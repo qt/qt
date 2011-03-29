@@ -1595,75 +1595,125 @@ QString HtmlGenerator::fileExtension(const Node * /* node */) const
 /*!
   Output breadcrumb list in the html file.
  */
-void HtmlGenerator::generateBreadCrumbs(const QString& title,
+void HtmlGenerator::generateBreadCrumbs(const QString &title,
                                         const Node *node,
                                         CodeMarker *marker)
 {
-    Text breadcrumb;
+    Text breadcrumbs;
+
     if (node->type() == Node::Class) {
-        const ClassNode* cn = static_cast<const ClassNode*>(node);
+        const ClassNode *cn = static_cast<const ClassNode *>(node);
         QString name =  node->moduleName();
-        out() << "              <li><a href=\"modules.html\">Modules</a></li>";
-        if (!name.isEmpty()) {
-            out() << "              <li>";
-            breadcrumb << Atom(Atom::AutoLink,name);
-            generateText(breadcrumb, node, marker);
-            out() << "</li>\n";
-        }
+        breadcrumbs << Atom(Atom::ListItemLeft)
+                    << Atom(Atom::Link, QLatin1String("All Modules"))
+                    << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                    << Atom(Atom::String, QLatin1String("Modules"))
+                    << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
+                    << Atom(Atom::ListItemRight);
+        if (!name.isEmpty())
+            breadcrumbs << Atom(Atom::ListItemLeft)
+                        << Atom(Atom::AutoLink, name)
+                        << Atom(Atom::ListItemRight);
         if (!cn->name().isEmpty())
-            out() << "              <li>" << protectEnc(cn->name()) << "</li>\n";
+            breadcrumbs << Atom(Atom::ListItemLeft)
+                        << Atom(Atom::String, protectEnc(cn->name()))
+                        << Atom(Atom::ListItemRight);
     }
     else if (node->type() == Node::Fake) {
         const FakeNode* fn = static_cast<const FakeNode*>(node);
         if (node->subType() == Node::Module) {
-            out() << "              <li><a href=\"modules.html\">Modules</a></li>";
+            breadcrumbs << Atom(Atom::ListItemLeft)
+                        << Atom(Atom::Link, QLatin1String("All Modules"))
+                        << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                        << Atom(Atom::String, QLatin1String("Modules"))
+                        << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
+                        << Atom(Atom::ListItemRight);
             QString name =  node->name();
             if (!name.isEmpty())
-                out() << "              <li>" << protectEnc(name) << "</li>\n";
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::String, protectEnc(name))
+                            << Atom(Atom::ListItemRight);
         }
         else if (node->subType() == Node::Group) {
             if (fn->name() == QString("modules"))
-                out() << "              <li>Modules</li>";
-            else {
-                out() << "              <li>" << protectEnc(title) << "</li>";
-            }
+                breadcrumbs << Atom(Atom::String, QLatin1String("Modules"));
+            else
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::String, protectEnc(title))
+                            << Atom(Atom::ListItemRight);
         }
         else if (node->subType() == Node::Page) {
             if (fn->name() == QString("qdeclarativeexamples.html")) {
-                out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
-                out() << "              <li>QML Examples &amp; Demos</li>";
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::Link, QLatin1String("Qt Examples"))
+                            << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                            << Atom(Atom::String, QLatin1String("Examples"))
+                            << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
+                            << Atom(Atom::ListItemRight);
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::AutoLink, QLatin1String("QML Examples & Demos"))
+                            << Atom(Atom::ListItemRight);
             }
             else if (fn->name().startsWith("examples-")) {
-                out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
-                out() << "              <li>" << protectEnc(title) << "</li>";
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::Link, QLatin1String("Qt Examples"))
+                            << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                            << Atom(Atom::String, QLatin1String("Examples"))
+                            << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
+                            << Atom(Atom::ListItemRight);
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::String, protectEnc(title))
+                            << Atom(Atom::ListItemRight);
             }
-            else if (fn->name() == QString("namespaces.html")) {
-                out() << "              <li>Namespaces</li>";
-            }
-            else {
-                out() << "              <li>" << protectEnc(title) << "</li>";
-            }
+            else if (fn->name() == QString("namespaces.html"))
+                breadcrumbs << Atom(Atom::String, QLatin1String("Namespaces"));
+            else
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::String, protectEnc(title))
+                            << Atom(Atom::ListItemRight);
         }
         else if (node->subType() == Node::QmlClass) {
-            out() << "              <li><a href=\"qdeclarativeelements.html\">QML Elements</a></li>";
-            out() << "              <li>" << protectEnc(title) << "</li>";
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::AutoLink, QLatin1String("QML Elements"))
+                            << Atom(Atom::ListItemRight);
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::String, protectEnc(title))
+                            << Atom(Atom::ListItemRight);
         }
         else if (node->subType() == Node::Example) {
-            out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
+            breadcrumbs << Atom(Atom::ListItemLeft)
+                        << Atom(Atom::Link, QLatin1String("Qt Examples"))
+                        << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                        << Atom(Atom::String, QLatin1String("Examples"))
+                        << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
+                        << Atom(Atom::ListItemRight);
             QStringList sl = fn->name().split('/');
             if (sl.contains("declarative"))
-                out() << "              <li><a href=\"qdeclarativeexamples.html\">QML Examples &amp; Demos</a></li>";
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::AutoLink, QLatin1String("QML Examples & Demos"))
+                            << Atom(Atom::ListItemRight);
             else {
                 QString name = protectEnc("examples-" + sl.at(0) + ".html"); // this generates an empty link
                 QString t = CodeParser::titleFromName(name);
             }
-            out() << "              <li>" << protectEnc(title) << "</li>";
+            breadcrumbs << Atom(Atom::ListItemLeft)
+                        << Atom(Atom::String, protectEnc(title))
+                        << Atom(Atom::ListItemRight);
         }
     }
     else if (node->type() == Node::Namespace) {
-        out() << "              <li><a href=\"namespaces.html\">Namespaces</a></li>";
-        out() << "              <li>" << protectEnc(title) << "</li>";
+        breadcrumbs << Atom(Atom::ListItemLeft)
+                    << Atom(Atom::Link, QLatin1String("All Namespaces"))
+                    << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                    << Atom(Atom::String, QLatin1String("Namespaces"))
+                    << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
+                    << Atom(Atom::ListItemRight);
+        breadcrumbs << Atom(Atom::ListItemLeft)
+                    << Atom(Atom::String, protectEnc(title))
+                    << Atom(Atom::ListItemRight);
     }
+
+    generateText(breadcrumbs, node, marker);
 }
 
 void HtmlGenerator::generateHeader(const QString& title,

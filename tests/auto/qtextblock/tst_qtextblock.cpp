@@ -75,6 +75,7 @@ private slots:
     void fragmentOverBlockBoundaries();
     void excludeParagraphSeparatorFragment();
     void backwardsBlockIterator();
+    void previousBlock_qtbug18026();
 
 private:
     QTextDocument *doc;
@@ -172,6 +173,12 @@ void tst_QTextBlock::backwardsBlockIterator()
     QCOMPARE(it.fragment().position(), 1);
     --it;
     QCOMPARE(it.fragment().position(), 0);
+}
+
+void tst_QTextBlock::previousBlock_qtbug18026()
+{
+    QTextBlock last = doc->end().previous();
+    QVERIFY(last.isValid());
 }
 
 QTEST_MAIN(tst_QTextBlock)

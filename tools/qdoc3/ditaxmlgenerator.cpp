@@ -1193,7 +1193,8 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 fileName = QLatin1String("images/") + protectEnc(atom->string());
             }
 
-            writeStartTag(DT_fig);
+            if (currentTag() != DT_xref)
+                writeStartTag(DT_fig);
             writeStartTag(DT_image);
             xmlWriter().writeAttribute("href",protectEnc(fileName));
             if (atom->type() == Atom::InlineImage)
@@ -1208,7 +1209,8 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 writeEndTag(); // </alt>
             }
             writeEndTag(); // </image>
-            writeEndTag(); // </fig>
+            if (currentTag() != DT_xref)
+                writeEndTag(); // </fig>
         }
         break;
     case Atom::ImageText:
@@ -5551,13 +5553,74 @@ void DitaXmlGenerator::writeDitaMap()
 }
 
 /*!
+  Looks up the tag name for \a t in the map of metadata
+  values for the current topic in \a inner. If a value
+  for the tag is found, the element is written with the
+  found value. Otherwise if \a force is set, an empty
+  element is written using the tag.
+
+  Returns true or false depending on whether it writes
+  an element using the tag \a t.
+
+  \note If \a t is found in the metadata map, it is erased.
+  i.e. Once you call this function for a particular \a t,
+  you consume \a t.
+
+  At the moment, it doesn't chaeck to see if there is a
+  default value for the tag. But it will eventually.
+ */
+bool DitaXmlGenerator::writeMetadataElement(const InnerNode* inner,
+                                            DitaXmlGenerator::DitaTag t,
+                                            bool force)
+{
+    QString s;
+    QStringMap& metaTagMap = const_cast<QStringMap&>(inner->doc().metaTagMap());
+    QStringMap::iterator i = metaTagMap.find(ditaTags[t]);
+    if (i == metaTagMap.end()) {
+        // get the default author, if there is one.
+    }
+    else {
+        s = i.value();
+        metaTagMap.erase(i);
+    }
+    if (s.isEmpty() && !force)
+        return false;
+    writeStartTag(t);
+    if (!s.isEmpty())
+        xmlWriter().writeCharacters(s);
+    writeEndTag();
+    return true;
+}
+
+/*!
+  Looks up the tag name for \a t in the map of metadata
+  values for the current topic in \a inner. If a value
+  for the tag is found, the value is returned.
+
+  \note If \a t is found in the metadata map, it is erased.
+  i.e. Once you call this function for a particular \a t,
+  you consume \a t.
+ */
+QString DitaXmlGenerator::getMetadataElement(const InnerNode* inner, DitaXmlGenerator::DitaTag t)
+{
+    QString s;
+    QStringMap& metaTagMap = const_cast<QStringMap&>(inner->doc().metaTagMap());
+    QStringMap::iterator i = metaTagMap.find(ditaTags[t]);
+    if (i != metaTagMap.end()) {
+        s = i.value();
+        metaTagMap.erase(i);
+    }
+    return s;
+}
+
+/*!
   Writes the <prolog> element for the \a inner node
   using the \a marker. The <prolog> element contains
   the <metadata> element, plus some others. This
   function writes one or more of these elements:
 
   \list
-    \o <audience>
+    \o <audience> *
     \o <author> *
     \o <brand>
     \o <category> *
@@ -5595,64 +5658,76 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
     if (!inner)
         return;
     writeStartTag(DT_prolog);
-    
-    QString author = inner->author();
-    writeStartTag(DT_author);
-    if (author.isEmpty())
-        author = "Qt Development Frameworks";
-    xmlWriter().writeCharacters(author);
-    writeEndTag(); // <author>
-
-    QString publisher = inner->publisher();
-    writeStartTag(DT_publisher);
-    if (publisher.isEmpty())
-        publisher = "Nokia";
-    xmlWriter().writeCharacters(publisher);
-    writeEndTag(); // <publisher>
-
-    QString permissions = inner->permissions();
-    writeStartTag(DT_permissions);
-    if (permissions.isEmpty())
-        permissions = "all";
-    xmlWriter().writeAttribute("view",permissions);
-    writeEndTag(); // <permissions>
-
-    writeStartTag(DT_metadata);
-    writeStartTag(DT_category);
-    QString category = "Page";
-    if (inner->type() == Node::Class)
-        category = "C++ Class";
-    else if (inner->type() == Node::Namespace)
-        category = "C++ Namespace";
-    else if (inner->type() == Node::Fake) {
-        if (inner->subType() == Node::QmlBasicType)
-            category = "QML Class";
-        else if (inner->subType() == Node::QmlClass)
-            category = "QML Basic Type";
-        else if (inner->subType() == Node::HeaderFile)
-            category = "Header File";
-        else if (inner->subType() == Node::Module)
-            category = "Module";
-        else if (inner->subType() == Node::File)
-            category = "Example Source File";
-        else if (inner->subType() == Node::Example)
-            category = "Example";
-        else if (inner->subType() == Node::Image)
-            category = "Image";
-        else if (inner->subType() == Node::Group)
-            category = "Group";
-        else if (inner->subType() == Node::Page)
-            category = "Page";
-        else if (inner->subType() == Node::ExternalPage)
-            category = "External Page"; // Is this necessary?
+    writeMetadataElement(inner,DT_author);
+    writeMetadataElement(inner,DT_publisher);
+    QString s = getMetadataElement(inner,DT_copyryear);
+    if (s.isEmpty()) {
+        s = "2011"; // zzz
     }
-    xmlWriter().writeCharacters(category);
-    writeEndTag(); // <category>
+    QString t = getMetadataElement(inner,DT_copyrholder);
+    if (t.isEmpty()) {
+        t = "Nokia"; // zzz
+    }
+    writeStartTag(DT_copyright);
+    writeStartTag(DT_copyryear);
+    xmlWriter().writeAttribute("year",s);
+    writeEndTag(); // </copyryear>
+    writeStartTag(DT_copyrholder);
+    xmlWriter().writeCharacters(t);
+    writeEndTag(); // </copyrholder>
+    writeEndTag(); // </copyright>
+    s = getMetadataElement(inner,DT_permissions);
+    if (s.isEmpty())
+        s = "all";
+    writeStartTag(DT_permissions);
+    xmlWriter().writeAttribute("view",s);
+    writeEndTag(); // </permissions>
+    writeStartTag(DT_metadata);
+    s = getMetadataElement(inner,DT_audience);
+    if (!s.isEmpty()) {
+        writeStartTag(DT_audience);
+        xmlWriter().writeAttribute("type",s);
+        writeEndTag(); // </audience>
+    }
+    if (!writeMetadataElement(inner,DT_category,false)) {
+        writeStartTag(DT_category);
+        QString category = "Page";
+        if (inner->type() == Node::Class)
+            category = "Class reference";
+        else if (inner->type() == Node::Namespace)
+            category = "Namespace";
+        else if (inner->type() == Node::Fake) {
+            if (inner->subType() == Node::QmlClass)
+                category = "QML Element Reference";
+            else if (inner->subType() == Node::QmlBasicType)
+                category = "QML Basic Type";
+            else if (inner->subType() == Node::HeaderFile)
+                category = "Header File";
+            else if (inner->subType() == Node::Module)
+                category = "Module";
+            else if (inner->subType() == Node::File)
+                category = "Example Source File";
+            else if (inner->subType() == Node::Example)
+                category = "Example";
+            else if (inner->subType() == Node::Image)
+                category = "Image";
+            else if (inner->subType() == Node::Group)
+                category = "Group";
+            else if (inner->subType() == Node::Page)
+                category = "Page";
+            else if (inner->subType() == Node::ExternalPage)
+                category = "External Page"; // Is this necessary?
+        }
+        xmlWriter().writeCharacters(category);
+        writeEndTag(); // </category>
+    }
     if (vrm.size() > 0) {
         writeStartTag(DT_prodinfo);
-        writeStartTag(DT_prodname);
-        xmlWriter().writeCharacters(projectDescription);
-        writeEndTag(); // <prodname>
+        if (!writeMetadataElement(inner,DT_prodname,false)) {
+            writeStartTag(DT_prodname);
+            xmlWriter().writeCharacters(projectDescription);
+            writeEndTag(); // </prodname>
+        }
         writeStartTag(DT_vrmlist);
         writeStartTag(DT_vrm);
         if (vrm.size() > 0)
@@ -5663,26 +5738,27 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
             xmlWriter().writeAttribute("modification",vrm[2]);
         writeEndTag(); // <vrm>
         writeEndTag(); // <vrmlist>
-        QString component = inner->moduleName();
-        if (!component.isEmpty()) {
-            writeStartTag(DT_component);
-            xmlWriter().writeCharacters(component);
-            writeEndTag(); // <component>
-        }
-        writeEndTag(); // <prodinfo>
-        if (inner->hasOtherMetadata()) {
-            const QMap<QString, QString>& omd = inner->otherMetadata();
-            QMapIterator<QString, QString> i(omd);
-            while (i.hasNext()) {
-                i.next();
-                writeStartTag(DT_othermeta);
-                xmlWriter().writeAttribute("name",i.key());
-                xmlWriter().writeAttribute("content",i.value());
+        if (!writeMetadataElement(inner,DT_component,false)) {
+            QString component = inner->moduleName();
+            if (!component.isEmpty()) {
+                writeStartTag(DT_component);
+                xmlWriter().writeCharacters(component);
+                writeEndTag(); // </component>
             }
         }
+        writeEndTag(); // </prodinfo>
     }
-    writeEndTag(); // <metadata>
-    writeEndTag(); // <prolog>
+    const QStringMap& metaTagMap = inner->doc().metaTagMap(); 
+    QMapIterator<QString, QString> i(metaTagMap);
+    while (i.hasNext()) {
+        i.next();
+        writeStartTag(DT_othermeta);
+        xmlWriter().writeAttribute("name",i.key());
+        xmlWriter().writeAttribute("content",i.value());
+        writeEndTag(); // </othermeta>
+    }
+    writeEndTag(); // </metadata>
+    writeEndTag(); // </prolog>
 }
 
 QT_END_NAMESPACE

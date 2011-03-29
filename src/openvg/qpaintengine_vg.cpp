@@ -2333,6 +2333,7 @@ bool QVGPaintEngine::isDefaultClipRect(const QRect& rect)
 void QVGPaintEngine::clipEnabledChanged()
 {
 #if defined(QVG_SCISSOR_CLIP)
+    vgSeti(VG_MASKING, VG_FALSE); // disable mask fallback
     updateScissor();
 #else
     Q_D(QVGPaintEngine);
@@ -3134,9 +3135,13 @@ void QVGPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF
         if (pm.size().width() <= screenSize.width()
             && pm.size().height() <= screenSize.height())
             vgpd->failedToAlloc = false;
-    }
 
-    drawImage(r, *(pd->buffer()), sr, Qt::AutoColor);
+        vgpd->source.beginDataAccess();
+        drawImage(r, vgpd->source.imageRef(), sr, Qt::AutoColor);
+        vgpd->source.endDataAccess(true);
+    } else {
+        drawImage(r, *(pd->buffer()), sr, Qt::AutoColor);
+    }
 }
 
 void QVGPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
@@ -3162,9 +3167,13 @@ void QVGPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
         if (pm.size().width() <= screenSize.width()
             && pm.size().height() <= screenSize.height())
             vgpd->failedToAlloc = false;
-    }
 
-    drawImage(pos, *(pd->buffer()));
+        vgpd->source.beginDataAccess();
+        drawImage(pos, vgpd->source.imageRef());
+        vgpd->source.endDataAccess();
+    } else {
+        drawImage(pos, *(pd->buffer()));
+    }
 }
 
 void QVGPaintEngine::drawImage
@@ -3172,6 +3181,8 @@ void QVGPaintEngine::drawImage
          Qt::ImageConversionFlags flags)
 {
     Q_D(QVGPaintEngine);
+    if (image.isNull())
+        return;
     VGImage vgImg;
     if (d->simpleTransform || d->opacity == 1.0f)
         vgImg = toVGImageSubRect(image, sr.toRect(), flags);
@@ -3217,6 +3228,8 @@ void QVGPaintEngine::drawImage
 void QVGPaintEngine::drawImage(const QPointF &pos, const QImage &image)
 {
     Q_D(QVGPaintEngine);
+    if (image.isNull())
+        return;
     VGImage vgImg;
     if (canVgWritePixels(image)) {
         // Optimization for straight blits, no blending
@@ -4010,6 +4023,8 @@ VGImageFormat qt_vg_image_to_vg_format(QImage::Format format)
     switch (format) {
         case QImage::Format_MonoLSB:
             return VG_BW_1;
+        case QImage::Format_Indexed8:
+            return VG_sL_8;
         case QImage::Format_ARGB32_Premultiplied:
             return VG_sARGB_8888_PRE;
         case QImage::Format_RGB32:
@@ -4020,7 +4035,8 @@ VGImageFormat qt_vg_image_to_vg_format(QImage::Format format)
             return VG_sRGB_565;
         case QImage::Format_ARGB4444_Premultiplied:
             return VG_sARGB_4444;
-        default: break;
+        default:
+            break;
     }
     return VG_sARGB_8888;   // XXX
 }

@@ -1504,7 +1504,7 @@ QTextBlock QTextBlock::next() const
 */
 QTextBlock QTextBlock::previous() const
 {
-    if (!isValid())
+    if (!p)
         return QTextBlock();
 
     return QTextBlock(p, p->blockMap().previous(n));

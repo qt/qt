@@ -94,17 +94,21 @@ public:
     struct AxisData {
         AxisData(QDeclarativeFlickablePrivate *fp, void (QDeclarativeFlickablePrivate::*func)(qreal))
             : move(fp, func), viewSize(-1), smoothVelocity(fp), atEnd(false), atBeginning(true)
+            , fixingUp(false)
         {}
 
         QDeclarativeTimeLineValueProxy<QDeclarativeFlickablePrivate> move;
         qreal viewSize;
         qreal pressPos;
         qreal dragStartOffset;
+        qreal dragMinBound;
+        qreal dragMaxBound;
         qreal velocity;
         qreal flickTarget;
         QDeclarativeFlickablePrivate::Velocity smoothVelocity;
         bool atEnd : 1;
         bool atBeginning : 1;
+        bool fixingUp : 1;
     };
 
     void flickX(qreal velocity);
@@ -160,6 +164,9 @@ public:
     QBasicTimer delayedPressTimer;
     int pressDelay;
     int fixupDuration;
+
+    enum FixupMode { Normal, Immediate, ExtentChanged };
+    FixupMode fixupMode;
 
     static void fixupY_callback(void *);
     static void fixupX_callback(void *);

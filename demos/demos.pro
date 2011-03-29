@@ -21,7 +21,11 @@ SUBDIRS     = \
 symbian: SUBDIRS = \
             demos_shared \
             demos_deform \
-            demos_pathstroke
+            demos_pathstroke \
+            demos_guitartuner \
+            demos_qcamera \
+            demos_qtbubblelevel \
+            demos_quickhit
             
 wince*:  SUBDIRS = \
             demos_shared \
@@ -90,6 +94,12 @@ demos_undo.subdir = undo
 demos_qtdemo.subdir = qtdemo
 demos_mediaplayer.subdir = qmediaplayer
 demos_declarative.subdir = declarative
+
+#mobile demos
+demos_guitartuner = mobile/guitartuner
+demos_qcamera = mobile/qcamera
+demos_qtbubblelevel = mobile/qtbubblelevel
+demos_quickhit = mobile/quickhit
 
 demos_browser.subdir = browser
 

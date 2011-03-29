@@ -313,7 +313,7 @@ void QDeclarativeWorkerScriptEnginePrivate::processLoad(int id, const QUrl &url)
 
         QScriptContext *ctxt = QScriptDeclarativeClass::pushCleanContext(workerEngine);
         QScriptValue urlContext = workerEngine->newObject();
-        urlContext.setData(QScriptValue(workerEngine, fileName));
+        urlContext.setData(QScriptValue(workerEngine, url.toString()));
         ctxt->pushScope(urlContext);
         ctxt->pushScope(activation);
         ctxt->setActivationObject(activation);

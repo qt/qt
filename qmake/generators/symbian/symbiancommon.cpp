@@ -394,8 +394,7 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile,
         t << manufacturerStr << endl;
     }
 
-    // ### FIXME: remove epocBuild check once makefile based mkspecs support localized resource generation
-    if (epocBuild && symbianLocalizationList.size()) {
+    if (symbianLocalizationList.size()) {
         // Add localized resources to DEPLOYMENT if default resource deployment is done
         addLocalizedResourcesToDeployment("default_resource_deployment.sources", symbianLocalizationList);
         addLocalizedResourcesToDeployment("default_reg_deployment.sources", symbianLocalizationList);

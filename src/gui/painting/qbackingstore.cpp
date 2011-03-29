@@ -1117,6 +1117,11 @@ void QWidgetBackingStore::sync(QWidget *exposedWidget, const QRegion &exposedReg
         return;
     }
 
+    // If there's no partial update support we always need
+    // to do a full repaint before flushing
+    if (!windowSurface->hasPartialUpdateSupport())
+        fullUpdatePending = true;
+
     // Nothing to repaint.
     if (!isDirty()) {
         qt_flush(exposedWidget, exposedRegion, windowSurface, tlw, tlwOffset);
