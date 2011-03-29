@@ -496,7 +496,7 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
         s.append(QLatin1String("UPDATE ")).append(tableName).append(
                  QLatin1String(" SET "));
         for (i = 0; i < rec.count(); ++i) {
-            if (!rec.isGenerated(i) || !rec.value(i).isValid())
+            if (!rec.isGenerated(i))
                 continue;
             s.append(prepareIdentifier(rec.fieldName(i), QSqlDriver::FieldName, this)).append(QLatin1Char('='));
             if (preparedStatement)
@@ -517,7 +517,7 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
         s.append(QLatin1String("INSERT INTO ")).append(tableName).append(QLatin1String(" ("));
         QString vals;
         for (i = 0; i < rec.count(); ++i) {
-            if (!rec.isGenerated(i) || !rec.value(i).isValid())
+            if (!rec.isGenerated(i))
                 continue;
             s.append(prepareIdentifier(rec.fieldName(i), QSqlDriver::FieldName, this)).append(QLatin1String(", "));
             if (preparedStatement)
