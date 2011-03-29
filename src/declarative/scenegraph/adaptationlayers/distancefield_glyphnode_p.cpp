@@ -450,12 +450,10 @@ const char *DistanceFieldShiftedStyleTextMaterialShader::fragmentShader() const 
             "uniform highp vec2 shift;                                                             \n"
             "void main() {                                                                         \n"
             "    highp float a = smoothstep(alphaMin, alphaMax, texture2D(texture, sampleCoord).a);\n"
-            "    highp vec4 glyph = color * a;                                                     \n"
             "    highp vec4 shifted = styleColor * smoothstep(alphaMin,                            \n"
             "                                                 alphaMax,                            \n"
             "                                                 texture2D(texture, sampleCoord - shift).a); \n"
-            "    gl_FragColor = vec4(shifted.rgb * (1.0 - a) + glyph.rgb,                          \n"
-            "                        shifted.a * (1.0 - a) + glyph.a);                             \n"
+            "    gl_FragColor = mix(shifted, color, a);                                            \n"
             "}";
 }
 
