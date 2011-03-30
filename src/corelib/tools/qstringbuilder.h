@@ -118,14 +118,14 @@ private:
     friend class QString;
     template <typename T> T convertTo() const
     {
-        const uint size = QConcatenable< QStringBuilder<A, B> >::size(*this);
-        T s(size, Qt::Uninitialized);
+        const uint len = QConcatenable< QStringBuilder<A, B> >::size(*this);
+        T s(len, Qt::Uninitialized);
 
         typename T::iterator d = s.data();
         typename T::const_iterator const start = d;
         QConcatenable< QStringBuilder<A, B> >::appendTo(*this, d);
 
-        if (!QConcatenable< QStringBuilder<A, B> >::ExactSize && int(size) != d - start) {
+        if (!QConcatenable< QStringBuilder<A, B> >::ExactSize && int(len) != d - start) {
             // this resize is necessary since we allocate a bit too much
             // when dealing with variable sized 8-bit encodings
             s.resize(d - start);
@@ -384,8 +384,7 @@ namespace QtStringBuilder {
     { typedef A ConvertTo; };
     template <typename T> struct ConvertToTypeHelper<T, QString>
     { typedef QString ConvertTo; };
-};
-
+}
 
 template <typename A, typename B>
 struct QConcatenable< QStringBuilder<A, B> >
