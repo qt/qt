@@ -278,10 +278,11 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
         qfilename += QLatin1String(".XXXXXX");
 
     int suffixLength = qfilename.length() - (qfilename.lastIndexOf(QLatin1String("XXXXXX"), -1, Qt::CaseSensitive) + 6);
-    char *filename = qstrdup(qfilename.toLocal8Bit());
+    QByteArray filename = qfilename.toLocal8Bit();
+    char *path = filename.data();
 
 #ifndef Q_OS_WIN
-    int fd = _gettemp(filename, suffixLength);
+    int fd = _gettemp(path, suffixLength);
     if (fd != -1) {
         // First open the fd as an external file descriptor to
         // initialize the engine properly.
@@ -291,26 +292,22 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
             d->closeFileHandle = true;
 
             // Restore the file names (open() resets them).
-            d->fileEntry = QFileSystemEntry(QString::fromLocal8Bit(filename)); //note that filename is NOT a native path
+            d->fileEntry = QFileSystemEntry(QString::fromLocal8Bit(path, filename.length())); //note that filename is NOT a native path
             filePathIsTemplate = false;
-            delete [] filename;
             return true;
         }
 
         QT_CLOSE(fd);
     }
-    delete [] filename;
     setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError, qt_error_string(errno));
     return false;
 #else
-    if (_gettemp(filename, suffixLength) == -1) {
-        delete [] filename;
+    if (_gettemp(path, suffixLength) == -1) {
         return false;
     }
 
     QString template_ = d->fileEntry.filePath();
-    d->fileEntry = QFileSystemEntry(QString::fromLocal8Bit(filename));
-    delete [] filename;
+    d->fileEntry = QFileSystemEntry(QString::fromLocal8Bit(path, filename.length()));
 
     if (QFSFileEngine::open(openMode)) {
         filePathIsTemplate = false;
