@@ -6,6 +6,8 @@
 #include <QFile>
 #include "coloredparticle.h"
 #include "particleemitter.h"
+#include <QGLFunctions>
+
 QT_BEGIN_NAMESPACE
 
 class ParticleTrailsMaterial : public AbstractMaterial
@@ -55,17 +57,17 @@ public:
         }
     }
 
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *, Renderer::Updates updates)
+    virtual void updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *)
     {
         ParticleTrailsMaterial *m = static_cast<ParticleTrailsMaterial *>(newEffect);
-        renderer->glActiveTexture(GL_TEXTURE0);
+        state.context()->functions()->glActiveTexture(GL_TEXTURE0);
         m->texture->bind();
 
-        m_program.setUniformValue(m_opacity_id, (float) renderer->renderOpacity());
+        m_program.setUniformValue(m_opacity_id, state.opacity());
         m_program.setUniformValue(m_timestamp_id, (float) m->timestamp);
 
-        if (updates & Renderer::UpdateMatrices)
-            m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
+        if (state.isMatrixDirty())
+            m_program.setUniformValue(m_matrix_id, state.combinedMatrix());
     }
 
     virtual void initialize() {
@@ -138,16 +140,16 @@ public:
         m_colortable_id = m_program.uniformLocation("colortable");
     }
 
-    virtual void updateState(Renderer *renderer, AbstractMaterial *current, AbstractMaterial *old, Renderer::Updates updates)
+    virtual void updateState(const RenderState &state, AbstractMaterial *current, AbstractMaterial *old)
     {
         // Bind the texture to unit 1 before calling the base class, so that the
         // base class can set active texture back to 0.
         ParticleTrailsMaterialCT *m = static_cast<ParticleTrailsMaterialCT *>(current);
-        renderer->glActiveTexture(GL_TEXTURE1);
+        state.context()->functions()->glActiveTexture(GL_TEXTURE1);
         m->colortable->bind();
         m_program.setUniformValue(m_colortable_id, 1);
 
-        ParticleTrailsMaterialData::updateState(renderer, current, old, updates);
+        ParticleTrailsMaterialData::updateState(state, current, old);
     }
 
     int m_colortable_id;

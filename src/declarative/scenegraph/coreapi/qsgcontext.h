@@ -60,6 +60,8 @@ class GlyphNodeInterface;
 class Renderer;
 
 class QSGTexture;
+class AbstractMaterial;
+class AbstractMaterialShader;
 
 class QGLContext;
 
@@ -83,6 +85,8 @@ public:
     static QSGContext *current; // Evil nasty hack!! Get rid of this!
 
     bool isReady() const;
+
+    AbstractMaterialShader *prepareMaterial(AbstractMaterial *material);
 
     virtual void renderNextFrame();
 

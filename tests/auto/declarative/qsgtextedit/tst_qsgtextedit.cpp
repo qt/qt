@@ -1868,7 +1868,11 @@ void tst_qsgtextedit::openInputPanelOnClick()
 {
     QSGView view(QUrl::fromLocalFile(SRCDIR "/data/openInputPanel.qml"));
     MyInputContext ic;
+    // QSGCanvas won't set the Qt::WA_InputMethodEnabled flag unless a suitable item has focus
+    // and QWidget won't allow an input context to be set when the flag is not set.
+    view.setAttribute(Qt::WA_InputMethodEnabled, true);
     view.setInputContext(&ic);
+    view.setAttribute(Qt::WA_InputMethodEnabled, false);
     view.show();
 
     qApp->setAutoSipEnabled(true);
@@ -1915,7 +1919,11 @@ void tst_qsgtextedit::openInputPanelOnFocus()
 {
     QSGView view(QUrl::fromLocalFile(SRCDIR "/data/openInputPanel.qml"));
     MyInputContext ic;
+    // QSGCanvas won't set the Qt::WA_InputMethodEnabled flag unless a suitable item has focus
+    // and QWidget won't allow an input context to be set when the flag is not set.
+    view.setAttribute(Qt::WA_InputMethodEnabled, true);
     view.setInputContext(&ic);
+    view.setAttribute(Qt::WA_InputMethodEnabled, false);
     view.show();
 
     qApp->setAutoSipEnabled(true);
@@ -2215,6 +2223,7 @@ void tst_qsgtextedit::inputContextMouseHandler()
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
     QSGTextEdit *edit = qobject_cast<QSGTextEdit *>(view.rootObject());
     QVERIFY(edit);
+    edit->setCursorPosition(12);
 
     QFontMetricsF fm(edit->font());
     const qreal y = fm.height() / 2;
@@ -2326,6 +2335,7 @@ void tst_qsgtextedit::inputMethodComposing()
     QSGTextEdit *edit = qobject_cast<QSGTextEdit *>(view.rootObject());
     QVERIFY(edit);
     QSignalSpy spy(edit, SIGNAL(inputMethodComposingChanged()));
+    edit->setCursorPosition(12);
 
     QCOMPARE(edit->isInputMethodComposing(), false);
 

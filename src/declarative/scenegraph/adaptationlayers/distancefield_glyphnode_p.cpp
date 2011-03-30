@@ -51,7 +51,7 @@ class DistanceFieldTextMaterialShader : public AbstractMaterialShader
 public:
     DistanceFieldTextMaterialShader();
 
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual void updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect);
     virtual char const *const *attributeNames() const;
 
 protected:
@@ -128,7 +128,7 @@ void DistanceFieldTextMaterialShader::initialize()
     m_alphaMax_id = m_program.uniformLocation("alphaMax");
 }
 
-void DistanceFieldTextMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+void DistanceFieldTextMaterialShader::updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect)
 {
     Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
     DistanceFieldTextMaterial *material = static_cast<DistanceFieldTextMaterial *>(newEffect);
@@ -136,10 +136,10 @@ void DistanceFieldTextMaterialShader::updateState(Renderer *renderer, AbstractMa
 
     if (oldMaterial == 0
            || material->color() != oldMaterial->color()
-           || (updates & Renderer::UpdateOpacity)) {
+           || state.isOpacityDirty()) {
         QVector4D color(material->color().redF(), material->color().greenF(),
                         material->color().blueF(), material->color().alphaF());
-        color *= renderer->renderOpacity();
+        color *= state.opacity();
         m_program.setUniformValue(m_color_id, color);
     }
 
@@ -149,9 +149,9 @@ void DistanceFieldTextMaterialShader::updateState(Renderer *renderer, AbstractMa
         m_fontScale = material->glyphCache()->fontScale();
         updateRange = true;
     }
-    if (updates & Renderer::UpdateMatrices) {
-        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
-        m_matrixScale = qSqrt(renderer->modelViewMatrix().top().determinant());
+    if (state.isMatrixDirty()) {
+        m_program.setUniformValue(m_matrix_id, state.combinedMatrix());
+        m_matrixScale = qSqrt(state.modelViewMatrix().determinant());
         updateRange = true;
     }
     if (updateRange)
@@ -166,7 +166,7 @@ void DistanceFieldTextMaterialShader::updateState(Renderer *renderer, AbstractMa
             || oldMaterial->texture()->textureId() != material->texture()->textureId()) {
         m_program.setUniformValue(m_textureScale_id, QVector2D(1.0 / material->glyphCache()->textureSize().width(),
                                                                1.0 / material->glyphCache()->textureSize().height()));
-        renderer->setTexture(0, material->texture());
+        glBindTexture(GL_TEXTURE_2D, material->texture()->textureId());
 
         if (updated) {
             // Set the mag/min filters to be linear. We only need to do this when the texture
@@ -238,7 +238,7 @@ class DistanceFieldStyledTextMaterialShader : public DistanceFieldTextMaterialSh
 public:
     DistanceFieldStyledTextMaterialShader();
 
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual void updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect);
 
 protected:
     virtual void initialize();
@@ -258,19 +258,19 @@ void DistanceFieldStyledTextMaterialShader::initialize()
     m_styleColor_id = m_program.uniformLocation("styleColor");
 }
 
-void DistanceFieldStyledTextMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+void DistanceFieldStyledTextMaterialShader::updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect)
 {
-    DistanceFieldTextMaterialShader::updateState(renderer, newEffect, oldEffect, updates);
+    DistanceFieldTextMaterialShader::updateState(state, newEffect, oldEffect);
 
     DistanceFieldStyledTextMaterial *material = static_cast<DistanceFieldStyledTextMaterial *>(newEffect);
     DistanceFieldStyledTextMaterial *oldMaterial = static_cast<DistanceFieldStyledTextMaterial *>(oldEffect);
 
     if (oldMaterial == 0
            || material->styleColor() != oldMaterial->styleColor()
-           || (updates & Renderer::UpdateOpacity)) {
+           || (state.isOpacityDirty())) {
         QVector4D color(material->styleColor().redF(), material->styleColor().greenF(),
                         material->styleColor().blueF(), material->styleColor().alphaF());
-        color *= renderer->renderOpacity();
+        color *= state.opacity();
         m_program.setUniformValue(m_styleColor_id, color);
     }
 }
@@ -302,7 +302,7 @@ class DistanceFieldOutlineTextMaterialShader : public DistanceFieldStyledTextMat
 public:
     DistanceFieldOutlineTextMaterialShader();
 
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual void updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect);
 
 protected:
     virtual void initialize();
@@ -355,16 +355,16 @@ void DistanceFieldOutlineTextMaterialShader::updateOutlineAlphaRange()
     m_program.setUniformValue(m_outlineAlphaMax1_id, GLfloat(styleAlphaMin1));
 }
 
-void DistanceFieldOutlineTextMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+void DistanceFieldOutlineTextMaterialShader::updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect)
 {
-    DistanceFieldStyledTextMaterialShader::updateState(renderer, newEffect, oldEffect, updates);
+    DistanceFieldStyledTextMaterialShader::updateState(state, newEffect, oldEffect);
 
     DistanceFieldOutlineTextMaterial *material = static_cast<DistanceFieldOutlineTextMaterial *>(newEffect);
     DistanceFieldOutlineTextMaterial *oldMaterial = static_cast<DistanceFieldOutlineTextMaterial *>(oldEffect);
 
     if (oldMaterial == 0
             || material->glyphCache()->fontScale() != oldMaterial->glyphCache()->fontScale()
-            || updates & Renderer::UpdateMatrices)
+            || state.isMatrixDirty())
         updateOutlineAlphaRange();
 }
 
@@ -395,7 +395,7 @@ class DistanceFieldShiftedStyleTextMaterialShader : public DistanceFieldStyledTe
 public:
     DistanceFieldShiftedStyleTextMaterialShader();
 
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual void updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect);
 
 protected:
     virtual void initialize();
@@ -417,9 +417,9 @@ void DistanceFieldShiftedStyleTextMaterialShader::initialize()
     m_shift_id = m_program.uniformLocation("shift");
 }
 
-void DistanceFieldShiftedStyleTextMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+void DistanceFieldShiftedStyleTextMaterialShader::updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect)
 {
-    DistanceFieldStyledTextMaterialShader::updateState(renderer, newEffect, oldEffect, updates);
+    DistanceFieldStyledTextMaterialShader::updateState(state, newEffect, oldEffect);
 
     DistanceFieldShiftedStyleTextMaterial *material = static_cast<DistanceFieldShiftedStyleTextMaterial *>(newEffect);
     DistanceFieldShiftedStyleTextMaterial *oldMaterial = static_cast<DistanceFieldShiftedStyleTextMaterial *>(oldEffect);
@@ -450,12 +450,10 @@ const char *DistanceFieldShiftedStyleTextMaterialShader::fragmentShader() const 
             "uniform highp vec2 shift;                                                             \n"
             "void main() {                                                                         \n"
             "    highp float a = smoothstep(alphaMin, alphaMax, texture2D(texture, sampleCoord).a);\n"
-            "    highp vec4 glyph = color * a;                                                     \n"
             "    highp vec4 shifted = styleColor * smoothstep(alphaMin,                            \n"
             "                                                 alphaMax,                            \n"
             "                                                 texture2D(texture, sampleCoord - shift).a); \n"
-            "    gl_FragColor = vec4(shifted.rgb * (1.0 - a) + glyph.rgb,                          \n"
-            "                        shifted.a * (1.0 - a) + glyph.a);                             \n"
+            "    gl_FragColor = mix(shifted, color, a);                                            \n"
             "}";
 }
 

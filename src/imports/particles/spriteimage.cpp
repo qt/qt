@@ -74,20 +74,20 @@ public:
         }
     }
 
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *, Renderer::Updates updates)
+    virtual void updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *)
     {
         SpriteMaterial *m = static_cast<SpriteMaterial *>(newEffect);
         m->texture->bind();
 
-        m_program.setUniformValue(m_opacity_id, (float) renderer->renderOpacity());
+        m_program.setUniformValue(m_opacity_id, state.opacity());
         m_program.setUniformValue(m_timestamp_id, (float) m->timestamp);
         m_program.setUniformValue(m_framecount_id, (float) m->framecount);
         m_program.setUniformValue(m_animcount_id, (float) m->animcount);
         m_program.setUniformValue(m_width_id, (float) m->width);
         m_program.setUniformValue(m_height_id, (float) m->height);
 
-        if (updates & Renderer::UpdateMatrices)
-            m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
+        if (state.isMatrixDirty())
+            m_program.setUniformValue(m_matrix_id, state.combinedMatrix());
     }
 
     virtual void initialize() {

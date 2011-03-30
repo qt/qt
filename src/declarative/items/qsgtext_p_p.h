@@ -140,6 +140,13 @@ public:
     static inline QSGTextPrivate *get(QSGText *t) {
         return t->d_func();
     }
+
+    enum NodeType {
+        NodeIsNull,
+        NodeIsTexture,
+        NodeIsText,
+    };
+    NodeType nodeType;
 };
 
 QT_END_NAMESPACE

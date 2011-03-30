@@ -72,8 +72,6 @@ public:
 
     QRectF sourceRect() const;
 
-    virtual NodeSubType subType() const { return EffectSubTreeNodeSubType; }
-
     int subtreeCount() const { return m_subtrees.size(); }
     void setSubtreeCount(int count);
 

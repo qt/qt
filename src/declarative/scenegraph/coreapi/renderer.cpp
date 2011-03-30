@@ -114,7 +114,7 @@ void BindableFbo::bind() const
  */
 
 
-Renderer::Renderer()
+Renderer::Renderer(QSGContext *context)
     : QObject()
     , m_clear_color(Qt::transparent)
     , m_root_node(0)
@@ -123,8 +123,8 @@ Renderer::Renderer()
     , m_mirrored(false)
     , m_is_rendering(false)
     , m_bindable(0)
+    , m_context(context)
 {
-    Q_ASSERT(QGLContext::currentContext());
     initializeGLFunctions();
 }
 
@@ -134,6 +134,19 @@ Renderer::~Renderer()
     setRootNode(0);
     delete m_node_updater;
 }
+
+/*!
+    Returns the scene graph context for this renderer.
+
+    \internal
+ */
+
+QSGContext *Renderer::context()
+{
+    return m_context;
+}
+
+
 
 
 /*!
@@ -261,35 +274,6 @@ void Renderer::setProjectMatrix(const QMatrix4x4 &matrix)
 void Renderer::setClearColor(const QColor &color)
 {
     m_clear_color = color;
-}
-
-void Renderer::setTexture(int unit, const QSGTextureRef &texture)
-{
-    if (unit < 0)
-        return;
-
-    // Select the texture unit and bind the texture.
-    glActiveTexture(GL_TEXTURE0 + unit);
-    if (texture.isNull()) {
-        glBindTexture(GL_TEXTURE_2D, 0);
-    } else {
-        glBindTexture(GL_TEXTURE_2D, texture->textureId());
-    }
-
-    if (unit != 0)
-        glActiveTexture(GL_TEXTURE0);
-}
-
-AbstractMaterialShader *Renderer::prepareMaterial(AbstractMaterial *material)
-{
-    AbstractMaterialType *type = material->type();
-    AbstractMaterialShader *shader = m_materials.value(type);
-    if (shader)
-        return shader;
-
-    shader = material->createShader();
-    m_materials[type] = shader;
-    return shader;
 }
 
 void Renderer::nodeChanged(Node *node, Node::DirtyFlags flags)
@@ -544,5 +528,31 @@ void Renderer::bindGeometry(AbstractMaterialShader *material, const QSGGeometry 
         offset += a.tupleSize * size_of_type(a.type);
     }
 }
+
+
+float AbstractMaterialShader::RenderState::opacity() const
+{
+    Q_ASSERT(m_data);
+    return static_cast<const Renderer *>(m_data)->renderOpacity();
+}
+
+
+QMatrix4x4 AbstractMaterialShader::RenderState::combinedMatrix() const
+{
+    Q_ASSERT(m_data);
+    return static_cast<const Renderer *>(m_data)->combinedMatrix();
+}
+
+QMatrix4x4 AbstractMaterialShader::RenderState::modelViewMatrix() const
+{
+    Q_ASSERT(m_data);
+    return const_cast<Renderer *>(static_cast<const Renderer *>(m_data))->modelViewMatrix().top();
+}
+
+const QGLContext *AbstractMaterialShader::RenderState::context() const
+{
+    return static_cast<const Renderer *>(m_data)->glContext();
+}
+
 
 QT_END_NAMESPACE

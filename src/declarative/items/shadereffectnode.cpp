@@ -43,6 +43,7 @@
 
 #include "shadereffectitem.h" // XXX todo
 #include "qsgtextureprovider.h"
+#include "renderer.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -50,7 +51,7 @@ class CustomMaterialShader : public AbstractMaterialShader
 {
 public:
     CustomMaterialShader(const ShaderEffectMaterialKey &key, const QVector<const char *> &attributes);
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual void updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect);
     virtual char const *const *attributeNames() const;
 
 protected:
@@ -76,7 +77,7 @@ CustomMaterialShader::CustomMaterialShader(const ShaderEffectMaterialKey &key, c
 {
 }
 
-void CustomMaterialShader::updateState(Renderer *r, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+void CustomMaterialShader::updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect)
 {
     Q_ASSERT(newEffect != 0);
     Q_UNUSED(oldEffect);
@@ -98,17 +99,17 @@ void CustomMaterialShader::updateState(Renderer *r, AbstractMaterial *newEffect,
         }
     }
 
+    QGLFunctions *functions = state.context()->functions();
     for (int i = material->m_textures.size() - 1; i >= 0; --i) {
         QPointer<QSGTextureProvider> source = material->m_textures.at(i).second;
         if (!source || !source->texture().texture())
             continue;
-
-        r->glActiveTexture(GL_TEXTURE0 + i);
+        functions->glActiveTexture(GL_TEXTURE0 + i);
         source->bind();
     }
 
     if (material->m_source.respectsOpacity)
-        m_program.setUniformValue(m_opacityLoc, (float) r->renderOpacity());
+        m_program.setUniformValue(m_opacityLoc, state.opacity());
 
     for (int i = 0; i < material->m_uniformValues.count(); ++i) {
         const QVariant &v = material->m_uniformValues.at(i).second;
@@ -152,8 +153,8 @@ void CustomMaterialShader::updateState(Renderer *r, AbstractMaterial *newEffect,
         }
     }
 
-    if ((updates & Renderer::UpdateMatrices) && material->m_source.respectsMatrix)
-        m_program.setUniformValue(m_matrixLoc, r->combinedMatrix());
+    if ((state.isMatrixDirty()) && material->m_source.respectsMatrix)
+        m_program.setUniformValue(m_matrixLoc, state.combinedMatrix());
 }
 
 char const *const *CustomMaterialShader::attributeNames() const

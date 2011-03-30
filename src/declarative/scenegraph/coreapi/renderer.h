@@ -53,6 +53,7 @@
 #include <qglshaderprogram.h>
 
 #include "node.h"
+#include "material.h"
 #include "qsgtexture.h"
 
 QT_BEGIN_HEADER
@@ -91,13 +92,6 @@ class Q_DECLARATIVE_EXPORT Renderer : public QObject, public QGLFunctions
 {
     Q_OBJECT
 public:
-    enum Update
-    {
-        UpdateMatrices              = 0x0001,
-        UpdateOpacity               = 0x0002
-    };
-    Q_DECLARE_FLAGS(Updates, Update)
-
     enum ClipType
     {
         NoClip,
@@ -105,7 +99,7 @@ public:
         StencilClip
     };
 
-    Renderer();
+    Renderer(QSGContext *context);
     virtual ~Renderer();
 
     void setRootNode(RootNode *node);
@@ -121,6 +115,7 @@ public:
 
     QSGMatrix4x4Stack &projectionMatrix() { return m_projectionMatrix; }
     QSGMatrix4x4Stack &modelViewMatrix() { return m_modelViewMatrix; }
+    QMatrix4x4 combinedMatrix() const { return m_projectionMatrix.top() * m_modelViewMatrix.top(); }
 
     void setProjectMatrixToDeviceRect();
     void setProjectMatrixToRect(const QRectF &rect);
@@ -128,15 +123,13 @@ public:
     QMatrix4x4 projectMatrix() const { return m_projection_matrix; }
     bool isMirrored() const { return m_mirrored; }
 
-    QMatrix4x4 combinedMatrix() const { return m_projectionMatrix.top() * m_modelViewMatrix.top(); }
-
-    // ### gunnar: move into RenderState along with combined matrix and update flags.
     qreal renderOpacity() const { return m_render_opacity; }
 
     void setClearColor(const QColor &color);
 
-    void setTexture(int unit, const QSGTextureRef &texture);
-    void setTexture(const QSGTextureRef &texture) { setTexture(0, texture); }
+    const QGLContext *glContext() const { Q_ASSERT(m_context); return m_context->glContext(); }
+
+    QSGContext *context();
 
     void renderScene();
     void renderScene(const Bindable &bindable);
@@ -145,6 +138,8 @@ public:
 
     NodeUpdater *nodeUpdater() const;
     void setNodeUpdater(NodeUpdater *updater);
+
+    inline AbstractMaterialShader::RenderState state(AbstractMaterialShader::RenderState::DirtyStates dirty) const;
 
 
 signals:
@@ -159,7 +154,6 @@ protected:
 
     const Bindable *bindable() const { return m_bindable; }
 
-    AbstractMaterialShader *prepareMaterial(AbstractMaterial *material);
     virtual void preprocess();
 
     void addNodesToPreprocess(Node *node);
@@ -170,6 +164,8 @@ protected:
     QSGMatrix4x4Stack m_modelViewMatrix;
     qreal m_render_opacity;
 
+    QSGContext *m_context;
+
 private:
     RootNode *m_root_node;
     NodeUpdater *m_node_updater;
@@ -177,7 +173,6 @@ private:
     QRect m_device_rect;
     QRect m_viewport_rect;
 
-    QHash<AbstractMaterialType *, AbstractMaterialShader *> m_materials;
     QSet<Node *> m_nodes_to_preprocess;
 
     QMatrix4x4 m_projection_matrix;
@@ -191,7 +186,13 @@ private:
     const Bindable *m_bindable;
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(Renderer::Updates)
+AbstractMaterialShader::RenderState Renderer::state(AbstractMaterialShader::RenderState::DirtyStates dirty) const
+{
+    AbstractMaterialShader::RenderState s;
+    s.m_dirty = dirty;
+    s.m_data = this;
+    return s;
+}
 
 QT_END_NAMESPACE
 

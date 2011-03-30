@@ -102,6 +102,10 @@ public:
 private:
     void updateGeometry();
 
+    QSGTextureProvider *m_texture;
+    QRectF m_targetRect;
+    QRectF m_sourceRect;
+
     TextureProviderMaterial m_material;
     TextureProviderMaterialWithOpacity m_materialO;
 

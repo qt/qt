@@ -55,8 +55,6 @@ class QuadNode : public GeometryNode
 public:
     QuadNode(const QRectF &targetRect, const QRectF &sourceRect = QRectF(0, 1, 1, -1));
     QuadNode(const QRectF &targetRect, const QRectF &sourceRect, qreal z, int meshSize = 1);
-
-    virtual NodeSubType subType() const { return QuadNodeSubType; }
 };
 
 

@@ -596,16 +596,13 @@ void QSGTextInput::keyPressEvent(QKeyEvent* ev)
 void QSGTextInput::inputMethodEvent(QInputMethodEvent *ev)
 {
     Q_D(QSGTextInput);
-    ev->ignore();
     const bool wasComposing = d->control->preeditAreaText().length() > 0;
-    if (!ev->isAccepted()) {
-        if (d->control->isReadOnly()) {
-            ev->ignore();
-        } else {
-            d->control->processInputMethodEvent(ev);
-            updateSize();
-            d->updateHorizontalScroll();
-        }
+    if (d->control->isReadOnly()) {
+        ev->ignore();
+    } else {
+        d->control->processInputMethodEvent(ev);
+        updateSize();
+        d->updateHorizontalScroll();
     }
     if (!ev->isAccepted())
         QSGPaintedItem::inputMethodEvent(ev);
@@ -1246,6 +1243,7 @@ void QSGTextInput::updateSize(bool needsRedraw)
     int h = height();
     setImplicitHeight(d->control->height()-1); // -1 to counter QLineControl's +1 which is not consistent with Text.
     setImplicitWidth(d->calculateTextWidth());
+    setContentsSize(QSize(width(), height()));
     if(w==width() && h==height() && needsRedraw)
         update();
 }

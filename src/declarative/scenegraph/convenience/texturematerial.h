@@ -43,6 +43,7 @@
 #define TEXTUREMATERIAL_H
 
 #include "material.h"
+#include <qsgtexture.h>
 
 QT_BEGIN_HEADER
 
@@ -87,7 +88,7 @@ protected:
 class Q_DECLARATIVE_EXPORT TextureMaterialShader : public AbstractMaterialShader
 {
 public:
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual void updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect);
     virtual char const *const *attributeNames() const;
 
     static AbstractMaterialType type;
