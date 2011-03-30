@@ -42,8 +42,7 @@
 #include "qsgdistancefieldglyphnode_p.h"
 #include "qsgdistancefieldglyphnode_p_p.h"
 #include "qsgdistancefieldglyphcache_p.h"
-
-#include <QtCore/qfileinfo.h>
+#include <private/qsgcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -195,7 +194,7 @@ void QSGDistanceFieldGlyphNode::updateGeometry()
 
 void QSGDistanceFieldGlyphNode::updateFont()
 {
-    m_glyph_cache = QSGDistanceFieldGlyphCache::get(m_glyphs.font());
+    m_glyph_cache = QSGDistanceFieldGlyphCache::get(QSGContext::current->glContext(), m_glyphs.font());
 }
 
 void QSGDistanceFieldGlyphNode::updateMaterial()

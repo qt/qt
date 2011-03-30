@@ -463,7 +463,7 @@ static void convert_to_Format_Alpha(QImage *image)
 DEFINE_BOOL_CONFIG_OPTION(disableDistanceField, QML_DISABLE_DISTANCEFIELD)
 
 QHash<QString, QSGDistanceFieldGlyphCache *> QSGDistanceFieldGlyphCache::m_caches;
-QHash<QString, QSGDistanceFieldGlyphCache::DistanceFieldTextureData *> QSGDistanceFieldGlyphCache::m_textures_data;
+QHash<QString, QGLContextGroupResource<QSGDistanceFieldGlyphCache::DistanceFieldTextureData> > QSGDistanceFieldGlyphCache::m_textures_data;
 
 static QString fontKey(const QFont &font)
 {
@@ -484,27 +484,25 @@ static QString fontKey(const QFont &font)
     return key;
 }
 
-QSGDistanceFieldGlyphCache *QSGDistanceFieldGlyphCache::get(const QFont &font)
+QSGDistanceFieldGlyphCache *QSGDistanceFieldGlyphCache::get(const QGLContext *ctx, const QFont &font)
 {
-    QString key = fontKey(font);
+    QString key = QString::number(long(ctx), 16) + fontKey(font);
     QHash<QString, QSGDistanceFieldGlyphCache *>::iterator atlas = m_caches.find(key);
     if (atlas == m_caches.end())
-        atlas = m_caches.insert(key, new QSGDistanceFieldGlyphCache(font));
+        atlas = m_caches.insert(key, new QSGDistanceFieldGlyphCache(ctx, font));
 
     return atlas.value();
 }
 
 QSGDistanceFieldGlyphCache::DistanceFieldTextureData *QSGDistanceFieldGlyphCache::textureData()
 {
-    QHash<QString, DistanceFieldTextureData *>::iterator data = m_textures_data.find(m_distanceFieldKey);
-    if (data == m_textures_data.end())
-        data = m_textures_data.insert(m_distanceFieldKey, new DistanceFieldTextureData);
-    return data.value();
+    return m_textures_data[m_distanceFieldKey].value(ctx);
 }
 
-QSGDistanceFieldGlyphCache::QSGDistanceFieldGlyphCache(const QFont &font)
-    : m_maxTextureSize(0)
-    , ctx(0)
+QSGDistanceFieldGlyphCache::QSGDistanceFieldGlyphCache(const QGLContext *c, const QFont &font)
+    : QObject()
+    , m_maxTextureSize(0)
+    , ctx(c)
     , m_blitProgram(0)
 {
     m_font = font;
@@ -550,6 +548,21 @@ QSGDistanceFieldGlyphCache::QSGDistanceFieldGlyphCache(const QFont &font)
     m_textureCoordinateArray[5] = 1.0f;
     m_textureCoordinateArray[6] = 0.0f;
     m_textureCoordinateArray[7] = 1.0f;
+
+    connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext*)),
+            this, SLOT(onContextDestroyed(const QGLContext*)));
+}
+
+QSGDistanceFieldGlyphCache::~QSGDistanceFieldGlyphCache()
+{
+    delete m_blitProgram;
+}
+
+void QSGDistanceFieldGlyphCache::onContextDestroyed(const QGLContext *context)
+{
+    QString key = QString::number(long(context), 16) + fontKey(m_font);
+    m_caches.remove(key);
+    deleteLater();
 }
 
 qreal QSGDistanceFieldGlyphCache::glyphMargin() const
@@ -819,9 +832,6 @@ void QSGDistanceFieldGlyphCache::updateCache()
 {
     if (m_textureData->pendingGlyphs.isEmpty())
         return;
-
-    if (!ctx)
-        ctx = QSGContext::current->glContext();
 
     int requiredWidth = m_textureData->currY == 0 ? m_textureData->currX : maxTextureSize();
     int requiredHeight = qMin(maxTextureSize(), m_textureData->currY + QT_DISTANCEFIELD_TILESIZE);

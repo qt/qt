@@ -43,6 +43,7 @@
 #define DISTANCEFIELDGLYPHCACHE_H
 
 #include <qgl.h>
+#include <private/qgl_p.h>
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
 
@@ -52,10 +53,13 @@ void qt_disableFontHinting(QFont &font);
 
 class QGLShaderProgram;
 
-class Q_DECLARATIVE_EXPORT QSGDistanceFieldGlyphCache
+class Q_DECLARATIVE_EXPORT QSGDistanceFieldGlyphCache : public QObject
 {
+    Q_OBJECT
 public:
-    static QSGDistanceFieldGlyphCache *get(const QFont &font);
+    ~QSGDistanceFieldGlyphCache();
+
+    static QSGDistanceFieldGlyphCache *get(const QGLContext *ctx, const QFont &font);
 
     struct Metrics {
         qreal width;
@@ -98,8 +102,11 @@ public:
 
     static bool distanceFieldEnabled();
 
+private Q_SLOTS:
+    void onContextDestroyed(const QGLContext *context);
+
 private:
-    QSGDistanceFieldGlyphCache(const QFont &font);
+    QSGDistanceFieldGlyphCache(const QGLContext *c, const QFont &font);
 
     void createTexture(int width, int height);
     void resizeTexture(int width, int height);
@@ -126,7 +133,7 @@ private:
         int currY;
         QImage image;
 
-        DistanceFieldTextureData()
+        DistanceFieldTextureData(const QGLContext *)
             : texture(0)
             , fbo(0)
             , currX(0)
@@ -135,7 +142,7 @@ private:
     };
     DistanceFieldTextureData *textureData();
     DistanceFieldTextureData *m_textureData;
-    static QHash<QString, DistanceFieldTextureData *> m_textures_data;
+    static QHash<QString, QGLContextGroupResource<DistanceFieldTextureData> > m_textures_data;
 
     const QGLContext *ctx;
     QGLShaderProgram *m_blitProgram;
