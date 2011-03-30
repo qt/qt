@@ -422,7 +422,7 @@ void QXcbWindow::lower()
 
 void QXcbWindow::requestActivateWindow()
 {
-    Q_XCB_CALL(xcb_set_input_focus(xcb_connection(), m_window, XCB_INPUT_FOCUS_PARENT, XCB_TIME_CURRENT_TIME));
+    Q_XCB_CALL(xcb_set_input_focus(xcb_connection(), XCB_INPUT_FOCUS_PARENT, m_window, XCB_TIME_CURRENT_TIME));
     connection()->sync();
 }
 
