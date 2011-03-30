@@ -236,6 +236,8 @@ public:
     void requestHostLookup();
     int id();
 
+    void returnResults();
+
     QHostInfoResult resultEmitter;
 
 private:
@@ -244,10 +246,13 @@ private:
     void run();
     TInt RunError(TInt aError);
 
-    void processNameResults();
-    void processAddressResults();
+    void processNameResult();
+    void nextNameResult();
+    void processAddressResult();
 
 private:
+    int iId;
+
     const QString iHostName;
     QString iEncodedHostName;
     TPtrC iHostNamePtr;
@@ -263,10 +268,13 @@ private:
 
     QHostInfo iResults;
 
+    QList<QHostAddress> iHostAddresses;
+
     enum {
         EIdle,
         EGetByName,
         EGetByAddress,
+        EGetMoreNames,
         EError
     } iState;
 };

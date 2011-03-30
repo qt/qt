@@ -53,9 +53,12 @@
 #include <private/qsystemerror_p.h>
 #include <private/qnetworksession_p.h>
 
+// Header does not exist in the S60 5.0 SDK
+//#include <networking/dnd_err.h>
+const TInt KErrDndNameNotFound = -5120; // Returned when no data found for GetByName
+const TInt KErrDndAddrNotFound = -5121; // Returned when no data found for GetByAddr
+
 QT_BEGIN_NAMESPACE
-
-
 
 QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetworkSession> networkSession)
 {
@@ -88,15 +91,14 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetw
     QHostAddress address;
     if (address.setAddress(hostName)) {
         // Reverse lookup
-
         TInetAddr IpAdd;
         IpAdd.Input(qt_QString2TPtrC(hostName));
 
         // Synchronous request. nameResult returns Host Name.
-        hostResolver.GetByAddress(IpAdd, nameResult);
+        err = hostResolver.GetByAddress(IpAdd, nameResult);
         if (err) {
             // TODO - Could there be other errors? Symbian docs don't say.
-            if (err == KErrNotFound) {
+            if (err == KErrDndAddrNotFound) {
                 results.setError(QHostInfo::HostNotFound);
                 results.setErrorString(tr("Host not found"));
             } else {
@@ -131,7 +133,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetw
     err = hostResolver.GetByName(qt_QString2TPtrC(QString::fromLatin1(aceHostname)), nameResult);
     if (err) {
         // TODO - Could there be other errors? Symbian docs don't say.
-        if (err == KErrNotFound) {
+        if (err == KErrDndNameNotFound) {
             results.setError(QHostInfo::HostNotFound);
             results.setErrorString(tr("Host not found"));
         } else {
@@ -159,7 +161,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetw
         hostAdd.Output(ipAddr);
 
         // Ensure that record is valid (not an alias and with length greater than 0)
-        if (!(nameResult().iFlags & TNameRecord::EAlias) && (ipAddr.Length() > 0)) {
+        if (!(nameResult().iFlags & TNameRecord::EAlias) && !(hostAdd.IsUnspecified())) {
             hostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
         }
     }
@@ -244,7 +246,6 @@ void QSymbianHostResolver::requestHostLookup()
 #endif
     }
     if (err) {
-        // What are we doing with iResults??
         iResults.setError(QHostInfo::UnknownError);
         iResults.setErrorString(QSystemError(err, QSystemError::NativeError).toString());
 
@@ -252,7 +253,6 @@ void QSymbianHostResolver::requestHostLookup()
 
         if (iAddress.setAddress(iHostName)) {
             // Reverse lookup
-
             IpAdd.Input(qt_QString2TPtrC(iHostName));
 
             // Asynchronous request.
@@ -297,7 +297,7 @@ void QSymbianHostResolver::DoCancel()
 #if defined(QHOSTINFO_DEBUG)
     qDebug() << "QSymbianHostResolver::DoCancel" << QThread::currentThreadId() << id() << (int)iState << this;
 #endif
-    if (iState == EGetByAddress || iState == EGetByName) {
+    if (iState == EGetByAddress || iState == EGetByName || iState == EGetMoreNames) {
         //these states have made an async request to host resolver
         iHostResolver.Cancel();
     } else {
@@ -313,11 +313,25 @@ void QSymbianHostResolver::RunL()
 
 void QSymbianHostResolver::run()
 {
-    if (iState == EGetByName)
-        processNameResults();
-    else if (iState == EGetByAddress)
-        processAddressResults();
+    switch (iState) {
+    case EGetByName:
+        processNameResult();
+        break;
+    case EGetByAddress:
+        processAddressResult();
+        break;
+    case EError:
+        returnResults();
+        break;
+    default:
+        iResults.setError(QHostInfo::UnknownError);
+        iResults.setErrorString(QSystemError(KErrCorrupt,QSystemError::NativeError).toString());
+        returnResults();
+    }
+}
 
+void QSymbianHostResolver::returnResults()
+{
     iState = EIdle;
 
     QSymbianHostInfoLookupManger *manager = QSymbianHostInfoLookupManger::globalInstance();
@@ -348,55 +362,57 @@ TInt QSymbianHostResolver::RunError(TInt aError)
     return KErrNone;
 }
 
-void QSymbianHostResolver::processNameResults()
+void QSymbianHostResolver::processNameResult()
 {
-    TInt err = iStatus.Int();
-    if (err < 0) {
-        // TODO - Could there be other errors? Symbian docs don't say.
-        if (err == KErrNotFound) {
-            iResults.setError(QHostInfo::HostNotFound);
-            iResults.setErrorString(QObject::tr("Host not found"));
-        } else {
-            iResults.setError(QHostInfo::UnknownError);
-            iResults.setErrorString(QSystemError(err,QSystemError::NativeError).toString());
-        }
+    if (iStatus.Int() == KErrNone) {
+        TInetAddr hostAdd = iNameResult().iAddr;
+        // 39 is the maximum length of an IPv6 address.
+        TBuf<39> ipAddr;
 
-        iHostResolver.Close();
-        return;
-    }
-
-    QList<QHostAddress> hostAddresses;
-
-    TInetAddr hostAdd = iNameResult().iAddr;
-    // 39 is the maximum length of an IPv6 address.
-    TBuf<39> ipAddr;
-
-    // Fill ipAddr with the IP address from hostAdd
-    hostAdd.Output(ipAddr);
-    if (ipAddr.Length() > 0)
-        hostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
-
-    // Check if there's more than one IP address linkd to this name
-    while (iHostResolver.Next(iNameResult) == KErrNone) {
-        hostAdd = iNameResult().iAddr;
         hostAdd.Output(ipAddr);
 
         // Ensure that record is valid (not an alias and with length greater than 0)
-        if (!(iNameResult().iFlags & TNameRecord::EAlias) && (ipAddr.Length() > 0)) {
-            hostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
+        if (!(iNameResult().iFlags & TNameRecord::EAlias) && !(hostAdd.IsUnspecified())) {
+           if (iNameResult().iAddr.Family() == KAfInet) {
+                // IPv4 - prepend
+                iHostAddresses.prepend(QHostAddress(qt_TDesC2QString(ipAddr)));
+            } else {
+                // IPv6 - append
+                iHostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
+            }
         }
-    }
 
-    iResults.setAddresses(hostAddresses);
+        iState = EGetByName;
+        iHostResolver.Next(iNameResult, iStatus);
+        SetActive();
+    }
+    else if (iStatus.Int() == KErrDndNameNotFound) {
+        // No more addresses, so return the results (or an error if there aren't any).
+        if (iHostAddresses.count() > 0) {
+            iResults.setAddresses(iHostAddresses);
+        } else {
+            iState = EError;
+            iResults.setError(QHostInfo::HostNotFound);
+            iResults.setErrorString(QObject::tr("Host not found"));
+        }
+        returnResults();
+    }
+    else {
+        // Unknown error
+        iState = EError;
+        iResults.setError(QHostInfo::UnknownError);
+        iResults.setErrorString(QSystemError(iStatus.Int(),QSystemError::NativeError).toString());
+        returnResults();
+    }
 }
 
-void QSymbianHostResolver::processAddressResults()
+void QSymbianHostResolver::processAddressResult()
 {
     TInt err = iStatus.Int();
 
     if (err < 0) {
         // TODO - Could there be other errors? Symbian docs don't say.
-        if (err == KErrNotFound) {
+        if (err == KErrDndAddrNotFound) {
             iResults.setError(QHostInfo::HostNotFound);
             iResults.setErrorString(QObject::tr("Host not found"));
         } else {
@@ -404,11 +420,13 @@ void QSymbianHostResolver::processAddressResults()
             iResults.setErrorString(QSystemError(err,QSystemError::NativeError).toString());
         }
 
+        returnResults();
         return;
     }
 
     iResults.setHostName(qt_TDesC2QString(iNameResult().iName));
     iResults.setAddresses(QList<QHostAddress>() << iAddress);
+    returnResults();
 }
 
 
