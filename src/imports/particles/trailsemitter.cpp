@@ -80,6 +80,11 @@ void TrailsEmitter::emitWindow(int timeStamp)
     while (pt < time) {
         //int pos = m_last_particle % m_particle_count;
         ParticleData* datum = m_system->newDatum(m_system->m_groupIds[m_particle]);
+        if(!datum){//skip this emission
+            ++m_last_particle;
+            pt += particleRatio;
+            continue;
+        }
         datum->e = this;//###useful?
         ParticleVertex &p = datum->pv;
         qreal t = 1 - (pt - opt) / dt;

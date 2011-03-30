@@ -18,6 +18,7 @@
 #include "spritegoalaffector.h"
 #include "swarmaffector.h"
 #include "turbulenceaffector.h"
+#include "eternalaffector.h"
 #include "particlesystem.h"
 #include "particleemitter.h"
 //#include "spriteemitter.h"
@@ -25,6 +26,7 @@
 #include "particle.h"
 #include "coloredparticle.h"
 #include "spriteparticle.h"
+#include "modelparticle.h"
 //#include "pairedparticle.h"
 #include "spriteimage.h"
 #include "followemitter.h"
@@ -56,6 +58,7 @@ void ParticlesPlugin::registerTypes(const char *uri)
     qmlRegisterType<ParticleType>(uri, 2, 0, "Particle");
     qmlRegisterType<ColoredParticle>(uri, 2, 0, "ColoredParticle");
     qmlRegisterType<SpriteParticle>(uri, 2, 0, "SpriteParticle");
+    qmlRegisterType<ModelParticle>(uri, 2, 0, "ModelParticle");
     //qmlRegisterType<PairedParticle>(uri, 2, 0, "PairedParticle");
 
     qmlRegisterType<ParticleEmitter>(uri, 2, 0, "ParticleEmitter");
@@ -82,6 +85,7 @@ void ParticlesPlugin::registerTypes(const char *uri)
     qmlRegisterType<MeanderAffector>(uri, 2, 0, "Meander");
     qmlRegisterType<SpeedLimitAffector>(uri, 2, 0, "SpeedLimit");
     qmlRegisterType<GravityAffector>(uri, 2, 0, "Gravity");
+    qmlRegisterType<EternalAffector>(uri, 2, 0, "Stasis");
     //qmlRegisterType<ZoneAffector>(uri, 2, 0, "Zone");
     //qmlRegisterType<ToggleAffector>(uri, 2, 0, "Toggle");
     qmlRegisterType<KillAffector>(uri, 2, 0, "Kill");

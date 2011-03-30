@@ -26,6 +26,7 @@ class ParticleEmitter : public QSGItem
     Q_PROPERTY(qreal particlesPerSecond READ particlesPerSecond WRITE setParticlesPerSecond NOTIFY particlesPerSecondChanged)
     Q_PROPERTY(int particleDuration READ particleDuration WRITE setParticleDuration NOTIFY particleDurationChanged)
     Q_PROPERTY(int particleDurationVariation READ particleDurationVariation WRITE setParticleDurationVariation NOTIFY particleDurationVariationChanged)
+    Q_PROPERTY(int maxParticleCount READ maxParticleCount WRITE setMaxParticleCount NOTIFY maxParticleCountChanged)
 
     Q_PROPERTY(qreal particleSize READ particleSize WRITE setParticleSize NOTIFY particleSizeChanged)
     Q_PROPERTY(qreal particleEndSize READ particleEndSize WRITE setParticleEndSize NOTIFY particleEndSizeChanged)
@@ -90,6 +91,8 @@ void particleSizeVariationChanged(qreal arg);
 void speedChanged(VaryingVector * arg);
 
 void accelerationChanged(VaryingVector * arg);
+
+void maxParticleCountChanged(int arg);
 
 public slots:
     void burst(qreal seconds);
@@ -184,7 +187,17 @@ public slots:
            }
        }
 
+       void setMaxParticleCount(int arg)
+       {
+           if (m_maxParticleCount != arg) {
+               m_maxParticleCount = arg;
+               emit maxParticleCountChanged(arg);
+           }
+       }
+
 public:
+       int particleCount() const;
+
        virtual void reset(){;}
        ParticleExtruder* extruder() const
        {
@@ -216,6 +229,11 @@ public:
            return m_acceleration;
        }
 
+       int maxParticleCount() const
+       {
+           return m_maxParticleCount;
+       }
+
 protected:
        qreal m_particlesPerSecond;
        int m_particleDuration;
@@ -235,6 +253,7 @@ protected:
        int m_burstLeft;
 private:
        VaryingVector m_nullVector;
+       int m_maxParticleCount;
 };
 
 QT_END_NAMESPACE

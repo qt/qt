@@ -40,7 +40,9 @@ HEADERS += \
     varyingvector.h \
     pointvector.h \
     angledvector.h \
-    directedvector.h
+    directedvector.h \
+    modelparticle.h \
+    eternalaffector.h
 
 SOURCES += \
     V1/qdeclarativeparticles.cpp \
@@ -80,7 +82,9 @@ SOURCES += \
     varyingvector.cpp \
     pointvector.cpp \
     angledvector.cpp \
-    directedvector.cpp
+    directedvector.cpp \
+    modelparticle.cpp \
+    eternalaffector.cpp
 
 QT += declarative opengl
 

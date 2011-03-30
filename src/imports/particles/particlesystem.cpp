@@ -39,9 +39,11 @@ void ParticleSystem::registerParticleType(ParticleType* p)
 void ParticleSystem::registerParticleEmitter(ParticleEmitter* e)
 {
     m_emitters << e;//###How to get them out?
-    connect(e, SIGNAL(particlesPerSecondChanged(qreal)),
+    connect(e, SIGNAL(particlesPerSecondChanged(qreal)),//TODO: Make a better particleCountChanged signal on emitter
             this, SLOT(countChanged()));
     connect(e, SIGNAL(particleDurationChanged(int)),
+            this, SLOT(countChanged()));
+    connect(e, SIGNAL(maxParticleCountChanged(int)),
             this, SLOT(countChanged()));
     reset();
 }
@@ -112,7 +114,7 @@ void ParticleSystem::initializeSystem()
             m_groupIds.insert(e->particle(), id);
             m_groupData.insert(id, gd);
         }
-        m_groupData[m_groupIds[e->particle()]]->size += ceil(e->particlesPerSecond()*((e->particleDuration()+e->particleDurationVariation())/1000.0));
+        m_groupData[m_groupIds[e->particle()]]->size += e->particleCount();
     }
 
     for(QHash<int, GroupData*>::iterator iter = m_groupData.begin(); iter != m_groupData.end(); iter++){
@@ -167,8 +169,11 @@ ParticleData* ParticleSystem::newDatum(int groupId)
         m_groupData[groupId]->nextIdx = 0;
 
     ParticleData* ret;
-    if(m_data[nextIdx]){//Recycle, it's faster. //###Reset?
+    if(m_data[nextIdx]){//Recycle, it's faster.
         ret = m_data[nextIdx];
+        if(ret->pv.t + ret->pv.lifeSpan > m_timeInt/1000.0)
+            return 0;//Artificial longevity (or too fast emission) means this guy hasn't died. To maintain count, don't emit a new one
+        //###Reset?
     }else{
         ret = new ParticleData;
         m_data[nextIdx] = ret;
