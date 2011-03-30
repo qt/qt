@@ -95,31 +95,6 @@ QT_BEGIN_NAMESPACE
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-static int createFileFromTemplate(char *const path,
-        char *const placeholderStart, char *const placeholderEnd);
-
-static int _gettemp(char *path, int slen)
-{
-    char *trv, *suffp;
-
-    for (trv = path; *trv; ++trv)
-        ;
-    trv -= slen;
-    suffp = trv;
-    --trv;
-    if (trv < path) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    while (trv >= path && *trv == 'X')
-        --trv;
-
-    char *const placeholderStart = trv + 1;
-    char *const placeholderEnd = suffp;
-
-    return createFileFromTemplate(path, placeholderStart, placeholderEnd);
-}
 
 /*!
     \internal
@@ -274,15 +249,49 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
         return QFSFileEngine::open(openMode);
 
     QString qfilename = d->fileEntry.filePath();
-    if(!qfilename.contains(QLatin1String("XXXXXX")))
-        qfilename += QLatin1String(".XXXXXX");
 
-    int suffixLength = qfilename.length() - (qfilename.lastIndexOf(QLatin1String("XXXXXX"), -1, Qt::CaseSensitive) + 6);
-    QByteArray filename = qfilename.toLocal8Bit();
+    // Find placeholder string.
+    size_t phPos = size_t(qfilename.length());
+    size_t phLength = 0;
+
+    while (phPos != 0) {
+        --phPos;
+
+        if (qfilename[phPos] == QLatin1Char('X')) {
+            ++phLength;
+            continue;
+        }
+
+        if (qfilename[phPos] == QLatin1Char('/')
+                || phLength >= 6) {
+            ++phPos;
+            break;
+        }
+
+        phLength = 0;
+    }
+
+    QStringRef prefix, suffix;
+    if (phLength < 6) {
+        qfilename += QLatin1Char('.');
+        prefix = QStringRef(&qfilename);
+        phLength = 6;
+    } else {
+        prefix = qfilename.leftRef(phPos);
+        suffix = qfilename.midRef(phPos + phLength);
+    }
+
+    QByteArray filename = prefix.toLocal8Bit();
+    phPos = filename.length();
+    if (suffix.isEmpty())
+        filename.resize(phPos + phLength);
+    else
+        filename.insert(phPos + phLength, suffix.toLocal8Bit());
+
     char *path = filename.data();
 
 #ifndef Q_OS_WIN
-    int fd = _gettemp(path, suffixLength);
+    int fd = createFileFromTemplate(path, path + phPos, path + phPos + phLength);
     if (fd != -1) {
         // First open the fd as an external file descriptor to
         // initialize the engine properly.
@@ -302,7 +311,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError, qt_error_string(errno));
     return false;
 #else
-    if (_gettemp(path, suffixLength) == -1) {
+    if (createFileFromTemplate(path, path + phPos, path + phPos + phLength) == -1) {
         return false;
     }
 
