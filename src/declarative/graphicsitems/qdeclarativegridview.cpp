@@ -197,6 +197,7 @@ public:
         if (q->isComponentComplete()) {
             clear();
             updateGrid();
+            setPosition(0);
             q->refill();
             updateCurrent(currentIndex);
         }
@@ -689,7 +690,6 @@ void QDeclarativeGridViewPrivate::updateGrid()
             q->setContentHeight(endPosition() - startPosition());
         else
             q->setContentWidth(lastPosition() - originPosition());
-        setPosition(0);
     }
 }
 
