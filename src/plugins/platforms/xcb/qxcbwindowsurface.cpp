@@ -185,8 +185,6 @@ void QXcbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoi
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
-    connection()->sync();
-
     QXcbWindow *window = static_cast<QXcbWindow *>(widget->window()->platformWindow());
 
     extern QWidgetData* qt_widget_data(QWidget *);
