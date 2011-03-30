@@ -1198,22 +1198,32 @@ bool QSymbianSocketEnginePrivate::multicastGroupMembershipHelper(const QHostAddr
                           const QNetworkInterface &iface,
                           TUint operation)
 {
-    //TODO - untested
+#if defined (QNATIVESOCKETENGINE_DEBUG)
+    qDebug() << "QSymbianSocketEnginePrivate::multicastGroupMembershipHelper" << groupAddress << iface << operation;
+#endif
     //translate address
     TPckgBuf<TIp6Mreq> option;
-    Q_IPV6ADDR ip6 = groupAddress.toIPv6Address();
-    memcpy(option().iAddr.u.iAddr8, ip6.c, 16);
-    //translate interface
-    //TODO - can we just use iface.index() ?
-    TPckgBuf<TSoInetIfQuery> query;
-    query().iName = qt_QString2TPtrC(iface.name());
-    TInt err = nativeSocket.GetOpt(KSoInetIfQueryByName, KSolInetIfQuery, query);
-    if (err == KErrNone)
-        option().iInterface = query().iIndex;
-    else
-        option().iInterface = 0;
+    if (groupAddress.protocol() == QAbstractSocket::IPv6Protocol) {
+        Q_IPV6ADDR ip6 = groupAddress.toIPv6Address();
+        memcpy(option().iAddr.u.iAddr8, ip6.c, 16);
+    } else {
+        TInetAddr wrapped;
+        wrapped.SetAddress(groupAddress.toIPv4Address());
+        wrapped.ConvertToV4Mapped();
+        option().iAddr = wrapped.Ip6Address();
+    }
+    option().iInterface = iface.index();
     //join or leave group
-    return (KErrNone == nativeSocket.SetOpt(operation, KSolInetIp, option));
+    TInt err = nativeSocket.SetOpt(operation, KSolInetIp, option);
+#if defined (QNATIVESOCKETENGINE_DEBUG)
+    qDebug() << "address" << qt_prettyDebug((const char *)(option().iAddr.u.iAddr8), 16, 16);
+    qDebug() << "interface" << option().iInterface;
+    qDebug() << "error" << err;
+#endif
+    if (err) {
+        setError(err);
+    }
+    return (KErrNone == err);
 }
 
 QNetworkInterface QSymbianSocketEngine::multicastInterface() const
