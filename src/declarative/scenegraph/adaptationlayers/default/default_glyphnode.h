@@ -63,8 +63,6 @@ public:
     virtual void setGlyphs(const QPointF &position, const QGlyphs &glyphs);
     virtual void setColor(const QColor &color);
 
-    virtual NodeSubType subType() const { return GlyphNodeSubType; }
-
 private:
     QGlyphs m_glyphs;
     QPointF m_position;

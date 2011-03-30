@@ -59,8 +59,6 @@ public:
     QRectF rect() const { return m_rect; }
     void setRect(const QRectF &rect);
 
-    virtual NodeSubType subType() const { return SolidRectNodeSubType; }
-
     void setColor(const QColor &color);
     inline QColor color() const { return m_material.color(); }
 

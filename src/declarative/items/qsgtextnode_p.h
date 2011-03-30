@@ -60,8 +60,6 @@ public:
     QSGTextNode(QSGContext *);
     ~QSGTextNode();
 
-    virtual NodeSubType subType() const { return TextNodeSubType; }
-
     static bool isComplexRichText(QTextDocument *);
 
     void deleteContent();

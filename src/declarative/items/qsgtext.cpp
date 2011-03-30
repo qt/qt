@@ -103,7 +103,7 @@ QSGTextPrivate::QSGTextPrivate()
   maximumLineCountValid(false), imageCacheDirty(true), updateOnComponentComplete(true),
   richText(false), singleline(false), cacheAllTextAsImage(true), internalWidthUpdate(false),
   requireImplicitWidth(false), truncated(false), hAlignImplicit(true), rightToLeftText(false),
-  naturalWidth(0), doc(0)
+  naturalWidth(0), doc(0), nodeType(NodeIsNull)
 {
     cacheAllTextAsImage = enableImageCache();
 }
@@ -1069,11 +1069,12 @@ Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         }
 
         TextureNodeInterface *node = 0;
-        if (!oldNode || oldNode->subType() != Node::TextureNodeInterfaceSubType) {
+        if (!oldNode || d->nodeType != QSGTextPrivate::NodeIsTexture) {
             delete oldNode;
             node = QSGContext::current->createTextureNode();
             node->setTexture(d->textureProvider);
             wasDirty = true;
+            d->nodeType = QSGTextPrivate::NodeIsTexture;
         } else {
             node = static_cast<TextureNodeInterface *>(oldNode);
         }
@@ -1093,9 +1094,10 @@ Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 
     } else {
         QSGTextNode *node = 0;
-        if (!oldNode || oldNode->subType() != Node::TextNodeSubType) {
+        if (!oldNode || d->nodeType != QSGTextPrivate::NodeIsText) {
             delete oldNode;
             node = new QSGTextNode(QSGContext::current);
+            d->nodeType = QSGTextPrivate::NodeIsText;
         } else {
             node = static_cast<QSGTextNode *>(oldNode);
         }

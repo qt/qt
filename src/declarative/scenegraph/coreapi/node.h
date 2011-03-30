@@ -105,18 +105,6 @@ public:
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
-    enum NodeSubType {
-        DefaultNodeSubType,
-
-        TextNodeSubType,
-        GlyphNodeSubType,
-        SolidRectNodeSubType,
-        PixmapNodeSubType,
-        QuadNodeSubType,
-        EffectSubTreeNodeSubType,
-        TextureNodeInterfaceSubType,
-    };
-
     Node();
     virtual ~Node();
 
@@ -132,8 +120,6 @@ public:
     Node *childAtIndex(int i) const { return m_children.at(i); }
 
     virtual NodeType type() const { return BasicNodeType; }
-
-    virtual NodeSubType subType() const { return DefaultNodeSubType; }
 
     void clearDirty() { m_flags = 0; }
     void markDirty(DirtyFlags flags);

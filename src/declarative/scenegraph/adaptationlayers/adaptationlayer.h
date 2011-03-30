@@ -85,7 +85,6 @@ public:
     virtual void setTargetRect(const QRectF &rect) = 0;
     virtual void setSourceRect(const QRectF &rect) = 0;
     virtual void setTexture(QSGTextureProvider *texture) = 0;
-    virtual NodeSubType subType() const { return TextureNodeInterfaceSubType; }
     virtual void update() = 0;
 };
 
@@ -93,8 +92,6 @@ public:
 class Q_DECLARATIVE_EXPORT GlyphNodeInterface: public GeometryNode
 {
 public:
-    virtual NodeSubType subType() const { return GlyphNodeSubType; }
-
     virtual void setGlyphs(const QPointF &position, const QGlyphs &glyphs) = 0;
     virtual void setColor(const QColor &color) = 0;
     virtual QPointF baseLine() const = 0;

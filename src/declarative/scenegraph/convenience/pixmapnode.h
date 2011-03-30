@@ -64,8 +64,6 @@ public:
 
     void setRects(const QRectF &targetRect, const QRectF &sourceRect);
 
-    virtual NodeSubType subType() const { return PixmapNodeSubType; }
-
 private:
     void updateGeometry();
 
