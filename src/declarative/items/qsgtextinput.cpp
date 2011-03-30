@@ -1243,6 +1243,7 @@ void QSGTextInput::updateSize(bool needsRedraw)
     int h = height();
     setImplicitHeight(d->control->height()-1); // -1 to counter QLineControl's +1 which is not consistent with Text.
     setImplicitWidth(d->calculateTextWidth());
+    setContentsSize(QSize(width(), height()));
     if(w==width() && h==height() && needsRedraw)
         update();
 }

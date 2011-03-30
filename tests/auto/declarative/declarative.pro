@@ -90,6 +90,7 @@ contains(QT_CONFIG, private_tests) {
            qsgpositioners \
            qsgrepeater \
            qsgtextedit \
+           qsgtextinput \
            qsgvisualdatamodel
 
 
