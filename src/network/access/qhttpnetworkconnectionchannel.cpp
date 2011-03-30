@@ -842,7 +842,10 @@ void QHttpNetworkConnectionChannel::handleStatus()
 
 bool QHttpNetworkConnectionChannel::resetUploadData()
 {
-    Q_ASSERT(reply);
+    if (!reply) {
+        //this happens if server closes connection while QHttpNetworkConnectionPrivate::_q_startNextRequest is pending
+        return false;
+    }
     QNonContiguousByteDevice* uploadByteDevice = request.uploadByteDevice();
     if (!uploadByteDevice)
         return true;
