@@ -228,6 +228,8 @@ public:
     QXcbConnection(const char *displayName = 0);
     ~QXcbConnection();
 
+    QXcbConnection *connection() const { return const_cast<QXcbConnection *>(this); }
+
     QList<QXcbScreen *> screens() const { return m_screens; }
     int primaryScreen() const { return m_primaryScreen; }
 
@@ -255,6 +257,8 @@ public:
 #if defined(XCB_USE_EGL) || defined(XCB_USE_DRI2)
     void *egl_display() const { return m_egl_display; }
 #endif
+
+    void sync();
 
 protected:
     void run();

@@ -151,9 +151,7 @@ void QXcbShmImage::preparePaint(const QRegion &region)
 {
     // to prevent X from reading from the image region while we're writing to it
     if (m_dirty.intersects(region)) {
-        // from xcb_aux_sync
-        xcb_get_input_focus_cookie_t cookie = Q_XCB_CALL(xcb_get_input_focus(xcb_connection()));
-        free(xcb_get_input_focus_reply(xcb_connection(), cookie, 0));
+        connection()->sync();
         m_dirty = QRegion();
     }
 }

@@ -701,6 +701,13 @@ void QXcbConnection::initializeAllAtoms() {
         m_allAtoms[i] = xcb_intern_atom_reply(xcb_connection(), cookies[i], 0)->atom;
 }
 
+void QXcbConnection::sync()
+{
+    // from xcb_aux_sync
+    xcb_get_input_focus_cookie_t cookie = Q_XCB_CALL(xcb_get_input_focus(xcb_connection()));
+    free(xcb_get_input_focus_reply(xcb_connection(), cookie, 0));
+}
+
 #if defined(XCB_USE_EGL)
 bool QXcbConnection::hasEgl() const
 {
