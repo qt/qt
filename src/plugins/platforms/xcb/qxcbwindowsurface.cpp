@@ -161,9 +161,6 @@ QXcbWindowSurface::QXcbWindowSurface(QWidget *widget, bool setDefaultSurface)
     : QWindowSurface(widget, setDefaultSurface)
     , m_image(0)
 {
-    setStaticContentsSupport(false);
-    setPartialUpdateSupport(true);
-
     QXcbScreen *screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(widget));
     setConnection(screen->connection());
 }
