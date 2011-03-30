@@ -279,6 +279,7 @@ const char *xcb_errors[] =
 
 const char *xcb_protocol_request_codes[] =
 {
+    "Null",
     "CreateWindow",
     "ChangeWindowAttributes",
     "GetWindowAttributes",
