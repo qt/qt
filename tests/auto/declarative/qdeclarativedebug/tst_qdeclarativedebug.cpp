@@ -1012,7 +1012,7 @@ void tst_QDeclarativeDebug::setBindingForObject()
     // set handler
     //
     rootObject = findRootObject();
-    QCOMPARE(rootObject.children().size(), 3);
+    QCOMPARE(rootObject.children().size(), 4); // Rectangle, Text, MouseArea, QDeclarativeComponentAttached
     QDeclarativeDebugObjectReference mouseAreaObject = rootObject.children().at(2);
     QDeclarativeDebugObjectQuery *q_obj = m_dbg->queryObjectRecursive(mouseAreaObject, this);
     waitForQuery(q_obj);
