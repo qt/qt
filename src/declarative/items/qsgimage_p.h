@@ -44,7 +44,7 @@
 #define QSGIMAGE_P_H
 
 #include "qsgimagebase_p.h"
-#include "qsgtextureprovider.h"
+#include <private/qsgtextureprovider_p.h>
 
 QT_BEGIN_HEADER
 
@@ -90,7 +90,7 @@ protected:
     void updatePaintedGeometry();
 
     virtual void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
-    virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
+    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
 
 private:
     Q_DISABLE_COPY(QSGImage)

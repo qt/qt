@@ -40,12 +40,12 @@
 ****************************************************************************/
 
 #include "qsgtextnode_p.h"
-#include "solidrectnode.h"
-#include "adaptationlayer.h"
-#include "distancefieldglyphcache_p.h"
-#include "distancefield_glyphnode.h"
+#include "qsgsimplerectnode.h"
+#include <private/qsgadaptationlayer_p.h>
+#include <private/qsgdistancefieldglyphcache_p.h>
+#include <private/qsgdistancefieldglyphnode_p.h>
 
-#include "qsgcontext.h"
+#include <private/qsgcontext_p.h>
 
 #include <qmath.h>
 #include <qtextdocument.h>
@@ -80,13 +80,13 @@ void QSGTextNode::setColor(const QColor &color)
         setUpdateFlag(UpdateNodes);
     } else {
         for (int i=0; i<childCount(); ++i) {
-            Node *childNode = childAtIndex(i);
+            QSGNode *childNode = childAtIndex(i);
             if (childNode->subType() == GlyphNodeSubType) {
-                GlyphNodeInterface *glyphNode = static_cast<GlyphNodeInterface *>(childNode);
+                QSGGlyphNode *glyphNode = static_cast<QSGGlyphNode *>(childNode);
                 if (glyphNode->color() == m_color)
                     glyphNode->setColor(color);
             } else if (childNode->subType() == SolidRectNodeSubType) {
-                SolidRectNode *solidRectNode = static_cast<SolidRectNode *>(childNode);
+                QSGSimpleRectNode *solidRectNode = static_cast<QSGSimpleRectNode *>(childNode);
                 if (solidRectNode->color() == m_color)
                     solidRectNode->setColor(color);
             }
@@ -102,13 +102,13 @@ void QSGTextNode::setStyleColor(const QColor &styleColor)
             setUpdateFlag(UpdateNodes);
         } else {
             for (int i=0; i<childCount(); ++i) {
-                Node *childNode = childAtIndex(i);
+                QSGNode *childNode = childAtIndex(i);
                 if (childNode->subType() == GlyphNodeSubType) {
-                    GlyphNodeInterface *glyphNode = static_cast<GlyphNodeInterface *>(childNode);
+                    QSGGlyphNode *glyphNode = static_cast<QSGGlyphNode *>(childNode);
                     if (glyphNode->color() == m_styleColor)
                         glyphNode->setColor(styleColor);
                 } else if (childNode->subType() == SolidRectNodeSubType) {
-                    SolidRectNode *solidRectNode = static_cast<SolidRectNode *>(childNode);
+                    QSGSimpleRectNode *solidRectNode = static_cast<QSGSimpleRectNode *>(childNode);
                     if (solidRectNode->color() == m_styleColor)
                         solidRectNode->setColor(styleColor);
                 }
@@ -133,29 +133,29 @@ void QSGTextNode::addTextDecorations(const QPointF &position, const QFont &font,
         int underlinePosition = fontEngine->underlinePosition().ceil().toInt();
         QRectF underline(line);
         underline.translate(0.0, underlinePosition);
-        appendChildNode(new SolidRectNode(underline, color));
+        appendChildNode(new QSGSimpleRectNode(underline, color));
     }
 
     qreal ascent = fontEngine->ascent().toReal();
     if (font.overline()) {
         QRectF overline(line);
         overline.translate(0.0, -ascent);
-        appendChildNode(new SolidRectNode(overline, color));
+        appendChildNode(new QSGSimpleRectNode(overline, color));
     }
 
     if (font.strikeOut()) {
         QRectF strikeOut(line);
         strikeOut.translate(0.0, ascent / -3.0);
-        appendChildNode(new SolidRectNode(strikeOut, color));
+        appendChildNode(new QSGSimpleRectNode(strikeOut, color));
     }
 }
 
-GlyphNodeInterface *QSGTextNode::addGlyphs(const QPointF &position, const QGlyphs &glyphs, const QColor &color,
+QSGGlyphNode *QSGTextNode::addGlyphs(const QPointF &position, const QGlyphs &glyphs, const QColor &color,
                                            QSGText::TextStyle style, const QColor &styleColor)
 {
-    GlyphNodeInterface *node = m_context->createGlyphNode();
-    if (DistanceFieldGlyphCache::distanceFieldEnabled()) {
-        DistanceFieldGlyphNode *dfNode = static_cast<DistanceFieldGlyphNode *>(node);
+    QSGGlyphNode *node = m_context->createGlyphNode();
+    if (QSGDistanceFieldGlyphCache::distanceFieldEnabled()) {
+        QSGDistanceFieldGlyphNode *dfNode = static_cast<QSGDistanceFieldGlyphNode *>(node);
         dfNode->setStyle(style);
         dfNode->setStyleColor(styleColor);
     }
@@ -353,7 +353,7 @@ void QSGTextNode::addTextBlock(const QPointF &position, QTextDocument *textDocum
             QList<QGlyphs> glyphsList = fragment.glyphs();
             for (int i=0; i<glyphsList.size(); ++i) {
                 QGlyphs glyphs = glyphsList.at(i);
-                GlyphNodeInterface *glyphNode = addGlyphs(position + blockPosition + ascent, glyphs,
+                QSGGlyphNode *glyphNode = addGlyphs(position + blockPosition + ascent, glyphs,
                                                           color, style, styleColor);
 
                 QFont font = glyphs.font();
@@ -387,7 +387,7 @@ void QSGTextNode::updateNodes()
 //        if (pixmap.isNull())
 //            return;
 
-//        TextureNodeInterface *pixmapNode = m_context->createTextureNode();
+//        QSGImageNode *pixmapNode = m_context->createImageNode();
 //        pixmapNode->setRect(pixmap.rect());
 //        pixmapNode->setSourceRect(pixmap.rect());
 //        pixmapNode->setOpacity(m_opacity);

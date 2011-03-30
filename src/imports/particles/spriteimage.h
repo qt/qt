@@ -14,7 +14,7 @@ QT_MODULE(Declarative)
 class QSGContext;
 class SpriteState;
 class SpriteEngine;
-class GeometryNode;
+class QSGGeometryNode;
 class SpriteMaterial;
 class SpriteImage : public QSGItem
 {
@@ -53,11 +53,11 @@ private slots:
     void createEngine();
 protected:
     void reset();
-    Node *updatePaintNode(Node *, UpdatePaintNodeData *);
+    QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
 private:
     void prepareNextFrame();
-    GeometryNode* buildNode();
-    GeometryNode *m_node;
+    QSGGeometryNode* buildNode();
+    QSGGeometryNode *m_node;
     SpriteMaterial *m_material;
     QList<SpriteState*> m_sprites;
     SpriteEngine* m_spriteEngine;

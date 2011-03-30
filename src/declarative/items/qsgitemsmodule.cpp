@@ -70,8 +70,8 @@
 #include "qsgtranslate_p.h"
 #include "qsgstateoperations_p.h"
 #include "qsganimation_p.h"
-#include "shadereffectitem.h"
-#include "shadereffectsource.h"
+#include <private/qsgshadereffectitem_p.h>
+#include <private/qsgshadereffectsource_p.h>
 //#include "private/qsgpincharea_p.h"
 
 static QDeclarativePrivate::AutoParentResult qsgitem_autoParent(QObject *obj, QObject *parent)
@@ -166,8 +166,8 @@ static void qt_sgitems_defineModule(const char *uri, int major, int minor)
     qmlRegisterType<QSGPinch>(uri,major,minor,"Pinch");
     qmlRegisterType<QSGPinchEvent>();
 
-    qmlRegisterType<ShaderEffectItem>("QtQuick", 2, 0, "ShaderEffectItem");
-    qmlRegisterType<ShaderEffectSource>("QtQuick", 2, 0, "ShaderEffectSource");
+    qmlRegisterType<QSGShaderEffectItem>("QtQuick", 2, 0, "ShaderEffectItem");
+    qmlRegisterType<QSGShaderEffectSource>("QtQuick", 2, 0, "ShaderEffectSource");
 
     qmlRegisterType<QSGParentChange>(uri, major, minor,"ParentChange");
     qmlRegisterType<QSGAnchorChanges>(uri, major, minor,"AnchorChanges");

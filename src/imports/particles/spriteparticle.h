@@ -11,7 +11,7 @@ QT_MODULE(Declarative)
 
 class SpriteState;
 class SpriteEngine;
-class GeometryNode;
+class QSGGeometryNode;
 class SpriteParticlesMaterial;
 class SpriteParticleVertex;
 
@@ -32,14 +32,14 @@ signals:
 
 public slots:
 protected:
-    Node *updatePaintNode(Node *, UpdatePaintNodeData *);
+    QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
     void reset();
     void prepareNextFrame();
-    GeometryNode* buildParticleNode();
+    QSGGeometryNode* buildParticleNode();
 private slots:
     void createEngine();
 private:
-    GeometryNode *m_node;
+    QSGGeometryNode *m_node;
     SpriteParticlesMaterial *m_material;
 
     int m_particle_duration;

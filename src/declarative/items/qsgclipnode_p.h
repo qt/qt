@@ -42,12 +42,12 @@
 #ifndef QSGCLIPNODE_P_H
 #define QSGCLIPNODE_P_H
 
-#include <node.h>
+#include <qsgnode.h>
 
-class QSGClipNode : public ClipNode
+class QSGDefaultClipNode : public QSGClipNode
 {
 public:
-    QSGClipNode(const QRectF &);
+    QSGDefaultClipNode(const QRectF &);
 
     void setRect(const QRectF &);
     QRectF rect() const { return m_rect; }

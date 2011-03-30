@@ -462,7 +462,7 @@ private:
     friend class QX11GLPixmapData;
     friend class QX11GLSharedContexts;
     friend class QGLContextResourceBase;
-    friend class DistanceFieldGlyphCache;
+    friend class QSGDistanceFieldGlyphCache;
 private:
     Q_DISABLE_COPY(QGLContext)
 };

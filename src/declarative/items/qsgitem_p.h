@@ -60,7 +60,7 @@
 #include "qsganchors_p_p.h"
 #include "qsgitemchangelistener_p.h"
 
-#include "node.h"
+#include "qsgnode.h"
 #include "qsgclipnode_p.h"
 
 #include <private/qpodvector_p.h>
@@ -365,10 +365,10 @@ public:
     QSGItem**prevDirtyItem;
 
     inline TransformNode *itemNode();
-    inline Node *childContainerNode();
+    inline QSGNode *childContainerNode();
 
     /*
-      Node order is:
+      QSGNode order is:
          - itemNode
          - (opacityNode)
          - (clipNode)
@@ -378,10 +378,10 @@ public:
 
     TransformNode *itemNodeInstance;
     OpacityNode *opacityNode;
-    QSGClipNode *clipNode;
-    RootNode *rootNode;
-    Node *groupNode;
-    Node *paintNode;
+    QSGDefaultClipNode *clipNode;
+    QSGRootNode *rootNode;
+    QSGNode *groupNode;
+    QSGNode *paintNode;
     int paintNodeIndex;
 
     virtual TransformNode *createTransformNode();
@@ -673,10 +673,10 @@ TransformNode *QSGItemPrivate::itemNode()
     return itemNodeInstance; 
 }
 
-Node *QSGItemPrivate::childContainerNode()
+QSGNode *QSGItemPrivate::childContainerNode()
 {
     if (!groupNode) {
-        groupNode = new Node();
+        groupNode = new QSGNode();
         if (rootNode)
             rootNode->appendChildNode(groupNode);
         else if (clipNode)

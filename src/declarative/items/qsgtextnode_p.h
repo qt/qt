@@ -42,13 +42,13 @@
 #ifndef QSGTEXTNODE_P_H
 #define QSGTEXTNODE_P_H
 
-#include <node.h>
+#include <qsgnode.h>
 #include <qsgtext_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QTextLayout;
-class GlyphNodeInterface;
+class QSGGlyphNode;
 class QTextBlock;
 class QColor;
 class QTextDocument;
@@ -71,7 +71,7 @@ public:
 private:
     void addTextBlock(const QPointF &position, QTextDocument *textDocument, const QTextBlock &block,
                       const QColor &overrideColor, QSGText::TextStyle style = QSGText::Normal, const QColor &styleColor = QColor());
-    GlyphNodeInterface *addGlyphs(const QPointF &position, const QGlyphs &glyphs, const QColor &color,
+    QSGGlyphNode *addGlyphs(const QPointF &position, const QGlyphs &glyphs, const QColor &color,
                                   QSGText::TextStyle style = QSGText::Normal, const QColor &styleColor = QColor());
     void addTextDecorations(const QPointF &position, const QFont &font, const QColor &color,
                             qreal width);

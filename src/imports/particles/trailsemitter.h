@@ -14,7 +14,7 @@ QT_MODULE(Declarative)
 
 
 class ParticleTrailsMaterial;
-class GeometryNode;
+class QSGGeometryNode;
 
 class TrailsEmitter : public ParticleEmitter
 {

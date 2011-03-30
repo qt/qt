@@ -43,8 +43,8 @@
 #include "qsgrectangle_p.h"
 #include "qsgrectangle_p_p.h"
 
-#include "qsgcontext.h"
-#include "adaptationlayer.h"
+#include <private/qsgcontext_p.h>
+#include <private/qsgadaptationlayer_p.h>
 
 #include <QtGui/qpixmapcache.h>
 #include <QtCore/qstringbuilder.h>
@@ -238,7 +238,7 @@ void QSGRectangle::setColor(const QColor &c)
     emit colorChanged();
 }
 
-Node *QSGRectangle::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
+QSGNode *QSGRectangle::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data)
 {
     Q_UNUSED(data);
     Q_D(QSGRectangle);
@@ -248,7 +248,7 @@ Node *QSGRectangle::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         return 0;
     }
 
-    RectangleNodeInterface *rectangle = static_cast<RectangleNodeInterface *>(oldNode);
+    QSGRectangleNode *rectangle = static_cast<QSGRectangleNode *>(oldNode);
     if (!rectangle) rectangle = QSGContext::current->createRectangleNode();
 
     rectangle->setRect(QRectF(0, 0, width(), height()));

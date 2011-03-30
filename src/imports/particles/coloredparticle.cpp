@@ -1,7 +1,7 @@
-#include <qsgcontext.h>
-#include <adaptationlayer.h>
-#include <node.h>
-#include <texturematerial.h>
+#include <private/qsgcontext_p.h>
+#include <private/qsgadaptationlayer_p.h>
+#include <qsgnode.h>
+#include <qsgtexturematerial.h>
 #include <qsgtexture.h>
 #include <QFile>
 #include "coloredparticle.h"
@@ -10,7 +10,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class ParticleTrailsMaterial : public AbstractMaterial
+class ParticleTrailsMaterial : public QSGMaterial
 {
 public:
     ParticleTrailsMaterial()
@@ -19,9 +19,9 @@ public:
         setFlag(Blending, true);
     }
 
-    virtual AbstractMaterialType *type() const { static AbstractMaterialType type; return &type; }
-    virtual AbstractMaterialShader *createShader() const;
-    virtual int compare(const AbstractMaterial *other) const
+    virtual QSGMaterialType *type() const { static QSGMaterialType type; return &type; }
+    virtual QSGMaterialShader *createShader() const;
+    virtual int compare(const QSGMaterial *other) const
     {
         return this - static_cast<const ParticleTrailsMaterial *>(other);
     }
@@ -32,7 +32,7 @@ public:
 };
 
 
-class ParticleTrailsMaterialData : public AbstractMaterialShader
+class ParticleTrailsMaterialData : public QSGMaterialShader
 {
 public:
     ParticleTrailsMaterialData(const char *vertexFile = 0, const char *fragmentFile = 0)
@@ -50,14 +50,14 @@ public:
     }
 
     void deactivate() {
-        AbstractMaterialShader::deactivate();
+        QSGMaterialShader::deactivate();
 
         for (int i=0; i<8; ++i) {
             m_program.setAttributeArray(i, GL_FLOAT, chunkOfBytes, 1, 0);
         }
     }
 
-    virtual void updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *)
+    virtual void updateState(const RenderState &state, QSGMaterial *newEffect, QSGMaterial *)
     {
         ParticleTrailsMaterial *m = static_cast<ParticleTrailsMaterial *>(newEffect);
         state.context()->functions()->glActiveTexture(GL_TEXTURE0);
@@ -105,7 +105,7 @@ public:
 float ParticleTrailsMaterialData::chunkOfBytes[1024];
 
 
-AbstractMaterialShader *ParticleTrailsMaterial::createShader() const
+QSGMaterialShader *ParticleTrailsMaterial::createShader() const
 {
     return new ParticleTrailsMaterialData;
 }
@@ -118,8 +118,8 @@ public:
     {
     }
 
-    virtual AbstractMaterialType *type() const { static AbstractMaterialType type; return &type; }
-    virtual AbstractMaterialShader *createShader() const;
+    virtual QSGMaterialType *type() const { static QSGMaterialType type; return &type; }
+    virtual QSGMaterialShader *createShader() const;
 
     QSGTextureRef colortable;
 };
@@ -140,7 +140,7 @@ public:
         m_colortable_id = m_program.uniformLocation("colortable");
     }
 
-    virtual void updateState(const RenderState &state, AbstractMaterial *current, AbstractMaterial *old)
+    virtual void updateState(const RenderState &state, QSGMaterial *current, QSGMaterial *old)
     {
         // Bind the texture to unit 1 before calling the base class, so that the
         // base class can set active texture back to 0.
@@ -156,7 +156,7 @@ public:
 };
 
 
-AbstractMaterialShader *ParticleTrailsMaterialCT::createShader() const
+QSGMaterialShader *ParticleTrailsMaterialCT::createShader() const
 {
     return new ParticleTrailsMaterialDataCT;
 }
@@ -277,7 +277,7 @@ static QSGGeometry::AttributeSet ColoredParticle_AttributeSet =
     ColoredParticle_Attributes
 };
 
-GeometryNode* ColoredParticle::buildParticleNode()
+QSGGeometryNode* ColoredParticle::buildParticleNode()
 {
     QSGContext *sg = QSGContext::current;
 
@@ -365,7 +365,7 @@ GeometryNode* ColoredParticle::buildParticleNode()
 
     m_material->texture = sg->createTexture(image);
 
-    m_node = new GeometryNode();
+    m_node = new QSGGeometryNode();
     m_node->setGeometry(g);
     m_node->setMaterial(m_material);
 
@@ -374,7 +374,7 @@ GeometryNode* ColoredParticle::buildParticleNode()
     return m_node;
 }
 
-Node *ColoredParticle::updatePaintNode(Node *, UpdatePaintNodeData *)
+QSGNode *ColoredParticle::updatePaintNode(QSGNode *, UpdatePaintNodeData *)
 {
     if(m_pleaseReset){
         if(m_node)
@@ -391,7 +391,7 @@ Node *ColoredParticle::updatePaintNode(Node *, UpdatePaintNodeData *)
         prepareNextFrame();
     if (m_node){
         update();
-        m_node->markDirty(Node::DirtyMaterial);
+        m_node->markDirty(QSGNode::DirtyMaterial);
     }
 
     return m_node;

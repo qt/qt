@@ -1,10 +1,10 @@
 #include "spriteimage.h"
 #include "spritestate.h"
 #include "spriteengine.h"
-#include <qsgcontext.h>
-#include <adaptationlayer.h>
-#include <node.h>
-#include <texturematerial.h>
+#include <private/qsgcontext_p.h>
+#include <private/qsgadaptationlayer_p.h>
+#include <qsgnode.h>
+#include <qsgtexturematerial.h>
 #include <qsgtexture.h>
 #include <QFile>
 #include <cmath>
@@ -12,14 +12,14 @@
 #include <QDebug>
 QT_BEGIN_NAMESPACE
 
-class SpriteMaterial : public AbstractMaterial
+class SpriteMaterial : public QSGMaterial
 {
 public:
     SpriteMaterial();
     virtual ~SpriteMaterial();
-    virtual AbstractMaterialType *type() const { static AbstractMaterialType type; return &type; }
-    virtual AbstractMaterialShader *createShader() const;
-    virtual int compare(const AbstractMaterial *other) const
+    virtual QSGMaterialType *type() const { static QSGMaterialType type; return &type; }
+    virtual QSGMaterialShader *createShader() const;
+    virtual int compare(const QSGMaterial *other) const
     {
         return this - static_cast<const SpriteMaterial *>(other);
     }
@@ -49,7 +49,7 @@ SpriteMaterial::~SpriteMaterial()
 {
 }
 
-class SpriteMaterialData : public AbstractMaterialShader
+class SpriteMaterialData : public QSGMaterialShader
 {
 public:
     SpriteMaterialData(const char *vertexFile = 0, const char *fragmentFile = 0)
@@ -67,14 +67,14 @@ public:
     }
 
     void deactivate() {
-        AbstractMaterialShader::deactivate();
+        QSGMaterialShader::deactivate();
 
         for (int i=0; i<8; ++i) {
             m_program.setAttributeArray(i, GL_FLOAT, chunkOfBytes, 1, 0);
         }
     }
 
-    virtual void updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *)
+    virtual void updateState(const RenderState &state, QSGMaterial *newEffect, QSGMaterial *)
     {
         SpriteMaterial *m = static_cast<SpriteMaterial *>(newEffect);
         m->texture->bind();
@@ -129,7 +129,7 @@ public:
 };
 float SpriteMaterialData::chunkOfBytes[1024];
 
-AbstractMaterialShader *SpriteMaterial::createShader() const
+QSGMaterialShader *SpriteMaterial::createShader() const
 {
     return new SpriteMaterialData;
 }
@@ -192,7 +192,7 @@ static QSGGeometry::AttributeSet SpriteImage_AttributeSet =
     SpriteImage_Attributes
 };
 
-GeometryNode* SpriteImage::buildNode()
+QSGGeometryNode* SpriteImage::buildNode()
 {
     QSGContext *sg = QSGContext::current;
 
@@ -250,7 +250,7 @@ GeometryNode* SpriteImage::buildNode()
 
 
     m_timestamp.start();
-    m_node = new GeometryNode();
+    m_node = new QSGGeometryNode();
     m_node->setGeometry(g);
     m_node->setMaterial(m_material);
     return m_node;
@@ -261,7 +261,7 @@ void SpriteImage::reset()
     m_pleaseReset = true;
 }
 
-Node *SpriteImage::updatePaintNode(Node *, UpdatePaintNodeData *)
+QSGNode *SpriteImage::updatePaintNode(QSGNode *, UpdatePaintNodeData *)
 {
     if(m_pleaseReset){
         delete m_node;
@@ -277,7 +277,7 @@ Node *SpriteImage::updatePaintNode(Node *, UpdatePaintNodeData *)
     if(m_running){
         update();
         if (m_node)
-            m_node->markDirty(Node::DirtyMaterial);
+            m_node->markDirty(QSGNode::DirtyMaterial);
     }
 
     return m_node;

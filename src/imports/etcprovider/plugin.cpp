@@ -43,6 +43,7 @@
 #include "qetcprovider.h"
 
 #include <QDeclarativeEngine>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -43,9 +43,9 @@
 #include "qsgtext_p.h"
 #include "qsgtext_p_p.h"
 
-#include "distancefieldglyphcache_p.h"
-#include "qsgcontext.h"
-#include "adaptationlayer.h"
+#include <private/qsgdistancefieldglyphcache_p.h>
+#include <private/qsgcontext_p.h>
+#include <private/qsgadaptationlayer_p.h>
 #include "qsgtextnode_p.h"
 #include "qsgimage_p_p.h"
 
@@ -559,7 +559,7 @@ void QSGTextPrivate::invalidateImageCache()
 {
     Q_Q(QSGText);
 
-    if(cacheAllTextAsImage || (!DistanceFieldGlyphCache::distanceFieldEnabled() && style != QSGText::Normal)){//If actually using the image cache
+    if(cacheAllTextAsImage || (!QSGDistanceFieldGlyphCache::distanceFieldEnabled() && style != QSGText::Normal)){//If actually using the image cache
         if (imageCacheDirty)
             return;
 
@@ -700,7 +700,7 @@ void QSGText::setFont(const QFont &font)
     d->sourceFont = font;
     QFont oldFont = d->font;
     d->font = font;
-    if (DistanceFieldGlyphCache::distanceFieldEnabled())
+    if (QSGDistanceFieldGlyphCache::distanceFieldEnabled())
         qt_disableFontHinting(d->font);
 
     if (d->font.pointSizeF() != -1) {
@@ -1044,7 +1044,7 @@ void QSGText::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeomet
     QSGItem::geometryChanged(newGeometry, oldGeometry);
 }
 
-Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
+QSGNode *QSGText::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data)
 {
     Q_UNUSED(data);
     Q_D(QSGText);
@@ -1058,7 +1058,7 @@ Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     QRectF bounds = boundingRect();
 
     // XXX todo - some styled text can be done by the QSGTextNode
-    if (richTextAsImage || d->cacheAllTextAsImage || (!DistanceFieldGlyphCache::distanceFieldEnabled() && d->style != Normal)) {
+    if (richTextAsImage || d->cacheAllTextAsImage || (!QSGDistanceFieldGlyphCache::distanceFieldEnabled() && d->style != Normal)) {
         bool wasDirty = d->imageCacheDirty;
 
         d->checkImageCache();
@@ -1068,15 +1068,15 @@ Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
             return 0;
         }
 
-        TextureNodeInterface *node = 0;
+        QSGImageNode *node = 0;
         if (!oldNode || d->nodeType != QSGTextPrivate::NodeIsTexture) {
             delete oldNode;
-            node = QSGContext::current->createTextureNode();
+            node = QSGContext::current->createImageNode();
             node->setTexture(d->textureProvider);
             wasDirty = true;
             d->nodeType = QSGTextPrivate::NodeIsTexture;
         } else {
-            node = static_cast<TextureNodeInterface *>(oldNode);
+            node = static_cast<QSGImageNode *>(oldNode);
         }
 
         if (wasDirty) {

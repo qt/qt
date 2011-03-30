@@ -9,7 +9,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class ParticleTrailsMaterial;
-class GeometryNode;
+class QSGGeometryNode;
 struct ColoredParticleVertex;
 
 class ColoredParticle : public ParticleType
@@ -75,10 +75,10 @@ void setAlphaVariation(qreal arg)
 }
 
 protected:
-    Node *updatePaintNode(Node *, UpdatePaintNodeData *);
+    QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
     void reset();
     void prepareNextFrame();
-    GeometryNode* buildParticleNode();
+    QSGGeometryNode* buildParticleNode();
 private:
     void vertexCopy(ColoredParticleVertex &b,const ParticleVertex& a);
     bool m_do_reset;
@@ -92,7 +92,7 @@ private:
     qreal m_additive;
     qreal m_particleDuration;
 
-    GeometryNode *m_node;
+    QSGGeometryNode *m_node;
     ParticleTrailsMaterial *m_material;
 
     // derived values...

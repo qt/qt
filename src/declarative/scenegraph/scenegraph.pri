@@ -3,57 +3,68 @@ INCLUDEPATH += $$PWD/coreapi $$PWD/convenience $$PWD/3d
 
 QT += opengl
 
+
 # Core API
 HEADERS += \
-    $$PWD/coreapi/material.h \
-    $$PWD/coreapi/node.h \
-    $$PWD/coreapi/nodeupdater_p.h \
-    $$PWD/coreapi/renderer.h \
-    $$PWD/coreapi/qmlrenderer.h \
-    $$PWD/coreapi/qsgcontext.h \
-    $$PWD/coreapi/qsgcontextplugin.h \
-    $$PWD/coreapi/qsgtextureprovider.h \
+    $$PWD/coreapi/qsgdefaultrenderer_p.h \
     $$PWD/coreapi/qsggeometry.h \
-    $$PWD/coreapi/qsgtexture.h \
-    $$PWD/coreapi/qsgtexture_p.h
-
+    $$PWD/coreapi/qsgmaterial.h \
+    $$PWD/coreapi/qsgmatrix4x4stack.h \
+    $$PWD/coreapi/qsgmatrix4x4stack_p.h \
+    $$PWD/coreapi/qsgnode.h \
+    $$PWD/coreapi/qsgnodeupdater_p.h \
+    $$PWD/coreapi/qsgrenderer_p.h
 SOURCES += \
-    $$PWD/coreapi/material.cpp \
-    $$PWD/coreapi/node.cpp \
-    $$PWD/coreapi/nodeupdater.cpp \
-    $$PWD/coreapi/renderer.cpp \
-    $$PWD/coreapi/qmlrenderer.cpp \
-    $$PWD/coreapi/qsgcontext.cpp \
-    $$PWD/coreapi/qsgcontextplugin.cpp \
-    $$PWD/coreapi/qsgtextureprovider.cpp \
+    $$PWD/coreapi/qsgdefaultrenderer.cpp \
     $$PWD/coreapi/qsggeometry.cpp \
-    $$PWD/coreapi/qsgtexture.cpp
+    $$PWD/coreapi/qsgmaterial.cpp \
+    $$PWD/coreapi/qsgmatrix4x4stack.cpp \
+    $$PWD/coreapi/qsgnode.cpp \
+    $$PWD/coreapi/qsgnodeupdater.cpp \
+    $$PWD/coreapi/qsgrenderer.cpp
 
-# Convenience API
+
+# Util API
 HEADERS += \
-    $$PWD/convenience/qsgareaallocator_p.h \
-    $$PWD/convenience/flatcolormaterial.h \
-    $$PWD/convenience/solidrectnode.h \
-    $$PWD/convenience/texturematerial.h \
-    $$PWD/convenience/vertexcolormaterial.h \
-    $$PWD/convenience/distancefieldglyphcache_p.h
-
+    $$PWD/util/qsgareaallocator_p.h \
+    $$PWD/util/qsgflatcolormaterial.h \
+    $$PWD/util/qsgsimplerectnode.h \
+    $$PWD/util/qsgtexturematerial.h \
+    $$PWD/util/qsgvertexcolormaterial_p.h \
+    $$PWD/util/qsgtexture.h \
+    $$PWD/util/qsgtexture_p.h \
+    $$PWD/util/qsgtextureprovider_p.h
 SOURCES += \
-    $$PWD/convenience/qsgareaallocator.cpp \
-    $$PWD/convenience/flatcolormaterial.cpp \
-    $$PWD/convenience/solidrectnode.cpp \
-    $$PWD/convenience/texturematerial.cpp \
-    $$PWD/convenience/vertexcolormaterial.cpp \
-    $$PWD/convenience/distancefieldglyphcache.cpp
+    $$PWD/util/qsgareaallocator.cpp \
+    $$PWD/util/qsgflatcolormaterial.cpp \
+    $$PWD/util/qsgsimplerectnode.cpp \
+    $$PWD/util/qsgtexturematerial.cpp \
+    $$PWD/util/qsgvertexcolormaterial.cpp \
+    $$PWD/util/qsgtexture.cpp \
+    $$PWD/util/qsgtextureprovider.cpp
 
 
-# 3D API (duplicates with qt3d)
+# QML / Adaptations API
 HEADERS += \
-    $$PWD/3d/qsgmatrix4x4stack.h \
-    $$PWD/3d/qsgmatrix4x4stack_p.h
-
-
+    $$PWD/qsgadaptationlayer_p.h \
+    $$PWD/qsgcontext_p.h \
+    $$PWD/qsgcontextplugin_p.h \
+    $$PWD/qsgdefaultglyphnode_p.h \
+    $$PWD/qsgdistancefieldglyphcache_p.h \
+    $$PWD/qsgdistancefieldglyphnode_p.h \
+    $$PWD/qsgdistancefieldglyphnode_p_p.h \
+    $$PWD/qsgdefaultglyphnode_p_p.h \
+    $$PWD/qsgdefaultimagenode_p.h \
+    $$PWD/qsgdefaultrectanglenode_p.h
 SOURCES += \
-    $$PWD/3d/qsgmatrix4x4stack.cpp
+    $$PWD/qsgadaptationlayer.cpp \
+    $$PWD/qsgcontext.cpp \
+    $$PWD/qsgcontextplugin.cpp \
+    $$PWD/qsgdefaultglyphnode.cpp \
+    $$PWD/qsgdefaultglyphnode_p.cpp \
+    $$PWD/qsgdistancefieldglyphcache.cpp \
+    $$PWD/qsgdistancefieldglyphnode.cpp \
+    $$PWD/qsgdistancefieldglyphnode_p.cpp \
+    $$PWD/qsgdefaultimagenode.cpp \
+    $$PWD/qsgdefaultrectanglenode.cpp
 
-include(adaptationlayers/adaptationlayers.pri)

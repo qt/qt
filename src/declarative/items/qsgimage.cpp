@@ -43,9 +43,9 @@
 #include "qsgimage_p.h"
 #include "qsgimage_p_p.h"
 
-#include "qsgcontext.h"
-#include "adaptationlayer.h"
-#include "textureitem.h"
+#include <private/qsgcontext_p.h>
+#include <private/qsgadaptationlayer_p.h>
+#include <private/qsgtextureitem_p.h>
 
 #include <QtGui/qpainter.h>
 
@@ -201,7 +201,7 @@ QSGTextureProvider *QSGImage::textureProvider() const
     return d->textureProvider;
 }
 
-Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
+QSGNode *QSGImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
     Q_D(QSGImage);
     //XXX Support mirror property
@@ -211,10 +211,10 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
         return 0;
     }
 
-    TextureNodeInterface *node = static_cast<TextureNodeInterface *>(oldNode);
+    QSGImageNode *node = static_cast<QSGImageNode *>(oldNode);
     if (!node) { 
         d->pixmapChanged = true;
-        node = QSGContext::current->createTextureNode();
+        node = QSGContext::current->createImageNode();
         QSGTextureRef t = d->pix.texture();
         d->textureProvider->tex = t;
         if (!t.isNull())

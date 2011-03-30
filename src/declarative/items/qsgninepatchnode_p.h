@@ -42,12 +42,12 @@
 #ifndef QSGNINEPATCHNODE_H
 #define QSGNINEPATCHNODE_H
 
-#include "node.h"
-#include "texturematerial.h"
+#include "qsgnode.h"
+#include "qsgtexturematerial.h"
 
 class TextureReference;
 
-class QSGNinePatchNode : public GeometryNode
+class QSGNinePatchNode : public QSGGeometryNode
 {
 public:
     QSGNinePatchNode(const QRectF &targetRect, const QSGTextureRef &texture, const QRect &innerRect, 
@@ -64,8 +64,8 @@ private:
     QRectF m_targetRect;
     QRect m_innerRect;
     bool m_linearFiltering;
-    TextureMaterial m_material;
-    TextureMaterialWithOpacity m_materialO;
+    QSGTextureMaterial m_material;
+    QSGTextureMaterialWithOpacity m_materialO;
     QSGTextureRef m_texture;
     QSGGeometry m_geometry;
 };                                                         

@@ -1,6 +1,7 @@
 #ifndef QETCPROVIDER_H
 #define QETCPROVIDER_H
 
+#include <qgl.h>
 #include <QDeclarativeImageProvider>
 #include <QSGTexture>
 #include <QDeclarativeEngine>

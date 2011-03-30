@@ -162,7 +162,7 @@ Q_SIGNALS:
     void radiusChanged();
 
 protected:
-    virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
+    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
 
 private Q_SLOTS:
     void doUpdate();

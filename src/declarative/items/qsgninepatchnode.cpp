@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qsgninepatchnode_p.h"
-#include "adaptationlayer.h"
+#include <private/qsgadaptationlayer_p.h>
 
 QSGNinePatchNode::QSGNinePatchNode(const QRectF &targetRect, const QSGTextureRef &texture,
                                  const QRect &innerRect, bool linearFiltering)
@@ -151,6 +151,6 @@ void QSGNinePatchNode::updateGeometry()
             vertices[i * 6 + j] = V(x[j], y[i], u[j], v[i]);
     }
 
-    markDirty(Node::DirtyGeometry);
+    markDirty(QSGNode::DirtyGeometry);
 }
 

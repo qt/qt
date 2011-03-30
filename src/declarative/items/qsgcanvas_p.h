@@ -57,7 +57,7 @@
 #include "qsgcanvas.h"
 #include "qdeclarativeguard_p.h"
 
-#include "qsgcontext.h"
+#include <private/qsgcontext_p.h>
 
 #include <QtCore/qthread.h>
 #include <QtCore/qmutex.h>
@@ -140,7 +140,7 @@ public:
     void updateInputMethodData();
 
     void dirtyItem(QSGItem *);
-    void cleanup(Node *);
+    void cleanup(QSGNode *);
     void maybeUpdate();
 
     void initializeSceneGraph();
@@ -152,7 +152,7 @@ public:
     QSGItem::UpdatePaintNodeData updatePaintNodeData;
 
     QSGItem *dirtyItemList;
-    QList<Node *> cleanupNodeList;
+    QList<QSGNode *> cleanupNodeList;
 
     QSet<QSGItem *> itemsToPolish;
 

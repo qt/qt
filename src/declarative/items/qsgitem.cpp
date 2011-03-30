@@ -1589,7 +1589,7 @@ void QSGItem::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeomet
     result in race conditions and potential crashes.
  */
 
-Node *QSGItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
+QSGNode *QSGItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
     delete oldNode;
     return 0;

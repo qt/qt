@@ -1,5 +1,5 @@
 #include "particlesystem.h"
-#include <node.h>
+#include <qsgnode.h>
 #include "particleemitter.h"
 #include "particleaffector.h"
 #include "particle.h"

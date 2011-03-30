@@ -45,7 +45,7 @@
 #include "qsgitem.h"
 #include "qsgitem_p.h"
 
-#include "renderer.h"
+#include <private/qsgrenderer_p.h>
 
 #include <QtGui/qpainter.h>
 #include <QtGui/qgraphicssceneevent.h>
@@ -878,7 +878,7 @@ void QSGCanvasPrivate::dirtyItem(QSGItem *)
     q->maybeUpdate();
 }
 
-void QSGCanvasPrivate::cleanup(Node *n)
+void QSGCanvasPrivate::cleanup(QSGNode *n)
 {
     Q_Q(QSGCanvas);
 
@@ -1586,7 +1586,7 @@ void QSGCanvasPrivate::updateDirtyNodes()
         itemPriv->removeFromDirtyList();
 
 #ifdef DIRTY_DEBUG
-        qWarning() << "   Node:" << item << qPrintable(itemPriv->dirtyToString());
+        qWarning() << "   QSGNode:" << item << qPrintable(itemPriv->dirtyToString());
 #endif
         updateDirtyNode(item);
     }
@@ -1631,12 +1631,12 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
                                   ((itemPriv->effectRefCount == 0) != (itemPriv->rootNode == 0));
 
     if (clipEffectivelyChanged) {
-        Node *parent = itemPriv->opacityNode ? (Node *) itemPriv->opacityNode : (Node *)itemPriv->itemNode();
-        Node *child = itemPriv->rootNode ? (Node *)itemPriv->rootNode : (Node *)itemPriv->groupNode;
+        QSGNode *parent = itemPriv->opacityNode ? (QSGNode *) itemPriv->opacityNode : (QSGNode *)itemPriv->itemNode();
+        QSGNode *child = itemPriv->rootNode ? (QSGNode *)itemPriv->rootNode : (QSGNode *)itemPriv->groupNode;
 
         if (item->clip()) {
             Q_ASSERT(itemPriv->clipNode == 0);
-            itemPriv->clipNode = new QSGClipNode(QRectF(0, 0, itemPriv->width, itemPriv->height));
+            itemPriv->clipNode = new QSGDefaultClipNode(QRectF(0, 0, itemPriv->width, itemPriv->height));
 
             if (child)
                 parent->removeChildNode(child);
@@ -1662,16 +1662,16 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
     }
 
     if (effectRefEffectivelyChanged) {
-        Node *parent = itemPriv->clipNode;
+        QSGNode *parent = itemPriv->clipNode;
         if (!parent)
             parent = itemPriv->opacityNode;
         if (!parent)
             parent = itemPriv->itemNode();
-        Node *child = itemPriv->groupNode;
+        QSGNode *child = itemPriv->groupNode;
 
         if (itemPriv->effectRefCount) {
             Q_ASSERT(itemPriv->rootNode == 0);
-            itemPriv->rootNode = new RootNode;
+            itemPriv->rootNode = new QSGRootNode;
 
             if (child)
                 parent->removeChildNode(child);
@@ -1691,7 +1691,7 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
     }
 
     if (dirty & QSGItemPrivate::ChildrenUpdateMask) {
-        Node *groupNode = itemPriv->groupNode;
+        QSGNode *groupNode = itemPriv->groupNode;
         if (groupNode) {
             for (int count = groupNode->childCount(); count; --count)
                 groupNode->removeChildNode(groupNode->childAtIndex(0));
@@ -1738,8 +1738,8 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
         if (opacity != 1 && !itemPriv->opacityNode) {
             itemPriv->opacityNode = new OpacityNode;
 
-            Node *parent = itemPriv->itemNode();
-            Node *child = itemPriv->clipNode;
+            QSGNode *parent = itemPriv->itemNode();
+            QSGNode *child = itemPriv->clipNode;
             if (!child)
                 child = itemPriv->rootNode;
             if (!child)
@@ -1778,7 +1778,7 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
 
 #ifndef QT_NO_DEBUG
     // Check consistency.
-    const Node *nodeChain[] = {
+    const QSGNode *nodeChain[] = {
         itemPriv->itemNodeInstance,
         itemPriv->opacityNode,
         itemPriv->clipNode,
@@ -1796,8 +1796,8 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
         int ic = ip + 1;
         while (ic < 5 && nodeChain[ic] == 0)
             ++ic;
-        const Node *parent = nodeChain[ip];
-        const Node *child = nodeChain[ic];
+        const QSGNode *parent = nodeChain[ip];
+        const QSGNode *child = nodeChain[ic];
         if (child == 0) {
             Q_ASSERT(parent == itemPriv->groupNode || parent->childCount() == 0);
         } else {

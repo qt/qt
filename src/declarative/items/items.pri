@@ -97,13 +97,13 @@ SOURCES += \
     $$PWD/qsgimplicitsizeitem.cpp \
 
 SOURCES += \
-    $$PWD/shadereffectitem.cpp \
-    $$PWD/shadereffectnode.cpp \
-    $$PWD/shadereffectsource.cpp \
-    $$PWD/textureitem.cpp \
+    $$PWD/qsgshadereffectitem.cpp \
+    $$PWD/qsgshadereffectnode.cpp \
+    $$PWD/qsgshadereffectsource.cpp \
+    $$PWD/qsgtextureitem.cpp
 
 HEADERS += \
-    $$PWD/shadereffectitem.h \
-    $$PWD/shadereffectnode.h \
-    $$PWD/shadereffectsource.h \
-    $$PWD/textureitem.h \
+    $$PWD/qsgshadereffectitem_p.h \
+    $$PWD/qsgshadereffectnode_p.h \
+    $$PWD/qsgshadereffectsource_p.h \
+    $$PWD/qsgtextureitem_p.h

@@ -44,8 +44,8 @@
 #include "qsgpainteditem_p_p.h"
 #include "qsgimage_p_p.h"
 
-#include "qsgcontext.h"
-#include "adaptationlayer.h"
+#include <private/qsgcontext_p.h>
+#include <private/qsgadaptationlayer_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -164,7 +164,7 @@ void QSGPaintedItem::geometryChanged(const QRectF &newGeometry, const QRectF &ol
     QSGItem::geometryChanged(newGeometry, oldGeometry);
 }
 
-Node *QSGPaintedItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
+QSGNode *QSGPaintedItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data)
 {
     // XXX todo - highly inefficient.  Should use the FBO approach used in QxPainterNode.
     Q_UNUSED(data);
@@ -175,9 +175,9 @@ Node *QSGPaintedItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         return 0;
     }
 
-    TextureNodeInterface *node = static_cast<TextureNodeInterface *>(oldNode);
+    QSGImageNode *node = static_cast<QSGImageNode *>(oldNode);
     if (!node) {
-        node = QSGContext::current->createTextureNode();
+        node = QSGContext::current->createImageNode();
         node->setTexture(d->textureProvider);
     }
 

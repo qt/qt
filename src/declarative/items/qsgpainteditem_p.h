@@ -93,7 +93,7 @@ Q_SIGNALS:
 protected:
     QSGPaintedItem(QSGPaintedItemPrivate &dd, QSGItem *parent = 0);
     virtual void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
-    virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
+    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
 
 private:
     Q_DISABLE_COPY(QSGPaintedItem);

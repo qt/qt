@@ -90,7 +90,7 @@ class QSGAnchors;
 class QSGItemPrivate;
 class QSGCanvas;
 class QTouchEvent;
-class Node;
+class QSGNode;
 class TransformNode;
 class Q_DECLARATIVE_EXPORT QSGItem : public QObject, public QDeclarativeParserStatus
 {
@@ -365,7 +365,7 @@ protected:
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
 
-    virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
+    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
     virtual void updatePolish();
 
 protected:

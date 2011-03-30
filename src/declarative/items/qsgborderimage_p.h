@@ -88,7 +88,7 @@ Q_SIGNALS:
 protected:
     virtual void load();
     virtual void pixmapChange();
-    virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
+    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
 
 private:
     void setGridScaledImage(const QSGGridScaledImage& sci);
