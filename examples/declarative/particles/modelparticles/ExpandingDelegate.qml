@@ -173,7 +173,7 @@ import "../../modelviews/listview/content"
 
                 PropertyChanges { target: background; color: "white" }
                 PropertyChanges { target: recipeImage; width: 130; height: 130 } // Make picture bigger
-                PropertyChanges { target: recipe; detailsOpacity: 1; x: 0 } // Make details visible
+                PropertyChanges { target: recipe; detailsOpacity: 1; x: 0; opacity: 1 } // Make details visible
                 PropertyChanges { target: recipe; height: root.height; width: root.height; x:0; y:0; z:100} // Fill the entire list area with the detailed view
 
                 // Move the list so that this item is at the top.
@@ -197,7 +197,7 @@ import "../../modelviews/listview/content"
                 // Make the state changes smooth
                 ParallelAnimation {
                     ColorAnimation { property: "color"; duration: 500 }
-                    NumberAnimation { duration: 300; properties: "detailsOpacity,x,y,height,width" }
+                    NumberAnimation { duration: 300; properties: "detailsOpacity,opacity,x,y,height,width" }
                 }
             }
         }

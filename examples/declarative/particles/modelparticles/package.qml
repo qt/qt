@@ -83,8 +83,8 @@ Rectangle {
         system: sys
         width: 100
         x: 50
-        speed: PointVector{ y: 100 }
-        particleDuration: 2000
-        particlesPerSecond: 4
+        speed: PointVector{ y: 40 }
+        particleDuration: 5000
+        particlesPerSecond: 1.6
     }
 }

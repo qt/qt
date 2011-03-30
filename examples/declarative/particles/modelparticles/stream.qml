@@ -29,11 +29,9 @@ Item{
         system: sys
         particle: "A"
         height: parent.height
-        x: -128
         speed: PointVector{ x: 64; xVariation: 16 }
         particlesPerSecond: 0.5
-        particleDuration: 20000 //TODO: A -1 or something which does 'infinite'? (but need disable fade first)
-        maxParticles: 10
+        particleDuration: 8000 //TODO: A -1 or something which does 'infinite'? (but need disable fade first)
     }
     ModelParticle{
         id: mp
