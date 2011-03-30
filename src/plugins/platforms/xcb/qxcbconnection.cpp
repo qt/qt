@@ -402,6 +402,7 @@ const char *xcb_protocol_request_codes[] =
     "Unknown"
 };
 
+#ifdef Q_XCB_DEBUG
 void QXcbConnection::log(const char *file, int line, int sequence)
 {
     CallInfo info;
@@ -409,8 +410,10 @@ void QXcbConnection::log(const char *file, int line, int sequence)
     info.file = file;
     info.line = line;
 
+    QMutexLocker locker(&m_callLogMutex);
     m_callLog << info;
 }
+#endif
 
 void QXcbConnection::run()
 {
@@ -431,6 +434,7 @@ void QXcbConnection::run()
                    int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
                    int(error->minor_code));
 #ifdef Q_XCB_DEBUG
+            QMutexLocker locker(&m_callLogMutex);
             for (int i = 0; i < m_callLog.size(); ++i) {
                 if (m_callLog.at(i).sequence == error->sequence) {
                     printf("Caused by: %s:%d\n", qPrintable(m_callLog.at(i).file), m_callLog.at(i).line);
@@ -442,11 +446,14 @@ void QXcbConnection::run()
         }
 
 #ifdef Q_XCB_DEBUG
-        int i = 0;
-        for (; i < m_callLog.size(); ++i)
-            if (m_callLog.at(i).sequence >= event->sequence)
-                break;
-        m_callLog.remove(0, i);
+        {
+            QMutexLocker locker(&m_callLogMutex);
+            int i = 0;
+            for (; i < m_callLog.size(); ++i)
+                if (m_callLog.at(i).sequence >= event->sequence)
+                    break;
+            m_callLog.remove(0, i);
+        }
 #endif
 
         if (response_type == XCB_CLIENT_MESSAGE
