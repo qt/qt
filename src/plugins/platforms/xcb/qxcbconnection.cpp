@@ -399,7 +399,6 @@ const char *xcb_protocol_request_codes[] =
     "GetPointerMapping",
     "SetModifierMapping",
     "GetModifierMapping",
-    "NoOperation",
     "Unknown"
 };
 
@@ -436,12 +435,20 @@ void QXcbConnection::run()
                    int(error->minor_code));
 #ifdef Q_XCB_DEBUG
             QMutexLocker locker(&m_callLogMutex);
-            for (int i = 0; i < m_callLog.size(); ++i) {
+            int i = 0;
+            for (; i < m_callLog.size(); ++i) {
                 if (m_callLog.at(i).sequence == error->sequence) {
                     printf("Caused by: %s:%d\n", qPrintable(m_callLog.at(i).file), m_callLog.at(i).line);
                     break;
+                } else if (m_callLog.at(i).sequence > error->sequence) {
+                    printf("Caused some time before: %s:%d\n", qPrintable(m_callLog.at(i).file), m_callLog.at(i).line);
+                    if (i > 0)
+                        printf("and after: %s:%d\n", qPrintable(m_callLog.at(i-1).file), m_callLog.at(i-1).line);
+                    break;
                 }
             }
+            if (i == m_callLog.size() && !m_callLog.isEmpty())
+                printf("Caused some time after: %s:%d\n", qPrintable(m_callLog.first().file), m_callLog.first().line);
 #endif
             continue;
         }
@@ -465,6 +472,7 @@ void QXcbConnection::run()
             && ((xcb_client_message_event_t *)event)->type == QXcbAtom::_QT_PAUSE_CONNECTION)
         {
             QMutexLocker locker(&m_connectionLock);
+            continue;
         }
 
         switch (response_type) {
