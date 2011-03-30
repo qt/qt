@@ -58,7 +58,7 @@
         \endlist
       \o \l {The QDoc Configuration File}
         \list
-          \o \l {General Configuration Variables}
+          \o \l {Generic Configuration Variables}
           \o \l {Creating Help Project Files}
           \o \l {C++ Specific Configuration Variables}
           \o \l {HTML Specific Configuration Variables}
@@ -79,12 +79,13 @@
 
     \title Introduction to QDoc
 
-    QDoc is a tool used by Qt Developers to generate documentation of
-    software projects by extracting the documentation from the project
-    source files and then formatting it as HTML pages or DITA XML
-    documents, etc. The documentation is embedded in the source files
-    in \e {qdoc comments}. A qdoc comment begins with an exclamation
-    mark \bold{(!)} e.g.:
+    QDoc is a tool used by Qt Developers to generate documentation for
+    software projects. It works by extracting \e {qdoc comments} from
+    project source files and then formatting these comments as HTML
+    pages or DITA XML documents, etc. QDoc finds qdoc comments in \c
+    {.cpp} files and in \c {.qdoc} files. QDoc does not look for qdoc
+    comments in \c {.h} files. A qdoc comment always begins with an
+    exclamation mark \bold{!} e.g.:
 
     \code 
         / *! 
@@ -124,13 +125,14 @@
 	* /
     \endcode
 
-    From this snippet, QDoc generates the now famous HTML page \l
-    {http://doc.trolltech.com/4.7/qobject.html#details} {QObject Class Reference}.
+    From the qdoc comment above, QDoc generates the now famous HTML
+    page \l {http://doc.trolltech.com/4.7/qobject.html#details}
+    {QObject Class Reference}.
     
-    This manual explains how to use the QDoc commands to write useful
-    qdoc comments in your source files. It also explains how to create
-    a \l {The QDoc Configuration File} {QDoc configuration file},
-    which you must pass to QDoc on the command line when you run it.
+    This manual explains how to use the QDoc commands in qdoc comments
+    to embed good documentation in your source files. It also explains
+    how to make a \l {The QDoc Configuration File} {QDoc configuration
+    file}, which you will pass to QDoc on the command line.
 
     \section1 Running QDoc
 
@@ -138,19 +140,63 @@
     from the command line, give it the name of a configuration file:
 
     \quotation
-        \c {/current/dir$ ../../bin/qdoc3 ./config.qdocconf}
+        \c {$ ../../bin/qdoc3 ./config.qdocconf}
     \endquotation
 
-    In the command line above, \c{config.qdocconf} is a \l{The QDoc
+    QDoc recognizes the \c {.qdocconf} suffix as a \l{The QDoc
     Configuration File} {QDoc configuration file}. The configuration
-    file is where you tell QDoc where to find the source files that
-    contain the QDoc comments that will become the documentation. It
-    is also where you tell QDoc what kind of output to generate (HTML,
-    DITA XML,...), and where to put the generated output. The
-    configuration file also contains other information for QDoc.
+    file is where you tell QDoc where to find the project source
+    files, header files, and \c {.qdoc} files. It is also where you
+    tell QDoc what kind of output to generate (HTML, DITA XML,...),
+    and where to put the generated documentation. The configuration
+    file also contains other information for QDoc.
 
-    See \l{The QDoc Configuration File} for a instructions on how ro
+    See \l{The QDoc Configuration File} for a instructions on how to
     build a Qdoc configuration file.
+
+    \section1 How QDoc Works
+
+    QDoc begins by reading the configuarion file you specified on the
+    command line. It stores all the variables from the configuration
+    file for later use. One of the first variables it uses is \c
+    {outputformats}. This variable tells QDoc which output generators
+    it will run. The default value is \e {HTML}, so if you don't set
+    \c {outputformats} in your configuration file, QDoc will generate
+    HTML output. That's usually what you will want anyway, but you can
+    also specify \e {DITAXML} to get DITA XML output instead.
+
+    Next, QDoc uses the values of the \l
+    {22-qdoc-configuration-generalvariables.html#headerdirs-variable}
+    {headerdirs} variable and/or the \l
+    {22-qdoc-configuration-generalvariables.html#headers-variable}
+    {headers} variable to find and parse all the header files for your
+    project. QDoc does \e not scan header files for qdoc comments. It
+    parses the header files to build a master tree of all the items
+    that should be documented (i.e. the items that QDoc should find 
+    qdoc comments for).
+
+    After parsing all the header files and building the master tree of
+    items to be documented, QDoc uses the value of the \l
+    {22-qdoc-configuration-generalvariables.html#sourcedirs-variable}
+    {sourcedirs} variable and/or the value of the \l
+    {22-qdoc-configuration-generalvariables.html#sources-variable}
+    {sources} variable to find and parse all the \c {.cpp} and \c
+    {.qdoc} files for your project. These are the files QDoc scans for
+    \e {qdoc comments}. Remember that a qdoc comment begins with 
+    an exclamation mark, i.e. \bold {/*!} .
+
+    For each qdoc comment it finds, it searches the master tree for
+    the item where the documentation belongs. The it interprets the
+    qdoc commands in the comment and stores the interpreted commands
+    and the comment text in the tree node for the item. 
+
+    Finally, QDoc traverses the master tree. For each node, if the
+    node has stored documentation, QDoc calls the output generator
+    specified by the \c {outputformats} variable to format and write
+    the documentation in the directory specified in the configuration
+    file in the \l
+    {22-qdoc-configuration-generalvariables.html#outputdir-variable}
+    {outputdir} variable.
 
     \section1 Command Types
 
@@ -6739,7 +6785,7 @@
     \page 21-0-qdoc-configuration.html
     \previouspage Miscellaneous
     \contentspage Table of Contents
-    \nextpage General Configuration Variables
+    \nextpage Generic Configuration Variables
 
     \title The QDoc Configuration File
 
@@ -6833,7 +6879,7 @@
     \section1 Categories
 
     \list
-    \o \l {General Configuration Variables}
+    \o \l {Generic Configuration Variables}
     \o \l {C++ Specific Configuration Variables}
     \o \l {HTML Specific Configuration Variables}
     \endlist
@@ -6874,7 +6920,7 @@
     \contentspage Table of Contents
     \nextpage Creating Help Project Files
 
-    \title General Configuration Variables
+    \title Generic Configuration Variables
 
     With the general QDoc configuration variables, you can define
     where QDoc will find the various source files it needs to generate
@@ -7751,7 +7797,7 @@
 
 /*!
     \page 22-creating-help-project-files.html
-    \previouspage General Configuration Variables
+    \previouspage Generic Configuration Variables
     \contentspage Table of Contents
     \nextpage C++ Specific Configuration Variables
 
