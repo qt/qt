@@ -65,7 +65,6 @@ QGLXContext::QGLXContext(Window window, QXcbScreen *screen, const QPlatformWindo
     , m_drawable((Drawable)window)
     , m_context(0)
 {
-
     const QPlatformGLContext *sharePlatformContext;
     if (format.useDefaultSharedContext()) {
         if (!QPlatformGLContext::defaultSharedContext()) {
@@ -131,6 +130,7 @@ void QGLXContext::createDefaultSharedContext(QXcbScreen *screen)
 
 void QGLXContext::makeCurrent()
 {
+    m_screen->connection()->setEventProcessingEnabled(false);
     QPlatformGLContext::makeCurrent();
     glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), m_drawable, m_context);
 }
@@ -139,11 +139,13 @@ void QGLXContext::doneCurrent()
 {
     QPlatformGLContext::doneCurrent();
     glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), 0, 0);
+    m_screen->connection()->setEventProcessingEnabled(true);
 }
 
 void QGLXContext::swapBuffers()
 {
     glXSwapBuffers(DISPLAY_FROM_XCB(m_screen), m_drawable);
+    doneCurrent();
 }
 
 void* QGLXContext::getProcAddress(const QString& procName)
