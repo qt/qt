@@ -26,7 +26,7 @@ symbian: SUBDIRS = \
             demos_qcamera \
             demos_qtbubblelevel \
             demos_quickhit
-            
+
 wince*:  SUBDIRS = \
             demos_shared \
             demos_deform \
@@ -43,7 +43,7 @@ wince*:  SUBDIRS = \
             demos_embeddeddialogs \
             demos_undo \
             demos_sub-attaq
-            
+
 contains(QT_CONFIG, opengl):!contains(QT_CONFIG, opengles1):!contains(QT_CONFIG, opengles2):{
 SUBDIRS += demos_boxes
 }
@@ -96,10 +96,10 @@ demos_mediaplayer.subdir = qmediaplayer
 demos_declarative.subdir = declarative
 
 #mobile demos
-demos_guitartuner = mobile/guitartuner
-demos_qcamera = mobile/qcamera
-demos_qtbubblelevel = mobile/qtbubblelevel
-demos_quickhit = mobile/quickhit
+demos_guitartuner.subdir = mobile/guitartuner
+demos_qcamera.subdir = mobile/qcamera
+demos_qtbubblelevel.subdir = mobile/qtbubblelevel
+demos_quickhit.subdir = mobile/quickhit
 
 demos_browser.subdir = browser
 
