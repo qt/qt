@@ -1,4 +1,4 @@
-TARGET = tcpserver
+TARGET = qmldbg_tcp
 QT       += declarative network
 
 include(../../qpluginbase.pri)
@@ -15,4 +15,4 @@ HEADERS += \
 target.path += $$[QT_INSTALL_PLUGINS]/qmltooling
 INSTALLS += target
 
-symbian:TARGET.UID3=0x20031E90 
+symbian:TARGET.UID3=0x20031E90
