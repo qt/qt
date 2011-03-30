@@ -192,7 +192,7 @@ void QXcbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoi
     extern QWidgetData* qt_widget_data(QWidget *);
     QPoint widgetOffset = qt_qwidget_data(widget)->wrect.topLeft();
 
-    QMutexLocker(&m_surfaceLock);
+    QMutexLocker locker(&m_surfaceLock);
 
     QVector<QRect> rects = region.rects();
     for (int i = 0; i < rects.size(); ++i)
@@ -205,7 +205,7 @@ void QXcbWindowSurface::resize(const QSize &size)
 
     QXcbScreen *screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(window()));
 
-    QMutexLocker(&m_surfaceLock);
+    QMutexLocker locker(&m_surfaceLock);
 
     delete m_image;
     m_image = new QXcbShmImage(screen, size);
