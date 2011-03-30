@@ -163,26 +163,35 @@ void tst_QTemporaryFile::cleanup()
 void tst_QTemporaryFile::fileTemplate_data()
 {
     QTest::addColumn<QString>("constructorTemplate");
+    QTest::addColumn<QString>("prefix");
     QTest::addColumn<QString>("suffix");
     QTest::addColumn<QString>("fileTemplate");
 
-    QTest::newRow("constructor default")          << "" << "" << "";
-    QTest::newRow("constructor with xxx sufix") << "qt_XXXXXXxxx" << "xxx" << "";
-    QTest::newRow("constructor with xXx sufix") << "qt_XXXXXXxXx" << "xXx" << "";
-    QTest::newRow("constructor with no sufix") << "qt_XXXXXX" << "" << "";
-    QTest::newRow("constructor with >6 X's and xxx suffix") << "qt_XXXXXXXXXXxxx" << "xxx" << "";
-    QTest::newRow("constructor with >6 X's, no suffix") << "qt_XXXXXXXXXX" << "" << "";
+    QTest::newRow("constructor default") << "" << "." << "" << "";
+    QTest::newRow("constructor with xxx sufix") << "qt_XXXXXXxxx" << "qt_" << "xxx" << "";
+    QTest::newRow("constructor with xXx sufix") << "qt_XXXXXXxXx" << "qt_" << "xXx" << "";
+    QTest::newRow("constructor with no sufix") << "qt_XXXXXX" << "qt_" << "" << "";
+    QTest::newRow("constructor with >6 X's and xxx suffix") << "qt_XXXXXXXXXXxxx" << "qt_" << "xxx" << "";
+    QTest::newRow("constructor with >6 X's, no suffix") << "qt_XXXXXXXXXX" << "qt_" << "" << "";
 
-    QTest::newRow("set template, no suffix") << "" << "" << "foo";
-    QTest::newRow("set template, with lowercase XXXXXX") << "" << "xxxxxx" << "qt_XXXXXXxxxxxx";
-    QTest::newRow("set template, with xxx") << "" << ".xxx" << "qt_XXXXXX.xxx";
-    QTest::newRow("set template, with >6 X's") << "" << ".xxx" << "qt_XXXXXXXXXXXXXX.xxx";
-    QTest::newRow("set template, with >6 X's, no suffix") << "" << "" << "qt_XXXXXXXXXXXXXX";
+    QTest::newRow("constructor with XXXX suffix") << "qt_XXXXXX_XXXX" << "qt_" << "_XXXX" << "";
+    QTest::newRow("constructor with XXXXX suffix") << "qt_XXXXXX_XXXXX" << "qt_" << "_XXXXX" << "";
+    QTest::newRow("constructor with XXXX prefix") << "qt_XXXX" << "qt_XXXX." << "" << "";
+    QTest::newRow("constructor with XXXXX prefix") << "qt_XXXXX" << "qt_XXXXX." << "" << "";
+    QTest::newRow("constructor with XXXX  prefix and suffix") << "qt_XXXX_XXXXXX_XXXX" << "qt_XXXX_" << "_XXXX" << "";
+    QTest::newRow("constructor with XXXXX prefix and suffix") << "qt_XXXXX_XXXXXX_XXXXX" << "qt_XXXXX_" << "_XXXXX" << "";
+
+    QTest::newRow("set template, no suffix") << "" << "foo" << "" << "foo";
+    QTest::newRow("set template, with lowercase XXXXXX") << "" << "qt_" << "xxxxxx" << "qt_XXXXXXxxxxxx";
+    QTest::newRow("set template, with xxx") << "" << "qt_" << ".xxx" << "qt_XXXXXX.xxx";
+    QTest::newRow("set template, with >6 X's") << "" << "qt_" << ".xxx" << "qt_XXXXXXXXXXXXXX.xxx";
+    QTest::newRow("set template, with >6 X's, no suffix") << "" << "qt_" << "" << "qt_XXXXXXXXXXXXXX";
 }
 
 void tst_QTemporaryFile::fileTemplate()
 {
     QFETCH(QString, constructorTemplate);
+    QFETCH(QString, prefix);
     QFETCH(QString, suffix);
     QFETCH(QString, fileTemplate);
 
@@ -192,8 +201,11 @@ void tst_QTemporaryFile::fileTemplate()
 
     QCOMPARE(file.open(), true);
 
-    QCOMPARE(file.fileName().right(suffix.length()), suffix);
-    file.close();
+    if (prefix.length())
+        QCOMPARE(file.fileName().left(prefix.length()), prefix);
+
+    if (suffix.length())
+        QCOMPARE(file.fileName().right(suffix.length()), suffix);
 }
 
 
