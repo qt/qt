@@ -44,7 +44,6 @@
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
-#include "qmutex.h"
 
 #include <xcb/shm.h>
 #include <xcb/xcb_image.h>
@@ -65,9 +64,6 @@ public:
     void put(xcb_window_t window, const QPoint &dst, const QRect &source);
     void preparePaint(const QRegion &region);
 
-    void lock() { m_surfaceLock.lock(); }
-    void unlock() { m_surfaceLock.unlock(); }
-
 private:
     void destroy();
 
@@ -81,7 +77,6 @@ private:
     xcb_window_t m_gc_window;
 
     QRegion m_dirty;
-    QMutex m_surfaceLock;
 };
 
 QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size)
@@ -114,7 +109,8 @@ void QXcbShmImage::destroy()
     xcb_image_destroy(m_xcb_image);
     shmdt(m_shm_info.shmaddr);
     shmctl(m_shm_info.shmid, IPC_RMID, 0);
-    Q_XCB_CALL(xcb_free_gc(xcb_connection(), m_gc));
+    if (m_gc)
+        Q_XCB_CALL(xcb_free_gc(xcb_connection(), m_gc));
 }
 
 void QXcbShmImage::put(xcb_window_t window, const QPoint &target, const QRect &source)
@@ -175,13 +171,13 @@ QPaintDevice *QXcbWindowSurface::paintDevice()
 
 void QXcbWindowSurface::beginPaint(const QRegion &region)
 {
-    m_image->lock();
+    m_surfaceLock.lock();
     m_image->preparePaint(region);
 }
 
 void QXcbWindowSurface::endPaint(const QRegion &)
 {
-    m_image->unlock();
+    m_surfaceLock.unlock();
 }
 
 void QXcbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
@@ -189,18 +185,18 @@ void QXcbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoi
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
+    connection()->sync();
+
     QXcbWindow *window = static_cast<QXcbWindow *>(widget->window()->platformWindow());
 
     extern QWidgetData* qt_widget_data(QWidget *);
     QPoint widgetOffset = qt_qwidget_data(widget)->wrect.topLeft();
 
-    m_image->lock();
+    QMutexLocker(&m_surfaceLock);
 
     QVector<QRect> rects = region.rects();
     for (int i = 0; i < rects.size(); ++i)
         m_image->put(window->window(), rects.at(i).topLeft() - widgetOffset, rects.at(i).translated(offset));
-
-    m_image->unlock();
 }
 
 void QXcbWindowSurface::resize(const QSize &size)
@@ -209,8 +205,7 @@ void QXcbWindowSurface::resize(const QSize &size)
 
     QXcbScreen *screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(window()));
 
-    if (m_image)
-        m_image->lock();
+    QMutexLocker(&m_surfaceLock);
 
     delete m_image;
     m_image = new QXcbShmImage(screen, size);
