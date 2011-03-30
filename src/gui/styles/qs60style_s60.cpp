@@ -158,7 +158,6 @@ public:
     static bool disabledPartGraphic(QS60StyleEnums::SkinParts &part);
     static bool disabledFrameGraphic(QS60StylePrivate::SkinFrameElements &frame);
     static QPixmap generateMissingThemeGraphic(QS60StyleEnums::SkinParts &part, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
-    static QSize naviPaneSize();
     static TAknsItemID partSpecificThemeId(int part);
 
     static QVariant themeDefinition(QS60StyleEnums::ThemeDefinitions definition, QS60StyleEnums::SkinParts part);
@@ -1402,6 +1401,7 @@ QPixmap QS60StylePrivate::backgroundTexture(bool skipCreation)
         if (m_background->width() != applicationRect.Width() ||
             m_background->height() != applicationRect.Height()) {
             delete m_background;
+            m_background = 0;
             createNewBackground = true;
         }
     }
@@ -1475,23 +1475,6 @@ void QS60StylePrivate::handleSkinChange()
     stopAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim); //todo: once we have more animations, we could say "stop all running ones"
     startAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim); //and "re-start all previously running ones"
 #endif
-}
-
-QSize QS60StylePrivate::naviPaneSize()
-{
-    return QS60StyleModeSpecifics::naviPaneSize();
-}
-
-QSize QS60StyleModeSpecifics::naviPaneSize()
-{
-    CAknNavigationControlContainer* naviContainer;
-    if (S60->statusPane()) {
-        TRAPD(err, naviContainer = static_cast<CAknNavigationControlContainer*>
-            (S60->statusPane()->ControlL(TUid::Uid(EEikStatusPaneUidNavi))));
-        if (err==KErrNone)
-            return QSize(naviContainer->Size().iWidth, naviContainer->Size().iHeight);
-    }
-    return QSize(0,0);
 }
 
 int QS60StylePrivate::currentAnimationFrame(QS60StyleEnums::SkinParts part)
