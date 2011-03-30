@@ -120,7 +120,8 @@ void QXcbShmImage::destroy()
 void QXcbShmImage::put(xcb_window_t window, const QPoint &target, const QRect &source)
 {
     if (m_gc_window != window) {
-        Q_XCB_CALL(xcb_free_gc(xcb_connection(), m_gc));
+        if (m_gc)
+            Q_XCB_CALL(xcb_free_gc(xcb_connection(), m_gc));
 
         m_gc = xcb_generate_id(xcb_connection());
         Q_XCB_CALL(xcb_create_gc(xcb_connection(), m_gc, window, 0, 0));
