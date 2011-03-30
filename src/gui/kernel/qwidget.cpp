@@ -306,6 +306,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , qd_hd(0)
 #elif defined(Q_OS_SYMBIAN)
       , symbianScreenNumber(0)
+      , fixNativeOrientationCalled(false)
 #endif
 {
     if (!qApp) {
@@ -10868,6 +10869,9 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         }
         QT_TRAP_THROWING(appUi->SetOrientationL(s60orientation));
         S60->orientationSet = true;
+        QSymbianControl *window = static_cast<QSymbianControl *>(internalWinId());
+        if (window)
+            window->ensureFixNativeOrientation();
 #endif
         break;
     }

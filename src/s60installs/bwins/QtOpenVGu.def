@@ -134,7 +134,7 @@ EXPORTS
 	?drawTextItem@QVGPaintEngine@@UAEXABVQPointF@@ABVQTextItem@@@Z @ 133 NONAME ; void QVGPaintEngine::drawTextItem(class QPointF const &, class QTextItem const &)
 	?clearScissor@QVGCompositionHelper@@QAEXXZ @ 134 NONAME ; void QVGCompositionHelper::clearScissor(void)
 	?fill@QVGPaintEngine@@UAEXABVQVectorPath@@ABVQBrush@@@Z @ 135 NONAME ; void QVGPaintEngine::fill(class QVectorPath const &, class QBrush const &)
-	?forceToImage@QVGPixmapData@@IAEXXZ @ 136 NONAME ; void QVGPixmapData::forceToImage(void)
+	?forceToImage@QVGPixmapData@@IAEXXZ @ 136 NONAME ABSENT ; void QVGPixmapData::forceToImage(void)
 	?drawPoints@QVGPaintEngine@@UAEXPBVQPoint@@H@Z @ 137 NONAME ; void QVGPaintEngine::drawPoints(class QPoint const *, int)
 	??_EQVGPaintEngine@@UAE@I@Z @ 138 NONAME ; QVGPaintEngine::~QVGPaintEngine(unsigned int)
 	?clip@QVGPaintEngine@@UAEXABVQPainterPath@@W4ClipOperation@Qt@@@Z @ 139 NONAME ; void QVGPaintEngine::clip(class QPainterPath const &, enum Qt::ClipOperation)
@@ -183,4 +183,5 @@ EXPORTS
 	?initFromNativeImageHandle@QVGPixmapData@@QAE_NPAXABVQString@@@Z @ 182 NONAME ; bool QVGPixmapData::initFromNativeImageHandle(void *, class QString const &)
 	?createFromNativeImageHandleProvider@QVGPixmapData@@QAEXXZ @ 183 NONAME ; void QVGPixmapData::createFromNativeImageHandleProvider(void)
 	?releaseNativeImageHandle@QVGPixmapData@@QAEXXZ @ 184 NONAME ; void QVGPixmapData::releaseNativeImageHandle(void)
+	?forceToImage@QVGPixmapData@@IAEX_N@Z @ 185 NONAME ; void QVGPixmapData::forceToImage(bool)
 
