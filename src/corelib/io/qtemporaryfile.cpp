@@ -178,8 +178,6 @@ static int createFileFromTemplate(char *const path,
         for (char *iter = placeholderStart;;) {
             // Character progression: [0-9] => 'a' ... 'z' => 'A' .. 'Z'
             // String progression: "ZZaiC" => "aabiC"
-            if (!*iter)
-                return -1;
             if (*iter == 'Z') {
                 *iter++ = 'a';
                 if (iter == placeholderEnd)
