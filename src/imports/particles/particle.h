@@ -2,6 +2,7 @@
 #define PARTICLE_H
 
 #include <QObject>
+#include <QDebug>
 #include "particlesystem.h"
 
 QT_BEGIN_HEADER
@@ -56,6 +57,11 @@ private slots:
     void calcSystemOffset();
 protected:
     virtual void reset() {;}
+
+//    virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *){
+//        qDebug() << "Shouldn't be here..." << this;
+//        return 0;
+//    }
 
     ParticleSystem* m_system;
     friend class ParticleSystem;

@@ -110,6 +110,7 @@ struct ParticleVertex {
     float sy;
     float ax;
     float ay;
+    //TODO: Need opacity over life control. More variable size over life?
 };
 
 class ParticleData{

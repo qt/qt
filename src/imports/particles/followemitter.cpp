@@ -79,6 +79,10 @@ void FollowEmitter::emitWindow(int timeStamp)
         }
         while(pt < time){
             ParticleData* datum = m_system->newDatum(gId2);
+            if(!datum){//skip this emission
+                pt += particleRatio;
+                continue;
+            }
             datum->e = this;//###useful?
             ParticleVertex &p = datum->pv;
 

@@ -14,6 +14,7 @@ ParticleEmitter::ParticleEmitter(QSGItem *parent) :
   , m_particleSize(16)
   , m_particleEndSize(-1)
   , m_particleSizeVariation(0)
+  , m_maxParticleCount(-1)
 
 {
     //TODO: Reset speed/acc back to null vector? Or allow null pointer?
@@ -53,6 +54,13 @@ void ParticleEmitter::burst(qreal seconds)
 {
     if(!m_emitting)
         m_burstLeft = seconds*1000.0;
+}
+
+int ParticleEmitter::particleCount() const
+{
+    if(m_maxParticleCount > 0)
+        return m_maxParticleCount;
+    return m_particlesPerSecond*((m_particleDuration+m_particleDurationVariation)/1000.0);
 }
 
 QT_END_NAMESPACE
