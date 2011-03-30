@@ -103,28 +103,27 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size)
     m_shm_info.shmaddr = m_xcb_image->data = (quint8 *)shmat (m_shm_info.shmid, 0, 0);
     m_shm_info.shmseg = xcb_generate_id(xcb_connection());
 
-    xcb_shm_attach(xcb_connection(), m_shm_info.shmseg, m_shm_info.shmid, false);
+    Q_XCB_CALL(xcb_shm_attach(xcb_connection(), m_shm_info.shmseg, m_shm_info.shmid, false));
 
     m_qimage = QImage( (uchar*) m_xcb_image->data, m_xcb_image->width, m_xcb_image->height, m_xcb_image->stride, screen->format());
 }
 
 void QXcbShmImage::destroy()
 {
-    xcb_shm_detach(xcb_connection(), m_shm_info.shmseg);
+    Q_XCB_CALL(xcb_shm_detach(xcb_connection(), m_shm_info.shmseg));
     xcb_image_destroy(m_xcb_image);
     shmdt(m_shm_info.shmaddr);
     shmctl(m_shm_info.shmid, IPC_RMID, 0);
-
-    xcb_free_gc(xcb_connection(), m_gc);
+    Q_XCB_CALL(xcb_free_gc(xcb_connection(), m_gc));
 }
 
 void QXcbShmImage::put(xcb_window_t window, const QPoint &target, const QRect &source)
 {
     if (m_gc_window != window) {
-        xcb_free_gc(xcb_connection(), m_gc);
+        Q_XCB_CALL(xcb_free_gc(xcb_connection(), m_gc));
 
         m_gc = xcb_generate_id(xcb_connection());
-        xcb_create_gc(xcb_connection(), m_gc, window, 0, 0);
+        Q_XCB_CALL(xcb_create_gc(xcb_connection(), m_gc, window, 0, 0));
 
         m_gc_window = window;
     }
@@ -152,7 +151,8 @@ void QXcbShmImage::preparePaint(const QRegion &region)
     // to prevent X from reading from the image region while we're writing to it
     if (m_dirty.intersects(region)) {
         // from xcb_aux_sync
-        free(xcb_get_input_focus_reply(xcb_connection(), xcb_get_input_focus(xcb_connection()), 0));
+        xcb_get_input_focus_cookie_t cookie = Q_XCB_CALL(xcb_get_input_focus(xcb_connection()));
+        free(xcb_get_input_focus_reply(xcb_connection(), cookie, 0));
         m_dirty = QRegion();
     }
 }

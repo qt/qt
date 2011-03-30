@@ -207,9 +207,9 @@ break;
 void printXcbEvent(const char *message, xcb_generic_event_t *event)
 {
 #ifdef XCB_EVENT_DEBUG
-#define PRINT_XCB_EVENT(event) \
-    case event: \
-        printf("%s: %d - %s\n", message, int(event), #event); \
+#define PRINT_XCB_EVENT(ev) \
+    case ev: \
+        printf("%s: %d - %s - sequence: %d\n", message, int(ev), #ev, event->sequence); \
         break;
 
     switch (event->response_type & ~0x80) {
@@ -402,6 +402,16 @@ const char *xcb_protocol_request_codes[] =
     "Unknown"
 };
 
+void QXcbConnection::log(const char *file, int line, int sequence)
+{
+    CallInfo info;
+    info.sequence = sequence;
+    info.file = file;
+    info.line = line;
+
+    m_callLog << info;
+}
+
 void QXcbConnection::run()
 {
     while (xcb_generic_event_t *event = xcb_wait_for_event(xcb_connection())) {
@@ -415,12 +425,29 @@ void QXcbConnection::run()
             uint clamped_error_code = qMin<uint>(error->error_code, (sizeof(xcb_errors) / sizeof(xcb_errors[0])) - 1);
             uint clamped_major_code = qMin<uint>(error->major_code, (sizeof(xcb_protocol_request_codes) / sizeof(xcb_protocol_request_codes[0])) - 1);
 
-            printf("XCB error: %d (%s), resource id: %d, major code: %d (%s), minor code: %d\n",
-                   int(error->error_code), xcb_errors[clamped_error_code], int(error->resource_id),
+            printf("XCB error: %d (%s), sequence: %d, resource id: %d, major code: %d (%s), minor code: %d\n",
+                   int(error->error_code), xcb_errors[clamped_error_code],
+                   int(error->sequence), int(error->resource_id),
                    int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
                    int(error->minor_code));
+#ifdef Q_XCB_DEBUG
+            for (int i = 0; i < m_callLog.size(); ++i) {
+                if (m_callLog.at(i).sequence == error->sequence) {
+                    printf("Caused by: %s:%d\n", qPrintable(m_callLog.at(i).file), m_callLog.at(i).line);
+                    break;
+                }
+            }
+#endif
             continue;
         }
+
+#ifdef Q_XCB_DEBUG
+        int i = 0;
+        for (; i < m_callLog.size(); ++i)
+            if (m_callLog.at(i).sequence >= event->sequence)
+                break;
+        m_callLog.remove(0, i);
+#endif
 
         if (response_type == XCB_CLIENT_MESSAGE
             && ((xcb_client_message_event_t *)event)->type == QXcbAtom::_QT_CLOSE_CONNECTION)
