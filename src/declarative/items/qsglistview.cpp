@@ -1,4 +1,4 @@
-// Commit: 68415b0bcc3e531dc16516aa6788aeef8bced6f2
+// Commit: ce38c6e3a9b7eb336cbd9cd1e9520a5000c8f8ac
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -2730,10 +2730,10 @@ void QSGListView::itemsInserted(int modelIndex, int count)
         if (d->currentItem) {
             d->currentItem->index = d->currentIndex;
             d->currentItem->setPosition(d->currentItem->position() + diff);
-        } else if (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared)) {
-            d->updateCurrent(0);
         }
         emit currentIndexChanged();
+    } else if (!d->itemCount && (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared))) {
+        d->updateCurrent(0);
     }
     // Update the indexes of the following visible items.
     for (; index < d->visibleItems.count(); ++index) {
@@ -2816,6 +2816,8 @@ void QSGListView::itemsRemoved(int modelIndex, int count)
         d->currentIndex = -1;
         if (d->itemCount)
             d->updateCurrent(qMin(modelIndex, d->itemCount-1));
+        else
+            emit currentIndexChanged();
     }
 
     // update visibleIndex
