@@ -4,5 +4,4 @@ TextEdit {
     width: 200
     text: "supercalifra"
     focus: true
-    cursorPosition: 12
 }

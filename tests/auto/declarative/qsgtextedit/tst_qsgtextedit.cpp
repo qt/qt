@@ -2223,6 +2223,7 @@ void tst_qsgtextedit::inputContextMouseHandler()
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
     QSGTextEdit *edit = qobject_cast<QSGTextEdit *>(view.rootObject());
     QVERIFY(edit);
+    edit->setCursorPosition(12);
 
     QFontMetricsF fm(edit->font());
     const qreal y = fm.height() / 2;
@@ -2334,6 +2335,7 @@ void tst_qsgtextedit::inputMethodComposing()
     QSGTextEdit *edit = qobject_cast<QSGTextEdit *>(view.rootObject());
     QVERIFY(edit);
     QSignalSpy spy(edit, SIGNAL(inputMethodComposingChanged()));
+    edit->setCursorPosition(12);
 
     QCOMPARE(edit->isInputMethodComposing(), false);
 
