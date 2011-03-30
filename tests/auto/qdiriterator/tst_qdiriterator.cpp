@@ -118,6 +118,7 @@ private slots:
     void longPath();
     void task185502_dirorder();
     void relativePaths();
+    void qtbug15421_hiddenDirs_hiddenFiles();
 };
 
 tst_QDirIterator::tst_QDirIterator()
@@ -163,6 +164,20 @@ tst_QDirIterator::tst_QDirIterator()
     createLink("nothing", "entrylist/brokenlink.lnk");
 #  endif
 #endif
+
+    createDirectory("qtbug15421_hiddenDirs_hiddenFiles");
+    createFile("qtbug15421_hiddenDirs_hiddenFiles/normalFile");
+    createFile("qtbug15421_hiddenDirs_hiddenFiles/.hiddenFile");
+    createDirectory("qtbug15421_hiddenDirs_hiddenFiles/normalDirectory");
+    createDirectory("qtbug15421_hiddenDirs_hiddenFiles/.hiddenDirectory");
+    createFile("qtbug15421_hiddenDirs_hiddenFiles/normalDirectory/normalFile");
+    createFile("qtbug15421_hiddenDirs_hiddenFiles/normalDirectory/.hiddenFile");
+    createFile("qtbug15421_hiddenDirs_hiddenFiles/.hiddenDirectory/normalFile");
+    createFile("qtbug15421_hiddenDirs_hiddenFiles/.hiddenDirectory/.hiddenFile");
+    createDirectory("qtbug15421_hiddenDirs_hiddenFiles/normalDirectory/normalDirectory");
+    createDirectory("qtbug15421_hiddenDirs_hiddenFiles/normalDirectory/.hiddenDirectory");
+    createDirectory("qtbug15421_hiddenDirs_hiddenFiles/.hiddenDirectory/normalDirectory");
+    createDirectory("qtbug15421_hiddenDirs_hiddenFiles/.hiddenDirectory/.hiddenDirectory");
 }
 
 tst_QDirIterator::~tst_QDirIterator()
@@ -530,6 +545,46 @@ void tst_QDirIterator::relativePaths()
     while(iterator.hasNext()) {
         QCOMPARE(iterator.filePath(), QDir::cleanPath(iterator.filePath()));
     }
+}
+
+void tst_QDirIterator::qtbug15421_hiddenDirs_hiddenFiles()
+{
+    // In Unix it is easy to create hidden files, but in Windows it requires
+    // a special call since hidden files need to be "marked" while in Unix
+    // anything starting by a '.' is a hidden file.
+    // For that reason this test is not run in Windows.
+#if defined Q_OS_WIN || Q_OS_WINCE
+    QSKIP("To create hidden files a special call is required in Windows.");
+#else
+    // Only files
+    {
+        int matches = 0;
+        int failures = 0;
+        QDirIterator di("qtbug15421_hiddenDirs_hiddenFiles", QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+        while (di.hasNext()) {
+            ++matches;
+            QString filename = di.next();
+            if (QFileInfo(filename).isDir())
+                ++failures;    // search was only supposed to find files
+        }
+        QCOMPARE(matches, 6);
+        QCOMPARE(failures, 0);
+    }
+    // Only directories
+    {
+        int matches = 0;
+        int failures = 0;
+        QDirIterator di("qtbug15421_hiddenDirs_hiddenFiles", QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+        while (di.hasNext()) {
+            ++matches;
+            QString filename = di.next();
+            if (!QFileInfo(filename).isDir())
+                ++failures;    // search was only supposed to find files
+        }
+        QCOMPARE(matches, 6);
+        QCOMPARE(failures, 0);
+    }
+#endif // Q_OS_WIN || Q_OS_WINCE
 }
 
 QTEST_MAIN(tst_QDirIterator)
