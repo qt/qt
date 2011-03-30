@@ -163,6 +163,8 @@ void QXcbConnection::setEventProcessingEnabled(bool enabled)
 
 QXcbConnection::~QXcbConnection()
 {
+    setEventProcessingEnabled(true);
+
     sendConnectionEvent(QXcbAtom::_QT_CLOSE_CONNECTION);
     wait();
 
