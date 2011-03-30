@@ -176,7 +176,7 @@ void QDeclarativeImageBase::load()
     Q_D(QDeclarativeImageBase);
 
     if (d->url.isEmpty()) {
-        d->pix.clear();
+        d->pix.clear(this);
         d->status = Null;
         d->progress = 0.0;
         setImplicitWidth(0);
@@ -191,6 +191,7 @@ void QDeclarativeImageBase::load()
             options |= QDeclarativePixmap::Asynchronous;
         if (d->cache)
             options |= QDeclarativePixmap::Cache;
+        d->pix.clear(this);
         d->pix.load(qmlEngine(this), d->url, d->explicitSourceSize ? sourceSize() : QSize(), options);
 
         if (d->pix.isLoading()) {
