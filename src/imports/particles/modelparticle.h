@@ -28,7 +28,7 @@ public:
 
     int modelCount() const;
 
-    virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
+    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
     virtual void load(ParticleData*);
     virtual void reload(ParticleData*);
     virtual void setCount(int c);

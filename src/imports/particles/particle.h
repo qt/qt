@@ -58,7 +58,7 @@ private slots:
 protected:
     virtual void reset() {;}
 
-//    virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *){
+//    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *){
 //        qDebug() << "Shouldn't be here..." << this;
 //        return 0;
 //    }
