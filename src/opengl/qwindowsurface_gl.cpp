@@ -371,6 +371,10 @@ QGLWindowSurface::QGLWindowSurface(QWidget *window)
     d_ptr->q_ptr = this;
     d_ptr->geometry_updated = false;
     d_ptr->did_paint = false;
+
+#ifdef QGL_NO_PRESERVED_SWAP
+    setPartialUpdateSupport(false);
+#endif
 }
 
 QGLWindowSurface::~QGLWindowSurface()
@@ -467,8 +471,16 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
         if (haveNOKSwapRegion)
             qDebug() << "Found EGL_NOK_swap_region2 extension. Using partial updates.";
     }
-    bool swapBehaviourPreserved = (ctx->d_func()->eglContext->configAttrib(EGL_SWAP_BEHAVIOR)
-                        || (ctx->d_func()->eglContext->configAttrib(EGL_SURFACE_TYPE)&EGL_SWAP_BEHAVIOR_PRESERVED_BIT));
+
+    bool swapBehaviourPreserved = ctx->d_func()->eglContext->configAttrib(EGL_SWAP_BEHAVIOR);
+    if (ctx->d_func()->eglContext->configAttrib(EGL_SURFACE_TYPE)&EGL_SWAP_BEHAVIOR_PRESERVED_BIT) {
+        EGLint swapBehavior;
+        if (eglQuerySurface(ctx->d_func()->eglContext->display(), ctx->d_func()->eglSurface
+                            , EGL_SWAP_BEHAVIOR, &swapBehavior)) {
+            swapBehaviourPreserved = (swapBehavior == EGL_BUFFER_PRESERVED);
+        }
+    }
+
     if (!swapBehaviourPreserved && !haveNOKSwapRegion)
         setPartialUpdateSupport(false); // Force full-screen updates
     else
@@ -514,6 +526,8 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
 
 void QGLWindowSurface::beginPaint(const QRegion &)
 {
+    updateGeometry();
+
     if (!context())
         return;
 
@@ -874,14 +888,22 @@ void QGLWindowSurface::updateGeometry() {
         ctx->d_func()->eglSurface = QEgl::createSurface(ctx->device(),
                                            ctx->d_func()->eglContext->config());
 
-#if !defined(QGL_NO_PRESERVED_SWAP)
-        eglGetError();  // Clear error state first.
-        eglSurfaceAttrib(QEgl::display(), ctx->d_func()->eglSurface,
-                                    EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
-        if (eglGetError() != EGL_SUCCESS) {
-            qWarning("QGLWindowSurface: could not restore preserved swap behaviour");
+        eglGetError();  // Clear error state.
+        if (hasPartialUpdateSupport()) {
+            eglSurfaceAttrib(ctx->d_func()->eglContext->display(),
+                                            ctx->d_func()->eglSurface,
+                                            EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
+
+            if (eglGetError() != EGL_SUCCESS)
+                qWarning("QGLWindowSurface: could not enable preserved swap behaviour");
+        } else {
+            eglSurfaceAttrib(ctx->d_func()->eglContext->display(),
+                                            ctx->d_func()->eglSurface,
+                                            EGL_SWAP_BEHAVIOR, EGL_BUFFER_DESTROYED);
+
+            if (eglGetError() != EGL_SUCCESS)
+                qWarning("QGLWindowSurface: could not enable destroyed swap behaviour");
         }
-#endif
     }
 #endif
 

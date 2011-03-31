@@ -944,7 +944,10 @@ QComboBox::QComboBox(bool rw, QWidget *parent, const char *name)
     to set and get item data (e.g., setItemData() and itemText()). You
     can also set a new model and view (with setModel() and setView()).
     For the text and icon in the combobox label, the data in the model
-    that has the Qt::DisplayRole and Qt::DecorationRole is used.
+    that has the Qt::DisplayRole and Qt::DecorationRole is used.  Note
+    that you cannot alter the \l{QAbstractItemView::}{SelectionMode}
+    of the view(), e.g., by using
+    \l{QAbstractItemView::}{setSelectionMode()}.
 
     \image qstyle-comboboxes.png Comboboxes in the different built-in styles.
 
@@ -2453,12 +2456,7 @@ void QComboBox::showPopup()
         // available screen geometry.This may override the vertical position, but it is more
         // important to show as much as possible of the popup.
         const int height = !boundToScreen ? listRect.height() : qMin(listRect.height(), screen.height());
-#ifdef Q_WS_S60
-        //popup needs to be stretched with screen minimum dimension
-        listRect.setHeight(qMin(screen.height(), screen.width()));
-#else
         listRect.setHeight(height);
-#endif
 
         if (boundToScreen) {
             if (listRect.top() < screen.top())

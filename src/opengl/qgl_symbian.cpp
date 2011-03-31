@@ -48,6 +48,7 @@
 #include <private/qgl_p.h>
 #include <private/qpaintengine_opengl_p.h>
 #include <private/qwidget_p.h> // to access QWExtra
+#include <private/qnativeimagehandleprovider_p.h>
 #include "qgl_egl_p.h"
 #include "qpixmapdata_gl_p.h"
 #include "qgltexturepool_p.h"
@@ -228,13 +229,20 @@ bool QGLContext::chooseContext(const QGLContext* shareContext) // almost same as
 
         d->eglSurface = QEgl::createSurface(device(), d->eglContext->config());
 
-#if !defined(QGL_NO_PRESERVED_SWAP)
-        eglGetError();  // Clear error state first.
-        eglSurfaceAttrib(QEgl::display(), d->eglSurface,
-                EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
-        if (eglGetError() != EGL_SUCCESS) {
-            qWarning("QGLContext: could not enable preserved swap");
-        }
+    eglGetError();  // Clear error state first.
+
+#ifdef QGL_NO_PRESERVED_SWAP
+    eglSurfaceAttrib(QEgl::display(), d->eglSurface,
+            EGL_SWAP_BEHAVIOR, EGL_BUFFER_DESTROYED);
+
+    if (eglGetError() != EGL_SUCCESS)
+        qWarning("QGLContext: could not enable destroyed swap behaviour");
+#else
+    eglSurfaceAttrib(QEgl::display(), d->eglSurface,
+            EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
+
+    if (eglGetError() != EGL_SUCCESS)
+        qWarning("QGLContext: could not enable preserved swap behaviour");
 #endif
 
         setWindowCreated(true);
@@ -404,6 +412,11 @@ void QGLPixmapData::fromNativeType(void* pixmap, NativeType type)
         m_hasAlpha = m_source.hasAlphaChannel();
         m_hasFillColor = false;
         m_dirty = true;
+    } else if (type == QPixmapData::NativeImageHandleProvider && pixmap) {
+        destroyTexture();
+        nativeImageHandleProvider = static_cast<QNativeImageHandleProvider *>(pixmap);
+        // Cannot defer the retrieval, we need at least the size right away.
+        createFromNativeImageHandleProvider();
     }
 }
 
@@ -416,6 +429,44 @@ void* QGLPixmapData::toNativeType(NativeType type)
     }
 
     return 0;
+}
+
+bool QGLPixmapData::initFromNativeImageHandle(void *handle, const QString &type)
+{
+    if (type == QLatin1String("RSgImage")) {
+        fromNativeType(handle, QPixmapData::SgImage);
+        return true;
+    } else if (type == QLatin1String("CFbsBitmap")) {
+        fromNativeType(handle, QPixmapData::FbsBitmap);
+        return true;
+    }
+    return false;
+}
+
+void QGLPixmapData::createFromNativeImageHandleProvider()
+{
+    void *handle = 0;
+    QString type;
+    nativeImageHandleProvider->get(&handle, &type);
+    if (handle) {
+        if (initFromNativeImageHandle(handle, type)) {
+            nativeImageHandle = handle;
+            nativeImageType = type;
+        } else {
+            qWarning("QGLPixmapData: Unknown native image type '%s'", qPrintable(type));
+        }
+    } else {
+        qWarning("QGLPixmapData: Native handle is null");
+    }
+}
+
+void QGLPixmapData::releaseNativeImageHandle()
+{
+    if (nativeImageHandleProvider && nativeImageHandle) {
+        nativeImageHandleProvider->release(nativeImageHandle, nativeImageType);
+        nativeImageHandle = 0;
+        nativeImageType = QString();
+    }
 }
 
 QT_END_NAMESPACE

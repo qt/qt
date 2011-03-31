@@ -1340,6 +1340,12 @@ void tst_qdeclarativetextedit::mouseSelection()
     else
         QVERIFY(str.isEmpty());
 
+    // Clicking and shift to clicking between the same points should select the same text.
+    textEditObject->setCursorPosition(0);
+    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, Qt::NoModifier, canvas->mapFromScene(QPoint(x1,y)));
+    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, Qt::ShiftModifier, canvas->mapFromScene(QPoint(x2,y)));
+    QCOMPARE(textEditObject->selectedText(), str);
+
     delete canvas;
 }
 
@@ -1435,6 +1441,12 @@ void tst_qdeclarativetextedit::mouseSelectionMode()
         QVERIFY(str.length() > 3);
         QVERIFY(str != text);
     }
+
+    // Clicking and shift to clicking between the same points should select the same text.
+    textEditObject->setCursorPosition(0);
+    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, Qt::NoModifier, canvas->mapFromScene(QPoint(x1,y)));
+    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, Qt::ShiftModifier, canvas->mapFromScene(QPoint(x2,y)));
+    QCOMPARE(textEditObject->selectedText(), str);
 
     delete canvas;
 }

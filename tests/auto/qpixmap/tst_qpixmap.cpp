@@ -641,9 +641,12 @@ void tst_QPixmap::mask()
 
     QVERIFY(!pm.isNull());
     QVERIFY(!bm.isNull());
-    // hw: todo: this will fail if the default pixmap format is
-    // argb32_premultiplied. The mask will be all 1's
-    QVERIFY(pm.mask().isNull());
+    if (!pm.hasAlphaChannel()) {
+        // This would fail if the default pixmap format is
+        // argb32_premultiplied. The mask will be all 1's.
+        // Therefore this is skipped when the alpha channel is present.
+        QVERIFY(pm.mask().isNull());
+    }
 
     QImage img = bm.toImage();
     QVERIFY(img.format() == QImage::Format_MonoLSB
