@@ -2282,8 +2282,9 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             //Need extra check since dialogs have their own theme background
             if (QS60StylePrivate::canDrawThemeBackground(option->palette.base(), widget)
                 && QS60StylePrivate::equalToThemePalette(option->palette.window().texture().cacheKey(), QPalette::Window)) {
+                    const bool comboMenu = qobject_cast<const QComboBoxListView *>(widget);
                     // Add margin area to the background, to avoid background being cut for first and last item.
-                    const int verticalMenuAdjustment = QS60StylePrivate::pixelMetric(PM_MenuVMargin);
+                    const int verticalMenuAdjustment = comboMenu ? QS60StylePrivate::pixelMetric(PM_MenuVMargin) : 0;
                     const QRect adjustedMenuRect = option->rect.adjusted(0, -verticalMenuAdjustment, 0, verticalMenuAdjustment);
                     QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_PopupBackground, painter, adjustedMenuRect, flags);
             } else {
@@ -2641,7 +2642,7 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         case CT_ItemViewItem:
             if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
                 if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
-                    sz = QSize(menuItem->rect.width(), 1);
+                    sz = QSize(menuItem->rect.width() - 2 * pixelMetric(PM_MenuHMargin) - 2 * QS60StylePrivate::pixelMetric(PM_FrameCornerWidth), 1);
                     break;
                 }
             }

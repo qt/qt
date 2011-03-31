@@ -298,6 +298,10 @@ bool QSoftKeyManagerPrivateS60::setSoftkey(CEikButtonGroupContainer &cba,
         QString text = softkeyText(*action);
         TPtrC nativeText = qt_QString2TPtrC(text);
         int command = S60_COMMAND_START + position;
+#ifdef SYMBIAN_VERSION_SYMBIAN3
+        if (softKeyCommandActions.contains(action))
+            command = softKeyCommandActions.value(action);
+#endif
         setNativeSoftkey(cba, position, command, nativeText);
         const bool dimmed = !action->isEnabled() && !QSoftKeyManager::isForceEnabledInSofkeys(action);
         cba.DimCommand(command, dimmed);
