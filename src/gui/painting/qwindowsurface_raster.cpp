@@ -410,11 +410,10 @@ bool QRasterWindowSurface::scroll(const QRegion &area, int dx, int dy)
 #endif
 }
 
-bool QRasterWindowSurface::hasStaticContentsSupport() const
+QWindowSurface::WindowSurfaceFeatures QRasterWindowSurface::features() const
 {
-    return true;
+    return QWindowSurface::AllFeatures;
 }
-
 
 void QRasterWindowSurface::prepareBuffer(QImage::Format format, QWidget *widget)
 {

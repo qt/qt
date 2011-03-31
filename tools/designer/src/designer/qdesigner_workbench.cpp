@@ -198,7 +198,7 @@ QDesignerWorkbench::QDesignerWorkbench()  :
     // Build main menu bar
     addMenu(m_globalMenuBar, tr("&File"), m_actionManager->fileActions()->actions());
 
-    QMenu *editMenu = addMenu(m_globalMenuBar, tr("Edit"), m_actionManager->editActions()->actions());
+    QMenu *editMenu = addMenu(m_globalMenuBar, tr("&Edit"), m_actionManager->editActions()->actions());
     editMenu->addSeparator();
     addActionsToMenu(editMenu, m_actionManager->toolActions()->actions());
 

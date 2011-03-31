@@ -136,6 +136,11 @@ void QMeeGoGraphicsSystemHelper::setSwapBehavior(SwapMode mode)
         QGLWindowSurface::swapBehavior = QGLWindowSurface::KillSwap;
 }
 
+void QMeeGoGraphicsSystemHelper::setSwitchPolicy(SwitchPolicy policy)
+{
+    QMeeGoRuntime::setSwitchPolicy(policy);
+}
+
 void QMeeGoGraphicsSystemHelper::enableSwitchEvents()
 {
     QMeeGoRuntime::enableSwitchEvents();

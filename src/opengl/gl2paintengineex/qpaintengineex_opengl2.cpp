@@ -90,10 +90,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_SYMBIAN)
-#define QT_GL_NO_SCISSOR_TEST
-#endif
-
 #if defined(Q_WS_WIN)
 extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif

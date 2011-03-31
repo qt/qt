@@ -809,8 +809,13 @@ void QWidgetPrivate::s60UpdateIsOpaque()
 {
     Q_Q(QWidget);
 
-    if (!q->testAttribute(Qt::WA_WState_Created) || !q->testAttribute(Qt::WA_TranslucentBackground))
+    if (!q->testAttribute(Qt::WA_WState_Created))
         return;
+
+    const bool writeAlpha = extraData()->nativePaintMode == QWExtra::BlitWriteAlpha;
+    if (!q->testAttribute(Qt::WA_TranslucentBackground) && !writeAlpha)
+        return;
+    const bool requireAlphaChannel = !isOpaque || writeAlpha;
 
     createTLExtra();
 
@@ -823,12 +828,11 @@ void QWidgetPrivate::s60UpdateIsOpaque()
         return;
     }
 #endif
-    if (!isOpaque) {
+    if (requireAlphaChannel) {
         const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
         if (window->SetTransparencyAlphaChannel() == KErrNone) {
             window->SetBackgroundColor(TRgb(255, 255, 255, 0));
             extra->topextra->nativeWindowTransparencyEnabled = 1;
-
             if (extra->topextra->backingStore.data() && (
                     QApplicationPrivate::graphics_system_name == QLatin1String("openvg")
                     || QApplicationPrivate::graphics_system_name == QLatin1String("opengl"))) {

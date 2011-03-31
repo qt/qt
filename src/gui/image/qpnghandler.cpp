@@ -506,8 +506,8 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
     state = ReadingEnd;
     png_read_end(png_ptr, end_info);
 
-    readPngTexts(end_info);
 #ifndef QT_NO_IMAGE_TEXT
+    readPngTexts(end_info);
     for (int i = 0; i < readTexts.size()-1; i+=2)
         outImage->setText(readTexts.at(i), readTexts.at(i+1));
 #endif

@@ -194,6 +194,8 @@ void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index
     }
 }
 
+#ifndef QT_NO_GESTURES
+
 // stores and restores the selection and current item when flicking
 void QAbstractItemViewPrivate::_q_scrollerStateChanged()
 {
@@ -225,6 +227,7 @@ void QAbstractItemViewPrivate::_q_scrollerStateChanged()
     }
 }
 
+#endif // QT_NO_GESTURES
 
 /*!
     \class QAbstractItemView
@@ -1661,7 +1664,9 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
         break;
     case QEvent::ScrollPrepare:
         executeDelayedItemsLayout();
+#ifndef QT_NO_GESTURES
         connect(QScroller::scroller(d->viewport), SIGNAL(stateChanged(QScroller::State)), this, SLOT(_q_scrollerStateChanged()), Qt::UniqueConnection);
+#endif
         break;
 
     default:

@@ -108,7 +108,7 @@ public:
 
     QImage *buffer(const QWidget *widget);
 
-    bool hasPartialUpdateSupport() const;
+    WindowSurfaceFeatures features() const;
 
     QGLContext *context() const;
 

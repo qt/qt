@@ -60,16 +60,16 @@
 
 // 10 predefined (but random() seek positions
 // hardcoded to be comparable over several runs
-const int seekpos[] = {TF_SIZE*0.52,
-                       TF_SIZE*0.23,
-                       TF_SIZE*0.73,
-                       TF_SIZE*0.77,
-                       TF_SIZE*0.80,
-                       TF_SIZE*0.12,
-                       TF_SIZE*0.53,
-                       TF_SIZE*0.21,
-                       TF_SIZE*0.27,
-                       TF_SIZE*0.78};
+const int seekpos[] = {int(TF_SIZE*0.52),
+                       int(TF_SIZE*0.23),
+                       int(TF_SIZE*0.73),
+                       int(TF_SIZE*0.77),
+                       int(TF_SIZE*0.80),
+                       int(TF_SIZE*0.12),
+                       int(TF_SIZE*0.53),
+                       int(TF_SIZE*0.21),
+                       int(TF_SIZE*0.27),
+                       int(TF_SIZE*0.78)};
 
 const int sp_size = sizeof(seekpos)/sizeof(int);
 
