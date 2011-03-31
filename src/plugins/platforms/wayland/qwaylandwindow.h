@@ -44,7 +44,6 @@
 
 #include <QtGui/QPlatformWindow>
 
-#include <stdint.h>
 #include "qwaylanddisplay.h"
 
 class QWaylandDisplay;

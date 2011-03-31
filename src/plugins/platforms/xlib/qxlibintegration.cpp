@@ -141,11 +141,12 @@ bool QXlibIntegration::hasOpenGL() const
     static bool wasEglInitialized = false;
     if (!eglHasbeenInitialized) {
         eglHasbeenInitialized = true;
-        const QXlibScreen *screen = static_cast<const QXlibScreen *>(mScreens.at(0));
+        QXlibScreen *screen = static_cast<QXlibScreen *>(mScreens.at(0));
         EGLint major, minor;
         eglBindAPI(EGL_OPENGL_ES_API);
         EGLDisplay disp = eglGetDisplay(screen->display()->nativeDisplay());
         wasEglInitialized = eglInitialize(disp,&major,&minor);
+        screen->setEglDisplay(disp);
     }
     return wasEglInitialized;
 #endif

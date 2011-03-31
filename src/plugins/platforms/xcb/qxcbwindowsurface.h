@@ -48,6 +48,8 @@
 
 #include "qxcbobject.h"
 
+#include <QMutex>
+
 class QXcbShmImage;
 
 class QXcbWindowSurface : public QXcbObject, public QWindowSurface
@@ -62,9 +64,11 @@ public:
     bool scroll(const QRegion &area, int dx, int dy);
 
     void beginPaint(const QRegion &);
+    void endPaint(const QRegion &);
 
 private:
     QXcbShmImage *m_image;
+    QMutex m_surfaceLock;
 };
 
 #endif

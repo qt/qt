@@ -1,5 +1,4 @@
-/****************************************************************************
-**
+/**************************************************************************** **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
@@ -45,7 +44,12 @@
 #include <xcb/xcb.h>
 
 #include <QList>
-#include <QObject>
+#include <QMutex>
+#include <QVector>
+#include <QWaitCondition>
+#include <QThread>
+
+#define Q_XCB_DEBUG
 
 class QXcbScreen;
 
@@ -88,6 +92,10 @@ namespace QXcbAtom {
 
         _QT_SCROLL_DONE,
         _QT_INPUT_ENCODING,
+
+        // Qt/XCB specific
+        _QT_CLOSE_CONNECTION,
+        _QT_PAUSE_CONNECTION,
 
         _MOTIF_WM_HINTS,
 
@@ -214,12 +222,14 @@ namespace QXcbAtom {
 
 class QXcbKeyboard;
 
-class QXcbConnection : public QObject
+class QXcbConnection : public QThread
 {
     Q_OBJECT
 public:
     QXcbConnection(const char *displayName = 0);
     ~QXcbConnection();
+
+    QXcbConnection *connection() const { return const_cast<QXcbConnection *>(this); }
 
     QList<QXcbScreen *> screens() const { return m_screens; }
     int primaryScreen() const { return m_primaryScreen; }
@@ -231,6 +241,8 @@ public:
     xcb_connection_t *xcb_connection() const { return m_connection; }
 
     QXcbKeyboard *keyboard() const { return m_keyboard; }
+
+    void setEventProcessingEnabled(bool enabled);
 
 #ifdef XCB_USE_XLIB
     void *xlib_display() const { return m_xlib_display; }
@@ -247,11 +259,14 @@ public:
     void *egl_display() const { return m_egl_display; }
 #endif
 
-private slots:
-    void eventDispatcher();
+    void sync();
+
+protected:
+    void run();
 
 private:
     void initializeAllAtoms();
+    void sendConnectionEvent(QXcbAtom::Atom atom, uint id = 0);
 #ifdef XCB_USE_DRI2
     void initializeDri2();
 #endif
@@ -265,6 +280,12 @@ private:
     xcb_atom_t m_allAtoms[QXcbAtom::NAtoms];
 
     QByteArray m_displayName;
+
+    xcb_window_t m_connectionEventListener;
+    QMutex m_connectionLock;
+    QWaitCondition m_connectionWaitCondition;
+    QAtomicInt m_pauseId;
+    bool m_enabled;
 
     QXcbKeyboard *m_keyboard;
 
@@ -283,9 +304,38 @@ private:
     void *m_egl_display;
     bool m_has_egl;
 #endif
+#ifdef Q_XCB_DEBUG
+    struct CallInfo {
+        int sequence;
+        QByteArray file;
+        int line;
+    };
+    QVector<CallInfo> m_callLog;
+    QMutex m_callLogMutex;
+    void log(const char *file, int line, int sequence);
+    template <typename cookie_t>
+    friend cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection, const char *file, int line);
+#endif
 };
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))
+
+#ifdef Q_XCB_DEBUG
+template <typename cookie_t>
+cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection, const char *file, int line)
+{
+    connection->log(file, line, cookie.sequence);
+    return cookie;
+}
+#define Q_XCB_CALL(x) q_xcb_call_template(x, connection(), __FILE__, __LINE__)
+#define Q_XCB_CALL2(x, connection) q_xcb_call_template(x, connection, __FILE__, __LINE__)
+#define Q_XCB_NOOP(c) q_xcb_call_template(xcb_no_operation(c->xcb_connection()), c, __FILE__, __LINE__);
+#else
+#define Q_XCB_CALL(x) x
+#define Q_XCB_CALL2(x, connection) x
+#define Q_XCB_NOOP(c)
+#endif
+
 
 #if defined(XCB_USE_DRI2) || defined(XCB_USE_EGL)
 #define EGL_DISPLAY_FROM_XCB(object) ((EGLDisplay)(object->connection()->egl_display()))

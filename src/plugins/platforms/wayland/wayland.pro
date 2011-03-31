@@ -22,29 +22,27 @@ HEADERS =   qwaylandintegration.h \
             qwaylandwindow.h \
             qwaylandscreen.h \
             qwaylandshmsurface.h \
-            qwaylanddrmsurface.h \
             qwaylandbuffer.h \
-            qwaylandinclude.h \
-            qwaylandeglwindow.h \
             qwaylandshmwindow.h
 
 INCLUDEPATH += $$QMAKE_INCDIR_WAYLAND
 LIBS += $$QMAKE_LIBS_WAYLAND
 QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_WAYLAND
 
-contains(QT_CONFIG, opengles2) {
-    QT += opengl
-    LIBS += -lwayland-egl -lEGL
+INCLUDEPATH += $$PWD
 
-    SOURCES += qwaylanddrmsurface.cpp \
-            qwaylandglcontext.cpp \
-            ../eglconvenience/qeglconvenience.cpp \
-            qwaylandeglwindow.cpp
-
-    HEADERS += qwaylandglcontext.h \
-            ../eglconvenience/qeglconvenience.h \
-
+contains(QT_CONFIG, opengl) {
     DEFINES += QT_WAYLAND_GL_SUPPORT
+    QT += opengl
+
+    contains(QT_CONFIG, opengles2) {
+        CONFIG += wayland_egl
+        #CONFIG += xpixmap_egl
+    } else {
+        CONFIG += xpixmap_glx    
+    }
+
+    include ($$PWD/gl_integration/gl_integration.pri)
 }
 
 include (../fontdatabases/genericunix/genericunix.pri)

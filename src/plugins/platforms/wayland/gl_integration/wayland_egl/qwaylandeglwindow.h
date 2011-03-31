@@ -43,6 +43,8 @@
 #define QWAYLANDEGLWINDOW_H
 
 #include "qwaylandwindow.h"
+#include "qwaylandeglinclude.h"
+#include "qwaylandeglintegration.h"
 
 class QWaylandGLContext;
 
@@ -58,6 +60,7 @@ public:
 protected:
     void newSurfaceCreated();
 private:
+    QWaylandEglIntegration *mEglIntegration;
     QWaylandGLContext *mGLContext;
     struct wl_egl_window *mWaylandEglWindow;
     EGLConfig mConfig;

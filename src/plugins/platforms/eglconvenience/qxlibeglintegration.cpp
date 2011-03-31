@@ -52,12 +52,10 @@ static int countBits(unsigned long mask)
     return count;
 }
 
-VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLConfig config)
+VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay eglDisplay, EGLConfig config)
 {
     VisualID    visualId = 0;
     EGLint      eglValue = 0;
-
-    EGLDisplay eglDisplay = eglGetDisplay(display);
 
     EGLint configRedSize = 0;
     eglGetConfigAttrib(eglDisplay, config, EGL_RED_SIZE, &configRedSize);

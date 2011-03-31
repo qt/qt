@@ -48,11 +48,11 @@
 
 class QGLFramebufferObject;
 
-class QWaylandDrmWindowSurface : public QWindowSurface
+class QWaylandGLWindowSurface : public QWindowSurface
 {
 public:
-    QWaylandDrmWindowSurface(QWidget *window);
-    ~QWaylandDrmWindowSurface();
+    QWaylandGLWindowSurface(QWidget *window);
+    ~QWaylandGLWindowSurface();
 
     void beginPaint(const QRegion &);
 
@@ -62,7 +62,6 @@ public:
     void resize(const QSize &size);
 
 private:
-
     QWaylandDisplay *mDisplay;
     QGLFramebufferObject *mPaintDevice;
 };
