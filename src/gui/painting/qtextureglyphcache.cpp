@@ -134,9 +134,13 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         if (!supportsSubPixelPositions) {
             m_subPixelPositionCount = 1;
         } else {
+#if !defined(Q_WS_X11)
             int i = 0;
             while (m_subPixelPositionCount == 0 && i < numGlyphs)
                 m_subPixelPositionCount = calculateSubPixelPositionCount(glyphs[i++]);
+#else
+            m_subPixelPositionCount = 4;
+#endif
         }
     }
 
@@ -234,6 +238,11 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
             }
         }
 
+        if (maxTextureHeight() > 0 && m_cy + c.h > maxTextureHeight()) {
+            // We can't make a cache of the required size, so we bail out
+            return false;
+        }
+
         c.x = m_cx;
         c.y = m_cy;
 
@@ -307,9 +316,11 @@ QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g, QFixed subPixelPosition
 
         QFontEngineFT *ft = static_cast<QFontEngineFT*> (m_current_fontengine);
         QFontEngineFT::QGlyphSet *gset = ft->loadTransformedGlyphSet(m_transform);
+        QFixedPoint positions[1];
+        positions[0].x = subPixelPosition;
 
-        if (gset && ft->loadGlyphs(gset, &g, 1, format)) {
-            QFontEngineFT::Glyph *glyph = gset->getGlyph(g);
+        if (gset && ft->loadGlyphs(gset, &g, 1, positions, format)) {
+            QFontEngineFT::Glyph *glyph = gset->getGlyph(g, subPixelPosition);
             const int bytesPerLine = (format == QFontEngineFT::Format_Mono ? ((glyph->width + 31) & ~31) >> 3
                                : (glyph->width + 3) & ~3);
             return QImage(glyph->data, glyph->width, glyph->height, bytesPerLine, imageFormat);
@@ -356,7 +367,7 @@ void QImageTextureGlyphCache::createTextureData(int width, int height)
 
 int QImageTextureGlyphCache::glyphMargin() const
 {
-#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+#if (defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)) || defined(Q_WS_X11)
     return 0;
 #else
     return m_type == QFontEngineGlyphCache::Raster_RGBMask ? 2 : 0;

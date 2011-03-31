@@ -1577,8 +1577,13 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     // cache so this text is performed before we test if the cache size has changed.
     if (recreateVertexArrays) {
         cache->setPaintEnginePrivate(this);
-        cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
-                        staticTextItem->glyphs, staticTextItem->glyphPositions);
+        if (!cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
+                             staticTextItem->glyphs, staticTextItem->glyphPositions)) {
+            // No space for glyphs in cache. We need to reset it and try again.
+            cache->clear();
+            cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
+                            staticTextItem->glyphs, staticTextItem->glyphPositions);
+        }
         cache->fillInPendingGlyphs();
     }
 
