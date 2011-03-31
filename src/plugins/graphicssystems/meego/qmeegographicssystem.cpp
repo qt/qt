@@ -170,7 +170,7 @@ bool QMeeGoGraphicsSystemSwitchHandler::eventFilter(QObject *object, QEvent *eve
                 if (visibleWidgets() == 0)
                     QMeeGoGraphicsSystem::switchToRaster();
             } else {
-                if (visibleWidgets() == 1)
+                if (visibleWidgets() > 0)
                     QMeeGoGraphicsSystem::switchToMeeGo();
             }
         }
