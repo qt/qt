@@ -133,6 +133,18 @@ QSize QDeclarativeImageBase::sourceSize() const
     return QSize(width != -1 ? width : d->pix.width(), height != -1 ? height : d->pix.height());
 }
 
+void QDeclarativeImageBase::resetSourceSize()
+{
+    Q_D(QDeclarativeImageBase);
+    if (!d->explicitSourceSize)
+        return;
+    d->explicitSourceSize = false;
+    d->sourcesize = QSize();
+    emit sourceSizeChanged();
+    if (isComponentComplete())
+        load();
+}
+
 bool QDeclarativeImageBase::cache() const
 {
     Q_D(const QDeclarativeImageBase);
