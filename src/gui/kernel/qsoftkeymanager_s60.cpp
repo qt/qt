@@ -113,12 +113,20 @@ void QSoftKeyManagerPrivateS60::ensureCbaVisibilityAndResponsiviness(CEikButtonG
 
 void QSoftKeyManagerPrivateS60::clearSoftkeys(CEikButtonGroupContainer &cba)
 {
+#ifdef SYMBIAN_VERSION_SYMBIAN3
+    QT_TRAP_THROWING(
+        //EAknSoftkeyEmpty is used, because using -1 adds softkeys without actions on Symbian3
+        cba.SetCommandL(0, EAknSoftkeyEmpty, KNullDesC);
+        cba.SetCommandL(2, EAknSoftkeyEmpty, KNullDesC);
+    );
+#else
     QT_TRAP_THROWING(
         //Using -1 instead of EAknSoftkeyEmpty to avoid flickering.
         cba.SetCommandL(0, -1, KNullDesC);
         // TODO: Should we clear also middle SK?
         cba.SetCommandL(2, -1, KNullDesC);
     );
+#endif
     realSoftKeyActions.clear();
 }
 

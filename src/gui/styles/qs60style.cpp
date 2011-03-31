@@ -2556,17 +2556,16 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                         tb->sizePolicy().horizontalPolicy() == QSizePolicy::Maximum) && tb->orientation() == Qt::Horizontal;
 
                 if (parentCanGrowHorizontally) {
-                    int visibleButtons = 0;
+                    int buttons = 0;
                     //Make the auto-stretch to happen only for horizontal orientation
                     if (tb && tb->orientation() == Qt::Horizontal) {
                         QList<QAction*> actionList =  tb->actions();
                         for (int i = 0; i < actionList.count(); i++) {
-                            if (actionList.at(i)->isVisible())
-                                visibleButtons++;
+                            buttons++;
                         }
                     }
 
-                    if (widget->parentWidget() && visibleButtons > 0) {
+                    if (widget->parentWidget() && buttons > 0) {
                         QWidget *w = const_cast<QWidget *>(widget);
                         int toolBarMaxWidth = 0;
                         int totalMargin = 0;
@@ -2589,7 +2588,7 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                         toolBarMaxWidth -= totalMargin;
 
                         //ensure that buttons are side-by-side and not on top of each other
-                        const int toolButtonWidth = (toolBarMaxWidth / visibleButtons)
+                        const int toolButtonWidth = (toolBarMaxWidth / buttons)
                                 - pixelMetric(QStyle::PM_ToolBarItemSpacing)
                                 - pixelMetric(QStyle::PM_ToolBarItemMargin)
                         //toolbar frame needs to be reduced again, since QToolBarLayout adds it for each toolbar action
