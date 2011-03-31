@@ -155,10 +155,6 @@ void runScenario()
         const char *mmh = "test\0foo";
         QCOMPARE(QByteArray(ba P mmh P ba), testWith0);
 
-        char mmh2[5];
-        strncpy(mmh2, mmh, 5);
-        QCOMPARE(QByteArray(ba P mmh2 P ba), testWith0);
-
         QByteArray raw = QByteArray::fromRawData(UTF8_LITERAL_EXTRA, UTF8_LITERAL_LEN);
         QByteArray r = "hello" P raw;
         QByteArray r2 = "hello" UTF8_LITERAL;
