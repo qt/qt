@@ -147,7 +147,7 @@ static QByteArray qt_prettyDebug(const char *data, int len, int maxSize)
 
 void QSymbianSocketEnginePrivate::getPortAndAddress(const TInetAddr& a, quint16 *port, QHostAddress *addr)
 {
-    if (a.Family() == KAfInet6) {
+    if (a.Family() == KAfInet6 && !a.IsV4Compat() && !a.IsV4Mapped()) {
         Q_IPV6ADDR tmp;
         memcpy(&tmp, a.Ip6Address().u.iAddr8, sizeof(tmp));
         if (addr) {
@@ -226,12 +226,7 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
 void QSymbianSocketEnginePrivate::setPortAndAddress(TInetAddr& nativeAddr, quint16 port, const QHostAddress &addr)
 {
     nativeAddr.SetPort(port);
-    if (addr == QHostAddress::Any) {
-        //Should allow both IPv4 and IPv6
-        //Listening on "0.0.0.0" accepts ONLY ipv4 connections
-        //Listening on "::" accepts ONLY ipv6 connections
-        nativeAddr.SetFamily(KAFUnspec);
-    } else if (addr.protocol() == QAbstractSocket::IPv6Protocol) {
+    if (addr.protocol() == QAbstractSocket::IPv6Protocol) {
         TPckgBuf<TSoInetIfQuery> query;
         query().iName = qt_QString2TPtrC(addr.scopeId());
         TInt err = nativeSocket.GetOpt(KSoInetIfQueryByName, KSolInetIfQuery, query);
@@ -274,7 +269,6 @@ QSymbianSocketEngine::QSymbianSocketEngine(QObject *parent)
 QSymbianSocketEngine::~QSymbianSocketEngine()
 {
     close();
-    // FIXME what else do we need to free?
 }
 
 /*!
@@ -650,7 +644,15 @@ bool QSymbianSocketEngine::bind(const QHostAddress &address, quint16 port)
     Q_CHECK_STATE(QSymbianSocketEngine::bind(), QAbstractSocket::UnconnectedState, false);
 
     TInetAddr nativeAddr;
-    d->setPortAndAddress(nativeAddr, port, address);
+    if (address == QHostAddress::Any || address == QHostAddress::AnyIPv6) {
+        //Should allow both IPv4 and IPv6
+        //Listening on "0.0.0.0" accepts ONLY ipv4 connections
+        //Listening on "::" accepts ONLY ipv6 connections
+        nativeAddr.SetFamily(KAFUnspec);
+        nativeAddr.SetPort(port);
+    } else {
+        d->setPortAndAddress(nativeAddr, port, address);
+    }
 
     TInt err = d->nativeSocket.Bind(nativeAddr);
 #ifdef __WINS__
@@ -684,6 +686,11 @@ bool QSymbianSocketEngine::bind(const QHostAddress &address, quint16 port)
     d->socketState = QAbstractSocket::BoundState;
 
     d->fetchConnectionParameters();
+
+    // When we bind to unspecified address (to get a dual mode socket), report back the
+    // same type of address that was requested. This is required for SOCKS proxy to work.
+    if (nativeAddr.Family() == KAFUnspec)
+        d->localAddress = address;
     return true;
 }
 
@@ -693,8 +700,6 @@ bool QSymbianSocketEngine::listen()
     Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::listen(), false);
     Q_CHECK_STATE(QSymbianSocketEngine::listen(), QAbstractSocket::BoundState, false);
     Q_CHECK_TYPE(QSymbianSocketEngine::listen(), QAbstractSocket::TcpSocket, false);
-   // TODO the value 50 is from the QNativeSocketEngine. Maybe it's a bit too much
-    // for a mobile platform
     TInt err = d->nativeSocket.Listen(50);
     if (err) {
         d->setError(err);
@@ -898,17 +903,7 @@ bool QSymbianSocketEnginePrivate::fetchConnectionParameters()
     getPortAndAddress(addr, &localPort, &localAddress);
 
     // Determine protocol family
-    switch (addr.Family()) {
-    case KAfInet:
-        socketProtocol = QAbstractSocket::IPv4Protocol;
-        break;
-    case KAfInet6:
-        socketProtocol = QAbstractSocket::IPv6Protocol;
-        break;
-    default:
-        socketProtocol = QAbstractSocket::UnknownNetworkLayerProtocol;
-        break;
-    }
+    socketProtocol = localAddress.protocol();
 
     // Determine the remote address
     nativeSocket.RemoteName(addr);
