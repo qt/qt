@@ -4162,14 +4162,8 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     // some progress should have been made
     QVERIFY(!spy.isEmpty());
     QList<QVariant> args = spy.last();
-    qDebug() << "tst_QNetworkReply::ioPostToHttpsUploadProgress"
-            << args.at(0).toLongLong()
-            << sourceFile.size()
-            << spy.size();
     QVERIFY(args.at(0).toLongLong() > 0);
-    // FIXME this is where it messes up
 
-    QEXPECT_FAIL("", "Either the readBufferSize of QSslSocket is broken or we do upload too much. Hm.", Abort);
     QVERIFY(args.at(0).toLongLong() != sourceFile.size());
 
     incomingSocket->setReadBufferSize(32*1024);
