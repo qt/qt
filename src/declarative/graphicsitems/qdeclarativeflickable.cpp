@@ -399,7 +399,7 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
 
     \section1 Example Usage
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage flickable.gif
     \enddiv
 

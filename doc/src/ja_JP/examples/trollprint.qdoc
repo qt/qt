@@ -136,12 +136,12 @@
     変更すべき行は4行あります。
     ラジオボタンの最初のペアの \c tr() 呼び出しに、2つ目の引数 "two-sided"(両面) をに追加します:
 
-    \snippet doc/src/snippets/code/doc_src_examples_trollprint.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_examples_trollprint.cpp 0
 
     そして、ラジオボタンの2番目のペアの \c tr() 呼び出しに、
     2つ目の引数 "colors"(色) を追加します。
 
-    \snippet doc/src/snippets/code/doc_src_examples_trollprint.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_examples_trollprint.cpp 1
 
     ここで、\c lupdate を実行し、\e {Qt Linguist} で
     \c trollprint_pt.ts を開きます。2 つの変更個所がわかるはずです。
@@ -184,7 +184,7 @@
     これは、ソースコードで \c TRANSLATOR
     コメントを使用して行います:
 
-    \snippet doc/src/snippets/code/doc_src_examples_trollprint.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_examples_trollprint.cpp 2
 
     一部のソースファイル、特にダイアログクラスのコメントに
     ダイアログに到達するまでに必要な操作を記述します。
@@ -201,7 +201,7 @@
     コメントは役立つナビゲーション情報を提供するため、
     翻訳に要する時間を節約できます:
 
-    \snippet doc/src/snippets/code/doc_src_examples_trollprint.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_examples_trollprint.cpp 3
 
     \section1 Troll Print 1.1
 
