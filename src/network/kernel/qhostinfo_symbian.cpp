@@ -60,6 +60,25 @@ const TInt KErrDndAddrNotFound = -5121; // Returned when no data found for GetBy
 
 QT_BEGIN_NAMESPACE
 
+static void setError_helper(QHostInfo &info, TInt symbianError)
+{
+    switch (symbianError) {
+    case KErrDndNameNotFound:
+    case KErrDndAddrNotFound:
+    case KErrNotFound:
+    case KErrEof:
+        // various "no more results" error codes
+        info.setError(QHostInfo::HostNotFound);
+        info.setErrorString(QObject::tr("Host not found"));
+        break;
+    default:
+        // Unknown error
+        info.setError(QHostInfo::UnknownError);
+        info.setErrorString(QSystemError(symbianError, QSystemError::NativeError).toString());
+        break;
+    }
+}
+
 QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetworkSession> networkSession)
 {
     QHostInfo results;
@@ -75,9 +94,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetw
     else
         err = hostResolver.Open(socketServ, KAfInet, KProtocolInetUdp);
     if (err) {
-        results.setError(QHostInfo::UnknownError);
-        results.setErrorString(QSystemError(err,QSystemError::NativeError).toString());
-
+        setError_helper(results, err);
         return results;
     }
 
@@ -97,20 +114,11 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetw
         // Synchronous request. nameResult returns Host Name.
         err = hostResolver.GetByAddress(IpAdd, nameResult);
         if (err) {
-            // TODO - Could there be other errors? Symbian docs don't say.
-            if (err == KErrDndAddrNotFound) {
-                results.setError(QHostInfo::HostNotFound);
-                results.setErrorString(tr("Host not found"));
-            } else {
-                results.setError(QHostInfo::UnknownError);
-                results.setErrorString(QSystemError(err,QSystemError::NativeError).toString());
-            }
-
-            return results;
+            setError_helper(results, err);
+        } else {
+            results.setHostName(qt_TDesC2QString(nameResult().iName));
+            results.setAddresses(QList<QHostAddress>() << address);
         }
-
-        results.setHostName(qt_TDesC2QString(nameResult().iName));
-        results.setAddresses(QList<QHostAddress>() << address);
         return results;
     }
 
@@ -132,15 +140,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetw
     // Synchronous request.
     err = hostResolver.GetByName(qt_QString2TPtrC(QString::fromLatin1(aceHostname)), nameResult);
     if (err) {
-        // TODO - Could there be other errors? Symbian docs don't say.
-        if (err == KErrDndNameNotFound) {
-            results.setError(QHostInfo::HostNotFound);
-            results.setErrorString(tr("Host not found"));
-        } else {
-            results.setError(QHostInfo::UnknownError);
-            results.setErrorString(QSystemError(err,QSystemError::NativeError).toString());
-        }
-
+        setError_helper(results, err);
         return results;
     }
 
@@ -246,9 +246,7 @@ void QSymbianHostResolver::requestHostLookup()
 #endif
     }
     if (err) {
-        iResults.setError(QHostInfo::UnknownError);
-        iResults.setErrorString(QSystemError(err, QSystemError::NativeError).toString());
-
+        setError_helper(iResults, err);
     } else {
 
         if (iAddress.setAddress(iHostName)) {
@@ -324,6 +322,7 @@ void QSymbianHostResolver::run()
         returnResults();
         break;
     default:
+        qWarning("QSymbianHostResolver internal error, bad state in run()");
         iResults.setError(QHostInfo::UnknownError);
         iResults.setErrorString(QSystemError(KErrCorrupt,QSystemError::NativeError).toString());
         returnResults();
@@ -332,6 +331,11 @@ void QSymbianHostResolver::run()
 
 void QSymbianHostResolver::returnResults()
 {
+#if defined(QHOSTINFO_DEBUG)
+    qDebug() << "QSymbianHostResolver::returnResults" << iResults.error() << iResults.errorString();
+    foreach (QHostAddress addr, iResults.addresses())
+        qDebug() << addr;
+#endif
     iState = EIdle;
 
     QSymbianHostInfoLookupManger *manager = QSymbianHostInfoLookupManger::globalInstance();
@@ -350,8 +354,7 @@ TInt QSymbianHostResolver::RunError(TInt aError)
         QSymbianHostInfoLookupManger *manager = QSymbianHostInfoLookupManger::globalInstance();
         manager->lookupFinished(this);
 
-        iResults.setError(QHostInfo::UnknownError);
-        iResults.setErrorString(QSystemError(aError,QSystemError::NativeError).toString());
+        setError_helper(iResults, aError);
 
         resultEmitter.emitResultsReady(iResults);
     }
@@ -386,22 +389,17 @@ void QSymbianHostResolver::processNameResult()
         iHostResolver.Next(iNameResult, iStatus);
         SetActive();
     }
-    else if (iStatus.Int() == KErrDndNameNotFound) {
+    else {
         // No more addresses, so return the results (or an error if there aren't any).
+#if defined(QHOSTINFO_DEBUG)
+        qDebug() << "QSymbianHostResolver::processNameResult with err=" << iStatus.Int() << "count=" << iHostAddresses.count();
+#endif
         if (iHostAddresses.count() > 0) {
             iResults.setAddresses(iHostAddresses);
         } else {
             iState = EError;
-            iResults.setError(QHostInfo::HostNotFound);
-            iResults.setErrorString(QObject::tr("Host not found"));
+            setError_helper(iResults, iStatus.Int());
         }
-        returnResults();
-    }
-    else {
-        // Unknown error
-        iState = EError;
-        iResults.setError(QHostInfo::UnknownError);
-        iResults.setErrorString(QSystemError(iStatus.Int(),QSystemError::NativeError).toString());
         returnResults();
     }
 }
@@ -411,21 +409,11 @@ void QSymbianHostResolver::processAddressResult()
     TInt err = iStatus.Int();
 
     if (err < 0) {
-        // TODO - Could there be other errors? Symbian docs don't say.
-        if (err == KErrDndAddrNotFound) {
-            iResults.setError(QHostInfo::HostNotFound);
-            iResults.setErrorString(QObject::tr("Host not found"));
-        } else {
-            iResults.setError(QHostInfo::UnknownError);
-            iResults.setErrorString(QSystemError(err,QSystemError::NativeError).toString());
-        }
-
-        returnResults();
-        return;
+        setError_helper(iResults, err);
+    } else {
+        iResults.setHostName(qt_TDesC2QString(iNameResult().iName));
+        iResults.setAddresses(QList<QHostAddress>() << iAddress);
     }
-
-    iResults.setHostName(qt_TDesC2QString(iNameResult().iName));
-    iResults.setAddresses(QList<QHostAddress>() << iAddress);
     returnResults();
 }
 
