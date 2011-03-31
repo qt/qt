@@ -564,6 +564,8 @@ void qt_init(QApplicationPrivate *priv, int type)
     init_platform(QLatin1String(platformName), platformPluginPath);
     init_plugins(pluginList);
 
+    QApplication::processEvents();
+
     QColormap::initialize();
     QFont::initialize();
 #ifndef QT_NO_CURSOR
