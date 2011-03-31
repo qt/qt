@@ -65,7 +65,7 @@ public:
     uint filterMode : 2;
 };
 
-class QSGPlainTexture : public QSGTexture
+class Q_DECLARATIVE_EXPORT QSGPlainTexture : public QSGTexture
 {
 public:
     QSGPlainTexture();
