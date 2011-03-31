@@ -1451,7 +1451,8 @@ void QWidget::activateWindow()
     if (tlw->isVisible()) {
         window()->createWinId();
         QSymbianControl *id = static_cast<QSymbianControl *>(tlw->internalWinId());
-        id->setFocusSafely(true);
+        if (!id->IsFocused())
+            id->setFocusSafely(true);
     }
 }
 
