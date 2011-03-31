@@ -98,6 +98,10 @@ extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 extern bool qt_applefontsmoothing_enabled;
 #endif
 
+#if !defined(QT_MAX_CACHED_GLYPH_SIZE)
+#  define QT_MAX_CACHED_GLYPH_SIZE 64
+#endif
+
 Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
 
 ////////////////////////////////// Private Methods //////////////////////////////////////////
@@ -1473,7 +1477,8 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
     // don't try to cache huge fonts or vastly transformed fonts
     const qreal pixelSize = ti.fontEngine->fontDef.pixelSize;
-    if (pixelSize * pixelSize * qAbs(det) >= 64 * 64 || det < 0.25f || det > 4.f)
+    if (pixelSize * pixelSize * qAbs(det) >= QT_MAX_CACHED_GLYPH_SIZE * QT_MAX_CACHED_GLYPH_SIZE ||
+        det < 0.25f || det > 4.f)
         drawCached = false;
 
     QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0
