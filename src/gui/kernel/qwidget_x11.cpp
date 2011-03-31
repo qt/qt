@@ -1380,9 +1380,15 @@ void QWidgetPrivate::updateSystemBackground()
     if (brush.style() == Qt::NoBrush
         || q->testAttribute(Qt::WA_NoSystemBackground)
         || q->testAttribute(Qt::WA_UpdatesDisabled)
-        || type == Qt::Popup || type == Qt::ToolTip
-        )
-        XSetWindowBackgroundPixmap(X11->display, q->internalWinId(), XNone);
+        || type == Qt::Popup || type == Qt::ToolTip) {
+            if (QX11Info::isCompositingManagerRunning()
+                && q->testAttribute(Qt::WA_TranslucentBackground)
+                && !(q->parent()))
+                XSetWindowBackground(X11->display, q->internalWinId(),
+                                     QColormap::instance(xinfo.screen()).pixel(Qt::transparent));
+            else
+                XSetWindowBackgroundPixmap(X11->display, q->internalWinId(), XNone);
+        }
     else if (brush.style() == Qt::SolidPattern && brush.isOpaque())
         XSetWindowBackground(X11->display, q->internalWinId(),
                              QColormap::instance(xinfo.screen()).pixel(brush.color()));
