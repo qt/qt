@@ -104,13 +104,6 @@ void foo()
 #include "q3cleanuphandler.h"
 #endif
 
-// Do not test initialization of pods on msvc6 and msvc 2002
-// This is a known issue
-#if defined Q_CC_MSVC && _MSC_VER < 1310
-#   define NOPODINITIALIZATION
-#endif
-
-
 template class QList<int>;
 
 //TESTED_FILES=
@@ -198,10 +191,6 @@ QT_END_NAMESPACE
 
 struct Pod {
     int i1, i2;
-
-#if defined NOPODINITIALIZATION
-    Pod() : i1(0), i2(0) { }
-#endif
 };
 
 tst_Collections::tst_Collections()
