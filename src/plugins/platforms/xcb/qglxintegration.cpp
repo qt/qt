@@ -65,6 +65,7 @@ QGLXContext::QGLXContext(Window window, QXcbScreen *screen, const QPlatformWindo
     , m_drawable((Drawable)window)
     , m_context(0)
 {
+    Q_XCB_NOOP(m_screen->connection());
     const QPlatformGLContext *sharePlatformContext;
     if (format.useDefaultSharedContext()) {
         if (!QPlatformGLContext::defaultSharedContext()) {
@@ -87,6 +88,7 @@ QGLXContext::QGLXContext(Window window, QXcbScreen *screen, const QPlatformWindo
     GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(screen),screen->screenNumber(),format);
     m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, shareGlxContext, TRUE);
     m_windowFormat = qglx_platformWindowFromGLXFBConfig(DISPLAY_FROM_XCB(screen), config, m_context);
+    Q_XCB_NOOP(m_screen->connection());
 }
 
 QGLXContext::QGLXContext(QXcbScreen *screen, Drawable drawable, GLXContext context)
@@ -97,12 +99,15 @@ QGLXContext::QGLXContext(QXcbScreen *screen, Drawable drawable, GLXContext conte
 
 QGLXContext::~QGLXContext()
 {
+    Q_XCB_NOOP(m_screen->connection());
     if (m_context)
         glXDestroyContext(DISPLAY_FROM_XCB(m_screen), m_context);
+    Q_XCB_NOOP(m_screen->connection());
 }
 
 void QGLXContext::createDefaultSharedContext(QXcbScreen *screen)
 {
+    Q_XCB_NOOP(screen->connection());
     int x = 0;
     int y = 0;
     int w = 3;
@@ -126,30 +131,38 @@ void QGLXContext::createDefaultSharedContext(QXcbScreen *screen)
     } else {
         qWarning("Warning no shared context created");
     }
+    Q_XCB_NOOP(screen->connection());
 }
 
 void QGLXContext::makeCurrent()
 {
+    Q_XCB_NOOP(m_screen->connection());
     m_screen->connection()->setEventProcessingEnabled(false);
     QPlatformGLContext::makeCurrent();
     glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), m_drawable, m_context);
+    Q_XCB_NOOP(m_screen->connection());
 }
 
 void QGLXContext::doneCurrent()
 {
+    Q_XCB_NOOP(m_screen->connection());
     QPlatformGLContext::doneCurrent();
     glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), 0, 0);
     m_screen->connection()->setEventProcessingEnabled(true);
+    Q_XCB_NOOP(m_screen->connection());
 }
 
 void QGLXContext::swapBuffers()
 {
+    Q_XCB_NOOP(m_screen->connection());
     glXSwapBuffers(DISPLAY_FROM_XCB(m_screen), m_drawable);
     doneCurrent();
+    Q_XCB_NOOP(m_screen->connection());
 }
 
 void* QGLXContext::getProcAddress(const QString& procName)
 {
+    Q_XCB_NOOP(m_screen->connection());
     typedef void *(*qt_glXGetProcAddressARB)(const GLubyte *);
     static qt_glXGetProcAddressARB glXGetProcAddressARB = 0;
     static bool resolved = false;

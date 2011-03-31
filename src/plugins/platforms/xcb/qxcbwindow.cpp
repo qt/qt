@@ -222,9 +222,7 @@ void QXcbWindow::setVisible(bool visible)
             xcb_wm_hints_set_normal(&hints);
         xcb_set_wm_hints(xcb_connection(), m_window, &hints);
         Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
-#if defined(XCB_USE_GLX)
-        glXWaitX();
-#endif
+        connection()->sync();
     } else {
         Q_XCB_CALL(xcb_unmap_window(xcb_connection(), m_window));
 

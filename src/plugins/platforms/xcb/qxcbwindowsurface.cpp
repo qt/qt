@@ -62,7 +62,7 @@ public:
     QImage *image() { return &m_qimage; }
 
     void put(xcb_window_t window, const QPoint &dst, const QRect &source);
-    void preparePaint(const QRegion &region);
+    void preparePaint(const QRegion &region, QMutex *mutex);
 
 private:
     void destroy();
@@ -84,6 +84,7 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size)
     , m_gc(0)
     , m_gc_window(0)
 {
+    Q_XCB_NOOP(connection());
     m_xcb_image = xcb_image_create_native(xcb_connection(),
                                           size.width(),
                                           size.height(),
@@ -115,6 +116,7 @@ void QXcbShmImage::destroy()
 
 void QXcbShmImage::put(xcb_window_t window, const QPoint &target, const QRect &source)
 {
+    Q_XCB_NOOP(connection());
     if (m_gc_window != window) {
         if (m_gc)
             Q_XCB_CALL(xcb_free_gc(xcb_connection(), m_gc));
@@ -125,6 +127,7 @@ void QXcbShmImage::put(xcb_window_t window, const QPoint &target, const QRect &s
         m_gc_window = window;
     }
 
+    Q_XCB_NOOP(connection());
     xcb_image_shm_put(xcb_connection(),
                       window,
                       m_gc,
@@ -137,18 +140,23 @@ void QXcbShmImage::put(xcb_window_t window, const QPoint &target, const QRect &s
                       source.width(),
                       source.height(),
                       false);
+    Q_XCB_NOOP(connection());
 
     m_dirty = m_dirty | source;
 
     xcb_flush(xcb_connection());
+    Q_XCB_NOOP(connection());
 }
 
-void QXcbShmImage::preparePaint(const QRegion &region)
+void QXcbShmImage::preparePaint(const QRegion &region, QMutex *mutex)
 {
     // to prevent X from reading from the image region while we're writing to it
     if (m_dirty.intersects(region)) {
         connection()->sync();
+        mutex->lock();
         m_dirty = QRegion();
+    } else {
+        mutex->lock();
     }
 }
 
@@ -162,6 +170,8 @@ QXcbWindowSurface::QXcbWindowSurface(QWidget *widget, bool setDefaultSurface)
 
 QXcbWindowSurface::~QXcbWindowSurface()
 {
+    QMutexLocker locker(&m_surfaceLock);
+    delete m_image;
 }
 
 QPaintDevice *QXcbWindowSurface::paintDevice()
@@ -171,8 +181,7 @@ QPaintDevice *QXcbWindowSurface::paintDevice()
 
 void QXcbWindowSurface::beginPaint(const QRegion &region)
 {
-    m_surfaceLock.lock();
-    m_image->preparePaint(region);
+    m_image->preparePaint(region, &m_surfaceLock);
 }
 
 void QXcbWindowSurface::endPaint(const QRegion &)
@@ -185,6 +194,8 @@ void QXcbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoi
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
+    Q_XCB_NOOP(connection());
+
     QXcbWindow *window = static_cast<QXcbWindow *>(widget->window()->platformWindow());
 
     extern QWidgetData* qt_widget_data(QWidget *);
@@ -195,18 +206,26 @@ void QXcbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoi
     QVector<QRect> rects = region.rects();
     for (int i = 0; i < rects.size(); ++i)
         m_image->put(window->window(), rects.at(i).topLeft() - widgetOffset, rects.at(i).translated(offset));
+
+    Q_XCB_NOOP(connection());
 }
 
 void QXcbWindowSurface::resize(const QSize &size)
 {
+    Q_XCB_NOOP(connection());
     QWindowSurface::resize(size);
 
     QXcbScreen *screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(window()));
 
-    QMutexLocker locker(&m_surfaceLock);
+    connection()->setEventProcessingEnabled(false);
+    m_surfaceLock.lock();
 
     delete m_image;
     m_image = new QXcbShmImage(screen, size);
+    Q_XCB_NOOP(connection());
+
+    m_surfaceLock.unlock();
+    connection()->setEventProcessingEnabled(true);
 }
 
 extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
@@ -216,11 +235,13 @@ bool QXcbWindowSurface::scroll(const QRegion &area, int dx, int dy)
     if (m_image->image()->isNull())
         return false;
 
-    m_image->preparePaint(area);
+    m_image->preparePaint(area, &m_surfaceLock);
 
     const QVector<QRect> rects = area.rects();
     for (int i = 0; i < rects.size(); ++i)
         qt_scrollRectInImage(*m_image->image(), rects.at(i), QPoint(dx, dy));
+
+    m_surfaceLock.unlock();
 
     return true;
 }

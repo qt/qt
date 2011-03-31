@@ -46,6 +46,7 @@
 #include <QList>
 #include <QMutex>
 #include <QVector>
+#include <QWaitCondition>
 #include <QThread>
 
 #define Q_XCB_DEBUG
@@ -265,7 +266,7 @@ protected:
 
 private:
     void initializeAllAtoms();
-    void sendConnectionEvent(QXcbAtom::Atom atom);
+    void sendConnectionEvent(QXcbAtom::Atom atom, uint id = 0);
 #ifdef XCB_USE_DRI2
     void initializeDri2();
 #endif
@@ -282,6 +283,8 @@ private:
 
     xcb_window_t m_connectionEventListener;
     QMutex m_connectionLock;
+    QWaitCondition m_connectionWaitCondition;
+    QAtomicInt m_pauseId;
     bool m_enabled;
 
     QXcbKeyboard *m_keyboard;
@@ -326,9 +329,11 @@ cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection,
 }
 #define Q_XCB_CALL(x) q_xcb_call_template(x, connection(), __FILE__, __LINE__)
 #define Q_XCB_CALL2(x, connection) q_xcb_call_template(x, connection, __FILE__, __LINE__)
+#define Q_XCB_NOOP(c) q_xcb_call_template(xcb_no_operation(c->xcb_connection()), c, __FILE__, __LINE__);
 #else
 #define Q_XCB_CALL(x) x
 #define Q_XCB_CALL2(x, connection) x
+#define Q_XCB_NOOP(c)
 #endif
 
 

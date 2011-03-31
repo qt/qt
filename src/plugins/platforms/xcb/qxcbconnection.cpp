@@ -76,6 +76,7 @@ extern "C" {
 
 QXcbConnection::QXcbConnection(const char *displayName)
     : m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
+    , m_pauseId(0)
     , m_enabled(true)
 #ifdef XCB_USE_DRI2
     , m_dri2_major(0)
@@ -130,7 +131,7 @@ QXcbConnection::QXcbConnection(const char *displayName)
     start();
 }
 
-void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom atom)
+void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom atom, uint id)
 {
     xcb_client_message_event_t event;
     memset(&event, 0, sizeof(event));
@@ -140,9 +141,9 @@ void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom atom)
     event.sequence = 0;
     event.window = m_connectionEventListener;
     event.type = atom;
+    event.data.data32[0] = id;
 
-    xcb_send_event(xcb_connection(), false, m_connectionEventListener, XCB_EVENT_MASK_NO_EVENT, (const char *)&event);
-
+    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, m_connectionEventListener, XCB_EVENT_MASK_NO_EVENT, (const char *)&event));
     xcb_flush(xcb_connection());
 }
 
@@ -152,10 +153,12 @@ void QXcbConnection::setEventProcessingEnabled(bool enabled)
         return;
 
     if (!enabled) {
+        sendConnectionEvent(QXcbAtom::_QT_PAUSE_CONNECTION, uint(m_pauseId));
         m_connectionLock.lock();
-        sendConnectionEvent(QXcbAtom::_QT_PAUSE_CONNECTION);
+        m_pauseId.fetchAndAddOrdered(1);
     } else {
         m_connectionLock.unlock();
+        m_connectionWaitCondition.wakeAll();
     }
 
     m_enabled = enabled;
@@ -191,8 +194,11 @@ QXcbWindow *platformWindowFromId(xcb_window_t id)
 #define HANDLE_PLATFORM_WINDOW_EVENT(event_t, window, handler) \
 { \
     event_t *e = (event_t *)event; \
-    if (QXcbWindow *platformWindow = platformWindowFromId(e->window)) \
-        platformWindow->handler(e); \
+    if (QXcbWindow *platformWindow = platformWindowFromId(e->window)) { \
+        QObjectPrivate *d = QObjectPrivate::get(platformWindow->widget()); \
+        if (!d->wasDeleted) \
+            platformWindow->handler(e); \
+    } \
 } \
 break;
 
@@ -419,100 +425,118 @@ void QXcbConnection::log(const char *file, int line, int sequence)
 
 void QXcbConnection::run()
 {
-    while (xcb_generic_event_t *event = xcb_wait_for_event(xcb_connection())) {
-        bool handled = true;
+    QMutexLocker locker(&m_connectionLock);
+    fd_set readset;
+    int xcb_fd = xcb_get_file_descriptor(xcb_connection());
+    FD_ZERO(&readset);
+    FD_SET(xcb_fd, &readset);
+    int result;
+    while (true) {
+        while (xcb_generic_event_t *event = xcb_poll_for_event(xcb_connection())) {
+            bool handled = true;
 
-        uint response_type = event->response_type & ~0x80;
+            uint response_type = event->response_type & ~0x80;
 
-        if (!response_type) {
-            xcb_generic_error_t *error = (xcb_generic_error_t *)event;
+            if (!response_type) {
+                xcb_generic_error_t *error = (xcb_generic_error_t *)event;
 
-            uint clamped_error_code = qMin<uint>(error->error_code, (sizeof(xcb_errors) / sizeof(xcb_errors[0])) - 1);
-            uint clamped_major_code = qMin<uint>(error->major_code, (sizeof(xcb_protocol_request_codes) / sizeof(xcb_protocol_request_codes[0])) - 1);
+                uint clamped_error_code = qMin<uint>(error->error_code, (sizeof(xcb_errors) / sizeof(xcb_errors[0])) - 1);
+                uint clamped_major_code = qMin<uint>(error->major_code, (sizeof(xcb_protocol_request_codes) / sizeof(xcb_protocol_request_codes[0])) - 1);
 
-            printf("XCB error: %d (%s), sequence: %d, resource id: %d, major code: %d (%s), minor code: %d\n",
-                   int(error->error_code), xcb_errors[clamped_error_code],
-                   int(error->sequence), int(error->resource_id),
-                   int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
-                   int(error->minor_code));
+                printf("XCB error: %d (%s), sequence: %d, resource id: %d, major code: %d (%s), minor code: %d\n",
+                       int(error->error_code), xcb_errors[clamped_error_code],
+                       int(error->sequence), int(error->resource_id),
+                       int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
+                       int(error->minor_code));
 #ifdef Q_XCB_DEBUG
-            QMutexLocker locker(&m_callLogMutex);
-            int i = 0;
-            for (; i < m_callLog.size(); ++i) {
-                if (m_callLog.at(i).sequence == error->sequence) {
-                    printf("Caused by: %s:%d\n", qPrintable(m_callLog.at(i).file), m_callLog.at(i).line);
-                    break;
-                } else if (m_callLog.at(i).sequence > error->sequence) {
-                    printf("Caused some time before: %s:%d\n", qPrintable(m_callLog.at(i).file), m_callLog.at(i).line);
-                    if (i > 0)
-                        printf("and after: %s:%d\n", qPrintable(m_callLog.at(i-1).file), m_callLog.at(i-1).line);
-                    break;
+                QMutexLocker locker(&m_callLogMutex);
+                int i = 0;
+                for (; i < m_callLog.size(); ++i) {
+                    if (m_callLog.at(i).sequence == error->sequence) {
+                        printf("Caused by: %s:%d\n", qPrintable(m_callLog.at(i).file), m_callLog.at(i).line);
+                        break;
+                    } else if (m_callLog.at(i).sequence > error->sequence) {
+                        printf("Caused some time before: %s:%d\n", qPrintable(m_callLog.at(i).file), m_callLog.at(i).line);
+                        if (i > 0)
+                            printf("and after: %s:%d\n", qPrintable(m_callLog.at(i-1).file), m_callLog.at(i-1).line);
+                        break;
+                    }
+                }
+                if (i == m_callLog.size() && !m_callLog.isEmpty())
+                    printf("Caused some time after: %s:%d\n", qPrintable(m_callLog.first().file), m_callLog.first().line);
+#endif
+                continue;
+            }
+
+#ifdef Q_XCB_DEBUG
+            {
+                QMutexLocker locker(&m_callLogMutex);
+                int i = 0;
+                for (; i < m_callLog.size(); ++i)
+                    if (m_callLog.at(i).sequence >= event->sequence)
+                        break;
+                m_callLog.remove(0, i);
+            }
+#endif
+
+            if (response_type == XCB_CLIENT_MESSAGE) {
+                xcb_client_message_event_t *ev = (xcb_client_message_event_t *)event;
+
+                if (ev->type == QXcbAtom::_QT_CLOSE_CONNECTION)
+                    return;
+
+                if (ev->type == QXcbAtom::_QT_PAUSE_CONNECTION) {
+                    if (ev->data.data32[0] == uint(m_pauseId))
+                        m_connectionWaitCondition.wait(&m_connectionLock);
+                    continue;
                 }
             }
-            if (i == m_callLog.size() && !m_callLog.isEmpty())
-                printf("Caused some time after: %s:%d\n", qPrintable(m_callLog.first().file), m_callLog.first().line);
-#endif
+
+            switch (response_type) {
+            case XCB_EXPOSE:
+                HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
+            case XCB_BUTTON_PRESS:
+                HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
+            case XCB_BUTTON_RELEASE:
+                HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
+            case XCB_MOTION_NOTIFY:
+                HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
+            case XCB_CONFIGURE_NOTIFY:
+                HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
+            case XCB_CLIENT_MESSAGE:
+                HANDLE_PLATFORM_WINDOW_EVENT(xcb_client_message_event_t, window, handleClientMessageEvent);
+            case XCB_ENTER_NOTIFY:
+                HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
+            case XCB_LEAVE_NOTIFY:
+                HANDLE_PLATFORM_WINDOW_EVENT(xcb_leave_notify_event_t, event, handleLeaveNotifyEvent);
+            case XCB_FOCUS_IN:
+                HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_in_event_t, event, handleFocusInEvent);
+            case XCB_FOCUS_OUT:
+                HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_out_event_t, event, handleFocusOutEvent);
+            case XCB_KEY_PRESS:
+                HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
+            case XCB_KEY_RELEASE:
+                HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
+            case XCB_MAPPING_NOTIFY:
+                m_keyboard->handleMappingNotifyEvent((xcb_mapping_notify_event_t *)event);
+                break;
+            default:
+                handled = false;
+                break;
+            }
+            if (handled)
+                printXcbEvent("Handled XCB event", event);
+            else
+                printXcbEvent("Unhandled XCB event", event);
+        }
+
+        do {
+            result = select(xcb_fd + 1, &readset, 0, 0, 0);
+        } while (result == -1 && errno == EINTR);
+
+        if (result <= 0 || !FD_ISSET(xcb_fd, &readset))
             continue;
-        }
 
-#ifdef Q_XCB_DEBUG
-        {
-            QMutexLocker locker(&m_callLogMutex);
-            int i = 0;
-            for (; i < m_callLog.size(); ++i)
-                if (m_callLog.at(i).sequence >= event->sequence)
-                    break;
-            m_callLog.remove(0, i);
-        }
-#endif
-
-        if (response_type == XCB_CLIENT_MESSAGE
-            && ((xcb_client_message_event_t *)event)->type == QXcbAtom::_QT_CLOSE_CONNECTION)
-            return;
-
-        if (response_type == XCB_CLIENT_MESSAGE
-            && ((xcb_client_message_event_t *)event)->type == QXcbAtom::_QT_PAUSE_CONNECTION)
-        {
-            QMutexLocker locker(&m_connectionLock);
-            continue;
-        }
-
-        switch (response_type) {
-        case XCB_EXPOSE:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
-        case XCB_BUTTON_PRESS:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
-        case XCB_BUTTON_RELEASE:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
-        case XCB_MOTION_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
-        case XCB_CONFIGURE_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
-        case XCB_CLIENT_MESSAGE:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_client_message_event_t, window, handleClientMessageEvent);
-        case XCB_ENTER_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
-        case XCB_LEAVE_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_leave_notify_event_t, event, handleLeaveNotifyEvent);
-        case XCB_FOCUS_IN:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_in_event_t, event, handleFocusInEvent);
-        case XCB_FOCUS_OUT:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_out_event_t, event, handleFocusOutEvent);
-        case XCB_KEY_PRESS:
-            HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
-        case XCB_KEY_RELEASE:
-            HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
-        case XCB_MAPPING_NOTIFY:
-            m_keyboard->handleMappingNotifyEvent((xcb_mapping_notify_event_t *)event);
-            break;
-        default:
-            handled = false;
-            break;
-        }
-        if (handled)
-            printXcbEvent("Handled XCB event", event);
-        else
-            printXcbEvent("Unhandled XCB event", event);
     }
     fprintf(stderr, "I/O error in xcb_wait_for_event\n");
 }
@@ -714,8 +738,13 @@ void QXcbConnection::initializeAllAtoms() {
 void QXcbConnection::sync()
 {
     // from xcb_aux_sync
+    bool wasEnabled = m_enabled;
+    setEventProcessingEnabled(false);
     xcb_get_input_focus_cookie_t cookie = Q_XCB_CALL(xcb_get_input_focus(xcb_connection()));
     free(xcb_get_input_focus_reply(xcb_connection(), cookie, 0));
+
+    if (wasEnabled)
+        setEventProcessingEnabled(true);
 }
 
 #if defined(XCB_USE_EGL)
