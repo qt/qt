@@ -32,13 +32,13 @@ ParticleSystem::ParticleSystem(QSGItem *parent) :
 
 void ParticleSystem::registerParticleType(ParticleType* p)
 {
-    m_particles << p;//###Set or uniqueness checking?
+    m_particles << QPointer<ParticleType>(p);//###Set or uniqueness checking?
     reset();
 }
 
 void ParticleSystem::registerParticleEmitter(ParticleEmitter* e)
 {
-    m_emitters << e;//###How to get them out?
+    m_emitters << QPointer<ParticleEmitter>(e);//###How to get them out?
     connect(e, SIGNAL(particlesPerSecondChanged(qreal)),//TODO: Make a better particleCountChanged signal on emitter
             this, SLOT(countChanged()));
     connect(e, SIGNAL(particleDurationChanged(int)),
@@ -50,7 +50,7 @@ void ParticleSystem::registerParticleEmitter(ParticleEmitter* e)
 
 void ParticleSystem::registerParticleAffector(ParticleAffector* a)
 {
-    m_affectors << a;
+    m_affectors << QPointer<ParticleAffector>(a);
     //reset();//TODO: Slim down the huge batch of resets at the start
 }
 
@@ -150,6 +150,12 @@ void ParticleSystem::initializeSystem()
 
 void ParticleSystem::reset()
 {
+    //Clear guarded pointers which have been deleted
+    int cleared = 0;
+    cleared += m_emitters.removeAll(0);
+    cleared += m_particles.removeAll(0);
+    cleared += m_affectors.removeAll(0);
+    //qDebug() << "Reset" << m_emitters.count() << m_particles.count() << "Cleared" << cleared;
     foreach(ParticleType* p, m_particles)
         p->reset();
     foreach(ParticleEmitter* e, m_emitters)
@@ -221,12 +227,15 @@ uint ParticleSystem::systemSync(ParticleType* p)
         dt = time - dt;
         m_needsReset.clear();
         foreach(ParticleEmitter* emitter, m_emitters)
-            emitter->emitWindow(m_timeInt);
+            if(emitter)
+                emitter->emitWindow(m_timeInt);
         foreach(ParticleAffector* a, m_affectors)
-            a->affectSystem(dt);
+            if(a)
+                a->affectSystem(dt);
         foreach(ParticleData* d, m_needsReset)
             foreach(ParticleType* p, m_groupData[d->group]->types)
-                p->reload(d);
+                if(p && d)
+                    p->reload(d);
     }
     m_syncList << p;
     return m_timeInt;

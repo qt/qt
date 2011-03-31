@@ -5,6 +5,7 @@
 #include <QTime>
 #include <QVector>
 #include <QHash>
+#include <QPointer>
 
 QT_BEGIN_HEADER
 
@@ -89,10 +90,10 @@ private:
     void initializeSystem();
     int m_particle_count;
     bool m_running;
-    QList<ParticleEmitter*> m_emitters;
-    QList<ParticleAffector*> m_affectors;
-    QList<ParticleType*> m_particles;
-    QList<ParticleType*> m_syncList;
+    QList<QPointer<ParticleEmitter> > m_emitters;
+    QList<QPointer<ParticleAffector> > m_affectors;
+    QList<QPointer<ParticleType> > m_particles;
+    QList<QPointer<ParticleType> > m_syncList;
     int m_startTime;
     int m_nextGroupId;
 };
