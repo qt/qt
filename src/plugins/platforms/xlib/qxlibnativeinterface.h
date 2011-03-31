@@ -39,51 +39,37 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSYSTEM_TESTLITE_H
-#define QGRAPHICSSYSTEM_TESTLITE_H
+#ifndef QXLIBNATIVEINTERFACE_H
+#define QXLIBNATIVEINTERFACE_H
 
-//make sure textstream is included before any X11 headers
-#include <QtCore/QTextStream>
+#include "qxlibscreen.h"
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
 #include <QtGui/QPlatformNativeInterface>
 
-#include "qxlibstatic.h"
-
-QT_BEGIN_NAMESPACE
-
-class QXlibScreen;
-
-class QXlibIntegration : public QPlatformIntegration
+class QXlibNativeInterface : public QPlatformNativeInterface
 {
 public:
-    QXlibIntegration(bool useOpenGL = false);
+    enum ResourceType {
+        Display,
+        EglDisplay,
+        Connection,
+        Screen,
+        GraphicsDevice,
+        EglContext
+    };
 
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    void *nativeResourceForWidget(const QByteArray &resourceString, QWidget *widget);
 
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
-
-    QPlatformFontDatabase *fontDatabase() const;
-    QPlatformClipboard *clipboard() const;
-
-    QPlatformNativeInterface *nativeInterface() const;
-
-    bool hasOpenGL() const;
+    void *displayForWidget(QWidget *widget);
+    void *eglDisplayForWidget(QWidget *widget);
+    void *connectionForWidget(QWidget *widget);
+    void *screenForWidget(QWidget *widget);
+    void *graphicsDeviceForWidget(QWidget *widget);
+    void *eglContextForWidget(QWidget *widget);
 
 private:
-    bool mUseOpenGL;
-    QXlibScreen *mPrimaryScreen;
-    QList<QPlatformScreen *> mScreens;
-    QPlatformFontDatabase *mFontDb;
-    QPlatformClipboard *mClipboard;
-    QPlatformNativeInterface *mNativeInterface;
+    static QXlibScreen *qPlatformScreenForWidget(QWidget *widget);
 };
 
-QT_END_NAMESPACE
 
-#endif
+#endif // QXLIBNATIVEINTERFACE_H
