@@ -53,40 +53,26 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 #ifndef QT_QWS_TEMP_DIR
-#define QT_QWS_TEMP_DIR "/tmp"
+#  define QT_QWS_TEMP_DIR QLatin1String("/tmp")
 #endif
 
 #ifdef QT_PRIVATE_QWS
-#define QT_VFB_DATADIR(DISPLAY) QString("%1/qtembedded-%2-%3") \
-                                .arg(QT_QWS_TEMP_DIR).arg(getuid()).arg(DISPLAY)
-
-#define QT_VFB_MOUSE_PIPE(DISPLAY)    QT_VFB_DATADIR(DISPLAY) \
-                                      .append("/qtvfb_mouse")
-#define QT_VFB_KEYBOARD_PIPE(DISPLAY) QT_VFB_DATADIR(DISPLAY) \
-                                      .append("/qtvfb_keyboard")
-#define QT_VFB_MAP(DISPLAY)           QT_VFB_DATADIR(DISPLAY) \
-                                      .append("/qtvfb_map")
-#define QT_VFB_SOUND_PIPE(DISPLAY)    QT_VFB_DATADIR(DISPLAY) \
-                                      .append("/qt_soundserver")
-#define QTE_PIPE(DISPLAY)             QT_VFB_DATADIR(DISPLAY) \
-                                      .append("/QtEmbedded")
+#define QT_VFB_DATADIR(DISPLAY)       QT_QWS_TEMP_DIR + QLatin1String("/qtembedded-") \
+                                      + QString::number(getuid()) + QLatin1Char('-') + QString::number(DISPLAY)
+#define QT_VFB_MOUSE_PIPE(DISPLAY)    QT_VFB_DATADIR(DISPLAY) + QLatin1String("/qtvfb_mouse")
+#define QT_VFB_KEYBOARD_PIPE(DISPLAY) QT_VFB_DATADIR(DISPLAY) + QLatin1String("/qtvfb_keyboard")
+#define QT_VFB_MAP(DISPLAY)           QT_VFB_DATADIR(DISPLAY) + QLatin1String("/qtvfb_map")
+#define QT_VFB_SOUND_PIPE(DISPLAY)    QT_VFB_DATADIR(DISPLAY) + QLatin1String("/qt_soundserver")
+#define QTE_PIPE(DISPLAY)             QT_VFB_DATADIR(DISPLAY) + QLatin1String("/QtEmbedded")
 #define QTE_PIPE_QVFB(DISPLAY)        QTE_PIPE(DISPLAY)
 #else
-#define QT_VFB_DATADIR(DISPLAY) QString("%1/qtembedded-%2") \
-                                .arg(QT_QWS_TEMP_DIR).arg(DISPLAY)
-#define QT_VFB_MOUSE_PIPE(DISPLAY)    QString("%1/.qtvfb_mouse-%2") \
-                                      .arg(QT_QWS_TEMP_DIR).arg(DISPLAY)
-#define QT_VFB_KEYBOARD_PIPE(DISPLAY) QString("%1/.qtvfb_keyboard-%2") \
-                                      .arg(QT_QWS_TEMP_DIR).arg(DISPLAY)
-#define QT_VFB_MAP(DISPLAY)           QString("%1/.qtvfb_map-%2") \
-                                      .arg(QT_QWS_TEMP_DIR).arg(DISPLAY)
-#define QT_VFB_SOUND_PIPE(DISPLAY)    QString("%1/.qt_soundserver-%2") \
-                                      .arg(QT_QWS_TEMP_DIR).arg(DISPLAY)
-#define QTE_PIPE(DISPLAY)             QT_VFB_DATADIR(DISPLAY)   \
-                                      .append("/QtEmbedded-%1") \
-                                      .arg(DISPLAY)
-#define QTE_PIPE_QVFB(DISPLAY)        QString("%1/qtembedded-%2/QtEmbedded-%2") \
-                                      .arg(QT_QWS_TEMP_DIR).arg(DISPLAY)
+#define QT_VFB_DATADIR(DISPLAY)       QT_QWS_TEMP_DIR + QLatin1String("/qtembedded-") + QString::number(DISPLAY)
+#define QT_VFB_MOUSE_PIPE(DISPLAY)    QT_QWS_TEMP_DIR + QLatin1String("/.qtvfb_mouse-") + QString::number(DISPLAY)
+#define QT_VFB_KEYBOARD_PIPE(DISPLAY) QT_QWS_TEMP_DIR + QLatin1String("/.qtvfb_keyboard-") + QString::number(DISPLAY)
+#define QT_VFB_MAP(DISPLAY)           QT_QWS_TEMP_DIR + QLatin1String("/.qtvfb_map-") + QString::number(DISPLAY)
+#define QT_VFB_SOUND_PIPE(DISPLAY)    QT_QWS_TEMP_DIR + QLatin1String("/.qt_soundserver-") + QString::number(DISPLAY)
+#define QTE_PIPE(DISPLAY)             QT_VFB_DATADIR(DISPLAY) + QLatin1String("/QtEmbedded-") + QString::number(DISPLAY)
+#define QTE_PIPE_QVFB(DISPLAY)        QTE_PIPE(DISPLAY)
 #endif
 
 struct QVFbHeader
