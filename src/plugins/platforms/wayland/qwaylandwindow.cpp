@@ -43,6 +43,7 @@
 
 #include "qwaylanddisplay.h"
 #include "qwaylandscreen.h"
+#include "qwaylandbuffer.h"
 
 #include <QtGui/QWidget>
 #include <QtGui/QWindowSystemInterface>
@@ -52,6 +53,8 @@
 QWaylandWindow::QWaylandWindow(QWidget *window)
     : QPlatformWindow(window)
     , mDisplay(QWaylandScreen::waylandScreenFromWidget(window)->display())
+    , mBuffer(0)
+    , mWaitingForFrameSync(false)
 {
     static WId id = 1;
     mWindowId = id++;
@@ -73,7 +76,7 @@ WId QWaylandWindow::winId() const
 void QWaylandWindow::setParent(const QPlatformWindow *parent)
 {
     Q_UNUSED(parent);
-    qWarning("Trying to add a raster window as a sub-window");
+    qWarning("Sub window is not supported");
 }
 
 void QWaylandWindow::setVisible(bool visible)
@@ -102,4 +105,55 @@ void QWaylandWindow::configure(uint32_t time, uint32_t edges,
     setGeometry(geometry);
 
     QWindowSystemInterface::handleGeometryChange(widget(), geometry);
+}
+
+void QWaylandWindow::attach(QWaylandBuffer *buffer)
+{
+    mBuffer = buffer;
+    if (mSurface) {
+        wl_surface_attach(mSurface, buffer->buffer(),0,0);
+    }
+}
+
+
+void QWaylandWindow::damage(const QRegion &region)
+{
+    //We have to do sync stuff before calling damage, or we might
+    //get a frame callback before we get the timestamp
+    mDisplay->frameCallback(QWaylandWindow::frameCallback, this);
+    mWaitingForFrameSync = true;
+
+    QVector<QRect> rects = region.rects();
+    for (int i = 0; i < rects.size(); i++) {
+        const QRect rect = rects.at(i);
+        wl_surface_damage(mSurface,
+                          rect.x(), rect.y(), rect.width(), rect.height());
+    }
+}
+
+void QWaylandWindow::newSurfaceCreated()
+{
+    if (mBuffer) {
+        wl_surface_attach(mSurface,mBuffer->buffer(),0,0);
+    }
+}
+
+void QWaylandWindow::frameCallback(void *data, uint32_t time)
+{
+    Q_UNUSED(time);
+    QWaylandWindow *self = static_cast<QWaylandWindow*>(data);
+    if (self->mWaitingForFrameSync) {
+        self->mWaitingForFrameSync = false;
+        self->mFrameSyncWait.wakeAll();
+    }
+}
+
+void QWaylandWindow::waitForFrameSync()
+{
+    if (!mWaitingForFrameSync) {
+        return;
+    }
+    QMutex lock;
+    lock.lock();
+    mFrameSyncWait.wait(&lock);
 }

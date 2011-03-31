@@ -45,6 +45,8 @@
 #include <QtCore/QObject>
 #include <QtCore/QRect>
 
+#include <QtCore/QWaitCondition>
+
 #include <wayland-client.h>
 
 class QWaylandInputDevice;
@@ -53,6 +55,7 @@ class QWaylandBuffer;
 class QPlatformScreen;
 class QWaylandScreen;
 class QWaylandGLIntegration;
+class QWaylandEventThread;
 
 class QWaylandDisplay : public QObject {
     Q_OBJECT
@@ -61,7 +64,6 @@ public:
     QWaylandDisplay(void);
     ~QWaylandDisplay(void);
 
-    void createNewScreen(struct wl_output *output, QRect geometry);
     QList<QPlatformScreen *> screens() const { return mScreens; }
     struct wl_surface *createSurface(void *handle);
     struct wl_buffer *createShmBuffer(int fd, int width, int height,
@@ -76,49 +78,33 @@ public:
 #endif
     void setCursor(QWaylandBuffer *buffer, int32_t x, int32_t y);
 
+
     void syncCallback(wl_display_sync_func_t func, void *data);
     void frameCallback(wl_display_frame_func_t func, void *data);
 
-    void iterate();
-
     struct wl_display *wl_display() const { return mDisplay; }
 public slots:
-    void readEvents(void);
-    void flushRequests(void);
+    void createNewScreen(struct wl_output *output, QRect geometry);
+    void displayHandleGlobal(uint32_t id, QByteArray interface, uint32_t version);
 
 private:
     struct wl_display *mDisplay;
+    QWaylandEventThread *mEventThread;
     struct wl_compositor *mCompositor;
     struct wl_shm *mShm;
     struct wl_shell *mShell;
-    char *mDeviceName;
-    int mFd;
     QList<QPlatformScreen *> mScreens;
     QList<QWaylandInputDevice *> mInputDevices;
-    QSocketNotifier *mReadNotifier;
-    QSocketNotifier *mWriteNotifier;
+
 #ifdef QT_WAYLAND_GL_SUPPORT
     QWaylandGLIntegration *mEglIntegration;
 #endif
-
-    static void displayHandleGlobal(struct wl_display *display,
-                                    uint32_t id,
-                                    const char *interface,
-                                    uint32_t version, void *data);
-
-    static void outputHandleGeometry(void *data,
-                                     struct wl_output *output,
-                                     int32_t x, int32_t y,
-                                     int32_t width, int32_t height);
 
     static void shellHandleConfigure(void *data, struct wl_shell *shell,
                                      uint32_t time, uint32_t edges,
                                      struct wl_surface *surface,
                                      int32_t width, int32_t height);
 
-    static int sourceUpdate(uint32_t mask, void *data);
-
-    static const struct wl_output_listener outputListener;
     static const struct wl_shell_listener shellListener;
 };
 
