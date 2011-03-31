@@ -120,7 +120,7 @@ x11 {
     LIBS_PRIVATE += $$QMAKE_LIBS_DYNLOAD
 }
 
-mac {
+mac:!qpa {
     OBJECTIVE_SOURCES += qgl_mac.mm \
                          qglpixelbuffer_mac.mm
     LIBS_PRIVATE += -framework AppKit -framework Carbon
