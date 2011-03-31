@@ -554,7 +554,7 @@ void tst_QDirIterator::qtbug15421_hiddenDirs_hiddenFiles()
     // anything starting by a '.' is a hidden file.
     // For that reason this test is not run in Windows.
 #if defined Q_OS_WIN || Q_OS_WINCE
-    QSKIP("To create hidden files a special call is required in Windows.");
+    QSKIP("To create hidden files a special call is required in Windows.", SkipAll);
 #else
     // Only files
     {
