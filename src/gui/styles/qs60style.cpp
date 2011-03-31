@@ -2641,7 +2641,7 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         case CT_ItemViewItem:
             if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
                 if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
-                    sz = QSize(menuItem->rect.width(), 1);
+                    sz = QSize(menuItem->rect.width() - 2 * pixelMetric(PM_MenuHMargin) - 2 * QS60StylePrivate::pixelMetric(PM_FrameCornerWidth), 1);
                     break;
                 }
             }
