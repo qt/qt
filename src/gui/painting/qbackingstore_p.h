@@ -262,8 +262,7 @@ private:
     }
 
     inline bool hasStaticContents() const
-    { return !staticWidgets.isEmpty() && windowSurface->hasStaticContentsSupport()
-        && windowSurface->hasPartialUpdateSupport(); }
+    { return !staticWidgets.isEmpty() && windowSurface->hasFeature(QWindowSurface::StaticContents); }
 
     friend QRegion qt_dirtyRegion(QWidget *);
     friend class QWidgetPrivate;

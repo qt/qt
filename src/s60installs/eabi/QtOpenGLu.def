@@ -755,6 +755,6 @@ EXPORTS
 	_ZN22QGLEngineSharedShadersC2EPK10QGLContext @ 754 NONAME
 	_ZN22QGLEngineSharedShadersD1Ev @ 755 NONAME
 	_ZN22QGLEngineSharedShadersD2Ev @ 756 NONAME
-	_ZNK16QGLWindowSurface23hasPartialUpdateSupportEv @ 757 NONAME
-	_ZThn8_NK16QGLWindowSurface23hasPartialUpdateSupportEv @ 758 NONAME
+	_ZNK16QGLWindowSurface23hasPartialUpdateSupportEv @ 757 NONAME ABSENT
+	_ZThn8_NK16QGLWindowSurface23hasPartialUpdateSupportEv @ 758 NONAME ABSENT
 

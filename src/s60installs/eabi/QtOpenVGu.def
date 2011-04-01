@@ -213,5 +213,5 @@ EXPORTS
 	_ZN13QVGPixmapData25initFromNativeImageHandleEPvRK7QString @ 212 NONAME
 	_ZN13QVGPixmapData35createFromNativeImageHandleProviderEv @ 213 NONAME
 	_ZNK13QVGPixmapData14ensureReadbackEb @ 214 NONAME
-	_ZNK16QVGWindowSurface24hasStaticContentsSupportEv @ 215 NONAME
+	_ZNK16QVGWindowSurface24hasStaticContentsSupportEv @ 215 NONAME ABSENT
 

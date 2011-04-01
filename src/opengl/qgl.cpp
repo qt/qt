@@ -1738,6 +1738,9 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     workaround_brokenTextureFromPixmap = false;
     workaround_brokenTextureFromPixmap_init = false;
 
+    workaround_brokenAlphaTexSubImage = false;
+    workaround_brokenAlphaTexSubImage_init = false;
+
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
         vertexAttributeArraysEnabledState[i] = false;
 }
@@ -5601,6 +5604,21 @@ void *QGLContextGroupResourceBase::value(const QGLContext *context)
 {
     QGLContextGroup *group = QGLContextPrivate::contextGroup(context);
     return group->m_resources.value(this, 0);
+}
+
+void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx)
+{
+    void *resource = value(ctx);
+
+    if (resource != 0) {
+        QGLShareContextScope scope(ctx);
+        freeResource(resource);
+
+        QGLContextGroup *group = QGLContextPrivate::contextGroup(ctx);
+        group->m_resources.remove(this);
+        m_groups.removeOne(group);
+        active.deref();
+    }
 }
 
 void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx, void *value)

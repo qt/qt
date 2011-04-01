@@ -833,4 +833,25 @@ EXPORTS
 	?glShaderSource@QGLFunctions@@QAEXIHPAPBDPBH@Z @ 832 NONAME ; void QGLFunctions::glShaderSource(unsigned int, int, char const * *, int const *)
 	?glGetShaderPrecisionFormat@QGLFunctions@@QAEXIIPAH0@Z @ 833 NONAME ; void QGLFunctions::glGetShaderPrecisionFormat(unsigned int, unsigned int, int *, int *)
 	?insert@QGLContextGroupResourceBase@@QAEXPBVQGLContext@@PAX@Z @ 834 NONAME ; void QGLContextGroupResourceBase::insert(class QGLContext const *, void *)
+	?hibernate@QGLPixmapData@@QAEXXZ @ 835 NONAME ; void QGLPixmapData::hibernate(void)
+	?idealFormat@QGLPixmapData@@QAE?AW4Format@QImage@@AAV3@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 836 NONAME ; enum QImage::Format QGLPixmapData::idealFormat(class QImage &, class QFlags<enum Qt::ImageConversionFlag>)
+	?simpleProgram@QGLEngineSharedShaders@@QAEPAVQGLShaderProgram@@XZ @ 837 NONAME ; class QGLShaderProgram * QGLEngineSharedShaders::simpleProgram(void)
+	?blitProgram@QGLEngineSharedShaders@@QAEPAVQGLShaderProgram@@XZ @ 838 NONAME ; class QGLShaderProgram * QGLEngineSharedShaders::blitProgram(void)
+	??0QGLEngineSharedShaders@@QAE@PBVQGLContext@@@Z @ 839 NONAME ; QGLEngineSharedShaders::QGLEngineSharedShaders(class QGLContext const *)
+	?qShaderSnippets@QGLEngineSharedShaders@@0PAPBDA @ 840 NONAME ; char const * * QGLEngineSharedShaders::qShaderSnippets
+	?shadersForContext@QGLEngineSharedShaders@@SAPAV1@PBVQGLContext@@@Z @ 841 NONAME ; class QGLEngineSharedShaders * QGLEngineSharedShaders::shadersForContext(class QGLContext const *)
+	?cleanupCustomStage@QGLEngineSharedShaders@@QAEXPAVQGLCustomShaderStage@@@Z @ 842 NONAME ; void QGLEngineSharedShaders::cleanupCustomStage(class QGLCustomShaderStage *)
+	?clear@QGLTextureGlyphCache@@QAEXXZ @ 843 NONAME ; void QGLTextureGlyphCache::clear(void)
+	?getStaticMetaObject@QGLEngineSharedShaders@@SAABUQMetaObject@@XZ @ 844 NONAME ; struct QMetaObject const & QGLEngineSharedShaders::getStaticMetaObject(void)
+	?detachTextureFromPool@QGLPixmapData@@QAEXXZ @ 845 NONAME ; void QGLPixmapData::detachTextureFromPool(void)
+	??1QGLEngineSharedShaders@@QAE@XZ @ 846 NONAME ; QGLEngineSharedShaders::~QGLEngineSharedShaders(void)
+	?findProgramInCache@QGLEngineSharedShaders@@QAEPAVQGLEngineShaderProg@@ABV2@@Z @ 847 NONAME ; class QGLEngineShaderProg * QGLEngineSharedShaders::findProgramInCache(class QGLEngineShaderProg const &)
+	?reclaimTexture@QGLPixmapData@@QAEXXZ @ 848 NONAME ; void QGLPixmapData::reclaimTexture(void)
+	?destroyTexture@QGLPixmapData@@QAEXXZ @ 849 NONAME ; void QGLPixmapData::destroyTexture(void)
+	?features@QGLWindowSurface@@UBE?AV?$QFlags@W4WindowSurfaceFeature@QWindowSurface@@@@XZ @ 850 NONAME ; class QFlags<enum QWindowSurface::WindowSurfaceFeature> QGLWindowSurface::features(void) const
+	?releaseCachedResources@QGLGraphicsSystem@@UAEXXZ @ 851 NONAME ; void QGLGraphicsSystem::releaseCachedResources(void)
+	??_EQGLEngineSharedShaders@@QAE@I@Z @ 852 NONAME ; QGLEngineSharedShaders::~QGLEngineSharedShaders(unsigned int)
+	?staticMetaObject@QGLEngineSharedShaders@@2UQMetaObject@@B @ 853 NONAME ; struct QMetaObject const QGLEngineSharedShaders::staticMetaObject
+	?cleanup@QGLContextGroupResourceBase@@QAEXPBVQGLContext@@@Z @ 854 NONAME ; void QGLContextGroupResourceBase::cleanup(class QGLContext const *)
+	?forceToImage@QGLPixmapData@@QAEXXZ @ 855 NONAME ; void QGLPixmapData::forceToImage(void)
 

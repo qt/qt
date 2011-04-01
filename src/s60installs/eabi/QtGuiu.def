@@ -8830,7 +8830,7 @@ EXPORTS
 	_ZNK14QWindowSurface10grabWidgetEPK7QWidgetRK5QRect @ 8829 NONAME
 	_ZNK14QWindowSurface14staticContentsEv @ 8830 NONAME
 	_ZNK14QWindowSurface17hasStaticContentsEv @ 8831 NONAME
-	_ZNK14QWindowSurface24hasStaticContentsSupportEv @ 8832 NONAME
+	_ZNK14QWindowSurface24hasStaticContentsSupportEv @ 8832 NONAME ABSENT
 	_ZNK14QWindowSurface6offsetEPK7QWidget @ 8833 NONAME
 	_ZNK14QWindowSurface6windowEv @ 8834 NONAME
 	_ZNK14QWindowSurface8geometryEv @ 8835 NONAME
@@ -12034,7 +12034,7 @@ EXPORTS
 	_ZNK13QS60MainAppUi15ApplicationRectEv @ 12033 NONAME
 	_ZNK14QPlainTextEdit8anchorAtERK6QPoint @ 12034 NONAME
 	_ZNK14QWidgetPrivate22childAtRecursiveHelperERK6QPointbb @ 12035 NONAME
-	_ZNK14QWindowSurface23hasPartialUpdateSupportEv @ 12036 NONAME
+	_ZNK14QWindowSurface23hasPartialUpdateSupportEv @ 12036 NONAME ABSENT
 	_ZNK15QGraphicsWidget18autoFillBackgroundEv @ 12037 NONAME
 	_ZNK17QRasterPixmapData7toImageERK5QRect @ 12038 NONAME
 	_ZNK18QRuntimePixmapData11paintEngineEv @ 12039 NONAME
@@ -12394,7 +12394,7 @@ EXPORTS
 	_ZNK20QBlittablePixmapData6metricEN12QPaintDevice17PaintDeviceMetricE @ 12393 NONAME
 	_ZNK20QBlittablePixmapData7toImageEv @ 12394 NONAME
 	_ZNK20QBlittablePixmapData9blittableEv @ 12395 NONAME
-	_ZNK20QRasterWindowSurface24hasStaticContentsSupportEv @ 12396 NONAME
+	_ZNK20QRasterWindowSurface24hasStaticContentsSupportEv @ 12396 NONAME ABSENT
 	_ZNK5QFont17hintingPreferenceEv @ 12397 NONAME
 	_ZNK7QGlyphs12glyphIndexesEv @ 12398 NONAME
 	_ZNK7QGlyphs4fontEv @ 12399 NONAME

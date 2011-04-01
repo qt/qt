@@ -2801,7 +2801,7 @@ void QDeclarativeListView::geometryChanged(const QRectF &newGeometry,
     Q_D(QDeclarativeListView);
     d->maxExtentDirty = true;
     d->minExtentDirty = true;
-    if (d->isRightToLeft() && d->orient == Qt::Horizontal) {
+    if (d->isRightToLeft() && d->orient == QDeclarativeListView::Horizontal) {
         // maintain position relative to the right edge
         int dx = newGeometry.width() - oldGeometry.width();
         setContentX(contentX() - dx);

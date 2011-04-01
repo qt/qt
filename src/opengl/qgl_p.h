@@ -416,6 +416,9 @@ public:
     uint workaround_brokenTextureFromPixmap : 1;
     uint workaround_brokenTextureFromPixmap_init : 1;
 
+    uint workaround_brokenAlphaTexSubImage : 1;
+    uint workaround_brokenAlphaTexSubImage_init : 1;
+
 #ifndef QT_NO_EGL
     uint ownsEglContext : 1;
 #endif
@@ -684,6 +687,7 @@ public:
     virtual ~QGLContextGroupResourceBase();
     void insert(const QGLContext *context, void *value);
     void *value(const QGLContext *context);
+    void cleanup(const QGLContext *context);
     void cleanup(const QGLContext *context, void *value);
     virtual void freeResource(void *value) = 0;
 
