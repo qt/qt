@@ -148,6 +148,7 @@ private slots:
     void preeditMicroFocus();
     void inputContextMouseHandler();
     void inputMethodComposing();
+    void cursorRectangleSize();
 
 private:
     void simulateKey(QDeclarativeView *, int key, Qt::KeyboardModifiers modifiers = 0);
@@ -2421,6 +2422,25 @@ void tst_qdeclarativetextedit::inputMethodComposing()
     QCOMPARE(spy.count(), 2);
 }
 
+void tst_qdeclarativetextedit::cursorRectangleSize()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/CursorRect.qml");
+    QVERIFY(canvas->rootObject() != 0);
+    canvas->show();
+    canvas->setFocus();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+
+    QDeclarativeTextEdit *textEdit = qobject_cast<QDeclarativeTextEdit *>(canvas->rootObject());
+    QVERIFY(textEdit != 0);
+    textEdit->setFocus(Qt::OtherFocusReason);
+    QRectF cursorRect = textEdit->positionToRectangle(textEdit->cursorPosition());
+    QRectF microFocusFromScene = canvas->scene()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
+    QRectF microFocusFromApp= QApplication::focusWidget()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
+
+    QCOMPARE(microFocusFromScene.size(), cursorRect.size());
+    QCOMPARE(microFocusFromApp.size(), cursorRect.size());
+}
 QTEST_MAIN(tst_qdeclarativetextedit)
 
 #include "tst_qdeclarativetextedit.moc"
