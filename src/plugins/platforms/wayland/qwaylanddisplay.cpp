@@ -82,10 +82,12 @@ struct wl_visual *QWaylandDisplay::argbPremultipliedVisual()
     return wl_display_get_premultiplied_argb_visual(mDisplay);
 }
 
+#ifdef QT_WAYLAND_GL_SUPPORT
 QWaylandGLIntegration * QWaylandDisplay::eglIntegration()
 {
     return mEglIntegration;
 }
+#endif
 
 void QWaylandDisplay::shellHandleConfigure(void *data, struct wl_shell *shell,
                                            uint32_t time, uint32_t edges,
