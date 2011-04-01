@@ -599,6 +599,8 @@ void QWidget::setAutoFillBackground(bool enabled)
 
     \ingroup basicwidgets
 
+    \meta {technology} {User Interface}
+    \meta {platform} {all}
 
     The widget is the atom of the user interface: it receives mouse, keyboard
     and other events from the window system, and paints a representation of

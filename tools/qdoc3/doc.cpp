@@ -877,7 +877,7 @@ void DocParser::parse(const QString& source,
                     case CMD_META:
                         priv->constructExtra();
                         p1 = getArgument();
-                        priv->extra->metaMap.insert(p1, getRestOfLine());
+                        priv->extra->metaMap.insert(p1, getArgument());
                         break;
                     case CMD_NEWCODE:
                         location().warning(tr("Unexpected '\\%1'").arg(cmdName(CMD_NEWCODE)));

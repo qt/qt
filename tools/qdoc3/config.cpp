@@ -329,7 +329,10 @@ QList<QRegExp> Config::getRegExpList(const QString& var) const
 }
 
 /*!
-  This function is slower than it could be.
+  This function is slower than it could be. What it does is
+  find all the keys that begin with \a var + dot and return
+  the matching keys in a set, stripped of the matching prefix
+  and dot.
  */
 QSet<QString> Config::subVars(const QString& var) const
 {
@@ -347,6 +350,27 @@ QSet<QString> Config::subVars(const QString& var) const
         ++v;
     }
     return result;
+}
+
+/*!
+  Same as subVars(), but in this case we return a string map
+  with the matching keys (stripped of the prefix \a var and
+  mapped to their values. The pairs are inserted into \a t
+ */
+void Config::subVarsAndValues(const QString& var, QStringMap& t) const
+{
+    QString varDot = var + QLatin1Char('.');
+    QMap<QString, QString>::ConstIterator v = stringValueMap.begin();
+    while (v != stringValueMap.end()) {
+        if (v.key().startsWith(varDot)) {
+            QString subVar = v.key().mid(varDot.length());
+            int dot = subVar.indexOf(QLatin1Char('.'));
+            if (dot != -1)
+                subVar.truncate(dot);
+            t.insert(subVar,v.value());
+        }
+        ++v;
+    }
 }
 
 /*!

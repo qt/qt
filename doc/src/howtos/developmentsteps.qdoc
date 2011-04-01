@@ -94,7 +94,7 @@ great way to do it.
 
 Not knowing a better place to start, you begin by taking a cue from web design
 and plan a wireframe, which helps
-\l{http://doc.qt.nokia.com/qtcreator-snapshot/creator-visual-editor.html}{define the application layout},
+\l{external: Developing Qt Quick Applications}{define the application layout},
 content and user interaction. You decide on breaking the field of the screen
 space into three roughly equal size parts. There will be one section across the
 top, which will span the width of the screen, and two sections in the lower
@@ -130,7 +130,7 @@ quickly:
 
 Devising a user friendly interface to audio playback is not as intuitive as you
 first thought. Since there exist a ready made component for
-\l{http://doc.qt.nokia.com/qtmobility-1.1.0/qml-multimedia.html}{multimedia},
+\l{external: Mobility Multimedia}{multimedia},
 you remove the bottom left field and now have the screen split in two. You add
 textual links for each of the five target languages, and when the user clicks
 one of them the message text changes and the appropriate audio plays back. It is
@@ -164,7 +164,7 @@ for your current and future projects:
 using \l{Qt WebKit}
 \o An \l{qt-rendering-painting-system}{OpenGL} based UI for embedded platforms
 \o \l{Gestures Programming}{Touch} screen support
-\o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/location-overview.html}{Location} based applications
+\o \l{external: Mobility Location}{Location} based applications
 \o \l{qt-technologies}{Much, much more}
 \endlist
 
