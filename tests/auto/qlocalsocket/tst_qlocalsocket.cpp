@@ -391,6 +391,8 @@ void tst_QLocalSocket::listenAndConnect()
         QVERIFY(socket->fullServerName().contains(name));
         sockets.append(socket);
         if (canListen) {
+            QVERIFY(socket->waitForConnected());
+            QVERIFY(socket->isValid());
             QCOMPARE(socket->errorString(), QString("Unknown error"));
             QCOMPARE(socket->error(), QLocalSocket::UnknownSocketError);
             QCOMPARE(socket->state(), QLocalSocket::ConnectedState);
