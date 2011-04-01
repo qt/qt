@@ -274,7 +274,7 @@ private:
         EIdle,
         EGetByName,
         EGetByAddress,
-        EGetMoreNames,
+        ECompleteFromCache,
         EError
     } iState;
 };

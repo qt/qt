@@ -108,6 +108,9 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetw
     QHostAddress address;
     if (address.setAddress(hostName)) {
         // Reverse lookup
+#if defined(QHOSTINFO_DEBUG)
+        qDebug("(reverse lookup)");
+#endif
         TInetAddr IpAdd;
         IpAdd.Input(qt_QString2TPtrC(hostName));
 
@@ -233,6 +236,24 @@ void QSymbianHostResolver::requestHostLookup()
         iHostName.toLatin1().constData(), id());
 #endif
 
+    QSymbianHostInfoLookupManger *manager = QSymbianHostInfoLookupManger::globalInstance();
+    if (manager->cache.isEnabled()) {
+        //check if name has been put in the cache while this request was queued
+        bool valid;
+        QHostInfo cachedResult = manager->cache.get(iHostName, &valid);
+        if (valid) {
+#if defined(QHOSTINFO_DEBUG)
+            qDebug("...found in cache");
+#endif
+            iResults = cachedResult;
+            iState = ECompleteFromCache;
+            SetActive();
+            TRequestStatus* stat = &iStatus;
+            User::RequestComplete(stat, KErrNone);
+            return;
+        }
+    }
+
     int err;
     if (iNetworkSession) {
         err = QNetworkSessionPrivate::nativeOpenHostResolver(*iNetworkSession, iHostResolver, KAfInet, KProtocolInetUdp);
@@ -295,12 +316,12 @@ void QSymbianHostResolver::DoCancel()
 #if defined(QHOSTINFO_DEBUG)
     qDebug() << "QSymbianHostResolver::DoCancel" << QThread::currentThreadId() << id() << (int)iState << this;
 #endif
-    if (iState == EGetByAddress || iState == EGetByName || iState == EGetMoreNames) {
+    if (iState == EGetByAddress || iState == EGetByName) {
         //these states have made an async request to host resolver
         iHostResolver.Cancel();
     } else {
         //for the self completing states there is nothing to cancel
-        Q_ASSERT(iState == EError);
+        Q_ASSERT(iState == EError || iState == ECompleteFromCache);
     }
 }
 
@@ -318,6 +339,7 @@ void QSymbianHostResolver::run()
     case EGetByAddress:
         processAddressResult();
         break;
+    case ECompleteFromCache:
     case EError:
         returnResults();
         break;
@@ -339,6 +361,9 @@ void QSymbianHostResolver::returnResults()
     iState = EIdle;
 
     QSymbianHostInfoLookupManger *manager = QSymbianHostInfoLookupManger::globalInstance();
+    if (manager->cache.isEnabled()) {
+        manager->cache.put(iHostName, iResults);
+    }
     manager->lookupFinished(this);
 
     resultEmitter.emitResultsReady(iResults);
