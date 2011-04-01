@@ -42,6 +42,7 @@
 #include "qsgdistancefieldglyphnode_p_p.h"
 #include "qsgdistancefieldglyphcache_p.h"
 #include <private/qsgtexture_p.h>
+#include <QtOpenGL/qglfunctions.h>
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE
