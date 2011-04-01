@@ -181,6 +181,7 @@ void tst_QNetworkDiskCache::initTestCase()
     dir.rmdir(s + "data7"); // the number is the internal cache version
     dir.rmdir(s + "prepared");
     dir.rmdir(s);
+    dir.rmdir(s + "http"); // delete directory used by 4.7 and earlier (would make the tests fail)
 }
 
 // This will be called after the last test function is executed.

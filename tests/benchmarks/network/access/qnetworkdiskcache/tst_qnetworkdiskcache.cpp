@@ -74,11 +74,11 @@ private:
     void initCacheObject();
     QString cacheDir;
     QNetworkDiskCache *cache;
-    
-public slots:    
+
+public slots:
     void initTestCase();
     void cleanupTestCase();
-    
+
 private slots:
 
     void timeInsertion_data();
@@ -147,7 +147,7 @@ void tst_qnetworkdiskcache::timeInsertion()
 
     // IMPORTANT: max cache size should be HugeCacheLimit, to avoid evictions below
     //time insertion of previously-uncached URLs.
-    QBENCHMARK_ONCE { 
+    QBENCHMARK_ONCE {
         for (quint32 i = NumFakeCacheObjects; i < (NumFakeCacheObjects + NumInsertions); i++) {
             //prepare metata for url
             QNetworkCacheMetaData meta;
@@ -274,7 +274,7 @@ void tst_qnetworkdiskcache::timeRemoval()
     QVERIFY(NumFakeCacheObjects > NumRemovals);
 
     //time removal of previously-inserted URL.
-    QBENCHMARK_ONCE { 
+    QBENCHMARK_ONCE {
         for (quint32 i = 0; i < NumRemovals; i++) {
             QString fakeURL;
             QTextStream stream(&fakeURL);

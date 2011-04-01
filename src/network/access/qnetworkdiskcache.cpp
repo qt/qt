@@ -261,12 +261,11 @@ void QNetworkDiskCachePrivate::prepareLayout()
 
     //Create directory and subdirectories 0-F
     helper.mkpath(dataDirectory);
-    for ( uint i = 0; i < 16 ; i++ ) {
+    for (uint i = 0; i < 16 ; i++) {
         QString str = QString::number(i, 16);
         QString subdir = dataDirectory + str;
         helper.mkdir(subdir);
     }
-
 }
 
 
@@ -435,6 +434,7 @@ QIODevice *QNetworkDiskCache::data(const QUrl &url)
 #endif
             if (p) {
                 buffer->setData((const char *)p, size);
+                file.take()->setParent(buffer.data());
             } else {
                 buffer->setData(file->readAll());
             }
@@ -605,7 +605,7 @@ QString QNetworkDiskCachePrivate::uniqueFileName(const QUrl &url)
     QByteArray id =  QByteArray::number(*(qlonglong*)hash.result().data(), 36).left(8);
     // generates <one-char subdir>/<8-char filname.d>
     uint code = (uint)id.at(id.length()-1) % 16;
-    QString pathFragment = QString::number(code, 16) + QLatin1String("/")
+    QString pathFragment = QString::number(code, 16) + QLatin1Char('/')
                              + QLatin1String(id) + CACHE_POSTFIX;
 
     return pathFragment;
@@ -618,7 +618,7 @@ QString QNetworkDiskCachePrivate::tmpCacheFileName() const
 }
 
 /*!
-    Genrates fully qualified path of cached resource from a URL.
+    Generates fully qualified path of cached resource from a URL.
  */
 QString QNetworkDiskCachePrivate::cacheFileName(const QUrl &url) const
 {
