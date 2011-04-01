@@ -1,6 +1,6 @@
 #include "modelparticle.h"
 #include <QtDeclarative/private/qsgvisualitemmodel_p.h>
-#include <node.h>
+#include <qsgnode.h>
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
@@ -128,7 +128,7 @@ void ModelParticle::reset()
 }
 
 
-Node* ModelParticle::updatePaintNode(Node* n, UpdatePaintNodeData* d)
+QSGNode* ModelParticle::updatePaintNode(QSGNode* n, UpdatePaintNodeData* d)
 {
     //Dummy update just to get painting tick
     if(m_pleaseReset){
@@ -139,7 +139,7 @@ Node* ModelParticle::updatePaintNode(Node* n, UpdatePaintNodeData* d)
 
     update();//Get called again
     if(n)
-        n->markDirty(Node::DirtyMaterial);
+        n->markDirty(QSGNode::DirtyMaterial);
     return QSGItem::updatePaintNode(n,d);
 }
 
