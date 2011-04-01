@@ -125,7 +125,7 @@ while (1) {
         }
         open($newDefFile, "< $defoutput[1]") or die("Could not open $defoutput[1]");
         open($tmpDefFile, "> $defoutput[1].tmp") or die("Could not open $defoutput[1].tmp");
-        print($tmpDefFile "EXPORTS\n");
+        print($tmpDefFile "EXPORTS\n") or die("Could not write to temporary DEF file: $!");
         $fixupFile = "$defoutput[1].tmp";
         while (1) {
             my $origDefLine;
@@ -210,9 +210,9 @@ while (1) {
                 # Auto-absent symbols.
                 $extraData .= " ABSENT";
             }
-            print($tmpDefFile "\t$sym \@ $ordinal $extraData\n");
+            print($tmpDefFile "\t$sym \@ $ordinal $extraData\n") or die("Could not write to temporary DEF file: $!");
         }
-        print($tmpDefFile "\n");
+        print($tmpDefFile "\n") or die("Could not write to temporary DEF file: $!");
         close($origDefFile) if ($definput[1]);
         close($newDefFile);
         close($tmpDefFile);
@@ -260,6 +260,6 @@ if ($buildingLibrary) {
     }
 
     if ($differenceFound) {
-        copy($tmpdso[1], $dso[1]);
+        copy($tmpdso[1], $dso[1]) or die("Could not copy $tmpdso[1] to $dso[1]: $!");
     }
 }
