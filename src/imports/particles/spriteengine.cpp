@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <QSet>
 #include <QtOpenGL>
+
 QT_BEGIN_NAMESPACE
 
 SpriteEngine::SpriteEngine(QObject *parent) :
@@ -285,4 +286,5 @@ void SpriteEngine::addToUpdateList(uint t, int idx)
     tmpList << idx;
     m_stateUpdates << qMakePair(t, tmpList);
 }
+
 QT_END_NAMESPACE

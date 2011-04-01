@@ -1,6 +1,8 @@
 #include "eternalaffector.h"
 #include <QDebug>
 
+QT_BEGIN_NAMESPACE
+
 EternalAffector::EternalAffector(QSGItem *parent) :
     ParticleAffector(parent)
 {
@@ -13,3 +15,5 @@ bool EternalAffector::affectParticle(ParticleData *d, qreal dt)
         d->pv.t = target;
     return true;
 }
+
+QT_END_NAMESPACE

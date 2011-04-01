@@ -2,6 +2,12 @@
 #define TOGGLEAFFECTOR_H
 #include "particleaffector.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class ToggleAffector : public ParticleAffector
 {
     Q_OBJECT

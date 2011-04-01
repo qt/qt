@@ -1,3 +1,4 @@
+#include "V1/qdeclarativeparticles_p.h"
 #include "pluginmain.h"
 #include "spritestate.h"
 #include "spriteengine.h"
@@ -38,8 +39,9 @@
 #include "angledvector.h"
 #include "directedvector.h"
 //#include "followaffector.h"
-#include "V1/qdeclarativeparticles_p.h"
+
 QT_BEGIN_NAMESPACE
+
 void ParticlesPlugin::registerTypes(const char *uri)
 {
     Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.labs.particles"));
@@ -94,6 +96,6 @@ void ParticlesPlugin::registerTypes(const char *uri)
     qmlRegisterType<TurbulenceAffector>(uri, 2, 0 , "Turbulence");
 }
 
-Q_EXPORT_PLUGIN2(Particles, ParticlesPlugin);
-
 QT_END_NAMESPACE
+
+Q_EXPORT_PLUGIN2(Particles, QT_PREPEND_NAMESPACE(ParticlesPlugin))

@@ -1,4 +1,5 @@
 #include "pointvector.h"
+
 QT_BEGIN_NAMESPACE
 
 PointVector::PointVector(QObject *parent) :

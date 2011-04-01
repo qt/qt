@@ -1,6 +1,8 @@
 #include "zoneaffector.h"
 #include <QDebug>
 
+QT_BEGIN_NAMESPACE
+
 ZoneAffector::ZoneAffector(QObject *parent) :
     ParticleAffector(parent), m_x(0), m_y(0), m_width(0), m_height(0), m_affector(0)
 {

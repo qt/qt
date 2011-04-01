@@ -152,6 +152,9 @@ public:
 };
 
 QT_END_NAMESPACE
-#endif // PARTICLESYSTEM_H
+
 QT_END_HEADER
+
+#endif // PARTICLESYSTEM_H
+
 

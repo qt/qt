@@ -1,5 +1,7 @@
 #include "toggleaffector.h"
 
+QT_BEGIN_NAMESPACE
+
 ToggleAffector::ToggleAffector(QObject *parent) :
     ParticleAffector(parent)
 {
@@ -12,4 +14,5 @@ bool ToggleAffector::affect(ParticleData *d, qreal dt)
     else
         return false;
 }
+
 QT_END_NAMESPACE

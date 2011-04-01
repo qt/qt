@@ -13,7 +13,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-
 class ParticleEmitter : public QSGItem
 {
     Q_OBJECT
@@ -257,5 +256,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
 QT_END_HEADER
+
 #endif // PARTICLEEMITTER_H

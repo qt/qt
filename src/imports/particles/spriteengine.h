@@ -16,7 +16,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-
 class SpriteState;
 
 class SpriteEngine : public QObject
@@ -108,7 +107,8 @@ inline int spriteCount(QDeclarativeListProperty<SpriteState> *p)
     return reinterpret_cast<QList<SpriteState *> *>(p->data)->count();
 }
 
-
 QT_END_NAMESPACE
+
 QT_END_HEADER
+
 #endif // SPRITEENGINE_H

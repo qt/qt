@@ -1,4 +1,5 @@
 #include "spritestate.h"
+
 QT_BEGIN_NAMESPACE
 
 SpriteState::SpriteState(QObject *parent) :
@@ -7,4 +8,5 @@ SpriteState::SpriteState(QObject *parent) :
     , m_duration(1000)
 {
 }
+
 QT_END_NAMESPACE

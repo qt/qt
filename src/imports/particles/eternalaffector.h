@@ -2,6 +2,12 @@
 #define ETERNALAFFECTOR_H
 #include "particleaffector.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class EternalAffector : public ParticleAffector
 {
     Q_OBJECT
@@ -33,5 +39,9 @@ public slots:
 private:
     int m_targetLife;
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // ETERNALAFFECTOR_H

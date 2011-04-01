@@ -1,7 +1,9 @@
 #include "speedlimitaffector.h"
 #include <cmath>
 #include <QDebug>
+
 QT_BEGIN_NAMESPACE
+
 SpeedLimitAffector::SpeedLimitAffector(QSGItem *parent) :
     ParticleAffector(parent), m_speedLimit(-1)
 {
@@ -30,4 +32,5 @@ bool SpeedLimitAffector::affectParticle(ParticleData *d, qreal dt){
 
     return true;
 }
+
 QT_END_NAMESPACE

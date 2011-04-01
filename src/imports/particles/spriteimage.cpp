@@ -10,6 +10,7 @@
 #include <cmath>
 #include <qmath.h>
 #include <QDebug>
+
 QT_BEGIN_NAMESPACE
 
 class SpriteMaterial : public QSGMaterial
