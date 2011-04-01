@@ -5028,7 +5028,7 @@ EXPORTS
 	?hasSelection@QItemSelectionModel@@QBE_NXZ @ 5027 NONAME ; bool QItemSelectionModel::hasSelection(void) const
 	?hasSelection@QTextCursor@@QBE_NXZ @ 5028 NONAME ; bool QTextCursor::hasSelection(void) const
 	?hasStaticContents@QWindowSurface@@IBE_NXZ @ 5029 NONAME ; bool QWindowSurface::hasStaticContents(void) const
-	?hasStaticContentsSupport@QWindowSurface@@UBE_NXZ @ 5030 NONAME ; bool QWindowSurface::hasStaticContentsSupport(void) const
+	?hasStaticContentsSupport@QWindowSurface@@UBE_NXZ @ 5030 NONAME ABSENT ; bool QWindowSurface::hasStaticContentsSupport(void) const
 	?hasThemeIcon@QIcon@@SA_NABVQString@@@Z @ 5031 NONAME ; bool QIcon::hasThemeIcon(class QString const &)
 	?hasTracking@QAbstractSlider@@QBE_NXZ @ 5032 NONAME ; bool QAbstractSlider::hasTracking(void) const
 	?hasTranslateOnlySceneTransform@QGraphicsItemPrivate@@QAE_NXZ @ 5033 NONAME ; bool QGraphicsItemPrivate::hasTranslateOnlySceneTransform(void)
@@ -12853,7 +12853,7 @@ EXPORTS
 	?updateAll@QGraphicsViewPrivate@@QAEXXZ @ 12852 NONAME ; void QGraphicsViewPrivate::updateAll(void)
 	?updateMicroFocus@QGraphicsItem@@IAEXXZ @ 12853 NONAME ; void QGraphicsItem::updateMicroFocus(void)
 	?populate@QTextureGlyphCache@@QAEXPAVQFontEngine@@HPBIPBUQFixedPoint@@@Z @ 12854 NONAME ABSENT ; void QTextureGlyphCache::populate(class QFontEngine *, int, unsigned int const *, struct QFixedPoint const *)
-	?hasPartialUpdateSupport@QWindowSurface@@UBE_NXZ @ 12855 NONAME ; bool QWindowSurface::hasPartialUpdateSupport(void) const
+	?hasPartialUpdateSupport@QWindowSurface@@UBE_NXZ @ 12855 NONAME ABSENT ; bool QWindowSurface::hasPartialUpdateSupport(void) const
 	?scroll@QRuntimePixmapData@@UAE_NHHABVQRect@@@Z @ 12856 NONAME ; bool QRuntimePixmapData::scroll(int, int, class QRect const &)
 	?qt_draw_glyphs@@YAXPAVQPainter@@PBIPBVQPointF@@H@Z @ 12857 NONAME ; void qt_draw_glyphs(class QPainter *, unsigned int const *, class QPointF const *, int)
 	?nativeDisplay@QEgl@@YAHXZ @ 12858 NONAME ; int QEgl::nativeDisplay(void)
@@ -13165,7 +13165,7 @@ EXPORTS
 	?metaObject@QFlickGesture@@UBEPBUQMetaObject@@XZ @ 13164 NONAME ; struct QMetaObject const * QFlickGesture::metaObject(void) const
 	?renderHintsChanged@QBlitterPaintEngine@@UAEXXZ @ 13165 NONAME ; void QBlitterPaintEngine::renderHintsChanged(void)
 	?supportedDropActions@QAbstractProxyModel@@UBE?AV?$QFlags@W4DropAction@Qt@@@@XZ @ 13166 NONAME ; class QFlags<enum Qt::DropAction> QAbstractProxyModel::supportedDropActions(void) const
-	?hasStaticContentsSupport@QRasterWindowSurface@@UBE_NXZ @ 13167 NONAME ; bool QRasterWindowSurface::hasStaticContentsSupport(void) const
+	?hasStaticContentsSupport@QRasterWindowSurface@@UBE_NXZ @ 13167 NONAME ABSENT ; bool QRasterWindowSurface::hasStaticContentsSupport(void) const
 	?fillRect@QBlitterPaintEngine@@UAEXABVQRectF@@ABVQBrush@@@Z @ 13168 NONAME ; void QBlitterPaintEngine::fillRect(class QRectF const &, class QBrush const &)
 	?setGlyphIndexes@QGlyphs@@QAEXABV?$QVector@I@@@Z @ 13169 NONAME ; void QGlyphs::setGlyphIndexes(class QVector<unsigned int> const &)
 	?alphaMapBoundingBox@QFontEngine@@UAE?AUglyph_metrics_t@@IABVQTransform@@W4GlyphFormat@1@@Z @ 13170 NONAME ; struct glyph_metrics_t QFontEngine::alphaMapBoundingBox(unsigned int, class QTransform const &, enum QFontEngine::GlyphFormat)
@@ -13371,4 +13371,8 @@ EXPORTS
 	?activeScrollers@QScroller@@SA?AV?$QList@PAVQScroller@@@@XZ @ 13370 NONAME ; class QList<class QScroller *> QScroller::activeScrollers(void)
 	?drawGlyphs@QPainter@@QAEXABVQPointF@@ABVQGlyphs@@@Z @ 13371 NONAME ; void QPainter::drawGlyphs(class QPointF const &, class QGlyphs const &)
 	??4QTextFrameFormat@@QAEAAV0@ABV0@@Z @ 13372 NONAME ABSENT ; class QTextFrameFormat & QTextFrameFormat::operator=(class QTextFrameFormat const &)
+	?hasFeature@QWindowSurface@@QBE_NW4WindowSurfaceFeature@1@@Z @ 13373 NONAME ; bool QWindowSurface::hasFeature(enum QWindowSurface::WindowSurfaceFeature) const
+	?leadingSpaceWidth@QTextEngine@@QAE?AUQFixed@@ABUQScriptLine@@@Z @ 13374 NONAME ; struct QFixed QTextEngine::leadingSpaceWidth(struct QScriptLine const &)
+	?features@QRasterWindowSurface@@UBE?AV?$QFlags@W4WindowSurfaceFeature@QWindowSurface@@@@XZ @ 13375 NONAME ; class QFlags<enum QWindowSurface::WindowSurfaceFeature> QRasterWindowSurface::features(void) const
+	?features@QWindowSurface@@UBE?AV?$QFlags@W4WindowSurfaceFeature@QWindowSurface@@@@XZ @ 13376 NONAME ; class QFlags<enum QWindowSurface::WindowSurfaceFeature> QWindowSurface::features(void) const
 

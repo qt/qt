@@ -183,4 +183,5 @@ EXPORTS
 	?initFromNativeImageHandle@QVGPixmapData@@QAE_NPAXABVQString@@@Z @ 182 NONAME ; bool QVGPixmapData::initFromNativeImageHandle(void *, class QString const &)
 	?createFromNativeImageHandleProvider@QVGPixmapData@@QAEXXZ @ 183 NONAME ; void QVGPixmapData::createFromNativeImageHandleProvider(void)
 	?releaseNativeImageHandle@QVGPixmapData@@QAEXXZ @ 184 NONAME ; void QVGPixmapData::releaseNativeImageHandle(void)
+	?features@QVGWindowSurface@@UBE?AV?$QFlags@W4WindowSurfaceFeature@QWindowSurface@@@@XZ @ 185 NONAME ; class QFlags<enum QWindowSurface::WindowSurfaceFeature> QVGWindowSurface::features(void) const
 
