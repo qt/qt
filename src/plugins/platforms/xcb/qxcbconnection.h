@@ -44,10 +44,8 @@
 #include <xcb/xcb.h>
 
 #include <QList>
-#include <QMutex>
+#include <QObject>
 #include <QVector>
-#include <QWaitCondition>
-#include <QThread>
 
 #define Q_XCB_DEBUG
 
@@ -92,10 +90,6 @@ namespace QXcbAtom {
 
         _QT_SCROLL_DONE,
         _QT_INPUT_ENCODING,
-
-        // Qt/XCB specific
-        _QT_CLOSE_CONNECTION,
-        _QT_PAUSE_CONNECTION,
 
         _MOTIF_WM_HINTS,
 
@@ -222,7 +216,7 @@ namespace QXcbAtom {
 
 class QXcbKeyboard;
 
-class QXcbConnection : public QThread
+class QXcbConnection : public QObject
 {
     Q_OBJECT
 public:
@@ -242,8 +236,6 @@ public:
 
     QXcbKeyboard *keyboard() const { return m_keyboard; }
 
-    void setEventProcessingEnabled(bool enabled);
-
 #ifdef XCB_USE_XLIB
     void *xlib_display() const { return m_xlib_display; }
 #endif
@@ -261,8 +253,8 @@ public:
 
     void sync();
 
-protected:
-    void run();
+private slots:
+    void processXcbEvents();
 
 private:
     void initializeAllAtoms();
@@ -280,12 +272,6 @@ private:
     xcb_atom_t m_allAtoms[QXcbAtom::NAtoms];
 
     QByteArray m_displayName;
-
-    xcb_window_t m_connectionEventListener;
-    QMutex m_connectionLock;
-    QWaitCondition m_connectionWaitCondition;
-    QAtomicInt m_pauseId;
-    bool m_enabled;
 
     QXcbKeyboard *m_keyboard;
 
@@ -311,7 +297,6 @@ private:
         int line;
     };
     QVector<CallInfo> m_callLog;
-    QMutex m_callLogMutex;
     void log(const char *file, int line, int sequence);
     template <typename cookie_t>
     friend cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection, const char *file, int line);

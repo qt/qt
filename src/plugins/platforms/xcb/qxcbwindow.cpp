@@ -113,7 +113,6 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
     if (tlw->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
         && QApplicationPrivate::platformIntegration()->hasOpenGL())
     {
-        connection()->setEventProcessingEnabled(false);
 #if defined(XCB_USE_GLX)
         XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), tlw->platformWindowFormat());
 #elif defined(XCB_USE_EGL)
@@ -142,7 +141,6 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
         } else {
             qFatal("no window!");
         }
-        connection()->setEventProcessingEnabled(true);
     } else
 #endif //defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     {
@@ -431,7 +429,6 @@ QPlatformGLContext *QXcbWindow::glContext() const
         return 0;
     }
     if (!m_context) {
-        connection()->setEventProcessingEnabled(false);
 #if defined(XCB_USE_GLX)
         QXcbWindow *that = const_cast<QXcbWindow *>(this);
         that->m_context = new QGLXContext(m_window, m_screen, widget()->platformWindowFormat());
@@ -450,7 +447,6 @@ QPlatformGLContext *QXcbWindow::glContext() const
         QXcbWindow *that = const_cast<QXcbWindow *>(this);
         that->m_context = new QDri2Context(that);
 #endif
-        connection()->setEventProcessingEnabled(true);
     }
     return m_context;
 }
