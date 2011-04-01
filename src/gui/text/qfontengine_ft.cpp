@@ -1430,6 +1430,8 @@ QFontEngineFT::QGlyphSet *QFontEngineFT::loadTransformedGlyphSet(const QTransfor
 QFixed QFontEngineFT::subPixelPositionForX(QFixed x)
 {
     int m_subPixelPositionCount = 4;
+    if (!supportsSubPixelPositions())
+        return 0;
 
     QFixed subPixelPosition;
     if (x != 0) {
