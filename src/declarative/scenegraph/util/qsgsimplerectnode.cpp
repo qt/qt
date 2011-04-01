@@ -44,33 +44,89 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+  \class QSGSimpleRectNode
+
+  \brief The QSGSimpleRectNode class is a convenience class for drawing
+  solid filled rectangles using scenegraph.
+
+ */
+
+
+
+/*!
+    Constructs a QSGSimpleRectNode instance which is spanning \a rect with
+    the color \a color.
+ */
 QSGSimpleRectNode::QSGSimpleRectNode(const QRectF &rect, const QColor &color)
     : m_geometry(QSGGeometry::defaultAttributes_Point2D(), 4)
 {
-    setRect(rect);
+    QSGGeometry::updateRectGeometry(&m_geometry, rect);
     m_material.setColor(color);
     setMaterial(&m_material);
     setGeometry(&m_geometry);
 }
 
-void QSGSimpleRectNode::updateGeometry()
+
+
+/*!
+    Constructs a QSGSimpleRectNode instance with an empty rectangle and
+    white color.
+ */
+QSGSimpleRectNode::QSGSimpleRectNode()
+    : m_geometry(QSGGeometry::defaultAttributes_Point2D(), 4)
 {
-    QSGGeometry::updateRectGeometry(&m_geometry, m_rect);
+    QSGGeometry::updateRectGeometry(&m_geometry, QRectF());
+    setMaterial(&m_material);
+    setGeometry(&m_geometry);
+}
+
+
+
+/*!
+    Sets the rectangle of this rect node to \a rect.
+ */
+void QSGSimpleRectNode::setRect(const QRectF &rect)
+{
+    QSGGeometry::updateRectGeometry(&m_geometry, rect);
     markDirty(QSGNode::DirtyGeometry);
 }
 
-void QSGSimpleRectNode::setRect(const QRectF &rect)
+
+
+/*!
+    Returns the rectangle that this rect node covers.
+ */
+QRectF QSGSimpleRectNode::rect() const
 {
-    m_rect = rect;
-    updateGeometry();
+    const QSGGeometry::Point2D *pts = m_geometry.vertexDataAsPoint2D();
+    return QRectF(pts[0].x,
+                  pts[0].y,
+                  pts[3].x - pts[0].x,
+                  pts[3].y - pts[0].y);
 }
 
+
+/*!
+    Sets the color of this rectangle to \a color. The default
+    color will be white.
+ */
 void QSGSimpleRectNode::setColor(const QColor &color)
 {
     if (color != m_material.color()) {
         m_material.setColor(color);
-        setMaterial(&m_material); // Indicate that the material has changed.
+        markDirty(QSGNode::DirtyMaterial);
     }
+}
+
+
+
+/*!
+    Returns the color of this rectangle.
+ */
+QColor QSGSimpleRectNode::color() const
+{
+    return m_material.color();
 }
 
 QT_END_NAMESPACE

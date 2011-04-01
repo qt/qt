@@ -74,7 +74,7 @@ void FlatColorMaterialShader::updateState(const RenderState &state, QSGMaterial 
     const QColor &c = newMaterial->color();
 
     if (oldMaterial == 0 || c != oldMaterial->color() || state.isOpacityDirty()) {
-        qreal opacity = state.opacity();
+        float opacity = state.opacity();
         QVector4D v(c.redF() * c.alphaF() * opacity,
                     c.greenF() * c.alphaF() * opacity,
                     c.blueF() * c.alphaF() * opacity,
@@ -135,11 +135,6 @@ QSGMaterialType *QSGFlatColorMaterial::type() const
 QSGMaterialShader *QSGFlatColorMaterial::createShader() const
 {
     return new FlatColorMaterialShader;
-}
-
-bool QSGFlatColorMaterial::is(const QSGMaterial *effect)
-{
-    return effect->type() == &FlatColorMaterialShader::type;
 }
 
 QT_END_NAMESPACE

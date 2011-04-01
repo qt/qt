@@ -55,18 +55,18 @@ class Q_DECLARATIVE_EXPORT QSGSimpleRectNode : public QSGGeometryNode
 {
 public:
     QSGSimpleRectNode(const QRectF &rect, const QColor &color);
+    QSGSimpleRectNode();
 
-    QRectF rect() const { return m_rect; }
+    QRectF rect() const;
     void setRect(const QRectF &rect);
 
     void setColor(const QColor &color);
-    inline QColor color() const { return m_material.color(); }
+    QColor color() const;
 
 private:
-    void updateGeometry();
-    QRectF m_rect;
     QSGFlatColorMaterial m_material;
     QSGGeometry m_geometry;
+    void *reserved;
 };
 
 QT_END_NAMESPACE

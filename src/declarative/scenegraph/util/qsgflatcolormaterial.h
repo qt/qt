@@ -60,10 +60,9 @@ public:
     void setColor(const QColor &color);
     const QColor &color() const { return m_color; }
 
-    static bool is(const QSGMaterial *effect);
-
 private:
     QColor m_color;
+    void *reserved;
 };
 
 QT_END_NAMESPACE
