@@ -259,6 +259,7 @@
     \o \l {12-0-qdoc-commands-miscellaneous.html#if-command} {\\if}
     \o \l {09-qdoc-commands-includingimages.html#image-command} {\\image}
     \o \l {12-0-qdoc-commands-miscellaneous.html#include-command} {\\include}
+    \o \l {12-0-qdoc-commands-miscellaneous.html#include-command} {\\input}
     \o \l {09-qdoc-commands-includingimages.html#inlineimage-command} {\\inlineimage}
     \o \l {08-qdoc-commands-creatinglinks.html#keyword-command} {\\keyword}
     \o \l {08-qdoc-commands-creatinglinks.html#l-command} {\\l}
@@ -1436,9 +1437,6 @@
                It contains only the bare minimum you need to get a Qt
                application up and running.
            \endquotation
-
-    \warning If you use the \l {Compatibility Issues}
-    {compat.qdocconf} file this command is called \\include.
 
     See also \l {quotefromfile-command} {\\quotefromfile} and
     \l {code-command} {\\code}.
@@ -3965,24 +3963,28 @@
     \target include-command
     \section1 \\include 
 
-    The \\include command  expands to the contents of the
-    file specified by the command's argument.
+    The \\include command sends all or part of the file specified by
+    its first argument to the QDoc input stream to be processed as a
+    qdoc comment snippet.  This command is often assigned the alias,
+    \e {input}, in the QDoc configuration file, e.g. \e {alias.include
+    = input}.
 
-    \warning This is preliminary functionality. For more information,
-    see the \l
-    {26-qdoc-commands-compatibility.html#include-versus-input}
-    {compatibility} section.
+    The command is useful when some snippet of commands and text is to
+    be used in multiple places in the documentation. In that case,
+    move the snippet into a separate file and use the \\include
+    command wherever you want to insert the snippet into the
+    documentation. To prevent QDoc from reading the file as a
+    stand-alone page of documentation, we recommend that you use the
+    \c .qdocinc extension for these \e {include} files.
 
-    The command takes a file name as an argument, and is useful when
-    some piece of the documentation is used repeatedly: Move the
-    repetetive text into a separate file, and use the \\include
-    command whenever you want to insert the separate documentation.
-
-    The contents of such a file should follow QDoc syntax, excluding
-    the enclosing \c{/}\c{*!} ... \c{*}\c{/} marks.  To ensure that
-    QDoc won't attempt to read the file as a stand-alone piece of
-    documentation, we recommend that you use the \c .qdocinc
-    extension.
+    The command can have either one or two arguments. The first
+    argument is always a file name. The contents of the file must be
+    QDoc input, i.e. a sequence of QDoc commands and text, but without
+    the enclosing qdoc comment \c{/}\c{*!}  ... \c{*}\c{/} delimeters.
+    If you want to include the entire named file, don't use the second
+    argument. If you want to include only part of the file, see the
+    \l{2-argument-form}{two argument form} below. Here is an example
+    of the one argument form:
 
             \code
             / *!
@@ -3995,7 +3997,9 @@
             * /
             \endcode
 
-    QDoc renders this as:
+    Here are links to the \c .qdocinc files used above:
+    \l{signalandslots.qdocinc}, \l{objectmodel.qdocinc},
+    \l{layoutmanagement.qdocinc}. QDoc renders this page as:
 
             \quotation
                 \raw HTML
@@ -4007,8 +4011,40 @@
                 \input examples/layoutmanagement.qdocinc
             \endquotation
 
-    Here is the actual \c .qdocinc files: \l signalandslots.qdocinc,
-    \l objectmodel.qdocinc, \l layoutmanagement.qdocinc
+    \target 2-argument-form}
+    \section2 \\include filename snippet-identifier
+
+    It is kind of a pain to make a separate \c .qdocinc file for every
+    QDoc include snippet you want to use in multiple places in the
+    documentation, especially given that you probably have to put the
+    copyright/license notice in every one of these files. So if you
+    have lots of these include snippets, you can put them all in a
+    single file if you want, and surround each one with:
+    \code
+        //! [snippet-id1]
+
+           QDoc commands and text...
+
+	//! [snippet-id1]
+
+        //! [snippet-id2]
+
+           More QDoc commands and text...
+
+	//! [snippet-id2]
+    \endcode
+
+    Then you can use the two-argument form of the command:
+
+    \code
+        \input examples/signalandslots.qdocinc snippet-id2
+        \input examples/objectmodel.qdocinc another-snippet-id
+    \endcode
+
+    It works as expected. The sequence of QDoc commands and text found
+    between the two tags with the same name as the second argument is
+    sent to the QDoc input stream. You can even nest these snippets,
+    although it's not clear why you would want to do that.
 
     \target meta-command
     \section1 \\meta 

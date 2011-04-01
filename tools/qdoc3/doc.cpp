@@ -360,7 +360,7 @@ class DocParser
     void checkExpiry(const QString& date);
     void insertBaseName(const QString &baseName);
     void insertTarget(const QString& target, bool keyword);
-    void include(const QString& fileName);
+    void include(const QString& fileName, const QString& identifier);
     void startFormat(const QString& format, int cmd);
     bool openCommand(int cmd);
     bool closeCommand(int endCmd);
@@ -804,7 +804,11 @@ void DocParser::parse(const QString& source,
                         append(Atom::ImageText, getRestOfLine());
                         break;
                     case CMD_INCLUDE:
-                        include(getArgument());
+                        {
+                            QString fileName = getArgument();
+                            QString identifier = getRestOfLine();
+                            include(fileName, identifier);
+                        }
                         break;
                     case CMD_INLINEIMAGE:
                         enterPara();
@@ -1578,7 +1582,7 @@ void DocParser::insertTarget(const QString &target, bool keyword)
     }
 }
 
-void DocParser::include(const QString& fileName)
+void DocParser::include(const QString& fileName, const QString& identifier)
 {
     if (location().depth() > 16)
         location().fatal(tr("Too many nested '\\%1's")
@@ -1592,12 +1596,12 @@ void DocParser::include(const QString& fileName)
                                         fileName,
                                         userFriendlyFilePath);
     if (filePath.isEmpty()) {
-        location().warning(tr("Cannot find leaf file '%1'").arg(fileName));
+        location().warning(tr("Cannot find qdoc include file '%1'").arg(fileName));
     }
     else {
         QFile inFile(filePath);
         if (!inFile.open(QFile::ReadOnly)) {
-            location().warning(tr("Cannot open leaf file '%1'")
+            location().warning(tr("Cannot open qdoc include file '%1'")
                                 .arg(userFriendlyFilePath));
         }
         else {
@@ -1607,9 +1611,56 @@ void DocParser::include(const QString& fileName)
             QString includedStuff = inStream.readAll();
             inFile.close();
 
-            in.insert(pos, includedStuff);
-            len = in.length();
-            openedInputs.push(pos + includedStuff.length());
+            if (identifier.isEmpty()) {
+                in.insert(pos, includedStuff);
+                len = in.length();
+                openedInputs.push(pos + includedStuff.length());
+            }
+            else {
+                QStringList lineBuffer = includedStuff.split(QLatin1Char('\n'));
+                int i = 0;
+                int startLine = -1;
+                while (i < lineBuffer.size()) {
+                    if (lineBuffer[i].startsWith("//!")) {
+                        if (lineBuffer[i].contains(identifier)) {
+                            startLine = i+1;
+                            break;
+                        }
+                    }
+                    ++i;
+                }
+                if (startLine < 0) {
+                    location().warning(tr("Cannot find '%1' in '%2'")
+                                       .arg(identifier)
+                                       .arg(userFriendlyFilePath));
+                    return;
+                    
+                }
+                QString result;
+                i = startLine;
+                do {
+                    if (lineBuffer[i].startsWith("//!")) {
+                        if (i<lineBuffer.size()) {
+                            if (lineBuffer[i].contains(identifier)) {
+                                break;
+                            }
+                        }
+                    }
+                    else
+                        result += lineBuffer[i] + "\n";
+                    ++i;
+                } while (i < lineBuffer.size());
+                if (result.isEmpty()) {
+                    location().warning(tr("Empty qdoc snippet '%1' in '%2'")
+                                       .arg(identifier)
+                                       .arg(userFriendlyFilePath));
+                }
+                else {
+                    in.insert(pos, result);
+                    len = in.length();
+                    openedInputs.push(pos + result.length());
+                }
+            }
         }
     }
 }
