@@ -142,6 +142,60 @@ void QS60Data::setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, boo
         // Ensure that control rectangle is updated
         static_cast<QSymbianControl *>(QApplication::activeWindow()->winId())->handleClientAreaChange();
 }
+
+bool QS60Data::setRecursiveDecorationsVisibility(QWidget *window, Qt::WindowStates newState)
+{
+    // Show statusbar:
+    //   Topmost parent: Show unless fullscreen/minimized.
+    //   Child windows: Follow topmost parent, unless fullscreen, in which case do not show statusbar
+    // Show CBA:
+    //   Topmost parent: Show unless fullscreen/minimized.
+    //     Exception: Show if fullscreen with Qt::WindowSoftkeysVisibleHint.
+    //   Child windows:
+    //     Minimized: Unclear if there is an use case for having focused minimized window at all.
+    //       Always follow topmost parent just to be safe.
+    //     Maximized and normal: follow topmost parent.
+    //       Exception: If topmost parent is not showing CBA, show CBA if any softkey actions are
+    //                  defined.
+    //     Fullscreen: Show only if Qt::WindowSoftkeysVisibleHint set.
+
+    Qt::WindowStates comparisonState = newState;
+    QWidget *parentWindow = window->parentWidget();
+    if (parentWindow) {
+        while (parentWindow->parentWidget())
+            parentWindow = parentWindow->parentWidget();
+        comparisonState = parentWindow->windowState();
+    } else {
+        parentWindow = window;
+    }
+
+    bool decorationsVisible = !(comparisonState & (Qt::WindowFullScreen | Qt::WindowMinimized));
+    const bool parentIsFullscreen = comparisonState & Qt::WindowFullScreen;
+    const bool parentCbaVisibilityHint = parentWindow->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+    bool buttonGroupVisibility = (decorationsVisible || (parentIsFullscreen && parentCbaVisibilityHint));
+
+    // Do extra checking for child windows
+    if (window->parentWidget()) {
+        if (newState & Qt::WindowFullScreen) {
+            decorationsVisible = false;
+            if (window->windowFlags() & Qt::WindowSoftkeysVisibleHint)
+                buttonGroupVisibility = true;
+            else
+                buttonGroupVisibility = false;
+        } else if (!(newState & Qt::WindowMinimized) && !buttonGroupVisibility) {
+            for (int i = 0; i < window->actions().size(); ++i) {
+                if (window->actions().at(i)->softKeyRole() != QAction::NoSoftKey) {
+                    buttonGroupVisibility = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    S60->setStatusPaneAndButtonGroupVisibility(decorationsVisible, buttonGroupVisibility);
+
+    return decorationsVisible;
+}
 #endif
 
 void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
@@ -1271,37 +1325,8 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         qwidget->d_func()->setWindowIcon_sys(true);
         qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
 #ifdef Q_WS_S60
-        if (qwidget->isWindow()) {
-            QWidget *const window = qwidget->window();
-            QWidget *parentWindow = window->parentWidget();
-            if (parentWindow) {
-                while (parentWindow->parentWidget())
-                    parentWindow = parentWindow->parentWidget();
-            } else {
-                parentWindow = window;
-            }
-
-            const bool parentDecorationsVisible = !(parentWindow->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
-            const bool parentIsFullscreen = parentWindow->windowState() & Qt::WindowFullScreen;
-            const bool parentCbaVisibilityHint = parentWindow->windowFlags() & Qt::WindowSoftkeysVisibleHint;
-            bool buttonGroupVisibility = (parentDecorationsVisible || (parentIsFullscreen && parentCbaVisibilityHint));
-
-            // For non-toplevel normal and maximized windows, show cba if window has softkey
-            // actions even if topmost parent is not showing cba. Do the same for fullscreen
-            // windows that request it.
-            if (!buttonGroupVisibility
-                && window->parentWidget()
-                && !(window->windowState() & Qt::WindowMinimized)
-                && ((window->windowFlags() & Qt::WindowSoftkeysVisibleHint) || !(window->windowState() & Qt::WindowFullScreen))) {
-                for (int i = 0; i < window->actions().size(); ++i) {
-                    if (window->actions().at(i)->softKeyRole() != QAction::NoSoftKey) {
-                        buttonGroupVisibility = true;
-                        break;
-                    }
-                }
-            }
-            S60->setStatusPaneAndButtonGroupVisibility(parentDecorationsVisible, buttonGroupVisibility);
-        }
+        if (qwidget->isWindow())
+            S60->setRecursiveDecorationsVisibility(qwidget, qwidget->windowState());
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
         bool focusedControlFound = false;
