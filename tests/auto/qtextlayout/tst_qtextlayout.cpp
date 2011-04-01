@@ -127,7 +127,6 @@ private slots:
     void textWithSurrogates_qtbug15679();
     void textWidthWithStackedTextEngine();
     void textWidthWithLineSeparator();
-    void textWithSurrogates_qtbug15679();
 
 private:
     QFont testFont;
@@ -1459,25 +1458,6 @@ void tst_QTextLayout::textWidthWithLineSeparator()
     line1.setLineWidth(0x1000);
     line2.setLineWidth(0x1000);
     QCOMPARE(line1.naturalTextWidth(), line2.naturalTextWidth());
-}
-
-void tst_QTextLayout::textWithSurrogates_qtbug15679()
-{
-    QString str = QString::fromUtf8("🀀a🀀");
-    QTextLayout layout(str);
-    layout.beginLayout();
-    QTextLine line = layout.createLine();
-    layout.endLayout();
-
-    qreal x[6];
-    for (int i = 0; i < 6; i++)
-        x[i] = line.cursorToX(i);
-
-    // If the first and third character are using the same
-    // font, they must have the same advance (since they
-    // are surrogate pairs, we need to add two for each
-    // character)
-    QCOMPARE(x[2] - x[0], x[5] - x[3]);
 }
 
 QTEST_MAIN(tst_QTextLayout)
