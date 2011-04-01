@@ -51,6 +51,7 @@ QSGDistanceFieldGlyphNode::QSGDistanceFieldGlyphNode()
     , m_glyph_cache(0)
     , m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 0)
     , m_style(QSGText::Normal)
+    , m_antialiasingMode(GrayAntialiasing)
 {
     m_geometry.setDrawingMode(GL_TRIANGLES);
     setGeometry(&m_geometry);
@@ -73,6 +74,14 @@ void QSGDistanceFieldGlyphNode::setColor(const QColor &color)
         m_material->setColor(color);
         setMaterial(m_material); // Indicate the material state has changed
     }
+}
+
+void QSGDistanceFieldGlyphNode::setPreferredAntialiasingMode(AntialiasingMode mode)
+{
+    if (mode == m_antialiasingMode)
+        return;
+    m_antialiasingMode = mode;
+    updateMaterial();
 }
 
 void QSGDistanceFieldGlyphNode::setGlyphs(const QPointF &position, const QGlyphs &glyphs)
@@ -189,7 +198,10 @@ void QSGDistanceFieldGlyphNode::updateMaterial()
     delete m_material;
 
     if (m_style == QSGText::Normal) {
-        m_material = new QSGDistanceFieldTextMaterial;
+        if (m_antialiasingMode == SubPixelAntialiasing)
+            m_material = new QSGSubPixelDistanceFieldTextMaterial;
+        else
+            m_material = new QSGDistanceFieldTextMaterial;
     } else {
         QSGDistanceFieldStyledTextMaterial *material;
         if (m_style == QSGText::Outline) {

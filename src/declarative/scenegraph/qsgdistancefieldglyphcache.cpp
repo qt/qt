@@ -439,7 +439,7 @@ static QImage makeDistanceField(const QPainterPath &path, float offs)
         QRgb *iLine = (QRgb *)image.scanLine(y);
         float *fLine = (float *)iLine;
         for (int x = 0; x < image.width(); ++x)
-            iLine[x] = QRgb(fLine[x] + 127) << 24;
+            iLine[x] = QRgb(fLine[x] + 127.5) << 24;
     }
 
     return image;

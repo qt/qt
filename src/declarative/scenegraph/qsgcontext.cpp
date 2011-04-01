@@ -188,10 +188,14 @@ QSGImageNode *QSGContext::createImageNode()
  */
 QSGGlyphNode *QSGContext::createGlyphNode()
 {
-    if (QSGDistanceFieldGlyphCache::distanceFieldEnabled())
-        return new QSGDistanceFieldGlyphNode;
-    else
+    if (QSGDistanceFieldGlyphCache::distanceFieldEnabled()) {
+        QSGGlyphNode *node = new QSGDistanceFieldGlyphNode;
+        if (qApp->arguments().contains(QLatin1String("--subpixel-antialiasing")))
+            node->setPreferredAntialiasingMode(QSGGlyphNode::SubPixelAntialiasing);
+        return node;
+    } else {
         return new QSGDefaultGlyphNode;
+    }
 }
 
 /*!

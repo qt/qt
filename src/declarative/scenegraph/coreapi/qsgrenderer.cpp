@@ -531,29 +531,4 @@ void QSGRenderer::bindGeometry(QSGMaterialShader *material, const QSGGeometry *g
 }
 
 
-float QSGMaterialShader::RenderState::opacity() const
-{
-    Q_ASSERT(m_data);
-    return static_cast<const QSGRenderer *>(m_data)->renderOpacity();
-}
-
-
-QMatrix4x4 QSGMaterialShader::RenderState::combinedMatrix() const
-{
-    Q_ASSERT(m_data);
-    return static_cast<const QSGRenderer *>(m_data)->combinedMatrix();
-}
-
-QMatrix4x4 QSGMaterialShader::RenderState::modelViewMatrix() const
-{
-    Q_ASSERT(m_data);
-    return const_cast<QSGRenderer *>(static_cast<const QSGRenderer *>(m_data))->modelViewMatrix().top();
-}
-
-const QGLContext *QSGMaterialShader::RenderState::context() const
-{
-    return static_cast<const QSGRenderer *>(m_data)->glContext();
-}
-
-
 QT_END_NAMESPACE
