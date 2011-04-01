@@ -130,7 +130,7 @@ const int SourcePixmap=1;
 
 class QScreenCursor;
 extern QScreenCursor *qt_screencursor;
-extern bool qt_sw_cursor;
+extern bool qws_sw_cursor;
 
 class Q_GUI_EXPORT QScreenCursor
 {
@@ -145,7 +145,7 @@ public:
 
     bool supportsAlphaCursor() const { return supportsAlpha; }
 
-    static bool enabled() { return qt_sw_cursor; }
+    static bool enabled() { return qws_sw_cursor; }
 
     QRect boundingRect() const { return QRect(pos - hotspot, size); }
     QImage image() const { return cursor; }
