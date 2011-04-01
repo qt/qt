@@ -61,12 +61,10 @@ void qt_disableFontHinting(QFont &font)
     fontEngine->setDefaultHintStyle(QFontEngine::HintNone);
 }
 
-#define QT_DISTANCEFIELD_TEXTURESIZE 2048
 #define QT_DISTANCEFIELD_BASEFONTSIZE 54
 #define QT_DISTANCEFIELD_TILESIZE 64
 #define QT_DISTANCEFIELD_SCALE 16
 #define QT_DISTANCEFIELD_RADIUS 80
-#define QT_DISTANCEFIELD_MARGIN 50
 
 struct DFPoint
 {
@@ -563,11 +561,6 @@ void QSGDistanceFieldGlyphCache::onContextDestroyed(const QGLContext *context)
     QString key = QString::number(long(context), 16) + fontKey(m_font);
     m_caches.remove(key);
     deleteLater();
-}
-
-qreal QSGDistanceFieldGlyphCache::glyphMargin() const
-{
-    return QT_DISTANCEFIELD_MARGIN / qreal(QT_DISTANCEFIELD_SCALE);
 }
 
 GLuint QSGDistanceFieldGlyphCache::texture()

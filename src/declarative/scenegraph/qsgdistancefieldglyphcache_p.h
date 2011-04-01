@@ -92,7 +92,6 @@ public:
     QImage renderDistanceFieldGlyph(glyph_t glyph) const;
 
     int glyphCount() const;
-    qreal glyphMargin() const;
 
     void populate(int count, const glyph_t *glyphs);
     void derefGlyphs(int count, const glyph_t *glyphs);

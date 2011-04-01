@@ -46,8 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#define QT_DISTANCEFIELD_MARGIN_THRESHOLD 0.31
-
 QSGDistanceFieldGlyphNode::QSGDistanceFieldGlyphNode()
     : m_material(0)
     , m_glyph_cache(0)
@@ -124,7 +122,7 @@ void QSGDistanceFieldGlyphNode::updateGeometry()
     QVector4D *vp = (QVector4D *)g->vertexData();
     ushort *ip = g->indexDataAsUShort();
 
-    QPointF margins(1.5, 1.5);
+    QPointF margins(2, 2);
     QPointF texMargins = margins / m_glyph_cache->fontScale();
 
     for (int i = 0; i < glyphIndexes.size(); ++i) {
@@ -133,7 +131,6 @@ void QSGDistanceFieldGlyphNode::updateGeometry()
         QSGDistanceFieldGlyphCache::TexCoord c = m_glyph_cache->glyphTexCoord(glyphIndex);
 
         if (!metrics.isNull() && !c.isNull()) {
-            if (m_style != QSGText::Normal) {
                 metrics.width += margins.x() * 2;
                 metrics.height += margins.y() * 2;
                 metrics.baselineX -= margins.x();
@@ -142,17 +139,6 @@ void QSGDistanceFieldGlyphNode::updateGeometry()
                 c.yMargin -= texMargins.y();
                 c.width += texMargins.x() * 2;
                 c.height += texMargins.y() * 2;
-
-            } else if (m_glyph_cache->fontScale() <= QT_DISTANCEFIELD_MARGIN_THRESHOLD) {
-                metrics.width += m_glyph_cache->glyphMargin() * m_glyph_cache->fontScale() * 2;
-                metrics.height += m_glyph_cache->glyphMargin() * m_glyph_cache->fontScale() * 2;
-                metrics.baselineX -= m_glyph_cache->glyphMargin() * m_glyph_cache->fontScale();
-                metrics.baselineY += m_glyph_cache->glyphMargin() * m_glyph_cache->fontScale();
-                c.xMargin -= m_glyph_cache->glyphMargin();
-                c.yMargin -= m_glyph_cache->glyphMargin();
-                c.width += m_glyph_cache->glyphMargin() * 2;
-                c.height += m_glyph_cache->glyphMargin() * 2;
-            }
         }
 
         QPointF glyphPosition = m_glyphs.positions().at(i) + m_position;
@@ -174,10 +160,11 @@ void QSGDistanceFieldGlyphNode::updateGeometry()
         if (m_baseLine.isNull())
             m_baseLine = glyphPosition;
 
-        vp[4 * i + 0] = QVector4D(cx1, cy1, tx1, ty1);
-        vp[4 * i + 1] = QVector4D(cx2, cy1, tx2, ty1);
-        vp[4 * i + 2] = QVector4D(cx1, cy2, tx1, ty2);
-        vp[4 * i + 3] = QVector4D(cx2, cy2, tx2, ty2);
+        int vi = i & 1 ? (glyphIndexes.size() + 1) / 2 + i / 2 : i / 2;
+        vp[4 * vi + 0] = QVector4D(cx1, cy1, tx1, ty1);
+        vp[4 * vi + 1] = QVector4D(cx2, cy1, tx2, ty1);
+        vp[4 * vi + 2] = QVector4D(cx1, cy2, tx1, ty2);
+        vp[4 * vi + 3] = QVector4D(cx2, cy2, tx2, ty2);
 
         int o = i * 4;
         ip[6 * i + 0] = o + 0;
