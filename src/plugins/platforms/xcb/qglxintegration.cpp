@@ -137,7 +137,6 @@ void QGLXContext::createDefaultSharedContext(QXcbScreen *screen)
 void QGLXContext::makeCurrent()
 {
     Q_XCB_NOOP(m_screen->connection());
-    m_screen->connection()->setEventProcessingEnabled(false);
     QPlatformGLContext::makeCurrent();
     glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), m_drawable, m_context);
     Q_XCB_NOOP(m_screen->connection());
@@ -148,7 +147,6 @@ void QGLXContext::doneCurrent()
     Q_XCB_NOOP(m_screen->connection());
     QPlatformGLContext::doneCurrent();
     glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), 0, 0);
-    m_screen->connection()->setEventProcessingEnabled(true);
     Q_XCB_NOOP(m_screen->connection());
 }
 

@@ -48,8 +48,6 @@
 
 #include "qxcbobject.h"
 
-#include <QMutex>
-
 class QXcbShmImage;
 
 class QXcbWindowSurface : public QXcbObject, public QWindowSurface
@@ -68,7 +66,6 @@ public:
 
 private:
     QXcbShmImage *m_image;
-    QMutex m_surfaceLock;
 };
 
 #endif
