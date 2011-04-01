@@ -400,6 +400,7 @@ public:
 
 protected:
     virtual void initialize();
+    virtual const char *vertexShader() const;
     virtual const char *fragmentShader() const;
 
     void updateShift(const QSGDistanceFieldGlyphCache *cache, const QPointF& shift);
@@ -435,25 +436,42 @@ void DistanceFieldShiftedStyleTextMaterialShader::updateState(const RenderState 
 
 void DistanceFieldShiftedStyleTextMaterialShader::updateShift(const QSGDistanceFieldGlyphCache *cache, const QPointF &shift)
 {
-    QPointF texel(1.0 / cache->fontScale() / cache->textureSize().width() * shift.x(),
-                  1.0 / cache->fontScale() / cache->textureSize().height() * shift.y());
+    QPointF texel(1.0 / cache->fontScale() * shift.x(),
+                  1.0 / cache->fontScale() * shift.y());
     m_program.setUniformValue(m_shift_id, texel);
+}
+
+const char *DistanceFieldShiftedStyleTextMaterialShader::vertexShader() const
+{
+    return
+            "uniform highp mat4 matrix;                                 \n"
+            "uniform highp vec2 textureScale;                           \n"
+            "attribute highp vec4 vCoord;                               \n"
+            "attribute highp vec2 tCoord;                               \n"
+            "uniform highp vec2 shift;                                  \n"
+            "varying highp vec2 sampleCoord;                            \n"
+            "varying highp vec2 shiftedSampleCoord;                     \n"
+            "void main() {                                              \n"
+            "     sampleCoord = tCoord * textureScale;                  \n"
+            "     shiftedSampleCoord = (tCoord - shift) * textureScale; \n"
+            "     gl_Position = matrix * vCoord;                        \n"
+            "}";
 }
 
 const char *DistanceFieldShiftedStyleTextMaterialShader::fragmentShader() const {
     return
             "varying highp vec2 sampleCoord;                                                       \n"
+            "varying highp vec2 shiftedSampleCoord;                                                \n"
             "uniform sampler2D texture;                                                            \n"
             "uniform lowp vec4 color;                                                              \n"
             "uniform lowp vec4 styleColor;                                                         \n"
             "uniform highp float alphaMin;                                                         \n"
             "uniform highp float alphaMax;                                                         \n"
-            "uniform highp vec2 shift;                                                             \n"
             "void main() {                                                                         \n"
             "    highp float a = smoothstep(alphaMin, alphaMax, texture2D(texture, sampleCoord).a);\n"
             "    highp vec4 shifted = styleColor * smoothstep(alphaMin,                            \n"
             "                                                 alphaMax,                            \n"
-            "                                                 texture2D(texture, sampleCoord - shift).a); \n"
+            "                                                 texture2D(texture, shiftedSampleCoord).a); \n"
             "    gl_FragColor = mix(shifted, color, a);                                            \n"
             "}";
 }
