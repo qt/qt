@@ -90,19 +90,18 @@ QT_END_NAMESPACE
 
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/ipc.h>
 #if defined(Q_NO_SEMAPHORE)
 #  include <sys/stat.h>
 #  include <sys/file.h>
 #else
 #  include <sys/sem.h>
 #endif
-#include <sys/ipc.h>
 #include <string.h>
 #include <errno.h>
 #include <qdebug.h>
 
 #include <private/qcore_unix_p.h> // overrides QT_OPEN
-
 
 QT_BEGIN_NAMESPACE
 
