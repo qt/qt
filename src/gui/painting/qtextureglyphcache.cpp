@@ -102,7 +102,7 @@ int QTextureGlyphCache::calculateSubPixelPositionCount(glyph_t glyph) const
 
 QFixed QTextureGlyphCache::subPixelPositionForX(QFixed x) const
 {
-    if (m_subPixelPositionCount == 0)
+    if (m_subPixelPositionCount <= 1)
         return QFixed();
 
     QFixed subPixelPosition;
