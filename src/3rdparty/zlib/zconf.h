@@ -360,7 +360,7 @@ typedef uLong FAR uLongf;
 #  define Z_HAVE_UNISTD_H
 #endif
 
-#ifdef STDC
+#if defined(STDC) && !defined(_WIN32_WCE)
 #  include <sys/types.h>    /* for off_t */
 #endif
 
