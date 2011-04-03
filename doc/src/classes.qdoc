@@ -153,7 +153,7 @@
 
     \brief A Qt namespace contains enum types, functions, and sometimes classes.
 
-    This is a list of the main namespaces in Qt. 
+    This is a list of the main namespaces in Qt.
 
     \generatelist{namespaces}
 */

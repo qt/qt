@@ -134,7 +134,7 @@ void QDeclarativeGradientStop::updateGradient()
 
     \section1 Example Usage
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage qml-gradient.png
     \enddiv
 
@@ -220,7 +220,7 @@ void QDeclarativeGradient::doUpdate()
 
     \section1 Example Usage
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage declarative-rect.png
     \enddiv
 
@@ -272,7 +272,7 @@ void QDeclarativeRectangle::doUpdate()
     rectangle (as documented for QRect rendering). This can cause unintended effects if
     \c border.width is 1 and the rectangle is \l{Item::clip}{clipped} by a parent item:
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage rect-border-width.png
     \enddiv
 
@@ -296,7 +296,7 @@ QDeclarativePen *QDeclarativeRectangle::border()
     This property allows for the construction of simple vertical gradients.
     Other gradients may by formed by adding rotation to the rectangle.
 
-    \div {float-left}
+    \div {class="float-left"}
     \inlineimage declarative-rect_gradient.png
     \enddiv
 
@@ -364,7 +364,7 @@ void QDeclarativeRectangle::setRadius(qreal radius)
 
     The default color is white.
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage rect-color.png
     \enddiv
 

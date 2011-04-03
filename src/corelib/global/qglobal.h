@@ -1599,7 +1599,7 @@ public:
         SV_SF_1 = SV_9_4,
         SV_SF_2 = 40,
         SV_SF_3 = 50,
-        SV_SF_4 = 60
+        SV_SF_4 = 60  // Deprecated
     };
     static SymbianVersion symbianVersion();
     enum S60Version {
@@ -1608,9 +1608,9 @@ public:
         SV_S60_3_1 = SV_9_2,
         SV_S60_3_2 = SV_9_3,
         SV_S60_5_0 = SV_9_4,
-        //versions beyond 5.0 are to be confirmed - it is better to use symbian version
         SV_S60_5_1 = SV_SF_2,
-        SV_S60_5_2 = SV_SF_3
+        SV_S60_5_2 = SV_SF_3,
+        SV_S60_5_3 = 70
     };
     static S60Version s60Version();
 #endif
@@ -2515,6 +2515,10 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 
 #ifdef SYMBIAN_WSERV_AND_CONE_MULTIPLE_SCREENS
 #define Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS
+#endif
+
+#ifdef SYMBIAN_GRAPHICS_FIXNATIVEORIENTATION
+#define Q_SYMBIAN_SUPPORTS_FIXNATIVEORIENTATION
 #endif
 
 //Symbian does not support data imports from a DLL

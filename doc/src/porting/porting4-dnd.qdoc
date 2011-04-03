@@ -54,7 +54,7 @@
     \l{Q3DragObject::}{drag()} function is called, and it receives no information
     about how the operation ended.
 
-    \snippet doc/src/snippets/code/doc_src_dnd.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_dnd.cpp 0
 
     Similarly, in Qt 4, drag operations are also initiated when a QDrag object
     is constructed and its \l{QDrag::}{exec()} function is called. In contrast,
@@ -94,7 +94,7 @@
     indicating success or failure of these checks via the event's
     \l{QDragEnterEvent::}{accept()} function, as shown in this simple example:
 
-    \snippet doc/src/snippets/code/doc_src_dnd.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_dnd.cpp 1
 
     In Qt 4, you can examine the MIME type describing the data to determine
     whether the widget should accept the event or, for common data types, you
@@ -113,7 +113,7 @@
     accept dropped data in the form of text or images might provide an
     implementation of \l{QWidget::}{dropEvent()} that looks like the following:
 
-    \snippet doc/src/snippets/code/doc_src_dnd.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_dnd.cpp 2
 
     In Qt 4, the event is handled in a similar way:
 

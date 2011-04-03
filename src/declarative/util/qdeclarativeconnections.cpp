@@ -117,6 +117,8 @@ public:
         id: area
     }
     // ...
+    \endqml
+    \qml
     Connections {
         target: area
         onClicked: foo(parameters)

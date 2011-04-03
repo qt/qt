@@ -771,6 +771,30 @@ void InnerNode::removeChild(Node *child)
     }
 }
 
+/*! \fn QString InnerNode::author() const
+  Returns the author.
+ */
+
+/*! \fn void InnerNode::setAuthor(const QString& author)
+  Sets the \a author.
+ */
+
+/*! \fn QString InnerNode::publisher() const
+  Returns the publisher.
+ */
+
+/*! \fn void InnerNode::setPublisher(const QString& publisher)
+  Sets the \a publisher.
+ */
+
+/*! \fn QString InnerNode::permissions() const
+  Returns the permissions.
+ */
+
+/*! \fn void InnerNode::setPermissions(const QString& permissions)
+  Sets the \a permissions.
+ */
+
 /*!
   Find the module (QtCore, QtGui, etc.) to which the class belongs.
   We do this by obtaining the full path to the header file's location
@@ -833,6 +857,21 @@ void InnerNode::removeRelated(Node *pseudoChild)
 {
     related.removeAll(pseudoChild);
 }
+
+/*! \fn bool InnerNode::hasOtherMetadata() const
+  Returns tru if the other metadata map is not empty.
+ */
+
+/*!
+  Insert the pair \a name and \a content into the other metadata map.
+ */
+void insertOtherMetadata(const QString& name, const QString& content)
+{
+}
+
+/*! \fn const QMap<QString, QString>& InnerNode::otherMetadata() cont
+  Returns the map containing pairs for output as \c {<othermetadata>}.
+ */
 
 /*!
   \class LeafNode
@@ -947,10 +986,35 @@ void ClassNode::fixBaseClasses()
   Search the child list to find the property node with the
   specified \a name.
  */
-const PropertyNode* ClassNode::findPropertyNode(const QString& name) const
+const PropertyNode *ClassNode::findPropertyNode(const QString &name) const
 {
-    const Node* n = findNode(name,Node::Property);
-    return (n ? static_cast<const PropertyNode*>(n) : 0);
+    const Node *n = findNode(name, Node::Property);
+
+    if (n)
+        return static_cast<const PropertyNode*>(n);
+
+    const PropertyNode *pn = 0;
+
+    const QList<RelatedClass> &bases = baseClasses();
+    if (!bases.isEmpty()) {
+        for (int i = 0; i < bases.size(); ++i) {
+            const ClassNode *cn = bases[i].node;
+            pn = cn->findPropertyNode(name);
+            if (pn)
+                break;
+        }
+    }
+    const QList<RelatedClass>& ignoredBases = ignoredBaseClasses();
+    if (!ignoredBases.isEmpty()) {
+        for (int i = 0; i < ignoredBases.size(); ++i) {
+            const ClassNode *cn = ignoredBases[i].node;
+            pn = cn->findPropertyNode(name);
+            if (pn)
+                break;
+        }
+    }
+
+    return pn;
 }
 
 /*!
@@ -1406,6 +1470,7 @@ PropertyNode::PropertyNode(InnerNode *parent, const QString& name)
       usr(Trool_Default),
       cst(false),
       fnl(false),
+      rev(-1),
       overrides(0)
 {
     // nothing.
@@ -1657,7 +1722,7 @@ bool QmlPropertyNode::fromTrool(Trool troolean, bool defaultValue)
     }
 }
 
-static QString valueType(const QString& n)
+static QString valueType(const QString &n)
 {
     if (n == "QPoint")
         return "QDeclarativePointValueType";
@@ -1700,6 +1765,19 @@ bool QmlPropertyNode::isWritable(const Tree* tree) const
     if (wri != Trool_Default)
         return fromTrool(wri, false);
 
+    const PropertyNode *pn = correspondingProperty(tree);
+    if (pn)
+        return pn->isWritable();
+    else {
+        location().warning(tr("Can't determine read-only status of QML property %1; writable assumed.").arg(name()));
+        return true;
+    }
+}
+
+const PropertyNode *QmlPropertyNode::correspondingProperty(const Tree *tree) const
+{
+    const PropertyNode *pn;
+
     Node* n = parent();
     while (n && n->subType() != Node::QmlClass)
         n = n->parent();
@@ -1708,93 +1786,35 @@ bool QmlPropertyNode::isWritable(const Tree* tree) const
         const ClassNode* cn = qcn->classNode();
         if (cn) {
             QStringList dotSplit = name().split(QChar('.'));
-            const PropertyNode* pn = cn->findPropertyNode(dotSplit[0]);
+            pn = cn->findPropertyNode(dotSplit[0]);
             if (pn) {
                 if (dotSplit.size() > 1) {
+                    // Find the C++ property corresponding to the QML property in
+                    // the property group, <group>.<property>.
+
                     QStringList path(extractClassName(pn->qualifiedDataType()));
                     const Node* nn = tree->findNode(path,Class);
                     if (nn) {
                         const ClassNode* cn = static_cast<const ClassNode*>(nn);
-                        pn = cn->findPropertyNode(dotSplit[1]);
-                        if (pn) {
-                            return pn->isWritable();
-                        }
-                        else {
-                            const QList<RelatedClass>& bases = cn->baseClasses();
-                            if (!bases.isEmpty()) {
-                                for (int i=0; i<bases.size(); ++i) {
-                                    const ClassNode* cn = bases[i].node;
-                                    pn = cn->findPropertyNode(dotSplit[1]);
-                                    if (pn) {
-                                        return pn->isWritable();
-                                    }
-                                }
-                            }
-                            const QList<RelatedClass>& ignoredBases = cn->ignoredBaseClasses();
-                            if (!ignoredBases.isEmpty()) {
-                                for (int i=0; i<ignoredBases.size(); ++i) {
-                                    const ClassNode* cn = ignoredBases[i].node;
-                                    pn = cn->findPropertyNode(dotSplit[1]);
-                                    if (pn) {
-                                        return pn->isWritable();
-                                    }
-                                }
-                            }
-                            QString vt = valueType(cn->name());
-                            if (!vt.isEmpty()) {
-                                QStringList path(vt);
-                                const Node* vtn = tree->findNode(path,Class);
-                                if (vtn) {
-                                    const ClassNode* cn = static_cast<const ClassNode*>(vtn);
-                                    pn = cn->findPropertyNode(dotSplit[1]);
-                                    if (pn) {
-                                        return pn->isWritable();
-                                    }
-                                }
-                            }
-                        }
+                        const PropertyNode *pn2 = cn->findPropertyNode(dotSplit[1]);
+                        if (pn2)
+                            return pn2; // Return the property for the QML property.
+                        else
+                            return pn;  // Return the property for the QML group.
                     }
                 }
-                else {
-                    return pn->isWritable();
-                }
+                else
+                    return pn;
             }
             else {
-                const QList<RelatedClass>& bases = cn->baseClasses();
-                if (!bases.isEmpty()) {
-                    for (int i=0; i<bases.size(); ++i) {
-                        const ClassNode* cn = bases[i].node;
-                        pn = cn->findPropertyNode(dotSplit[0]);
-                        if (pn) {
-                            return pn->isWritable();
-                        }
-                    }
-                }
-                const QList<RelatedClass>& ignoredBases = cn->ignoredBaseClasses();
-                if (!ignoredBases.isEmpty()) {
-                    for (int i=0; i<ignoredBases.size(); ++i) {
-                        const ClassNode* cn = ignoredBases[i].node;
-                        pn = cn->findPropertyNode(dotSplit[0]);
-                        if (pn) {
-                            return pn->isWritable();
-                        }
-                    }
-                }
-                if (isAttached()) {
-                    QString classNameAttached = cn->name() + "Attached";
-                    QStringList path(classNameAttached);
-                    const Node* nn = tree->findNode(path,Class);
-                    const ClassNode* acn = static_cast<const ClassNode*>(nn);
-                    pn = acn->findPropertyNode(dotSplit[0]);
-                    if (pn) {
-                        return pn->isWritable();
-                    }
-                }
+                pn = cn->findPropertyNode(dotSplit[0]);
+                if (pn)
+                    return pn;
             }
         }
     }
-    location().warning(tr("Can't determine read-only status of QML property %1; writable assumed.").arg(name()));
-    return true;
+
+    return 0;
 }
 
 #endif
