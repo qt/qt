@@ -25,14 +25,14 @@ enum {
 #undef FontChange
 #endif
 
-QVector<int> qglx_buildSpec(const QPlatformWindowFormat &format)
+QVector<int> qglx_buildSpec(const QPlatformWindowFormat &format, int drawableBit)
 {
     QVector<int> spec(48);
     int i = 0;
 
     spec[i++] = GLX_LEVEL;
     spec[i++] = 0;
-    spec[i++] = GLX_DRAWABLE_TYPE; spec[i++] = GLX_WINDOW_BIT;
+    spec[i++] = GLX_DRAWABLE_TYPE; spec[i++] = drawableBit;
 
     if (format.rgba()) {
         spec[i++] = GLX_RENDER_TYPE; spec[i++] = GLX_RGBA_BIT;
@@ -77,13 +77,13 @@ QVector<int> qglx_buildSpec(const QPlatformWindowFormat &format)
     return spec;
 }
 
-GLXFBConfig qglx_findConfig(Display *display, int screen , const QPlatformWindowFormat &format)
+GLXFBConfig qglx_findConfig(Display *display, int screen , const QPlatformWindowFormat &format, int drawableBit)
 {
     bool reduced = true;
     GLXFBConfig chosenConfig = 0;
     QPlatformWindowFormat reducedFormat = format;
     while (!chosenConfig && reduced) {
-        QVector<int> spec = qglx_buildSpec(reducedFormat);
+        QVector<int> spec = qglx_buildSpec(reducedFormat, drawableBit);
         int confcount = 0;
         GLXFBConfig *configs;
         configs = glXChooseFBConfig(display, screen,spec.constData(),&confcount);
