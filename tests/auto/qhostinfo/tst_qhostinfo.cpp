@@ -126,6 +126,7 @@ private slots:
 
     void raceCondition();
     void threadSafety();
+    void threadSafetyAsynchronousAPI();
 
     void multipleSameLookups();
     void multipleDifferentLookups_data();
@@ -419,7 +420,7 @@ protected:
 void tst_QHostInfo::threadSafety()
 {
     const int nattempts = 5;
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     const int runs = 10;
 #else
     const int runs = 100;
@@ -430,6 +431,56 @@ void tst_QHostInfo::threadSafety()
             thr[i].start();
         for (int k = nattempts - 1; k >= 0; --k)
             thr[k].wait();
+    }
+}
+
+class LookupReceiver : public QObject
+{
+    Q_OBJECT
+public slots:
+    void start();
+    void resultsReady(const QHostInfo&);
+public:
+    QHostInfo result;
+    int numrequests;
+};
+
+void LookupReceiver::start()
+{
+    for (int i=0;i<numrequests;i++)
+        QHostInfo::lookupHost(QString("qt.nokia.com"), this, SLOT(resultsReady(const QHostInfo&)));
+}
+
+void LookupReceiver::resultsReady(const QHostInfo &info)
+{
+    result = info;
+    numrequests--;
+    if (numrequests == 0 || info.error() != QHostInfo::NoError)
+        QThread::currentThread()->quit();
+}
+
+void tst_QHostInfo::threadSafetyAsynchronousAPI()
+{
+    const int nattempts = 10;
+    const int lookupsperthread = 10;
+    QList<QThread*> threads;
+    QList<LookupReceiver*> receivers;
+    for (int i = 0; i < nattempts; ++i) {
+        QThread* thread = new QThread;
+        LookupReceiver* receiver = new LookupReceiver;
+        receiver->numrequests = lookupsperthread;
+        receivers.append(receiver);
+        receiver->moveToThread(thread);
+        connect(thread, SIGNAL(started()), receiver, SLOT(start()));
+        thread->start();
+        threads.append(thread);
+    }
+    for (int k = threads.count() - 1; k >= 0; --k)
+        QVERIFY(threads.at(k)->wait(60000));
+    foreach (LookupReceiver* receiver, receivers) {
+        QCOMPARE(receiver->result.error(), QHostInfo::NoError);
+        QCOMPARE(receiver->result.addresses().at(0).toString(), QString("87.238.50.178"));
+        QCOMPARE(receiver->numrequests, 0);
     }
 }
 
