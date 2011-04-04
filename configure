@@ -3244,7 +3244,7 @@ if [ "$PLATFORM_QWS" = "yes" ] && [ "$CFG_OPENGL" = "auto" ]; then
 fi
 
 # mac
-if [ "$PLATFORM_MAC" = "yes"] && [ "$XPLATFORM_SYMBIAN" = "no" ]; then
+if [ "$PLATFORM_MAC" = "yes" ] && [ "$XPLATFORM_SYMBIAN" = "no" ]; then
     if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
         CFG_OPENGL=desktop
     fi
