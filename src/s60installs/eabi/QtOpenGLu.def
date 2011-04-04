@@ -721,9 +721,9 @@ EXPORTS
 	_ZN13QGLPixmapData9hibernateEv @ 720 NONAME
 	_ZN17QGLGraphicsSystem22releaseCachedResourcesEv @ 721 NONAME
 	_ZN13QGLPixmapData11idealFormatER6QImage6QFlagsIN2Qt19ImageConversionFlagEE @ 722 NONAME
-	_ZN13QGLPixmapData24releaseNativeImageHandleEv @ 723 NONAME ABSENT
-	_ZN13QGLPixmapData25initFromNativeImageHandleEPvRK7QString @ 724 NONAME ABSENT
-	_ZN13QGLPixmapData35createFromNativeImageHandleProviderEv @ 725 NONAME ABSENT
+	_ZN13QGLPixmapData24releaseNativeImageHandleEv @ 723 NONAME
+	_ZN13QGLPixmapData25initFromNativeImageHandleEPvRK7QString @ 724 NONAME
+	_ZN13QGLPixmapData35createFromNativeImageHandleProviderEv @ 725 NONAME
 	_Z28qt_resolve_buffer_extensionsP10QGLContext @ 726 NONAME
 	_ZN12QGLFunctions21initializeGLFunctionsEPK10QGLContext @ 727 NONAME
 	_ZN12QGLFunctionsC1EPK10QGLContext @ 728 NONAME

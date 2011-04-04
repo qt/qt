@@ -81,6 +81,182 @@ class DitaXmlGenerator : public PageGenerator
         LastSinceType
     };
 
+    enum DitaTag {
+        DT_NONE,
+        DT_alt,
+        DT_apiDesc,
+        DT_APIMap,
+        DT_apiName,
+        DT_audience,
+        DT_author,
+        DT_b,
+        DT_body,
+        DT_bodydiv,
+        DT_brand,
+        DT_category,
+        DT_codeblock,
+        DT_comment,
+        DT_component,
+        DT_copyrholder,
+        DT_copyright,
+        DT_copyryear,
+        DT_created,
+        DT_critdates,
+        DT_cxxAPIMap,
+        DT_cxxClass,
+        DT_cxxClassAbstract,
+        DT_cxxClassAccessSpecifier,
+        DT_cxxClassAPIItemLocation,
+        DT_cxxClassBaseClass,
+        DT_cxxClassDeclarationFile,
+        DT_cxxClassDeclarationFileLine,
+        DT_cxxClassDefinition,
+        DT_cxxClassDerivation,
+        DT_cxxClassDerivationAccessSpecifier,
+        DT_cxxClassDerivations,
+        DT_cxxClassDetail,
+        DT_cxxClassNested,
+        DT_cxxClassNestedClass,
+        DT_cxxClassNestedDetail,
+        DT_cxxDefine,
+        DT_cxxDefineAccessSpecifier,
+        DT_cxxDefineAPIItemLocation,
+        DT_cxxDefineDeclarationFile,
+        DT_cxxDefineDeclarationFileLine,
+        DT_cxxDefineDefinition,
+        DT_cxxDefineDetail,
+        DT_cxxDefineNameLookup,
+        DT_cxxDefineParameter,
+        DT_cxxDefineParameterDeclarationName,
+        DT_cxxDefineParameters,
+        DT_cxxDefinePrototype,
+        DT_cxxDefineReimplemented,
+        DT_cxxEnumeration,
+        DT_cxxEnumerationAccessSpecifier,
+        DT_cxxEnumerationAPIItemLocation,
+        DT_cxxEnumerationDeclarationFile,
+        DT_cxxEnumerationDeclarationFileLine,
+        DT_cxxEnumerationDefinition,
+        DT_cxxEnumerationDefinitionFile,
+        DT_cxxEnumerationDefinitionFileLineStart,
+        DT_cxxEnumerationDefinitionFileLineEnd,
+        DT_cxxEnumerationDetail,
+        DT_cxxEnumerationNameLookup,
+        DT_cxxEnumerationPrototype,
+        DT_cxxEnumerationScopedName,
+        DT_cxxEnumerator,
+        DT_cxxEnumeratorInitialiser,
+        DT_cxxEnumeratorNameLookup,
+        DT_cxxEnumeratorPrototype,
+        DT_cxxEnumerators,
+        DT_cxxEnumeratorScopedName,
+        DT_cxxFunction,
+        DT_cxxFunctionAccessSpecifier,
+        DT_cxxFunctionAPIItemLocation,
+        DT_cxxFunctionConst,
+        DT_cxxFunctionConstructor,
+        DT_cxxFunctionDeclarationFile,
+        DT_cxxFunctionDeclarationFileLine,
+        DT_cxxFunctionDeclaredType,
+        DT_cxxFunctionDefinition,
+        DT_cxxFunctionDestructor,
+        DT_cxxFunctionDetail,
+        DT_cxxFunctionNameLookup,
+        DT_cxxFunctionParameter,
+        DT_cxxFunctionParameterDeclarationName,
+        DT_cxxFunctionParameterDeclaredType,
+        DT_cxxFunctionParameterDefaultValue,
+        DT_cxxFunctionParameters,
+        DT_cxxFunctionPrototype,
+        DT_cxxFunctionPureVirtual,
+        DT_cxxFunctionReimplemented,
+        DT_cxxFunctionScopedName,
+        DT_cxxFunctionStorageClassSpecifierStatic,
+        DT_cxxFunctionVirtual,
+        DT_cxxTypedef,
+        DT_cxxTypedefAccessSpecifier,
+        DT_cxxTypedefAPIItemLocation,
+        DT_cxxTypedefDeclarationFile,
+        DT_cxxTypedefDeclarationFileLine,
+        DT_cxxTypedefDefinition,
+        DT_cxxTypedefDetail,
+        DT_cxxTypedefNameLookup,
+        DT_cxxTypedefScopedName,
+    	DT_cxxVariable,
+    	DT_cxxVariableAccessSpecifier,
+    	DT_cxxVariableAPIItemLocation,
+        DT_cxxVariableDeclarationFile,
+        DT_cxxVariableDeclarationFileLine,
+    	DT_cxxVariableDeclaredType,
+    	DT_cxxVariableDefinition,
+    	DT_cxxVariableDetail,
+    	DT_cxxVariableNameLookup,
+    	DT_cxxVariablePrototype,
+    	DT_cxxVariableReimplemented,
+    	DT_cxxVariableScopedName,
+    	DT_cxxVariableStorageClassSpecifierStatic,
+        DT_data,
+        DT_dataabout,
+        DT_dd,
+        DT_dl,
+        DT_dlentry,
+        DT_dt,
+        DT_entry,
+        DT_fig,
+        DT_i,
+        DT_image,
+        DT_keyword,
+        DT_keywords,
+        DT_li,
+        DT_link,
+        DT_linktext,
+        DT_lq,
+        DT_metadata,
+        DT_ol,
+        DT_othermeta,
+        DT_p,
+        DT_parameter,
+        DT_permissions,
+        DT_ph,
+        DT_platform,
+        DT_pre,
+        DT_prodinfo,
+        DT_prodname,
+        DT_prolog,
+        DT_publisher,
+        DT_relatedLinks,
+        DT_resourceid,
+        DT_revised,
+        DT_row,
+        DT_section,
+        DT_sectiondiv,
+        DT_shortdesc,
+        DT_simpletable,
+        DT_source,
+        DT_stentry,
+        DT_sthead,
+        DT_strow,
+        DT_sub,
+        DT_sup,
+        DT_table,
+        DT_tbody,
+        DT_tgroup,
+        DT_thead,
+        DT_title,
+        DT_tm,
+        DT_topic,
+        DT_topicmeta,
+        DT_topicref,
+        DT_tt,
+        DT_u,
+        DT_ul,
+        DT_unknown,
+        DT_vrm,
+        DT_vrmlist,
+        DT_xref,
+        DT_LAST
+    };
+
  public:
     DitaXmlGenerator();
     ~DitaXmlGenerator();
@@ -139,6 +315,7 @@ class DitaXmlGenerator : public PageGenerator
     void writePropertyParameter(const QString& tag, const NodeList& nlist);
     void writeRelatedLinks(const FakeNode* fake, CodeMarker* marker);
     void writeLink(const Node* node, const QString& tex, const QString& role);
+    void writeProlog(const InnerNode* inner, CodeMarker* marker);
 
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
@@ -254,27 +431,45 @@ class DitaXmlGenerator : public PageGenerator
     virtual void endSubPage();
     virtual void generateInnerNode(const InnerNode* node);
     QXmlStreamWriter& xmlWriter();
-    void writeDetailedDescription(const Node* node,
-                                  CodeMarker* marker,
-                                  bool apiDesc,
-                                  const QString& title);
+    void writeApiDesc(const Node* node, CodeMarker* marker, const QString& title);
     void addLink(const QString& href, const QStringRef& text);
     void writeDitaMap();
+    void writeStartTag(DitaTag t);
+    void writeEndTag(DitaTag t=DT_NONE);
+    DitaTag currentTag();
+    void clearSectionNesting() { sectionNestingLevel = 0; } 
+    int enterApiDesc(const QString& outputclass, const QString& title);
+    int enterSection(const QString& outputclass, const QString& title);
+    int leaveSection();
+    bool inSection() const { return (sectionNestingLevel > 0); }
+    int currentSectionNestingLevel() const { return sectionNestingLevel; }
+    
 
  private:
-    QMap<QString, QString> refMap;
-    QMap<QString, QString> name2guidMap;
-    GuidMaps guidMaps;
-    int codeIndent;
+    /*
+      These flags indicate which elements the generator
+      is currently outputting.
+     */
+    bool inContents;
+    bool inDetailedDescription;
+    bool inLegaleseText;
     bool inLink;
     bool inObsoleteLink;
-    bool inContents;
     bool inSectionHeading;
     bool inTableHeader;
     bool inTableBody;
-    int numTableRows;
-    bool threeColumnEnumValueTable;
+
+    bool noLinks;
+    bool obsoleteLinks;
     bool offlineDocs;
+    bool threeColumnEnumValueTable;
+
+    int codeIndent;
+    int numTableRows;
+    int divNestingLevel;
+    int sectionNestingLevel;
+    int tableColumnCount;
+
     QString link;
     QStringList sectionNumber;
     QRegExp funcLeftParen;
@@ -288,12 +483,14 @@ class DitaXmlGenerator : public PageGenerator
     QString projectDescription;
     QString projectUrl;
     QString navigationLinks;
+    QString version;
+    QStringList vrm;
     QStringList stylesheets;
     QStringList customHeadElements;
     const Tree* myTree;
-    bool obsoleteLinks;
-    bool noLinks;
-    int tableColumnCount;
+    QMap<QString, QString> refMap;
+    QMap<QString, QString> name2guidMap;
+    GuidMaps guidMaps;
     QMap<QString, NodeMap > moduleClassMap;
     QMap<QString, NodeMap > moduleNamespaceMap;
     NodeMap nonCompatClasses;
@@ -312,12 +509,9 @@ class DitaXmlGenerator : public PageGenerator
     NewClassMaps newClassMaps;
     NewClassMaps newQmlClassMaps;
     static int id;
-    static bool inApiDesc;
-    static bool inSection;
-    static bool inDetailedDescription;
-    static bool inLegaleseText;
-
+    static QString ditaTags[];
     QStack<QXmlStreamWriter*> xmlWriterStack;
+    QStack<DitaTag> tagStack;
 };
 
 #define DITAXMLGENERATOR_ADDRESS           "address"

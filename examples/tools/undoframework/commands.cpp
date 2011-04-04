@@ -136,6 +136,12 @@ AddCommand::AddCommand(DiagramItem::DiagramType addType,
 }
 //! [7]
 
+AddCommand::~AddCommand()
+{
+    if (!myDiagramItem->scene())
+        delete myDiagramItem;
+}
+
 //! [8]
 void AddCommand::undo()
 {

@@ -719,9 +719,9 @@ EXPORTS
 	?serialNumber@QGLTextureGlyphCache@@QBEHXZ @ 718 NONAME ; int QGLTextureGlyphCache::serialNumber(void) const
 	?forceToImage@QGLPixmapData@@QAEXXZ @ 719 NONAME ; void QGLPixmapData::forceToImage(void)
 	?idealFormat@QGLPixmapData@@QAE?AW4Format@QImage@@AAV3@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 720 NONAME ; enum QImage::Format QGLPixmapData::idealFormat(class QImage &, class QFlags<enum Qt::ImageConversionFlag>)
-	?releaseNativeImageHandle@QGLPixmapData@@QAEXXZ @ 721 NONAME ABSENT ; void QGLPixmapData::releaseNativeImageHandle(void)
-	?createFromNativeImageHandleProvider@QGLPixmapData@@QAEXXZ @ 722 NONAME ABSENT ; void QGLPixmapData::createFromNativeImageHandleProvider(void)
-	?initFromNativeImageHandle@QGLPixmapData@@QAE_NPAXABVQString@@@Z @ 723 NONAME ABSENT ; bool QGLPixmapData::initFromNativeImageHandle(void *, class QString const &)
+	?releaseNativeImageHandle@QGLPixmapData@@QAEXXZ @ 721 NONAME ; void QGLPixmapData::releaseNativeImageHandle(void)
+	?createFromNativeImageHandleProvider@QGLPixmapData@@QAEXXZ @ 722 NONAME ; void QGLPixmapData::createFromNativeImageHandleProvider(void)
+	?initFromNativeImageHandle@QGLPixmapData@@QAE_NPAXABVQString@@@Z @ 723 NONAME ; bool QGLPixmapData::initFromNativeImageHandle(void *, class QString const &)
 	?glVertexAttrib3f@QGLFunctions@@QAEXIMMM@Z @ 724 NONAME ; void QGLFunctions::glVertexAttrib3f(unsigned int, float, float, float)
 	?glVertexAttrib1fv@QGLFunctions@@QAEXIPBM@Z @ 725 NONAME ; void QGLFunctions::glVertexAttrib1fv(unsigned int, float const *)
 	?glIsBuffer@QGLFunctions@@QAEEI@Z @ 726 NONAME ; unsigned char QGLFunctions::glIsBuffer(unsigned int)
