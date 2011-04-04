@@ -63,7 +63,7 @@ public:
 
     void createNewScreen(struct wl_output *output, QRect geometry);
     QList<QPlatformScreen *> screens() const { return mScreens; }
-    struct wl_surface *createSurface();
+    struct wl_surface *createSurface(void *handle);
     struct wl_buffer *createShmBuffer(int fd, int width, int height,
                                       uint32_t stride,
                                       struct wl_visual *visual);
