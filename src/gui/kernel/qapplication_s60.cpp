@@ -2198,7 +2198,8 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
         }
 #endif
 #ifdef QT_SOFTKEYS_ENABLED
-        QSoftKeyManager::updateSoftKeys();
+        if (!CEikonEnv::Static()->EikAppUi()->IsDisplayingMenuOrDialog())
+            QSoftKeyManager::updateSoftKeys();
 #endif
         break;
     case EEventFocusLost:
