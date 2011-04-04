@@ -8,7 +8,7 @@ EXPORTS
 	_Z25qt_vg_create_paint_enginev @ 7 NONAME
 	_Z26qt_vg_destroy_paint_engineP14QVGPaintEngine @ 8 NONAME
 	_Z28qt_vg_config_to_image_formatP11QEglContext @ 9 NONAME
-	_ZN13QVGPixmapData12forceToImageEv @ 10 NONAME
+	_ZN13QVGPixmapData12forceToImageEv @ 10 NONAME ABSENT
 	_ZN13QVGPixmapData12toNativeTypeEN11QPixmapData10NativeTypeE @ 11 NONAME
 	_ZN13QVGPixmapData14fromNativeTypeEPvN11QPixmapData10NativeTypeE @ 12 NONAME
 	_ZN13QVGPixmapData15setAlphaChannelERK7QPixmap @ 13 NONAME
@@ -213,6 +213,6 @@ EXPORTS
 	_ZN13QVGPixmapData24releaseNativeImageHandleEv @ 212 NONAME
 	_ZN13QVGPixmapData25initFromNativeImageHandleEPvRK7QString @ 213 NONAME
 	_ZN13QVGPixmapData35createFromNativeImageHandleProviderEv @ 214 NONAME
-	_ZN13QVGPixmapData12forceToImageEb @ 215 NONAME ABSENT
+	_ZN13QVGPixmapData12forceToImageEb @ 215 NONAME
 	_ZNK16QVGWindowSurface8featuresEv @ 216 NONAME
 
