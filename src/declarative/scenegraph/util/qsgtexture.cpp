@@ -123,7 +123,7 @@ QRectF QSGTexture::textureSubRect() const
 
 
 /*!
-    Sets wether mipmapping should be used when sampling from this texture.
+    Sets whether mipmapping should be used when sampling from this texture.
  */
 void QSGTexture::setMipmapFiltering(Filtering filter)
 {
@@ -135,7 +135,7 @@ void QSGTexture::setMipmapFiltering(Filtering filter)
 }
 
 /*!
-    Returns wether mipmapping should be used when sampling from this texture.
+    Returns whether mipmapping should be used when sampling from this texture.
  */
 QSGTexture::Filtering QSGTexture::mipmapFiltering() const
 {

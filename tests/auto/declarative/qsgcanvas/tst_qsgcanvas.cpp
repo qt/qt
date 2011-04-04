@@ -144,7 +144,7 @@ public:
 
     int iterations;
 protected:
-    Node* updatePaintNode(Node *, UpdatePaintNodeData *){
+    QSGNode* updatePaintNode(QSGNode *, UpdatePaintNodeData *){
         iterations++;
         update();
         return 0;

@@ -519,7 +519,7 @@ void QSGRenderer::bindGeometry(QSGMaterialShader *material, const QSGGeometry *g
             continue;
         Q_ASSERT_X(j < g->attributeCount(), "QSGRenderer::bindGeometry()", "Geometry lacks attribute required by material");
         const QSGGeometry::Attribute &a = g->attributes()[j];
-        Q_ASSERT_X(j == a.position, "QSGRenderer::bindGeometry()", "Geometry does not have continous attribute positions");
+        Q_ASSERT_X(j == a.position, "QSGRenderer::bindGeometry()", "Geometry does not have continuous attribute positions");
 #if defined(QT_OPENGL_ES_2)
         GLboolean normalize = a.type != GL_FLOAT;
 #else
