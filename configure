@@ -8330,6 +8330,11 @@ if [ -n "$QT_CFLAGS_FPU" ]; then
     echo "MMP_RULES += \"ARMFPU $QT_CFLAGS_FPU\"" >> "$QTCONFIG.tmp"
 fi
 
+if [ -n "$QMAKE_INCDIR_OPENGL_ES2" ]; then
+    echo "\n#Qt opengl include path" >> "$QTCONFIG.tmp"
+    echo "QMAKE_INCDIR_OPENGL_ES2 = \"$QMAKE_INCDIR_OPENGL_ES2\"" >> "$QTCONFIG.tmp"
+fi
+
 # replace qconfig.pri if it differs from the newly created temp file
 if cmp -s "$QTCONFIG.tmp" "$QTCONFIG"; then
     rm -f "$QTCONFIG.tmp"
