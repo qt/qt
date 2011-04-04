@@ -251,8 +251,8 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     QString qfilename = d->fileEntry.filePath();
 
     // Find placeholder string.
-    size_t phPos = size_t(qfilename.length());
-    size_t phLength = 0;
+    uint phPos = qfilename.length();
+    uint phLength = 0;
 
     while (phPos != 0) {
         --phPos;
