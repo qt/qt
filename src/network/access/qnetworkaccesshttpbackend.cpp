@@ -219,7 +219,7 @@ QNetworkAccessHttpBackend::~QNetworkAccessHttpBackend()
     2) If we have a cache entry for this url populate headers so the server can return 304
     3) Calculate if response_is_fresh and if so send the cache and set loadedFromCache to true
  */
-bool QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest)
+bool QNetworkAccessHttpBackend::loadFromCacheIfAllowed(QHttpNetworkRequest &httpRequest)
 {
     QNetworkRequest::CacheLoadControl CacheLoadControlAttribute =
         (QNetworkRequest::CacheLoadControl)request().attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt();
@@ -440,12 +440,12 @@ void QNetworkAccessHttpBackend::postRequest()
     switch (operation()) {
     case QNetworkAccessManager::GetOperation:
         httpRequest.setOperation(QHttpNetworkRequest::Get);
-        loadedFromCache = validateCache(httpRequest);
+        loadedFromCache = loadFromCacheIfAllowed(httpRequest);
         break;
 
     case QNetworkAccessManager::HeadOperation:
         httpRequest.setOperation(QHttpNetworkRequest::Head);
-        loadedFromCache = validateCache(httpRequest);
+        loadedFromCache = loadFromCacheIfAllowed(httpRequest);
         break;
 
     case QNetworkAccessManager::PostOperation:
