@@ -74,6 +74,7 @@
 #include "followemitter.h"
 #include "particleextruder.h"
 #include "ellipseextruder.h"
+#include "lineextruder.h"
 #include "maskextruder.h"
 #include "varyingvector.h"
 #include "pointvector.h"
@@ -110,6 +111,7 @@ void ParticlesPlugin::registerTypes(const char *uri)
     qmlRegisterType<FollowEmitter>(uri, 2, 0, "FollowEmitter");
     qmlRegisterType<ParticleExtruder>(uri, 2, 0, "Box");
     qmlRegisterType<EllipseExtruder>(uri, 2, 0, "Ellipse");
+    qmlRegisterType<LineExtruder>(uri, 2, 0, "Line");
     qmlRegisterType<MaskExtruder>(uri, 2, 0, "Mask");
 
     qmlRegisterType<VaryingVector>(uri, 2, 0, "NullVector");

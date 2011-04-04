@@ -51,7 +51,7 @@ Rectangle{
         id: cp
         image: "content/particle.png"
         colorVariation: 0.4
-        additive: 1
+        color: "#000000FF"
     }
     TrailEmitter{
         //burst on click
@@ -62,7 +62,7 @@ Rectangle{
         y: ma.mouseY
         particlesPerSecond: 16000
         particleDuration: 1000
-        maxParticleCount: 4000
+        maxParticles: 4000
         acceleration: AngleVector{angleVariation: 360; magnitude: 360; }
         particleSize: 8
         particleEndSize: 16
@@ -71,5 +71,15 @@ Rectangle{
     MouseArea{
         anchors.fill: parent
         id: ma
+    }
+    MouseArea{
+        width: 100
+        height: 100
+        onClicked: sys.overwrite = !sys.overwrite
+        id: ma2
+        Rectangle{
+            anchors.fill: parent
+            color: "lightsteelblue"
+        }
     }
 }

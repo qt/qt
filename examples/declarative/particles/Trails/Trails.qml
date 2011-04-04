@@ -50,8 +50,8 @@ Rectangle{
         system: sys
         id: cp
         image: "content/particle.png"
+        color: "#00FFFFFF"
         colorVariation: 0.4
-        additive: 1
     }
     TrailEmitter{
     //burst on click
@@ -81,7 +81,7 @@ Rectangle{
     MouseArea{
         id: ma
         anchors.fill: parent
-        onPressed: {bursty.x = mouse.x; bursty.y = mouse.y; bursty.burst(0.1);}
-        onReleased: {bursty.x = mouse.x; bursty.y = mouse.y; bursty.burst(0.1);}
+        onPressed: {bursty.x = mouse.x; bursty.y = mouse.y; bursty.pulse(0.1);}//uses both for comparison
+        onReleased: {bursty.x = mouse.x; bursty.y = mouse.y; bursty.burst(200);}
     }
 }

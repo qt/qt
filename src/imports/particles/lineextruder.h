@@ -39,67 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef TRAILSEMITTER_H
-#define TRAILSEMITTER_H
+#ifndef LINEEXTRUDER_H
+#define LINEEXTRUDER_H
+#include "particleextruder.h"
 
-#include <QtCore>
-#include <QtGui>
-
-#include "particleemitter.h"
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-
-class ParticleTrailsMaterial;
-class QSGGeometryNode;
-
-class TrailsEmitter : public ParticleEmitter
+class LineExtruder : public ParticleExtruder
 {
     Q_OBJECT
-
-    Q_PROPERTY(qreal speedFromMovement READ speedFromMovement WRITE setSpeedFromMovement NOTIFY speedFromMovementChanged)
+    //Default is topleft to bottom right. Flipped makes it topright to bottom left
+    Q_PROPERTY(bool mirrored READ mirrored WRITE setmirrored NOTIFY mirroredChanged)
 
 public:
-    explicit TrailsEmitter(QSGItem* parent=0);
-    virtual ~TrailsEmitter(){}
-    virtual void emitWindow(int timeStamp);
-
-
-    qreal speedFromMovement() const { return m_speed_from_movement; }
-    void setSpeedFromMovement(qreal s);
-
-    qreal renderOpacity() const { return m_render_opacity; }
+    explicit LineExtruder(QObject *parent = 0);
+    virtual QPointF extrude(const QRectF &);
+    bool mirrored() const
+    {
+        return m_mirrored;
+    }
 
 signals:
 
-    void speedFromMovementChanged();
+    void mirroredChanged(bool arg);
 
 public slots:
-public:
-    virtual void reset();
-protected:
 
+    void setmirrored(bool arg)
+    {
+        if (m_mirrored != arg) {
+            m_mirrored = arg;
+            emit mirroredChanged(arg);
+        }
+    }
 private:
-
-    qreal m_speed_from_movement;
-
-    // derived values...
-    int m_particle_count;
-    bool m_reset_last;
-    qreal m_last_timestamp;
-    qreal m_last_emission;
-
-    QPointF m_last_emitter;
-    QPointF m_last_last_emitter;
-    QPointF m_last_last_last_emitter;
-
-    qreal m_render_opacity;
+    bool m_mirrored;
 };
 
-QT_END_NAMESPACE
-QT_END_HEADER
-#endif // TRAILSEMITTER_H
+#endif // LINEEXTRUDER_H

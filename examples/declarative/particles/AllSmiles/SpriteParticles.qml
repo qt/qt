@@ -52,9 +52,8 @@ Rectangle{
         system: sys
         z: 2
         anchors.fill: parent
-        color: "lightsteelblue"
+        color: "#336666CC"
         colorVariation: 0.0
-        additive: 0.6
     }
     SpriteParticle{
         id: single

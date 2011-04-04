@@ -59,8 +59,7 @@ Rectangle {
         system: particles
         image: "content/particleA.png"
         colorVariation: 0.2
-        color: "#ff400f"
-        additive: 1
+        color: "#00ff400f"
     }
     */
     ColoredParticle{
@@ -70,8 +69,7 @@ Rectangle {
         particles: ["A", "B"]
         image: "content/particle.png"
         colorVariation: 0
-        color: "#111111"
-        additive: 1
+        color: "#00111111"
     }
     ColoredParticle{
         id: flame
@@ -80,8 +78,7 @@ Rectangle {
         particles: ["C", "D"]
         image: "content/particle.png"
         colorVariation: 0.1
-        color: "#ff400f"
-        additive: 1
+        color: "#00ff400f"
     }
     TrailEmitter{
         id: fire

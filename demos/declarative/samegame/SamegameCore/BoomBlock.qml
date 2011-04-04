@@ -90,7 +90,7 @@ Item {
         emitting: false;
         particleDuration: 700; particleDurationVariation: 100
         particlesPerSecond: 1000
-        maxParticleCount: 100 //only fires 0.1s bursts (still 2x old number, ColoredParticle wants less than 16000 max though)
+        maxParticles: 100 //only fires 0.1s bursts (still 2x old number, ColoredParticle wants less than 16000 max though)
         particleSize: 28
         particleEndSize: 14
     }
@@ -103,7 +103,7 @@ Item {
 
         State {
             name: "DeathState"; when: dying == true
-            StateChangeScript { script: particles.burst(0.1); }
+            StateChangeScript { script: particles.pulse(0.1); }
             PropertyChanges { target: img; opacity: 0 }
             StateChangeScript { script: block.destroy(1000); }
         }

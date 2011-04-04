@@ -98,7 +98,6 @@ Rectangle{
         image: "star.png"
         color: "white"
         colorVariation: 0.1
-        additive: 1
     }
     SpriteParticle{
         id: roids
@@ -119,7 +118,7 @@ Rectangle{
         system: particles
         image: "star.png"
 
-        color: "orange"
+        color: "#0FF06600"
         colorVariation: 0.3
     }
     ColoredParticle{
@@ -144,7 +143,6 @@ Rectangle{
         }
 
         colorVariation: 0.2
-        additive: 1
     }
     GravitationalSingularity{
         id: gs; x: root.width/2; y: root.height/2; strength: 4000000;

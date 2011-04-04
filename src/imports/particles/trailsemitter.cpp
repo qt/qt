@@ -50,7 +50,7 @@ TrailsEmitter::TrailsEmitter(QSGItem* parent)
     , m_particle_count(0)
     , m_reset_last(true)
     , m_last_timestamp(0)
-    , m_last_particle(0)
+    , m_last_emission(0)
 {
 //    setFlag(ItemHasContents);
 }
@@ -72,7 +72,7 @@ void TrailsEmitter::emitWindow(int timeStamp)
 {
     if (m_system == 0)
         return;
-    if(!m_emitting && !m_burstLeft){
+    if(!m_emitting && !m_burstLeft && !m_emitLeft){
         m_reset_last = true;
         return;
     }
@@ -80,16 +80,17 @@ void TrailsEmitter::emitWindow(int timeStamp)
     if (m_reset_last) {
         m_last_emitter = m_last_last_emitter = QPointF(x(), y());
         m_last_timestamp = timeStamp/1000.;
-        m_last_particle = ceil(m_last_timestamp * m_particlesPerSecond);
+        m_last_emission = m_last_timestamp;
         m_reset_last = false;
     }
 
-    m_particle_count = m_particlesPerSecond * (m_particleDuration / 1000.);
+    //XXX: m_particle_count = m_particlesPerSecond * (m_particleDuration / 1000.);
 
     if(m_burstLeft){
         m_burstLeft -= timeStamp - m_last_timestamp * 1000.;
         if(m_burstLeft < 0){
-            timeStamp += m_burstLeft;
+            if(!m_emitting)
+                timeStamp += m_burstLeft;
             m_burstLeft = 0;
         }
     }
@@ -97,7 +98,7 @@ void TrailsEmitter::emitWindow(int timeStamp)
 
 
     qreal particleRatio = 1. / m_particlesPerSecond;
-    qreal pt = m_last_particle * particleRatio;
+    qreal pt = m_last_emission;
 
     qreal opt = pt; // original particle time
     qreal dt = time - m_last_timestamp; // timestamp delta...
@@ -118,12 +119,14 @@ void TrailsEmitter::emitWindow(int timeStamp)
     float sizeAtEnd = m_particleEndSize >= 0 ? m_particleEndSize : m_particleSize;
     qreal emitter_x_offset = m_last_emitter.x() - x();
     qreal emitter_y_offset = m_last_emitter.y() - y();
-    while (pt < time) {
+    while (pt < time || m_emitLeft) {
         //int pos = m_last_particle % m_particle_count;
         ParticleData* datum = m_system->newDatum(m_system->m_groupIds[m_particle]);
         if(!datum){//skip this emission
-            ++m_last_particle;
-            pt += particleRatio;
+            if(!m_emitLeft)
+                pt += particleRatio;
+            else
+                --m_emitLeft;
             continue;
         }
         datum->e = this;//###useful?
@@ -141,7 +144,7 @@ void TrailsEmitter::emitWindow(int timeStamp)
 
         // Particle timestamp
         p.t = pt;
-        p.lifeSpan = //Promote to base class?
+        p.lifeSpan = //TODO:Promote to base class?
                 (m_particleDuration
                  + ((rand() % ((m_particleDurationVariation*2) + 1)) - m_particleDurationVariation))
                 / 1000.0;
@@ -175,11 +178,14 @@ void TrailsEmitter::emitWindow(int timeStamp)
         p.size = size;// * float(m_emitting);
         p.endSize = endSize;// * float(m_emitting);
 
-        ++m_last_particle;
-        pt = m_last_particle * particleRatio;
+        if(!m_emitLeft)
+            pt += particleRatio;
+        else
+            --m_emitLeft;
 
         m_system->emitParticle(datum);
     }
+    m_last_emission = pt;
 
     m_last_last_last_emitter = m_last_last_emitter;
     m_last_last_emitter = m_last_emitter;

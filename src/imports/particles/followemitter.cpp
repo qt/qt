@@ -82,7 +82,7 @@ void FollowEmitter::emitWindow(int timeStamp)
 {
     if (m_system == 0)
         return;
-    if(!m_emitting && !m_burstLeft)
+    if(!m_emitting && !m_burstLeft && !m_emitLeft)
         return;
     if(m_followCount != m_system->m_groupData[m_system->m_groupIds[m_follow]]->size){
         recalcParticlesPerSecond();
@@ -118,10 +118,13 @@ void FollowEmitter::emitWindow(int timeStamp)
             m_lastEmission[i] = time;//jump over this time period without emitting, because it's outside
             continue;
         }
-        while(pt < time){
+        while(pt < time || m_emitLeft){
             ParticleData* datum = m_system->newDatum(gId2);
             if(!datum){//skip this emission
-                pt += particleRatio;
+                if(m_emitLeft)
+                    --m_emitLeft;
+                else
+                    pt += particleRatio;
                 continue;
             }
             datum->e = this;//###useful?
@@ -172,7 +175,10 @@ void FollowEmitter::emitWindow(int timeStamp)
             p.size = size * float(m_emitting);
             p.endSize = endSize * float(m_emitting);
 
-            pt += particleRatio;
+            if(m_emitLeft)
+                --m_emitLeft;
+            else
+                pt += particleRatio;
             m_system->emitParticle(datum);
         }
         m_lastEmission[i] = pt;

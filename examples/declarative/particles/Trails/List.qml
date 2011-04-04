@@ -57,7 +57,6 @@ Rectangle {
         image: "content/star.png"
         color: "white"
         colorVariation: 0.0
-        additive: 0
     }
 
     // Define a delegate component.  A component will be

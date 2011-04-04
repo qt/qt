@@ -66,7 +66,7 @@ class ParticleEmitter : public QSGItem
     Q_PROPERTY(qreal particlesPerSecond READ particlesPerSecond WRITE setParticlesPerSecond NOTIFY particlesPerSecondChanged)
     Q_PROPERTY(int particleDuration READ particleDuration WRITE setParticleDuration NOTIFY particleDurationChanged)
     Q_PROPERTY(int particleDurationVariation READ particleDurationVariation WRITE setParticleDurationVariation NOTIFY particleDurationVariationChanged)
-    Q_PROPERTY(int maxParticleCount READ maxParticleCount WRITE setMaxParticleCount NOTIFY maxParticleCountChanged)
+    Q_PROPERTY(int maxParticles READ maxParticleCount WRITE setMaxParticleCount NOTIFY maxParticleCountChanged)
 
     Q_PROPERTY(qreal particleSize READ particleSize WRITE setParticleSize NOTIFY particleSizeChanged)
     Q_PROPERTY(qreal particleEndSize READ particleEndSize WRITE setParticleEndSize NOTIFY particleEndSizeChanged)
@@ -126,16 +126,18 @@ signals:
 
     void particleEndSizeChanged(qreal arg);
 
-void particleSizeVariationChanged(qreal arg);
+    void particleSizeVariationChanged(qreal arg);
 
-void speedChanged(VaryingVector * arg);
+    void speedChanged(VaryingVector * arg);
 
-void accelerationChanged(VaryingVector * arg);
+    void accelerationChanged(VaryingVector * arg);
 
-void maxParticleCountChanged(int arg);
+    void maxParticleCountChanged(int arg);
+    void particleCountChanged();
 
 public slots:
-    void burst(qreal seconds);
+    void pulse(qreal seconds);
+    void burst(int num);
 
     void setEmitting(bool arg);
 
@@ -227,13 +229,7 @@ public slots:
            }
        }
 
-       void setMaxParticleCount(int arg)
-       {
-           if (m_maxParticleCount != arg) {
-               m_maxParticleCount = arg;
-               emit maxParticleCountChanged(arg);
-           }
-       }
+       void setMaxParticleCount(int arg);
 
 public:
        int particleCount() const;
@@ -284,13 +280,14 @@ protected:
        ParticleExtruder* m_extruder;
        ParticleExtruder* m_defaultExtruder;
        ParticleExtruder* effectiveExtruder();
+       VaryingVector * m_speed;
+       VaryingVector * m_acceleration;
        qreal m_particleSize;
        qreal m_particleEndSize;
        qreal m_particleSizeVariation;
-       VaryingVector * m_speed;
-       VaryingVector * m_acceleration;
 
        int m_burstLeft;
+       int m_emitLeft;
 private:
        VaryingVector m_nullVector;
        int m_maxParticleCount;

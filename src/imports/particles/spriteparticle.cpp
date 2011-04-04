@@ -402,7 +402,8 @@ QSGNode *SpriteParticle::updatePaintNode(QSGNode *, UpdatePaintNodeData *)
         m_material = 0;
         m_pleaseReset = false;
     }
-    prepareNextFrame();
+    if(m_system&& m_system->isRunning())
+        prepareNextFrame();
     if (m_node){
         update();
         m_node->markDirty(QSGNode::DirtyMaterial);

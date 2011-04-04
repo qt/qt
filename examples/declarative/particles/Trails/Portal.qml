@@ -60,7 +60,7 @@ Rectangle{
         system: particles
         image: "content/particle.png"
         colorVariation: 0.1
-        color: "lightsteelblue"
+        color: "#0F9999FF"
         additive: 1
     }
     TrailEmitter{

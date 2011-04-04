@@ -67,7 +67,7 @@ ParticleData::ParticleData()
 }
 
 ParticleSystem::ParticleSystem(QSGItem *parent) :
-    QSGItem(parent), m_running(true) , m_startTime(0)
+    QSGItem(parent), m_running(true) , m_startTime(0), m_overwrite(true)
 {
     m_groupIds = QHash<QString, int>();
 }
@@ -81,11 +81,7 @@ void ParticleSystem::registerParticleType(ParticleType* p)
 void ParticleSystem::registerParticleEmitter(ParticleEmitter* e)
 {
     m_emitters << QPointer<ParticleEmitter>(e);//###How to get them out?
-    connect(e, SIGNAL(particlesPerSecondChanged(qreal)),//TODO: Make a better particleCountChanged signal on emitter
-            this, SLOT(countChanged()));
-    connect(e, SIGNAL(particleDurationChanged(int)),
-            this, SLOT(countChanged()));
-    connect(e, SIGNAL(maxParticleCountChanged(int)),
+    connect(e, SIGNAL(particleCountChanged()),
             this, SLOT(countChanged()));
     reset();
 }
@@ -219,9 +215,9 @@ ParticleData* ParticleSystem::newDatum(int groupId)
     ParticleData* ret;
     if(m_data[nextIdx]){//Recycle, it's faster.
         ret = m_data[nextIdx];
-        if(ret->pv.t + ret->pv.lifeSpan > m_timeInt/1000.0)
+        if(!m_overwrite && ret->pv.t + ret->pv.lifeSpan > m_timeInt/1000.0){
             return 0;//Artificial longevity (or too fast emission) means this guy hasn't died. To maintain count, don't emit a new one
-        //###Reset?
+        }//###Reset?
     }else{
         ret = new ParticleData;
         m_data[nextIdx] = ret;

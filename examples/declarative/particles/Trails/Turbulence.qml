@@ -70,17 +70,15 @@ Rectangle{
         particles: ["smoke"]
         system: ps
         image: "content/particle.png"
-        color: "#111111"
+        color: "#11111111"
         colorVariation: 0
-        additive: 1
     }
     ColoredParticle{
         particles: ["flame"]
         system: ps
         image: "content/particle.png"
-        color: "#ff400f"
+        color: "#11ff400f"
         colorVariation: 0.1
-        additive: 1
         }
     TrailEmitter{
         anchors.centerIn: parent

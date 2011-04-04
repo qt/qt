@@ -56,9 +56,17 @@ ParticleEmitter::ParticleEmitter(QSGItem *parent) :
   , m_particleEndSize(-1)
   , m_particleSizeVariation(0)
   , m_maxParticleCount(-1)
+  , m_burstLeft(0)
+  , m_emitLeft(0)
 
 {
     //TODO: Reset speed/acc back to null vector? Or allow null pointer?
+    connect(this, SIGNAL(maxParticleCountChanged(int)),
+            this, SIGNAL(particleCountChanged()));
+    connect(this, SIGNAL(particlesPerSecondChanged(qreal)),
+            this, SIGNAL(particleCountChanged()));
+    connect(this, SIGNAL(particleDurationChanged(int)),
+            this, SIGNAL(particleCountChanged()));
 }
 
 ParticleEmitter::~ParticleEmitter()
@@ -91,10 +99,34 @@ ParticleExtruder* ParticleEmitter::effectiveExtruder()
     return m_defaultExtruder;
 }
 
-void ParticleEmitter::burst(qreal seconds)
+void ParticleEmitter::pulse(qreal seconds)
 {
     if(!m_emitting)
-        m_burstLeft = seconds*1000.0;
+        m_burstLeft = seconds*1000.0;//TODO: Change name to match
+}
+
+void ParticleEmitter::burst(int num)
+{
+    m_emitLeft += num;
+}
+
+void ParticleEmitter::setMaxParticleCount(int arg)
+{
+    if (m_maxParticleCount != arg) {
+        if(arg < 0 && m_maxParticleCount >= 0){
+            connect(this, SIGNAL(particlesPerSecondChanged(qreal)),
+                    this, SIGNAL(particleCountChanged()));
+            connect(this, SIGNAL(particleDurationChanged(int)),
+                    this, SIGNAL(particleCountChanged()));
+        }else if(arg >= 0 && m_maxParticleCount < 0){
+            disconnect(this, SIGNAL(particlesPerSecondChanged(qreal)),
+                    this, SIGNAL(particleCountChanged()));
+            disconnect(this, SIGNAL(particleDurationChanged(int)),
+                    this, SIGNAL(particleCountChanged()));
+        }
+        m_maxParticleCount = arg;
+        emit maxParticleCountChanged(arg);
+    }
 }
 
 int ParticleEmitter::particleCount() const

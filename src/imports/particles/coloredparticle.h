@@ -63,7 +63,6 @@ class ColoredParticle : public ParticleType
     Q_PROPERTY(qreal colorVariation READ colorVariation WRITE setColorVariation NOTIFY colorVariationChanged)
     Q_PROPERTY(qreal alphaVariation READ alphaVariation WRITE setAlphaVariation NOTIFY alphaVariationChanged)
 
-    Q_PROPERTY(qreal additive READ additive WRITE setAdditive NOTIFY additiveChanged)
 public:
     explicit ColoredParticle(QSGItem *parent = 0);
     virtual ~ColoredParticle(){}
@@ -84,9 +83,6 @@ public:
     qreal colorVariation() const { return m_color_variation; }
     void setColorVariation(qreal var);
 
-    qreal additive() const { return m_additive; }
-    void setAdditive(qreal additive);
-
     qreal renderOpacity() const { return m_render_opacity; }
 
     qreal alphaVariation() const
@@ -101,7 +97,6 @@ signals:
 
     void colorChanged();
     void colorVariationChanged();
-    void additiveChanged();
 
     void particleDurationChanged();
     void alphaVariationChanged(qreal arg);
@@ -130,7 +125,6 @@ private:
 
     QColor m_color;
     qreal m_color_variation;
-    qreal m_additive;
     qreal m_particleDuration;
 
     QSGGeometryNode *m_node;

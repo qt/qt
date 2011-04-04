@@ -238,7 +238,6 @@ ColoredParticle::ColoredParticle(QSGItem* parent)
     , m_do_reset(false)
     , m_color(Qt::white)
     , m_color_variation(0.5)
-    , m_additive(1)
     , m_node(0)
     , m_material(0)
     , m_alphaVariation(0)
@@ -280,15 +279,6 @@ void ColoredParticle::setColorVariation(qreal var)
         return;
     m_color_variation = var;
     emit colorVariationChanged();
-    //m_system->pleaseReset();//XXX
-}
-
-void ColoredParticle::setAdditive(qreal additive)
-{
-    if (m_additive == additive)
-        return;
-    m_additive = additive;
-    emit additiveChanged();
     //m_system->pleaseReset();//XXX
 }
 
@@ -429,7 +419,7 @@ QSGNode *ColoredParticle::updatePaintNode(QSGNode *, UpdatePaintNodeData *)
         m_pleaseReset = false;
     }
 
-    if(m_system->isRunning())
+    if(m_system && m_system->isRunning())
         prepareNextFrame();
     if (m_node){
         update();
@@ -497,7 +487,7 @@ void ColoredParticle::load(ParticleData *d)
     color.r = m_color.red() * (1 - m_color_variation) + rand() % 256 * m_color_variation;
     color.g = m_color.green() * (1 - m_color_variation) + rand() % 256 * m_color_variation;
     color.b = m_color.blue() * (1 - m_color_variation) + rand() % 256 * m_color_variation;
-    color.a = (1 - m_additive) * m_color.alpha() * (1 - m_alphaVariation) + rand() % 256 * m_alphaVariation;
+    color.a = m_color.alpha() * (1 - m_alphaVariation) + rand() % 256 * m_alphaVariation;
     ColoredParticleVertices *particles = (ColoredParticleVertices *) m_node->geometry()->vertexData();
     ColoredParticleVertices &p = particles[particleTypeIndex(d)];
     p.v1.color = p.v2.color = p.v3.color = p.v4.color = color;

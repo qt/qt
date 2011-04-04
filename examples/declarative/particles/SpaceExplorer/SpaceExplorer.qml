@@ -96,7 +96,6 @@ Rectangle{
         image: "content/star.png"
         color: "white"
         colorVariation: 0.1
-        additive: 1
     }
     Gravity{
         system: background
@@ -208,7 +207,6 @@ Rectangle{
         image: "content/star.png"
         color: "white"
         colorVariation: 0.1
-        additive: 1
     }
     ColoredParticle{
         particles: ["shot"]
@@ -242,7 +240,6 @@ Rectangle{
         }
 
         colorVariation: 0.2
-        additive: 1
     }
     SpriteParticle{
         particles: ["powerups"]

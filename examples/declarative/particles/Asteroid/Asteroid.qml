@@ -71,7 +71,6 @@ Item {
         image: "star.png"
         colorVariation: 0.3
         color: "white"
-        additive: 1
     }
     TrailEmitter {
         id: starField

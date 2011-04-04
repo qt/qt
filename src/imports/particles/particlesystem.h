@@ -73,6 +73,7 @@ class ParticleSystem : public QSGItem
     Q_OBJECT
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
     Q_PROPERTY(int startTime READ startTime WRITE setStartTime NOTIFY startTimeChanged)
+    Q_PROPERTY(bool overwrite READ overwrite WRITE setOverwrite NOTIFY overwriteChanged)//XXX: Should just be an implementation detail, but I can't decide which way
 
 public:
     explicit ParticleSystem(QSGItem *parent = 0);
@@ -97,6 +98,8 @@ void runningChanged(bool arg);
 void startTimeChanged(int arg);
 
 
+void overwriteChanged(bool arg);
+
 public slots:
 void reset();
 void setRunning(bool arg);
@@ -105,6 +108,14 @@ void setRunning(bool arg);
 void setStartTime(int arg)
 {
     m_startTime = arg;
+}
+
+void setOverwrite(bool arg)
+{
+    if (m_overwrite != arg) {
+    m_overwrite = arg;
+emit overwriteChanged(arg);
+}
 }
 
 protected:
@@ -127,6 +138,11 @@ public://but only really for related class usage. Perhaps we should all be frien
     void registerParticleType(ParticleType* p);
     void registerParticleEmitter(ParticleEmitter* e);
     void registerParticleAffector(ParticleAffector* a);
+    bool overwrite() const
+    {
+        return m_overwrite;
+    }
+
 private:
     void initializeSystem();
     int m_particle_count;
@@ -137,6 +153,7 @@ private:
     QList<QPointer<ParticleType> > m_syncList;
     int m_startTime;
     int m_nextGroupId;
+    bool m_overwrite;
 };
 
 //TODO: Clean up all this into ParticleData

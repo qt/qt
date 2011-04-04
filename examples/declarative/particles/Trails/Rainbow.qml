@@ -51,7 +51,6 @@ Rectangle {
     ColoredParticle{
         system: particles
         colorVariation: 0.5
-        additive: 1
 
         image: "content/particle.png"
         colortable: "content/colortable.png"
