@@ -56,7 +56,7 @@ QWaylandWindow::QWaylandWindow(QWidget *window)
     static WId id = 1;
     mWindowId = id++;
 
-    mSurface = mDisplay->createSurface();
+    mSurface = mDisplay->createSurface(this);
 }
 
 QWaylandWindow::~QWaylandWindow()
@@ -76,13 +76,12 @@ void QWaylandWindow::setParent(const QPlatformWindow *parent)
 
 void QWaylandWindow::setVisible(bool visible)
 {
-    if (!mSurface) {
-        mSurface = mDisplay->createSurface();
+    if (!mSurface && visible) {
+        mSurface = mDisplay->createSurface(this);
         newSurfaceCreated();
     }
 
     if (visible) {
-        wl_surface_set_user_data(mSurface, this);
         wl_surface_map_toplevel(mSurface);
     } else {
         wl_surface_destroy(mSurface);

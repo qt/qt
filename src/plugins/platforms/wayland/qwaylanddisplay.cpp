@@ -54,9 +54,11 @@
 #include <fcntl.h>
 #include <stdio.h>
 
-struct wl_surface *QWaylandDisplay::createSurface()
+struct wl_surface *QWaylandDisplay::createSurface(void *handle)
 {
-    return wl_compositor_create_surface(mCompositor);
+    struct wl_surface * surface = wl_compositor_create_surface(mCompositor);
+    wl_surface_set_user_data(surface, handle);
+    return surface;
 }
 
 struct wl_buffer *QWaylandDisplay::createShmBuffer(int fd,

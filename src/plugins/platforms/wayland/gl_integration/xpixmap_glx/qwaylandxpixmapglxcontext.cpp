@@ -74,7 +74,7 @@ QWaylandXPixmapGLXContext::QWaylandXPixmapGLXContext(QWaylandXPixmapGLXIntegrati
     , mWindow(window)
     , mBuffer(0)
     , mPixmap(0)
-    , mConfig(qglx_findConfig(glxIntegration->xDisplay(),glxIntegration->screen(),window->widget()->platformWindowFormat()))
+    , mConfig(qglx_findConfig(glxIntegration->xDisplay(),glxIntegration->screen(),window->widget()->platformWindowFormat(),GLX_PIXMAP_BIT))
     , mGlxPixmap(0)
 {
     XVisualInfo *visualInfo = glXGetVisualFromFBConfig(glxIntegration->xDisplay(),mConfig);
