@@ -652,7 +652,7 @@ int QMetaObject::indexOfSlot(const char *slot) const
     if (i < 0)
         i = QMetaObjectPrivate::indexOfSlotRelative(&m, slot, true);
     if (i >= 0)
-        i += methodOffset();
+        i += m->methodOffset();
     return i;
 }
 
