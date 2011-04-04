@@ -219,14 +219,12 @@ while (1) {
 
         $definput[1] = "$defoutput[1].tmp";
 
-        if (!$foundBrokenSymbols || $errors) {
-            last;
-        }
-
-        print("Rerunning elf2e32 due to DEF file / ELF file mismatch\n");
-    } else {
+    }
+    if (!$foundBrokenSymbols || $errors) {
         last;
     }
+
+    print("Rerunning elf2e32 due to DEF file / ELF file mismatch\n");
 };
 
 if ($fixupFile) {
