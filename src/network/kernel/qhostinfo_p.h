@@ -234,6 +234,7 @@ public:
     ~QSymbianHostResolver();
 
     void requestHostLookup();
+    void abortHostLookup();
     int id();
 
     void returnResults();
@@ -301,6 +302,7 @@ public:
 private:
     void runNextLookup();
 
+    // this is true for single threaded use, with multiple threads the max is ((number of threads) + KMaxConcurrentLookups - 1)
     static const int KMaxConcurrentLookups = 5;
 
     QList<QSymbianHostResolver*> iCurrentLookups;
