@@ -125,7 +125,7 @@ QXcbConnection::QXcbConnection(const char *displayName)
     connect(notifier, SIGNAL(activated(int)), this, SLOT(processXcbEvents()));
 
     QAbstractEventDispatcher *dispatcher = QAbstractEventDispatcher::instance(qApp->thread());
-    connect(dispatcher, SIGNAL(awake()), this, SLOT(processXcbEvents()));
+    connect(dispatcher, SIGNAL(aboutToBlock()), this, SLOT(processXcbEvents()));
 }
 
 QXcbConnection::~QXcbConnection()
