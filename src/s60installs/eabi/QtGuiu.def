@@ -12433,4 +12433,7 @@ EXPORTS
 	_ZTV20QBlittablePixmapData @ 12432 NONAME
 	_ZTV9QScroller @ 12433 NONAME
 	_Zls6QDebugPK13QSymbianEvent @ 12434 NONAME
+	_ZN11QTextEngine17leadingSpaceWidthERK11QScriptLine @ 12435 NONAME
+	_ZNK14QWindowSurface8featuresEv @ 12436 NONAME
+	_ZNK20QRasterWindowSurface8featuresEv @ 12437 NONAME
 
