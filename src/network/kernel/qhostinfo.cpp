@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 #ifndef Q_OS_SYMBIAN
 Q_GLOBAL_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
 #else
-Q_GLOBAL_STATIC(QSymbianHostInfoLookupManger, theHostInfoLookupManager)
+Q_GLOBAL_STATIC(QSymbianHostInfoLookupManager, theHostInfoLookupManager)
 #endif
 
 /*!
@@ -202,7 +202,7 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
         manager->scheduleLookup(runnable);
     }
 #else
-    QSymbianHostInfoLookupManger *manager = theHostInfoLookupManager();
+    QSymbianHostInfoLookupManager *manager = theHostInfoLookupManager();
 
     if (manager) {
         // the application is still alive
@@ -267,7 +267,7 @@ QHostInfo QHostInfo::fromName(const QString &name)
 #endif
 
     QHostInfo hostInfo = QHostInfoAgent::fromName(name);
-    QAbstractHostInfoLookupManger* manager = theHostInfoLookupManager();
+    QAbstractHostInfoLookupManager* manager = theHostInfoLookupManager();
     manager->cache.put(name, hostInfo);
     return hostInfo;
 }
@@ -280,7 +280,7 @@ QHostInfo QHostInfoPrivate::fromName(const QString &name, QSharedPointer<QNetwor
 #endif
 
     QHostInfo hostInfo = QHostInfoAgent::fromName(name, session);
-    QAbstractHostInfoLookupManger* manager = theHostInfoLookupManager();
+    QAbstractHostInfoLookupManager* manager = theHostInfoLookupManager();
     manager->cache.put(name, hostInfo);
     return hostInfo;
 }
@@ -707,7 +707,7 @@ QHostInfo qt_qhostinfo_lookup(const QString &name, QObject *receiver, const char
     *id = -1;
 
     // check cache
-    QAbstractHostInfoLookupManger* manager = theHostInfoLookupManager();
+    QAbstractHostInfoLookupManager* manager = theHostInfoLookupManager();
     if (manager && manager->cache.isEnabled()) {
         QHostInfo info = manager->cache.get(name, valid);
         if (*valid) {
@@ -724,7 +724,7 @@ QHostInfo qt_qhostinfo_lookup(const QString &name, QObject *receiver, const char
 
 void qt_qhostinfo_clear_cache()
 {
-    QAbstractHostInfoLookupManger* manager = theHostInfoLookupManager();
+    QAbstractHostInfoLookupManager* manager = theHostInfoLookupManager();
     if (manager) {
         manager->clear();
     }
@@ -732,7 +732,7 @@ void qt_qhostinfo_clear_cache()
 
 void Q_AUTOTEST_EXPORT qt_qhostinfo_enable_cache(bool e)
 {
-    QAbstractHostInfoLookupManger* manager = theHostInfoLookupManager();
+    QAbstractHostInfoLookupManager* manager = theHostInfoLookupManager();
     if (manager) {
         manager->cache.setEnabled(e);
     }
@@ -800,7 +800,7 @@ void QHostInfoCache::clear()
     cache.clear();
 }
 
-QAbstractHostInfoLookupManger* QAbstractHostInfoLookupManger::globalInstance()
+QAbstractHostInfoLookupManager* QAbstractHostInfoLookupManager::globalInstance()
 {
     return theHostInfoLookupManager();
 }

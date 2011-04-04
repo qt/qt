@@ -172,24 +172,24 @@ public:
 };
 
 
-class QAbstractHostInfoLookupManger : public QObject
+class QAbstractHostInfoLookupManager : public QObject
 {
     Q_OBJECT
 
 public:
-    ~QAbstractHostInfoLookupManger() {}
+    ~QAbstractHostInfoLookupManager() {}
     virtual void clear() = 0;
 
     QHostInfoCache cache;
 
 protected:
-     QAbstractHostInfoLookupManger() {}
-     static QAbstractHostInfoLookupManger* globalInstance();
+     QAbstractHostInfoLookupManager() {}
+     static QAbstractHostInfoLookupManager* globalInstance();
 
 };
 
 #ifndef Q_OS_SYMBIAN
-class QHostInfoLookupManager : public QAbstractHostInfoLookupManger
+class QHostInfoLookupManager : public QAbstractHostInfoLookupManager
 {
     Q_OBJECT
 public:
@@ -279,14 +279,14 @@ private:
     } iState;
 };
 
-class QSymbianHostInfoLookupManger : public QAbstractHostInfoLookupManger
+class QSymbianHostInfoLookupManager : public QAbstractHostInfoLookupManager
 {
     Q_OBJECT
 public:
-    QSymbianHostInfoLookupManger();
-    ~QSymbianHostInfoLookupManger();
+    QSymbianHostInfoLookupManager();
+    ~QSymbianHostInfoLookupManager();
 
-    static QSymbianHostInfoLookupManger* globalInstance();
+    static QSymbianHostInfoLookupManager* globalInstance();
 
     int id();
     void clear();
