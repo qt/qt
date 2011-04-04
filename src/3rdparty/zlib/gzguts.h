@@ -25,7 +25,9 @@
 #  include <stdlib.h>
 #  include <limits.h>
 #endif
+#if !defined(_WIN32_WCE)
 #include <fcntl.h>
+#endif
 
 #ifdef NO_DEFLATE       /* for compatibility with old definition */
 #  define NO_GZCOMPRESS
