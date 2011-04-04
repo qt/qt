@@ -81,9 +81,37 @@ my $fixupFile = "";
 my $runCount = 0;
 my $returnCode = 0;
 
+# For debugging. Make it nonzero to give verbose output.
+my $debugScript = 1;
+my @usedDefFiles;
+sub recordDefFile {
+    return if (!$debugScript);
+
+    my ($msg, $file) = @_;
+    my $content = "$msg, $file:\n";
+    my $defFileFd;
+    if (!open($defFileFd, "< $file")) {
+        print("Warning: Could not open $file (for debug analysis)\n");
+        return;
+    }
+    while (<$defFileFd>) {
+        $content .= $_;
+    }
+
+    push(@usedDefFiles, $content);
+}
+sub printRecordedDefFiles {
+    return if (!$debugScript);
+
+    foreach (@usedDefFiles) {
+        print ("$_\n");
+    }
+}
+
 while (1) {
     if (++$runCount > 2) {
         print("Internal error in $0, link succeeded, but exports may be wrong.\n");
+        printRecordedDefFiles;
         last;
     }
 
@@ -109,6 +137,9 @@ while (1) {
         }
     }
     close($elf2e32Pipe);
+
+    recordDefFile("Run no $runCount, elf2e32 DEF file input", "$definput[1]");
+    recordDefFile("Run no $runCount, elf2e32 DEF file output", "$defoutput[1]");
 
     if ($errors) {
         $returnCode = 1;
