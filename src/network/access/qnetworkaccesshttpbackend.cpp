@@ -479,6 +479,13 @@ void QNetworkAccessHttpBackend::postRequest()
         break;                  // can't happen
     }
 
+    if (loadedFromCache) {
+        // commented this out since it will be called later anyway
+        // by copyFinished()
+        //QNetworkAccessBackend::finished();
+        return;    // no need to send the request! :)
+    }
+
     QList<QByteArray> headers = request().rawHeaderList();
     if (resumeOffset != 0) {
         if (headers.contains("Range")) {
@@ -505,13 +512,6 @@ void QNetworkAccessHttpBackend::postRequest()
 
     foreach (const QByteArray &header, headers)
         httpRequest.setHeaderField(header, request().rawHeader(header));
-
-    if (loadedFromCache) {
-        // commented this out since it will be called later anyway
-        // by copyFinished()
-        //QNetworkAccessBackend::finished();
-        return;    // no need to send the request! :)
-    }
 
     if (request().attribute(QNetworkRequest::HttpPipeliningAllowedAttribute).toBool() == true)
         httpRequest.setPipeliningAllowed(true);
