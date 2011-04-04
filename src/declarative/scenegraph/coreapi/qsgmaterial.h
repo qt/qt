@@ -55,7 +55,7 @@ class QSGMaterial;
 class Q_DECLARATIVE_EXPORT QSGMaterialShader
 {
 public:
-    class RenderState {
+    class Q_DECLARATIVE_EXPORT RenderState {
     public:
         enum DirtyState
         {
