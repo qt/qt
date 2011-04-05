@@ -338,7 +338,7 @@ QSet<QString> Config::subVars(const QString& var) const
 {
     QSet<QString> result;
     QString varDot = var + QLatin1Char('.');
-    QMap<QString, QString>::ConstIterator v = stringValueMap.begin();
+    QStringMultiMap::ConstIterator v = stringValueMap.begin();
     while (v != stringValueMap.end()) {
         if (v.key().startsWith(varDot)) {
             QString subVar = v.key().mid(varDot.length());
@@ -357,10 +357,10 @@ QSet<QString> Config::subVars(const QString& var) const
   with the matching keys (stripped of the prefix \a var and
   mapped to their values. The pairs are inserted into \a t
  */
-void Config::subVarsAndValues(const QString& var, QStringMap& t) const
+void Config::subVarsAndValues(const QString& var, QStringMultiMap& t) const
 {
     QString varDot = var + QLatin1Char('.');
-    QMap<QString, QString>::ConstIterator v = stringValueMap.begin();
+    QStringMultiMap::ConstIterator v = stringValueMap.begin();
     while (v != stringValueMap.end()) {
         if (v.key().startsWith(varDot)) {
             QString subVar = v.key().mid(varDot.length());

@@ -1327,6 +1327,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
         generateBody(inner, marker);
         out() << "</div>\n"; // QTBUG-9504
         generateAlsoList(inner, marker);
+        generateMaintainerList(inner, marker);
         generateExtractionMark(inner, EndMark);
     }
 

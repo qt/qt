@@ -63,6 +63,7 @@ Q_GLOBAL_STATIC(QSet<QString>, null_Set_QString)
 Q_GLOBAL_STATIC(QStringList, null_QStringList)
 Q_GLOBAL_STATIC(QList<Text>, null_QList_Text)
 Q_GLOBAL_STATIC(QStringMap, null_QStringMap)
+Q_GLOBAL_STATIC(QStringMultiMap, null_QStringMultiMap)
 
 struct Macro
 {
@@ -228,7 +229,7 @@ class DocPrivateExtra
     QList<int>          tableOfContentsLevels;
     QList<Atom*>        keywords;
     QList<Atom*>        targets;
-    QStringMap          metaMap;
+    QStringMultiMap          metaMap;
 
     DocPrivateExtra()
         : granularity(Doc::Part) { }
@@ -2960,9 +2961,9 @@ const QList<Atom *> &Doc::targets() const
     return priv->extra->targets;
 }
 
-const QStringMap &Doc::metaTagMap() const
+const QStringMultiMap &Doc::metaTagMap() const
 {
-    return priv && priv->extra ? priv->extra->metaMap : *null_QStringMap();
+    return priv && priv->extra ? priv->extra->metaMap : *null_QStringMultiMap();
 }
 
 void Doc::initialize(const Config& config)
