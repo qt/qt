@@ -260,7 +260,7 @@ QNetworkSession::QNetworkSession(const QNetworkConfiguration& connectionConfig, 
 */
 QNetworkSession::~QNetworkSession()
 {
-    delete d;
+    d->deleteLater();
 }
 
 /*!
