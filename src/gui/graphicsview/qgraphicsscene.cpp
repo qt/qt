@@ -4948,6 +4948,19 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
 
         if (painterStateProtection || restorePainterClip)
             painter->restore();
+
+        static int drawRect = qgetenv("QT_DRAW_SCENE_ITEM_RECTS").toInt();
+        if (drawRect) {
+            QPen oldPen = painter->pen();
+            QBrush oldBrush = painter->brush();
+            quintptr ptr = reinterpret_cast<quintptr>(item);
+            const QColor color = QColor::fromHsv(ptr % 255, 255, 255);
+            painter->setPen(color);
+            painter->setBrush(Qt::NoBrush);
+            painter->drawRect(adjustedItemBoundingRect(item));
+            painter->setPen(oldPen);
+            painter->setBrush(oldBrush);
+        }
     }
 
     // Draw children in front
