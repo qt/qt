@@ -72,7 +72,7 @@ void TrailsEmitter::emitWindow(int timeStamp)
 {
     if (m_system == 0)
         return;
-    if(!m_emitting && !m_burstLeft && !m_emitLeft){
+    if((!m_emitting || !m_particlesPerSecond)&& !m_burstLeft && !m_emitLeft){
         m_reset_last = true;
         return;
     }
@@ -84,8 +84,6 @@ void TrailsEmitter::emitWindow(int timeStamp)
         m_reset_last = false;
     }
 
-    //XXX: m_particle_count = m_particlesPerSecond * (m_particleDuration / 1000.);
-
     if(m_burstLeft){
         m_burstLeft -= timeStamp - m_last_timestamp * 1000.;
         if(m_burstLeft < 0){
@@ -95,7 +93,6 @@ void TrailsEmitter::emitWindow(int timeStamp)
         }
     }
     qreal time = timeStamp / 1000.;
-
 
     qreal particleRatio = 1. / m_particlesPerSecond;
     qreal pt = m_last_emission;

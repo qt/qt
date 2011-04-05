@@ -131,7 +131,7 @@ void ParticleEmitter::setMaxParticleCount(int arg)
 
 int ParticleEmitter::particleCount() const
 {
-    if(m_maxParticleCount > 0)
+    if(m_maxParticleCount >= 0)
         return m_maxParticleCount;
     return m_particlesPerSecond*((m_particleDuration+m_particleDurationVariation)/1000.0);
 }

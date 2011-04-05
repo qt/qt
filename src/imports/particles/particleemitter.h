@@ -288,9 +288,9 @@ protected:
 
        int m_burstLeft;
        int m_emitLeft;
+       int m_maxParticleCount;
 private:
        VaryingVector m_nullVector;
-       int m_maxParticleCount;
 };
 
 QT_END_NAMESPACE
