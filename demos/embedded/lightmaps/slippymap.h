@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,48 +39,49 @@
 **
 ****************************************************************************/
 
-#ifndef QMLVISITOR_H
-#define QMLVISITOR_H
+#ifndef SLIPPYMAP_H
+#define SLIPPYMAP_H
 
-#include <QString>
-#include "declarativeparser/qdeclarativejsastvisitor_p.h"
-#include "node.h"
-#include "tree.h"
+#include <QNetworkAccessManager>
+#include <QPixmap>
+#include <QUrl>
 
-QT_BEGIN_NAMESPACE
+class QNetworkReply;
+class QPainter;
 
-class QmlDocVisitor : public QDeclarativeJS::AST::Visitor
+class SlippyMap: public QObject
 {
+    Q_OBJECT
+
 public:
-    QmlDocVisitor(const QString &filePath, const QString &code,
-               QDeclarativeJS::Engine *engine, Tree *tree, QSet<QString> &commands);
-    virtual ~QmlDocVisitor();
+    SlippyMap(QObject *parent = 0);
+    void invalidate();
+    void render(QPainter *p, const QRect &rect);
+    void pan(const QPoint &delta);
 
-    bool visit(QDeclarativeJS::AST::UiImportList *imports);
+    int width;
+    int height;
+    int zoom;
+    qreal latitude;
+    qreal longitude;
 
-    bool visit(QDeclarativeJS::AST::UiObjectDefinition *definition);
-    void endVisit(QDeclarativeJS::AST::UiObjectDefinition *definition);
+signals:
+    void updated(const QRect &rect);
 
-    bool visit(QDeclarativeJS::AST::UiPublicMember *member);
-    void endVisit(QDeclarativeJS::AST::UiPublicMember *definition);
+private slots:
+    void handleNetworkData(QNetworkReply *reply);
+    void download();
 
-    bool visit(QDeclarativeJS::AST::IdentifierPropertyName *idproperty);
+protected:
+    QRect tileRect(const QPoint &tp);
 
 private:
-    QDeclarativeJS::AST::SourceLocation precedingComment(unsigned offset) const;
-    void applyDocumentation(QDeclarativeJS::AST::SourceLocation location, Node *node);
-
-    QDeclarativeJS::Engine *engine;
-    quint32 lastEndOffset;
-    QString filePath;
-    QString name;
-    QString document;
-    QList<QPair<QString, QString> > importList;
-    QSet<QString> commands;
-    Tree *tree;
-    InnerNode *current;
+    QPoint m_offset;
+    QRect m_tilesRect;
+    QPixmap m_emptyTile;
+    QHash<QPoint, QPixmap> m_tilePixmaps;
+    QNetworkAccessManager m_manager;
+    QUrl m_url;
 };
-
-QT_END_NAMESPACE
 
 #endif

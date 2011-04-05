@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "private/qdeclarativejsastvisitor_p.h"
-#include "private/qdeclarativejsglobal_p.h"
+#include "qdeclarativejsastvisitor_p.h"
+#include "qdeclarativejsglobal_p.h"
 
 #include <QtCore/QString>
 

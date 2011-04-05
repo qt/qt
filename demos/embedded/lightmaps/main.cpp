@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,48 +39,25 @@
 **
 ****************************************************************************/
 
-#ifndef QMLVISITOR_H
-#define QMLVISITOR_H
+#include <QApplication>
+#include "mapzoom.h"
 
-#include <QString>
-#include "declarativeparser/qdeclarativejsastvisitor_p.h"
-#include "node.h"
-#include "tree.h"
-
-QT_BEGIN_NAMESPACE
-
-class QmlDocVisitor : public QDeclarativeJS::AST::Visitor
+int main(int argc, char **argv)
 {
-public:
-    QmlDocVisitor(const QString &filePath, const QString &code,
-               QDeclarativeJS::Engine *engine, Tree *tree, QSet<QString> &commands);
-    virtual ~QmlDocVisitor();
-
-    bool visit(QDeclarativeJS::AST::UiImportList *imports);
-
-    bool visit(QDeclarativeJS::AST::UiObjectDefinition *definition);
-    void endVisit(QDeclarativeJS::AST::UiObjectDefinition *definition);
-
-    bool visit(QDeclarativeJS::AST::UiPublicMember *member);
-    void endVisit(QDeclarativeJS::AST::UiPublicMember *definition);
-
-    bool visit(QDeclarativeJS::AST::IdentifierPropertyName *idproperty);
-
-private:
-    QDeclarativeJS::AST::SourceLocation precedingComment(unsigned offset) const;
-    void applyDocumentation(QDeclarativeJS::AST::SourceLocation location, Node *node);
-
-    QDeclarativeJS::Engine *engine;
-    quint32 lastEndOffset;
-    QString filePath;
-    QString name;
-    QString document;
-    QList<QPair<QString, QString> > importList;
-    QSet<QString> commands;
-    Tree *tree;
-    InnerNode *current;
-};
-
-QT_END_NAMESPACE
-
+#if defined(Q_WS_X11)
+    QApplication::setGraphicsSystem("raster");
 #endif
+
+    QApplication app(argc, argv);
+    app.setApplicationName("LightMaps");
+
+    MapZoom w;
+#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE_WM)
+    w.showMaximized();
+#else
+    w.resize(600, 450);
+    w.show();
+#endif
+
+    return app.exec();
+}

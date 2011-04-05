@@ -59,10 +59,10 @@
 #ifndef QDECLARATIVEJSPARSER_P_H
 #define QDECLARATIVEJSPARSER_P_H
 
-#include "private/qdeclarativejsglobal_p.h"
-#include "private/qdeclarativejsgrammar_p.h"
-#include "private/qdeclarativejsast_p.h"
-#include "private/qdeclarativejsengine_p.h"
+#include "qdeclarativejsglobal_p.h"
+#include "qdeclarativejsgrammar_p.h"
+#include "qdeclarativejsast_p.h"
+#include "qdeclarativejsengine_p.h"
 
 #include <QtCore/QList>
 #include <QtCore/QString>

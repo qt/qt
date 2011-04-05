@@ -64,19 +64,6 @@ QT_BEGIN_NAMESPACE
 
 Q_OPENGL_EXPORT extern QGLWidget* qt_gl_share_widget();
 
-/*!
-    \class QGLFramebufferObjectPool
-    \since 4.6
-
-    \brief The QGLFramebufferObject class provides a pool of framebuffer
-    objects for offscreen rendering purposes.
-
-    When requesting an FBO of a given size and format, an FBO of the same
-    format and a size at least as big as the requested size will be returned.
-
-    \internal
-*/
-
 static inline int areaDiff(const QSize &size, const QGLFramebufferObject *fbo)
 {
     return qAbs(size.width() * size.height() - fbo->width() * fbo->height());
