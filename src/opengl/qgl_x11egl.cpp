@@ -232,7 +232,8 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     if (devType == QInternal::Widget) {
         if (d->eglSurface != EGL_NO_SURFACE)
             eglDestroySurface(d->eglContext->display(), d->eglSurface);
-        d->eglSurface = QEgl::createSurface(device(), d->eglContext->config());
+        // extraWindowSurfaceCreationProps default to NULL unless were specifically set before
+        d->eglSurface = QEgl::createSurface(device(), d->eglContext->config(), d->extraWindowSurfaceCreationProps);
         XFlush(X11->display);
         setWindowCreated(true);
     }

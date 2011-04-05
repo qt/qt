@@ -416,7 +416,8 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
             int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
             if (index != -1)
                 disconnect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
-            QGraphicsItem *rootItem;
+
+            QGraphicsItem *rootItem = 0;
             foreach (QGraphicsItem *item, gv->scene()->items()) {
                 if (!item->parentItem()) {
                     rootItem = item;
@@ -828,7 +829,7 @@ void QCoeFepInputContext::translateInputWidget()
         return;
 
     // Fetch root item (i.e. graphicsitem with no parent)
-    QGraphicsItem *rootItem;
+    QGraphicsItem *rootItem = 0;
     foreach (QGraphicsItem *item, gv->scene()->items()) {
         if (!item->parentItem()) {
             rootItem = item;

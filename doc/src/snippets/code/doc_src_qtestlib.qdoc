@@ -38,28 +38,6 @@
 **
 ****************************************************************************/
 
-//! [0]
-class MyFirstTest: public QObject
-{
-    Q_OBJECT
-private slots:
-    void initTestCase()
-    { qDebug("called before everything else"); }
-    void myFirstTest()
-    { QVERIFY(1 == 1); }
-    void mySecondTest()
-    { QVERIFY(1 != 2); }
-    void cleanupTestCase()
-    { qDebug("called after myFirstTest and mySecondTest"); }
-};
-//! [0]
-
-
-//! [1]
-QT += testlib
-//! [1]
-
-
 //! [2]
 testname [options] [testfunctions[:testdata]]...
 //! [2]
@@ -91,15 +69,6 @@ set LIB=C:\Program Files\Windows CE Tools\wce500\Windows Mobile 5.0 Pocket PC SD
 //! [7]
 
 
-//! [8]
-void TestQString::toUpper()
-{
-    QString str = "Hello";
-    QVERIFY(str.toUpper() == "HELLO");
-}
-//! [8]
-
-
 //! [9]
 /myTestDirectory$ qmake -project "CONFIG += qtestlib"
 /myTestDirectory$ qmake
@@ -116,27 +85,3 @@ PASS   : TestQString::cleanupTestCase()
 Totals: 3 passed, 0 failed, 0 skipped
 ********* Finished testing of TestQString *********
 //! [10]
-
-
-//! [11]
-QCOMPARE(QString("hello").toUpper(), QString("HELLO"));
-QCOMPARE(QString("Hello").toUpper(), QString("HELLO"));
-QCOMPARE(QString("HellO").toUpper(), QString("HELLO"));
-QCOMPARE(QString("HELLO").toUpper(), QString("HELLO"));
-//! [11]
-
-//! [12]
-class MyFirstBenchmark: public QObject
-{
-    Q_OBJECT
-private slots:
-    void myFirstBenchmark()
-    { 
-        QString string1;
-        QString string2;
-        QBENCHMARK {
-            string1.localeAwareCompare(string2);
-        }
-    }
-};
-//! [12]

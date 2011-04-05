@@ -219,7 +219,7 @@ QString QFutureInterfaceBase::progressText() const
 bool QFutureInterfaceBase::isProgressUpdateNeeded() const
 {
     QMutexLocker locker(&d->m_mutex);
-    return (d->progressTime.elapsed() > (1000 / MaxProgressEmitsPerSecond));
+    return !d->progressTime.isValid() || (d->progressTime.elapsed() > (1000 / MaxProgressEmitsPerSecond));
 }
 
 void QFutureInterfaceBase::reportStarted()

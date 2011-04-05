@@ -275,6 +275,7 @@ int QSqlRelationalTableModelPrivate::nameToIndex(const QString &name) const
 void QSqlRelationalTableModelPrivate::clearEditBuffer()
 {
     editBuffer = baseRec;
+    clearGenerated(editBuffer);
 }
 
 /*!
@@ -410,13 +411,14 @@ QVariant QSqlRelationalTableModel::data(const QModelIndex &index, int role) cons
             case OnFieldChange:
                 break;
             case OnRowChange:
-                if (index.row() == d->editIndex || index.row() == d->insertIndex) {
+                if ((index.row() == d->editIndex || index.row() == d->insertIndex)
+                    && d->editBuffer.isGenerated(index.column()))
                     v = d->editBuffer.value(index.column());
-                }
                 break;
             case OnManualSubmit:
                 const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
-                v = row.rec.value(index.column());
+                if (row.op != QSqlTableModelPrivate::None && row.rec.isGenerated(index.column()))
+                    v = row.rec.value(index.column());
                 break;
         }
         if (v.isValid())
@@ -678,8 +680,10 @@ void QSqlRelationalTableModelPrivate::translateFieldNames(int row, QSqlRecord &v
         int realCol = q->indexInQuery(q->createIndex(row, i)).column();
         if (realCol != -1 && relations.value(realCol).isValid()) {
             QVariant v = values.value(i);
+            bool gen = values.isGenerated(i);
             values.replace(i, baseRec.field(realCol));
             values.setValue(i, v);
+            values.setGenerated(i, gen);
         }
     }
 }

@@ -256,7 +256,7 @@
     variable set to 1. For example, this is set in the following way with
     the bash shell:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-accessibility.qdoc environment
+    \snippet doc/src/snippets/code/doc_src_qt4-accessibility.cpp environment
 
     Accessibility features are built into Qt by default when the libraries
     are configured and built.
