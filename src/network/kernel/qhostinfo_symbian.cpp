@@ -117,11 +117,13 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetw
         // Synchronous request. nameResult returns Host Name.
         err = hostResolver.GetByAddress(IpAdd, nameResult);
         if (err) {
-            setError_helper(results, err);
+            //for behavioural compatibility with Qt 4.7 and unix/windows
+            //backends: don't report error, return ip address as host name
+            results.setHostName(address.toString());
         } else {
             results.setHostName(qt_TDesC2QString(nameResult().iName));
-            results.setAddresses(QList<QHostAddress>() << address);
         }
+        results.setAddresses(QList<QHostAddress>() << address);
         return results;
     }
 
@@ -188,8 +190,7 @@ QString QHostInfo::localHostName()
     RSocketServ socketServ(qt_symbianGetSocketServer());
     RHostResolver hostResolver;
 
-    // Will return both IPv4 and IPv6
-    // TODO: Pass RHostResolver.Open() the global RConnection
+    // RConnection not required to get the host name
     int err = hostResolver.Open(socketServ, KAfInet, KProtocolInetUdp);
     if (err)
         return QString();
@@ -420,13 +421,7 @@ void QSymbianHostResolver::processNameResult()
 
         // Ensure that record is valid (not an alias and with length greater than 0)
         if (!(iNameResult().iFlags & TNameRecord::EAlias) && !(hostAdd.IsUnspecified())) {
-           if (iNameResult().iAddr.Family() == KAfInet) {
-                // IPv4 - prepend
-                iHostAddresses.prepend(QHostAddress(qt_TDesC2QString(ipAddr)));
-            } else {
-                // IPv6 - append
-                iHostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
-            }
+            iHostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
         }
 
         iState = EGetByName;
@@ -453,11 +448,13 @@ void QSymbianHostResolver::processAddressResult()
     TInt err = iStatus.Int();
 
     if (err < 0) {
-        setError_helper(iResults, err);
+        //For behavioural compatibility with Qt 4.7, don't report errors on reverse lookup,
+        //return the address as a string (same as unix/windows backends)
+        iResults.setHostName(iAddress.toString());
     } else {
         iResults.setHostName(qt_TDesC2QString(iNameResult().iName));
-        iResults.setAddresses(QList<QHostAddress>() << iAddress);
     }
+    iResults.setAddresses(QList<QHostAddress>() << iAddress);
     returnResults();
 }
 
@@ -523,6 +520,7 @@ void QSymbianHostInfoLookupManager::runNextLookup()
             // if spare capacity, try to start another one
             if (iCurrentLookups.count() >= KMaxConcurrentLookups)
                 break;
+            i--; //compensate for removeAt
         }
     }
 }
