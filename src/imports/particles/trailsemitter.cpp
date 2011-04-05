@@ -116,7 +116,7 @@ void TrailsEmitter::emitWindow(int timeStamp)
     qreal by = m_last_emitter.y();
     qreal cy = (y() + m_last_emitter.y()) / 2;
 
-    float sizeAtEnd = m_particleEndSize >= 0 ? m_particleEndSize : m_particleSize;
+    qreal sizeAtEnd = m_particleEndSize >= 0 ? m_particleEndSize : m_particleSize;
     qreal emitter_x_offset = m_last_emitter.x() - x();
     qreal emitter_y_offset = m_last_emitter.y() - y();
     while (pt < time || m_emitLeft) {
@@ -172,8 +172,8 @@ void TrailsEmitter::emitWindow(int timeStamp)
         float sizeVariation = -m_particleSizeVariation
                 + rand() / float(RAND_MAX) * m_particleSizeVariation * 2;
 
-        float size = m_particleSize + sizeVariation;
-        float endSize = sizeAtEnd + sizeVariation;
+        float size = qMax(0.0 , m_particleSize + sizeVariation);
+        float endSize = qMax(0.0 , sizeAtEnd + sizeVariation);
 
         p.size = size;// * float(m_emitting);
         p.endSize = endSize;// * float(m_emitting);

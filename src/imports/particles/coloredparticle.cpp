@@ -240,7 +240,11 @@ ColoredParticle::ColoredParticle(QSGItem* parent)
     , m_color_variation(0.5)
     , m_node(0)
     , m_material(0)
-    , m_alphaVariation(0)
+    , m_alphaVariation(0.0)
+    , m_alpha(1.0)
+    , m_redVariation(0.0)
+    , m_greenVariation(0.0)
+    , m_blueVariation(0.0)
 {
     setFlag(ItemHasContents);
 }
@@ -484,10 +488,13 @@ void ColoredParticle::load(ParticleData *d)
     //Color initialization
     // Particle color
     Color4ub color;
-    color.r = m_color.red() * (1 - m_color_variation) + rand() % 256 * m_color_variation;
-    color.g = m_color.green() * (1 - m_color_variation) + rand() % 256 * m_color_variation;
-    color.b = m_color.blue() * (1 - m_color_variation) + rand() % 256 * m_color_variation;
-    color.a = m_color.alpha() * (1 - m_alphaVariation) + rand() % 256 * m_alphaVariation;
+    qreal redVariation = m_color_variation + m_redVariation;
+    qreal greenVariation = m_color_variation + m_greenVariation;
+    qreal blueVariation = m_color_variation + m_blueVariation;
+    color.r = m_color.red() * (1 - redVariation) + rand() % 256 * redVariation;
+    color.g = m_color.green() * (1 - greenVariation) + rand() % 256 * greenVariation;
+    color.b = m_color.blue() * (1 - blueVariation) + rand() % 256 * blueVariation;
+    color.a = m_alpha * m_color.alpha() * (1 - m_alphaVariation) + rand() % 256 * m_alphaVariation;
     ColoredParticleVertices *particles = (ColoredParticleVertices *) m_node->geometry()->vertexData();
     ColoredParticleVertices &p = particles[particleTypeIndex(d)];
     p.v1.color = p.v2.color = p.v3.color = p.v4.color = color;

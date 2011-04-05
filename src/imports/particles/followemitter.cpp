@@ -95,7 +95,7 @@ void FollowEmitter::emitWindow(int timeStamp)
 
     //Have to map it into this system, because particlesystem automaps it back
     QPointF offset = this->mapFromItem(m_system, QPointF(0, 0));
-    float sizeAtEnd = m_particleEndSize >= 0 ? m_particleEndSize : m_particleSize;
+    qreal sizeAtEnd = m_particleEndSize >= 0 ? m_particleEndSize : m_particleSize;
 
     int gId = m_system->m_groupIds[m_follow];
     int gId2 = m_system->m_groupIds[m_particle];
@@ -161,8 +161,8 @@ void FollowEmitter::emitWindow(int timeStamp)
             float sizeVariation = -m_particleSizeVariation
                     + rand() / float(RAND_MAX) * m_particleSizeVariation * 2;
 
-            float size = m_particleSize + sizeVariation;
-            float endSize = sizeAtEnd + sizeVariation;
+            float size = qMax(0.0, m_particleSize + sizeVariation);
+            float endSize = qMax(0.0, sizeAtEnd + sizeVariation);
 
             p.size = size * float(m_emitting);
             p.endSize = endSize * float(m_emitting);

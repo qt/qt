@@ -60,7 +60,13 @@ class ColoredParticle : public ParticleType
     Q_PROPERTY(QUrl colortable READ colortable WRITE setColortable NOTIFY colortableChanged)
 
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
+    //Stacks (added) with individual colorVariations
     Q_PROPERTY(qreal colorVariation READ colorVariation WRITE setColorVariation NOTIFY colorVariationChanged)
+    Q_PROPERTY(qreal redVariation READ redVariation WRITE setRedVariation NOTIFY redVariationChanged)
+    Q_PROPERTY(qreal greenVariation READ greenVariation WRITE setGreenVariation NOTIFY greenVariationChanged)
+    Q_PROPERTY(qreal blueVariation READ blueVariation WRITE setBlueVariation NOTIFY blueVariationChanged)
+    //Stacks (multiplies) with the Alpha in the color, mostly here so you can use svg color names (which have full alpha)
+    Q_PROPERTY(qreal alpha READ alpha WRITE setAlpha NOTIFY alphaChanged)
     Q_PROPERTY(qreal alphaVariation READ alphaVariation WRITE setAlphaVariation NOTIFY alphaVariationChanged)
 
 public:
@@ -90,6 +96,26 @@ public:
         return m_alphaVariation;
     }
 
+    qreal alpha() const
+    {
+        return m_alpha;
+    }
+
+    qreal redVariation() const
+    {
+        return m_redVariation;
+    }
+
+    qreal greenVariation() const
+    {
+        return m_greenVariation;
+    }
+
+    qreal blueVariation() const
+    {
+        return m_blueVariation;
+    }
+
 signals:
 
     void imageChanged();
@@ -101,12 +127,52 @@ signals:
     void particleDurationChanged();
     void alphaVariationChanged(qreal arg);
 
+    void alphaChanged(qreal arg);
+
+    void redVariationChanged(qreal arg);
+
+    void greenVariationChanged(qreal arg);
+
+    void blueVariationChanged(qreal arg);
+
 public slots:
 void setAlphaVariation(qreal arg)
 {
     if (m_alphaVariation != arg) {
         m_alphaVariation = arg;
         emit alphaVariationChanged(arg);
+    }
+}
+
+void setAlpha(qreal arg)
+{
+    if (m_alpha != arg) {
+        m_alpha = arg;
+        emit alphaChanged(arg);
+    }
+}
+
+void setRedVariation(qreal arg)
+{
+    if (m_redVariation != arg) {
+        m_redVariation = arg;
+        emit redVariationChanged(arg);
+    }
+}
+
+void setGreenVariation(qreal arg)
+{
+    if (m_greenVariation != arg) {
+        m_greenVariation = arg;
+        emit greenVariationChanged(arg);
+    }
+}
+
+void setBlueVariation(qreal arg)
+{
+    if (m_blueVariation != arg) {
+        m_blueVariation = arg;
+        emit blueVariationChanged(arg);
     }
 }
 
@@ -135,6 +201,10 @@ private:
 
     qreal m_render_opacity;
     qreal m_alphaVariation;
+    qreal m_alpha;
+    qreal m_redVariation;
+    qreal m_greenVariation;
+    qreal m_blueVariation;
 };
 
 QT_END_NAMESPACE
