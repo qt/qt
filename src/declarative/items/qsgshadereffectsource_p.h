@@ -45,7 +45,6 @@
 #include "qsgitem.h"
 #include <private/qsgtextureprovider_p.h>
 #include <private/qsgadaptationlayer_p.h>
-#include <private/qsgtextureitem_p.h>
 
 #include "qpointer.h"
 #include "qsize.h"
@@ -70,6 +69,16 @@ public:
     ~QSGShaderEffectTextureProvider();
     virtual void updateTexture();
     virtual QSGTextureRef texture();
+
+    virtual WrapMode horizontalWrapMode() const;
+    virtual WrapMode verticalWrapMode() const;
+    virtual Filtering filtering() const;
+    virtual Filtering mipmapFiltering() const;
+
+    void setHorizontalWrapMode(WrapMode mode);
+    void setVerticalWrapMode(WrapMode mode);
+    void setFiltering(Filtering filtering);
+    void setMipmapFiltering(Filtering filtering);
 
     // The item's "paint node", not effect node.
     QSGNode *item() const { return m_item; }
@@ -109,15 +118,21 @@ private:
     QSGRectangleNode *m_debugOverlay;
 #endif
 
+    uint m_hWrapMode : 1;
+    uint m_vWrapMode : 1;
+    uint m_filtering : 2;
+    uint m_mipmapFiltering : 2;
+
     uint m_live : 1;
     uint m_dirtyTexture : 1;
     uint m_multisamplingSupportChecked : 1;
     uint m_multisampling : 1;
 };
 
-class QSGShaderEffectSource : public TextureItem
+class QSGShaderEffectSource : public QSGItem, public QSGTextureProviderInterface
 {
     Q_OBJECT
+    Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
     Q_PROPERTY(QSGItem *sourceItem READ sourceItem WRITE setSourceItem NOTIFY sourceItemChanged)
     Q_PROPERTY(QRectF sourceRect READ sourceRect WRITE setSourceRect NOTIFY sourceRectChanged)
     Q_PROPERTY(QSize textureSize READ textureSize WRITE setTextureSize NOTIFY textureSizeChanged)
@@ -125,8 +140,16 @@ class QSGShaderEffectSource : public TextureItem
     Q_PROPERTY(bool live READ live WRITE setLive NOTIFY liveChanged)
     Q_PROPERTY(bool hideSource READ hideSource WRITE setHideSource NOTIFY hideSourceChanged)
     Q_PROPERTY(bool mipmap READ mipmap WRITE setMipmap NOTIFY mipmapChanged)
-    Q_ENUMS(Format)
+    Q_INTERFACES(QSGTextureProviderInterface)
+    Q_ENUMS(Format WrapMode)
 public:
+    enum WrapMode {
+        ClampToEdge,
+        RepeatHorizontally,
+        RepeatVertically,
+        Repeat
+    };
+
     enum Format {
         Alpha = GL_ALPHA,
         RGB = GL_RGB,
@@ -135,6 +158,11 @@ public:
 
     QSGShaderEffectSource(QSGItem *parent = 0);
     ~QSGShaderEffectSource();
+
+    virtual QSGTextureProvider *textureProvider() const;
+
+    WrapMode wrapMode() const;
+    void setWrapMode(WrapMode mode);
 
     QSGItem *sourceItem() const;
     void setSourceItem(QSGItem *item);
@@ -160,6 +188,7 @@ public:
     Q_INVOKABLE void grab();
 
 Q_SIGNALS:
+    void wrapModeChanged();
     void sourceItemChanged();
     void sourceRectChanged();
     void textureSizeChanged();
@@ -172,6 +201,8 @@ protected:
     virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
 
 private:
+    QSGShaderEffectTextureProvider *m_textureProvider;
+    WrapMode m_wrapMode;
     QPointer<QSGItem> m_sourceItem;
     QRectF m_sourceRect;
     QSize m_textureSize;

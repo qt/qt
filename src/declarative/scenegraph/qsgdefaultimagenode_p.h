@@ -68,6 +68,9 @@ public:
     void setTexture(QSGTextureProvider *texture);
     QSGTextureProvider *texture() const { return m_texture; }
 
+    void setBlending(bool enable);
+    bool blending() const;
+
     static bool is(const QSGMaterial *effect);
 
 protected:
