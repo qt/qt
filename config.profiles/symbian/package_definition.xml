@@ -36,19 +36,5 @@
                 <unit bldFile="examples" qt:proFile="examples.pro"/>
             </component>
     </collection>
-    <collection id="qt_tests" name="Qt Tests" level="app">
-            <component id="qttestsauto" name="Qt Automated Tests" introduced="^2" filter="s60,qttestsauto,test,build_as_app">
-                  <meta rel="qttestsauto">
-                   <group name="qtdemos"/>
-                  </meta>
-                <unit bldFile="tests/auto" qt:proFile="qtpauto.pro"/>
-            </component>
-            <component id="qttestsbenchmarks" name="Qt Benchmarks Tests" introduced="^2" filter="s60,qttestsbenchmarks,test,build_as_app">
-                  <meta rel="testbuild">
-                   <group name="qttestsbenchmarks"/>
-                  </meta>
-                <unit bldFile="tests/benchmarks" qt:proFile="benchmarks.pro"/>
-            </component>
-    </collection>
   </package>
 </SystemDefinition>

@@ -46,6 +46,8 @@
 
 #include "listwidgeteditor.h"
 
+#include <QtGui/QDialog>
+
 QT_BEGIN_NAMESPACE
 
 class QTableWidget;
@@ -60,7 +62,7 @@ class TableWidgetEditor: public AbstractItemEditor
 {
     Q_OBJECT
 public:
-    TableWidgetEditor(QDesignerFormWindowInterface *form, QWidget *parent);
+    explicit TableWidgetEditor(QDesignerFormWindowInterface *form, QDialog *dialog);
 
     TableWidgetContents fillContentsFromTableWidget(QTableWidget *tableWidget);
     TableWidgetContents contents() const;
@@ -95,6 +97,7 @@ protected:
     virtual QVariant getItemData(int role) const;
 
 private:
+    void setPropertyBrowserVisible(bool v);
     void updateEditor();
     void moveColumnsLeft(int fromColumn, int toColumn);
     void moveColumnsRight(int fromColumn, int toColumn);
@@ -105,6 +108,19 @@ private:
     ItemListEditor *m_rowEditor;
     ItemListEditor *m_columnEditor;
     bool m_updatingBrowser;
+};
+
+class TableWidgetEditorDialog : public QDialog
+{
+    Q_OBJECT
+public:
+    explicit TableWidgetEditorDialog(QDesignerFormWindowInterface *form, QWidget *parent);
+
+    TableWidgetContents fillContentsFromTableWidget(QTableWidget *tableWidget);
+    TableWidgetContents contents() const;
+
+private:
+    TableWidgetEditor m_editor;
 };
 
 }  // namespace qdesigner_internal

@@ -399,10 +399,10 @@ bool QDeclarativeTextInputPrivate::setHAlign(QDeclarativeTextInput::HAlignment a
     if ((hAlign != alignment || forceAlign) && alignment <= QDeclarativeTextInput::AlignHCenter) { // justify not supported
         QDeclarativeTextInput::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
         hAlign = alignment;
-        return true;
         emit q->horizontalAlignmentChanged(alignment);
         if (oldEffectiveHAlign != q->effectiveHAlign())
             emit q->effectiveHorizontalAlignmentChanged();
+        return true;
     }
     return false;
 }
@@ -555,8 +555,10 @@ QRect QDeclarativeTextInput::cursorRectangle() const
 {
     Q_D(const QDeclarativeTextInput);
     QRect r = d->control->cursorRect();
-    r.setHeight(r.height()-1); // Make consistent with TextEdit (QLineControl inexplicably adds 1)
-    r.moveLeft(r.x() - d->hscroll);
+    // Scroll and make consistent with TextEdit
+    // QLineControl inexplicably adds 1 to the height and horizontal padding
+    // for unicode direction markers.
+    r.adjust(5 - d->hscroll, 0, -4 - d->hscroll, -1);
     return r;
 }
 

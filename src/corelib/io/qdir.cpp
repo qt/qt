@@ -196,12 +196,19 @@ inline void QDirPrivate::resolveAbsoluteEntry() const
     if (!absoluteDirEntry.isEmpty() || dirEntry.isEmpty())
         return;
 
-    if (dirEntry.isRelative()) {
-        QFileSystemEntry answer = QFileSystemEngine::absoluteName(dirEntry);
-        absoluteDirEntry = QFileSystemEntry(QDir::cleanPath(answer.filePath()), QFileSystemEntry::FromInternalPath());
+    QString absoluteName;
+    if (fileEngine.isNull()) {
+        if (!dirEntry.isRelative()) {
+            absoluteDirEntry = dirEntry;
+            return;
+        }
+
+        absoluteName = QFileSystemEngine::absoluteName(dirEntry).filePath();
     } else {
-        absoluteDirEntry = dirEntry;
+        absoluteName = fileEngine->fileName(QAbstractFileEngine::AbsoluteName);
     }
+
+    absoluteDirEntry = QFileSystemEntry(QDir::cleanPath(absoluteName), QFileSystemEntry::FromInternalPath());
 }
 
 /* For sorting */

@@ -417,6 +417,11 @@
     click focus to items underneath when being clicked on. This flag
     allows you create a non-focusable item that can be clicked on without
     changing the focus. \endomit
+
+    \omitvalue ItemStopsFocusHandling \omit Same as
+    ItemStopsClickFocusPropagation, but also suppresses focus-out. This flag
+    allows you to completely take over focus handling.
+    This flag was introduced in Qt 4.7.
 */
 
 /*!
@@ -574,19 +579,21 @@
     QGraphicsItem pointer). The return value is unused; you cannot adjust
     anything in this notification.
 
-    \value ItemSceneChange The item is moved to a new scene. This notification
-    is also sent when the item is added to its initial scene, and when it is
-    removed. The value argument is the new scene (i.e., a QGraphicsScene
+    \value ItemSceneChange The item is moved to a new scene. This notification is
+    also sent when the item is added to its initial scene, and when it is removed.
+    The item's scene() is the old scene (or 0 if the item has not been added to a
+    scene yet). The value argument is the new scene (i.e., a QGraphicsScene
     pointer), or a null pointer if the item is removed from a scene. Do not
-    override this change by passing this item to QGraphicsScene::addItem() as
-    this notification is delivered; instead, you can return the new scene from
+    override this change by passing this item to QGraphicsScene::addItem() as this
+    notification is delivered; instead, you can return the new scene from
     itemChange(). Use this feature with caution; objecting to a scene change can
     quickly lead to unwanted recursion.
 
-    \value ItemSceneHasChanged The item's scene has changed. The value
-    argument is the new scene (i.e., a pointer to a QGraphicsScene). Do not
-    call setScene() in itemChange() as this notification is delivered. The
-    return value is ignored.
+    \value ItemSceneHasChanged The item's scene has changed. The item's scene() is
+    the new scene. This notification is also sent when the item is added to its
+    initial scene, and when it is removed.The value argument is the new scene
+    (i.e., a pointer to a QGraphicsScene). Do not call setScene() in itemChange()
+    as this notification is delivered. The return value is ignored.
 
     \value ItemCursorChange The item's cursor changes. The value argument is
     the new cursor (i.e., a QCursor). Do not call setCursor() in itemChange()
@@ -11556,6 +11563,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemStopsClickFocusPropagation:
         str = "ItemStopsClickFocusPropagation";
+        break;
+    case QGraphicsItem::ItemStopsFocusHandling:
+        str = "ItemStopsFocusHandling";
         break;
     }
     debug << str;

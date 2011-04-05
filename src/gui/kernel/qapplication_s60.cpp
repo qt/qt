@@ -1132,7 +1132,8 @@ void QSymbianControl::Draw(const TRect& controlRect) const
             // Do nothing
             break;
         case QWExtra::Blit:
-            if (qwidget->d_func()->isOpaque)
+        case QWExtra::BlitWriteAlpha:
+            if (qwidget->d_func()->isOpaque || nativePaintMode == QWExtra::BlitWriteAlpha)
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
             gc.BitBlt(controlRect.iTl, bitmap, backingStoreRect);
             break;
@@ -1270,15 +1271,36 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         qwidget->d_func()->setWindowIcon_sys(true);
         qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
 #ifdef Q_WS_S60
-        // If widget is fullscreen/minimized, hide status pane and button container otherwise show them.
-        QWidget *const window = qwidget->window();
-        if (!window->parentWidget()) { // Only top level native windows have control over cba/status pane
-            const bool decorationsVisible = !(window->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
-            const bool statusPaneVisibility = decorationsVisible;
-            const bool isFullscreen = window->windowState() & Qt::WindowFullScreen;
-            const bool cbaVisibilityHint = window->windowFlags() & Qt::WindowSoftkeysVisibleHint;
-            const bool buttonGroupVisibility = (decorationsVisible || (isFullscreen && cbaVisibilityHint));
-            S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
+        if (qwidget->isWindow()) {
+            QWidget *const window = qwidget->window();
+            QWidget *parentWindow = window->parentWidget();
+            if (parentWindow) {
+                while (parentWindow->parentWidget())
+                    parentWindow = parentWindow->parentWidget();
+            } else {
+                parentWindow = window;
+            }
+
+            const bool parentDecorationsVisible = !(parentWindow->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
+            const bool parentIsFullscreen = parentWindow->windowState() & Qt::WindowFullScreen;
+            const bool parentCbaVisibilityHint = parentWindow->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+            bool buttonGroupVisibility = (parentDecorationsVisible || (parentIsFullscreen && parentCbaVisibilityHint));
+
+            // For non-toplevel normal and maximized windows, show cba if window has softkey
+            // actions even if topmost parent is not showing cba. Do the same for fullscreen
+            // windows that request it.
+            if (!buttonGroupVisibility
+                && window->parentWidget()
+                && !(window->windowState() & Qt::WindowMinimized)
+                && ((window->windowFlags() & Qt::WindowSoftkeysVisibleHint) || !(window->windowState() & Qt::WindowFullScreen))) {
+                for (int i = 0; i < window->actions().size(); ++i) {
+                    if (window->actions().at(i)->softKeyRole() != QAction::NoSoftKey) {
+                        buttonGroupVisibility = true;
+                        break;
+                    }
+                }
+            }
+            S60->setStatusPaneAndButtonGroupVisibility(parentDecorationsVisible, buttonGroupVisibility);
         }
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
@@ -1452,6 +1474,35 @@ void QSymbianControl::setFocusSafely(bool focus)
 bool QSymbianControl::isControlActive()
 {
     return IsActivated() ? true : false;
+}
+
+void QSymbianControl::ensureFixNativeOrientation()
+{
+#if defined(Q_SYMBIAN_SUPPORTS_FIXNATIVEORIENTATION)
+    // Call FixNativeOrientation() for fullscreen QDeclarativeViews that
+    // have a locked orientation matching the native orientation of the device.
+    // This avoids unnecessary window rotation on wserv level.
+    if (!qwidget->isWindow() || qwidget->windowType() == Qt::Desktop
+        || !qwidget->inherits("QDeclarativeView")
+        || S60->screenNumberForWidget(qwidget) > 0)
+        return;
+    const bool isFullScreen = qwidget->windowState().testFlag(Qt::WindowFullScreen);
+    const bool isFixed = qwidget->d_func()->fixNativeOrientationCalled;
+    const bool matchesNative = qwidget->testAttribute(
+        S60->nativeOrientationIsPortrait ? Qt::WA_LockPortraitOrientation
+            : Qt::WA_LockLandscapeOrientation);
+    if (isFullScreen && matchesNative) {
+        if (!isFixed) {
+            Window().FixNativeOrientation();
+            qwidget->d_func()->fixNativeOrientationCalled = true;
+        }
+    } else if (isFixed) {
+        qwidget->d_func()->fixNativeOrientationCalled = false;
+        qwidget->hide();
+        qwidget->d_func()->create_sys(0, false, true);
+        qwidget->show();
+    }
+#endif
 }
 
 /*!

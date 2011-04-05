@@ -202,6 +202,7 @@ private:
     qint64 lastTick;
     int timingInterval;
     int currentAnimationIdx;
+    bool insideTick;
     bool consistentTiming;
     bool slowMode;
 

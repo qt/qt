@@ -59,7 +59,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeImageBase : public QDeclarativeImplicitSizeI
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(bool asynchronous READ asynchronous WRITE setAsynchronous NOTIFY asynchronousChanged)
     Q_PROPERTY(bool cache READ cache WRITE setCache NOTIFY cacheChanged REVISION 1)
-    Q_PROPERTY(QSize sourceSize READ sourceSize WRITE setSourceSize NOTIFY sourceSizeChanged)
+    Q_PROPERTY(QSize sourceSize READ sourceSize WRITE setSourceSize RESET resetSourceSize NOTIFY sourceSizeChanged)
     Q_PROPERTY(bool mirror READ mirror WRITE setMirror NOTIFY mirrorChanged REVISION 1)
 
 public:
@@ -80,6 +80,7 @@ public:
 
     virtual void setSourceSize(const QSize&);
     QSize sourceSize() const;
+    void resetSourceSize();
 
     virtual void setMirror(bool mirror);
     bool mirror() const;

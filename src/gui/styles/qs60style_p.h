@@ -554,15 +554,13 @@ public:
 
     static QPixmap frame(SkinFrameElements frame, const QSize &size,
         SkinElementFlags flags = KDefaultSkinElementFlags);
-    static QPixmap backgroundTexture();
+    static QPixmap backgroundTexture(bool skipCreation = false);
     static QPixmap placeHolderTexture();
 
 #ifdef Q_WS_S60
     void handleDynamicLayoutVariantSwitch();
     void handleSkinChange();
 #endif // Q_WS_S60
-
-    static QSize naviPaneSize();
 
     //Checks that the current brush is transparent or has BrushStyle NoBrush,
     //so that theme graphic background can be drawn.
@@ -595,9 +593,9 @@ private:
 
     // set S60 font for widget
     void setFont(QWidget *widget) const;
-    void setThemePalette(QWidget *widget) const;
+    static void setThemePalette(QWidget *widget);
     void setThemePalette(QPalette *palette) const;
-    void setThemePaletteHash(QPalette *palette) const;
+    static void setThemePaletteHash(QPalette *palette);
     static void storeThemePalette(QPalette *palette);
     static void deleteThemePalette();
     static bool equalToThemePalette(QColor color, QPalette::ColorRole role);

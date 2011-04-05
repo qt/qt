@@ -1,7 +1,8 @@
 TEMPLATE      = subdirs
 SUBDIRS       = \
                 addressbook \
-                modelview
+                modelview \
+                threads
 
 
 # install

@@ -188,7 +188,7 @@ inline bool QDBusMarshaller::append(const QDBusVariant &arg)
         return false;
     }
 
-    QDBusMarshaller sub;
+    QDBusMarshaller sub(capabilities);
     open(sub, DBUS_TYPE_VARIANT, signature);
     bool isOk = sub.appendVariantInternal(value);
     // don't call sub.close(): it auto-closes
@@ -203,7 +203,7 @@ inline void QDBusMarshaller::append(const QStringList &arg)
         return;
     }
 
-    QDBusMarshaller sub;
+    QDBusMarshaller sub(capabilities);
     open(sub, DBUS_TYPE_ARRAY, DBUS_TYPE_STRING_AS_STRING);
     QStringList::ConstIterator it = arg.constBegin();
     QStringList::ConstIterator end = arg.constEnd();
@@ -280,6 +280,7 @@ void QDBusMarshaller::open(QDBusMarshaller &sub, int code, const char *signature
     sub.parent = this;
     sub.ba = ba;
     sub.ok = true;
+    sub.capabilities = capabilities;
 
     if (ba)
         switch (code) {
@@ -303,7 +304,7 @@ void QDBusMarshaller::open(QDBusMarshaller &sub, int code, const char *signature
 
 QDBusMarshaller *QDBusMarshaller::beginCommon(int code, const char *signature)
 {
-    QDBusMarshaller *d = new QDBusMarshaller;
+    QDBusMarshaller *d = new QDBusMarshaller(capabilities);
     open(*d, code, signature);
     return d;
 }
@@ -362,7 +363,7 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
         if (!d->message)
             return false;       // can't append this one...
 
-        QDBusDemarshaller demarshaller;
+        QDBusDemarshaller demarshaller(capabilities);
         demarshaller.message = q_dbus_message_ref(d->message);
 
         if (d->direction == Demarshalling) {
@@ -528,7 +529,7 @@ bool QDBusMarshaller::appendCrossMarshalling(QDBusDemarshaller *demarshaller)
     // We have to recurse
     QDBusDemarshaller *drecursed = demarshaller->beginCommon();
 
-    QDBusMarshaller mrecursed;  // create on the stack makes it autoclose
+    QDBusMarshaller mrecursed(capabilities);  // create on the stack makes it autoclose
     QByteArray subSignature;
     const char *sig = 0;
     if (code == DBUS_TYPE_VARIANT || code == DBUS_TYPE_ARRAY) {

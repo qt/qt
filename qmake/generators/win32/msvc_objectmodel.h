@@ -366,6 +366,7 @@ enum optLinkTimeCodeGenType {
     optLTCGUpdate
 };
 enum pchOption {
+    pchUnset = -1,
     pchNone,
     pchCreateUsingSpecific,
     pchGenerateAuto,

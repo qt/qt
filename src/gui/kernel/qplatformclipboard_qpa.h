@@ -44,6 +44,8 @@
 
 #include <qplatformdefs.h>
 
+#ifndef QT_NO_CLIPBOARD
+
 #include <QtGui/QClipboard>
 
 QT_BEGIN_HEADER
@@ -66,5 +68,6 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
+#endif // QT_NO_CLIPBOARD
 
 #endif //QPLATFORMCLIPBOARD_QPA_H

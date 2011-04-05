@@ -621,21 +621,21 @@ static QString get_network_interface()
     if (ret == 0) {
 	/* No results */
 #ifdef BEARER_MANAGEMENT_DEBUG
-	qDebug() << "Cannot get addrinfo from icd, are you connected or is icd running?";
+        qDebug() << "Cannot get addrinfo from icd, are you connected or is icd running?";
 #endif
-	return iface;
+        return iface;
     }
 
     if (addr_results.first().ip_info.isEmpty())
-	return QString();
+        return QString();
 
-    const char *address = addr_results.first().ip_info.first().address.toAscii().constData();
+    QByteArray data = addr_results.first().ip_info.first().address.toAscii();
     struct in_addr addr;
-    if (inet_aton(address, &addr) == 0) {
+    if (inet_aton(data.constData(), &addr) == 0) {
 #ifdef BEARER_MANAGEMENT_DEBUG
-	qDebug() << "address" << address << "invalid";
+        qDebug() << "address" << data.constData() << "invalid";
 #endif
-	return iface;
+        return iface;
     }
 
     struct ifaddrs *ifaddr, *ifa;

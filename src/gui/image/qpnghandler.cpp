@@ -109,6 +109,7 @@ public:
 
     bool readPngHeader();
     bool readPngImage(QImage *image);
+    void readPngTexts(png_info *info);
 
     QImage::Format readImageFormat();
 
@@ -218,6 +219,7 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, float scre
     png_colorp palette = 0;
     int num_palette;
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, 0, 0, 0);
+    png_set_interlace_handling(png_ptr);
 
     if (color_type == PNG_COLOR_TYPE_GRAY) {
         // Black & White or 8-bit grayscale
@@ -359,6 +361,39 @@ static void CALLBACK_CALL_TYPE qt_png_warning(png_structp /*png_ptr*/, png_const
 }
 #endif
 
+
+/*!
+    \internal
+*/
+void Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngTexts(png_info *info)
+{
+#ifndef QT_NO_IMAGE_TEXT
+    png_textp text_ptr;
+    int num_text=0;
+    png_get_text(png_ptr, info, &text_ptr, &num_text);
+
+    while (num_text--) {
+        QString key, value;
+        key = QString::fromLatin1(text_ptr->key);
+#if defined(PNG_iTXt_SUPPORTED)
+        if (text_ptr->itxt_length) {
+            value = QString::fromUtf8(text_ptr->text, int(text_ptr->itxt_length));
+        } else
+#endif
+        {
+            value = QString::fromLatin1(text_ptr->text, int(text_ptr->text_length));
+        }
+        if (!description.isEmpty())
+            description += QLatin1String("\n\n");
+        description += key + QLatin1String(": ") + value.simplified();
+        readTexts.append(key);
+        readTexts.append(value);
+        text_ptr++;
+    }
+#endif
+}
+
+
 /*!
     \internal
 */
@@ -394,30 +429,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngHeader()
     png_set_read_fn(png_ptr, this, iod_read_fn);
     png_read_info(png_ptr, info_ptr);
 
-#ifndef QT_NO_IMAGE_TEXT
-    png_textp text_ptr;
-    int num_text=0;
-    png_get_text(png_ptr,info_ptr,&text_ptr,&num_text);
-
-    while (num_text--) {
-        QString key, value;
-        key = QString::fromLatin1(text_ptr->key);
-#if defined(PNG_iTXt_SUPPORTED)
-        if (text_ptr->itxt_length) {
-            value = QString::fromUtf8(text_ptr->text, int(text_ptr->itxt_length));
-        } else
-#endif
-        {
-            value = QString::fromLatin1(QByteArray(text_ptr->text, int(text_ptr->text_length)));
-        }
-        if (!description.isEmpty())
-            description += QLatin1String("\n\n");
-        description += key + QLatin1String(": ") + value.simplified();
-        readTexts.append(key);
-        readTexts.append(value);
-        text_ptr++;
-    }
-#endif
+    readPngTexts(info_ptr);
 
     state = ReadHeader;
     return true;
@@ -492,11 +504,15 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
     outImage->setDotsPerMeterX(png_get_x_pixels_per_meter(png_ptr,info_ptr));
     outImage->setDotsPerMeterY(png_get_y_pixels_per_meter(png_ptr,info_ptr));
 
-    for (int i = 0; i < readTexts.size()-1; i+=2)
-        outImage->setText(readTexts.at(i), readTexts.at(i+1));
-
     state = ReadingEnd;
     png_read_end(png_ptr, end_info);
+
+#ifndef QT_NO_IMAGE_TEXT
+    readPngTexts(end_info);
+    for (int i = 0; i < readTexts.size()-1; i+=2)
+        outImage->setText(readTexts.at(i), readTexts.at(i+1));
+#endif
+
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
     delete [] row_pointers;
     png_ptr = 0;

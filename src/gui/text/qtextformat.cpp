@@ -411,6 +411,9 @@ void QTextFormatPrivate::recalcFont() const
             case QTextFormat::FontStyleHint:
                 f.setStyleHint(static_cast<QFont::StyleHint>(props.at(i).value.toInt()), f.styleStrategy());
                 break;
+            case QTextFormat::FontHintingPreference:
+                f.setHintingPreference(static_cast<QFont::HintingPreference>(props.at(i).value.toInt()));
+                break;
             case QTextFormat::FontStyleStrategy:
                 f.setStyleStrategy(static_cast<QFont::StyleStrategy>(props.at(i).value.toInt()));
                 break;
@@ -1565,6 +1568,25 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
     \sa font()
 */
 
+/*!
+    \since 4.8
+
+    \fn void QTextCharFormat::setFontHintingPreference(QFont::HintingPreference hintingPreference)
+
+    Sets the hinting preference of the text format's font to be \a hintingPreference.
+
+    \sa setFont(), QFont::setHintingPreference()
+*/
+
+/*!
+    \since 4.8
+
+    \fn QFont::HintingPreference QTextCharFormat::fontHintingPreference() const
+
+    Returns the hinting preference set for this text format.
+
+    \sa font(), QFont::hintingPreference()
+*/
 
 /*!
     \fn QPen QTextCharFormat::textOutline() const

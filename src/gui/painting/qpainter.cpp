@@ -6463,12 +6463,13 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     pen.setWidthF(fe->lineThickness().toReal());
     pen.setCapStyle(Qt::FlatCap);
 
-    QLineF line(pos.x(), pos.y(), pos.x() + width, pos.y());
+    QLineF line(pos.x(), pos.y(), pos.x() + qFloor(width), pos.y());
 
     const qreal underlineOffset = fe->underlinePosition().toReal();
     // deliberately ceil the offset to avoid the underline coming too close to
     // the text above it.
-    const qreal underlinePos = pos.y() + qCeil(underlineOffset);
+    const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
+    const qreal underlinePos = pos.y() + qCeil(underlineOffset) - aliasedCoordinateDelta;
 
     if (underlineStyle == QTextCharFormat::SpellCheckUnderline) {
         underlineStyle = QTextCharFormat::UnderlineStyle(QApplication::style()->styleHint(QStyle::SH_SpellCheckUnderlineStyle));
@@ -8246,12 +8247,16 @@ start_lengthVariant:
             QTextLine line = textLayout.lineAt(i);
 
             qreal advance = line.horizontalAdvance();
-            if (tf & Qt::AlignRight)
-                xoff = r.width() - advance;
+            xoff = 0;
+            if (tf & Qt::AlignRight) {
+                QTextEngine *eng = textLayout.engine();
+                xoff = r.width() - advance -
+                    eng->leadingSpaceWidth(eng->lines[line.lineNumber()]).toReal();
+            }
             else if (tf & Qt::AlignHCenter)
-                xoff = (r.width() - advance)/2;
+                xoff = (r.width() - advance) / 2;
 
-            line.draw(painter, QPointF(r.x() + xoff + line.x(), r.y() + yoff));
+            line.draw(painter, QPointF(r.x() + xoff, r.y() + yoff));
         }
 
         if (restore) {

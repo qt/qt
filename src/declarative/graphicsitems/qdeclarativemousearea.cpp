@@ -216,7 +216,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     \section1 Example Usage
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage qml-mousearea-snippet.png
     \enddiv
 
@@ -315,7 +315,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
 
-    \sa onCanceled()
+    \sa onCanceled
 */
 
 /*!

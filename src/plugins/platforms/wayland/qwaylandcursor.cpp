@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenVG module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -48,7 +48,7 @@
 
 #include <QtGui/QImageReader>
 
-#define DATADIR "/home/jlind/install/share"
+#define DATADIR "/usr/share"
 
 static const struct pointer_image {
     const char *filename;
@@ -163,6 +163,9 @@ void QWaylandCursor::changeCursor(QCursor *cursor, QWidget *widget)
     }
 
     QImageReader reader(p->filename);
+
+    if (!reader.canRead())
+        return;
 
     if (mBuffer == NULL || mBuffer->size() != reader.size()) {
         if (mBuffer)

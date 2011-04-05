@@ -158,7 +158,6 @@ public:
     static bool disabledPartGraphic(QS60StyleEnums::SkinParts &part);
     static bool disabledFrameGraphic(QS60StylePrivate::SkinFrameElements &frame);
     static QPixmap generateMissingThemeGraphic(QS60StyleEnums::SkinParts &part, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
-    static QSize naviPaneSize();
     static TAknsItemID partSpecificThemeId(int part);
 
     static QVariant themeDefinition(QS60StyleEnums::ThemeDefinitions definition, QS60StyleEnums::SkinParts part);
@@ -639,13 +638,14 @@ QPixmap QS60StyleModeSpecifics::fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask
 
     QPixmap pixmap;
     QScopedPointer<QPixmapData> pd(QPixmapData::create(0, 0, QPixmapData::PixmapType));
-    bool nativeMaskSupported = (pd->toNativeType(QPixmapData::VolatileImage) != 0);
-    if (mask && nativeMaskSupported) {
-        // Efficient path, less copying and conversion.
+    if (mask) {
+        // Try the efficient path with less copying and conversion.
         QVolatileImage img(icon, mask);
         pd->fromNativeType(&img, QPixmapData::VolatileImage);
-        pixmap = QPixmap(pd.take());
-    } else {
+        if (!pd->isNull())
+            pixmap = QPixmap(pd.take());
+    }
+    if (pixmap.isNull()) {
         // Potentially more expensive path.
         pd->fromNativeType(icon, QPixmapData::FbsBitmap);
         pixmap = QPixmap(pd.take());
@@ -1390,7 +1390,7 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size, Skin
     return result;
 }
 
-QPixmap QS60StylePrivate::backgroundTexture()
+QPixmap QS60StylePrivate::backgroundTexture(bool skipCreation)
 {
     bool createNewBackground = false;
     TRect applicationRect = (static_cast<CEikAppUi*>(S60->appUi())->ApplicationRect());
@@ -1401,25 +1401,41 @@ QPixmap QS60StylePrivate::backgroundTexture()
         if (m_background->width() != applicationRect.Width() ||
             m_background->height() != applicationRect.Height()) {
             delete m_background;
+            m_background = 0;
             createNewBackground = true;
         }
     }
 
-    if (createNewBackground) {
+    if (createNewBackground && !skipCreation) {
         QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen,
             QSize(applicationRect.Width(), applicationRect.Height()), 0, SkinElementFlags());
         m_background = new QPixmap(background);
+
+        // Notify all widgets that palette is updated with the actual background texture.
+        QPalette pal = QApplication::palette();
+        pal.setBrush(QPalette::Window, *m_background);
+        QApplication::setPalette(pal);
+        setThemePaletteHash(&pal);
+        storeThemePalette(&pal);
+        foreach (QWidget *widget, QApplication::allWidgets()){
+            QEvent e(QEvent::PaletteChange);
+            QApplication::sendEvent(widget, &e);
+            setThemePalette(widget);
+            widget->ensurePolished();
+        }
     }
+    if (!m_background)
+        return QPixmap();
     return *m_background;
 }
 
-// Generates 1*1 red pixmap as a placeholder for real texture.
+// Generates 1*1 white pixmap as a placeholder for real texture.
 // The actual theme texture is drawn in qt_s60_fill_background().
 QPixmap QS60StylePrivate::placeHolderTexture()
 {
     if (!m_placeHolderTexture) {
         m_placeHolderTexture = new QPixmap(1,1);
-        m_placeHolderTexture->fill(Qt::red);
+        m_placeHolderTexture->fill(Qt::white);
     }
     return *m_placeHolderTexture;
 }
@@ -1459,23 +1475,6 @@ void QS60StylePrivate::handleSkinChange()
     stopAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim); //todo: once we have more animations, we could say "stop all running ones"
     startAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim); //and "re-start all previously running ones"
 #endif
-}
-
-QSize QS60StylePrivate::naviPaneSize()
-{
-    return QS60StyleModeSpecifics::naviPaneSize();
-}
-
-QSize QS60StyleModeSpecifics::naviPaneSize()
-{
-    CAknNavigationControlContainer* naviContainer;
-    if (S60->statusPane()) {
-        TRAPD(err, naviContainer = static_cast<CAknNavigationControlContainer*>
-            (S60->statusPane()->ControlL(TUid::Uid(EEikStatusPaneUidNavi))));
-        if (err==KErrNone)
-            return QSize(naviContainer->Size().iWidth, naviContainer->Size().iHeight);
-    }
-    return QSize(0,0);
 }
 
 int QS60StylePrivate::currentAnimationFrame(QS60StyleEnums::SkinParts part)
