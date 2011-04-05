@@ -44,14 +44,30 @@
 QT_BEGIN_NAMESPACE
 
 ParticleExtruder::ParticleExtruder(QObject *parent) :
-    QObject(parent)
+    QObject(parent), m_fill(true)
 {
 }
 
 QPointF ParticleExtruder::extrude(const QRectF &rect)
 {
-    return QPointF(((qreal)rand() / RAND_MAX) * rect.width() + rect.x(),
-                   ((qreal)rand() / RAND_MAX) * rect.height() + rect.y());
+    if(m_fill)
+        return QPointF(((qreal)rand() / RAND_MAX) * rect.width() + rect.x(),
+                       ((qreal)rand() / RAND_MAX) * rect.height() + rect.y());
+    int side = rand() % 4;
+    switch(side){//TODO: Doesn't this overlap the corners?
+    case 0:
+        return QPointF(rect.x(),
+                       ((qreal)rand() / RAND_MAX) * rect.height() + rect.y());
+    case 1:
+        return QPointF(rect.width() + rect.x(),
+                       ((qreal)rand() / RAND_MAX) * rect.height() + rect.y());
+    case 2:
+        return QPointF(((qreal)rand() / RAND_MAX) * rect.width() + rect.x(),
+                       rect.y());
+    default:
+        return QPointF(((qreal)rand() / RAND_MAX) * rect.width() + rect.x(),
+                       rect.height() + rect.y());
+    }
 }
 
 QT_END_NAMESPACE
