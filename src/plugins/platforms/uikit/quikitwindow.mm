@@ -39,17 +39,221 @@
 **
 ****************************************************************************/
 
+#import <QuartzCore/CAEAGLLayer.h>
+
 #include "quikitwindow.h"
 
 #include "quikitscreen.h"
 
 #include <QtDebug>
+#include <QtGui/QPlatformGLContext>
+#include <QtGui/QWindowSystemInterface>
+
+#include <QtDebug>
+
+class EAGLPlatformContext : public QPlatformGLContext
+{
+public:
+    EAGLPlatformContext(EAGLView *view)
+        : mView(view)
+    {
+        mFormat.setWindowApi(QPlatformWindowFormat::OpenGL);
+        mFormat.setDepthBufferSize(24);
+        mFormat.setAccumBufferSize(0);
+        mFormat.setRedBufferSize(8);
+        mFormat.setGreenBufferSize(8);
+        mFormat.setBlueBufferSize(8);
+        mFormat.setAlphaBufferSize(8);
+        mFormat.setStencilBufferSize(8);
+        mFormat.setSampleBuffers(false);
+        mFormat.setSamples(1);
+//        mFormat.setSwapInterval(?)
+        mFormat.setDoubleBuffer(true);
+        mFormat.setDepth(true);
+        mFormat.setRgba(true);
+        mFormat.setAlpha(true);
+        mFormat.setAccum(false);
+        mFormat.setStencil(true);
+        mFormat.setStereo(false);
+        mFormat.setDirectRendering(false);
+        mFormat.setUseDefaultSharedContext(false);
+
+        EAGLContext *aContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+        [mView setContext:aContext];
+    }
+
+    ~EAGLPlatformContext() { }
+
+    void makeCurrent()
+    {
+        QPlatformGLContext::makeCurrent();
+        [mView makeCurrent];
+    }
+
+    void doneCurrent()
+    {
+        QPlatformGLContext::doneCurrent();
+    }
+
+    void swapBuffers()
+    {
+        [mView presentFramebuffer];
+    }
+
+    void* getProcAddress(const QString& ) { return 0; }
+
+    QPlatformWindowFormat platformWindowFormat() const
+    {
+        return mFormat;
+    }
+
+private:
+    EAGLView *mView;
+
+    QPlatformWindowFormat mFormat;
+};
+
+@implementation EAGLView
+
++ (Class)layerClass
+{
+    return [CAEAGLLayer class];
+}
+
+- (id)init
+{
+    if ((self = [super init])) {
+        CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
+        eaglLayer.opaque = TRUE;
+        eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+                                        [NSNumber numberWithBool:NO], kEAGLDrawablePropertyRetainedBacking,
+                                        kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
+                                        nil];
+    }
+    return self;
+}
+
+- (void)setContext:(EAGLContext *)newContext
+{
+    if (mContext != newContext)
+    {
+        [self deleteFramebuffer];
+        [mContext release];
+        mContext = [newContext retain];
+        [EAGLContext setCurrentContext:nil];
+    }
+}
+
+- (void)presentFramebuffer
+{
+    if (mContext) {
+        [EAGLContext setCurrentContext:mContext];
+        glBindRenderbufferOES(GL_RENDERBUFFER_OES, mColorRenderbuffer);
+        [mContext presentRenderbuffer:GL_RENDERBUFFER_OES];
+    }
+}
+
+- (void)deleteFramebuffer
+{
+    if (mContext)
+    {
+        [EAGLContext setCurrentContext:mContext];
+        if (mFramebuffer) {
+            glDeleteFramebuffersOES(1, &mFramebuffer);
+            mFramebuffer = 0;
+        }
+        if (mColorRenderbuffer) {
+            glDeleteRenderbuffersOES(1, &mColorRenderbuffer);
+            mColorRenderbuffer = 0;
+        }
+        if (mDepthRenderbuffer) {
+            glDeleteRenderbuffersOES(1, &mDepthRenderbuffer);
+            mDepthRenderbuffer = 0;
+        }
+    }
+}
+
+- (void)createFramebuffer
+{
+    if (mContext && !mFramebuffer)
+    {
+        [EAGLContext setCurrentContext:mContext];
+        glGenFramebuffersOES(1, &mFramebuffer);
+        glBindFramebufferOES(GL_FRAMEBUFFER_OES, mFramebuffer);
+
+        glGenRenderbuffersOES(1, &mColorRenderbuffer);
+        glBindRenderbufferOES(GL_RENDERBUFFER_OES, mColorRenderbuffer);
+        [mContext renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer *)self.layer];
+        glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &mFramebufferWidth);
+        glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &mFramebufferHeight);
+        glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, mColorRenderbuffer);
+
+        glGenRenderbuffersOES(1, &mDepthRenderbuffer);
+        glBindRenderbufferOES(GL_RENDERBUFFER_OES, mDepthRenderbuffer);
+        glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH24_STENCIL8_OES, mFramebufferWidth, mFramebufferHeight);
+        glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, mDepthRenderbuffer);
+        glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_STENCIL_ATTACHMENT_OES, GL_RENDERBUFFER_OES, mDepthRenderbuffer);
+
+        if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES)
+            NSLog(@"Failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
+    }
+}
+
+- (void)makeCurrent
+{
+    if (mContext)
+    {
+        [EAGLContext setCurrentContext:mContext];
+        if (!mFramebuffer)
+            [self createFramebuffer];
+        glBindFramebufferOES(GL_FRAMEBUFFER_OES, mFramebuffer);
+        glViewport(0, 0, mFramebufferWidth, mFramebufferHeight);
+    }
+}
+
+- (void)setWindow:(QPlatformWindow *)window
+{
+    mWindow = window;
+}
+
+- (void)sendMouseEventForTouches:(NSSet *)touches withEvent:(UIEvent *)event fakeButtons:(Qt::MouseButtons)buttons
+{
+    UITouch *touch = [touches anyObject];
+    CGPoint locationInView = [touch locationInView:self];
+    QPoint p(locationInView.x, locationInView.y);
+    // TODO handle global touch point? for status bar?
+    QWindowSystemInterface::handleMouseEvent(mWindow->widget(), (ulong)(event.timestamp*1000),
+        p, p, buttons);
+}
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [self sendMouseEventForTouches:touches withEvent:event fakeButtons:Qt::LeftButton];
+}
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [self sendMouseEventForTouches:touches withEvent:event fakeButtons:Qt::LeftButton];
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [self sendMouseEventForTouches:touches withEvent:event fakeButtons:Qt::NoButton];
+}
+
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [self sendMouseEventForTouches:touches withEvent:event fakeButtons:Qt::NoButton];
+}
+
+@end
 
 QT_BEGIN_NAMESPACE
 
 QUIKitWindow::QUIKitWindow(QWidget *tlw) :
     QPlatformWindow(tlw),
-    mWindow(nil)
+    mWindow(nil),
+    mContext(0)
 {
     mScreen = static_cast<QUIKitScreen *>(QPlatformScreen::platformScreenForWidget(tlw));
     CGRect screenBounds = [mScreen->uiScreen() bounds];
@@ -60,6 +264,8 @@ QUIKitWindow::QUIKitWindow(QWidget *tlw) :
 
 QUIKitWindow::~QUIKitWindow()
 {
+    delete mContext; mContext = 0;
+    [mView release];
     [mWindow release];
 }
 
@@ -67,6 +273,8 @@ void QUIKitWindow::setGeometry(const QRect &rect)
 {
     if (mWindow) {
         mWindow.frame = CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
+        mView.frame = CGRectMake(0, 0, rect.width(), rect.height());
+        [mView deleteFramebuffer];
         [mWindow setNeedsDisplay];
     }
     QPlatformWindow::setGeometry(rect);
@@ -75,15 +283,31 @@ void QUIKitWindow::setGeometry(const QRect &rect)
 UIWindow *QUIKitWindow::ensureNativeWindow()
 {
     if (!mWindow) {
+        // window
         CGRect screenBounds = [mScreen->uiScreen() bounds];
         QRect geom = geometry();
         CGRect frame = CGRectMake(geom.x(), geom.y(), geom.width(), geom.height());
         mWindow = [[UIWindow alloc] initWithFrame:frame];
         mWindow.screen = mScreen->uiScreen();
         mWindow.frame = frame; // for some reason setting the screen resets frame.origin
+
+        // view
+        mView = [[EAGLView alloc] initWithFrame:CGRectMake(0, 0, geom.width(), geom.height())];
+        [mView setMultipleTouchEnabled:YES];
+        [mView setWindow:this];
+        [mWindow addSubview:mView];
         [mWindow setNeedsDisplay];
+        [mWindow makeKeyAndVisible];
     }
     return mWindow;
+}
+
+QPlatformGLContext *QUIKitWindow::glContext() const
+{
+    if (!mContext) {
+        mContext = new EAGLPlatformContext(mView);
+    }
+    return mContext;
 }
 
 QT_END_NAMESPACE

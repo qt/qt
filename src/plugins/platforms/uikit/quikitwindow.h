@@ -43,7 +43,33 @@
 #define QUIKITWINDOW_H
 
 #include <QPlatformWindow>
-#include <UIKit/UIKit.h>
+
+#import <UIKit/UIKit.h>
+#import <OpenGLES/ES1/gl.h>
+#import <OpenGLES/ES1/glext.h>
+#import <OpenGLES/EAGL.h>
+
+@interface EAGLView : UIView
+{
+    QPlatformWindow *mWindow;
+    EAGLContext *mContext;
+
+    GLint mFramebufferWidth;
+    GLint mFramebufferHeight;
+
+    GLuint mFramebuffer, mColorRenderbuffer, mDepthRenderbuffer;
+}
+
+- (void)setContext:(EAGLContext *)newContext;
+- (void)presentFramebuffer;
+- (void)deleteFramebuffer;
+- (void)createFramebuffer;
+- (void)makeCurrent;
+- (void)setWindow:(QPlatformWindow *)window;
+- (void)sendMouseEventForTouches:(NSSet *)touches withEvent:(UIEvent *)event fakeButtons:(Qt::MouseButtons)buttons;
+@end
+
+class EAGLPlatformContext;
 
 QT_BEGIN_NAMESPACE
 
@@ -60,9 +86,13 @@ public:
 
     UIWindow *ensureNativeWindow();
 
+    QPlatformGLContext *glContext() const;
+
 private:
     QUIKitScreen *mScreen;
     UIWindow *mWindow;
+    EAGLView *mView;
+    mutable EAGLPlatformContext *mContext;
 };
 
 QT_END_NAMESPACE
