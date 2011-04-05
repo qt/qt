@@ -3191,15 +3191,10 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             rightShift = 3; // divide by 8
 
         int margin = cache->glyphMargin();
-
-        bool supportsSubPixelPositions = fontEngine->supportsSubPixelPositions();
-
         const uchar *bits = image.bits();
         for (int i=0; i<numGlyphs; ++i) {
 
-            QFixed subPixelPosition;
-            if (supportsSubPixelPositions)
-                subPixelPosition = cache->subPixelPositionForX(positions[i].x);
+            QFixed subPixelPosition = cache->subPixelPositionForX(positions[i].x);
             QTextureGlyphCache::GlyphAndSubPixelPosition glyph(glyphs[i], subPixelPosition);
             const QTextureGlyphCache::Coord &c = cache->coords[glyph];
             if (c.isNull())

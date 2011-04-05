@@ -369,11 +369,14 @@ public:
     EGLSurface eglSurface;
     void destroyEglSurfaceForDevice();
     EGLSurface eglSurfaceForDevice() const;
+    static QEglProperties *extraWindowSurfaceCreationProps;
+    static void setExtraWindowSurfaceCreationProps(QEglProperties *props);
 #endif
 
 #if defined(Q_WS_QPA)
     QPlatformGLContext *platformContext;
     void setupSharing();
+
 #elif defined(Q_WS_X11) || defined(Q_WS_MAC)
     void* cx;
 #endif

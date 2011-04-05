@@ -83,8 +83,10 @@ QString ExampleContent::loadDescription()
     int errorLine, errorColumn;
 
     QDomDocument exampleDoc;
-    if (!exampleDoc.setContent(ba, false, &errorMsg, &errorLine, &errorColumn)) {
-        qDebug() << errorMsg << errorLine << errorColumn;
+    if (ba.isEmpty()) {
+        qDebug() << "No documentation found for" << name << "Is the documentation built?";
+    } else if (!exampleDoc.setContent(ba, false, &errorMsg, &errorLine, &errorColumn)) {
+        qDebug() << "Error loading documentation for " << name << ": " << errorMsg << errorLine << errorColumn;
     }
 
     QDomNodeList paragraphs = exampleDoc.elementsByTagName("p");
