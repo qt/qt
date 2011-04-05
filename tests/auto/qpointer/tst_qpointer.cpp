@@ -121,6 +121,13 @@ void tst_QPointer::assignment_operators()
     QCOMPARE(p2, QPointer<QObject>(object));
     QCOMPARE(p1, QPointer<QObject>(p2));
 
+    // Test assignment with the same pointer that's already guarded
+    p1 = object;
+    p2 = p1;
+    QCOMPARE(p1, QPointer<QObject>(object));
+    QCOMPARE(p2, QPointer<QObject>(object));
+    QCOMPARE(p1, QPointer<QObject>(p2));
+
     // Cleanup
     delete object;
 }
