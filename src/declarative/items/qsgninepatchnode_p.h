@@ -78,6 +78,7 @@ public:
     void update();
 
 private:
+    void fillRow(QSGGeometry::TexturedPoint2D *&v, float y, float ty, int xChunkCount, float xChunkSize);
     QRectF m_targetRect;
     QRectF m_innerRect;
     QSGTextureMaterial m_material;
