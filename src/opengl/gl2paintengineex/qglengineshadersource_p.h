@@ -148,7 +148,7 @@ static const char* const qglslAffinePositionWithPatternBrushVertexShader
                  = qglslPositionWithPatternBrushVertexShader;
 
 static const char* const qglslPatternBrushSrcFragmentShader = "\n\
-    uniform   lowp    sampler2D brushTexture; \n\
+    uniform           sampler2D brushTexture; \n\
     uniform   lowp    vec4      patternColor; \n\
     varying   highp   vec2      patternTexCoords;\n\
     lowp vec4 srcPixel() \n\
@@ -183,7 +183,7 @@ static const char* const qglslAffinePositionWithLinearGradientBrushVertexShader
                  = qglslPositionWithLinearGradientBrushVertexShader;
 
 static const char* const qglslLinearGradientBrushSrcFragmentShader = "\n\
-    uniform   lowp    sampler2D brushTexture; \n\
+    uniform           sampler2D brushTexture; \n\
     varying   mediump float     index; \n\
     lowp vec4 srcPixel() \n\
     { \n\
@@ -218,7 +218,7 @@ static const char* const qglslAffinePositionWithConicalGradientBrushVertexShader
 
 static const char* const qglslConicalGradientBrushSrcFragmentShader = "\n\
     #define INVERSE_2PI 0.1591549430918953358 \n\
-    uniform   lowp    sampler2D brushTexture; \n\
+    uniform           sampler2D brushTexture; \n\
     uniform   mediump float     angle; \n\
     varying   highp   vec2      A; \n\
     lowp vec4 srcPixel() \n\
@@ -260,7 +260,7 @@ static const char* const qglslAffinePositionWithRadialGradientBrushVertexShader
                  = qglslPositionWithRadialGradientBrushVertexShader;
 
 static const char* const qglslRadialGradientBrushSrcFragmentShader = "\n\
-    uniform   lowp    sampler2D brushTexture; \n\
+    uniform           sampler2D brushTexture; \n\
     uniform   highp   float     fmp2_m_radius2; \n\
     uniform   highp   float     inverse_2_fmp2_m_radius2; \n\
     varying   highp   float     b; \n\
@@ -304,14 +304,14 @@ static const char* const qglslAffinePositionWithTextureBrushVertexShader
 // TODO: Special case POT textures which don't need this emulation
 static const char* const qglslTextureBrushSrcFragmentShader = "\n\
     varying highp   vec2      brushTextureCoords; \n\
-    uniform lowp    sampler2D brushTexture; \n\
+    uniform         sampler2D brushTexture; \n\
     lowp vec4 srcPixel() { \n\
         return texture2D(brushTexture, fract(brushTextureCoords)); \n\
     }\n";
 #else
 static const char* const qglslTextureBrushSrcFragmentShader = "\n\
     varying   highp   vec2      brushTextureCoords; \n\
-    uniform   lowp    sampler2D brushTexture; \n\
+    uniform           sampler2D brushTexture; \n\
     lowp vec4 srcPixel() \n\
     { \n\
         return texture2D(brushTexture, brushTextureCoords); \n\
@@ -321,7 +321,7 @@ static const char* const qglslTextureBrushSrcFragmentShader = "\n\
 static const char* const qglslTextureBrushSrcWithPatternFragmentShader = "\n\
     varying   highp   vec2      brushTextureCoords; \n\
     uniform   lowp    vec4      patternColor; \n\
-    uniform   lowp    sampler2D brushTexture; \n\
+    uniform           sampler2D brushTexture; \n\
     lowp vec4 srcPixel() \n\
     { \n\
         return patternColor * (1.0 - texture2D(brushTexture, brushTextureCoords).r); \n\
@@ -337,7 +337,7 @@ static const char* const qglslSolidBrushSrcFragmentShader = "\n\
 
 static const char* const qglslImageSrcFragmentShader = "\n\
     varying   highp   vec2      textureCoords; \n\
-    uniform   lowp    sampler2D imageTexture; \n\
+    uniform           sampler2D imageTexture; \n\
     lowp vec4 srcPixel() \n\
     { \n"
         "return texture2D(imageTexture, textureCoords); \n"
@@ -345,7 +345,7 @@ static const char* const qglslImageSrcFragmentShader = "\n\
 
 static const char* const qglslCustomSrcFragmentShader = "\n\
     varying   highp   vec2      textureCoords; \n\
-    uniform   lowp    sampler2D imageTexture; \n\
+    uniform           sampler2D imageTexture; \n\
     lowp vec4 srcPixel() \n\
     { \n\
         return customShader(imageTexture, textureCoords); \n\
@@ -354,7 +354,7 @@ static const char* const qglslCustomSrcFragmentShader = "\n\
 static const char* const qglslImageSrcWithPatternFragmentShader = "\n\
     varying   highp   vec2      textureCoords; \n\
     uniform   lowp    vec4      patternColor; \n\
-    uniform   lowp    sampler2D imageTexture; \n\
+    uniform           sampler2D imageTexture; \n\
     lowp vec4 srcPixel() \n\
     { \n\
         return patternColor * (1.0 - texture2D(imageTexture, textureCoords).r); \n\
@@ -362,7 +362,7 @@ static const char* const qglslImageSrcWithPatternFragmentShader = "\n\
 
 static const char* const qglslNonPremultipliedImageSrcFragmentShader = "\n\
     varying   highp   vec2      textureCoords; \n\
-    uniform   lowp    sampler2D imageTexture; \n\
+    uniform          sampler2D imageTexture; \n\
     lowp vec4 srcPixel() \n\
     { \n\
         lowp vec4 sample = texture2D(imageTexture, textureCoords); \n\
@@ -454,7 +454,7 @@ static const char* const qglslMainFragmentShader = "\n\
 
 static const char* const qglslMaskFragmentShader = "\n\
     varying   highp   vec2      textureCoords;\n\
-    uniform   lowp    sampler2D maskTexture;\n\
+    uniform           sampler2D maskTexture;\n\
     lowp vec4 applyMask(lowp vec4 src) \n\
     {\n\
         lowp vec4 mask = texture2D(maskTexture, textureCoords); \n\
@@ -478,7 +478,7 @@ static const char* const qglslMaskFragmentShader = "\n\
 
 static const char* const qglslRgbMaskFragmentShaderPass1 = "\n\
     varying   highp   vec2      textureCoords;\n\
-    uniform   lowp    sampler2D maskTexture;\n\
+    uniform           sampler2D maskTexture;\n\
     lowp vec4 applyMask(lowp vec4 src) \n\
     { \n\
         lowp vec4 mask = texture2D(maskTexture, textureCoords); \n\
@@ -487,7 +487,7 @@ static const char* const qglslRgbMaskFragmentShaderPass1 = "\n\
 
 static const char* const qglslRgbMaskFragmentShaderPass2 = "\n\
     varying   highp   vec2      textureCoords;\n\
-    uniform   lowp    sampler2D maskTexture;\n\
+    uniform           sampler2D maskTexture;\n\
     lowp vec4 applyMask(lowp vec4 src) \n\
     { \n\
         lowp vec4 mask = texture2D(maskTexture, textureCoords); \n\

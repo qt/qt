@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFixedPoint;
+struct QFixedPoint;
 class QVGPaintEnginePrivate;
 class QPixmapData;
 class QVGEGLWindowSurfacePrivate;

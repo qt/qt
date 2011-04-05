@@ -130,20 +130,22 @@ class Q_AUTOTEST_EXPORT QDeclarativeRow: public QDeclarativeBasePositioner
 {
     Q_OBJECT
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged REVISION 1)
+    Q_PROPERTY(Qt::LayoutDirection effectiveLayoutDirection READ effectiveLayoutDirection NOTIFY effectiveLayoutDirectionChanged REVISION 1)
 public:
     QDeclarativeRow(QDeclarativeItem *parent=0);
 
     Qt::LayoutDirection layoutDirection() const;
     void setLayoutDirection (Qt::LayoutDirection);
+    Qt::LayoutDirection effectiveLayoutDirection() const;
 
 Q_SIGNALS:
     Q_REVISION(1) void layoutDirectionChanged();
+    Q_REVISION(1) void effectiveLayoutDirectionChanged();
 
 protected:
     virtual void doPositioning(QSizeF *contentSize);
     virtual void reportConflictingAnchors();
 private:
-    Qt::LayoutDirection m_layoutDirection;
     Q_DISABLE_COPY(QDeclarativeRow)
 };
 
@@ -154,7 +156,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeGrid : public QDeclarativeBasePositioner
     Q_PROPERTY(int columns READ columns WRITE setColumns NOTIFY columnsChanged)
     Q_PROPERTY(Flow flow READ flow WRITE setFlow NOTIFY flowChanged)
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged REVISION 1)
-
+    Q_PROPERTY(Qt::LayoutDirection effectiveLayoutDirection READ effectiveLayoutDirection NOTIFY effectiveLayoutDirectionChanged REVISION 1)
 public:
     QDeclarativeGrid(QDeclarativeItem *parent=0);
 
@@ -171,12 +173,14 @@ public:
 
     Qt::LayoutDirection layoutDirection() const;
     void setLayoutDirection (Qt::LayoutDirection);
+    Qt::LayoutDirection effectiveLayoutDirection() const;
 
 Q_SIGNALS:
     void rowsChanged();
     void columnsChanged();
     void flowChanged();
     Q_REVISION(1) void layoutDirectionChanged();
+    Q_REVISION(1) void effectiveLayoutDirectionChanged();
 
 protected:
     virtual void doPositioning(QSizeF *contentSize);
@@ -186,7 +190,6 @@ private:
     int m_rows;
     int m_columns;
     Flow m_flow;
-    Qt::LayoutDirection m_layoutDirection;
     Q_DISABLE_COPY(QDeclarativeGrid)
 };
 
@@ -194,8 +197,9 @@ class QDeclarativeFlowPrivate;
 class Q_AUTOTEST_EXPORT QDeclarativeFlow: public QDeclarativeBasePositioner
 {
     Q_OBJECT
-    Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged REVISION 1)
     Q_PROPERTY(Flow flow READ flow WRITE setFlow NOTIFY flowChanged)
+    Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged REVISION 1)
+    Q_PROPERTY(Qt::LayoutDirection effectiveLayoutDirection READ effectiveLayoutDirection NOTIFY effectiveLayoutDirectionChanged REVISION 1)
 public:
     QDeclarativeFlow(QDeclarativeItem *parent=0);
 
@@ -206,10 +210,11 @@ public:
 
     Qt::LayoutDirection layoutDirection() const;
     void setLayoutDirection (Qt::LayoutDirection);
-
+    Qt::LayoutDirection effectiveLayoutDirection() const;
 Q_SIGNALS:
     void flowChanged();
     Q_REVISION(1) void layoutDirectionChanged();
+    Q_REVISION(1) void effectiveLayoutDirectionChanged();
 
 protected:
     virtual void doPositioning(QSizeF *contentSize);

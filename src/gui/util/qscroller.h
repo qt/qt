@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,8 +55,10 @@ QT_MODULE(Gui)
 class QWidget;
 class QScrollerPrivate;
 class QScrollerProperties;
+#ifndef QT_NO_GESTURES
 class QFlickGestureRecognizer;
 class QMouseFlickGestureRecognizer;
+#endif
 
 class Q_GUI_EXPORT QScroller : public QObject
 {
@@ -94,9 +96,11 @@ public:
     static QScroller *scroller(QObject *target);
     static const QScroller *scroller(const QObject *target);
 
+#ifndef QT_NO_GESTURES
     static Qt::GestureType grabGesture(QObject *target, ScrollerGestureType gestureType = TouchGesture);
     static Qt::GestureType grabbedGesture(QObject *target);
     static void ungrabGesture(QObject *target);
+#endif
 
     static QList<QScroller *> activeScrollers();
 
@@ -139,7 +143,9 @@ private:
     Q_DISABLE_COPY(QScroller)
     Q_DECLARE_PRIVATE(QScroller)
 
+#ifndef QT_NO_GESTURES
     friend class QFlickGestureRecognizer;
+#endif
 };
 
 QT_END_NAMESPACE

@@ -44,13 +44,12 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QRect>
+#include <QtCore/QDataStream>
+#include <QtCore/QTextStream>
+#include <QtCore/QMetaType>
+#include <QtGui>
 
-#include <wayland-client.h>
-
-#define MESA_EGL_NO_X11_HEADERS
-#define EGL_EGLEXT_PROTOTYPES
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
+#include "qwaylandinclude.h"
 
 class QWaylandInputDevice;
 class QSocketNotifier;
@@ -71,12 +70,10 @@ public:
     struct wl_buffer *createShmBuffer(int fd, int width, int height,
                                       uint32_t stride,
                                       struct wl_visual *visual);
-    struct wl_buffer *createDrmBuffer(int name, int width, int height,
-                                      uint32_t stride,
-                                      struct wl_visual *visual);
     struct wl_visual *rgbVisual();
     struct wl_visual *argbVisual();
     struct wl_visual *argbPremultipliedVisual();
+    struct wl_egl_display *nativeDisplay();
     EGLDisplay eglDisplay() { return mEglDisplay; }
 
     void setCursor(QWaylandBuffer *buffer, int32_t x, int32_t y);
@@ -84,14 +81,15 @@ public:
     void syncCallback(wl_display_sync_func_t func, void *data);
     void frameCallback(wl_display_frame_func_t func, void *data);
 
+    void iterate();
+
 public slots:
-    void eventDispatcher(void);
+    void readEvents(void);
     void flushRequests(void);
 
 private:
     struct wl_display *mDisplay;
     struct wl_compositor *mCompositor;
-    struct wl_drm *mDrm;
     struct wl_shm *mShm;
     struct wl_shell *mShell;
     char *mDeviceName;
@@ -101,15 +99,12 @@ private:
     QSocketNotifier *mReadNotifier;
     QSocketNotifier *mWriteNotifier;
     EGLDisplay mEglDisplay;
+    struct wl_egl_display *mNativeEglDisplay;
 
     static void displayHandleGlobal(struct wl_display *display,
                                     uint32_t id,
                                     const char *interface,
                                     uint32_t version, void *data);
-
-    static void drmHandleDevice(void *data,
-                                struct wl_drm *drm, const char *device);
-    static void drmHandleAuthenticated(void *data, struct wl_drm *drm);
 
     static void outputHandleGeometry(void *data,
                                      struct wl_output *output,
@@ -123,7 +118,6 @@ private:
 
     static int sourceUpdate(uint32_t mask, void *data);
 
-    static const struct wl_drm_listener drmListener;
     static const struct wl_output_listener outputListener;
     static const struct wl_shell_listener shellListener;
 };

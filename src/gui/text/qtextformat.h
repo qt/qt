@@ -177,6 +177,7 @@ public:
         FontStyleHint = 0x1FE3,
         FontStyleStrategy = 0x1FE4,
         FontKerning = 0x1FE5,
+        FontHintingPreference = 0x1FE6,
         FontFamily = 0x2000,
         FontPointSize = 0x2001,
         FontSizeAdjustment = 0x2002,
@@ -459,6 +460,16 @@ public:
     { return static_cast<QFont::StyleHint>(intProperty(FontStyleHint)); }
     QFont::StyleStrategy fontStyleStrategy() const
     { return static_cast<QFont::StyleStrategy>(intProperty(FontStyleStrategy)); }
+
+    inline void setFontHintingPreference(QFont::HintingPreference hintingPreference)
+    {
+        setProperty(FontHintingPreference, hintingPreference);
+    }
+
+    inline QFont::HintingPreference fontHintingPreference() const
+    {
+        return static_cast<QFont::HintingPreference>(intProperty(FontHintingPreference));
+    }
 
     inline void setFontKerning(bool enable)
     { setProperty(FontKerning, enable); }

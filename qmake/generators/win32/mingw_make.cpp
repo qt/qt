@@ -302,8 +302,10 @@ void MingwMakefileGenerator::init()
 	project->values("QMAKE_LFLAGS").append(QString("-Wl,--out-implib,") + project->first("MINGW_IMPORT_LIB"));
     }
 
-    if(!project->values("DEF_FILE").isEmpty() && project->values("QMAKE_SYMBIAN_SHLIB").isEmpty())
-        project->values("QMAKE_LFLAGS").append(QString("-Wl,") + project->first("DEF_FILE"));
+    if(!project->values("DEF_FILE").isEmpty() && project->values("QMAKE_SYMBIAN_SHLIB").isEmpty()) {
+        QString defFileName = fileFixify(project->values("DEF_FILE")).first();
+        project->values("QMAKE_LFLAGS").append(QString("-Wl,") + escapeFilePath(defFileName));
+    }
 
     MakefileGenerator::init();
 
