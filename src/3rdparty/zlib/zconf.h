@@ -271,8 +271,6 @@
 #endif
 
 #if defined(WINDOWS) || defined(WIN32)
-#  define _CRT_SECURE_NO_DEPRECATE
-#  define _CRT_NONSTDC_NO_DEPRECATE
    /* If building or using zlib as a DLL, define ZLIB_DLL.
     * This is not mandatory, but it offers a little performance increase.
     */
