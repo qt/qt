@@ -100,6 +100,7 @@ private:
     uint m_has_alpha : 1;
     uint m_has_mipmaps : 1;
     uint m_dirty_texture : 1;
+    uint m_dirty_bind_options : 1;
     uint m_owns_texture : 1;
 };
 
