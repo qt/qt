@@ -340,6 +340,8 @@ QSGNode *QSGBorderImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *
                               d->pix.height() - border->bottom() - border->top()));
     node->setRect(QRectF(0, 0, width(), height()));
     node->setLinearFiltering(d->smooth);
+    node->setHorzontalTileMode(d->horizontalTileMode);
+    node->setVerticalTileMode(d->verticalTileMode);
     node->update();
 
     return node;
