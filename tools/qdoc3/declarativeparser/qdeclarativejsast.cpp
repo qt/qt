@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "private/qdeclarativejsast_p.h"
+#include "qdeclarativejsast_p.h"
 
-#include "private/qdeclarativejsastvisitor_p.h"
+#include "qdeclarativejsastvisitor_p.h"
 
 QT_QML_BEGIN_NAMESPACE
 
