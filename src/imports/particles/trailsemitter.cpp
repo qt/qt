@@ -172,8 +172,8 @@ void TrailsEmitter::emitWindow(int timeStamp)
         float sizeVariation = -m_particleSizeVariation
                 + rand() / float(RAND_MAX) * m_particleSizeVariation * 2;
 
-        float size = qMax(0.0 , m_particleSize + sizeVariation);
-        float endSize = qMax(0.0 , sizeAtEnd + sizeVariation);
+        float size = qMax((qreal)0.0 , m_particleSize + sizeVariation);
+        float endSize = qMax((qreal)0.0 , sizeAtEnd + sizeVariation);
 
         p.size = size;// * float(m_emitting);
         p.endSize = endSize;// * float(m_emitting);
