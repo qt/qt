@@ -64,6 +64,8 @@
 
 QT_BEGIN_NAMESPACE
 
+uint qHash(const QNetworkConfiguration& config);
+
 class QSharedNetworkSessionManager
 {
 public:

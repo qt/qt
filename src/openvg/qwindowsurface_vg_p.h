@@ -78,6 +78,8 @@ public:
 
     QPaintEngine *paintEngine() const;
 
+    WindowSurfaceFeatures features() const;
+
 protected:
     int metric(PaintDeviceMetric metric) const;
 

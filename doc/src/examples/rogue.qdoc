@@ -190,8 +190,8 @@
     \snippet examples/statemachine/rogue/movementtransition.h 2
 
     When \c onTransition() is invoked, we know that we have a
-    \l{QEvent::}{KeyPress} event with 2, 4, 6, or 8, i.e., the event
-    is already unwrapped.
+    \l{QEvent::}{KeyPress} event with 2, 4, 6, or 8, and can ask \c
+    Window to move the player.
 
     \section1 The Roguelike Tradition
 

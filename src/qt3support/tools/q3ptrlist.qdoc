@@ -54,10 +54,10 @@
 
     \target example
     Example:
-    \snippet doc/src/snippets/code/doc_src_q3ptrlist.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_q3ptrlist.cpp 0
 
     The output is
-    \snippet doc/src/snippets/code/doc_src_q3ptrlist.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_q3ptrlist.cpp 1
 
     Q3PtrList has several member functions for traversing the list, but
     using a Q3PtrListIterator can be more practical. Multiple list
@@ -353,7 +353,7 @@
     auto-deletion\endlink is enabled.
 
     Equivalent to:
-    \snippet doc/src/snippets/code/doc_src_q3ptrlist.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_q3ptrlist.cpp 2
 
     The item after the removed item becomes the new current list item
     if the removed item is not the last item in the list. If the last
@@ -785,10 +785,10 @@
     but it uses Q3PtrListIterator. The class Employee is
     defined there.
 
-    \snippet doc/src/snippets/code/doc_src_q3ptrlist.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_q3ptrlist.cpp 3
 
     The output is
-    \snippet doc/src/snippets/code/doc_src_q3ptrlist.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_q3ptrlist.cpp 4
 
     Using a list iterator is a more robust way of traversing the list
     than using the Q3PtrList member functions \link Q3PtrList::first()

@@ -309,8 +309,10 @@ static QScriptValue qmlsqldatabase_change_version(QScriptContext *context, QScri
 
     if (ok) {
         context->thisObject().setProperty(QLatin1String("version"), to_version, QScriptValue::ReadOnly);
+#ifndef QT_NO_SETTINGS
         QSettings ini(qmlsqldatabase_databaseFile(db.connectionName(),engine) + QLatin1String(".ini"), QSettings::IniFormat);
         ini.setValue(QLatin1String("Version"), to_version);
+#endif
     }
 
     return engine->undefinedValue();
@@ -355,6 +357,7 @@ static QScriptValue qmlsqldatabase_read_transaction(QScriptContext *context, QSc
 */
 static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEngine *engine)
 {
+#ifndef QT_NO_SETTINGS
     qmlsqldatabase_initDatabasesPath(engine);
 
     QSqlDatabase database;
@@ -418,6 +421,9 @@ static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEng
     }
 
     return result;
+#else
+    return engine->undefinedValue();
+#endif // QT_NO_SETTINGS
 }
 
 void qt_add_qmlsqldatabase(QScriptEngine *engine)

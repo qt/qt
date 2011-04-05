@@ -1107,7 +1107,11 @@ void tst_QLocale::macDefaultLocale()
             expectedGMTSpecifier.append(QString("0%1").arg(qAbs(diff)));
         else
             expectedGMTSpecifier.append(QString("%1").arg(qAbs(diff)));
-        QVERIFY(timeString.contains(expectedGMTSpecifier));
+        QVERIFY2(timeString.contains(expectedGMTSpecifier), qPrintable(
+            QString("timeString `%1', expectedGMTSpecifier `%2'")
+            .arg(timeString)
+            .arg(expectedGMTSpecifier)
+        ));
     }
     QCOMPARE(locale.dayName(1), QString("Monday"));
     QCOMPARE(locale.dayName(7), QString("Sunday"));

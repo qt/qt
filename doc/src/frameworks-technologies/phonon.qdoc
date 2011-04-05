@@ -165,7 +165,7 @@
 
     The \c .pro file for a project needs the following line to be added:
 
-    \snippet doc/src/snippets/code/doc_src_phonon.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_phonon.pro 0
 
     Phonon comes with several widgets that provide functionality
     commonly associated with multimedia players - notably SeekSlider

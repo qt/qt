@@ -147,8 +147,8 @@ void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
 /*!
     \qmlproperty enumeration Image::fillMode
 
-    Set this property to define what happens when the image set for the item is smaller
-    than the size of the item.
+    Set this property to define what happens when the source image has a different size
+    than the item.
 
     \list
     \o Image.Stretch - the image is scaled to fit
@@ -233,6 +233,9 @@ void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
     \endqml
 
     \endtable
+
+    Note that \c clip is \c false by default which means that the element might
+    paint outside its bounding rectangle even if the fillMode is set to \c PreserveAspectCrop.
 
     \sa {declarative/imageelements/image}{Image example}
 */
@@ -374,6 +377,9 @@ qreal QDeclarativeImage::paintedHeight() const
     If the source is a non-scalable image (eg. JPEG), the loaded image will
     be no greater than this property specifies. For some formats (currently only JPEG),
     the whole image will never actually be loaded into memory.
+
+    Since QtQuick 1.1 the sourceSize can be cleared to the natural size of the image
+    by setting sourceSize to \c undefined.
  
     \note \e {Changing this property dynamically causes the image source to be reloaded,
     potentially even from the network, if it is not in the disk cache.}
@@ -386,14 +392,16 @@ void QDeclarativeImage::updatePaintedGeometry()
     if (d->fillMode == PreserveAspectFit) {
         if (!d->pix.width() || !d->pix.height())
             return;
-        qreal widthScale = width() / qreal(d->pix.width());
-        qreal heightScale = height() / qreal(d->pix.height());
+        qreal w = widthValid() ? width() : d->pix.width();
+        qreal widthScale = w / qreal(d->pix.width());
+        qreal h = heightValid() ? height() : d->pix.height();
+        qreal heightScale = h / qreal(d->pix.height());
         if (widthScale <= heightScale) {
-            d->paintedWidth = width();
+            d->paintedWidth = w;
             d->paintedHeight = widthScale * qreal(d->pix.height());
         } else if(heightScale < widthScale) {
             d->paintedWidth = heightScale * qreal(d->pix.width());
-            d->paintedHeight = height();
+            d->paintedHeight = h;
         }
         if (widthValid() && !heightValid()) {
             setImplicitHeight(d->paintedHeight);

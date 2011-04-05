@@ -1052,15 +1052,15 @@ HB_Bool HB_SelectScript(HB_ShaperItem *shaper_item, const HB_OpenTypeFeature *fe
 {
     HB_Script script = shaper_item->item.script;
 
-    if (!shaper_item->face->supported_scripts[script])
-        return false;
-
     HB_Face face = shaper_item->face;
     if (face->current_script == script && face->current_flags == shaper_item->shaperFlags)
-        return true;
+        return shaper_item->face->supported_scripts[script] ? true : false;
 
     face->current_script = script;
     face->current_flags = shaper_item->shaperFlags;
+
+    if (!shaper_item->face->supported_scripts[script])
+        return false;
 
     assert(script < HB_ScriptCount);
     // find script in our list of supported scripts.
@@ -1232,7 +1232,7 @@ HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool do
     }
 
     if (!face->glyphs_substituted && !glyphs_positioned) {
-        HB_GetGlyphAdvances(item);
+        HB_HeuristicPosition(item);
         return true; // nothing to do for us
     }
 

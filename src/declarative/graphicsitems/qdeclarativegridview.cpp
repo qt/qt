@@ -197,6 +197,7 @@ public:
         if (q->isComponentComplete()) {
             clear();
             updateGrid();
+            setPosition(0);
             q->refill();
             updateCurrent(currentIndex);
         }
@@ -689,7 +690,6 @@ void QDeclarativeGridViewPrivate::updateGrid()
             q->setContentHeight(endPosition() - startPosition());
         else
             q->setContentWidth(lastPosition() - originPosition());
-        setPosition(0);
     }
 }
 
@@ -1246,7 +1246,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 
     \snippet doc/src/snippets/declarative/gridview/ContactModel.qml 0
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage gridview-simple.png
     \enddiv
 
@@ -1262,7 +1262,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     \codeline
     \snippet doc/src/snippets/declarative/gridview/gridview.qml classdocs simple
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage gridview-highlight.png
     \enddiv
 
@@ -2237,6 +2237,7 @@ qreal QDeclarativeGridView::maxXExtent() const
     } else {
         highlightStart = d->highlightRangeStart;
         highlightEnd = d->highlightRangeEnd;
+        lastItemPosition = 0;
         if (d->model && d->model->count())
             lastItemPosition = d->rowPosAt(d->model->count()-1);
     }

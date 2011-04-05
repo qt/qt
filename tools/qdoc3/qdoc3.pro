@@ -93,10 +93,24 @@ include($$QT_SOURCE_TREE/src/declarative/qml/parser/parser.pri)
 ### Documentation for qdoc3 ###
 
 qtPrepareTool(QDOC, qdoc3)
+qtPrepareTool(QHELPGENERATOR, qhelpgenerator)
 
-html-docs.commands = cd \"$$PWD/doc\" && $$QDOC qdoc-manual.qdocconf
+$$unixstyle {
+    QDOC = QT_BUILD_TREE=$$QT_BUILD_TREE QT_SOURCE_TREE=$$QT_SOURCE_TREE $$QDOC
+} else {
+    QDOC = set QT_BUILD_TREE=$$QT_BUILD_TREE&& set QT_SOURCE_TREE=$$QT_SOURCE_TREE&& $$QDOC
+    QDOC = $$replace(QDOC, "/", "\\")
+}
 
-QMAKE_EXTRA_TARGETS += html-docs
+html-docs.commands = cd \"$$QT_BUILD_TREE/doc\" && $$QDOC $$QT_SOURCE_TREE/tools/qdoc3/doc/config/qdoc.qdocconf
+html-docs.files = $$QT_BUILD_TREE/doc/html
+
+qch-docs.commands = cd \"$$QT_BUILD_TREE/doc\" && $$QHELPGENERATOR $$QT_BUILD_TREE/tools/qdoc3/doc/html/qdoc.qhp -o $$QT_BUILD_TREE/tools/qdoc3/doc/qch/qdoc.qch
+qch-docs.files = $$QT_BUILD_TREE/tools/qdoc3/doc/qch
+qch-docs.path = $$[QT_INSTALL_DOCS]
+qch-docs.CONFIG += no_check_exist directory
+
+QMAKE_EXTRA_TARGETS += html-docs qch-docs
 
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target

@@ -369,11 +369,14 @@ public:
     EGLSurface eglSurface;
     void destroyEglSurfaceForDevice();
     EGLSurface eglSurfaceForDevice() const;
+    static QEglProperties *extraWindowSurfaceCreationProps;
+    static void setExtraWindowSurfaceCreationProps(QEglProperties *props);
 #endif
 
 #if defined(Q_WS_QPA)
     QPlatformGLContext *platformContext;
     void setupSharing();
+
 #elif defined(Q_WS_X11) || defined(Q_WS_MAC)
     void* cx;
 #endif
@@ -415,6 +418,9 @@ public:
 
     uint workaround_brokenTextureFromPixmap : 1;
     uint workaround_brokenTextureFromPixmap_init : 1;
+
+    uint workaround_brokenAlphaTexSubImage : 1;
+    uint workaround_brokenAlphaTexSubImage_init : 1;
 
 #ifndef QT_NO_EGL
     uint ownsEglContext : 1;
@@ -684,6 +690,7 @@ public:
     virtual ~QGLContextGroupResourceBase();
     void insert(const QGLContext *context, void *value);
     void *value(const QGLContext *context);
+    void cleanup(const QGLContext *context);
     void cleanup(const QGLContext *context, void *value);
     virtual void freeResource(void *value) = 0;
 

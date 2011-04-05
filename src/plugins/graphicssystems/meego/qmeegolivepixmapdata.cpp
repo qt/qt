@@ -194,6 +194,8 @@ QImage* QMeeGoLivePixmapData::lock(EGLSyncKHR fenceSync)
 
     void *data = 0;
     int pitch = 0;
+    int surfaceWidth = 0;
+    int surfaceHeight = 0;
     EGLSurface surface = 0;
     QImage::Format format;
     lockedImage = QImage();
@@ -206,9 +208,11 @@ QImage* QMeeGoLivePixmapData::lock(EGLSyncKHR fenceSync)
 
     eglQuerySurface(QEgl::display(), surface, EGL_BITMAP_POINTER_KHR, (EGLint*) &data);
     eglQuerySurface(QEgl::display(), surface, EGL_BITMAP_PITCH_KHR, (EGLint*) &pitch);
+    eglQuerySurface(QEgl::display(), surface, EGL_WIDTH, (EGLint*) &surfaceWidth);
+    eglQuerySurface(QEgl::display(), surface, EGL_HEIGHT, (EGLint*) &surfaceHeight);
 
     // Ok, here we know we just support those two formats. Real solution would be:
-    // uqery also the format.
+    // query also the format.
     if (backingX11Pixmap->depth() > 16)
         format = QImage::Format_ARGB32_Premultiplied;
     else
@@ -216,6 +220,12 @@ QImage* QMeeGoLivePixmapData::lock(EGLSyncKHR fenceSync)
 
     if (data == NULL || pitch == 0) {
         qWarning("Failed to query the live texture!");
+        return &lockedImage;
+    }
+
+    if (width() != surfaceWidth || height() != surfaceHeight) {
+        qWarning("Live texture dimensions don't match!");
+        QMeeGoExtensions::eglUnlockSurfaceKHR(QEgl::display(), surface);
         return &lockedImage;
     }
 

@@ -71,6 +71,10 @@
 # include "private/qpixmap_mac_p.h"
 #endif
 
+#ifdef Q_WS_QPA
+# include "qplatformintegration_qpa.h"
+#endif
+
 #if defined(Q_WS_X11)
 # include "qx11info_x11.h"
 # include <private/qt_x11_p.h>
@@ -98,12 +102,26 @@ static bool qt_pixmap_thread_test()
         qFatal("QPixmap: Must construct a QApplication before a QPaintDevice");
         return false;
     }
-#ifndef Q_WS_WIN
-    if (!QApplication::testAttribute(Qt::AA_X11InitThreads) && qApp->thread() != QThread::currentThread()) {
-        qWarning("QPixmap: It is not safe to use pixmaps outside the GUI thread");
-        return false;
-    }
+
+    if (qApp->thread() != QThread::currentThread()) {
+        bool fail = false;
+#if defined (Q_WS_X11)
+        if (!QApplication::testAttribute(Qt::AA_X11InitThreads))
+            fail = true;
+#elif defined (Q_WS_QPA)
+        if (!QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps)) {
+            printf("Lighthouse plugin does not support threaded pixmaps!\n");
+            fail = true;
+        }
+#else
+        if (QApplicationPrivate::graphics_system_name != QLatin1String("raster"))
+            fail = true;
 #endif
+        if (fail) {
+            qWarning("QPixmap: It is not safe to use pixmaps outside the GUI thread");
+            return false;
+        }
+    }
     return true;
 }
 
