@@ -68,6 +68,8 @@ void VirtualFrame::PopToR0() {
 
 void VirtualFrame::MergeTo(const VirtualFrame* expected, Condition cond) {
   if (Equals(expected)) return;
+  ASSERT((expected->tos_known_smi_map_ & tos_known_smi_map_) ==
+         expected->tos_known_smi_map_);
   ASSERT(expected->IsCompatibleWith(this));
   MergeTOSTo(expected->top_of_stack_state_, cond);
   ASSERT(register_allocation_map_ == expected->register_allocation_map_);
@@ -76,7 +78,7 @@ void VirtualFrame::MergeTo(const VirtualFrame* expected, Condition cond) {
 
 void VirtualFrame::MergeTo(VirtualFrame* expected, Condition cond) {
   if (Equals(expected)) return;
-  expected->tos_known_smi_map_ &= tos_known_smi_map_;
+  tos_known_smi_map_ &= expected->tos_known_smi_map_;
   MergeTOSTo(expected->top_of_stack_state_, cond);
   ASSERT(register_allocation_map_ == expected->register_allocation_map_);
 }
@@ -320,7 +322,7 @@ void VirtualFrame::InvokeBuiltin(Builtins::JavaScript id,
 
 void VirtualFrame::CallLoadIC(Handle<String> name, RelocInfo::Mode mode) {
   Handle<Code> ic(Isolate::Current()->builtins()->builtin(
-      Builtins::LoadIC_Initialize));
+      Builtins::kLoadIC_Initialize));
   PopToR0();
   SpillAll();
   __ mov(r2, Operand(name));
@@ -328,34 +330,41 @@ void VirtualFrame::CallLoadIC(Handle<String> name, RelocInfo::Mode mode) {
 }
 
 
-void VirtualFrame::CallStoreIC(Handle<String> name, bool is_contextual) {
+void VirtualFrame::CallStoreIC(Handle<String> name,
+                               bool is_contextual,
+                               StrictModeFlag strict_mode) {
   Handle<Code> ic(Isolate::Current()->builtins()->builtin(
-      Builtins::StoreIC_Initialize));
+      (strict_mode == kStrictMode) ? Builtins::kStoreIC_Initialize_Strict
+                                   : Builtins::kStoreIC_Initialize));
   PopToR0();
+  RelocInfo::Mode mode;
   if (is_contextual) {
     SpillAll();
     __ ldr(r1, MemOperand(cp, Context::SlotOffset(Context::GLOBAL_INDEX)));
+    mode = RelocInfo::CODE_TARGET_CONTEXT;
   } else {
     EmitPop(r1);
     SpillAll();
+    mode = RelocInfo::CODE_TARGET;
   }
   __ mov(r2, Operand(name));
-  CallCodeObject(ic, RelocInfo::CODE_TARGET, 0);
+  CallCodeObject(ic, mode, 0);
 }
 
 
 void VirtualFrame::CallKeyedLoadIC() {
   Handle<Code> ic(Isolate::Current()->builtins()->builtin(
-      Builtins::KeyedLoadIC_Initialize));
+      Builtins::kKeyedLoadIC_Initialize));
   PopToR1R0();
   SpillAll();
   CallCodeObject(ic, RelocInfo::CODE_TARGET, 0);
 }
 
 
-void VirtualFrame::CallKeyedStoreIC() {
+void VirtualFrame::CallKeyedStoreIC(StrictModeFlag strict_mode) {
   Handle<Code> ic(Isolate::Current()->builtins()->builtin(
-      Builtins::KeyedStoreIC_Initialize));
+      (strict_mode == kStrictMode) ? Builtins::kKeyedStoreIC_Initialize_Strict
+                                   : Builtins::kKeyedStoreIC_Initialize));
   PopToR1R0();
   SpillAll();
   EmitPop(r2);
@@ -379,7 +388,7 @@ void VirtualFrame::CallCodeObject(Handle<Code> code,
       break;
     case Code::BUILTIN:
       ASSERT(*code == Isolate::Current()->builtins()->builtin(
-          Builtins::JSConstructCall));
+          Builtins::kJSConstructCall));
       break;
     default:
       UNREACHABLE();

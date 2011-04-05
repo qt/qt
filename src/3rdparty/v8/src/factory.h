@@ -1,4 +1,4 @@
-// Copyright 2006-2008 the V8 project authors. All rights reserved.
+// Copyright 2010 the V8 project authors. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -54,8 +54,16 @@ class Factory {
   Handle<StringDictionary> NewStringDictionary(int at_least_space_for);
 
   Handle<DescriptorArray> NewDescriptorArray(int number_of_descriptors);
+  Handle<DeoptimizationInputData> NewDeoptimizationInputData(
+      int deopt_entry_count,
+      PretenureFlag pretenure);
+  Handle<DeoptimizationOutputData> NewDeoptimizationOutputData(
+      int deopt_entry_count,
+      PretenureFlag pretenure);
 
   Handle<String> LookupSymbol(Vector<const char> str);
+  Handle<String> LookupAsciiSymbol(Vector<const char> str);
+  Handle<String> LookupTwoByteSymbol(Vector<const uc16> str);
   Handle<String> LookupAsciiSymbol(const char* str) {
     return LookupSymbol(CStrVector(str));
   }
@@ -159,16 +167,14 @@ class Factory {
   Handle<ByteArray> NewByteArray(int length,
                                  PretenureFlag pretenure = NOT_TENURED);
 
-  Handle<PixelArray> NewPixelArray(
-      int length,
-      uint8_t* external_pointer,
-      PretenureFlag pretenure = NOT_TENURED);
-
   Handle<ExternalArray> NewExternalArray(
       int length,
       ExternalArrayType array_type,
       void* external_pointer,
       PretenureFlag pretenure = NOT_TENURED);
+
+  Handle<JSGlobalPropertyCell> NewJSGlobalPropertyCell(
+      Handle<Object> value);
 
   Handle<Map> NewMap(InstanceType type, int instance_size);
 
@@ -185,6 +191,10 @@ class Factory {
   Handle<Map> GetFastElementsMap(Handle<Map> map);
 
   Handle<Map> GetSlowElementsMap(Handle<Map> map);
+
+  Handle<Map> GetExternalArrayElementsMap(Handle<Map> map,
+                                          ExternalArrayType array_type,
+                                          bool safe_to_add_transition);
 
   Handle<FixedArray> CopyFixedArray(Handle<FixedArray> array);
 
@@ -214,7 +224,7 @@ class Factory {
   Handle<JSObject> NewJSObjectFromMap(Handle<Map> map);
 
   // JS arrays are pretenured when allocated by the parser.
-  Handle<JSArray> NewJSArray(int init_length,
+  Handle<JSArray> NewJSArray(int capacity,
                              PretenureFlag pretenure = NOT_TENURED);
 
   Handle<JSArray> NewJSArrayWithElements(
@@ -224,7 +234,9 @@ class Factory {
   Handle<JSFunction> NewFunction(Handle<String> name,
                                  Handle<Object> prototype);
 
-  Handle<JSFunction> NewFunctionWithoutPrototype(Handle<String> name);
+  Handle<JSFunction> NewFunctionWithoutPrototype(
+      Handle<String> name,
+      StrictModeFlag strict_mode);
 
   Handle<JSFunction> NewFunction(Handle<Object> super, bool is_global);
 
@@ -240,7 +252,8 @@ class Factory {
 
   Handle<Code> NewCode(const CodeDesc& desc,
                        Code::Flags flags,
-                       Handle<Object> self_reference);
+                       Handle<Object> self_reference,
+                       bool immovable = false);
 
   Handle<Code> CopyCode(Handle<Code> code);
 
@@ -355,6 +368,15 @@ class Factory {
       Handle<SerializedScopeInfo> scope_info);
   Handle<SharedFunctionInfo> NewSharedFunctionInfo(Handle<String> name);
 
+  Handle<JSMessageObject> NewJSMessageObject(
+      Handle<String> type,
+      Handle<JSArray> arguments,
+      int start_position,
+      int end_position,
+      Handle<Object> script,
+      Handle<Object> stack_trace,
+      Handle<Object> stack_frames);
+
   Handle<NumberDictionary> DictionaryAtNumberPut(
       Handle<NumberDictionary>,
       uint32_t key,
@@ -392,7 +414,8 @@ class Factory {
                                        Handle<Object> prototype);
 
   Handle<JSFunction> NewFunctionWithoutPrototypeHelper(
-      Handle<String> name);
+      Handle<String> name,
+      StrictModeFlag strict_mode);
 
   Handle<DescriptorArray> CopyAppendCallbackDescriptors(
       Handle<DescriptorArray> array,

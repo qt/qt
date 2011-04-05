@@ -1,4 +1,4 @@
-// Copyright 2009 the V8 project authors. All rights reserved.
+// Copyright 2010 the V8 project authors. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -104,7 +104,8 @@ class RegExpMacroAssemblerX64: public NativeRegExpMacroAssembler {
                       Handle<String> subject,
                       int* offsets_vector,
                       int offsets_vector_length,
-                      int previous_index);
+                      int previous_index,
+                      Isolate* isolate);
 
   static Result Execute(Code* code,
                         String* input,
@@ -217,7 +218,7 @@ class RegExpMacroAssemblerX64: public NativeRegExpMacroAssembler {
   void BranchOrBacktrack(Condition condition, Label* to);
 
   void MarkPositionForCodeRelativeFixup() {
-    code_relative_fixup_positions_.Add(masm_->pc_offset());
+    code_relative_fixup_positions_.Add(masm_.pc_offset());
   }
 
   void FixupCodeRelativePositions();
@@ -249,7 +250,8 @@ class RegExpMacroAssemblerX64: public NativeRegExpMacroAssembler {
   // Increments the stack pointer (rcx) by a word size.
   inline void Drop();
 
-  MacroAssembler* masm_;
+  MacroAssembler masm_;
+  MacroAssembler::NoRootArrayScope no_root_array_scope_;
 
   ZoneList<int> code_relative_fixup_positions_;
 

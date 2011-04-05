@@ -28,6 +28,9 @@
 #ifndef V8_ALLOCATION_H_
 #define V8_ALLOCATION_H_
 
+#include "checks.h"
+#include "globals.h"
+
 namespace v8 {
 namespace internal {
 
@@ -35,20 +38,6 @@ namespace internal {
 // This function should not return, but should terminate the current
 // processing.
 void FatalProcessOutOfMemory(const char* message);
-
-// A class that controls whether allocation is allowed.  This is for
-// the C++ heap only!
-class NativeAllocationChecker {
- public:
-  typedef enum { ALLOW, DISALLOW } NativeAllocationAllowed;
-  explicit inline NativeAllocationChecker(NativeAllocationAllowed allowed);
-  inline ~NativeAllocationChecker();
-  static inline bool allocation_allowed();
- private:
-  // This flag applies to this particular instance.
-  NativeAllocationAllowed allowed_;
-};
-
 
 // Superclass for classes managed with new & delete.
 class Malloced {
@@ -93,7 +82,6 @@ class AllStatic {
 
 template <typename T>
 static T* NewArray(int size) {
-  ASSERT(NativeAllocationChecker::allocation_allowed());
   T* result = new T[size];
   if (result == NULL) Malloced::FatalProcessOutOfMemory();
   return result;

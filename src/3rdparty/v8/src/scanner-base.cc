@@ -27,13 +27,7 @@
 
 // Features shared by parsing and pre-parsing scanners.
 
-#include "v8.h"
-
-/*
-TODO(isolates): I incldue v8.h instead of these because we need Isolate and 
-some classes (NativeAllocationChecker) are moved into isolate.h 
 #include "../include/v8stdint.h"
-*/
 #include "scanner-base.h"
 #include "char-predicates-inl.h"
 
@@ -41,33 +35,6 @@ namespace v8 {
 namespace internal {
 
 // ----------------------------------------------------------------------------
-// UTF16Buffer
-
-UTF16Buffer::UTF16Buffer()
-    : pos_(0), end_(kNoEndPosition) { }
-
-// ----------------------------------------------------------------------------
-// LiteralCollector
-
-LiteralCollector::LiteralCollector()
-    : buffer_(kInitialCapacity), recording_(false) { }
-
-
-LiteralCollector::~LiteralCollector() {}
-
-
-void LiteralCollector::AddCharSlow(uc32 c) {
-  ASSERT(static_cast<unsigned>(c) > unibrow::Utf8::kMaxOneByteChar);
-  int length = unibrow::Utf8::Length(c);
-  Vector<char> block = buffer_.AddBlock(length, '\0');
-#ifdef DEBUG
-  int written_length = unibrow::Utf8::Encode(block.start(), c);
-  CHECK_EQ(length, written_length);
-#else
-  unibrow::Utf8::Encode(block.start(), c);
-#endif
-}
-
 // Compound predicates.
 
 bool ScannerConstants::IsIdentifier(unibrow::CharacterStream* buffer) {
@@ -87,9 +54,9 @@ bool ScannerConstants::IsIdentifier(unibrow::CharacterStream* buffer) {
 // ----------------------------------------------------------------------------
 // Scanner
 
-Scanner::Scanner()
-    : scanner_constants_(Isolate::Current()->scanner_constants()),
-      source_(NULL) {
+Scanner::Scanner(ScannerConstants* scanner_constants)
+    : scanner_constants_(scanner_constants),
+      octal_pos_(kNoOctalLocation) {
 }
 
 
@@ -125,13 +92,20 @@ uc32 Scanner::ScanHexEscape(uc32 c, int length) {
 // ECMA-262. Other JS VMs support them.
 uc32 Scanner::ScanOctalEscape(uc32 c, int length) {
   uc32 x = c - '0';
-  for (int i = 0; i < length; i++) {
+  int i = 0;
+  for (; i < length; i++) {
     int d = c0_ - '0';
     if (d < 0 || d > 7) break;
     int nx = x * 8 + d;
     if (nx >= 256) break;
     x = nx;
     Advance();
+  }
+  // Anything excelt '\0' is an octal escape sequence, illegal in strict mode.
+  // Remember the position of octal escape sequences so that better error
+  // can be reported later (in strict mode).
+  if (c != '0' || i > 0) {
+    octal_pos_ = source_pos() - i - 1;     // Already advanced
   }
   return x;
 }
@@ -140,9 +114,8 @@ uc32 Scanner::ScanOctalEscape(uc32 c, int length) {
 // ----------------------------------------------------------------------------
 // JavaScriptScanner
 
-JavaScriptScanner::JavaScriptScanner(ScannerConstants* scanner_constants)
-    : scanner_constants_(scanner_constants),
-      has_line_terminator_before_next_(false) {}
+JavaScriptScanner::JavaScriptScanner(ScannerConstants* scanner_contants)
+    : Scanner(scanner_contants) { }
 
 
 Token::Value JavaScriptScanner::Next() {
@@ -262,7 +235,7 @@ Token::Value JavaScriptScanner::ScanHtmlComment() {
 
 
 void JavaScriptScanner::Scan() {
-  next_.literal_chars = Vector<const char>();
+  next_.literal_chars = NULL;
   Token::Value token;
   do {
     // Remember the position of the next token
@@ -502,12 +475,21 @@ void JavaScriptScanner::Scan() {
 
 
 void JavaScriptScanner::SeekForward(int pos) {
-  source_->SeekForward(pos - 1);
-  Advance();
-  // This function is only called to seek to the location
-  // of the end of a function (at the "}" token). It doesn't matter
-  // whether there was a line terminator in the part we skip.
-  has_line_terminator_before_next_ = false;
+  // After this call, we will have the token at the given position as
+  // the "next" token. The "current" token will be invalid.
+  if (pos == next_.location.beg_pos) return;
+  int current_pos = source_pos();
+  ASSERT_EQ(next_.location.end_pos, current_pos);
+  // Positions inside the lookahead token aren't supported.
+  ASSERT(pos >= current_pos);
+  if (pos != current_pos) {
+    source_->SeekForward(pos - source_->pos());
+    Advance();
+    // This function is only called to seek to the location
+    // of the end of a function (at the "}" token). It doesn't matter
+    // whether there was a line terminator in the part we skip.
+    has_line_terminator_before_next_ = false;
+  }
   Scan();
 }
 
@@ -558,7 +540,7 @@ Token::Value JavaScriptScanner::ScanString() {
   uc32 quote = c0_;
   Advance();  // consume quote
 
-  LiteralScope literal(this, kLiteralString);
+  LiteralScope literal(this);
   while (c0_ != quote && c0_ >= 0
          && !scanner_constants_->IsLineTerminator(c0_)) {
     uc32 c = c0_;
@@ -589,7 +571,7 @@ Token::Value JavaScriptScanner::ScanNumber(bool seen_period) {
 
   enum { DECIMAL, HEX, OCTAL } kind = DECIMAL;
 
-  LiteralScope literal(this, kLiteralNumber);
+  LiteralScope literal(this);
   if (seen_period) {
     // we have already seen a decimal point of the float
     AddLiteralChar('.');
@@ -620,7 +602,11 @@ Token::Value JavaScriptScanner::ScanNumber(bool seen_period) {
             kind = DECIMAL;
             break;
           }
-          if (c0_  < '0' || '7'  < c0_) break;
+          if (c0_  < '0' || '7'  < c0_) {
+            // Octal literal finished.
+            octal_pos_ = next_.location.beg_pos;
+            break;
+          }
           AddLiteralCharAdvance();
         }
       }
@@ -678,7 +664,7 @@ uc32 JavaScriptScanner::ScanIdentifierUnicodeEscape() {
 
 Token::Value JavaScriptScanner::ScanIdentifierOrKeyword() {
   ASSERT(scanner_constants_->IsIdentifierStart(c0_));
-  LiteralScope literal(this, kLiteralIdentifier);
+  LiteralScope literal(this);
   KeywordMatcher keyword_match;
   // Scan identifier start character.
   if (c0_ == '\\') {
@@ -744,17 +730,24 @@ bool JavaScriptScanner::ScanRegExpPattern(bool seen_equal) {
   // Scan regular expression body: According to ECMA-262, 3rd, 7.8.5,
   // the scanner should pass uninterpreted bodies to the RegExp
   // constructor.
-  LiteralScope literal(this, kLiteralRegExp);
+  LiteralScope literal(this);
   if (seen_equal)
     AddLiteralChar('=');
 
   while (c0_ != '/' || in_character_class) {
     if (scanner_constants_->IsLineTerminator(c0_) || c0_ < 0) return false;
-    if (c0_ == '\\') {  // escaped character
+    if (c0_ == '\\') {  // Escape sequence.
       AddLiteralCharAdvance();
       if (scanner_constants_->IsLineTerminator(c0_) || c0_ < 0) return false;
       AddLiteralCharAdvance();
-    } else {  // unescaped character
+      // If the escape allows more characters, i.e., \x??, \u????, or \c?,
+      // only "safe" characters are allowed (letters, digits, underscore),
+      // otherwise the escape isn't valid and the invalid character has
+      // its normal meaning. I.e., we can just continue scanning without
+      // worrying whether the following characters are part of the escape
+      // or not, since any '/', '\\' or '[' is guaranteed to not be part
+      // of the escape sequence.
+    } else {  // Unescaped character.
       if (c0_ == '[') in_character_class = true;
       if (c0_ == ']') in_character_class = false;
       AddLiteralCharAdvance();
@@ -770,7 +763,7 @@ bool JavaScriptScanner::ScanRegExpPattern(bool seen_equal) {
 
 bool JavaScriptScanner::ScanRegExpFlags() {
   // Scan regular expression flags.
-  LiteralScope literal(this, kLiteralRegExpFlags);
+  LiteralScope literal(this);
   while (scanner_constants_->IsIdentifierPart(c0_)) {
     if (c0_ == '\\') {
       uc32 c = ScanIdentifierUnicodeEscape();
@@ -796,25 +789,27 @@ KeywordMatcher::FirstState KeywordMatcher::first_states_[] = {
   { "break",  KEYWORD_PREFIX, Token::BREAK },
   { NULL,     C,              Token::ILLEGAL },
   { NULL,     D,              Token::ILLEGAL },
-  { "else",   KEYWORD_PREFIX, Token::ELSE },
+  { NULL,     E,              Token::ILLEGAL },
   { NULL,     F,              Token::ILLEGAL },
   { NULL,     UNMATCHABLE,    Token::ILLEGAL },
   { NULL,     UNMATCHABLE,    Token::ILLEGAL },
   { NULL,     I,              Token::ILLEGAL },
   { NULL,     UNMATCHABLE,    Token::ILLEGAL },
   { NULL,     UNMATCHABLE,    Token::ILLEGAL },
-  { NULL,     UNMATCHABLE,    Token::ILLEGAL },
+  { "let",    KEYWORD_PREFIX, Token::FUTURE_RESERVED_WORD },
   { NULL,     UNMATCHABLE,    Token::ILLEGAL },
   { NULL,     N,              Token::ILLEGAL },
   { NULL,     UNMATCHABLE,    Token::ILLEGAL },
-  { NULL,     UNMATCHABLE,    Token::ILLEGAL },
+  { NULL,     P,              Token::ILLEGAL },
   { NULL,     UNMATCHABLE,    Token::ILLEGAL },
   { "return", KEYWORD_PREFIX, Token::RETURN },
-  { "switch", KEYWORD_PREFIX, Token::SWITCH },
+  { NULL,     S,              Token::ILLEGAL },
   { NULL,     T,              Token::ILLEGAL },
   { NULL,     UNMATCHABLE,    Token::ILLEGAL },
   { NULL,     V,              Token::ILLEGAL },
-  { NULL,     W,              Token::ILLEGAL }
+  { NULL,     W,              Token::ILLEGAL },
+  { NULL,     UNMATCHABLE,    Token::ILLEGAL },
+  { "yield",  KEYWORD_PREFIX, Token::FUTURE_RESERVED_WORD }
 };
 
 
@@ -822,7 +817,7 @@ void KeywordMatcher::Step(unibrow::uchar input) {
   switch (state_) {
     case INITIAL: {
       // matching the first character is the only state with significant fanout.
-      // Match only lower-case letters in range 'b'..'w'.
+      // Match only lower-case letters in range 'b'..'y'.
       unsigned int offset = input - kFirstCharRangeMin;
       if (offset < kFirstCharRangeLength) {
         state_ = first_states_[offset].state;
@@ -850,6 +845,8 @@ void KeywordMatcher::Step(unibrow::uchar input) {
       break;
     case C:
       if (MatchState(input, 'a', CA)) return;
+      if (MatchKeywordStart(input, "class", 1,
+          Token::FUTURE_RESERVED_WORD)) return;
       if (MatchState(input, 'o', CO)) return;
       break;
     case CA:
@@ -872,6 +869,18 @@ void KeywordMatcher::Step(unibrow::uchar input) {
       if (MatchKeywordStart(input, "default", 2, Token::DEFAULT)) return;
       if (MatchKeywordStart(input, "delete", 2, Token::DELETE)) return;
       break;
+    case E:
+      if (MatchKeywordStart(input, "else", 1, Token::ELSE)) return;
+      if (MatchKeywordStart(input, "enum", 1,
+          Token::FUTURE_RESERVED_WORD)) return;
+      if (MatchState(input, 'x', EX)) return;
+      break;
+    case EX:
+      if (MatchKeywordStart(input, "export", 2,
+          Token::FUTURE_RESERVED_WORD)) return;
+      if (MatchKeywordStart(input, "extends", 2,
+          Token::FUTURE_RESERVED_WORD)) return;
+      break;
     case F:
       if (MatchKeywordStart(input, "false", 1, Token::FALSE_LITERAL)) return;
       if (MatchKeywordStart(input, "finally", 1, Token::FINALLY)) return;
@@ -880,16 +889,49 @@ void KeywordMatcher::Step(unibrow::uchar input) {
       break;
     case I:
       if (MatchKeyword(input, 'f', KEYWORD_MATCHED, Token::IF)) return;
+      if (MatchState(input, 'm', IM)) return;
       if (MatchKeyword(input, 'n', IN, Token::IN)) return;
+      break;
+    case IM:
+      if (MatchState(input, 'p', IMP)) return;
+      break;
+    case IMP:
+      if (MatchKeywordStart(input, "implements", 3,
+         Token::FUTURE_RESERVED_WORD )) return;
+      if (MatchKeywordStart(input, "import", 3,
+         Token::FUTURE_RESERVED_WORD)) return;
       break;
     case IN:
       token_ = Token::IDENTIFIER;
+      if (MatchKeywordStart(input, "interface", 2,
+         Token::FUTURE_RESERVED_WORD)) return;
       if (MatchKeywordStart(input, "instanceof", 2, Token::INSTANCEOF)) return;
       break;
     case N:
       if (MatchKeywordStart(input, "native", 1, Token::NATIVE)) return;
       if (MatchKeywordStart(input, "new", 1, Token::NEW)) return;
       if (MatchKeywordStart(input, "null", 1, Token::NULL_LITERAL)) return;
+      break;
+    case P:
+      if (MatchKeywordStart(input, "package", 1,
+          Token::FUTURE_RESERVED_WORD)) return;
+      if (MatchState(input, 'r', PR)) return;
+      if (MatchKeywordStart(input, "public", 1,
+          Token::FUTURE_RESERVED_WORD)) return;
+      break;
+    case PR:
+      if (MatchKeywordStart(input, "private", 2,
+          Token::FUTURE_RESERVED_WORD)) return;
+      if (MatchKeywordStart(input, "protected", 2,
+          Token::FUTURE_RESERVED_WORD)) return;
+      break;
+    case S:
+      if (MatchKeywordStart(input, "static", 1,
+          Token::FUTURE_RESERVED_WORD)) return;
+      if (MatchKeywordStart(input, "super", 1,
+          Token::FUTURE_RESERVED_WORD)) return;
+      if (MatchKeywordStart(input, "switch", 1,
+          Token::SWITCH)) return;
       break;
     case T:
       if (MatchState(input, 'h', TH)) return;

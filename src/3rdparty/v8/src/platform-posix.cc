@@ -1,4 +1,4 @@
-// Copyright 2009 the V8 project authors. All rights reserved.
+// Copyright 2011 the V8 project authors. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -122,6 +122,11 @@ FILE* OS::FOpen(const char* path, const char* mode) {
 }
 
 
+bool OS::Remove(const char* path) {
+  return (remove(path) == 0);
+}
+
+
 const char* const OS::LogFileOpenMode = "w";
 
 
@@ -134,10 +139,27 @@ void OS::Print(const char* format, ...) {
 
 
 void OS::VPrint(const char* format, va_list args) {
-#if defined(ANDROID)
+#if defined(ANDROID) && !defined(V8_ANDROID_LOG_STDOUT)
   LOG_PRI_VA(ANDROID_LOG_INFO, LOG_TAG, format, args);
 #else
   vprintf(format, args);
+#endif
+}
+
+
+void OS::FPrint(FILE* out, const char* format, ...) {
+  va_list args;
+  va_start(args, format);
+  VFPrint(out, format, args);
+  va_end(args);
+}
+
+
+void OS::VFPrint(FILE* out, const char* format, va_list args) {
+#if defined(ANDROID) && !defined(V8_ANDROID_LOG_STDOUT)
+  LOG_PRI_VA(ANDROID_LOG_INFO, LOG_TAG, format, args);
+#else
+  vfprintf(out, format, args);
 #endif
 }
 
@@ -151,7 +173,7 @@ void OS::PrintError(const char* format, ...) {
 
 
 void OS::VPrintError(const char* format, va_list args) {
-#if defined(ANDROID)
+#if defined(ANDROID) && !defined(V8_ANDROID_LOG_STDOUT)
   LOG_PRI_VA(ANDROID_LOG_ERROR, LOG_TAG, format, args);
 #else
   vfprintf(stderr, format, args);
@@ -173,13 +195,40 @@ int OS::VSNPrintF(Vector<char> str,
                   va_list args) {
   int n = vsnprintf(str.start(), str.length(), format, args);
   if (n < 0 || n >= str.length()) {
-    str[str.length() - 1] = '\0';
+    // If the length is zero, the assignment fails.
+    if (str.length() > 0)
+      str[str.length() - 1] = '\0';
     return -1;
   } else {
     return n;
   }
 }
 
+
+#if defined(V8_TARGET_ARCH_IA32)
+static OS::MemCopyFunction memcopy_function = NULL;
+static Mutex* memcopy_function_mutex = OS::CreateMutex();
+// Defined in codegen-ia32.cc.
+OS::MemCopyFunction CreateMemCopyFunction();
+
+// Copy memory area to disjoint memory area.
+void OS::MemCopy(void* dest, const void* src, size_t size) {
+  if (memcopy_function == NULL) {
+    ScopedLock lock(memcopy_function_mutex);
+    if (memcopy_function == NULL) {
+      OS::MemCopyFunction temp = CreateMemCopyFunction();
+      MemoryBarrier();
+      memcopy_function = temp;
+    }
+  }
+  // Note: here we rely on dependent reads being ordered. This is true
+  // on all architectures we currently support.
+  (*memcopy_function)(dest, src, size);
+#ifdef DEBUG
+  CHECK_EQ(0, memcmp(dest, src, size));
+#endif
+}
+#endif  // V8_TARGET_ARCH_IA32
 
 // ----------------------------------------------------------------------------
 // POSIX string support.
@@ -204,6 +253,14 @@ class POSIXSocket : public Socket {
   explicit POSIXSocket() {
     // Create the socket.
     socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (IsValid()) {
+      // Allow rapid reuse.
+      static const int kOn = 1;
+      int ret = setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR,
+                           &kOn, sizeof(kOn));
+      ASSERT(ret == 0);
+      USE(ret);
+    }
   }
   explicit POSIXSocket(int socket): socket_(socket) { }
   virtual ~POSIXSocket() { Shutdown(); }

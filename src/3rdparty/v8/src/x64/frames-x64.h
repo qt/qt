@@ -1,4 +1,4 @@
-// Copyright 2009 the V8 project authors. All rights reserved.
+// Copyright 2010 the V8 project authors. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -28,12 +28,10 @@
 #ifndef V8_X64_FRAMES_X64_H_
 #define V8_X64_FRAMES_X64_H_
 
-#include "memory.h"
-
 namespace v8 {
 namespace internal {
 
-static const int kNumRegs = 8;
+static const int kNumRegs = 16;
 static const RegList kJSCallerSaved =
     1 << 0 |  // rax
     1 << 1 |  // rcx
@@ -44,6 +42,11 @@ static const RegList kJSCallerSaved =
 static const int kNumJSCallerSaved = 5;
 
 typedef Object* JSCallerSavedBuffer[kNumJSCallerSaved];
+
+// Number of registers for which space is reserved in safepoints.
+static const int kNumSafepointRegisters = 16;
+
+// ----------------------------------------------------
 
 class StackHandlerConstants : public AllStatic {
  public:
@@ -96,7 +99,7 @@ class JavaScriptFrameConstants : public AllStatic {
  public:
   // FP-relative.
   static const int kLocal0Offset = StandardFrameConstants::kExpressionsOffset;
-  static const int kSavedRegistersOffset = +2 * kPointerSize;
+  static const int kLastParameterOffset = +2 * kPointerSize;
   static const int kFunctionOffset = StandardFrameConstants::kMarkerOffset;
 
   // Caller SP-relative.

@@ -35,10 +35,12 @@
 #include "v8.h"
 
 #include "arguments.h"
+#include "deoptimizer.h"
 #include "execution.h"
 #include "ic-inl.h"
 #include "factory.h"
 #include "runtime.h"
+#include "runtime-profiler.h"
 #include "serialize.h"
 #include "stub-cache.h"
 #include "regexp-stack.h"
@@ -53,6 +55,8 @@
 #include "x64/regexp-macro-assembler-x64.h"
 #elif V8_TARGET_ARCH_ARM
 #include "arm/regexp-macro-assembler-arm.h"
+#elif V8_TARGET_ARCH_MIPS
+#include "mips/regexp-macro-assembler-mips.h"
 #else  // Unknown architecture.
 #error "Unknown architecture."
 #endif  // Target architecture.
@@ -61,6 +65,13 @@
 namespace v8 {
 namespace internal {
 
+
+const double DoubleConstant::min_int = kMinInt;
+const double DoubleConstant::one_half = 0.5;
+const double DoubleConstant::minus_zero = -0.0;
+const double DoubleConstant::nan = OS::nan_value();
+const double DoubleConstant::negative_infinity = -V8_INFINITY;
+const char* RelocInfo::kFillerCommentString = "DEOPTIMIZATION PADDING";
 
 // -----------------------------------------------------------------------------
 // Implementation of Label
@@ -131,6 +142,7 @@ const int kPCJumpTag = (1 << kExtraTagBits) - 1;
 
 const int kSmallPCDeltaBits = kBitsPerByte - kTagBits;
 const int kSmallPCDeltaMask = (1 << kSmallPCDeltaBits) - 1;
+const int RelocInfo::kMaxSmallPCDelta = kSmallPCDeltaMask;
 
 const int kVariableLengthPCJumpTopTag = 1;
 const int kChunkBits = 7;
@@ -208,9 +220,8 @@ void RelocInfoWriter::Write(const RelocInfo* rinfo) {
 #ifdef DEBUG
   byte* begin_pos = pos_;
 #endif
-  COUNTERS->reloc_info_count()->Increment();
   ASSERT(rinfo->pc() - last_pc_ >= 0);
-  ASSERT(RelocInfo::NUMBER_OF_MODES < kMaxRelocModes);
+  ASSERT(RelocInfo::NUMBER_OF_MODES <= kMaxRelocModes);
   // Use unsigned delta-encoding for pc.
   uint32_t pc_delta = static_cast<uint32_t>(rinfo->pc() - last_pc_);
   RelocInfo::Mode rmode = rinfo->rmode();
@@ -220,6 +231,7 @@ void RelocInfoWriter::Write(const RelocInfo* rinfo) {
     WriteTaggedPC(pc_delta, kEmbeddedObjectTag);
   } else if (rmode == RelocInfo::CODE_TARGET) {
     WriteTaggedPC(pc_delta, kCodeTargetTag);
+    ASSERT(begin_pos - pos_ <= RelocInfo::kMaxCallSize);
   } else if (RelocInfo::IsPosition(rmode)) {
     // Use signed delta-encoding for data.
     intptr_t data_delta = rinfo->data() - last_data_;
@@ -243,6 +255,7 @@ void RelocInfoWriter::Write(const RelocInfo* rinfo) {
     WriteExtraTaggedPC(pc_delta, kPCJumpTag);
     WriteExtraTaggedData(rinfo->data() - last_data_, kCommentTag);
     last_data_ = rinfo->data();
+    ASSERT(begin_pos - pos_ >= RelocInfo::kMinRelocCommentSize);
   } else {
     // For all other modes we simply use the mode as the extra tag.
     // None of these modes need a data component.
@@ -386,7 +399,7 @@ void RelocIterator::next() {
 RelocIterator::RelocIterator(Code* code, int mode_mask) {
   rinfo_.pc_ = code->instruction_start();
   rinfo_.data_ = 0;
-  // relocation info is read backwards
+  // Relocation info is read backwards.
   pos_ = code->relocation_start() + code->relocation_size();
   end_ = code->relocation_start();
   done_ = false;
@@ -399,7 +412,7 @@ RelocIterator::RelocIterator(Code* code, int mode_mask) {
 RelocIterator::RelocIterator(const CodeDesc& desc, int mode_mask) {
   rinfo_.pc_ = desc.buffer;
   rinfo_.data_ = 0;
-  // relocation info is read backwards
+  // Relocation info is read backwards.
   pos_ = desc.buffer + desc.buffer_size;
   end_ = pos_ - desc.reloc_size;
   done_ = false;
@@ -431,6 +444,8 @@ const char* RelocInfo::RelocModeName(RelocInfo::Mode rmode) {
       return "debug break";
     case RelocInfo::CODE_TARGET:
       return "code target";
+    case RelocInfo::GLOBAL_PROPERTY_CELL:
+      return "global property cell";
     case RelocInfo::RUNTIME_ENTRY:
       return "runtime entry";
     case RelocInfo::JS_RETURN:
@@ -458,27 +473,35 @@ const char* RelocInfo::RelocModeName(RelocInfo::Mode rmode) {
 }
 
 
-void RelocInfo::Print() {
-  PrintF("%p  %s", pc_, RelocModeName(rmode_));
+void RelocInfo::Print(FILE* out) {
+  PrintF(out, "%p  %s", pc_, RelocModeName(rmode_));
   if (IsComment(rmode_)) {
-    PrintF("  (%s)", reinterpret_cast<char*>(data_));
+    PrintF(out, "  (%s)", reinterpret_cast<char*>(data_));
   } else if (rmode_ == EMBEDDED_OBJECT) {
-    PrintF("  (");
-    target_object()->ShortPrint();
-    PrintF(")");
+    PrintF(out, "  (");
+    target_object()->ShortPrint(out);
+    PrintF(out, ")");
   } else if (rmode_ == EXTERNAL_REFERENCE) {
     ExternalReferenceEncoder ref_encoder;
-    PrintF(" (%s)  (%p)",
+    PrintF(out, " (%s)  (%p)",
            ref_encoder.NameOfAddress(*target_reference_address()),
            *target_reference_address());
   } else if (IsCodeTarget(rmode_)) {
     Code* code = Code::GetCodeFromTargetAddress(target_address());
-    PrintF(" (%s)  (%p)", Code::Kind2String(code->kind()), target_address());
+    PrintF(out, " (%s)  (%p)", Code::Kind2String(code->kind()),
+           target_address());
   } else if (IsPosition(rmode_)) {
-    PrintF("  (%" V8_PTR_PREFIX "d)", data());
+    PrintF(out, "  (%" V8_PTR_PREFIX "d)", data());
+  } else if (rmode_ == RelocInfo::RUNTIME_ENTRY) {
+    // Depotimization bailouts are stored as runtime entries.
+    int id = Deoptimizer::GetDeoptimizationId(
+        target_address(), Deoptimizer::EAGER);
+    if (id != Deoptimizer::kNotDeoptimizationEntry) {
+      PrintF(out, "  (deoptimization bailout %d)", id);
+    }
   }
 
-  PrintF("\n");
+  PrintF(out, "\n");
 }
 #endif  // ENABLE_DISASSEMBLER
 
@@ -488,6 +511,9 @@ void RelocInfo::Verify() {
   switch (rmode_) {
     case EMBEDDED_OBJECT:
       Object::VerifyPointer(target_object());
+      break;
+    case GLOBAL_PROPERTY_CELL:
+      Object::VerifyPointer(target_cell());
       break;
     case DEBUG_BREAK:
 #ifndef ENABLE_DEBUGGER_SUPPORT
@@ -528,24 +554,29 @@ void RelocInfo::Verify() {
 // -----------------------------------------------------------------------------
 // Implementation of ExternalReference
 
-ExternalReference::ExternalReference(Builtins::CFunctionId id)
-  : address_(Redirect(Builtins::c_function_address(id))) {}
+ExternalReference::ExternalReference(Builtins::CFunctionId id, Isolate* isolate)
+  : address_(Redirect(isolate, Builtins::c_function_address(id))) {}
 
 
-ExternalReference::ExternalReference(ApiFunction* fun)
-  : address_(Redirect(fun->address())) {}
+ExternalReference::ExternalReference(
+    ApiFunction* fun,
+    Type type = ExternalReference::BUILTIN_CALL,
+    Isolate* isolate = NULL)
+  : address_(Redirect(isolate, fun->address(), type)) {}
 
 
-ExternalReference::ExternalReference(Builtins::Name name)
-  : address_(Isolate::Current()->builtins()->builtin_address(name)) {}
+ExternalReference::ExternalReference(Builtins::Name name, Isolate* isolate)
+  : address_(isolate->builtins()->builtin_address(name)) {}
 
 
-ExternalReference::ExternalReference(Runtime::FunctionId id)
-  : address_(Redirect(Runtime::FunctionForId(id)->entry)) {}
+ExternalReference::ExternalReference(Runtime::FunctionId id,
+                                     Isolate* isolate)
+  : address_(Redirect(isolate, Runtime::FunctionForId(id)->entry)) {}
 
 
-ExternalReference::ExternalReference(const Runtime::Function* f)
-  : address_(Redirect(f->entry)) {}
+ExternalReference::ExternalReference(const Runtime::Function* f,
+                                     Isolate* isolate)
+  : address_(Redirect(isolate, f->entry)) {}
 
 
 ExternalReference ExternalReference::isolate_address() {
@@ -553,116 +584,154 @@ ExternalReference ExternalReference::isolate_address() {
 }
 
 
-ExternalReference::ExternalReference(const IC_Utility& ic_utility)
-  : address_(Redirect(ic_utility.address())) {}
+ExternalReference::ExternalReference(const IC_Utility& ic_utility,
+                                     Isolate* isolate)
+  : address_(Redirect(isolate, ic_utility.address())) {}
 
 #ifdef ENABLE_DEBUGGER_SUPPORT
-ExternalReference::ExternalReference(const Debug_Address& debug_address)
-  : address_(debug_address.address(Isolate::Current())) {}
+ExternalReference::ExternalReference(const Debug_Address& debug_address,
+                                     Isolate* isolate)
+  : address_(debug_address.address(isolate)) {}
 #endif
 
 ExternalReference::ExternalReference(StatsCounter* counter)
   : address_(reinterpret_cast<Address>(counter->GetInternalPointer())) {}
 
 
-ExternalReference::ExternalReference(Isolate::AddressId id)
-  : address_(Isolate::Current()->get_address_from_id(id)) {}
+ExternalReference::ExternalReference(Isolate::AddressId id, Isolate* isolate)
+  : address_(isolate->get_address_from_id(id)) {}
 
 
 ExternalReference::ExternalReference(const SCTableReference& table_ref)
   : address_(table_ref.address()) {}
 
 
-ExternalReference ExternalReference::perform_gc_function() {
-  return ExternalReference(Redirect(FUNCTION_ADDR(Runtime::PerformGC)));
+ExternalReference ExternalReference::perform_gc_function(Isolate* isolate) {
+  return ExternalReference(Redirect(isolate,
+                                    FUNCTION_ADDR(Runtime::PerformGC)));
 }
 
 
-ExternalReference ExternalReference::fill_heap_number_with_random_function() {
-  return
-      ExternalReference(Redirect(FUNCTION_ADDR(V8::FillHeapNumberWithRandom)));
+ExternalReference ExternalReference::fill_heap_number_with_random_function(
+    Isolate* isolate) {
+  return ExternalReference(Redirect(
+      isolate,
+      FUNCTION_ADDR(V8::FillHeapNumberWithRandom)));
 }
 
 
-ExternalReference ExternalReference::delete_handle_scope_extensions() {
-  return ExternalReference(Redirect(FUNCTION_ADDR(
-                           HandleScope::DeleteExtensions)));
+ExternalReference ExternalReference::delete_handle_scope_extensions(
+    Isolate* isolate) {
+  return ExternalReference(Redirect(
+      isolate,
+      FUNCTION_ADDR(HandleScope::DeleteExtensions)));
 }
 
 
-ExternalReference ExternalReference::random_uint32_function() {
-  return ExternalReference(Redirect(FUNCTION_ADDR(V8::Random)));
+ExternalReference ExternalReference::random_uint32_function(
+    Isolate* isolate) {
+  return ExternalReference(Redirect(isolate, FUNCTION_ADDR(V8::Random)));
 }
 
 
-ExternalReference ExternalReference::transcendental_cache_array_address() {
-  return ExternalReference(Isolate::Current()->transcendental_cache()->
-      cache_array_address());
-}
-
-
-ExternalReference ExternalReference::keyed_lookup_cache_keys() {
-  return ExternalReference(Isolate::Current()->
-      keyed_lookup_cache()->keys_address());
-}
-
-
-ExternalReference ExternalReference::keyed_lookup_cache_field_offsets() {
-  return ExternalReference(Isolate::Current()->
-      keyed_lookup_cache()->field_offsets_address());
-}
-
-
-ExternalReference ExternalReference::the_hole_value_location() {
-  return ExternalReference(FACTORY->the_hole_value().location());
-}
-
-
-ExternalReference ExternalReference::roots_address() {
-  return ExternalReference(HEAP->roots_address());
-}
-
-
-ExternalReference ExternalReference::address_of_stack_limit() {
+ExternalReference ExternalReference::transcendental_cache_array_address(
+    Isolate* isolate) {
   return ExternalReference(
-      Isolate::Current()->stack_guard()->address_of_jslimit());
+      isolate->transcendental_cache()->cache_array_address());
 }
 
 
-ExternalReference ExternalReference::address_of_real_stack_limit() {
+ExternalReference ExternalReference::new_deoptimizer_function(
+    Isolate* isolate) {
   return ExternalReference(
-      Isolate::Current()->stack_guard()->address_of_real_jslimit());
+      Redirect(isolate, FUNCTION_ADDR(Deoptimizer::New)));
 }
 
 
-ExternalReference ExternalReference::address_of_regexp_stack_limit() {
+ExternalReference ExternalReference::compute_output_frames_function(
+    Isolate* isolate) {
   return ExternalReference(
-      Isolate::Current()->regexp_stack()->limit_address());
+      Redirect(isolate, FUNCTION_ADDR(Deoptimizer::ComputeOutputFrames)));
 }
 
 
-ExternalReference ExternalReference::new_space_start() {
-  return ExternalReference(HEAP->NewSpaceStart());
+ExternalReference ExternalReference::global_contexts_list(Isolate* isolate) {
+  return ExternalReference(isolate->heap()->global_contexts_list_address());
 }
 
 
-ExternalReference ExternalReference::new_space_mask() {
-  return ExternalReference(reinterpret_cast<Address>(HEAP->NewSpaceMask()));
+ExternalReference ExternalReference::keyed_lookup_cache_keys(Isolate* isolate) {
+  return ExternalReference(isolate->keyed_lookup_cache()->keys_address());
 }
 
 
-ExternalReference ExternalReference::new_space_allocation_top_address() {
-  return ExternalReference(HEAP->NewSpaceAllocationTopAddress());
+ExternalReference ExternalReference::keyed_lookup_cache_field_offsets(
+    Isolate* isolate) {
+  return ExternalReference(
+      isolate->keyed_lookup_cache()->field_offsets_address());
 }
 
 
-ExternalReference ExternalReference::heap_always_allocate_scope_depth() {
-  return ExternalReference(HEAP->always_allocate_scope_depth_address());
+ExternalReference ExternalReference::the_hole_value_location(Isolate* isolate) {
+  return ExternalReference(isolate->factory()->the_hole_value().location());
 }
 
 
-ExternalReference ExternalReference::new_space_allocation_limit_address() {
-  return ExternalReference(HEAP->NewSpaceAllocationLimitAddress());
+ExternalReference ExternalReference::arguments_marker_location(
+    Isolate* isolate) {
+  return ExternalReference(isolate->factory()->arguments_marker().location());
+}
+
+
+ExternalReference ExternalReference::roots_address(Isolate* isolate) {
+  return ExternalReference(isolate->heap()->roots_address());
+}
+
+
+ExternalReference ExternalReference::address_of_stack_limit(Isolate* isolate) {
+  return ExternalReference(isolate->stack_guard()->address_of_jslimit());
+}
+
+
+ExternalReference ExternalReference::address_of_real_stack_limit(
+    Isolate* isolate) {
+  return ExternalReference(isolate->stack_guard()->address_of_real_jslimit());
+}
+
+
+ExternalReference ExternalReference::address_of_regexp_stack_limit(
+    Isolate* isolate) {
+  return ExternalReference(isolate->regexp_stack()->limit_address());
+}
+
+
+ExternalReference ExternalReference::new_space_start(Isolate* isolate) {
+  return ExternalReference(isolate->heap()->NewSpaceStart());
+}
+
+
+ExternalReference ExternalReference::new_space_mask(Isolate* isolate) {
+  Address mask = reinterpret_cast<Address>(isolate->heap()->NewSpaceMask());
+  return ExternalReference(mask);
+}
+
+
+ExternalReference ExternalReference::new_space_allocation_top_address(
+    Isolate* isolate) {
+  return ExternalReference(isolate->heap()->NewSpaceAllocationTopAddress());
+}
+
+
+ExternalReference ExternalReference::heap_always_allocate_scope_depth(
+    Isolate* isolate) {
+  Heap* heap = isolate->heap();
+  return ExternalReference(heap->always_allocate_scope_depth_address());
+}
+
+
+ExternalReference ExternalReference::new_space_allocation_limit_address(
+    Isolate* isolate) {
+  return ExternalReference(isolate->heap()->NewSpaceAllocationLimitAddress());
 }
 
 
@@ -681,14 +750,46 @@ ExternalReference ExternalReference::handle_scope_limit_address() {
 }
 
 
-ExternalReference ExternalReference::scheduled_exception_address() {
-  return ExternalReference(Isolate::Current()->scheduled_exception_address());
+ExternalReference ExternalReference::scheduled_exception_address(
+    Isolate* isolate) {
+  return ExternalReference(isolate->scheduled_exception_address());
+}
+
+
+ExternalReference ExternalReference::address_of_min_int() {
+  return ExternalReference(reinterpret_cast<void*>(
+      const_cast<double*>(&DoubleConstant::min_int)));
+}
+
+
+ExternalReference ExternalReference::address_of_one_half() {
+  return ExternalReference(reinterpret_cast<void*>(
+      const_cast<double*>(&DoubleConstant::one_half)));
+}
+
+
+ExternalReference ExternalReference::address_of_minus_zero() {
+  return ExternalReference(reinterpret_cast<void*>(
+      const_cast<double*>(&DoubleConstant::minus_zero)));
+}
+
+
+ExternalReference ExternalReference::address_of_negative_infinity() {
+  return ExternalReference(reinterpret_cast<void*>(
+      const_cast<double*>(&DoubleConstant::negative_infinity)));
+}
+
+
+ExternalReference ExternalReference::address_of_nan() {
+  return ExternalReference(reinterpret_cast<void*>(
+      const_cast<double*>(&DoubleConstant::nan)));
 }
 
 
 #ifndef V8_INTERPRETED_REGEXP
 
-ExternalReference ExternalReference::re_check_stack_guard_state() {
+ExternalReference ExternalReference::re_check_stack_guard_state(
+    Isolate* isolate) {
   Address function;
 #ifdef V8_TARGET_ARCH_X64
   function = FUNCTION_ADDR(RegExpMacroAssemblerX64::CheckStackGuardState);
@@ -696,19 +797,23 @@ ExternalReference ExternalReference::re_check_stack_guard_state() {
   function = FUNCTION_ADDR(RegExpMacroAssemblerIA32::CheckStackGuardState);
 #elif V8_TARGET_ARCH_ARM
   function = FUNCTION_ADDR(RegExpMacroAssemblerARM::CheckStackGuardState);
+#elif V8_TARGET_ARCH_MIPS
+  function = FUNCTION_ADDR(RegExpMacroAssemblerMIPS::CheckStackGuardState);
 #else
   UNREACHABLE();
 #endif
-  return ExternalReference(Redirect(function));
+  return ExternalReference(Redirect(isolate, function));
 }
 
-ExternalReference ExternalReference::re_grow_stack() {
+ExternalReference ExternalReference::re_grow_stack(Isolate* isolate) {
   return ExternalReference(
-      Redirect(FUNCTION_ADDR(NativeRegExpMacroAssembler::GrowStack)));
+      Redirect(isolate, FUNCTION_ADDR(NativeRegExpMacroAssembler::GrowStack)));
 }
 
-ExternalReference ExternalReference::re_case_insensitive_compare_uc16() {
+ExternalReference ExternalReference::re_case_insensitive_compare_uc16(
+    Isolate* isolate) {
   return ExternalReference(Redirect(
+      isolate,
       FUNCTION_ADDR(NativeRegExpMacroAssembler::CaseInsensitiveCompareUC16)));
 }
 
@@ -717,19 +822,21 @@ ExternalReference ExternalReference::re_word_character_map() {
       NativeRegExpMacroAssembler::word_character_map_address());
 }
 
-ExternalReference ExternalReference::address_of_static_offsets_vector() {
-  return ExternalReference(OffsetsVector::static_offsets_vector_address(
-      Isolate::Current()));
+ExternalReference ExternalReference::address_of_static_offsets_vector(
+    Isolate* isolate) {
+  return ExternalReference(
+      OffsetsVector::static_offsets_vector_address(isolate));
 }
 
-ExternalReference ExternalReference::address_of_regexp_stack_memory_address() {
+ExternalReference ExternalReference::address_of_regexp_stack_memory_address(
+    Isolate* isolate) {
   return ExternalReference(
-      Isolate::Current()->regexp_stack()->memory_address());
+      isolate->regexp_stack()->memory_address());
 }
 
-ExternalReference ExternalReference::address_of_regexp_stack_memory_size() {
-  return ExternalReference(
-      Isolate::Current()->regexp_stack()->memory_size_address());
+ExternalReference ExternalReference::address_of_regexp_stack_memory_size(
+    Isolate* isolate) {
+  return ExternalReference(isolate->regexp_stack()->memory_size_address());
 }
 
 #endif  // V8_INTERPRETED_REGEXP
@@ -760,6 +867,96 @@ static double mod_two_doubles(double x, double y) {
 }
 
 
+static double math_sin_double(double x) {
+  return sin(x);
+}
+
+
+static double math_cos_double(double x) {
+  return cos(x);
+}
+
+
+static double math_log_double(double x) {
+  return log(x);
+}
+
+
+ExternalReference ExternalReference::math_sin_double_function(
+    Isolate* isolate) {
+  return ExternalReference(Redirect(isolate,
+                                    FUNCTION_ADDR(math_sin_double),
+                                    FP_RETURN_CALL));
+}
+
+
+ExternalReference ExternalReference::math_cos_double_function(
+    Isolate* isolate) {
+  return ExternalReference(Redirect(isolate,
+                                    FUNCTION_ADDR(math_cos_double),
+                                    FP_RETURN_CALL));
+}
+
+
+ExternalReference ExternalReference::math_log_double_function(
+    Isolate* isolate) {
+  return ExternalReference(Redirect(isolate,
+                                    FUNCTION_ADDR(math_log_double),
+                                    FP_RETURN_CALL));
+}
+
+
+// Helper function to compute x^y, where y is known to be an
+// integer. Uses binary decomposition to limit the number of
+// multiplications; see the discussion in "Hacker's Delight" by Henry
+// S. Warren, Jr., figure 11-6, page 213.
+double power_double_int(double x, int y) {
+  double m = (y < 0) ? 1 / x : x;
+  unsigned n = (y < 0) ? -y : y;
+  double p = 1;
+  while (n != 0) {
+    if ((n & 1) != 0) p *= m;
+    m *= m;
+    if ((n & 2) != 0) p *= m;
+    m *= m;
+    n >>= 2;
+  }
+  return p;
+}
+
+
+double power_double_double(double x, double y) {
+  int y_int = static_cast<int>(y);
+  if (y == y_int) {
+    return power_double_int(x, y_int);  // Returns 1.0 for exponent 0.
+  }
+  if (!isinf(x)) {
+    if (y == 0.5) return sqrt(x + 0.0);  // -0 must be converted to +0.
+    if (y == -0.5) return 1.0 / sqrt(x + 0.0);
+  }
+  if (isnan(y) || ((x == 1 || x == -1) && isinf(y))) {
+    return OS::nan_value();
+  }
+  return pow(x, y);
+}
+
+
+ExternalReference ExternalReference::power_double_double_function(
+    Isolate* isolate) {
+  return ExternalReference(Redirect(isolate,
+                                    FUNCTION_ADDR(power_double_double),
+                                    FP_RETURN_CALL));
+}
+
+
+ExternalReference ExternalReference::power_double_int_function(
+    Isolate* isolate) {
+  return ExternalReference(Redirect(isolate,
+                                    FUNCTION_ADDR(power_double_int),
+                                    FP_RETURN_CALL));
+}
+
+
 static int native_compare_doubles(double y, double x) {
   if (x == y) return EQUAL;
   return x < y ? LESS : GREATER;
@@ -767,7 +964,7 @@ static int native_compare_doubles(double y, double x) {
 
 
 ExternalReference ExternalReference::double_fp_operation(
-    Token::Value operation) {
+    Token::Value operation, Isolate* isolate) {
   typedef double BinaryFPOperation(double x, double y);
   BinaryFPOperation* function = NULL;
   switch (operation) {
@@ -790,24 +987,28 @@ ExternalReference ExternalReference::double_fp_operation(
       UNREACHABLE();
   }
   // Passing true as 2nd parameter indicates that they return an fp value.
-  return ExternalReference(Redirect(FUNCTION_ADDR(function), true));
+  return ExternalReference(Redirect(isolate,
+                                    FUNCTION_ADDR(function),
+                                    FP_RETURN_CALL));
 }
 
 
-ExternalReference ExternalReference::compare_doubles() {
-  return ExternalReference(Redirect(FUNCTION_ADDR(native_compare_doubles),
-                                    false));
+ExternalReference ExternalReference::compare_doubles(Isolate* isolate) {
+  return ExternalReference(Redirect(isolate,
+                                    FUNCTION_ADDR(native_compare_doubles),
+                                    BUILTIN_CALL));
 }
 
 
 #ifdef ENABLE_DEBUGGER_SUPPORT
-ExternalReference ExternalReference::debug_break() {
-  return ExternalReference(Redirect(FUNCTION_ADDR(Debug::Break)));
+ExternalReference ExternalReference::debug_break(Isolate* isolate) {
+  return ExternalReference(Redirect(isolate, FUNCTION_ADDR(Debug_Break)));
 }
 
 
-ExternalReference ExternalReference::debug_step_in_fp_address() {
-  return ExternalReference(Isolate::Current()->debug()->step_in_fp_addr());
+ExternalReference ExternalReference::debug_step_in_fp_address(
+    Isolate* isolate) {
+  return ExternalReference(isolate->debug()->step_in_fp_addr());
 }
 #endif
 
@@ -816,6 +1017,11 @@ void PositionsRecorder::RecordPosition(int pos) {
   ASSERT(pos != RelocInfo::kNoPosition);
   ASSERT(pos >= 0);
   state_.current_position = pos;
+#ifdef ENABLE_GDB_JIT_INTERFACE
+  if (gdbjit_lineinfo_ != NULL) {
+    gdbjit_lineinfo_->SetPosition(assembler_->pc_offset(), pos, false);
+  }
+#endif
 }
 
 
@@ -823,6 +1029,11 @@ void PositionsRecorder::RecordStatementPosition(int pos) {
   ASSERT(pos != RelocInfo::kNoPosition);
   ASSERT(pos >= 0);
   state_.current_statement_position = pos;
+#ifdef ENABLE_GDB_JIT_INTERFACE
+  if (gdbjit_lineinfo_ != NULL) {
+    gdbjit_lineinfo_->SetPosition(assembler_->pc_offset(), pos, true);
+  }
+#endif
 }
 
 

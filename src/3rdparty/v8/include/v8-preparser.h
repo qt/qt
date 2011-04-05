@@ -73,7 +73,7 @@ class PreParserData {
       : data_(data), size_(size) { }
 
   // Create a PreParserData value where stack_overflow reports true.
-  static PreParserData StackOverflow() { return PreParserData(NULL, 0); }
+  static PreParserData StackOverflow() { return PreParserData(0, NULL); }
   // Whether the pre-parser stopped due to a stack overflow.
   // If this is the case, size() and data() should not be used.
 
@@ -99,13 +99,6 @@ class UnicodeInputStream {
   // Returns the next Unicode code-point in the input, or a negative value when
   // there is no more input in the stream.
   virtual int32_t Next() = 0;
-
-  // Pushes a read character back into the stream, so that it will be the next
-  // to be read by Advance(). The character pushed back must be the most
-  // recently read character that hasn't already been pushed back (i.e., if
-  // pushing back more than one character, they must occur in the opposite order
-  // of the one they were read in).
-  virtual void PushBack(int32_t ch) = 0;
 };
 
 

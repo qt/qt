@@ -55,6 +55,14 @@ bool CodeGenerator::is_eval() { return info_->is_eval(); }
 
 Scope* CodeGenerator::scope() { return info_->function()->scope(); }
 
+bool CodeGenerator::is_strict_mode() {
+  return info_->function()->strict_mode();
+}
+
+StrictModeFlag CodeGenerator::strict_mode_flag() {
+  return is_strict_mode() ? kStrictMode : kNonStrictMode;
+}
+
 } }  // namespace v8::internal
 
 #endif  // V8_CODEGEN_INL_H_

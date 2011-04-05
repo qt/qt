@@ -39,19 +39,40 @@ namespace internal {
 // At GC the destroyed global handles are removed from the free list
 // and deallocated.
 
-// Callback function on handling weak global handles.
-// typedef bool (*WeakSlotCallback)(Object** pointer);
-
 // An object group is treated like a single JS object: if one of object in
 // the group is alive, all objects in the same group are considered alive.
 // An object group is used to simulate object relationship in a DOM tree.
 class ObjectGroup : public Malloced {
  public:
   ObjectGroup() : objects_(4) {}
-  explicit ObjectGroup(size_t capacity)
-      : objects_(static_cast<int>(capacity)) { }
+  ObjectGroup(size_t capacity, v8::RetainedObjectInfo* info)
+      : objects_(static_cast<int>(capacity)),
+        info_(info) { }
+  ~ObjectGroup();
 
   List<Object**> objects_;
+  v8::RetainedObjectInfo* info_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ObjectGroup);
+};
+
+
+// An implicit references group consists of two parts: a parent object and
+// a list of children objects.  If the parent is alive, all the children
+// are alive too.
+class ImplicitRefGroup : public Malloced {
+ public:
+  ImplicitRefGroup() : children_(4) {}
+  ImplicitRefGroup(HeapObject* parent, size_t capacity)
+      : parent_(parent),
+        children_(static_cast<int>(capacity)) { }
+
+  HeapObject* parent_;
+  List<Object**> children_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ImplicitRefGroup);
 };
 
 
@@ -76,6 +97,8 @@ class GlobalHandles {
   void MakeWeak(Object** location,
                 void* parameter,
                 WeakReferenceCallback callback);
+
+  static void SetWrapperClassId(Object** location, uint16_t class_id);
 
   // Returns the current number of weak handles.
   int NumberOfWeakHandles() { return number_of_weak_handles_; }
@@ -107,6 +130,9 @@ class GlobalHandles {
   // Iterates over all handles.
   void IterateAllRoots(ObjectVisitor* v);
 
+  // Iterates over all handles that have embedder-assigned class ID.
+  void IterateAllRootsWithClassIds(ObjectVisitor* v);
+
   // Iterates over all weak roots in heap.
   void IterateWeakRoots(ObjectVisitor* v);
 
@@ -119,18 +145,35 @@ class GlobalHandles {
   void IdentifyWeakHandles(WeakSlotCallback f);
 
   // Add an object group.
-  // Should only used in GC callback function before a collection.
+  // Should be only used in GC callback function before a collection.
   // All groups are destroyed after a mark-compact collection.
-  void AddGroup(Object*** handles, size_t length);
+  void AddObjectGroup(Object*** handles,
+                      size_t length,
+                      v8::RetainedObjectInfo* info);
+
+  // Add an implicit references' group.
+  // Should be only used in GC callback function before a collection.
+  // All groups are destroyed after a mark-compact collection.
+  void AddImplicitReferences(HeapObject* parent,
+                             Object*** children,
+                             size_t length);
 
   // Returns the object groups.
   List<ObjectGroup*>* object_groups() { return &object_groups_; }
 
+  // Returns the implicit references' groups.
+  List<ImplicitRefGroup*>* implicit_ref_groups() {
+    return &implicit_ref_groups_;
+  }
+
   // Remove bags, this should only happen after GC.
   void RemoveObjectGroups();
+  void RemoveImplicitRefGroups();
 
   // Tear down the global handle structure.
   void TearDown();
+
+  Isolate* isolate() { return isolate_; }
 
 #ifdef DEBUG
   void PrintStats();
@@ -183,6 +226,7 @@ class GlobalHandles {
   Pool* pool_;
   int post_gc_processing_count_;
   List<ObjectGroup*> object_groups_;
+  List<ImplicitRefGroup*> implicit_ref_groups_;
 
   friend class Isolate;
 

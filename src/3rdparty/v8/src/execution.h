@@ -38,10 +38,8 @@ enum InterruptFlag {
   DEBUGBREAK = 1 << 1,
   DEBUGCOMMAND = 1 << 2,
   PREEMPT = 1 << 3,
-  TERMINATE = 1 << 4
-#ifdef QT_BUILD_SCRIPT_LIB
-  , USERCALLBACK = 1 << 5
-#endif
+  TERMINATE = 1 << 4,
+  RUNTIME_PROFILER_TICK = 1 << 5
 };
 
 class Execution : public AllStatic {
@@ -179,11 +177,8 @@ class StackGuard {
   void Interrupt();
   bool IsTerminateExecution();
   void TerminateExecution();
-#ifdef QT_BUILD_SCRIPT_LIB
-  bool IsUserCallback();
-  void ExecuteUserCallback(UserCallback callback, void *data);
-  void RunUserCallbackNow();
-#endif
+  bool IsRuntimeProfilerTick();
+  void RequestRuntimeProfilerTick();
 #ifdef ENABLE_DEBUGGER_SUPPORT
   bool IsDebugBreak();
   void DebugBreak();
@@ -241,8 +236,6 @@ class StackGuard {
   void EnableInterrupts();
   void DisableInterrupts();
 
-  static const uintptr_t kLimitSize = kPointerSize * 128 * KB;
-
 #ifdef V8_TARGET_ARCH_X64
   static const uintptr_t kInterruptLimit = V8_UINT64_C(0xfffffffffffffffe);
   static const uintptr_t kIllegalLimit = V8_UINT64_C(0xfffffffffffffff8);
@@ -278,10 +271,6 @@ class StackGuard {
     int nesting_;
     int postpone_interrupts_nesting_;
     int interrupt_flags_;
-#ifdef QT_BUILD_SCRIPT_LIB
-    UserCallback user_callback_;
-    void *user_data_;
-#endif
   };
 
   // TODO(isolates): Technically this could be calculated directly from a

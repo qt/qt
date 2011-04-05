@@ -1,4 +1,4 @@
-// Copyright 2009 the V8 project authors. All rights reserved.
+// Copyright 2009-2010 the V8 project authors. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -174,7 +174,8 @@ class RetainersPrinter : public RetainerHeapProfile::Printer {
     HeapStringAllocator allocator;
     StringStream stream(&allocator);
     cluster.Print(&stream);
-    LOG(HeapSampleJSRetainersEvent(
+    LOG(ISOLATE,
+        HeapSampleJSRetainersEvent(
         *(stream.ToCString()), *(retainers.ToCString())));
   }
 };
@@ -325,6 +326,13 @@ HeapProfiler::~HeapProfiler() {
   delete snapshots_;
 }
 
+
+void HeapProfiler::ResetSnapshots() {
+  delete snapshots_;
+  snapshots_ = new HeapSnapshotsCollection();
+}
+
+
 #endif  // ENABLE_LOGGING_AND_PROFILING
 
 void HeapProfiler::Setup() {
@@ -348,30 +356,61 @@ void HeapProfiler::TearDown() {
 
 #ifdef ENABLE_LOGGING_AND_PROFILING
 
-HeapSnapshot* HeapProfiler::TakeSnapshot(const char* name, int type) {
+HeapSnapshot* HeapProfiler::TakeSnapshot(const char* name,
+                                         int type,
+                                         v8::ActivityControl* control) {
   ASSERT(Isolate::Current()->heap_profiler() != NULL);
-  return Isolate::Current()->heap_profiler()->TakeSnapshotImpl(name, type);
+  return Isolate::Current()->heap_profiler()->TakeSnapshotImpl(name,
+                                                               type,
+                                                               control);
 }
 
 
-HeapSnapshot* HeapProfiler::TakeSnapshot(String* name, int type) {
+HeapSnapshot* HeapProfiler::TakeSnapshot(String* name,
+                                         int type,
+                                         v8::ActivityControl* control) {
   ASSERT(Isolate::Current()->heap_profiler() != NULL);
-  return Isolate::Current()->heap_profiler()->TakeSnapshotImpl(name, type);
+  return Isolate::Current()->heap_profiler()->TakeSnapshotImpl(name,
+                                                               type,
+                                                               control);
 }
 
 
-HeapSnapshot* HeapProfiler::TakeSnapshotImpl(const char* name, int type) {
-  HEAP->CollectAllGarbage(true);
+void HeapProfiler::DefineWrapperClass(
+    uint16_t class_id, v8::HeapProfiler::WrapperInfoCallback callback) {
+  ASSERT(class_id != v8::HeapProfiler::kPersistentHandleNoClassId);
+  if (wrapper_callbacks_.length() <= class_id) {
+    wrapper_callbacks_.AddBlock(
+        NULL, class_id - wrapper_callbacks_.length() + 1);
+  }
+  wrapper_callbacks_[class_id] = callback;
+}
+
+
+v8::RetainedObjectInfo* HeapProfiler::ExecuteWrapperClassCallback(
+    uint16_t class_id, Object** wrapper) {
+  if (wrapper_callbacks_.length() <= class_id) return NULL;
+  return wrapper_callbacks_[class_id](
+      class_id, Utils::ToLocal(Handle<Object>(wrapper)));
+}
+
+
+HeapSnapshot* HeapProfiler::TakeSnapshotImpl(const char* name,
+                                             int type,
+                                             v8::ActivityControl* control) {
   HeapSnapshot::Type s_type = static_cast<HeapSnapshot::Type>(type);
   HeapSnapshot* result =
       snapshots_->NewSnapshot(s_type, name, next_snapshot_uid_++);
+  bool generation_completed = true;
   switch (s_type) {
     case HeapSnapshot::kFull: {
-      HeapSnapshotGenerator generator(result);
-      generator.GenerateSnapshot();
+      HEAP->CollectAllGarbage(true);
+      HeapSnapshotGenerator generator(result, control);
+      generation_completed = generator.GenerateSnapshot();
       break;
     }
     case HeapSnapshot::kAggregated: {
+      HEAP->CollectAllGarbage(true);
       AggregatedHeapSnapshot agg_snapshot;
       AggregatedHeapSnapshotGenerator generator(&agg_snapshot);
       generator.GenerateSnapshot();
@@ -381,13 +420,19 @@ HeapSnapshot* HeapProfiler::TakeSnapshotImpl(const char* name, int type) {
     default:
       UNREACHABLE();
   }
-  snapshots_->SnapshotGenerationFinished();
+  if (!generation_completed) {
+    delete result;
+    result = NULL;
+  }
+  snapshots_->SnapshotGenerationFinished(result);
   return result;
 }
 
 
-HeapSnapshot* HeapProfiler::TakeSnapshotImpl(String* name, int type) {
-  return TakeSnapshotImpl(snapshots_->GetName(name), type);
+HeapSnapshot* HeapProfiler::TakeSnapshotImpl(String* name,
+                                             int type,
+                                             v8::ActivityControl* control) {
+  return TakeSnapshotImpl(snapshots_->names()->GetName(name), type, control);
 }
 
 
@@ -412,6 +457,13 @@ HeapSnapshot* HeapProfiler::FindSnapshot(unsigned uid) {
 }
 
 
+void HeapProfiler::DeleteAllSnapshots() {
+  HeapProfiler* profiler = Isolate::Current()->heap_profiler();
+  ASSERT(profiler != NULL);
+  profiler->ResetSnapshots();
+}
+
+
 void HeapProfiler::ObjectMoveEvent(Address from, Address to) {
   snapshots_->ObjectMoveEvent(from, to);
 }
@@ -431,7 +483,8 @@ void ConstructorHeapProfile::Call(const JSObjectsCluster& cluster,
   HeapStringAllocator allocator;
   StringStream stream(&allocator);
   cluster.Print(&stream);
-  LOG(HeapSampleJSConstructorEvent(*(stream.ToCString()),
+  LOG(ISOLATE,
+      HeapSampleJSConstructorEvent(*(stream.ToCString()),
                                    number_and_size.number(),
                                    number_and_size.bytes()));
 }
@@ -720,16 +773,18 @@ static void PrintProducerStackTrace(Object* obj, void* trace) {
   String* constructor = GetConstructorNameForHeapProfile(JSObject::cast(obj));
   SmartPointer<char> s_name(
       constructor->ToCString(DISALLOW_NULLS, ROBUST_STRING_TRAVERSAL));
-  LOG(HeapSampleJSProducerEvent(GetConstructorName(*s_name),
+  LOG(ISOLATE,
+      HeapSampleJSProducerEvent(GetConstructorName(*s_name),
                                 reinterpret_cast<Address*>(trace)));
 }
 
 
 void HeapProfiler::WriteSample() {
   Isolate* isolate = Isolate::Current();
-  LOG(HeapSampleBeginEvent("Heap", "allocated"));
-  LOG(HeapSampleStats(
-      "Heap", "allocated", HEAP->CommittedMemory(), HEAP->SizeOfObjects()));
+  LOG(isolate, HeapSampleBeginEvent("Heap", "allocated"));
+  LOG(isolate,
+      HeapSampleStats(
+          "Heap", "allocated", HEAP->CommittedMemory(), HEAP->SizeOfObjects()));
 
   AggregatedHeapSnapshot snapshot;
   AggregatedHeapSnapshotGenerator generator(&snapshot);
@@ -740,7 +795,8 @@ void HeapProfiler::WriteSample() {
        i <= AggregatedHeapSnapshotGenerator::kAllStringsType;
        ++i) {
     if (info[i].bytes() > 0) {
-      LOG(HeapSampleItemEvent(info[i].name(), info[i].number(),
+      LOG(isolate,
+          HeapSampleItemEvent(info[i].name(), info[i].number(),
                               info[i].bytes()));
     }
   }
@@ -751,7 +807,7 @@ void HeapProfiler::WriteSample() {
   isolate->global_handles()->IterateWeakRoots(PrintProducerStackTrace,
                                               StackWeakReferenceCallback);
 
-  LOG(HeapSampleEndEvent("Heap", "allocated"));
+  LOG(isolate, HeapSampleEndEvent("Heap", "allocated"));
 }
 
 
@@ -798,7 +854,7 @@ void AggregatedHeapSnapshotGenerator::CollectStats(HeapObject* obj) {
 
 
 void AggregatedHeapSnapshotGenerator::GenerateSnapshot() {
-  HeapIterator iterator(HeapIterator::kPreciseFiltering);
+  HeapIterator iterator(HeapIterator::kFilterUnreachable);
   for (HeapObject* obj = iterator.next(); obj != NULL; obj = iterator.next()) {
     CollectStats(obj);
     agg_snapshot_->js_cons_profile()->CollectStats(obj);
@@ -861,7 +917,8 @@ class AllocatingConstructorHeapProfileIterator {
             const NumberAndSizeInfo& number_and_size) {
     const char* name = cluster.GetSpecialCaseName();
     if (name == NULL) {
-      name = snapshot_->collection()->GetFunctionName(cluster.constructor());
+      name = snapshot_->collection()->names()->GetFunctionName(
+          cluster.constructor());
     }
     AddEntryFromAggregatedSnapshot(snapshot_,
                                    root_child_index_,
@@ -900,22 +957,27 @@ static JSObjectsCluster HeapObjectAsCluster(HeapObject* object) {
 class CountingRetainersIterator {
  public:
   CountingRetainersIterator(const JSObjectsCluster& child_cluster,
+                            HeapEntriesAllocator* allocator,
                             HeapEntriesMap* map)
-      : child_(ClusterAsHeapObject(child_cluster)), map_(map) {
+      : child_(ClusterAsHeapObject(child_cluster)),
+        allocator_(allocator),
+        map_(map) {
     if (map_->Map(child_) == NULL)
-      map_->Pair(child_, HeapEntriesMap::kHeapEntryPlaceholder);
+      map_->Pair(child_, allocator_, HeapEntriesMap::kHeapEntryPlaceholder);
   }
 
   void Call(const JSObjectsCluster& cluster,
             const NumberAndSizeInfo& number_and_size) {
     if (map_->Map(ClusterAsHeapObject(cluster)) == NULL)
       map_->Pair(ClusterAsHeapObject(cluster),
+                 allocator_,
                  HeapEntriesMap::kHeapEntryPlaceholder);
     map_->CountReference(ClusterAsHeapObject(cluster), child_);
   }
 
  private:
   HeapObject* child_;
+  HeapEntriesAllocator* allocator_;
   HeapEntriesMap* map_;
 };
 
@@ -923,6 +985,7 @@ class CountingRetainersIterator {
 class AllocatingRetainersIterator {
  public:
   AllocatingRetainersIterator(const JSObjectsCluster& child_cluster,
+                              HeapEntriesAllocator*,
                               HeapEntriesMap* map)
       : child_(ClusterAsHeapObject(child_cluster)), map_(map) {
     child_entry_ = map_->Map(child_);
@@ -955,8 +1018,9 @@ template<class RetainersIterator>
 class AggregatingRetainerTreeIterator {
  public:
   explicit AggregatingRetainerTreeIterator(ClustersCoarser* coarser,
+                                           HeapEntriesAllocator* allocator,
                                            HeapEntriesMap* map)
-      : coarser_(coarser), map_(map) {
+      : coarser_(coarser), allocator_(allocator), map_(map) {
   }
 
   void Call(const JSObjectsCluster& cluster, JSObjectsClusterTree* tree) {
@@ -970,29 +1034,33 @@ class AggregatingRetainerTreeIterator {
       tree->ForEach(&retainers_aggregator);
       tree_to_iterate = &dest_tree_;
     }
-    RetainersIterator iterator(cluster, map_);
+    RetainersIterator iterator(cluster, allocator_, map_);
     tree_to_iterate->ForEach(&iterator);
   }
 
  private:
   ClustersCoarser* coarser_;
+  HeapEntriesAllocator* allocator_;
   HeapEntriesMap* map_;
 };
 
 
-class AggregatedRetainerTreeAllocator {
+class AggregatedRetainerTreeAllocator : public HeapEntriesAllocator {
  public:
   AggregatedRetainerTreeAllocator(HeapSnapshot* snapshot,
                                   int* root_child_index)
       : snapshot_(snapshot), root_child_index_(root_child_index) {
   }
+  ~AggregatedRetainerTreeAllocator() { }
 
-  HeapEntry* GetEntry(
-      HeapObject* obj, int children_count, int retainers_count) {
+  HeapEntry* AllocateEntry(
+      HeapThing ptr, int children_count, int retainers_count) {
+    HeapObject* obj = reinterpret_cast<HeapObject*>(ptr);
     JSObjectsCluster cluster = HeapObjectAsCluster(obj);
     const char* name = cluster.GetSpecialCaseName();
     if (name == NULL) {
-      name = snapshot_->collection()->GetFunctionName(cluster.constructor());
+      name = snapshot_->collection()->names()->GetFunctionName(
+          cluster.constructor());
     }
     return AddEntryFromAggregatedSnapshot(
         snapshot_, root_child_index_, HeapEntry::kObject, name,
@@ -1007,12 +1075,13 @@ class AggregatedRetainerTreeAllocator {
 
 template<class Iterator>
 void AggregatedHeapSnapshotGenerator::IterateRetainers(
-    HeapEntriesMap* entries_map) {
+    HeapEntriesAllocator* allocator, HeapEntriesMap* entries_map) {
   RetainerHeapProfile* p = agg_snapshot_->js_retainer_profile();
   AggregatingRetainerTreeIterator<Iterator> agg_ret_iter_1(
-      p->coarser(), entries_map);
+      p->coarser(), allocator, entries_map);
   p->retainers_tree()->ForEach(&agg_ret_iter_1);
-  AggregatingRetainerTreeIterator<Iterator> agg_ret_iter_2(NULL, entries_map);
+  AggregatingRetainerTreeIterator<Iterator> agg_ret_iter_2(
+      NULL, allocator, entries_map);
   p->aggregator()->output_tree().ForEach(&agg_ret_iter_2);
 }
 
@@ -1031,7 +1100,9 @@ void AggregatedHeapSnapshotGenerator::FillHeapSnapshot(HeapSnapshot* snapshot) {
   agg_snapshot_->js_cons_profile()->ForEach(&counting_cons_iter);
   histogram_entities_count += counting_cons_iter.entities_count();
   HeapEntriesMap entries_map;
-  IterateRetainers<CountingRetainersIterator>(&entries_map);
+  int root_child_index = 0;
+  AggregatedRetainerTreeAllocator allocator(snapshot, &root_child_index);
+  IterateRetainers<CountingRetainersIterator>(&allocator, &entries_map);
   histogram_entities_count += entries_map.entries_count();
   histogram_children_count += entries_map.total_children_count();
   histogram_retainers_count += entries_map.total_retainers_count();
@@ -1045,10 +1116,7 @@ void AggregatedHeapSnapshotGenerator::FillHeapSnapshot(HeapSnapshot* snapshot) {
   snapshot->AllocateEntries(histogram_entities_count,
                             histogram_children_count,
                             histogram_retainers_count);
-  snapshot->AddEntry(HeapSnapshot::kInternalRootObject,
-                     root_children_count,
-                     0);
-  int root_child_index = 0;
+  snapshot->AddRootEntry(root_children_count);
   for (int i = FIRST_NONSTRING_TYPE; i <= kAllStringsType; ++i) {
     if (agg_snapshot_->info()[i].bytes() > 0) {
       AddEntryFromAggregatedSnapshot(snapshot,
@@ -1064,11 +1132,10 @@ void AggregatedHeapSnapshotGenerator::FillHeapSnapshot(HeapSnapshot* snapshot) {
   AllocatingConstructorHeapProfileIterator alloc_cons_iter(
       snapshot, &root_child_index);
   agg_snapshot_->js_cons_profile()->ForEach(&alloc_cons_iter);
-  AggregatedRetainerTreeAllocator allocator(snapshot, &root_child_index);
-  entries_map.UpdateEntries(&allocator);
+  entries_map.AllocateEntries();
 
   // Fill up references.
-  IterateRetainers<AllocatingRetainersIterator>(&entries_map);
+  IterateRetainers<AllocatingRetainersIterator>(&allocator, &entries_map);
 
   snapshot->SetDominatorsToSelf();
 }

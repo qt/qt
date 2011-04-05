@@ -11,13 +11,13 @@ macx:CONFIG(debug, debug|release) {
 }
 
 include($$PWD/v8.pri)
-
 V8SOURCES = \
     $$V8DIR/src/accessors.cc \
     $$V8DIR/src/allocation.cc \
     $$V8DIR/src/api.cc \
     $$V8DIR/src/assembler.cc \
     $$V8DIR/src/ast.cc \
+    $$V8DIR/src/atomicops_internals_x86_gcc.cc \
     $$V8DIR/src/bignum.cc \
     $$V8DIR/src/bignum-dtoa.cc \
     $$V8DIR/src/bootstrapper.cc \
@@ -37,6 +37,7 @@ V8SOURCES = \
     $$V8DIR/src/dateparser.cc \
     $$V8DIR/src/debug-agent.cc \
     $$V8DIR/src/debug.cc \
+    $$V8DIR/src/deoptimizer.cc \
     $$V8DIR/src/disassembler.cc \
     $$V8DIR/src/diy-fp.cc \
     $$V8DIR/src/dtoa.cc \
@@ -47,6 +48,7 @@ V8SOURCES = \
     $$V8DIR/src/frames.cc \
     $$V8DIR/src/full-codegen.cc \
     $$V8DIR/src/func-name-inferrer.cc \
+    $$V8DIR/src/gdb-jit.cc \
     $$V8DIR/src/global-handles.cc \
     $$V8DIR/src/fast-dtoa.cc \
     $$V8DIR/src/fixed-dtoa.cc \
@@ -54,19 +56,25 @@ V8SOURCES = \
     $$V8DIR/src/hashmap.cc \
     $$V8DIR/src/heap-profiler.cc \
     $$V8DIR/src/heap.cc \
+    $$V8DIR/src/hydrogen.cc \
+    $$V8DIR/src/hydrogen-instructions.cc \
     $$V8DIR/src/ic.cc \
+    $$V8DIR/src/inspector.cc \
     $$V8DIR/src/interpreter-irregexp.cc \
     $$V8DIR/src/isolate.cc \
     $$V8DIR/src/jsregexp.cc \
     $$V8DIR/src/jump-target.cc \
+    $$V8DIR/src/lithium-allocator.cc \
+    $$V8DIR/src/lithium.cc \
     $$V8DIR/src/liveedit.cc \
+    $$V8DIR/src/liveobjectlist.cc \
     $$V8DIR/src/log-utils.cc \
     $$V8DIR/src/log.cc \
     $$V8DIR/src/mark-compact.cc \
     $$V8DIR/src/messages.cc \
     $$V8DIR/src/objects.cc \
+    $$V8DIR/src/objects-printer.cc \
     $$V8DIR/src/objects-visiting.cc \
-    $$V8DIR/src/oprofile-agent.cc \
     $$V8DIR/src/parser.cc \
     $$V8DIR/src/preparser.cc \
     $$V8DIR/src/preparse-data.cc \
@@ -78,6 +86,8 @@ V8SOURCES = \
     $$V8DIR/src/register-allocator.cc \
     $$V8DIR/src/rewriter.cc \
     $$V8DIR/src/runtime.cc \
+    $$V8DIR/src/runtime-profiler.cc \
+    $$V8DIR/src/safepoint-table.cc \
     $$V8DIR/src/scanner-base.cc \
     $$V8DIR/src/scanner.cc \
     $$V8DIR/src/scopeinfo.cc \
@@ -102,7 +112,7 @@ V8SOURCES = \
     $$V8DIR/src/virtual-frame.cc \
     $$V8DIR/src/zone.cc \
     $$V8DIR/src/extensions/gc-extension.cc \
-    $$V8DIR/src/extensions/externalize-string-extension.cc
+    $$V8DIR/src/extensions/externalize-string-extension.cc \
 
 
 arch_arm {
@@ -116,17 +126,22 @@ V8SOURCES += \
     $$V8DIR/src/arm/constants-arm.cc \
     $$V8DIR/src/arm/cpu-arm.cc \
     $$V8DIR/src/arm/debug-arm.cc \
+    $$V8DIR/src/arm/deoptimizer-arm.cc \
     $$V8DIR/src/arm/disasm-arm.cc \
     $$V8DIR/src/arm/frames-arm.cc \
     $$V8DIR/src/arm/full-codegen-arm.cc \
     $$V8DIR/src/arm/ic-arm.cc \
     $$V8DIR/src/arm/jump-target-arm.cc \
+    $$V8DIR/src/arm/lithium-arm.cc \
+    $$V8DIR/src/arm/lithium-codegen-arm.cc \
+    $$V8DIR/src/arm/lithium-gap-resolver-arm.cc \
     $$V8DIR/src/arm/macro-assembler-arm.cc \
     $$V8DIR/src/arm/regexp-macro-assembler-arm.cc \
     $$V8DIR/src/arm/register-allocator-arm.cc \
     $$V8DIR/src/arm/stub-cache-arm.cc \
     $$V8DIR/src/arm/virtual-frame-arm.cc \
-    $$V8DIR/src/arm/assembler-arm.cc
+    $$V8DIR/src/arm/assembler-arm.cc \
+
 }
 
 arch_mips {
@@ -146,7 +161,8 @@ V8SOURCES += \
     $$V8DIR/src/mips/macro-assembler-mips.cc \
     $$V8DIR/src/mips/register-allocator-mips.cc \
     $$V8DIR/src/mips/stub-cache-mips.cc \
-    $$V8DIR/src/mips/virtual-frame-mips.cc
+    $$V8DIR/src/mips/virtual-frame-mips.cc \
+
 }
 
 arch_i386 {
@@ -160,16 +176,21 @@ V8SOURCES += \
     $$V8DIR/src/ia32/codegen-ia32.cc \
     $$V8DIR/src/ia32/cpu-ia32.cc \
     $$V8DIR/src/ia32/debug-ia32.cc \
+    $$V8DIR/src/ia32/deoptimizer-ia32.cc \
     $$V8DIR/src/ia32/disasm-ia32.cc \
     $$V8DIR/src/ia32/frames-ia32.cc \
     $$V8DIR/src/ia32/full-codegen-ia32.cc \
     $$V8DIR/src/ia32/ic-ia32.cc \
     $$V8DIR/src/ia32/jump-target-ia32.cc \
+    $$V8DIR/src/ia32/lithium-codegen-ia32.cc \
+    $$V8DIR/src/ia32/lithium-gap-resolver-ia32.cc \
+    $$V8DIR/src/ia32/lithium-ia32.cc \
     $$V8DIR/src/ia32/macro-assembler-ia32.cc \
     $$V8DIR/src/ia32/regexp-macro-assembler-ia32.cc \
     $$V8DIR/src/ia32/register-allocator-ia32.cc \
     $$V8DIR/src/ia32/stub-cache-ia32.cc \
-    $$V8DIR/src/ia32/virtual-frame-ia32.cc
+    $$V8DIR/src/ia32/virtual-frame-ia32.cc \
+
 }
 
 # FIXME Should we use QT_CONFIG instead? What about 32 bit Macs?
@@ -184,16 +205,21 @@ V8SOURCES += \
     $$V8DIR/src/x64/codegen-x64.cc \
     $$V8DIR/src/x64/cpu-x64.cc \
     $$V8DIR/src/x64/debug-x64.cc \
+    $$V8DIR/src/x64/deoptimizer-x64.cc \
     $$V8DIR/src/x64/disasm-x64.cc \
     $$V8DIR/src/x64/frames-x64.cc \
     $$V8DIR/src/x64/full-codegen-x64.cc \
     $$V8DIR/src/x64/ic-x64.cc \
     $$V8DIR/src/x64/jump-target-x64.cc \
+    $$V8DIR/src/x64/lithium-codegen-x64.cc \
+    $$V8DIR/src/x64/lithium-gap-resolver-x64.cc \
+    $$V8DIR/src/x64/lithium-x64.cc \
     $$V8DIR/src/x64/macro-assembler-x64.cc \
     $$V8DIR/src/x64/regexp-macro-assembler-x64.cc \
     $$V8DIR/src/x64/register-allocator-x64.cc \
     $$V8DIR/src/x64/stub-cache-x64.cc \
-    $$V8DIR/src/x64/virtual-frame-x64.cc
+    $$V8DIR/src/x64/virtual-frame-x64.cc \
+
 }
 
 unix:!symbian:!macx {

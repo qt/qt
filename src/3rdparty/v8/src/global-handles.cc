@@ -30,8 +30,16 @@
 #include "api.h"
 #include "global-handles.h"
 
+#include "vm-state-inl.h"
+
 namespace v8 {
 namespace internal {
+
+
+ObjectGroup::~ObjectGroup() {
+  if (info_ != NULL) info_->Dispose();
+}
+
 
 class GlobalHandles::Node : public Malloced {
  public:
@@ -39,6 +47,7 @@ class GlobalHandles::Node : public Malloced {
   void Initialize(Object* object) {
     // Set the initial value of the handle.
     object_ = object;
+    class_id_ = v8::HeapProfiler::kPersistentHandleNoClassId;
     state_  = NORMAL;
     parameter_or_next_free_.parameter = NULL;
     callback_ = NULL;
@@ -101,7 +110,8 @@ class GlobalHandles::Node : public Malloced {
   // Make this handle weak.
   void MakeWeak(GlobalHandles* global_handles, void* parameter,
                 WeakReferenceCallback callback) {
-    LOG(HandleEvent("GlobalHandle::MakeWeak", handle().location()));
+    LOG(global_handles->isolate(),
+        HandleEvent("GlobalHandle::MakeWeak", handle().location()));
     ASSERT(state_ != DESTROYED);
     if (state_ != WEAK && !IsNearDeath()) {
       global_handles->number_of_weak_handles_++;
@@ -115,7 +125,8 @@ class GlobalHandles::Node : public Malloced {
   }
 
   void ClearWeakness(GlobalHandles* global_handles) {
-    LOG(HandleEvent("GlobalHandle::ClearWeakness", handle().location()));
+    LOG(global_handles->isolate(),
+        HandleEvent("GlobalHandle::ClearWeakness", handle().location()));
     ASSERT(state_ != DESTROYED);
     if (state_ == WEAK || IsNearDeath()) {
       global_handles->number_of_weak_handles_--;
@@ -136,6 +147,14 @@ class GlobalHandles::Node : public Malloced {
     return state_ == WEAK;
   }
 
+  bool CanBeRetainer() {
+    return state_ != DESTROYED && state_ != NEAR_DEATH;
+  }
+
+  void SetWrapperClassId(uint16_t class_id) {
+    class_id_ = class_id;
+  }
+
   // Returns the id for this weak handle.
   void set_parameter(void* parameter) {
     ASSERT(state_ != DESTROYED);
@@ -152,7 +171,7 @@ class GlobalHandles::Node : public Malloced {
   bool PostGarbageCollectionProcessing(Isolate* isolate,
                                        GlobalHandles* global_handles) {
     if (state_ != Node::PENDING) return false;
-    LOG(HandleEvent("GlobalHandle::Processing", handle().location()));
+    LOG(isolate, HandleEvent("GlobalHandle::Processing", handle().location()));
     WeakReferenceCallback func = callback();
     if (func == NULL) {
       Destroy(global_handles);
@@ -190,6 +209,8 @@ class GlobalHandles::Node : public Malloced {
   // Place the handle address first to avoid offset computation.
   Object* object_;  // Storage for object pointer.
 
+  uint16_t class_id_;
+
   // Transition diagram:
   // NORMAL <-> WEAK -> PENDING -> NEAR_DEATH -> { NORMAL, WEAK, DESTROYED }
   enum State {
@@ -199,7 +220,7 @@ class GlobalHandles::Node : public Malloced {
     NEAR_DEATH,  // Callback has informed the handle is near death.
     DESTROYED
   };
-  State state_;
+  State state_ : 4;  // Need one more bit for MSVC as it treats enums as signed.
 
  private:
   // Handle specific callback.
@@ -353,6 +374,11 @@ bool GlobalHandles::IsWeak(Object** location) {
 }
 
 
+void GlobalHandles::SetWrapperClassId(Object** location, uint16_t class_id) {
+  Node::FromLocation(location)->SetWrapperClassId(class_id);
+}
+
+
 void GlobalHandles::IterateWeakRoots(ObjectVisitor* v) {
   // Traversal of GC roots in the global handle list that are marked as
   // WEAK or PENDING.
@@ -381,7 +407,8 @@ void GlobalHandles::IdentifyWeakHandles(WeakSlotCallback f) {
     if (current->state_ == Node::WEAK) {
       if (f(&current->object_)) {
         current->state_ = Node::PENDING;
-        LOG(HandleEvent("GlobalHandle::Pending", current->handle().location()));
+        LOG(isolate_,
+            HandleEvent("GlobalHandle::Pending", current->handle().location()));
       }
     }
   }
@@ -444,6 +471,16 @@ void GlobalHandles::IterateAllRoots(ObjectVisitor* v) {
   for (Node* current = head_; current != NULL; current = current->next()) {
     if (current->state_ != Node::DESTROYED) {
       v->VisitPointer(&current->object_);
+    }
+  }
+}
+
+
+void GlobalHandles::IterateAllRootsWithClassIds(ObjectVisitor* v) {
+  for (Node* current = head_; current != NULL; current = current->next()) {
+    if (current->class_id_ != v8::HeapProfiler::kPersistentHandleNoClassId &&
+        current->CanBeRetainer()) {
+      v->VisitEmbedderReference(&current->object_, current->class_id_);
     }
   }
 }
@@ -517,19 +554,43 @@ void GlobalHandles::Print() {
 #endif
 
 
-void GlobalHandles::AddGroup(Object*** handles, size_t length) {
-  ObjectGroup* new_entry = new ObjectGroup(length);
-  for (size_t i = 0; i < length; ++i)
+
+void GlobalHandles::AddObjectGroup(Object*** handles,
+                                   size_t length,
+                                   v8::RetainedObjectInfo* info) {
+  ObjectGroup* new_entry = new ObjectGroup(length, info);
+  for (size_t i = 0; i < length; ++i) {
     new_entry->objects_.Add(handles[i]);
+  }
   object_groups_.Add(new_entry);
 }
 
 
+void GlobalHandles::AddImplicitReferences(HeapObject* parent,
+                                          Object*** children,
+                                          size_t length) {
+  ImplicitRefGroup* new_entry = new ImplicitRefGroup(parent, length);
+  for (size_t i = 0; i < length; ++i) {
+    new_entry->children_.Add(children[i]);
+  }
+  implicit_ref_groups_.Add(new_entry);
+}
+
+
 void GlobalHandles::RemoveObjectGroups() {
-  for (int i = 0; i< object_groups_.length(); i++) {
+  for (int i = 0; i < object_groups_.length(); i++) {
     delete object_groups_.at(i);
   }
   object_groups_.Clear();
 }
+
+
+void GlobalHandles::RemoveImplicitRefGroups() {
+  for (int i = 0; i < implicit_ref_groups_.length(); i++) {
+    delete implicit_ref_groups_.at(i);
+  }
+  implicit_ref_groups_.Clear();
+}
+
 
 } }  // namespace v8::internal

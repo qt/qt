@@ -60,8 +60,8 @@ class Descriptor BASE_EMBEDDED {
   Object* GetValue() { return value_; }
   PropertyDetails GetDetails() { return details_; }
 
-#ifdef DEBUG
-  void Print();
+#ifdef OBJECT_PRINT
+  void Print(FILE* out);
 #endif
 
   void SetEnumerationIndex(int index) {
@@ -108,6 +108,16 @@ class MapTransitionDescriptor: public Descriptor {
  public:
   MapTransitionDescriptor(String* key, Map* map, PropertyAttributes attributes)
       : Descriptor(key, map, attributes, MAP_TRANSITION) { }
+};
+
+class ExternalArrayTransitionDescriptor: public Descriptor {
+ public:
+  ExternalArrayTransitionDescriptor(String* key,
+                                    Map* map,
+                                    ExternalArrayType array_type)
+      : Descriptor(key, map, PropertyDetails(NONE,
+                                             EXTERNAL_ARRAY_TRANSITION,
+                                             array_type)) { }
 };
 
 // Marks a field name in a map so that adding the field is guaranteed
@@ -262,14 +272,29 @@ class LookupResult BASE_EMBEDDED {
 
   Map* GetTransitionMap() {
     ASSERT(lookup_type_ == DESCRIPTOR_TYPE);
-    ASSERT(type() == MAP_TRANSITION || type() == CONSTANT_TRANSITION);
+    ASSERT(type() == MAP_TRANSITION || type() == CONSTANT_TRANSITION ||
+           type() == EXTERNAL_ARRAY_TRANSITION);
     return Map::cast(GetValue());
+  }
+
+  Map* GetTransitionMapFromMap(Map* map) {
+    ASSERT(lookup_type_ == DESCRIPTOR_TYPE);
+    ASSERT(type() == MAP_TRANSITION);
+    return Map::cast(map->instance_descriptors()->GetValue(number_));
   }
 
   int GetFieldIndex() {
     ASSERT(lookup_type_ == DESCRIPTOR_TYPE);
     ASSERT(type() == FIELD);
     return Descriptor::IndexFromValue(GetValue());
+  }
+
+  int GetLocalFieldIndexFromMap(Map* map) {
+    ASSERT(lookup_type_ == DESCRIPTOR_TYPE);
+    ASSERT(type() == FIELD);
+    return Descriptor::IndexFromValue(
+        map->instance_descriptors()->GetValue(number_)) -
+        map->inobject_properties();
   }
 
   int GetDictionaryEntry() {
@@ -282,6 +307,12 @@ class LookupResult BASE_EMBEDDED {
     return JSFunction::cast(GetValue());
   }
 
+  JSFunction* GetConstantFunctionFromMap(Map* map) {
+    ASSERT(lookup_type_ == DESCRIPTOR_TYPE);
+    ASSERT(type() == CONSTANT_FUNCTION);
+    return JSFunction::cast(map->instance_descriptors()->GetValue(number_));
+  }
+
   Object* GetCallbackObject() {
     if (lookup_type_ == CONSTANT_TYPE) {
       // For now we only have the __proto__ as constant type.
@@ -290,8 +321,8 @@ class LookupResult BASE_EMBEDDED {
     return GetValue();
   }
 
-#ifdef DEBUG
-  void Print();
+#ifdef OBJECT_PRINT
+  void Print(FILE* out);
 #endif
 
   Object* GetValue() {

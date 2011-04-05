@@ -1,4 +1,4 @@
-// Copyright 2006-2008 the V8 project authors. All rights reserved.
+// Copyright 2006-2010 the V8 project authors. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -29,8 +29,8 @@
 #define V8_SPACES_INL_H_
 
 #include "isolate.h"
-#include "memory.h"
 #include "spaces.h"
+#include "v8memory.h"
 
 namespace v8 {
 namespace internal {
@@ -465,16 +465,22 @@ MaybeObject* PagedSpace::MCAllocateRaw(int size_in_bytes) {
 // -----------------------------------------------------------------------------
 // LargeObjectChunk
 
-HeapObject* LargeObjectChunk::GetObject() {
+Address LargeObjectChunk::GetStartAddress() {
   // Round the chunk address up to the nearest page-aligned address
   // and return the heap object in that page.
   Page* page = Page::FromAddress(RoundUp(address(), Page::kPageSize));
-  return HeapObject::FromAddress(page->ObjectAreaStart());
+  return page->ObjectAreaStart();
 }
 
 
+void LargeObjectChunk::Free(Executability executable) {
+  Isolate* isolate =
+      Page::FromAddress(RoundUp(address(), Page::kPageSize))->heap_->isolate();
+  isolate->memory_allocator()->FreeRawMemory(address(), size(), executable);
+}
+
 // -----------------------------------------------------------------------------
-// LargeObjectSpace
+// NewSpace
 
 MaybeObject* NewSpace::AllocateRawInternal(int size_in_bytes,
                                            AllocationInfo* alloc_info) {
@@ -497,6 +503,18 @@ MaybeObject* NewSpace::AllocateRawInternal(int size_in_bytes,
 intptr_t LargeObjectSpace::Available() {
   return LargeObjectChunk::ObjectSizeFor(
       heap()->isolate()->memory_allocator()->Available());
+}
+
+
+template <typename StringType>
+void NewSpace::ShrinkStringAtAllocationBoundary(String* string, int length) {
+  ASSERT(length <= string->length());
+  ASSERT(string->IsSeqString());
+  ASSERT(string->address() + StringType::SizeFor(string->length()) ==
+         allocation_info_.top);
+  allocation_info_.top =
+      string->address() + StringType::SizeFor(length);
+  string->set_length(length);
 }
 
 

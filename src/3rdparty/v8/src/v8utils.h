@@ -29,6 +29,7 @@
 #define V8_V8UTILS_H_
 
 #include "utils.h"
+#include "platform.h"  // For va_list on Solaris.
 
 namespace v8 {
 namespace internal {
@@ -42,18 +43,26 @@ namespace internal {
 // so it works on MacOSX.
 #if defined(__MACH__) && defined(__APPLE__)
 #define PRINTF_CHECKING
+#define FPRINTF_CHECKING
 #else  // MacOsX.
 #define PRINTF_CHECKING __attribute__ ((format (printf, 1, 2)))
+#define FPRINTF_CHECKING __attribute__ ((format (printf, 2, 3)))
 #endif
 #else
 #define PRINTF_CHECKING
+#define FPRINTF_CHECKING
 #endif
 
 // Our version of printf().
 void PRINTF_CHECKING PrintF(const char* format, ...);
+void FPRINTF_CHECKING PrintF(FILE* out, const char* format, ...);
 
 // Our version of fflush.
-void Flush();
+void Flush(FILE* out);
+
+inline void Flush() {
+  Flush(stdout);
+}
 
 
 // Read a line of characters after printing the prompt to stdout. The resulting
@@ -65,6 +74,14 @@ char* ReadLine(const char* prompt);
 // in size.
 // The returned buffer must be freed by the caller.
 byte* ReadBytes(const char* filename, int* size, bool verbose = true);
+
+
+// Append size chars from str to the file given by filename.
+// The file is overwritten. Returns the number of chars written.
+int AppendChars(const char* filename,
+                const char* str,
+                int size,
+                bool verbose = true);
 
 
 // Write size chars from str to the file given by filename.
@@ -217,6 +234,9 @@ class StringBuilder {
   // Add formatted contents to the builder just like printf().
   void AddFormatted(const char* format, ...);
 
+  // Add formatted contents like printf based on a va_list.
+  void AddFormattedList(const char* format, va_list list);
+
   // Add character padding to the builder. If count is non-positive,
   // nothing is added to the builder.
   void AddPadding(char c, int count);
@@ -234,51 +254,14 @@ class StringBuilder {
 };
 
 
-// Custom memcpy implementation for platforms where the standard version
-// may not be good enough.
-#if defined(V8_TARGET_ARCH_IA32)
-
-// The default memcpy on ia32 architectures is generally not as efficient
-// as possible. (If any further ia32 platforms are introduced where the
-// memcpy function is efficient, exclude them from this branch).
-
-typedef void (*MemCopyFunction)(void* dest, const void* src, size_t size);
-
-// Implemented in codegen-<arch>.cc.
-MemCopyFunction CreateMemCopyFunction();
-
-// Copy memory area to disjoint memory area.
-static inline void MemCopy(void* dest, const void* src, size_t size) {
-  static MemCopyFunction memcopy = CreateMemCopyFunction();
-  (*memcopy)(dest, src, size);
-#ifdef DEBUG
-  CHECK_EQ(0, memcmp(dest, src, size));
-#endif
-}
-
-// Limit below which the extra overhead of the MemCopy function is likely
-// to outweigh the benefits of faster copying.
-static const int kMinComplexMemCopy = 64;
-
-#else  // V8_TARGET_ARCH_IA32
-
-static inline void MemCopy(void* dest, const void* src, size_t size) {
-  memcpy(dest, src, size);
-}
-
-static const int kMinComplexMemCopy = 256;
-
-#endif  // V8_TARGET_ARCH_IA32
-
-
 // Copy from ASCII/16bit chars to ASCII/16bit chars.
 template <typename sourcechar, typename sinkchar>
 static inline void CopyChars(sinkchar* dest, const sourcechar* src, int chars) {
   sinkchar* limit = dest + chars;
 #ifdef V8_HOST_CAN_READ_UNALIGNED
   if (sizeof(*dest) == sizeof(*src)) {
-    if (chars >= static_cast<int>(kMinComplexMemCopy / sizeof(*dest))) {
-      MemCopy(dest, src, chars * sizeof(*dest));
+    if (chars >= static_cast<int>(OS::kMinComplexMemCopy / sizeof(*dest))) {
+      OS::MemCopy(dest, src, chars * sizeof(*dest));
       return;
     }
     // Number of characters in a uintptr_t.
@@ -295,6 +278,39 @@ static inline void CopyChars(sinkchar* dest, const sourcechar* src, int chars) {
     *dest++ = static_cast<sinkchar>(*src++);
   }
 }
+
+
+// A resource for using mmapped files to back external strings that are read
+// from files.
+class MemoryMappedExternalResource: public
+    v8::String::ExternalAsciiStringResource {
+ public:
+  explicit MemoryMappedExternalResource(const char* filename);
+  MemoryMappedExternalResource(const char* filename,
+                               bool remove_file_on_cleanup);
+  virtual ~MemoryMappedExternalResource();
+
+  virtual const char* data() const { return data_; }
+  virtual size_t length() const { return length_; }
+
+  bool exists() const { return file_ != NULL; }
+  bool is_empty() const { return length_ == 0; }
+
+  bool EnsureIsAscii(bool abort_if_failed) const;
+  bool EnsureIsAscii() const { return EnsureIsAscii(true); }
+  bool IsAscii() const { return EnsureIsAscii(false); }
+
+ private:
+  void Init(const char* filename);
+
+  char* filename_;
+  OS::MemoryMappedFile* file_;
+
+  const char* data_;
+  size_t length_;
+  bool remove_file_on_cleanup_;
+};
+
 
 } }  // namespace v8::internal
 

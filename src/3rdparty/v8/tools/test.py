@@ -361,7 +361,7 @@ class TestCase(object):
     full_command = self.context.processor(command)
     output = Execute(full_command,
                      self.context,
-                     self.context.GetTimeout(self.mode))
+                     self.context.GetTimeout(self, self.mode))
     self.Cleanup()
     return TestOutput(self,
                       full_command,
@@ -374,8 +374,12 @@ class TestCase(object):
   def AfterRun(self, result):
     pass
 
+  def GetCustomFlags(self, mode):
+    return None
+
   def Run(self):
     self.BeforeRun()
+    result = "exception"
     try:
       result = self.RunCommand(self.GetCommand())
     finally:
@@ -502,11 +506,19 @@ def PrintError(str):
 
 
 def CheckedUnlink(name):
-  try:
-    os.unlink(name)
-  except OSError, e:
-    PrintError("os.unlink() " + str(e))
-
+  # On Windows, when run with -jN in parallel processes,
+  # OS often fails to unlink the temp file. Not sure why.
+  # Need to retry.
+  # Idea from https://bugs.webkit.org/attachment.cgi?id=75982&action=prettypatch
+  retry_count = 0
+  while retry_count < 30:
+    try:
+      os.unlink(name)
+      return
+    except OSError, e:
+      retry_count += 1;
+      time.sleep(retry_count * 0.1)
+  PrintError("os.unlink() " + str(e))
 
 def Execute(args, context, timeout=None):
   (fd_out, outname) = tempfile.mkstemp()
@@ -572,7 +584,9 @@ class TestSuite(object):
 
 # Use this to run several variants of the tests, e.g.:
 # VARIANT_FLAGS = [[], ['--always_compact', '--noflush_code']]
-VARIANT_FLAGS = [[]]
+VARIANT_FLAGS = [[],
+                 ['--stress-opt', '--always-opt'],
+                 ['--nocrankshaft']]
 
 
 class TestRepository(TestSuite):
@@ -603,7 +617,7 @@ class TestRepository(TestSuite):
 
   def AddTestsToList(self, result, current_path, path, context, mode):
     for v in VARIANT_FLAGS:
-      tests = self.GetConfiguration(context).ListTests(current_path, path, mode)
+      tests = self.GetConfiguration(context).ListTests(current_path, path, mode, v)
       for t in tests: t.variant_flags = v
       result += tests
 
@@ -626,7 +640,7 @@ class LiteralTestSuite(TestSuite):
         result += test.GetBuildRequirements(rest, context)
     return result
 
-  def ListTests(self, current_path, path, context, mode):
+  def ListTests(self, current_path, path, context, mode, variant_flags):
     (name, rest) = CarCdr(path)
     result = [ ]
     for test in self.tests:
@@ -674,10 +688,17 @@ class Context(object):
     return [self.GetVm(mode)] + self.GetVmFlags(testcase, mode)
 
   def GetVmFlags(self, testcase, mode):
-    return testcase.variant_flags + FLAGS[mode]
+    flags = testcase.GetCustomFlags(mode)
+    if flags is None:
+      flags = FLAGS[mode]
+    return testcase.variant_flags + flags
 
-  def GetTimeout(self, mode):
-    return self.timeout * TIMEOUT_SCALEFACTOR[mode]
+  def GetTimeout(self, testcase, mode):
+    result = self.timeout * TIMEOUT_SCALEFACTOR[mode]
+    if '--stress-opt' in self.GetVmFlags(testcase, mode):
+      return result * 2
+    else:
+      return result
 
 def RunTestCases(cases_to_run, progress, tasks):
   progress = PROGRESS_INDICATORS[progress](cases_to_run)
@@ -727,6 +748,9 @@ class Variable(Expression):
   def GetOutcomes(self, env, defs):
     if self.name in env: return ListSet([env[self.name]])
     else: return Nothing()
+
+  def Evaluate(self, env, defs):
+    return env[self.name]
 
 
 class Outcome(Expression):
@@ -1166,12 +1190,29 @@ def BuildOptions():
         dest="suppress_dialogs", action="store_false")
   result.add_option("--shell", help="Path to V8 shell", default="shell")
   result.add_option("--isolates", help="Whether to test isolates", default=False, action="store_true")
-  result.add_option("--store-unexpected-output", 
+  result.add_option("--store-unexpected-output",
       help="Store the temporary JS files from tests that fails",
       dest="store_unexpected_output", default=True, action="store_true")
-  result.add_option("--no-store-unexpected-output", 
+  result.add_option("--no-store-unexpected-output",
       help="Deletes the temporary JS files from tests that fails",
       dest="store_unexpected_output", action="store_false")
+  result.add_option("--stress-only",
+                    help="Only run tests with --always-opt --stress-opt",
+                    default=False, action="store_true")
+  result.add_option("--nostress",
+                    help="Don't run crankshaft --always-opt --stress-op test",
+                    default=False, action="store_true")
+  result.add_option("--crankshaft",
+                    help="Run with the --crankshaft flag",
+                    default=False, action="store_true")
+  result.add_option("--shard-count",
+                    help="Split testsuites into this number of shards",
+                    default=1, type="int")
+  result.add_option("--shard-run",
+                    help="Run this shard from the split up tests.",
+                    default=1, type="int")
+  result.add_option("--noprof", help="Disable profiling support",
+                    default=False)
   return result
 
 
@@ -1201,6 +1242,19 @@ def ProcessOptions(options):
     options.scons_flags.append("arch=" + options.arch)
   if options.snapshot:
     options.scons_flags.append("snapshot=on")
+  global VARIANT_FLAGS
+  if options.stress_only:
+    VARIANT_FLAGS = [['--stress-opt', '--always-opt']]
+  if options.nostress:
+    VARIANT_FLAGS = [[],['--nocrankshaft']]
+  if options.crankshaft:
+    if options.special_command:
+      options.special_command += " --crankshaft"
+    else:
+      options.special_command = "@--crankshaft"
+  if options.noprof:
+    options.scons_flags.append("prof=off")
+    options.scons_flags.append("profilingsupport=off")
   return True
 
 
@@ -1265,7 +1319,7 @@ def GetSpecialCommandProcessor(value):
     return ExpandCommand
 
 
-BUILT_IN_TESTS = ['mjsunit', 'cctest', 'message']
+BUILT_IN_TESTS = ['mjsunit', 'cctest', 'message', 'preparser']
 
 
 def GetSuites(test_root):
@@ -1278,6 +1332,20 @@ def FormatTime(d):
   millis = round(d * 1000) % 1000
   return time.strftime("%M:%S.", time.gmtime(d)) + ("%03i" % millis)
 
+def ShardTests(tests, options):
+  if options.shard_count < 2:
+    return tests
+  if options.shard_run < 1 or options.shard_run > options.shard_count:
+    print "shard-run not a valid number, should be in [1:shard-count]"
+    print "defaulting back to running all tests"
+    return tests
+  count = 0;
+  shard = []
+  for test in tests:
+    if count % options.shard_count == options.shard_run - 1:
+      shard.append(test);
+    count += 1
+  return shard
 
 def Main():
   parser = BuildOptions()
@@ -1344,23 +1412,21 @@ def Main():
   globally_unused_rules = None
   for path in paths:
     for mode in options.mode:
-      if not exists(context.GetVm(mode)):
-        print "Can't find shell executable: '%s'" % context.GetVm(mode)
-        continue
       env = {
         'mode': mode,
         'system': utils.GuessOS(),
         'arch': options.arch,
-        'simulator': options.simulator
+        'simulator': options.simulator,
+        'crankshaft': options.crankshaft
       }
-      test_list = root.ListTests([], path, context, mode)
+      test_list = root.ListTests([], path, context, mode, [])
       unclassified_tests += test_list
       (cases, unused_rules, all_outcomes) = config.ClassifyTests(test_list, env)
       if globally_unused_rules is None:
         globally_unused_rules = set(unused_rules)
       else:
         globally_unused_rules = globally_unused_rules.intersection(unused_rules)
-      all_cases += cases
+      all_cases += ShardTests(cases, options)
       all_unused.append(unused_rules)
 
   if options.cat:

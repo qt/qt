@@ -102,7 +102,10 @@ class ExternalReferenceTable {
   void PopulateTable(Isolate* isolate);
 
   // For a few types of references, we can get their address from their id.
-  void AddFromId(TypeCode type, uint16_t id, const char* name);
+  void AddFromId(TypeCode type,
+                 uint16_t id,
+                 const char* name,
+                 Isolate* isolate);
 
   // For other types of references, the caller will figure out the address.
   void Add(Address address, TypeCode type, uint16_t id, const char* name);
@@ -114,26 +117,28 @@ class ExternalReferenceTable {
 
 void ExternalReferenceTable::AddFromId(TypeCode type,
                                        uint16_t id,
-                                       const char* name) {
+                                       const char* name,
+                                       Isolate* isolate) {
   Address address;
   switch (type) {
     case C_BUILTIN: {
-      ExternalReference ref(static_cast<Builtins::CFunctionId>(id));
+      ExternalReference ref(static_cast<Builtins::CFunctionId>(id), isolate);
       address = ref.address();
       break;
     }
     case BUILTIN: {
-      ExternalReference ref(static_cast<Builtins::Name>(id));
+      ExternalReference ref(static_cast<Builtins::Name>(id), isolate);
       address = ref.address();
       break;
     }
     case RUNTIME_FUNCTION: {
-      ExternalReference ref(static_cast<Runtime::FunctionId>(id));
+      ExternalReference ref(static_cast<Runtime::FunctionId>(id), isolate);
       address = ref.address();
       break;
     }
     case IC_UTILITY: {
-      ExternalReference ref(IC_Utility(static_cast<IC::UtilityId>(id)));
+      ExternalReference ref(IC_Utility(static_cast<IC::UtilityId>(id)),
+                            isolate);
       address = ref.address();
       break;
     }
@@ -191,9 +196,9 @@ void ExternalReferenceTable::PopulateTable(Isolate* isolate) {
 
 #define DEF_ENTRY_C(name, ignored) \
   { BUILTIN, \
-    Builtins::name, \
+    Builtins::k##name, \
     "Builtins::" #name },
-#define DEF_ENTRY_A(name, kind, state) DEF_ENTRY_C(name, ignored)
+#define DEF_ENTRY_A(name, kind, state, extra) DEF_ENTRY_C(name, ignored)
 
   BUILTIN_LIST_C(DEF_ENTRY_C)
   BUILTIN_LIST_A(DEF_ENTRY_A)
@@ -221,7 +226,10 @@ void ExternalReferenceTable::PopulateTable(Isolate* isolate) {
   };  // end of ref_table[].
 
   for (size_t i = 0; i < ARRAY_SIZE(ref_table); ++i) {
-    AddFromId(ref_table[i].type, ref_table[i].id, ref_table[i].name);
+    AddFromId(ref_table[i].type,
+              ref_table[i].id,
+              ref_table[i].name,
+              isolate);
   }
 
 #ifdef ENABLE_DEBUGGER_SUPPORT
@@ -317,122 +325,124 @@ void ExternalReferenceTable::PopulateTable(Isolate* isolate) {
       "StubCache::secondary_->value");
 
   // Runtime entries
-  Add(ExternalReference::perform_gc_function().address(),
+  Add(ExternalReference::perform_gc_function(isolate).address(),
       RUNTIME_ENTRY,
       1,
       "Runtime::PerformGC");
-  Add(ExternalReference::fill_heap_number_with_random_function().address(),
+  Add(ExternalReference::fill_heap_number_with_random_function(
+          isolate).address(),
       RUNTIME_ENTRY,
       2,
       "V8::FillHeapNumberWithRandom");
-  Add(ExternalReference::random_uint32_function().address(),
+  Add(ExternalReference::random_uint32_function(isolate).address(),
       RUNTIME_ENTRY,
       3,
       "V8::Random");
-  Add(ExternalReference::delete_handle_scope_extensions().address(),
+  Add(ExternalReference::delete_handle_scope_extensions(isolate).address(),
       RUNTIME_ENTRY,
       4,
       "HandleScope::DeleteExtensions");
 
   // Miscellaneous
-  Add(ExternalReference::the_hole_value_location().address(),
+  Add(ExternalReference::the_hole_value_location(isolate).address(),
       UNCLASSIFIED,
       2,
       "Factory::the_hole_value().location()");
-  Add(ExternalReference::roots_address().address(),
+  Add(ExternalReference::roots_address(isolate).address(),
       UNCLASSIFIED,
       3,
       "Heap::roots_address()");
-  Add(ExternalReference::address_of_stack_limit().address(),
+  Add(ExternalReference::address_of_stack_limit(isolate).address(),
       UNCLASSIFIED,
       4,
       "StackGuard::address_of_jslimit()");
-  Add(ExternalReference::address_of_real_stack_limit().address(),
+  Add(ExternalReference::address_of_real_stack_limit(isolate).address(),
       UNCLASSIFIED,
       5,
       "StackGuard::address_of_real_jslimit()");
 #ifndef V8_INTERPRETED_REGEXP
-  Add(ExternalReference::address_of_regexp_stack_limit().address(),
+  Add(ExternalReference::address_of_regexp_stack_limit(isolate).address(),
       UNCLASSIFIED,
       6,
       "RegExpStack::limit_address()");
-  Add(ExternalReference::address_of_regexp_stack_memory_address().address(),
+  Add(ExternalReference::address_of_regexp_stack_memory_address(
+          isolate).address(),
       UNCLASSIFIED,
       7,
       "RegExpStack::memory_address()");
-  Add(ExternalReference::address_of_regexp_stack_memory_size().address(),
+  Add(ExternalReference::address_of_regexp_stack_memory_size(isolate).address(),
       UNCLASSIFIED,
       8,
       "RegExpStack::memory_size()");
-  Add(ExternalReference::address_of_static_offsets_vector().address(),
+  Add(ExternalReference::address_of_static_offsets_vector(isolate).address(),
       UNCLASSIFIED,
       9,
       "OffsetsVector::static_offsets_vector");
 #endif  // V8_INTERPRETED_REGEXP
-  Add(ExternalReference::new_space_start().address(),
+  Add(ExternalReference::new_space_start(isolate).address(),
       UNCLASSIFIED,
       10,
       "Heap::NewSpaceStart()");
-  Add(ExternalReference::new_space_mask().address(),
+  Add(ExternalReference::new_space_mask(isolate).address(),
       UNCLASSIFIED,
       11,
       "Heap::NewSpaceMask()");
-  Add(ExternalReference::heap_always_allocate_scope_depth().address(),
+  Add(ExternalReference::heap_always_allocate_scope_depth(isolate).address(),
       UNCLASSIFIED,
       12,
       "Heap::always_allocate_scope_depth()");
-  Add(ExternalReference::new_space_allocation_limit_address().address(),
+  Add(ExternalReference::new_space_allocation_limit_address(isolate).address(),
       UNCLASSIFIED,
       13,
       "Heap::NewSpaceAllocationLimitAddress()");
-  Add(ExternalReference::new_space_allocation_top_address().address(),
+  Add(ExternalReference::new_space_allocation_top_address(isolate).address(),
       UNCLASSIFIED,
       14,
       "Heap::NewSpaceAllocationTopAddress()");
 #ifdef ENABLE_DEBUGGER_SUPPORT
-  Add(ExternalReference::debug_break().address(),
+  Add(ExternalReference::debug_break(isolate).address(),
       UNCLASSIFIED,
       15,
       "Debug::Break()");
-  Add(ExternalReference::debug_step_in_fp_address().address(),
+  Add(ExternalReference::debug_step_in_fp_address(isolate).address(),
       UNCLASSIFIED,
       16,
       "Debug::step_in_fp_addr()");
 #endif
-  Add(ExternalReference::double_fp_operation(Token::ADD).address(),
+  Add(ExternalReference::double_fp_operation(Token::ADD, isolate).address(),
       UNCLASSIFIED,
       17,
       "add_two_doubles");
-  Add(ExternalReference::double_fp_operation(Token::SUB).address(),
+  Add(ExternalReference::double_fp_operation(Token::SUB, isolate).address(),
       UNCLASSIFIED,
       18,
       "sub_two_doubles");
-  Add(ExternalReference::double_fp_operation(Token::MUL).address(),
+  Add(ExternalReference::double_fp_operation(Token::MUL, isolate).address(),
       UNCLASSIFIED,
       19,
       "mul_two_doubles");
-  Add(ExternalReference::double_fp_operation(Token::DIV).address(),
+  Add(ExternalReference::double_fp_operation(Token::DIV, isolate).address(),
       UNCLASSIFIED,
       20,
       "div_two_doubles");
-  Add(ExternalReference::double_fp_operation(Token::MOD).address(),
+  Add(ExternalReference::double_fp_operation(Token::MOD, isolate).address(),
       UNCLASSIFIED,
       21,
       "mod_two_doubles");
-  Add(ExternalReference::compare_doubles().address(),
+  Add(ExternalReference::compare_doubles(isolate).address(),
       UNCLASSIFIED,
       22,
       "compare_doubles");
 #ifndef V8_INTERPRETED_REGEXP
-  Add(ExternalReference::re_case_insensitive_compare_uc16().address(),
+  Add(ExternalReference::re_case_insensitive_compare_uc16(isolate).address(),
       UNCLASSIFIED,
       23,
       "NativeRegExpMacroAssembler::CaseInsensitiveCompareUC16()");
-  Add(ExternalReference::re_check_stack_guard_state().address(),
+  Add(ExternalReference::re_check_stack_guard_state(isolate).address(),
       UNCLASSIFIED,
       24,
       "RegExpMacroAssembler*::CheckStackGuardState()");
-  Add(ExternalReference::re_grow_stack().address(),
+  Add(ExternalReference::re_grow_stack(isolate).address(),
       UNCLASSIFIED,
       25,
       "NativeRegExpMacroAssembler::GrowStack()");
@@ -442,15 +452,15 @@ void ExternalReferenceTable::PopulateTable(Isolate* isolate) {
       "NativeRegExpMacroAssembler::word_character_map");
 #endif  // V8_INTERPRETED_REGEXP
   // Keyed lookup cache.
-  Add(ExternalReference::keyed_lookup_cache_keys().address(),
+  Add(ExternalReference::keyed_lookup_cache_keys(isolate).address(),
       UNCLASSIFIED,
       27,
       "KeyedLookupCache::keys()");
-  Add(ExternalReference::keyed_lookup_cache_field_offsets().address(),
+  Add(ExternalReference::keyed_lookup_cache_field_offsets(isolate).address(),
       UNCLASSIFIED,
       28,
       "KeyedLookupCache::field_offsets()");
-  Add(ExternalReference::transcendental_cache_array_address().address(),
+  Add(ExternalReference::transcendental_cache_array_address(isolate).address(),
       UNCLASSIFIED,
       29,
       "TranscendentalCache::caches()");
@@ -466,10 +476,46 @@ void ExternalReferenceTable::PopulateTable(Isolate* isolate) {
       UNCLASSIFIED,
       32,
       "HandleScope::level");
-  Add(ExternalReference::isolate_address().address(),
+  Add(ExternalReference::new_deoptimizer_function(isolate).address(),
       UNCLASSIFIED,
       33,
+      "Deoptimizer::New()");
+  Add(ExternalReference::compute_output_frames_function(isolate).address(),
+      UNCLASSIFIED,
+      34,
+      "Deoptimizer::ComputeOutputFrames()");
+  Add(ExternalReference::address_of_min_int().address(),
+      UNCLASSIFIED,
+      35,
+      "LDoubleConstant::min_int");
+  Add(ExternalReference::address_of_one_half().address(),
+      UNCLASSIFIED,
+      36,
+      "LDoubleConstant::one_half");
+  Add(ExternalReference::isolate_address().address(),
+      UNCLASSIFIED,
+      37,
       "isolate");
+  Add(ExternalReference::address_of_minus_zero().address(),
+      UNCLASSIFIED,
+      38,
+      "LDoubleConstant::minus_zero");
+  Add(ExternalReference::address_of_negative_infinity().address(),
+      UNCLASSIFIED,
+      39,
+      "LDoubleConstant::negative_infinity");
+  Add(ExternalReference::power_double_double_function(isolate).address(),
+      UNCLASSIFIED,
+      40,
+      "power_double_double_function");
+  Add(ExternalReference::power_double_int_function(isolate).address(),
+      UNCLASSIFIED,
+      41,
+      "power_double_int_function");
+  Add(ExternalReference::arguments_marker_location(isolate).address(),
+      UNCLASSIFIED,
+      42,
+      "Factory::arguments_marker().location()");
 }
 
 
@@ -571,7 +617,6 @@ Address Deserializer::Allocate(int space_index, Space* space, int size) {
     high_water_[space_index] = address + size;
   } else {
     ASSERT(SpaceIsLarge(space_index));
-    ASSERT(size > Page::kPageSize - Page::kObjectStartOffset);
     LargeObjectSpace* lo_space = reinterpret_cast<LargeObjectSpace*>(space);
     Object* new_allocation;
     if (space_index == kLargeData) {
@@ -694,16 +739,14 @@ void Deserializer::ReadObject(int space_number,
   Object** current = reinterpret_cast<Object**>(address);
   Object** limit = current + (size >> kPointerSizeLog2);
   if (FLAG_log_snapshot_positions) {
-    LOG(SnapshotPositionEvent(address, source_->position()));
+    LOG(isolate_, SnapshotPositionEvent(address, source_->position()));
   }
   ReadChunk(current, limit, space_number, address);
-
-  if (space_number == MAP_SPACE) {
-    ASSERT(size == Map::kSize);
-    HeapObject* obj = HeapObject::FromAddress(address);
-    Map* map = reinterpret_cast<Map*>(obj);
-    map->set_heap(isolate_->heap());
-  }
+#ifdef DEBUG
+  bool is_codespace = (space == HEAP->code_space()) ||
+      ((space == HEAP->lo_space()) && (space_number == kLargeCode));
+  ASSERT(HeapObject::FromAddress(address)->IsCode() == is_codespace);
+#endif
 }
 
 
@@ -861,7 +904,7 @@ void Deserializer::ReadChunk(Object** current,
   CASE_STATEMENT(where, how, within, CODE_SPACE)                               \
   CASE_BODY(where, how, within, CODE_SPACE, kUnknownOffsetFromStart)           \
   CASE_STATEMENT(where, how, within, kLargeCode)                               \
-  CASE_BODY(where, how, within, LO_SPACE, kUnknownOffsetFromStart)
+  CASE_BODY(where, how, within, kLargeCode, kUnknownOffsetFromStart)
 
 #define EMIT_COMMON_REFERENCE_PATTERNS(pseudo_space_number,                    \
                                        space_number,                           \
@@ -1312,7 +1355,8 @@ void Serializer::ObjectSerializer::Serialize() {
              "ObjectSerialization");
   sink_->PutInt(size >> kObjectAlignmentBits, "Size in words");
 
-  LOG(SnapshotPositionEvent(object_->address(), sink_->Position()));
+  LOG(i::Isolate::Current(),
+      SnapshotPositionEvent(object_->address(), sink_->Position()));
 
   // Mark this object as already serialized.
   bool start_new_page;
@@ -1398,6 +1442,13 @@ void Serializer::ObjectSerializer::VisitCodeEntry(Address entry_address) {
   OutputRawData(entry_address);
   serializer_->SerializeObject(target, kPlain, kFirstInstruction);
   bytes_processed_so_far_ += kPointerSize;
+}
+
+
+void Serializer::ObjectSerializer::VisitGlobalPropertyCell(RelocInfo* rinfo) {
+  // We shouldn't have any global property cell references in code
+  // objects in the snapshot.
+  UNREACHABLE();
 }
 
 

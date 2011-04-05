@@ -47,7 +47,7 @@ namespace internal {
   /* Property access */ \
   F(GetProperty, 2, 1) \
   F(KeyedGetProperty, 2, 1) \
-  F(DeleteProperty, 2, 1) \
+  F(DeleteProperty, 3, 1) \
   F(HasLocalProperty, 2, 1) \
   F(HasProperty, 2, 1) \
   F(HasElement, 2, 1) \
@@ -81,6 +81,11 @@ namespace internal {
   F(GetConstructorDelegate, 1, 1) \
   F(NewArgumentsFast, 3, 1) \
   F(LazyCompile, 1, 1) \
+  F(LazyRecompile, 1, 1) \
+  F(NotifyDeoptimized, 1, 1) \
+  F(NotifyOSR, 0, 1) \
+  F(DeoptimizeFunction, 1, 1)             \
+  F(CompileForOnStackReplacement, 1, 1) \
   F(SetNewFunctionAttributes, 1, 1) \
   F(AllocateInNewSpace, 1, 1) \
   \
@@ -103,6 +108,7 @@ namespace internal {
   F(URIEscape, 1, 1) \
   F(URIUnescape, 1, 1) \
   F(QuoteJSONString, 1, 1) \
+  F(QuoteJSONStringComma, 1, 1) \
   \
   F(NumberToString, 1, 1) \
   F(NumberToStringSkipCache, 1, 1) \
@@ -111,6 +117,7 @@ namespace internal {
   F(NumberToJSUint32, 1, 1) \
   F(NumberToJSInt32, 1, 1) \
   F(NumberToSmi, 1, 1) \
+  F(AllocateHeapNumber, 0, 1) \
   \
   /* Arithmetic operations */ \
   F(NumberAdd, 2, 1) \
@@ -123,6 +130,7 @@ namespace internal {
   \
   F(StringAdd, 2, 1) \
   F(StringBuilderConcat, 3, 1) \
+  F(StringBuilderJoin, 3, 1) \
   \
   /* Bit operations */ \
   F(NumberOr, 2, 1) \
@@ -232,10 +240,10 @@ namespace internal {
   \
   /* Eval */ \
   F(GlobalReceiver, 1, 1) \
-  F(ResolvePossiblyDirectEval, 3, 2) \
-  F(ResolvePossiblyDirectEvalNoLookup, 3, 2) \
+  F(ResolvePossiblyDirectEval, 4, 2) \
+  F(ResolvePossiblyDirectEvalNoLookup, 4, 2) \
   \
-  F(SetProperty, -1 /* 3 or 4 */, 1) \
+  F(SetProperty, -1 /* 4 or 5 */, 1) \
   F(DefineOrRedefineDataProperty, 4, 1) \
   F(DefineOrRedefineAccessorProperty, 5, 1) \
   F(IgnoreAttributesAndSetProperty, -1 /* 3 or 4 */, 1) \
@@ -279,15 +287,15 @@ namespace internal {
   F(NewContext, 1, 1) \
   F(PushContext, 1, 1) \
   F(PushCatchContext, 1, 1) \
-  F(LookupContext, 2, 1) \
+  F(DeleteContextSlot, 2, 1) \
   F(LoadContextSlot, 2, 2) \
   F(LoadContextSlotNoReferenceError, 2, 2) \
-  F(StoreContextSlot, 3, 1) \
+  F(StoreContextSlot, 4, 1) \
   \
   /* Declarations and initialization */ \
-  F(DeclareGlobals, 3, 1) \
+  F(DeclareGlobals, 4, 1) \
   F(DeclareContextSlot, 4, 1) \
-  F(InitializeVarGlobal, -1 /* 1 or 2 */, 1) \
+  F(InitializeVarGlobal, -1 /* 2 or 3 */, 1) \
   F(InitializeConstGlobal, 2, 1) \
   F(InitializeConstContextSlot, 3, 1) \
   F(OptimizeObjectForAddingMultipleProperties, 2, 1) \
@@ -304,6 +312,13 @@ namespace internal {
   F(LocalKeys, 1, 1) \
   /* Cache suport */ \
   F(GetFromCache, 2, 1) \
+  \
+  /* Message objects */ \
+  F(NewMessageObject, 2, 1) \
+  F(MessageGetType, 1, 1) \
+  F(MessageGetArguments, 1, 1) \
+  F(MessageGetStartPosition, 1, 1) \
+  F(MessageGetScript, 1, 1) \
   \
   /* Pseudo functions - handled as macros by parser */ \
   F(IS_VAR, 1, 1)
@@ -338,8 +353,8 @@ namespace internal {
   F(IsBreakOnException, 1, 1) \
   F(PrepareStep, 3, 1) \
   F(ClearStepping, 0, 1) \
-  F(DebugEvaluate, 4, 1) \
-  F(DebugEvaluateGlobal, 3, 1) \
+  F(DebugEvaluate, 5, 1) \
+  F(DebugEvaluateGlobal, 4, 1) \
   F(DebugGetLoadedScripts, 0, 1) \
   F(DebugReferencedBy, 3, 1) \
   F(DebugConstructedBy, 2, 1) \
@@ -352,13 +367,33 @@ namespace internal {
   F(LiveEditGatherCompileInfo, 2, 1) \
   F(LiveEditReplaceScript, 3, 1) \
   F(LiveEditReplaceFunctionCode, 2, 1) \
+  F(LiveEditFunctionSourceUpdated, 1, 1) \
   F(LiveEditFunctionSetScript, 2, 1) \
   F(LiveEditReplaceRefToNestedFunction, 3, 1) \
   F(LiveEditPatchFunctionPositions, 2, 1) \
   F(LiveEditCheckAndDropActivations, 2, 1) \
-  F(LiveEditCompareStringsLinewise, 2, 1) \
+  F(LiveEditCompareStrings, 2, 1) \
   F(GetFunctionCodePositionFromSource, 2, 1) \
-  F(ExecuteInDebugContext, 2, 1)
+  F(ExecuteInDebugContext, 2, 1) \
+  \
+  F(SetFlags, 1, 1) \
+  F(CollectGarbage, 1, 1) \
+  F(GetHeapUsage, 0, 1) \
+  \
+  /* LiveObjectList support*/ \
+  F(HasLOLEnabled, 0, 1) \
+  F(CaptureLOL, 0, 1) \
+  F(DeleteLOL, 1, 1) \
+  F(DumpLOL, 5, 1) \
+  F(GetLOLObj, 1, 1) \
+  F(GetLOLObjId, 1, 1) \
+  F(GetLOLObjRetainers, 6, 1) \
+  F(GetLOLPath, 3, 1) \
+  F(InfoLOL, 2, 1) \
+  F(PrintLOLObj, 1, 1) \
+  F(ResetLOL, 0, 1) \
+  F(SummarizeLOL, 3, 1)
+
 #else
 #define RUNTIME_FUNCTION_LIST_DEBUGGER_SUPPORT(F)
 #endif
@@ -574,7 +609,8 @@ class Runtime : public AllStatic {
       Handle<Object> object,
       Handle<Object> key,
       Handle<Object> value,
-      PropertyAttributes attr);
+      PropertyAttributes attr,
+      StrictModeFlag strict_mode);
 
   MUST_USE_RESULT static MaybeObject* ForceSetObjectProperty(
       Isolate* isolate,

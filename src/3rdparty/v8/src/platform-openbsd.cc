@@ -52,6 +52,7 @@
 #include "v8.h"
 
 #include "platform.h"
+#include "vm-state-inl.h"
 
 
 namespace v8 {
@@ -153,7 +154,7 @@ void* OS::Allocate(const size_t requested,
   void* mbase = mmap(NULL, msize, prot, MAP_PRIVATE | MAP_ANON, -1, 0);
 
   if (mbase == MAP_FAILED) {
-    LOG(StringEvent("OS::Allocate", "mmap failed"));
+    LOG(ISOLATE, StringEvent("OS::Allocate", "mmap failed"));
     return NULL;
   }
   *allocated = msize;
@@ -212,11 +213,25 @@ class PosixMemoryMappedFile : public OS::MemoryMappedFile {
     : file_(file), memory_(memory), size_(size) { }
   virtual ~PosixMemoryMappedFile();
   virtual void* memory() { return memory_; }
+  virtual int size() { return size_; }
  private:
   FILE* file_;
   void* memory_;
   int size_;
 };
+
+
+OS::MemoryMappedFile* OS::MemoryMappedFile::open(const char* name) {
+  FILE* file = fopen(name, "r+");
+  if (file == NULL) return NULL;
+
+  fseek(file, 0, SEEK_END);
+  int size = ftell(file);
+
+  void* memory =
+      mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fileno(file), 0);
+  return new PosixMemoryMappedFile(file, memory, size);
+}
 
 
 OS::MemoryMappedFile* OS::MemoryMappedFile::create(const char* name, int size,
@@ -385,9 +400,19 @@ bool ThreadHandle::IsValid() const {
 }
 
 
-Thread::Thread(Isolate* isolate)
+Thread::Thread(Isolate* isolate, const Options& options)
     : ThreadHandle(ThreadHandle::INVALID),
-      isolate_(isolate) {
+      isolate_(isolate),
+      stack_size_(options.stack_size) {
+  set_name(options.name);
+}
+
+
+Thread::Thread(Isolate* isolate, const char* name)
+    : ThreadHandle(ThreadHandle::INVALID),
+      isolate_(isolate),
+      stack_size_(0) {
+  set_name(name);
 }
 
 
@@ -408,8 +433,21 @@ static void* ThreadEntry(void* arg) {
 }
 
 
+void Thread::set_name(const char* name) {
+  strncpy(name_, name, sizeof(name_));
+  name_[sizeof(name_) - 1] = '\0';
+}
+
+
 void Thread::Start() {
-  pthread_create(&thread_handle_data()->thread_, NULL, ThreadEntry, this);
+  pthread_attr_t* attr_ptr = NULL;
+  pthread_attr_t attr;
+  if (stack_size_ > 0) {
+    pthread_attr_init(&attr);
+    pthread_attr_setstacksize(&attr, static_cast<size_t>(stack_size_));
+    attr_ptr = &attr;
+  }
+  pthread_create(&thread_handle_data()->thread_, attr_ptr, ThreadEntry, this);
   ASSERT(IsValid());
 }
 
@@ -574,11 +612,10 @@ class Sampler::PlatformData : public Malloced {
 };
 
 
-Sampler::Sampler(Isolate* isolate, int interval, bool profiling)
+Sampler::Sampler(Isolate* isolate, int interval)
     : isolate_(isolate),
       interval_(interval),
-      profiling_(profiling),
-      synchronous_(profiling),
+      profiling_(false),
       active_(false),
       samples_taken_(0) {
   data_ = new PlatformData();

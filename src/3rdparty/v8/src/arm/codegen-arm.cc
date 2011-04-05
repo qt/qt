@@ -36,7 +36,7 @@
 #include "debug.h"
 #include "ic-inl.h"
 #include "jsregexp.h"
-#include "jump-target-light-inl.h"
+#include "jump-target-inl.h"
 #include "parser.h"
 #include "regexp-macro-assembler.h"
 #include "regexp-stack.h"
@@ -79,12 +79,12 @@ void VirtualFrameRuntimeCallHelper::AfterCall(MacroAssembler* masm) const {
 }
 
 
-void ICRuntimeCallHelper::BeforeCall(MacroAssembler* masm) const {
+void StubRuntimeCallHelper::BeforeCall(MacroAssembler* masm) const {
   masm->EnterInternalFrame();
 }
 
 
-void ICRuntimeCallHelper::AfterCall(MacroAssembler* masm) const {
+void StubRuntimeCallHelper::AfterCall(MacroAssembler* masm) const {
   masm->LeaveInternalFrame();
 }
 
@@ -132,8 +132,6 @@ TypeInfoCodeGenState::~TypeInfoCodeGenState() {
 // -------------------------------------------------------------------------
 // CodeGenerator implementation
 
-int CodeGenerator::inlined_write_barrier_size_ = -1;
-
 CodeGenerator::CodeGenerator(MacroAssembler* masm)
     : deferred_(8),
       masm_(masm),
@@ -165,6 +163,9 @@ void CodeGenerator::Generate(CompilationInfo* info) {
 
   int slots = scope()->num_parameters() + scope()->num_stack_slots();
   ScopedVector<TypeInfo> type_info_array(slots);
+  for (int i = 0; i < slots; i++) {
+    type_info_array[i] = TypeInfo::Unknown();
+  }
   type_info_ = &type_info_array;
 
   ASSERT(allocator_ == NULL);
@@ -574,11 +575,13 @@ void CodeGenerator::LoadGlobalReceiver(Register scratch) {
 
 ArgumentsAllocationMode CodeGenerator::ArgumentsMode() {
   if (scope()->arguments() == NULL) return NO_ARGUMENTS_ALLOCATION;
-  ASSERT(scope()->arguments_shadow() != NULL);
+
+  // In strict mode there is no need for shadow arguments.
+  ASSERT(scope()->arguments_shadow() != NULL || scope()->is_strict_mode());
   // We don't want to do lazy arguments allocation for functions that
   // have heap-allocated contexts, because it interfers with the
   // uninitialized const tracking in the context objects.
-  return (scope()->num_heap_slots() > 0)
+  return (scope()->num_heap_slots() > 0 || scope()->is_strict_mode())
       ? EAGER_ARGUMENTS_ALLOCATION
       : LAZY_ARGUMENTS_ALLOCATION;
 }
@@ -593,10 +596,12 @@ void CodeGenerator::StoreArgumentsObject(bool initial) {
     // When using lazy arguments allocation, we store the hole value
     // as a sentinel indicating that the arguments object hasn't been
     // allocated yet.
-    frame_->EmitPushRoot(Heap::kTheHoleValueRootIndex);
+    frame_->EmitPushRoot(Heap::kArgumentsMarkerRootIndex);
   } else {
     frame_->SpillAll();
-    ArgumentsAccessStub stub(ArgumentsAccessStub::NEW_OBJECT);
+    ArgumentsAccessStub stub(is_strict_mode()
+        ? ArgumentsAccessStub::NEW_STRICT
+        : ArgumentsAccessStub::NEW_NON_STRICT);
     __ ldr(r2, frame_->Function());
     // The receiver is below the arguments, the return address, and the
     // frame pointer on the stack.
@@ -612,7 +617,9 @@ void CodeGenerator::StoreArgumentsObject(bool initial) {
   Variable* arguments = scope()->arguments();
   Variable* shadow = scope()->arguments_shadow();
   ASSERT(arguments != NULL && arguments->AsSlot() != NULL);
-  ASSERT(shadow != NULL && shadow->AsSlot() != NULL);
+  ASSERT((shadow != NULL && shadow->AsSlot() != NULL) ||
+         scope()->is_strict_mode());
+
   JumpTarget done;
   if (mode == LAZY_ARGUMENTS_ALLOCATION && !initial) {
     // We have to skip storing into the arguments slot if it has
@@ -620,13 +627,15 @@ void CodeGenerator::StoreArgumentsObject(bool initial) {
     // has a local variable named 'arguments'.
     LoadFromSlot(scope()->arguments()->AsSlot(), NOT_INSIDE_TYPEOF);
     Register arguments = frame_->PopToRegister();
-    __ LoadRoot(ip, Heap::kTheHoleValueRootIndex);
+    __ LoadRoot(ip, Heap::kArgumentsMarkerRootIndex);
     __ cmp(arguments, ip);
     done.Branch(ne);
   }
   StoreToSlot(arguments->AsSlot(), NOT_CONST_INIT);
   if (mode == LAZY_ARGUMENTS_ALLOCATION) done.Bind();
-  StoreToSlot(shadow->AsSlot(), NOT_CONST_INIT);
+  if (shadow != NULL) {
+    StoreToSlot(shadow->AsSlot(), NOT_CONST_INIT);
+  }
 }
 
 
@@ -761,7 +770,7 @@ void CodeGenerator::ToBoolean(JumpTarget* true_target,
     true_target->Branch(eq);
 
     // Slow case.
-    if (Isolate::Current()->cpu_features()->IsSupported(VFP3)) {
+    if (CpuFeatures::IsSupported(VFP3)) {
       CpuFeatures::Scope scope(VFP3);
       // Implements the slow case by using ToBooleanStub.
       // The ToBooleanStub takes a single argument, and
@@ -958,8 +967,7 @@ void DeferredInlineSmiOperation::JumpToNonSmiInput(Condition cond) {
 void DeferredInlineSmiOperation::JumpToAnswerOutOfRange(Condition cond) {
   ASSERT(Token::IsBitOp(op_));
 
-  if ((op_ == Token::SHR) &&
-      !Isolate::Current()->cpu_features()->IsSupported(VFP3)) {
+  if ((op_ == Token::SHR) && !CpuFeatures::IsSupported(VFP3)) {
     // >>> requires an unsigned to double conversion and the non VFP code
     // does not support this conversion.
     __ b(cond, entry_label());
@@ -1063,7 +1071,7 @@ void DeferredInlineSmiOperation::Generate() {
 void DeferredInlineSmiOperation::WriteNonSmiAnswer(Register answer,
                                                    Register heap_number,
                                                    Register scratch) {
-  if (Isolate::Current()->cpu_features()->IsSupported(VFP3)) {
+  if (CpuFeatures::IsSupported(VFP3)) {
     CpuFeatures::Scope scope(VFP3);
     __ vmov(s0, answer);
     if (op_ == Token::SHR) {
@@ -1108,7 +1116,7 @@ void DeferredInlineSmiOperation::GenerateNonSmiInput() {
 
   Register int32 = r2;
   // Not a 32bits signed int, fall back to the GenericBinaryOpStub.
-  __ ConvertToInt32(tos_register_, int32, r4, r5, entry_label());
+  __ ConvertToInt32(tos_register_, int32, r4, r5, d0, entry_label());
 
   // tos_register_ (r0 or r1): Original heap number.
   // int32: signed 32bits int.
@@ -1133,7 +1141,7 @@ void DeferredInlineSmiOperation::GenerateNonSmiInput() {
         // SHR is special because it is required to produce a positive answer.
         __ cmp(int32, Operand(0, RelocInfo::NONE));
       }
-      if (Isolate::Current()->cpu_features()->IsSupported(VFP3)) {
+      if (CpuFeatures::IsSupported(VFP3)) {
         __ b(mi, &result_not_a_smi);
       } else {
         // Non VFP code cannot convert from unsigned to double, so fall back
@@ -1151,7 +1159,7 @@ void DeferredInlineSmiOperation::GenerateNonSmiInput() {
   }
   // Check that the *signed* result fits in a smi. Not necessary for AND, SAR
   // if the shift if more than 0 or SHR if the shit is more than 1.
-  if (!( (op_ == Token::AND) ||
+  if (!( (op_ == Token::AND && value_ >= 0) ||
         ((op_ == Token::SAR) && (shift_value > 0)) ||
         ((op_ == Token::SHR) && (shift_value > 1)))) {
     __ add(r3, int32, Operand(0x40000000), SetCC);
@@ -1412,8 +1420,10 @@ void CodeGenerator::SmiOperation(Token::Value op,
           default: UNREACHABLE();
         }
         deferred->BindExit();
-        TypeInfo result_type =
-            (op == Token::BIT_AND) ? TypeInfo::Smi() : TypeInfo::Integer32();
+        TypeInfo result_type = TypeInfo::Integer32();
+        if (op == Token::BIT_AND && int_value >= 0) {
+          result_type = TypeInfo::Smi();
+        }
         frame_->EmitPush(tos, result_type);
       }
       break;
@@ -1587,7 +1597,7 @@ void CodeGenerator::SmiOperation(Token::Value op,
 }
 
 
-void CodeGenerator::Comparison(Condition cc,
+void CodeGenerator::Comparison(Condition cond,
                                Expression* left,
                                Expression* right,
                                bool strict) {
@@ -1601,7 +1611,7 @@ void CodeGenerator::Comparison(Condition cc,
   // result : cc register
 
   // Strict only makes sense for equality comparisons.
-  ASSERT(!strict || cc == eq);
+  ASSERT(!strict || cond == eq);
 
   Register lhs;
   Register rhs;
@@ -1612,8 +1622,8 @@ void CodeGenerator::Comparison(Condition cc,
   // We load the top two stack positions into registers chosen by the virtual
   // frame.  This should keep the register shuffling to a minimum.
   // Implement '>' and '<=' by reversal to obtain ECMA-262 conversion order.
-  if (cc == gt || cc == le) {
-    cc = ReverseCondition(cc);
+  if (cond == gt || cond == le) {
+    cond = ReverseCondition(cond);
     lhs_is_smi = frame_->KnownSmiAt(0);
     rhs_is_smi = frame_->KnownSmiAt(1);
     lhs = frame_->PopToRegister();
@@ -1653,7 +1663,7 @@ void CodeGenerator::Comparison(Condition cc,
     // Perform non-smi comparison by stub.
     // CompareStub takes arguments in r0 and r1, returns <0, >0 or 0 in r0.
     // We call with 0 args because there are 0 on the stack.
-    CompareStub stub(cc, strict, NO_SMI_COMPARE_IN_STUB, lhs, rhs);
+    CompareStub stub(cond, strict, NO_SMI_COMPARE_IN_STUB, lhs, rhs);
     frame_->CallStub(&stub, 0);
     __ cmp(r0, Operand(0, RelocInfo::NONE));
     exit.Jump();
@@ -1665,7 +1675,7 @@ void CodeGenerator::Comparison(Condition cc,
   __ cmp(lhs, Operand(rhs));
 
   exit.Bind();
-  cc_reg_ = cc;
+  cc_reg_ = cond;
 }
 
 
@@ -1746,7 +1756,7 @@ void CodeGenerator::CallApplyLazy(Expression* applicand,
   // named 'arguments' has been introduced.
   JumpTarget slow;
   Label done;
-  __ LoadRoot(ip, Heap::kTheHoleValueRootIndex);
+  __ LoadRoot(ip, Heap::kArgumentsMarkerRootIndex);
   __ cmp(ip, arguments_reg);
   slow.Branch(ne);
 
@@ -1760,7 +1770,7 @@ void CodeGenerator::CallApplyLazy(Expression* applicand,
   //   sp[2]: applicand.
 
   // Check that the receiver really is a JavaScript object.
-  __ BranchOnSmi(receiver_reg, &build_args);
+  __ JumpIfSmi(receiver_reg, &build_args);
   // We allow all JSObjects including JSFunctions.  As long as
   // JS_FUNCTION_TYPE is the last instance type and it is right
   // after LAST_JS_OBJECT_TYPE, we do not have to check the upper
@@ -1772,11 +1782,11 @@ void CodeGenerator::CallApplyLazy(Expression* applicand,
 
   // Check that applicand.apply is Function.prototype.apply.
   __ ldr(r0, MemOperand(sp, kPointerSize));
-  __ BranchOnSmi(r0, &build_args);
+  __ JumpIfSmi(r0, &build_args);
   __ CompareObjectType(r0, r1, r2, JS_FUNCTION_TYPE);
   __ b(ne, &build_args);
   Handle<Code> apply_code(
-      Isolate::Current()->builtins()->builtin(Builtins::FunctionApply));
+      Isolate::Current()->builtins()->builtin(Builtins::kFunctionApply));
   __ ldr(r1, FieldMemOperand(r0, JSFunction::kCodeEntryOffset));
   __ sub(r1, r1, Operand(Code::kHeaderSize - kHeapObjectTag));
   __ cmp(r1, Operand(apply_code));
@@ -1784,7 +1794,7 @@ void CodeGenerator::CallApplyLazy(Expression* applicand,
 
   // Check that applicand is a function.
   __ ldr(r1, MemOperand(sp, 2 * kPointerSize));
-  __ BranchOnSmi(r1, &build_args);
+  __ JumpIfSmi(r1, &build_args);
   __ CompareObjectType(r1, r2, r3, JS_FUNCTION_TYPE);
   __ b(ne, &build_args);
 
@@ -1884,8 +1894,8 @@ void CodeGenerator::CallApplyLazy(Expression* applicand,
 
 void CodeGenerator::Branch(bool if_true, JumpTarget* target) {
   ASSERT(has_cc());
-  Condition cc = if_true ? cc_reg_ : NegateCondition(cc_reg_);
-  target->Branch(cc);
+  Condition cond = if_true ? cc_reg_ : NegateCondition(cc_reg_);
+  target->Branch(cond);
   cc_reg_ = al;
 }
 
@@ -1937,8 +1947,9 @@ void CodeGenerator::DeclareGlobals(Handle<FixedArray> pairs) {
   frame_->EmitPush(cp);
   frame_->EmitPush(Operand(pairs));
   frame_->EmitPush(Operand(Smi::FromInt(is_eval() ? 1 : 0)));
+  frame_->EmitPush(Operand(Smi::FromInt(strict_mode_flag())));
 
-  frame_->CallRuntime(Runtime::kDeclareGlobals, 3);
+  frame_->CallRuntime(Runtime::kDeclareGlobals, 4);
   // The result is discarded.
 }
 
@@ -2191,15 +2202,10 @@ void CodeGenerator::GenerateReturnSequence() {
     DeleteFrame();
 
 #ifdef DEBUG
-    // Check that the size of the code used for returning matches what is
-    // expected by the debugger. If the sp_delts above cannot be encoded in
-    // the add instruction the add will generate two instructions.
-    int return_sequence_length =
-        masm_->InstructionsGeneratedSince(&check_exit_codesize);
-    CHECK(return_sequence_length ==
-          Assembler::kJSReturnSequenceInstructions ||
-          return_sequence_length ==
-          Assembler::kJSReturnSequenceInstructions + 1);
+    // Check that the size of the code used for returning is large enough
+    // for the debugger's requirements.
+    ASSERT(Assembler::kJSReturnSequenceInstructions <=
+           masm_->InstructionsGeneratedSince(&check_exit_codesize));
 #endif
   }
 }
@@ -2852,7 +2858,7 @@ void CodeGenerator::VisitTryCatchStatement(TryCatchStatement* node) {
   function_return_is_shadowed_ = function_return_was_shadowed;
 
   // Get an external reference to the handler address.
-  ExternalReference handler_address(Isolate::k_handler_address);
+  ExternalReference handler_address(Isolate::k_handler_address, isolate());
 
   // If we can fall off the end of the try block, unlink from try chain.
   if (has_valid_frame()) {
@@ -2968,7 +2974,7 @@ void CodeGenerator::VisitTryFinallyStatement(TryFinallyStatement* node) {
   function_return_is_shadowed_ = function_return_was_shadowed;
 
   // Get an external reference to the handler address.
-  ExternalReference handler_address(Isolate::k_handler_address);
+  ExternalReference handler_address(Isolate::k_handler_address, isolate());
 
   // If we can fall off the end of the try block, unlink from the try
   // chain and set the state on the frame to FALLING.
@@ -3109,10 +3115,11 @@ void CodeGenerator::InstantiateFunction(
     bool pretenure) {
   // Use the fast case closure allocation code that allocates in new
   // space for nested functions that don't need literals cloning.
-  if (scope()->is_function_scope() &&
-      function_info->num_literals() == 0 &&
-      !pretenure) {
-    FastNewClosureStub stub;
+  if (!pretenure &&
+      scope()->is_function_scope() &&
+      function_info->num_literals() == 0) {
+    FastNewClosureStub stub(
+        function_info->strict_mode() ? kStrictMode : kNonStrictMode);
     frame_->EmitPush(Operand(function_info));
     frame_->SpillAll();
     frame_->CallStub(&stub, 1);
@@ -3254,7 +3261,7 @@ void CodeGenerator::LoadFromSlotCheckForArguments(Slot* slot,
   // If the loaded value is the sentinel that indicates that we
   // haven't loaded the arguments object yet, we need to do it now.
   JumpTarget exit;
-  __ LoadRoot(ip, Heap::kTheHoleValueRootIndex);
+  __ LoadRoot(ip, Heap::kArgumentsMarkerRootIndex);
   __ cmp(tos, ip);
   exit.Branch(ne);
   frame_->Drop();
@@ -3291,7 +3298,8 @@ void CodeGenerator::StoreToSlot(Slot* slot, InitState init_state) {
       // context slot followed by initialization.
       frame_->CallRuntime(Runtime::kInitializeConstContextSlot, 3);
     } else {
-      frame_->CallRuntime(Runtime::kStoreContextSlot, 3);
+      frame_->EmitPush(Operand(Smi::FromInt(strict_mode_flag())));
+      frame_->CallRuntime(Runtime::kStoreContextSlot, 4);
     }
     // Storing a variable must keep the (new) value on the expression
     // stack. This is necessary for compiling assignment expressions.
@@ -3623,7 +3631,7 @@ void CodeGenerator::VisitObjectLiteral(ObjectLiteral* node) {
       case ObjectLiteral::Property::COMPUTED:
         if (key->handle()->IsSymbol()) {
           Handle<Code> ic(Isolate::Current()->builtins()->builtin(
-              Builtins::StoreIC_Initialize));
+              Builtins::kStoreIC_Initialize));
           Load(value);
           if (property->emit_store()) {
             frame_->PopToR0();
@@ -3642,7 +3650,8 @@ void CodeGenerator::VisitObjectLiteral(ObjectLiteral* node) {
         Load(key);
         Load(value);
         if (property->emit_store()) {
-          frame_->CallRuntime(Runtime::kSetProperty, 3);
+          frame_->EmitPush(Operand(Smi::FromInt(NONE)));  // PropertyAttributes
+          frame_->CallRuntime(Runtime::kSetProperty, 4);
         } else {
           frame_->Drop(3);
         }
@@ -3689,7 +3698,8 @@ void CodeGenerator::VisitArrayLiteral(ArrayLiteral* node) {
     FastCloneShallowArrayStub stub(
         FastCloneShallowArrayStub::COPY_ON_WRITE_ELEMENTS, length);
     frame_->CallStub(&stub, 3);
-    __ IncrementCounter(COUNTERS->cow_arrays_created_stub(), 1, r1, r2);
+    __ IncrementCounter(masm_->isolate()->counters()->cow_arrays_created_stub(),
+                        1, r1, r2);
   } else if (node->depth() > 1) {
     frame_->CallRuntime(Runtime::kCreateArrayLiteral, 3);
   } else if (length > FastCloneShallowArrayStub::kMaximumClonedLength) {
@@ -4177,7 +4187,10 @@ void CodeGenerator::VisitCall(Call* node) {
       __ ldr(r1, frame_->Receiver());
       frame_->EmitPush(r1);
 
-      frame_->CallRuntime(Runtime::kResolvePossiblyDirectEvalNoLookup, 3);
+      // Push the strict mode flag.
+      frame_->EmitPush(Operand(Smi::FromInt(strict_mode_flag())));
+
+      frame_->CallRuntime(Runtime::kResolvePossiblyDirectEvalNoLookup, 4);
 
       done.Jump();
       slow.Bind();
@@ -4197,8 +4210,11 @@ void CodeGenerator::VisitCall(Call* node) {
     __ ldr(r1, frame_->Receiver());
     frame_->EmitPush(r1);
 
+    // Push the strict mode flag.
+    frame_->EmitPush(Operand(Smi::FromInt(strict_mode_flag())));
+
     // Resolve the call.
-    frame_->CallRuntime(Runtime::kResolvePossiblyDirectEval, 3);
+    frame_->CallRuntime(Runtime::kResolvePossiblyDirectEval, 4);
 
     // If we generated fast-case code bind the jump-target where fast
     // and slow case merge.
@@ -4444,7 +4460,7 @@ void CodeGenerator::VisitCallNew(CallNew* node) {
   // constructor invocation.
   CodeForSourcePosition(node->position());
   Handle<Code> ic(Isolate::Current()->builtins()->builtin(
-      Builtins::JSConstructCall));
+      Builtins::kJSConstructCall));
   frame_->CallCodeObject(ic, RelocInfo::CONSTRUCT_CALL, arg_count + 1);
   frame_->EmitPush(r0);
 
@@ -4600,7 +4616,7 @@ void CodeGenerator::GenerateMathPow(ZoneList<Expression*>* args) {
   Load(args->at(0));
   Load(args->at(1));
 
-  if (!Isolate::Current()->cpu_features()->IsSupported(VFP3)) {
+  if (!CpuFeatures::IsSupported(VFP3)) {
     frame_->CallRuntime(Runtime::kMath_pow, 2);
     frame_->EmitPush(r0);
   } else {
@@ -4621,8 +4637,8 @@ void CodeGenerator::GenerateMathPow(ZoneList<Expression*>* args) {
     ASSERT(runtime.entry_frame() == NULL);
     runtime.set_entry_frame(frame_);
 
-    __ BranchOnNotSmi(exponent, &exponent_nonsmi);
-    __ BranchOnNotSmi(base, &base_nonsmi);
+    __ JumpIfNotSmi(exponent, &exponent_nonsmi);
+    __ JumpIfNotSmi(base, &base_nonsmi);
 
     heap_number_map = r6;
     __ LoadRoot(heap_number_map, Heap::kHeapNumberMapRootIndex);
@@ -4670,8 +4686,7 @@ void CodeGenerator::GenerateMathPow(ZoneList<Expression*>* args) {
     __ mov(scratch2, Operand(0x7FF00000));
     __ mov(scratch1, Operand(0, RelocInfo::NONE));
     __ vmov(d1, scratch1, scratch2);  // Load infinity into d1.
-    __ vcmp(d0, d1);
-    __ vmrs(pc);
+    __ VFPCompareAndSetFlags(d0, d1);
     runtime.Branch(eq);  // d0 reached infinity.
     __ vdiv(d0, d2, d0);
     __ b(&allocate_return);
@@ -4702,12 +4717,15 @@ void CodeGenerator::GenerateMathPow(ZoneList<Expression*>* args) {
                                  runtime.entry_label(),
                                  AVOID_NANS_AND_INFINITIES);
 
+    // Convert -0 into +0 by adding +0.
+    __ vmov(d2, 0.0);
+    __ vadd(d0, d2, d0);
     // Load 1.0 into d2.
     __ vmov(d2, 1.0);
 
-    // Calculate the reciprocal of the square root. 1/sqrt(x) = sqrt(1/x).
-    __ vdiv(d0, d2, d0);
+    // Calculate the reciprocal of the square root.
     __ vsqrt(d0, d0);
+    __ vdiv(d0, d2, d0);
 
     __ b(&allocate_return);
 
@@ -4721,6 +4739,9 @@ void CodeGenerator::GenerateMathPow(ZoneList<Expression*>* args) {
                                  scratch1, scratch2, heap_number_map, s0,
                                  runtime.entry_label(),
                                  AVOID_NANS_AND_INFINITIES);
+    // Convert -0 into +0 by adding +0.
+    __ vmov(d2, 0.0);
+    __ vadd(d0, d2, d0);
     __ vsqrt(d0, d0);
 
     __ bind(&allocate_return);
@@ -4749,7 +4770,7 @@ void CodeGenerator::GenerateMathSqrt(ZoneList<Expression*>* args) {
   ASSERT(args->length() == 1);
   Load(args->at(0));
 
-  if (!Isolate::Current()->cpu_features()->IsSupported(VFP3)) {
+  if (!CpuFeatures::IsSupported(VFP3)) {
     frame_->CallRuntime(Runtime::kMath_sqrt, 1);
     frame_->EmitPush(r0);
   } else {
@@ -5167,11 +5188,11 @@ class DeferredIsStringWrapperSafeForDefaultValueOf : public DeferredCode {
 
     // Set the bit in the map to indicate that it has been checked safe for
     // default valueOf and set true result.
-    __ ldr(scratch1_, FieldMemOperand(map_result_, Map::kBitField2Offset));
+    __ ldrb(scratch1_, FieldMemOperand(map_result_, Map::kBitField2Offset));
     __ orr(scratch1_,
            scratch1_,
            Operand(1 << Map::kStringWrapperSafeForDefaultValueOf));
-    __ str(scratch1_, FieldMemOperand(map_result_, Map::kBitField2Offset));
+    __ strb(scratch1_, FieldMemOperand(map_result_, Map::kBitField2Offset));
     __ mov(map_result_, Operand(1));
     __ jmp(exit_label());
     __ bind(&false_result);
@@ -5338,9 +5359,10 @@ void CodeGenerator::GenerateRandomHeapNumber(
   // Convert 32 random bits in r0 to 0.(32 random bits) in a double
   // by computing:
   // ( 1.(20 0s)(32 random bits) x 2^20 ) - (1.0 x 2^20)).
-  if (Isolate::Current()->cpu_features()->IsSupported(VFP3)) {
-    __ PrepareCallCFunction(0, r1);
-    __ CallCFunction(ExternalReference::random_uint32_function(), 0);
+  if (CpuFeatures::IsSupported(VFP3)) {
+    __ PrepareCallCFunction(1, r0);
+    __ mov(r0, Operand(ExternalReference::isolate_address()));
+    __ CallCFunction(ExternalReference::random_uint32_function(isolate()), 1);
 
     CpuFeatures::Scope scope(VFP3);
     // 0x41300000 is the top half of 1.0 x 2^20 as a double.
@@ -5358,10 +5380,11 @@ void CodeGenerator::GenerateRandomHeapNumber(
     __ vstr(d7, r0, HeapNumber::kValueOffset);
     frame_->EmitPush(r4);
   } else {
+    __ PrepareCallCFunction(2, r0);
     __ mov(r0, Operand(r4));
-    __ PrepareCallCFunction(1, r1);
+    __ mov(r1, Operand(ExternalReference::isolate_address()));
     __ CallCFunction(
-        ExternalReference::fill_heap_number_with_random_function(), 1);
+        ExternalReference::fill_heap_number_with_random_function(isolate()), 2);
     frame_->EmitPush(r0);
   }
 }
@@ -5422,97 +5445,14 @@ void CodeGenerator::GenerateRegExpExec(ZoneList<Expression*>* args) {
 
 
 void CodeGenerator::GenerateRegExpConstructResult(ZoneList<Expression*>* args) {
-  // No stub. This code only occurs a few times in regexp.js.
-  const int kMaxInlineLength = 100;
   ASSERT_EQ(3, args->length());
+
   Load(args->at(0));  // Size of array, smi.
   Load(args->at(1));  // "index" property value.
   Load(args->at(2));  // "input" property value.
-  {
-    VirtualFrame::SpilledScope spilled_scope(frame_);
-    Label slowcase;
-    Label done;
-    __ ldr(r1, MemOperand(sp, kPointerSize * 2));
-    STATIC_ASSERT(kSmiTag == 0);
-    STATIC_ASSERT(kSmiTagSize == 1);
-    __ tst(r1, Operand(kSmiTagMask));
-    __ b(ne, &slowcase);
-    __ cmp(r1, Operand(Smi::FromInt(kMaxInlineLength)));
-    __ b(hi, &slowcase);
-    // Smi-tagging is equivalent to multiplying by 2.
-    // Allocate RegExpResult followed by FixedArray with size in ebx.
-    // JSArray:   [Map][empty properties][Elements][Length-smi][index][input]
-    // Elements:  [Map][Length][..elements..]
-    // Size of JSArray with two in-object properties and the header of a
-    // FixedArray.
-    int objects_size =
-        (JSRegExpResult::kSize + FixedArray::kHeaderSize) / kPointerSize;
-    __ mov(r5, Operand(r1, LSR, kSmiTagSize + kSmiShiftSize));
-    __ add(r2, r5, Operand(objects_size));
-    __ AllocateInNewSpace(
-        r2,  // In: Size, in words.
-        r0,  // Out: Start of allocation (tagged).
-        r3,  // Scratch register.
-        r4,  // Scratch register.
-        &slowcase,
-        static_cast<AllocationFlags>(TAG_OBJECT | SIZE_IN_WORDS));
-    // r0: Start of allocated area, object-tagged.
-    // r1: Number of elements in array, as smi.
-    // r5: Number of elements, untagged.
-
-    // Set JSArray map to global.regexp_result_map().
-    // Set empty properties FixedArray.
-    // Set elements to point to FixedArray allocated right after the JSArray.
-    // Interleave operations for better latency.
-    __ ldr(r2, ContextOperand(cp, Context::GLOBAL_INDEX));
-    __ add(r3, r0, Operand(JSRegExpResult::kSize));
-    __ mov(r4, Operand(FACTORY->empty_fixed_array()));
-    __ ldr(r2, FieldMemOperand(r2, GlobalObject::kGlobalContextOffset));
-    __ str(r3, FieldMemOperand(r0, JSObject::kElementsOffset));
-    __ ldr(r2, ContextOperand(r2, Context::REGEXP_RESULT_MAP_INDEX));
-    __ str(r4, FieldMemOperand(r0, JSObject::kPropertiesOffset));
-    __ str(r2, FieldMemOperand(r0, HeapObject::kMapOffset));
-
-    // Set input, index and length fields from arguments.
-    __ ldm(ia_w, sp, static_cast<RegList>(r2.bit() | r4.bit()));
-    __ str(r1, FieldMemOperand(r0, JSArray::kLengthOffset));
-    __ add(sp, sp, Operand(kPointerSize));
-    __ str(r4, FieldMemOperand(r0, JSRegExpResult::kIndexOffset));
-    __ str(r2, FieldMemOperand(r0, JSRegExpResult::kInputOffset));
-
-    // Fill out the elements FixedArray.
-    // r0: JSArray, tagged.
-    // r3: FixedArray, tagged.
-    // r5: Number of elements in array, untagged.
-
-    // Set map.
-    __ mov(r2, Operand(FACTORY->fixed_array_map()));
-    __ str(r2, FieldMemOperand(r3, HeapObject::kMapOffset));
-    // Set FixedArray length.
-    __ mov(r6, Operand(r5, LSL, kSmiTagSize));
-    __ str(r6, FieldMemOperand(r3, FixedArray::kLengthOffset));
-    // Fill contents of fixed-array with the-hole.
-    __ mov(r2, Operand(FACTORY->the_hole_value()));
-    __ add(r3, r3, Operand(FixedArray::kHeaderSize - kHeapObjectTag));
-    // Fill fixed array elements with hole.
-    // r0: JSArray, tagged.
-    // r2: the hole.
-    // r3: Start of elements in FixedArray.
-    // r5: Number of elements to fill.
-    Label loop;
-    __ tst(r5, Operand(r5));
-    __ bind(&loop);
-    __ b(le, &done);  // Jump if r1 is negative or zero.
-    __ sub(r5, r5, Operand(1), SetCC);
-    __ str(r2, MemOperand(r3, r5, LSL, kPointerSizeLog2));
-    __ jmp(&loop);
-
-    __ bind(&slowcase);
-    __ CallRuntime(Runtime::kRegExpConstructResult, 3);
-
-    __ bind(&done);
-  }
-  frame_->Forget(3);
+  RegExpConstructResultStub stub;
+  frame_->SpillAll();
+  frame_->CallStub(&stub, 3);
   frame_->EmitPush(r0);
 }
 
@@ -5655,11 +5595,11 @@ void CodeGenerator::GenerateSwapElements(ZoneList<Expression*>* args) {
   // Fetch the map and check if array is in fast case.
   // Check that object doesn't require security checks and
   // has no indexed interceptor.
-  __ CompareObjectType(object, tmp1, tmp2, FIRST_JS_OBJECT_TYPE);
-  deferred->Branch(lt);
+  __ CompareObjectType(object, tmp1, tmp2, JS_ARRAY_TYPE);
+  deferred->Branch(ne);
   __ ldrb(tmp2, FieldMemOperand(tmp1, Map::kBitFieldOffset));
   __ tst(tmp2, Operand(KeyedLoadIC::kSlowCaseBitFieldMask));
-  deferred->Branch(nz);
+  deferred->Branch(ne);
 
   // Check the object's elements are in fast case and writable.
   __ ldr(tmp1, FieldMemOperand(object, JSObject::kElementsOffset));
@@ -5676,7 +5616,13 @@ void CodeGenerator::GenerateSwapElements(ZoneList<Expression*>* args) {
   __ mov(tmp2, index1);
   __ orr(tmp2, tmp2, index2);
   __ tst(tmp2, Operand(kSmiTagMask));
-  deferred->Branch(nz);
+  deferred->Branch(ne);
+
+  // Check that both indices are valid.
+  __ ldr(tmp2, FieldMemOperand(object, JSArray::kLengthOffset));
+  __ cmp(tmp2, index1);
+  __ cmp(tmp2, index2, hi);
+  deferred->Branch(ls);
 
   // Bring the offsets into the fixed array in tmp1 into index1 and
   // index2.
@@ -5698,12 +5644,10 @@ void CodeGenerator::GenerateSwapElements(ZoneList<Expression*>* args) {
   // (or them and test against Smi mask.)
 
   __ mov(tmp2, tmp1);
-  RecordWriteStub recordWrite1(tmp1, index1, tmp3);
-  __ CallStub(&recordWrite1);
-
-  RecordWriteStub recordWrite2(tmp2, index2, tmp3);
-  __ CallStub(&recordWrite2);
-
+  __ add(index1, index1, tmp1);
+  __ add(index2, index2, tmp1);
+  __ RecordWriteHelper(tmp1, index1, tmp3);
+  __ RecordWriteHelper(tmp2, index2, tmp3);
   __ bind(&done);
 
   deferred->BindExit();
@@ -5731,8 +5675,9 @@ void CodeGenerator::GenerateCallFunction(ZoneList<Expression*>* args) {
 void CodeGenerator::GenerateMathSin(ZoneList<Expression*>* args) {
   ASSERT_EQ(args->length(), 1);
   Load(args->at(0));
-  if (Isolate::Current()->cpu_features()->IsSupported(VFP3)) {
-    TranscendentalCacheStub stub(TranscendentalCache::SIN);
+  if (CpuFeatures::IsSupported(VFP3)) {
+    TranscendentalCacheStub stub(TranscendentalCache::SIN,
+                                 TranscendentalCacheStub::TAGGED);
     frame_->SpillAllButCopyTOSToR0();
     frame_->CallStub(&stub, 1);
   } else {
@@ -5745,8 +5690,9 @@ void CodeGenerator::GenerateMathSin(ZoneList<Expression*>* args) {
 void CodeGenerator::GenerateMathCos(ZoneList<Expression*>* args) {
   ASSERT_EQ(args->length(), 1);
   Load(args->at(0));
-  if (Isolate::Current()->cpu_features()->IsSupported(VFP3)) {
-    TranscendentalCacheStub stub(TranscendentalCache::COS);
+  if (CpuFeatures::IsSupported(VFP3)) {
+    TranscendentalCacheStub stub(TranscendentalCache::COS,
+                                 TranscendentalCacheStub::TAGGED);
     frame_->SpillAllButCopyTOSToR0();
     frame_->CallStub(&stub, 1);
   } else {
@@ -5759,8 +5705,9 @@ void CodeGenerator::GenerateMathCos(ZoneList<Expression*>* args) {
 void CodeGenerator::GenerateMathLog(ZoneList<Expression*>* args) {
   ASSERT_EQ(args->length(), 1);
   Load(args->at(0));
-  if (Isolate::Current()->cpu_features()->IsSupported(VFP3)) {
-    TranscendentalCacheStub stub(TranscendentalCache::LOG);
+  if (CpuFeatures::IsSupported(VFP3)) {
+    TranscendentalCacheStub stub(TranscendentalCache::LOG,
+                                 TranscendentalCacheStub::TAGGED);
     frame_->SpillAllButCopyTOSToR0();
     frame_->CallStub(&stub, 1);
   } else {
@@ -5921,26 +5868,27 @@ void CodeGenerator::VisitUnaryOperation(UnaryOperation* node) {
     if (property != NULL) {
       Load(property->obj());
       Load(property->key());
-      frame_->InvokeBuiltin(Builtins::DELETE, CALL_JS, 2);
+      frame_->EmitPush(Operand(Smi::FromInt(strict_mode_flag())));
+      frame_->InvokeBuiltin(Builtins::DELETE, CALL_JS, 3);
       frame_->EmitPush(r0);
 
     } else if (variable != NULL) {
+      // Delete of an unqualified identifier is disallowed in strict mode
+      // but "delete this" is.
+      ASSERT(strict_mode_flag() == kNonStrictMode || variable->is_this());
       Slot* slot = variable->AsSlot();
       if (variable->is_global()) {
         LoadGlobal();
         frame_->EmitPush(Operand(variable->name()));
-        frame_->InvokeBuiltin(Builtins::DELETE, CALL_JS, 2);
+        frame_->EmitPush(Operand(Smi::FromInt(kNonStrictMode)));
+        frame_->InvokeBuiltin(Builtins::DELETE, CALL_JS, 3);
         frame_->EmitPush(r0);
 
       } else if (slot != NULL && slot->type() == Slot::LOOKUP) {
-        // lookup the context holding the named variable
+        // Delete from the context holding the named variable.
         frame_->EmitPush(cp);
         frame_->EmitPush(Operand(variable->name()));
-        frame_->CallRuntime(Runtime::kLookupContext, 2);
-        // r0: context
-        frame_->EmitPush(r0);
-        frame_->EmitPush(Operand(variable->name()));
-        frame_->InvokeBuiltin(Builtins::DELETE, CALL_JS, 2);
+        frame_->CallRuntime(Runtime::kDeleteContextSlot, 2);
         frame_->EmitPush(r0);
 
       } else {
@@ -6550,7 +6498,7 @@ void CodeGenerator::VisitCompareOperation(CompareOperation* node) {
     case Token::INSTANCEOF: {
       Load(left);
       Load(right);
-      InstanceofStub stub;
+      InstanceofStub stub(InstanceofStub::kNoFlags);
       frame_->CallStub(&stub, 2);
       // At this point if instanceof succeeded then r0 == 0.
       __ tst(r0, Operand(r0));
@@ -6642,9 +6590,10 @@ void DeferredReferenceGetNamedValue::Generate() {
   Register scratch1 = VirtualFrame::scratch0();
   Register scratch2 = VirtualFrame::scratch1();
   ASSERT(!receiver_.is(scratch1) && !receiver_.is(scratch2));
-  __ DecrementCounter(COUNTERS->named_load_inline(), 1, scratch1, scratch2);
-  __ IncrementCounter(COUNTERS->named_load_inline_miss(), 1,
-      scratch1, scratch2);
+  __ DecrementCounter(masm_->isolate()->counters()->named_load_inline(),
+                      1, scratch1, scratch2);
+  __ IncrementCounter(masm_->isolate()->counters()->named_load_inline_miss(),
+                      1, scratch1, scratch2);
 
   // Ensure receiver in r0 and name in r2 to match load ic calling convention.
   __ Move(r0, receiver_);
@@ -6653,7 +6602,7 @@ void DeferredReferenceGetNamedValue::Generate() {
   // The rest of the instructions in the deferred code must be together.
   { Assembler::BlockConstPoolScope block_const_pool(masm_);
     Handle<Code> ic(Isolate::Current()->builtins()->builtin(
-        Builtins::LoadIC_Initialize));
+        Builtins::kLoadIC_Initialize));
     RelocInfo::Mode mode = is_contextual_
         ? RelocInfo::CODE_TARGET_CONTEXT
         : RelocInfo::CODE_TARGET;
@@ -6715,9 +6664,10 @@ void DeferredReferenceGetKeyedValue::Generate() {
 
   Register scratch1 = VirtualFrame::scratch0();
   Register scratch2 = VirtualFrame::scratch1();
-  __ DecrementCounter(COUNTERS->keyed_load_inline(), 1, scratch1, scratch2);
-  __ IncrementCounter(COUNTERS->keyed_load_inline_miss(),
-      1, scratch1, scratch2);
+  __ DecrementCounter(masm_->isolate()->counters()->keyed_load_inline(),
+                      1, scratch1, scratch2);
+  __ IncrementCounter(masm_->isolate()->counters()->keyed_load_inline_miss(),
+                      1, scratch1, scratch2);
 
   // Ensure key in r0 and receiver in r1 to match keyed load ic calling
   // convention.
@@ -6729,7 +6679,7 @@ void DeferredReferenceGetKeyedValue::Generate() {
   { Assembler::BlockConstPoolScope block_const_pool(masm_);
     // Call keyed load IC. It has the arguments key and receiver in r0 and r1.
     Handle<Code> ic(Isolate::Current()->builtins()->builtin(
-        Builtins::KeyedLoadIC_Initialize));
+        Builtins::kKeyedLoadIC_Initialize));
     __ Call(ic, RelocInfo::CODE_TARGET);
     // The call must be followed by a nop instruction to indicate that the
     // keyed load has been inlined.
@@ -6754,8 +6704,12 @@ class DeferredReferenceSetKeyedValue: public DeferredCode {
  public:
   DeferredReferenceSetKeyedValue(Register value,
                                  Register key,
-                                 Register receiver)
-      : value_(value), key_(key), receiver_(receiver) {
+                                 Register receiver,
+                                 StrictModeFlag strict_mode)
+      : value_(value),
+        key_(key),
+        receiver_(receiver),
+        strict_mode_(strict_mode) {
     set_comment("[ DeferredReferenceSetKeyedValue");
   }
 
@@ -6765,14 +6719,16 @@ class DeferredReferenceSetKeyedValue: public DeferredCode {
   Register value_;
   Register key_;
   Register receiver_;
+  StrictModeFlag strict_mode_;
 };
 
 
 void DeferredReferenceSetKeyedValue::Generate() {
   Register scratch1 = VirtualFrame::scratch0();
   Register scratch2 = VirtualFrame::scratch1();
-  __ DecrementCounter(COUNTERS->keyed_store_inline(), 1, scratch1, scratch2);
-  __ IncrementCounter(COUNTERS->keyed_store_inline_miss(),
+  __ DecrementCounter(masm_->isolate()->counters()->keyed_store_inline(),
+                      1, scratch1, scratch2);
+  __ IncrementCounter(masm_->isolate()->counters()->keyed_store_inline_miss(),
                       1, scratch1, scratch2);
 
   // Ensure value in r0, key in r1 and receiver in r2 to match keyed store ic
@@ -6787,7 +6743,9 @@ void DeferredReferenceSetKeyedValue::Generate() {
     // Call keyed store IC. It has the arguments value, key and receiver in r0,
     // r1 and r2.
     Handle<Code> ic(Isolate::Current()->builtins()->builtin(
-        Builtins::KeyedStoreIC_Initialize));
+        (strict_mode_ == kStrictMode)
+        ? Builtins::kKeyedStoreIC_Initialize_Strict
+        : Builtins::kKeyedStoreIC_Initialize));
     __ Call(ic, RelocInfo::CODE_TARGET);
     // The call must be followed by a nop instruction to indicate that the
     // keyed store has been inlined.
@@ -6805,8 +6763,12 @@ class DeferredReferenceSetNamedValue: public DeferredCode {
  public:
   DeferredReferenceSetNamedValue(Register value,
                                  Register receiver,
-                                 Handle<String> name)
-      : value_(value), receiver_(receiver), name_(name) {
+                                 Handle<String> name,
+                                 StrictModeFlag strict_mode)
+      : value_(value),
+        receiver_(receiver),
+        name_(name),
+        strict_mode_(strict_mode) {
     set_comment("[ DeferredReferenceSetNamedValue");
   }
 
@@ -6816,6 +6778,7 @@ class DeferredReferenceSetNamedValue: public DeferredCode {
   Register value_;
   Register receiver_;
   Handle<String> name_;
+  StrictModeFlag strict_mode_;
 };
 
 
@@ -6836,7 +6799,8 @@ void DeferredReferenceSetNamedValue::Generate() {
     // Call keyed store IC. It has the arguments value, key and receiver in r0,
     // r1 and r2.
     Handle<Code> ic(Isolate::Current()->builtins()->builtin(
-        Builtins::StoreIC_Initialize));
+        (strict_mode_ == kStrictMode) ? Builtins::kStoreIC_Initialize_Strict
+                                      : Builtins::kStoreIC_Initialize));
     __ Call(ic, RelocInfo::CODE_TARGET);
     // The call must be followed by a nop instruction to indicate that the
     // named store has been inlined.
@@ -6882,11 +6846,12 @@ void CodeGenerator::EmitNamedLoad(Handle<String> name, bool is_contextual) {
     // Counter will be decremented in the deferred code. Placed here to avoid
     // having it in the instruction stream below where patching will occur.
     if (is_contextual) {
-      __ IncrementCounter(COUNTERS->named_load_global_inline(), 1,
-                          frame_->scratch0(), frame_->scratch1());
+      __ IncrementCounter(
+          masm_->isolate()->counters()->named_load_global_inline(),
+          1, frame_->scratch0(), frame_->scratch1());
     } else {
-      __ IncrementCounter(COUNTERS->named_load_inline(), 1,
-                          frame_->scratch0(), frame_->scratch1());
+      __ IncrementCounter(masm_->isolate()->counters()->named_load_inline(),
+                          1, frame_->scratch0(), frame_->scratch1());
     }
 
     // The following instructions are the inlined load of an in-object property.
@@ -6918,8 +6883,9 @@ void CodeGenerator::EmitNamedLoad(Handle<String> name, bool is_contextual) {
         }
       }
       if (is_dont_delete) {
-        __ IncrementCounter(COUNTERS->dont_delete_hint_hit(), 1,
-                            frame_->scratch0(), frame_->scratch1());
+        __ IncrementCounter(
+            masm_->isolate()->counters()->dont_delete_hint_hit(),
+            1, frame_->scratch0(), frame_->scratch1());
       }
     }
 
@@ -7013,7 +6979,7 @@ void CodeGenerator::EmitNamedStore(Handle<String> name, bool is_contextual) {
 
   Result result;
   if (is_contextual || scope()->is_global_scope() || loop_nesting() == 0) {
-    frame()->CallStoreIC(name, is_contextual);
+    frame()->CallStoreIC(name, is_contextual, strict_mode_flag());
   } else {
     // Inline the in-object property case.
     JumpTarget slow, done;
@@ -7025,7 +6991,8 @@ void CodeGenerator::EmitNamedStore(Handle<String> name, bool is_contextual) {
     Register receiver = r1;
 
     DeferredReferenceSetNamedValue* deferred =
-        new DeferredReferenceSetNamedValue(value, receiver, name);
+        new DeferredReferenceSetNamedValue(
+          value, receiver, name, strict_mode_flag());
 
     // Check that the receiver is a heap object.
     __ tst(receiver, Operand(kSmiTagMask));
@@ -7077,11 +7044,11 @@ void CodeGenerator::EmitNamedStore(Handle<String> name, bool is_contextual) {
       // Check that this is the first inlined write barrier or that
       // this inlined write barrier has the same size as all the other
       // inlined write barriers.
-      ASSERT((inlined_write_barrier_size_ == -1) ||
-             (inlined_write_barrier_size_ ==
+      ASSERT((Isolate::Current()->inlined_write_barrier_size() == -1) ||
+             (Isolate::Current()->inlined_write_barrier_size() ==
               masm()->InstructionsGeneratedSince(&record_write_start)));
-      inlined_write_barrier_size_ =
-          masm()->InstructionsGeneratedSince(&record_write_start);
+      Isolate::Current()->set_inlined_write_barrier_size(
+          masm()->InstructionsGeneratedSince(&record_write_start));
 
       // Make sure that the expected number of instructions are generated.
       ASSERT_EQ(GetInlinedNamedStoreInstructionsAfterPatch(),
@@ -7103,8 +7070,8 @@ void CodeGenerator::EmitKeyedLoad() {
 
     // Counter will be decremented in the deferred code. Placed here to avoid
     // having it in the instruction stream below where patching will occur.
-    __ IncrementCounter(COUNTERS->keyed_load_inline(), 1,
-                        frame_->scratch0(), frame_->scratch1());
+    __ IncrementCounter(masm_->isolate()->counters()->keyed_load_inline(),
+                        1, frame_->scratch0(), frame_->scratch1());
 
     // Load the key and receiver from the stack.
     bool key_is_known_smi = frame_->KnownSmiAt(0);
@@ -7190,9 +7157,8 @@ void CodeGenerator::EmitKeyedStore(StaticType* key_type,
 
     // Counter will be decremented in the deferred code. Placed here to avoid
     // having it in the instruction stream below where patching will occur.
-    __ IncrementCounter(COUNTERS->keyed_store_inline(), 1,
-                        scratch1, scratch2);
-
+    __ IncrementCounter(masm_->isolate()->counters()->keyed_store_inline(),
+                        1, scratch1, scratch2);
 
 
     // Load the value, key and receiver from the stack.
@@ -7211,7 +7177,8 @@ void CodeGenerator::EmitKeyedStore(StaticType* key_type,
 
     // The deferred code expects value, key and receiver in registers.
     DeferredReferenceSetKeyedValue* deferred =
-        new DeferredReferenceSetKeyedValue(value, key, receiver);
+        new DeferredReferenceSetKeyedValue(
+          value, key, receiver, strict_mode_flag());
 
     // Check that the value is a smi. As this inlined code does not set the
     // write barrier it is only possible to store smi values.
@@ -7241,18 +7208,14 @@ void CodeGenerator::EmitKeyedStore(StaticType* key_type,
     __ CompareObjectType(receiver, scratch1, scratch1, JS_ARRAY_TYPE);
     deferred->Branch(ne);
 
-    // Check that the key is within bounds. Both the key and the length of
-    // the JSArray are smis. Use unsigned comparison to handle negative keys.
-    __ ldr(scratch1, FieldMemOperand(receiver, JSArray::kLengthOffset));
-    __ cmp(scratch1, key);
-    deferred->Branch(ls);  // Unsigned less equal.
-
     // Get the elements array from the receiver.
     __ ldr(scratch1, FieldMemOperand(receiver, JSObject::kElementsOffset));
     if (!value_is_harmless && wb_info != LIKELY_SMI) {
       Label ok;
-      __ and_(scratch2, scratch1, Operand(ExternalReference::new_space_mask()));
-      __ cmp(scratch2, Operand(ExternalReference::new_space_start()));
+      __ and_(scratch2,
+              scratch1,
+              Operand(ExternalReference::new_space_mask(isolate())));
+      __ cmp(scratch2, Operand(ExternalReference::new_space_start(isolate())));
       __ tst(value, Operand(kSmiTagMask), ne);
       deferred->Branch(ne);
 #ifdef DEBUG
@@ -7261,6 +7224,7 @@ void CodeGenerator::EmitKeyedStore(StaticType* key_type,
     }
     // Check that the elements array is not a dictionary.
     __ ldr(scratch2, FieldMemOperand(scratch1, JSObject::kMapOffset));
+
     // The following instructions are the part of the inlined store keyed
     // property code which can be patched. Therefore the exact number of
     // instructions generated need to be fixed, so the constant pool is blocked
@@ -7280,6 +7244,14 @@ void CodeGenerator::EmitKeyedStore(StaticType* key_type,
       __ cmp(scratch2, scratch3);
       deferred->Branch(ne);
 
+      // Check that the key is within bounds.  Both the key and the length of
+      // the JSArray are smis (because the fixed array check above ensures the
+      // elements are in fast case). Use unsigned comparison to handle negative
+      // keys.
+      __ ldr(scratch3, FieldMemOperand(receiver, JSArray::kLengthOffset));
+      __ cmp(scratch3, key);
+      deferred->Branch(ls);  // Unsigned less equal.
+
       // Store the value.
       __ add(scratch1, scratch1,
              Operand(FixedArray::kHeaderSize - kHeapObjectTag));
@@ -7296,7 +7268,7 @@ void CodeGenerator::EmitKeyedStore(StaticType* key_type,
 
     deferred->BindExit();
   } else {
-    frame()->CallKeyedStoreIC();
+    frame()->CallKeyedStoreIC(strict_mode_flag());
   }
 }
 

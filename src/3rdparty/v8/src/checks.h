@@ -30,6 +30,7 @@
 
 #include <string.h>
 
+#include "../include/v8stdint.h"
 extern "C" void V8_Fatal(const char* file, int line, const char* format, ...);
 
 // The FATAL, UNREACHABLE and UNIMPLEMENTED macros are useful during
@@ -231,6 +232,8 @@ static inline void CheckNonEqualsHelper(const char* file,
 
 #define CHECK_GT(a, b) CHECK((a) > (b))
 #define CHECK_GE(a, b) CHECK((a) >= (b))
+#define CHECK_LT(a, b) CHECK((a) < (b))
+#define CHECK_LE(a, b) CHECK((a) <= (b))
 
 
 // This is inspired by the static assertion facility in boost.  This
@@ -268,6 +271,8 @@ bool EnableSlowAsserts();
 #define ASSERT_EQ(v1, v2)    CHECK_EQ(v1, v2)
 #define ASSERT_NE(v1, v2)    CHECK_NE(v1, v2)
 #define ASSERT_GE(v1, v2)    CHECK_GE(v1, v2)
+#define ASSERT_LT(v1, v2)    CHECK_LT(v1, v2)
+#define ASSERT_LE(v1, v2)    CHECK_LE(v1, v2)
 #define SLOW_ASSERT(condition) if (EnableSlowAsserts()) CHECK(condition)
 #else
 #define ASSERT_RESULT(expr)     (expr)
@@ -275,13 +280,15 @@ bool EnableSlowAsserts();
 #define ASSERT_EQ(v1, v2)      ((void) 0)
 #define ASSERT_NE(v1, v2)      ((void) 0)
 #define ASSERT_GE(v1, v2)      ((void) 0)
+#define ASSERT_LT(v1, v2)      ((void) 0)
+#define ASSERT_LE(v1, v2)      ((void) 0)
 #define SLOW_ASSERT(condition) ((void) 0)
 #endif
 // Static asserts has no impact on runtime performance, so they can be
 // safely enabled in release mode. Moreover, the ((void) 0) expression
 // obeys different syntax rules than typedef's, e.g. it can't appear
 // inside class declaration, this leads to inconsistency between debug
-// and release compilation modes behaviour.
+// and release compilation modes behavior.
 #define STATIC_ASSERT(test)  STATIC_CHECK(test)
 
 #define ASSERT_NOT_NULL(p)  ASSERT_NE(NULL, p)

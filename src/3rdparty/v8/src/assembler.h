@@ -35,12 +35,38 @@
 #ifndef V8_ASSEMBLER_H_
 #define V8_ASSEMBLER_H_
 
+#include "gdb-jit.h"
 #include "runtime.h"
 #include "token.h"
-#include "objects.h"
 
 namespace v8 {
 namespace internal {
+
+
+// -----------------------------------------------------------------------------
+// Platform independent assembler base class.
+
+class AssemblerBase: public Malloced {
+ public:
+  explicit AssemblerBase(Isolate* isolate) : isolate_(isolate) {}
+
+  Isolate* isolate() const { return isolate_; }
+
+ private:
+  Isolate* isolate_;
+};
+
+// -----------------------------------------------------------------------------
+// Common double constants.
+
+class DoubleConstant: public AllStatic {
+ public:
+  static const double min_int;
+  static const double one_half;
+  static const double minus_zero;
+  static const double negative_infinity;
+  static const double nan;
+};
 
 
 // -----------------------------------------------------------------------------
@@ -165,13 +191,31 @@ class RelocInfo BASE_EMBEDDED {
   // invalid/uninitialized position value.
   static const int kNoPosition = -1;
 
+  // This string is used to add padding comments to the reloc info in cases
+  // where we are not sure to have enough space for patching in during
+  // lazy deoptimization. This is the case if we have indirect calls for which
+  // we do not normally record relocation info.
+  static const char* kFillerCommentString;
+
+  // The minimum size of a comment is equal to three bytes for the extra tagged
+  // pc + the tag for the data, and kPointerSize for the actual pointer to the
+  // comment.
+  static const int kMinRelocCommentSize = 3 + kPointerSize;
+
+  // The maximum size for a call instruction including pc-jump.
+  static const int kMaxCallSize = 6;
+
+  // The maximum pc delta that will use the short encoding.
+  static const int kMaxSmallPCDelta;
+
   enum Mode {
     // Please note the order is important (see IsCodeTarget, IsGCRelocMode).
     CONSTRUCT_CALL,  // code target that is a call to a JavaScript constructor.
-    CODE_TARGET_CONTEXT,  // Code target used for contextual loads.
+    CODE_TARGET_CONTEXT,  // Code target used for contextual loads and stores.
     DEBUG_BREAK,  // Code target for the debugger statement.
     CODE_TARGET,  // Code target which is not any of the above.
     EMBEDDED_OBJECT,
+    GLOBAL_PROPERTY_CELL,
 
     // Everything after runtime_entry (inclusive) is not GC'ed.
     RUNTIME_ENTRY,
@@ -188,7 +232,7 @@ class RelocInfo BASE_EMBEDDED {
     NUMBER_OF_MODES,  // must be no greater than 14 - see RelocInfoWriter
     NONE,  // never recorded
     LAST_CODE_ENUM = CODE_TARGET,
-    LAST_GCED_ENUM = EMBEDDED_OBJECT
+    LAST_GCED_ENUM = GLOBAL_PROPERTY_CELL
   };
 
 
@@ -253,6 +297,10 @@ class RelocInfo BASE_EMBEDDED {
   INLINE(Handle<Object> target_object_handle(Assembler* origin));
   INLINE(Object** target_object_address());
   INLINE(void set_target_object(Object* target));
+  INLINE(JSGlobalPropertyCell* target_cell());
+  INLINE(Handle<JSGlobalPropertyCell> target_cell_handle());
+  INLINE(void set_target_cell(JSGlobalPropertyCell* cell));
+
 
   // Read the address of the word containing the target_address in an
   // instruction stream.  What this means exactly is architecture-independent.
@@ -305,7 +353,7 @@ class RelocInfo BASE_EMBEDDED {
 #ifdef ENABLE_DISASSEMBLER
   // Printing
   static const char* RelocModeName(Mode rmode);
-  void Print();
+  void Print(FILE* out);
 #endif  // ENABLE_DISASSEMBLER
 #ifdef DEBUG
   // Debugging
@@ -448,104 +496,150 @@ class Debug_Address;
 // addresses when deserializing a heap.
 class ExternalReference BASE_EMBEDDED {
  public:
-  explicit ExternalReference(Builtins::CFunctionId id);
+  // Used in the simulator to support different native api calls.
+  enum Type {
+    // Builtin call.
+    // MaybeObject* f(v8::internal::Arguments).
+    BUILTIN_CALL,  // default
 
-  explicit ExternalReference(ApiFunction* ptr);
+    // Builtin call that returns floating point.
+    // double f(double, double).
+    FP_RETURN_CALL,
 
-  explicit ExternalReference(Builtins::Name name);
+    // Direct call to API function callback.
+    // Handle<Value> f(v8::Arguments&)
+    DIRECT_API_CALL,
 
-  explicit ExternalReference(Runtime::FunctionId id);
+    // Direct call to accessor getter callback.
+    // Handle<value> f(Local<String> property, AccessorInfo& info)
+    DIRECT_GETTER_CALL
+  };
 
-  explicit ExternalReference(const Runtime::Function* f);
+  typedef void* ExternalReferenceRedirector(void* original, Type type);
 
-  // Isolate::Current() as an external reference.
-  static ExternalReference isolate_address();
+  ExternalReference(Builtins::CFunctionId id, Isolate* isolate);
 
-  explicit ExternalReference(const IC_Utility& ic_utility);
+  ExternalReference(ApiFunction* ptr, Type type, Isolate* isolate);
+
+  ExternalReference(Builtins::Name name, Isolate* isolate);
+
+  ExternalReference(Runtime::FunctionId id, Isolate* isolate);
+
+  ExternalReference(const Runtime::Function* f, Isolate* isolate);
+
+  ExternalReference(const IC_Utility& ic_utility, Isolate* isolate);
 
 #ifdef ENABLE_DEBUGGER_SUPPORT
-  explicit ExternalReference(const Debug_Address& debug_address);
+  ExternalReference(const Debug_Address& debug_address, Isolate* isolate);
 #endif
 
   explicit ExternalReference(StatsCounter* counter);
 
-  explicit ExternalReference(Isolate::AddressId id);
+  ExternalReference(Isolate::AddressId id, Isolate* isolate);
 
   explicit ExternalReference(const SCTableReference& table_ref);
+
+  // Isolate::Current() as an external reference.
+  static ExternalReference isolate_address();
 
   // One-of-a-kind references. These references are not part of a general
   // pattern. This means that they have to be added to the
   // ExternalReferenceTable in serialize.cc manually.
 
-  static ExternalReference perform_gc_function();
-  static ExternalReference fill_heap_number_with_random_function();
-  static ExternalReference random_uint32_function();
-  static ExternalReference transcendental_cache_array_address();
-  static ExternalReference delete_handle_scope_extensions();
+  static ExternalReference perform_gc_function(Isolate* isolate);
+  static ExternalReference fill_heap_number_with_random_function(
+      Isolate* isolate);
+  static ExternalReference random_uint32_function(Isolate* isolate);
+  static ExternalReference transcendental_cache_array_address(Isolate* isolate);
+  static ExternalReference delete_handle_scope_extensions(Isolate* isolate);
+
+  // Deoptimization support.
+  static ExternalReference new_deoptimizer_function(Isolate* isolate);
+  static ExternalReference compute_output_frames_function(Isolate* isolate);
+  static ExternalReference global_contexts_list(Isolate* isolate);
 
   // Static data in the keyed lookup cache.
-  static ExternalReference keyed_lookup_cache_keys();
-  static ExternalReference keyed_lookup_cache_field_offsets();
+  static ExternalReference keyed_lookup_cache_keys(Isolate* isolate);
+  static ExternalReference keyed_lookup_cache_field_offsets(Isolate* isolate);
 
   // Static variable Factory::the_hole_value.location()
-  static ExternalReference the_hole_value_location();
+  static ExternalReference the_hole_value_location(Isolate* isolate);
+
+  // Static variable Factory::arguments_marker.location()
+  static ExternalReference arguments_marker_location(Isolate* isolate);
 
   // Static variable Heap::roots_address()
-  static ExternalReference roots_address();
+  static ExternalReference roots_address(Isolate* isolate);
 
   // Static variable StackGuard::address_of_jslimit()
-  static ExternalReference address_of_stack_limit();
+  static ExternalReference address_of_stack_limit(Isolate* isolate);
 
   // Static variable StackGuard::address_of_real_jslimit()
-  static ExternalReference address_of_real_stack_limit();
+  static ExternalReference address_of_real_stack_limit(Isolate* isolate);
 
   // Static variable RegExpStack::limit_address()
-  static ExternalReference address_of_regexp_stack_limit();
+  static ExternalReference address_of_regexp_stack_limit(Isolate* isolate);
 
   // Static variables for RegExp.
-  static ExternalReference address_of_static_offsets_vector();
-  static ExternalReference address_of_regexp_stack_memory_address();
-  static ExternalReference address_of_regexp_stack_memory_size();
+  static ExternalReference address_of_static_offsets_vector(Isolate* isolate);
+  static ExternalReference address_of_regexp_stack_memory_address(
+      Isolate* isolate);
+  static ExternalReference address_of_regexp_stack_memory_size(
+      Isolate* isolate);
 
   // Static variable Heap::NewSpaceStart()
-  static ExternalReference new_space_start();
-  static ExternalReference new_space_mask();
-  static ExternalReference heap_always_allocate_scope_depth();
+  static ExternalReference new_space_start(Isolate* isolate);
+  static ExternalReference new_space_mask(Isolate* isolate);
+  static ExternalReference heap_always_allocate_scope_depth(Isolate* isolate);
 
   // Used for fast allocation in generated code.
-  static ExternalReference new_space_allocation_top_address();
-  static ExternalReference new_space_allocation_limit_address();
+  static ExternalReference new_space_allocation_top_address(Isolate* isolate);
+  static ExternalReference new_space_allocation_limit_address(Isolate* isolate);
 
-  static ExternalReference double_fp_operation(Token::Value operation);
-  static ExternalReference compare_doubles();
+  static ExternalReference double_fp_operation(Token::Value operation,
+                                               Isolate* isolate);
+  static ExternalReference compare_doubles(Isolate* isolate);
+  static ExternalReference power_double_double_function(Isolate* isolate);
+  static ExternalReference power_double_int_function(Isolate* isolate);
 
   static ExternalReference handle_scope_next_address();
   static ExternalReference handle_scope_limit_address();
   static ExternalReference handle_scope_level_address();
 
-  static ExternalReference scheduled_exception_address();
+  static ExternalReference scheduled_exception_address(Isolate* isolate);
+
+  // Static variables containing common double constants.
+  static ExternalReference address_of_min_int();
+  static ExternalReference address_of_one_half();
+  static ExternalReference address_of_minus_zero();
+  static ExternalReference address_of_negative_infinity();
+  static ExternalReference address_of_nan();
+
+  static ExternalReference math_sin_double_function(Isolate* isolate);
+  static ExternalReference math_cos_double_function(Isolate* isolate);
+  static ExternalReference math_log_double_function(Isolate* isolate);
 
   Address address() const {return reinterpret_cast<Address>(address_);}
 
 #ifdef ENABLE_DEBUGGER_SUPPORT
   // Function Debug::Break()
-  static ExternalReference debug_break();
+  static ExternalReference debug_break(Isolate* isolate);
 
   // Used to check if single stepping is enabled in generated code.
-  static ExternalReference debug_step_in_fp_address();
+  static ExternalReference debug_step_in_fp_address(Isolate* isolate);
 #endif
 
 #ifndef V8_INTERPRETED_REGEXP
   // C functions called from RegExp generated code.
 
   // Function NativeRegExpMacroAssembler::CaseInsensitiveCompareUC16()
-  static ExternalReference re_case_insensitive_compare_uc16();
+  static ExternalReference re_case_insensitive_compare_uc16(Isolate* isolate);
 
   // Function RegExpMacroAssembler*::CheckStackGuardState()
-  static ExternalReference re_check_stack_guard_state();
+  static ExternalReference re_check_stack_guard_state(Isolate* isolate);
 
   // Function NativeRegExpMacroAssembler::GrowStack()
-  static ExternalReference re_grow_stack();
+  static ExternalReference re_grow_stack(Isolate* isolate);
 
   // byte NativeRegExpMacroAssembler::word_character_bitmap
   static ExternalReference re_word_character_map();
@@ -557,28 +651,35 @@ class ExternalReference BASE_EMBEDDED {
   static void set_redirector(ExternalReferenceRedirector* redirector) {
     // We can't stack them.
     ASSERT(Isolate::Current()->external_reference_redirector() == NULL);
-    Isolate::Current()->set_external_reference_redirector(redirector);
+    Isolate::Current()->set_external_reference_redirector(
+        reinterpret_cast<ExternalReferenceRedirectorPointer*>(redirector));
   }
 
  private:
   explicit ExternalReference(void* address)
       : address_(address) {}
 
-  static void* Redirect(void* address, bool fp_return = false) {
+  static void* Redirect(Isolate* isolate,
+                        void* address,
+                        Type type = ExternalReference::BUILTIN_CALL) {
     ExternalReferenceRedirector* redirector =
-        Isolate::Current()->external_reference_redirector();
+        reinterpret_cast<ExternalReferenceRedirector*>(
+            isolate->external_reference_redirector());
     if (redirector == NULL) return address;
-    void* answer = (*redirector)(address, fp_return);
+    void* answer = (*redirector)(address, type);
     return answer;
   }
 
-  static void* Redirect(Address address_arg, bool fp_return = false) {
+  static void* Redirect(Isolate* isolate,
+                        Address address_arg,
+                        Type type = ExternalReference::BUILTIN_CALL) {
     ExternalReferenceRedirector* redirector =
-        Isolate::Current()->external_reference_redirector();
+        reinterpret_cast<ExternalReferenceRedirector*>(
+            isolate->external_reference_redirector());
     void* address = reinterpret_cast<void*>(address_arg);
     void* answer = (redirector == NULL) ?
                    address :
-                   (*redirector)(address, fp_return);
+                   (*redirector)(address, type);
     return answer;
   }
 
@@ -606,7 +707,29 @@ struct PositionState {
 class PositionsRecorder BASE_EMBEDDED {
  public:
   explicit PositionsRecorder(Assembler* assembler)
-      : assembler_(assembler) {}
+      : assembler_(assembler) {
+#ifdef ENABLE_GDB_JIT_INTERFACE
+    gdbjit_lineinfo_ = NULL;
+#endif
+  }
+
+#ifdef ENABLE_GDB_JIT_INTERFACE
+  ~PositionsRecorder() {
+    delete gdbjit_lineinfo_;
+  }
+
+  void StartGDBJITLineInfoRecording() {
+    if (FLAG_gdbjit) {
+      gdbjit_lineinfo_ = new GDBJITLineInfo();
+    }
+  }
+
+  GDBJITLineInfo* DetachGDBJITLineInfo() {
+    GDBJITLineInfo* lineinfo = gdbjit_lineinfo_;
+    gdbjit_lineinfo_ = NULL;  // To prevent deallocation in destructor.
+    return lineinfo;
+  }
+#endif
 
   // Set current position to pos.
   void RecordPosition(int pos);
@@ -626,6 +749,9 @@ class PositionsRecorder BASE_EMBEDDED {
  private:
   Assembler* assembler_;
   PositionState state_;
+#ifdef ENABLE_GDB_JIT_INTERFACE
+  GDBJITLineInfo* gdbjit_lineinfo_;
+#endif
 
   friend class PreservePositionScope;
 
@@ -687,6 +813,10 @@ static inline int NumberOfBitsSet(uint32_t x) {
   }
   return num_bits_set;
 }
+
+// Computes pow(x, y) with the special cases in the spec for Math.pow.
+double power_double_int(double x, int y);
+double power_double_double(double x, double y);
 
 } }  // namespace v8::internal
 

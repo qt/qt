@@ -259,11 +259,11 @@ SmartPointer<const char> StringStream::ToCString() const {
 
 
 void StringStream::Log() {
-  LOG(StringEvent("StackDump", buffer_));
+  LOG(ISOLATE, StringEvent("StackDump", buffer_));
 }
 
 
-void StringStream::OutputToStdOut() {
+void StringStream::OutputToFile(FILE* out) {
   // Dump the output to stdout, but make sure to break it up into
   // manageable chunks to avoid losing parts of the output in the OS
   // printing code. This is a problem on Windows in particular; see
@@ -272,10 +272,10 @@ void StringStream::OutputToStdOut() {
   for (unsigned next; (next = position + 2048) < length_; position = next) {
     char save = buffer_[next];
     buffer_[next] = '\0';
-    internal::PrintF("%s", &buffer_[position]);
+    internal::PrintF(out, "%s", &buffer_[position]);
     buffer_[next] = save;
   }
-  internal::PrintF("%s", &buffer_[position]);
+  internal::PrintF(out, "%s", &buffer_[position]);
 }
 
 

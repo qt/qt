@@ -78,7 +78,7 @@ class CustomArguments : public Relocatable {
  public:
   inline CustomArguments(Isolate* isolate,
                          Object* data,
-                         JSObject* self,
+                         Object* self,
                          JSObject* holder) : Relocatable(isolate) {
     values_[2] = self;
     values_[1] = holder;
@@ -99,8 +99,17 @@ class CustomArguments : public Relocatable {
   Object* values_[3];
 };
 
-#define RUNTIME_CALLING_CONVENTION Arguments args, Isolate* isolate
-#define RUNTIME_GET_ISOLATE ASSERT(isolate == Isolate::Current())
+
+#define DECLARE_RUNTIME_FUNCTION(Type, Name)    \
+Type Name(Arguments args, Isolate* isolate)
+
+
+#define RUNTIME_FUNCTION(Type, Name)            \
+Type Name(Arguments args, Isolate* isolate)
+
+
+#define RUNTIME_ARGUMENTS(isolate, args) args, isolate
+
 
 } }  // namespace v8::internal
 

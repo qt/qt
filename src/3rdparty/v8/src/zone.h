@@ -1,4 +1,4 @@
-// Copyright 2006-2008 the V8 project authors. All rights reserved.
+// Copyright 2011 the V8 project authors. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -72,6 +72,8 @@ class Zone {
 
   inline void adjust_segment_bytes_allocated(int delta);
 
+  static unsigned allocation_size_;
+
  private:
   friend class Isolate;
   friend class ZoneScope;
@@ -131,6 +133,7 @@ class ZoneObject {
  public:
   // Allocate a new ZoneObject of 'size' bytes in the Zone.
   inline void* operator new(size_t size);
+  inline void* operator new(size_t size, Zone* zone);
 
   // Ideally, the delete operator should be private instead of
   // public, but unfortunately the compiler sometimes synthesizes
@@ -177,19 +180,17 @@ class ZoneList: public List<T, ZoneListAllocationPolicy> {
   // always zero. The capacity must be non-negative.
   explicit ZoneList(int capacity)
       : List<T, ZoneListAllocationPolicy>(capacity) { }
+
+  // Construct a new ZoneList by copying the elements of the given ZoneList.
+  explicit ZoneList(const ZoneList<T>& other)
+      : List<T, ZoneListAllocationPolicy>(other.length()) {
+    AddAll(other);
+  }
 };
 
 
-// A zone splay tree.  The config type parameter encapsulates the
-// different configurations of a concrete splay tree (see splay-tree.h).
-// The tree itself and all its elements are allocated in the Zone.
-template <typename Config>
-class ZoneSplayTree: public SplayTree<Config, ZoneListAllocationPolicy> {
- public:
-  ZoneSplayTree()
-      : SplayTree<Config, ZoneListAllocationPolicy>() {}
-  ~ZoneSplayTree();
-};
+// Introduce a convenience type for zone lists of map handles.
+typedef ZoneList<Handle<Map> > ZoneMapList;
 
 
 // ZoneScopes keep track of the current parsing and compilation
@@ -197,6 +198,7 @@ class ZoneSplayTree: public SplayTree<Config, ZoneListAllocationPolicy> {
 // outer-most scope.
 class ZoneScope BASE_EMBEDDED {
  public:
+  // TODO(isolates): pass isolate pointer here.
   inline explicit ZoneScope(ZoneScopeMode mode);
 
   virtual ~ZoneScope();
@@ -214,6 +216,18 @@ class ZoneScope BASE_EMBEDDED {
  private:
   Isolate* isolate_;
   ZoneScopeMode mode_;
+};
+
+
+// A zone splay tree.  The config type parameter encapsulates the
+// different configurations of a concrete splay tree (see splay-tree.h).
+// The tree itself and all its elements are allocated in the Zone.
+template <typename Config>
+class ZoneSplayTree: public SplayTree<Config, ZoneListAllocationPolicy> {
+ public:
+  ZoneSplayTree()
+      : SplayTree<Config, ZoneListAllocationPolicy>() {}
+  ~ZoneSplayTree();
 };
 
 

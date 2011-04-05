@@ -39,6 +39,7 @@
 #include "runtime.h"
 #include "string-search.h"
 #include "stub-cache.h"
+#include "vm-state-inl.h"
 
 namespace v8 {
 namespace internal {
@@ -131,14 +132,14 @@ Address HandleScope::current_limit_address() {
 
 Handle<FixedArray> AddKeysFromJSArray(Handle<FixedArray> content,
                                       Handle<JSArray> array) {
-  CALL_HEAP_FUNCTION(content->GetHeap()->isolate(),
+  CALL_HEAP_FUNCTION(content->GetIsolate(),
                      content->AddKeysFromJSArray(*array), FixedArray);
 }
 
 
 Handle<FixedArray> UnionOfKeys(Handle<FixedArray> first,
                                Handle<FixedArray> second) {
-  CALL_HEAP_FUNCTION(first->GetHeap()->isolate(),
+  CALL_HEAP_FUNCTION(first->GetIsolate(),
                      first->UnionOfKeys(*second), FixedArray);
 }
 
@@ -147,7 +148,7 @@ Handle<JSGlobalProxy> ReinitializeJSGlobalProxy(
     Handle<JSFunction> constructor,
     Handle<JSGlobalProxy> global) {
   CALL_HEAP_FUNCTION(
-      constructor->GetHeap()->isolate(),
+      constructor->GetIsolate(),
       constructor->GetHeap()->ReinitializeJSGlobalProxy(*constructor, *global),
       JSGlobalProxy);
 }
@@ -173,7 +174,7 @@ void SetExpectedNofProperties(Handle<JSFunction> func, int nof) {
 
 
 void SetPrototypeProperty(Handle<JSFunction> func, Handle<JSObject> value) {
-  CALL_HEAP_FUNCTION_VOID(func->GetHeap()->isolate(),
+  CALL_HEAP_FUNCTION_VOID(func->GetIsolate(),
                           func->SetPrototype(*value));
 }
 
@@ -206,7 +207,7 @@ void SetExpectedNofPropertiesFromEstimate(Handle<SharedFunctionInfo> shared,
 void NormalizeProperties(Handle<JSObject> object,
                          PropertyNormalizationMode mode,
                          int expected_additional_properties) {
-  CALL_HEAP_FUNCTION_VOID(object->GetHeap()->isolate(),
+  CALL_HEAP_FUNCTION_VOID(object->GetIsolate(),
                           object->NormalizeProperties(
                               mode,
                               expected_additional_properties));
@@ -214,7 +215,7 @@ void NormalizeProperties(Handle<JSObject> object,
 
 
 void NormalizeElements(Handle<JSObject> object) {
-  CALL_HEAP_FUNCTION_VOID(object->GetHeap()->isolate(),
+  CALL_HEAP_FUNCTION_VOID(object->GetIsolate(),
                           object->NormalizeElements());
 }
 
@@ -222,7 +223,7 @@ void NormalizeElements(Handle<JSObject> object) {
 void TransformToFastProperties(Handle<JSObject> object,
                                int unused_property_fields) {
   CALL_HEAP_FUNCTION_VOID(
-      object->GetHeap()->isolate(),
+      object->GetIsolate(),
       object->TransformToFastProperties(unused_property_fields));
 }
 
@@ -249,7 +250,7 @@ Handle<String> FlattenGetString(Handle<String> string) {
 Handle<Object> SetPrototype(Handle<JSFunction> function,
                             Handle<Object> prototype) {
   ASSERT(function->should_have_prototype());
-  CALL_HEAP_FUNCTION(function->GetHeap()->isolate(),
+  CALL_HEAP_FUNCTION(function->GetIsolate(),
                      Accessors::FunctionSetPrototype(*function,
                                                      *prototype,
                                                      NULL),
@@ -260,20 +261,24 @@ Handle<Object> SetPrototype(Handle<JSFunction> function,
 Handle<Object> SetProperty(Handle<JSObject> object,
                            Handle<String> key,
                            Handle<Object> value,
-                           PropertyAttributes attributes) {
-  CALL_HEAP_FUNCTION(object->GetHeap()->isolate(),
-                     object->SetProperty(*key, *value, attributes), Object);
+                           PropertyAttributes attributes,
+                           StrictModeFlag strict_mode) {
+  CALL_HEAP_FUNCTION(object->GetIsolate(),
+                     object->SetProperty(*key, *value, attributes, strict_mode),
+                     Object);
 }
 
 
 Handle<Object> SetProperty(Handle<Object> object,
                            Handle<Object> key,
                            Handle<Object> value,
-                           PropertyAttributes attributes) {
+                           PropertyAttributes attributes,
+                           StrictModeFlag strict_mode) {
   Isolate* isolate = Isolate::Current();
   CALL_HEAP_FUNCTION(
       isolate,
-      Runtime::SetObjectProperty(isolate, object, key, value, attributes),
+      Runtime::SetObjectProperty(
+          isolate, object, key, value, attributes, strict_mode),
       Object);
 }
 
@@ -285,7 +290,8 @@ Handle<Object> ForceSetProperty(Handle<JSObject> object,
   Isolate* isolate = object->GetIsolate();
   CALL_HEAP_FUNCTION(
       isolate,
-      Runtime::ForceSetObjectProperty(isolate, object, key, value, attributes),
+      Runtime::ForceSetObjectProperty(
+          isolate, object, key, value, attributes),
       Object);
 }
 
@@ -309,26 +315,40 @@ Handle<Object> ForceDeleteProperty(Handle<JSObject> object,
 }
 
 
-Handle<Object> IgnoreAttributesAndSetLocalProperty(
+Handle<Object> SetLocalPropertyIgnoreAttributes(
     Handle<JSObject> object,
     Handle<String> key,
     Handle<Object> value,
     PropertyAttributes attributes) {
   CALL_HEAP_FUNCTION(
-      object->GetIsolate(),
-      object->IgnoreAttributesAndSetLocalProperty(*key, *value, attributes),
-      Object);
+    object->GetIsolate(),
+    object->SetLocalPropertyIgnoreAttributes(*key, *value, attributes),
+    Object);
+}
+
+
+void SetLocalPropertyNoThrow(Handle<JSObject> object,
+                             Handle<String> key,
+                             Handle<Object> value,
+                             PropertyAttributes attributes) {
+  Isolate* isolate = object->GetIsolate();
+  ASSERT(!isolate->has_pending_exception());
+  CHECK(!SetLocalPropertyIgnoreAttributes(
+        object, key, value, attributes).is_null());
+  CHECK(!isolate->has_pending_exception());
 }
 
 
 Handle<Object> SetPropertyWithInterceptor(Handle<JSObject> object,
                                           Handle<String> key,
                                           Handle<Object> value,
-                                          PropertyAttributes attributes) {
+                                          PropertyAttributes attributes,
+                                          StrictModeFlag strict_mode) {
   CALL_HEAP_FUNCTION(object->GetIsolate(),
                      object->SetPropertyWithInterceptor(*key,
                                                         *value,
-                                                        attributes),
+                                                        attributes,
+                                                        strict_mode),
                      Object);
 }
 
@@ -382,12 +402,17 @@ Handle<Object> SetPrototype(Handle<JSObject> obj, Handle<Object> value) {
 }
 
 
+Handle<Object> PreventExtensions(Handle<JSObject> object) {
+  CALL_HEAP_FUNCTION(object->GetIsolate(), object->PreventExtensions(), Object);
+}
+
+
 Handle<Object> GetHiddenProperties(Handle<JSObject> obj,
                                    bool create_if_needed) {
   Isolate* isolate = obj->GetIsolate();
   Object* holder = obj->BypassGlobalProxy();
   if (holder->IsUndefined()) return isolate->factory()->undefined_value();
-  obj = Handle<JSObject>(JSObject::cast(holder));
+  obj = Handle<JSObject>(JSObject::cast(holder), isolate);
 
   if (obj->HasFastProperties()) {
     // If the object has fast properties, check whether the first slot
@@ -399,7 +424,8 @@ Handle<Object> GetHiddenProperties(Handle<JSObject> obj,
         (descriptors->GetKey(0) == isolate->heap()->hidden_symbol()) &&
         descriptors->IsProperty(0)) {
       ASSERT(descriptors->GetType(0) == FIELD);
-      return Handle<Object>(obj->FastPropertyAt(descriptors->GetFieldIndex(0)));
+      return Handle<Object>(obj->FastPropertyAt(descriptors->GetFieldIndex(0)),
+                            isolate);
     }
   }
 
@@ -457,8 +483,9 @@ Handle<String> SubString(Handle<String> str,
 
 Handle<Object> SetElement(Handle<JSObject> object,
                           uint32_t index,
-                          Handle<Object> value) {
-  if (object->HasPixelElements() || object->HasExternalArrayElements()) {
+                          Handle<Object> value,
+                          StrictModeFlag strict_mode) {
+  if (object->HasExternalArrayElements()) {
     if (!value->IsSmi() && !value->IsHeapNumber() && !value->IsUndefined()) {
       bool has_exception;
       Handle<Object> number = Execution::ToNumber(value, &has_exception);
@@ -467,7 +494,18 @@ Handle<Object> SetElement(Handle<JSObject> object,
     }
   }
   CALL_HEAP_FUNCTION(object->GetIsolate(),
-                     object->SetElement(index, *value), Object);
+                     object->SetElement(index, *value, strict_mode), Object);
+}
+
+
+Handle<Object> SetOwnElement(Handle<JSObject> object,
+                             uint32_t index,
+                             Handle<Object> value,
+                             StrictModeFlag strict_mode) {
+  ASSERT(!object->HasExternalArrayElements());
+  CALL_HEAP_FUNCTION(object->GetIsolate(),
+                     object->SetElement(index, *value, strict_mode, false),
+                     Object);
 }
 
 
@@ -500,19 +538,19 @@ static void ClearWrapperCache(Persistent<v8::Value> handle, void*) {
   Proxy* proxy = Script::cast(wrapper->value())->wrapper();
   ASSERT(proxy->proxy() == reinterpret_cast<Address>(cache.location()));
   proxy->set_proxy(0);
-  Isolate::Current()->global_handles()->Destroy(cache.location());
-  COUNTERS->script_wrappers()->Decrement();
+  Isolate* isolate = Isolate::Current();
+  isolate->global_handles()->Destroy(cache.location());
+  isolate->counters()->script_wrappers()->Decrement();
 }
 
 
 Handle<JSValue> GetScriptWrapper(Handle<Script> script) {
-  Isolate* isolate = Isolate::Current();
   if (script->wrapper()->proxy() != NULL) {
     // Return the script wrapper directly from the cache.
     return Handle<JSValue>(
         reinterpret_cast<JSValue**>(script->wrapper()->proxy()));
   }
-
+  Isolate* isolate = Isolate::Current();
   // Construct a new script wrapper.
   isolate->counters()->script_wrappers()->Increment();
   Handle<JSFunction> constructor = isolate->script_function();
@@ -536,21 +574,22 @@ Handle<JSValue> GetScriptWrapper(Handle<Script> script) {
 void InitScriptLineEnds(Handle<Script> script) {
   if (!script->line_ends()->IsUndefined()) return;
 
+  Isolate* isolate = script->GetIsolate();
+
   if (!script->source()->IsString()) {
     ASSERT(script->source()->IsUndefined());
-    Handle<FixedArray> empty =
-        script->GetIsolate()->factory()->NewFixedArray(0);
+    Handle<FixedArray> empty = isolate->factory()->NewFixedArray(0);
     script->set_line_ends(*empty);
     ASSERT(script->line_ends()->IsFixedArray());
     return;
   }
 
-  Handle<String> src(String::cast(script->source()));
+  Handle<String> src(String::cast(script->source()), isolate);
 
   Handle<FixedArray> array = CalculateLineEnds(src, true);
 
-  if (*array != HEAP->empty_fixed_array()) {
-    array->set_map(HEAP->fixed_cow_array_map());
+  if (*array != isolate->heap()->empty_fixed_array()) {
+    array->set_map(isolate->heap()->fixed_cow_array_map());
   }
 
   script->set_line_ends(*array);
@@ -589,9 +628,9 @@ Handle<FixedArray> CalculateLineEnds(Handle<String> src,
   // length of (unpacked) code.
   int line_count_estimate = src->length() >> 4;
   List<int> line_ends(line_count_estimate);
+  Isolate* isolate = src->GetIsolate();
   {
     AssertNoAllocation no_heap_allocation;  // ensure vectors stay valid.
-    Isolate* isolate = src->GetIsolate();
     // Dispatch on type of strings.
     if (src->IsAsciiRepresentation()) {
       CalculateLineEnds(isolate,
@@ -606,7 +645,7 @@ Handle<FixedArray> CalculateLineEnds(Handle<String> src,
     }
   }
   int line_count = line_ends.length();
-  Handle<FixedArray> array = FACTORY->NewFixedArray(line_count);
+  Handle<FixedArray> array = isolate->factory()->NewFixedArray(line_count);
   for (int i = 0; i < line_count; i++) {
     array->set(i, Smi::FromInt(line_ends[i]));
   }
@@ -680,7 +719,7 @@ v8::Handle<v8::Array> GetKeysForNamedInterceptor(Handle<JSObject> receiver,
   if (!interceptor->enumerator()->IsUndefined()) {
     v8::NamedPropertyEnumerator enum_fun =
         v8::ToCData<v8::NamedPropertyEnumerator>(interceptor->enumerator());
-    LOG(ApiObjectAccess("interceptor-named-enum", *object));
+    LOG(isolate, ApiObjectAccess("interceptor-named-enum", *object));
     {
       // Leaving JavaScript.
       VMState state(isolate, EXTERNAL);
@@ -702,7 +741,7 @@ v8::Handle<v8::Array> GetKeysForIndexedInterceptor(Handle<JSObject> receiver,
   if (!interceptor->enumerator()->IsUndefined()) {
     v8::IndexedPropertyEnumerator enum_fun =
         v8::ToCData<v8::IndexedPropertyEnumerator>(interceptor->enumerator());
-    LOG(ApiObjectAccess("interceptor-indexed-enum", *object));
+    LOG(isolate, ApiObjectAccess("interceptor-indexed-enum", *object));
     {
       // Leaving JavaScript.
       VMState state(isolate, EXTERNAL);
@@ -728,18 +767,18 @@ Handle<FixedArray> GetKeysInFixedArrayFor(Handle<JSObject> object,
   USE(ContainsOnlyValidKeys);
   Isolate* isolate = object->GetIsolate();
   Handle<FixedArray> content = isolate->factory()->empty_fixed_array();
-  Handle<JSObject> arguments_boilerplate =
-      Handle<JSObject>(
-          isolate->context()->global_context()->arguments_boilerplate());
-  Handle<JSFunction> arguments_function =
-      Handle<JSFunction>(
-          JSFunction::cast(arguments_boilerplate->map()->constructor()));
+  Handle<JSObject> arguments_boilerplate = Handle<JSObject>(
+      isolate->context()->global_context()->arguments_boilerplate(),
+      isolate);
+  Handle<JSFunction> arguments_function = Handle<JSFunction>(
+      JSFunction::cast(arguments_boilerplate->map()->constructor()),
+      isolate);
 
   // Only collect keys if access is permitted.
   for (Handle<Object> p = object;
        *p != isolate->heap()->null_value();
-       p = Handle<Object>(p->GetPrototype())) {
-    Handle<JSObject> current(JSObject::cast(*p));
+       p = Handle<Object>(p->GetPrototype(), isolate)) {
+    Handle<JSObject> current(JSObject::cast(*p), isolate);
 
     // Check access rights if required.
     if (current->IsAccessCheckNeeded() &&
@@ -822,14 +861,15 @@ Handle<FixedArray> GetEnumPropertyKeys(Handle<JSObject> object,
     if (object->map()->instance_descriptors()->HasEnumCache()) {
       isolate->counters()->enum_cache_hits()->Increment();
       DescriptorArray* desc = object->map()->instance_descriptors();
-      return Handle<FixedArray>(FixedArray::cast(desc->GetEnumCache()));
+      return Handle<FixedArray>(FixedArray::cast(desc->GetEnumCache()),
+                                isolate);
     }
     isolate->counters()->enum_cache_misses()->Increment();
     int num_enum = object->NumberOfEnumProperties();
     Handle<FixedArray> storage = isolate->factory()->NewFixedArray(num_enum);
     Handle<FixedArray> sort_array = isolate->factory()->NewFixedArray(num_enum);
     Handle<DescriptorArray> descs =
-        Handle<DescriptorArray>(object->map()->instance_descriptors());
+        Handle<DescriptorArray>(object->map()->instance_descriptors(), isolate);
     for (int i = 0; i < descs->number_of_descriptors(); i++) {
       if (descs->IsProperty(i) && !descs->IsDontEnum(i)) {
         (*storage)->set(index, descs->GetKey(i));
@@ -867,11 +907,12 @@ bool EnsureCompiled(Handle<SharedFunctionInfo> shared,
 static bool CompileLazyHelper(CompilationInfo* info,
                               ClearExceptionFlag flag) {
   // Compile the source information to a code object.
-  ASSERT(!info->shared_info()->is_compiled());
+  ASSERT(info->IsOptimizing() || !info->shared_info()->is_compiled());
+  ASSERT(!info->isolate()->has_pending_exception());
   bool result = Compiler::CompileLazy(info);
   ASSERT(result != Isolate::Current()->has_pending_exception());
   if (!result && flag == CLEAR_EXCEPTION) {
-    Isolate::Current()->clear_pending_exception();
+    info->isolate()->clear_pending_exception();
   }
   return result;
 }
@@ -884,68 +925,41 @@ bool CompileLazyShared(Handle<SharedFunctionInfo> shared,
 }
 
 
-bool CompileLazy(Handle<JSFunction> function,
-                 ClearExceptionFlag flag) {
+static bool CompileLazyFunction(Handle<JSFunction> function,
+                                ClearExceptionFlag flag,
+                                InLoopFlag in_loop_flag) {
+  bool result = true;
   if (function->shared()->is_compiled()) {
-    function->set_code(function->shared()->code());
-    PROFILE(FunctionCreateEvent(*function));
+    function->ReplaceCode(function->shared()->code());
     function->shared()->set_code_age(0);
-    return true;
   } else {
     CompilationInfo info(function);
-    bool result = CompileLazyHelper(&info, flag);
+    if (in_loop_flag == IN_LOOP) info.MarkAsInLoop();
+    result = CompileLazyHelper(&info, flag);
     ASSERT(!result || function->is_compiled());
-    PROFILE(FunctionCreateEvent(*function));
-    return result;
   }
+  return result;
+}
+
+
+bool CompileLazy(Handle<JSFunction> function,
+                 ClearExceptionFlag flag) {
+  return CompileLazyFunction(function, flag, NOT_IN_LOOP);
 }
 
 
 bool CompileLazyInLoop(Handle<JSFunction> function,
                        ClearExceptionFlag flag) {
-  if (function->shared()->is_compiled()) {
-    function->set_code(function->shared()->code());
-    PROFILE(FunctionCreateEvent(*function));
-    function->shared()->set_code_age(0);
-    return true;
-  } else {
-    CompilationInfo info(function);
-    info.MarkAsInLoop();
-    bool result = CompileLazyHelper(&info, flag);
-    ASSERT(!result || function->is_compiled());
-    PROFILE(FunctionCreateEvent(*function));
-    return result;
-  }
+  return CompileLazyFunction(function, flag, IN_LOOP);
 }
 
 
-OptimizedObjectForAddingMultipleProperties::
-OptimizedObjectForAddingMultipleProperties(Handle<JSObject> object,
-                                           int expected_additional_properties,
-                                           bool condition) {
-  object_ = object;
-  if (condition && object_->HasFastProperties()) {
-    // Normalize the properties of object to avoid n^2 behavior
-    // when extending the object multiple properties. Indicate the number of
-    // properties to be added.
-    unused_property_fields_ = object->map()->unused_property_fields();
-    NormalizeProperties(object_,
-                        KEEP_INOBJECT_PROPERTIES,
-                        expected_additional_properties);
-    has_been_transformed_ = true;
-
-  } else {
-    has_been_transformed_ = false;
-  }
-}
-
-
-OptimizedObjectForAddingMultipleProperties::
-~OptimizedObjectForAddingMultipleProperties() {
-  // Reoptimize the object to allow fast property access.
-  if (has_been_transformed_) {
-    TransformToFastProperties(object_, unused_property_fields_);
-  }
+bool CompileOptimized(Handle<JSFunction> function,
+                      int osr_ast_id,
+                      ClearExceptionFlag flag) {
+  CompilationInfo info(function);
+  info.SetOptimizing(osr_ast_id);
+  return CompileLazyHelper(&info, flag);
 }
 
 } }  // namespace v8::internal

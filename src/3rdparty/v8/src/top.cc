@@ -29,16 +29,21 @@
 
 #include "api.h"
 #include "bootstrapper.h"
+#include "compiler.h"
 #include "debug.h"
 #include "execution.h"
 #include "messages.h"
 #include "platform.h"
 #include "simulator.h"
 #include "string-stream.h"
+#include "vm-state-inl.h"
+
+
+// TODO(isolates): move to isolate.cc. This stuff is kept here to
+// simplify merging.
 
 namespace v8 {
 namespace internal {
-
 
 v8::TryCatch* ThreadLocalTop::TryCatchHandler() {
   return TRY_CATCH_FROM_ADDRESS(try_catch_handler_address());
@@ -50,16 +55,17 @@ void ThreadLocalTop::Initialize() {
   handler_ = 0;
 #ifdef USE_SIMULATOR
 #ifdef V8_TARGET_ARCH_ARM
-  simulator_ = assembler::arm::Simulator::current(Isolate::Current());
+  simulator_ = Simulator::current(Isolate::Current());
 #elif V8_TARGET_ARCH_MIPS
-  simulator_ = assembler::mips::Simulator::current(Isolate::Current());
+  simulator_ = Simulator::current(Isolate::Current());
 #endif
 #endif
 #ifdef ENABLE_LOGGING_AND_PROFILING
-  js_entry_sp_ = 0;
+  js_entry_sp_ = NULL;
+  external_callback_ = NULL;
 #endif
 #ifdef ENABLE_VMSTATE_TRACKING
-  current_vm_state_ = NULL;
+  current_vm_state_ = EXTERNAL;
 #endif
   try_catch_handler_address_ = NULL;
   context_ = NULL;
@@ -85,13 +91,13 @@ char* Isolate::Iterate(ObjectVisitor* v, char* thread_storage) {
 
 
 void Isolate::IterateThread(ThreadVisitor* v) {
-  v->VisitThread(thread_local_top());
+  v->VisitThread(this, thread_local_top());
 }
 
 
 void Isolate::IterateThread(ThreadVisitor* v, char* t) {
   ThreadLocalTop* thread = reinterpret_cast<ThreadLocalTop*>(t);
-  v->VisitThread(thread);
+  v->VisitThread(this, thread);
 }
 
 
@@ -121,7 +127,7 @@ void Isolate::Iterate(ObjectVisitor* v, ThreadLocalTop* thread) {
   }
 
   // Iterate over pointers on native execution stack.
-  for (StackFrameIterator it(thread); !it.done(); it.Advance()) {
+  for (StackFrameIterator it(this, thread); !it.done(); it.Advance()) {
     it.frame()->Iterate(v);
   }
 }
@@ -188,104 +194,102 @@ Handle<JSArray> Isolate::CaptureCurrentStackTrace(
   int limit = Max(frame_limit, 0);
   Handle<JSArray> stack_trace = factory()->NewJSArray(frame_limit);
 
-  Handle<String> column_key =  factory()->LookupAsciiSymbol("column");
-  Handle<String> line_key =  factory()->LookupAsciiSymbol("lineNumber");
-  Handle<String> script_key =  factory()->LookupAsciiSymbol("scriptName");
-#ifdef QT_BUILD_SCRIPT_LIB
-  Handle<String> script_id_key =  factory()->LookupAsciiSymbol("scriptId");
-#endif
+  Handle<String> column_key = factory()->LookupAsciiSymbol("column");
+  Handle<String> line_key = factory()->LookupAsciiSymbol("lineNumber");
+  Handle<String> script_key = factory()->LookupAsciiSymbol("scriptName");
   Handle<String> name_or_source_url_key =
       factory()->LookupAsciiSymbol("nameOrSourceURL");
   Handle<String> script_name_or_source_url_key =
       factory()->LookupAsciiSymbol("scriptNameOrSourceURL");
-  Handle<String> function_key =  factory()->LookupAsciiSymbol("functionName");
-  Handle<String> eval_key =  factory()->LookupAsciiSymbol("isEval");
+  Handle<String> function_key = factory()->LookupAsciiSymbol("functionName");
+  Handle<String> eval_key = factory()->LookupAsciiSymbol("isEval");
   Handle<String> constructor_key =
       factory()->LookupAsciiSymbol("isConstructor");
 
-  StackTraceFrameIterator it;
+  StackTraceFrameIterator it(this);
   int frames_seen = 0;
   while (!it.done() && (frames_seen < limit)) {
-    // Create a JSObject to hold the information for the StackFrame.
-    Handle<JSObject> stackFrame = factory()->NewJSObject(object_function());
-
     JavaScriptFrame* frame = it.frame();
-    Handle<JSFunction> fun(JSFunction::cast(frame->function()));
-    Handle<Script> script(Script::cast(fun->shared()->script()));
+    // Set initial size to the maximum inlining level + 1 for the outermost
+    // function.
+    List<FrameSummary> frames(Compiler::kMaxInliningLevels + 1);
+    frame->Summarize(&frames);
+    for (int i = frames.length() - 1; i >= 0 && frames_seen < limit; i--) {
+      // Create a JSObject to hold the information for the StackFrame.
+      Handle<JSObject> stackFrame = factory()->NewJSObject(object_function());
 
-    if (options & StackTrace::kLineNumber) {
-      int script_line_offset = script->line_offset()->value();
-      int position = frame->LookupCode(this)->SourcePosition(frame->pc());
-      int line_number = GetScriptLineNumber(script, position);
-      // line_number is already shifted by the script_line_offset.
-      int relative_line_number = line_number - script_line_offset;
-      if (options & StackTrace::kColumnOffset && relative_line_number >= 0) {
-        Handle<FixedArray> line_ends(FixedArray::cast(script->line_ends()));
-        int start = (relative_line_number == 0) ? 0 :
-            Smi::cast(line_ends->get(relative_line_number - 1))->value() + 1;
-        int column_offset = position - start;
-        if (relative_line_number == 0) {
-          // For the case where the code is on the same line as the script tag.
-          column_offset += script->column_offset()->value();
+      Handle<JSFunction> fun = frames[i].function();
+      Handle<Script> script(Script::cast(fun->shared()->script()));
+
+      if (options & StackTrace::kLineNumber) {
+        int script_line_offset = script->line_offset()->value();
+        int position = frames[i].code()->SourcePosition(frames[i].pc());
+        int line_number = GetScriptLineNumber(script, position);
+        // line_number is already shifted by the script_line_offset.
+        int relative_line_number = line_number - script_line_offset;
+        if (options & StackTrace::kColumnOffset && relative_line_number >= 0) {
+          Handle<FixedArray> line_ends(FixedArray::cast(script->line_ends()));
+          int start = (relative_line_number == 0) ? 0 :
+              Smi::cast(line_ends->get(relative_line_number - 1))->value() + 1;
+          int column_offset = position - start;
+          if (relative_line_number == 0) {
+            // For the case where the code is on the same line as the script
+            // tag.
+            column_offset += script->column_offset()->value();
+          }
+          SetLocalPropertyNoThrow(stackFrame, column_key,
+                                  Handle<Smi>(Smi::FromInt(column_offset + 1)));
         }
-        SetProperty(stackFrame, column_key,
-                    Handle<Smi>(Smi::FromInt(column_offset + 1)), NONE);
+        SetLocalPropertyNoThrow(stackFrame, line_key,
+                                Handle<Smi>(Smi::FromInt(line_number + 1)));
       }
-      SetProperty(stackFrame, line_key,
-                  Handle<Smi>(Smi::FromInt(line_number + 1)), NONE);
-    }
 
-    if (options & StackTrace::kScriptName) {
-      Handle<Object> script_name(script->name());
-      SetProperty(stackFrame, script_key, script_name, NONE);
-    }
-
-#ifdef QT_BUILD_SCRIPT_LIB
-    if (options & StackTrace::kScriptId) {
-      Handle<Object> script_id(script->id());
-      SetProperty(stackFrame, script_id_key, script_id, NONE);
-    }
-#endif
-
-    if (options & StackTrace::kScriptNameOrSourceURL) {
-      Handle<Object> script_name(script->name());
-      Handle<JSValue> script_wrapper = GetScriptWrapper(script);
-      Handle<Object> property = GetProperty(script_wrapper,
-                                            name_or_source_url_key);
-      ASSERT(property->IsJSFunction());
-      Handle<JSFunction> method = Handle<JSFunction>::cast(property);
-      bool caught_exception;
-      Handle<Object> result = Execution::TryCall(method, script_wrapper, 0,
-                                                 NULL, &caught_exception);
-      if (caught_exception) {
-        result = factory()->undefined_value();
+      if (options & StackTrace::kScriptName) {
+        Handle<Object> script_name(script->name(), this);
+        SetLocalPropertyNoThrow(stackFrame, script_key, script_name);
       }
-      SetProperty(stackFrame, script_name_or_source_url_key, result, NONE);
-    }
 
-    if (options & StackTrace::kFunctionName) {
-      Handle<Object> fun_name(fun->shared()->name());
-      if (fun_name->ToBoolean()->IsFalse()) {
-        fun_name = Handle<Object>(fun->shared()->inferred_name());
+      if (options & StackTrace::kScriptNameOrSourceURL) {
+        Handle<Object> script_name(script->name(), this);
+        Handle<JSValue> script_wrapper = GetScriptWrapper(script);
+        Handle<Object> property = GetProperty(script_wrapper,
+                                              name_or_source_url_key);
+        ASSERT(property->IsJSFunction());
+        Handle<JSFunction> method = Handle<JSFunction>::cast(property);
+        bool caught_exception;
+        Handle<Object> result = Execution::TryCall(method, script_wrapper, 0,
+                                                   NULL, &caught_exception);
+        if (caught_exception) {
+          result = factory()->undefined_value();
+        }
+        SetLocalPropertyNoThrow(stackFrame, script_name_or_source_url_key,
+                                result);
       }
-      SetProperty(stackFrame, function_key, fun_name, NONE);
-    }
 
-    if (options & StackTrace::kIsEval) {
-      int type = Smi::cast(script->compilation_type())->value();
-      Handle<Object> is_eval = (type == Script::COMPILATION_TYPE_EVAL) ?
-          factory()->true_value() : factory()->false_value();
-      SetProperty(stackFrame, eval_key, is_eval, NONE);
-    }
+      if (options & StackTrace::kFunctionName) {
+        Handle<Object> fun_name(fun->shared()->name(), this);
+        if (fun_name->ToBoolean()->IsFalse()) {
+          fun_name = Handle<Object>(fun->shared()->inferred_name(), this);
+        }
+        SetLocalPropertyNoThrow(stackFrame, function_key, fun_name);
+      }
 
-    if (options & StackTrace::kIsConstructor) {
-      Handle<Object> is_constructor = (frame->IsConstructor()) ?
-          factory()->true_value() : factory()->false_value();
-      SetProperty(stackFrame, constructor_key, is_constructor, NONE);
-    }
+      if (options & StackTrace::kIsEval) {
+        int type = Smi::cast(script->compilation_type())->value();
+        Handle<Object> is_eval = (type == Script::COMPILATION_TYPE_EVAL) ?
+            factory()->true_value() : factory()->false_value();
+        SetLocalPropertyNoThrow(stackFrame, eval_key, is_eval);
+      }
 
-    FixedArray::cast(stack_trace->elements())->set(frames_seen, *stackFrame);
-    frames_seen++;
+      if (options & StackTrace::kIsConstructor) {
+        Handle<Object> is_constructor = (frames[i].is_constructor()) ?
+            factory()->true_value() : factory()->false_value();
+        SetLocalPropertyNoThrow(stackFrame, constructor_key, is_constructor);
+      }
+
+      FixedArray::cast(stack_trace->elements())->set(frames_seen, *stackFrame);
+      frames_seen++;
+    }
     it.Advance();
   }
 
@@ -304,11 +308,6 @@ void Isolate::PrintStack() {
     } else {
       allocator = preallocated_message_space_;
     }
-
-    NativeAllocationChecker allocation_checker(
-      !FLAG_preallocate_message_memory ?
-      NativeAllocationChecker::ALLOW :
-      NativeAllocationChecker::DISALLOW);
 
     StringStream::ClearMentionedObjectCache();
     StringStream accumulator(allocator);
@@ -343,6 +342,13 @@ static void PrintFrames(StringStream* accumulator,
 
 
 void Isolate::PrintStack(StringStream* accumulator) {
+  if (!IsInitialized()) {
+    accumulator->Add(
+        "\n==== Stack trace is not available ==========================\n\n");
+    accumulator->Add(
+        "\n==== Isolate for the thread is not initialized =============\n\n");
+    return;
+  }
   // The MentionedObjectCache is not GC-proof at the moment.
   AssertNoAllocation nogc;
   ASSERT(StringStream::IsMentionedObjectCacheClear());
@@ -457,7 +463,7 @@ bool Isolate::MayNamedAccess(JSObject* receiver, Object* key,
   Handle<JSObject> receiver_handle(receiver, this);
   Handle<Object> key_handle(key, this);
   Handle<Object> data(AccessCheckInfo::cast(data_obj)->data(), this);
-  LOG(ApiNamedSecurityCheck(key));
+  LOG(this, ApiNamedSecurityCheck(key));
   bool result = false;
   {
     // Leaving JavaScript.
@@ -499,7 +505,7 @@ bool Isolate::MayIndexedAccess(JSObject* receiver,
   HandleScope scope(this);
   Handle<JSObject> receiver_handle(receiver, this);
   Handle<Object> data(AccessCheckInfo::cast(data_obj)->data(), this);
-  LOG(ApiIndexedSecurityCheck(index));
+  LOG(this, ApiIndexedSecurityCheck(index));
   bool result = false;
   {
     // Leaving JavaScript.
@@ -545,6 +551,12 @@ Failure* Isolate::Throw(Object* exception, MessageLocation* location) {
 
 
 Failure* Isolate::ReThrow(MaybeObject* exception, MessageLocation* location) {
+  bool can_be_caught_externally = false;
+  ShouldReportException(&can_be_caught_externally,
+                        is_catchable_by_javascript(exception));
+  thread_local_top()->catcher_ = can_be_caught_externally ?
+      try_catch_handler() : NULL;
+
   // Set the exception being re-thrown.
   set_pending_exception(exception);
   return Failure::Exception();
@@ -575,12 +587,12 @@ Failure* Isolate::PromoteScheduledException() {
 
 
 void Isolate::PrintCurrentStackTrace(FILE* out) {
-  StackTraceFrameIterator it;
+  StackTraceFrameIterator it(this);
   while (!it.done()) {
     HandleScope scope;
     // Find code position if recorded in relocation info.
     JavaScriptFrame* frame = it.frame();
-    int pos = frame->LookupCode(this)->SourcePosition(frame->pc());
+    int pos = frame->LookupCode()->SourcePosition(frame->pc());
     Handle<Object> pos_obj(Smi::FromInt(pos));
     // Fetch function and receiver.
     Handle<JSFunction> fun(JSFunction::cast(frame->function()));
@@ -604,14 +616,14 @@ void Isolate::PrintCurrentStackTrace(FILE* out) {
 
 void Isolate::ComputeLocation(MessageLocation* target) {
   *target = MessageLocation(Handle<Script>(heap_.empty_script()), -1, -1);
-  StackTraceFrameIterator it;
+  StackTraceFrameIterator it(this);
   if (!it.done()) {
     JavaScriptFrame* frame = it.frame();
     JSFunction* fun = JSFunction::cast(frame->function());
     Object* script = fun->shared()->script();
     if (script->IsScript() &&
         !(Script::cast(script)->source()->IsUndefined())) {
-      int pos = frame->LookupCode(this)->SourcePosition(frame->pc());
+      int pos = frame->LookupCode()->SourcePosition(frame->pc());
       // Compute the location from the function and the reloc info.
       Handle<Script> casted_script(Script::cast(script));
       *target = MessageLocation(casted_script, pos, pos + 1);
@@ -620,7 +632,7 @@ void Isolate::ComputeLocation(MessageLocation* target) {
 }
 
 
-bool Isolate::ShouldReturnException(bool* is_caught_externally,
+bool Isolate::ShouldReportException(bool* can_be_caught_externally,
                                     bool catchable_by_javascript) {
   // Find the top-most try-catch handler.
   StackHandler* handler =
@@ -637,13 +649,13 @@ bool Isolate::ShouldReturnException(bool* is_caught_externally,
   // The exception has been externally caught if and only if there is
   // an external handler which is on top of the top-most try-catch
   // handler.
-  *is_caught_externally = external_handler_address != NULL &&
+  *can_be_caught_externally = external_handler_address != NULL &&
       (handler == NULL || handler->address() > external_handler_address ||
        !catchable_by_javascript);
 
-  if (*is_caught_externally) {
+  if (*can_be_caught_externally) {
     // Only report the exception if the external handler is verbose.
-    return thread_local_top()->TryCatchHandler()->is_verbose_;
+    return try_catch_handler()->is_verbose_;
   } else {
     // Report the exception if it isn't caught by JavaScript code.
     return handler == NULL;
@@ -662,15 +674,13 @@ void Isolate::DoThrow(MaybeObject* exception,
   Handle<Object> exception_handle(exception_object);
 
   // Determine reporting and whether the exception is caught externally.
-  bool is_caught_externally = false;
-  bool is_out_of_memory = exception == Failure::OutOfMemoryException();
-  bool is_termination_exception = exception == heap_.termination_exception();
-  bool catchable_by_javascript = !is_termination_exception && !is_out_of_memory;
+  bool catchable_by_javascript = is_catchable_by_javascript(exception);
   // Only real objects can be caught by JS.
   ASSERT(!catchable_by_javascript || is_object);
-  bool should_return_exception =
-      ShouldReturnException(&is_caught_externally, catchable_by_javascript);
-  bool report_exception = catchable_by_javascript && should_return_exception;
+  bool can_be_caught_externally = false;
+  bool should_report_exception =
+      ShouldReportException(&can_be_caught_externally, catchable_by_javascript);
+  bool report_exception = catchable_by_javascript && should_report_exception;
 
 #ifdef ENABLE_DEBUGGER_SUPPORT
   // Notify debugger of exception.
@@ -683,8 +693,8 @@ void Isolate::DoThrow(MaybeObject* exception,
   Handle<Object> message_obj;
   MessageLocation potential_computed_location;
   bool try_catch_needs_message =
-      is_caught_externally &&
-      thread_local_top()->TryCatchHandler()->capture_message_;
+      can_be_caught_externally &&
+      try_catch_handler()->capture_message_;
   if (report_exception || try_catch_needs_message) {
     if (location == NULL) {
       // If no location was specified we use a computed one instead
@@ -722,9 +732,10 @@ void Isolate::DoThrow(MaybeObject* exception,
     }
   }
 
-  if (is_caught_externally) {
-    thread_local_top()->catcher_ = thread_local_top()->TryCatchHandler();
-  }
+  // Do not forget to clean catcher_ if currently thrown exception cannot
+  // be caught.  If necessary, ReThrow will update the catcher.
+  thread_local_top()->catcher_ = can_be_caught_externally ?
+      try_catch_handler() : NULL;
 
   // NOTE: Notifying the debugger or generating the message
   // may have caused new exceptions. For now, we just ignore
@@ -739,23 +750,65 @@ void Isolate::DoThrow(MaybeObject* exception,
 }
 
 
+bool Isolate::IsExternallyCaught() {
+  ASSERT(has_pending_exception());
+
+  if ((thread_local_top()->catcher_ == NULL) ||
+      (try_catch_handler() != thread_local_top()->catcher_)) {
+    // When throwing the exception, we found no v8::TryCatch
+    // which should care about this exception.
+    return false;
+  }
+
+  if (!is_catchable_by_javascript(pending_exception())) {
+    return true;
+  }
+
+  // Get the address of the external handler so we can compare the address to
+  // determine which one is closer to the top of the stack.
+  Address external_handler_address =
+      thread_local_top()->try_catch_handler_address();
+  ASSERT(external_handler_address != NULL);
+
+  // The exception has been externally caught if and only if there is
+  // an external handler which is on top of the top-most try-finally
+  // handler.
+  // There should be no try-catch blocks as they would prohibit us from
+  // finding external catcher in the first place (see catcher_ check above).
+  //
+  // Note, that finally clause would rethrow an exception unless it's
+  // aborted by jumps in control flow like return, break, etc. and we'll
+  // have another chances to set proper v8::TryCatch.
+  StackHandler* handler =
+      StackHandler::FromAddress(Isolate::handler(thread_local_top()));
+  while (handler != NULL && handler->address() < external_handler_address) {
+    ASSERT(!handler->is_try_catch());
+    if (handler->is_try_finally()) return false;
+
+    handler = handler->next();
+  }
+
+  return true;
+}
+
+
 void Isolate::ReportPendingMessages() {
   ASSERT(has_pending_exception());
-  setup_external_caught();
   // If the pending exception is OutOfMemoryException set out_of_memory in
   // the global context.  Note: We have to mark the global context here
   // since the GenerateThrowOutOfMemory stub cannot make a RuntimeCall to
   // set it.
-  bool external_caught = thread_local_top()->external_caught_exception_;
-  HandleScope scope;
+  bool external_caught = IsExternallyCaught();
+  thread_local_top()->external_caught_exception_ = external_caught;
+  HandleScope scope(this);
   if (thread_local_top()->pending_exception_ ==
       Failure::OutOfMemoryException()) {
     context()->mark_out_of_memory();
   } else if (thread_local_top()->pending_exception_ ==
              heap_.termination_exception()) {
     if (external_caught) {
-      thread_local_top()->TryCatchHandler()->can_continue_ = false;
-      thread_local_top()->TryCatchHandler()->exception_ = heap_.null_value();
+      try_catch_handler()->can_continue_ = false;
+      try_catch_handler()->exception_ = heap_.null_value();
     }
   } else {
     // At this point all non-object (failure) exceptions have
@@ -764,9 +817,8 @@ void Isolate::ReportPendingMessages() {
     Handle<Object> exception(pending_exception_object);
     thread_local_top()->external_caught_exception_ = false;
     if (external_caught) {
-      thread_local_top()->TryCatchHandler()->can_continue_ = true;
-      thread_local_top()->TryCatchHandler()->exception_ =
-        thread_local_top()->pending_exception_;
+      try_catch_handler()->can_continue_ = true;
+      try_catch_handler()->exception_ = thread_local_top()->pending_exception_;
       if (!thread_local_top()->pending_message_obj_->IsTheHole()) {
         try_catch_handler()->message_ =
             thread_local_top()->pending_message_obj_;
@@ -900,6 +952,9 @@ Handle<Context> Isolate::GetCallingGlobalContext() {
 
 
 char* Isolate::ArchiveThread(char* to) {
+  if (RuntimeProfiler::IsEnabled() && current_vm_state() == JS) {
+    RuntimeProfiler::IsolateExitedJS(this);
+  }
   memcpy(to, reinterpret_cast<char*>(thread_local_top()),
          sizeof(ThreadLocalTop));
   InitializeThreadLocal();
@@ -914,23 +969,15 @@ char* Isolate::RestoreThread(char* from) {
   // thread_local_ is restored on a separate OS thread.
 #ifdef USE_SIMULATOR
 #ifdef V8_TARGET_ARCH_ARM
-  thread_local_top()->simulator_ = assembler::arm::Simulator::current(this);
+  thread_local_top()->simulator_ = Simulator::current(this);
 #elif V8_TARGET_ARCH_MIPS
-  thread_local_top()->simulator_ = assembler::mips::Simulator::current(this);
+  thread_local_top()->simulator_ = Simulator::current(this);
 #endif
 #endif
+  if (RuntimeProfiler::IsEnabled() && current_vm_state() == JS) {
+    RuntimeProfiler::IsolateEnteredJS(this);
+  }
   return from + sizeof(ThreadLocalTop);
 }
-
-
-ExecutionAccess::ExecutionAccess() {
-  Isolate::Current()->break_access()->Lock();
-}
-
-
-ExecutionAccess::~ExecutionAccess() {
-  Isolate::Current()->break_access()->Unlock();
-}
-
 
 } }  // namespace v8::internal

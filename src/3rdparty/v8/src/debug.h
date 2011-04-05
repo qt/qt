@@ -33,6 +33,7 @@
 #include "debug-agent.h"
 #include "execution.h"
 #include "factory.h"
+#include "flags.h"
 #include "hashmap.h"
 #include "platform.h"
 #include "string-stream.h"
@@ -227,7 +228,7 @@ class Debug {
   void PreemptionWhileInDebugger();
   void Iterate(ObjectVisitor* v);
 
-  static Object* Break(RUNTIME_CALLING_CONVENTION);
+  Object* Break(Arguments args);
   void SetBreakPoint(Handle<SharedFunctionInfo> shared,
                      Handle<Object> break_point_object,
                      int* source_position);
@@ -547,6 +548,9 @@ class Debug {
 };
 
 
+DECLARE_RUNTIME_FUNCTION(Object*, Debug_Break);
+
+
 // Message delivered to the message handler callback. This is either a debugger
 // event or the response to a command.
 class MessageImpl: public v8::Debug::Message {
@@ -782,6 +786,15 @@ class Debugger {
       }
     }
 
+    if (((event == v8::BeforeCompile) || (event == v8::AfterCompile)) &&
+        !FLAG_debug_compile_events) {
+      return false;
+
+    } else if ((event == v8::ScriptCollected) &&
+               !FLAG_debug_script_collected_events) {
+      return false;
+    }
+
     // Currently argument event is not used.
     return !compiling_natives_ && Debugger::IsDebuggerActive();
   }
@@ -850,6 +863,7 @@ class EnterDebugger BASE_EMBEDDED {
   EnterDebugger()
       : isolate_(Isolate::Current()),
         prev_(isolate_->debug()->debugger_entry()),
+        it_(isolate_),
         has_js_frames_(!it_.done()),
         save_(isolate_) {
     Debug* debug = isolate_->debug();

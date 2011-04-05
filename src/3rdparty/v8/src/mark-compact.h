@@ -39,9 +39,10 @@ namespace internal {
 typedef bool (*IsAliveFunction)(HeapObject* obj, int* size, int* offset);
 
 // Forward declarations.
+class CodeFlusher;
 class GCTracer;
-class RootMarkingVisitor;
 class MarkingVisitor;
+class RootMarkingVisitor;
 
 
 // ----------------------------------------------------------------------------
@@ -97,8 +98,6 @@ class MarkingStack {
 
 // -------------------------------------------------------------------------
 // Mark-Compact collector
-//
-// All methods are static.
 
 class OverflowedObjectsScanner;
 
@@ -128,7 +127,7 @@ class MarkCompactCollector {
                                    int* offset);
 
   // Type of functions to process non-live objects.
-  typedef void (*ProcessNonLiveFunction)(HeapObject* object);
+  typedef void (*ProcessNonLiveFunction)(HeapObject* object, Isolate* isolate);
 
   // Pointer to member function, used in IterateLiveObjects.
   typedef int (MarkCompactCollector::*LiveObjectCallback)(HeapObject* obj);
@@ -178,7 +177,7 @@ class MarkCompactCollector {
 #endif
 
   // Determine type of object and emit deletion log event.
-  static void ReportDeleteIfNeeded(HeapObject* obj);
+  static void ReportDeleteIfNeeded(HeapObject* obj, Isolate* isolate);
 
   // Returns size of a possibly marked object.
   static int SizeOfMarkedObject(HeapObject* obj);
@@ -190,8 +189,13 @@ class MarkCompactCollector {
 
   inline Heap* heap() const { return heap_; }
 
+  CodeFlusher* code_flusher() { return code_flusher_; }
+  inline bool is_code_flushing_enabled() const { return code_flusher_ != NULL; }
+  void EnableCodeFlushing(bool enable);
+
  private:
   MarkCompactCollector();
+  ~MarkCompactCollector();
 
 #ifdef DEBUG
   enum CollectorState {
@@ -279,10 +283,13 @@ class MarkCompactCollector {
   // group marked.
   void MarkObjectGroups();
 
-  // Mark all objects in an object group with at least one marked
-  // object, then all objects reachable from marked objects in object
-  // groups, and repeat.
-  void ProcessObjectGroups();
+  // Mark objects in implicit references groups if their parent object
+  // is marked.
+  void MarkImplicitRefGroups();
+
+  // Mark all objects which are reachable due to host application
+  // logic like object groups or implicit references' groups.
+  void ProcessExternalMarking();
 
   // Mark objects reachable (transitively) from objects in the marking stack
   // or overflowed in the heap.
@@ -487,6 +494,8 @@ class MarkCompactCollector {
 
   Heap* heap_;
   MarkingStack marking_stack_;
+  CodeFlusher* code_flusher_;
+
   friend class Heap;
   friend class OverflowedObjectsScanner;
 };

@@ -30,17 +30,24 @@
 #include "api.h"
 #include "arguments.h"
 #include "bootstrapper.h"
+#include "codegen.h"
 #include "debug.h"
+#include "deoptimizer.h"
 #include "execution.h"
+#include "full-codegen.h"
+#include "hydrogen.h"
 #include "objects-inl.h"
 #include "objects-visiting.h"
 #include "macro-assembler.h"
+#include "safepoint-table.h"
 #include "scanner-base.h"
 #include "scopeinfo.h"
 #include "string-stream.h"
 #include "utils.h"
+#include "vm-state-inl.h"
 
 #ifdef ENABLE_DISASSEMBLER
+#include "disasm.h"
 #include "disassembler.h"
 #endif
 
@@ -106,39 +113,47 @@ Object* Object::ToBoolean() {
   if (IsSmi()) {
     return Isolate::Current()->heap()->ToBoolean(Smi::cast(this)->value() != 0);
   }
-  if (IsUndefined() || IsNull()) {
-    return HeapObject::cast(this)->GetHeap()->false_value();
+  HeapObject* heap_object = HeapObject::cast(this);
+  if (heap_object->IsUndefined() || heap_object->IsNull()) {
+    return heap_object->GetHeap()->false_value();
   }
   // Undetectable object is false
-  if (IsUndetectableObject()) {
-    return HeapObject::cast(this)->GetHeap()->false_value();
+  if (heap_object->IsUndetectableObject()) {
+    return heap_object->GetHeap()->false_value();
   }
-  if (IsString()) {
-    return HeapObject::cast(this)->GetHeap()->ToBoolean(
+  if (heap_object->IsString()) {
+    return heap_object->GetHeap()->ToBoolean(
         String::cast(this)->length() != 0);
   }
-  if (IsHeapNumber()) {
+  if (heap_object->IsHeapNumber()) {
     return HeapNumber::cast(this)->HeapNumberToBoolean();
   }
-  return Isolate::Current()->heap()->true_value();
+  return heap_object->GetHeap()->true_value();
 }
 
 
 void Object::Lookup(String* name, LookupResult* result) {
-  if (IsJSObject()) return JSObject::cast(this)->Lookup(name, result);
   Object* holder = NULL;
-  if (IsString()) {
-    Heap* heap = HeapObject::cast(this)->GetHeap();
-    Context* global_context = heap->isolate()->context()->global_context();
-    holder = global_context->string_function()->instance_prototype();
-  } else if (IsNumber()) {
+  if (IsSmi()) {
     Heap* heap = Isolate::Current()->heap();
     Context* global_context = heap->isolate()->context()->global_context();
     holder = global_context->number_function()->instance_prototype();
-  } else if (IsBoolean()) {
-    Heap* heap = HeapObject::cast(this)->GetHeap();
-    Context* global_context = heap->isolate()->context()->global_context();
-    holder = global_context->boolean_function()->instance_prototype();
+  } else {
+    HeapObject* heap_object = HeapObject::cast(this);
+    if (heap_object->IsJSObject()) {
+      return JSObject::cast(this)->Lookup(name, result);
+    }
+    Heap* heap = heap_object->GetHeap();
+    if (heap_object->IsString()) {
+      Context* global_context = heap->isolate()->context()->global_context();
+      holder = global_context->string_function()->instance_prototype();
+    } else if (heap_object->IsHeapNumber()) {
+      Context* global_context = heap->isolate()->context()->global_context();
+      holder = global_context->number_function()->instance_prototype();
+    } else if (heap_object->IsBoolean()) {
+      Context* global_context = heap->isolate()->context()->global_context();
+      holder = global_context->boolean_function()->instance_prototype();
+    }
   }
   ASSERT(holder != NULL);  // Cannot handle null or undefined.
   JSObject::cast(holder)->Lookup(name, result);
@@ -181,7 +196,7 @@ MaybeObject* Object::GetPropertyWithCallback(Object* receiver,
     JSObject* self = JSObject::cast(receiver);
     JSObject* holder_handle = JSObject::cast(holder);
     Handle<String> key(name);
-    LOG(ApiNamedPropertyAccess("load", self, name));
+    LOG(isolate, ApiNamedPropertyAccess("load", self, name));
     CustomArguments args(isolate, data->data(), self, holder_handle);
     v8::AccessorInfo info(args.end());
     v8::Handle<v8::Value> result;
@@ -240,7 +255,6 @@ MaybeObject* JSObject::GetPropertyWithFailedAccessCheck(
     LookupResult* result,
     String* name,
     PropertyAttributes* attributes) {
-  Heap* heap = name->GetHeap();
   if (result->IsProperty()) {
     switch (result->type()) {
       case CALLBACKS: {
@@ -292,6 +306,7 @@ MaybeObject* JSObject::GetPropertyWithFailedAccessCheck(
 
   // No accessible property found.
   *attributes = ABSENT;
+  Heap* heap = name->GetHeap();
   heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_GET);
   return heap->undefined_value();
 }
@@ -302,7 +317,6 @@ PropertyAttributes JSObject::GetPropertyAttributeWithFailedAccessCheck(
     LookupResult* result,
     String* name,
     bool continue_search) {
-  Heap* heap = name->GetHeap();
   if (result->IsProperty()) {
     switch (result->type()) {
       case CALLBACKS: {
@@ -356,7 +370,7 @@ PropertyAttributes JSObject::GetPropertyAttributeWithFailedAccessCheck(
     }
   }
 
-  heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_HAS);
+  GetHeap()->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_HAS);
   return ABSENT;
 }
 
@@ -390,11 +404,11 @@ MaybeObject* JSObject::SetNormalizedProperty(String* name,
                                              Object* value,
                                              PropertyDetails details) {
   ASSERT(!HasFastProperties());
-  Heap* heap = name->GetHeap();
   int entry = property_dictionary()->FindEntry(name);
   if (entry == StringDictionary::kNotFound) {
     Object* store_value = value;
     if (IsGlobalObject()) {
+      Heap* heap = name->GetHeap();
       MaybeObject* maybe_store_value =
           heap->AllocateJSGlobalPropertyCell(value);
       if (!maybe_store_value->ToObject(&store_value)) return maybe_store_value;
@@ -426,7 +440,6 @@ MaybeObject* JSObject::SetNormalizedProperty(String* name,
 
 MaybeObject* JSObject::DeleteNormalizedProperty(String* name, DeleteMode mode) {
   ASSERT(!HasFastProperties());
-  Heap* heap = GetHeap();
   StringDictionary* dictionary = property_dictionary();
   int entry = dictionary->FindEntry(name);
   if (entry != StringDictionary::kNotFound) {
@@ -434,7 +447,7 @@ MaybeObject* JSObject::DeleteNormalizedProperty(String* name, DeleteMode mode) {
     if (IsGlobalObject()) {
       PropertyDetails details = dictionary->DetailsAt(entry);
       if (details.IsDontDelete()) {
-        if (mode != FORCE_DELETION) return heap->false_value();
+        if (mode != FORCE_DELETION) return GetHeap()->false_value();
         // When forced to delete global properties, we have to make a
         // map change to invalidate any ICs that think they can load
         // from the DontDelete cell without checking if it contains
@@ -447,13 +460,13 @@ MaybeObject* JSObject::DeleteNormalizedProperty(String* name, DeleteMode mode) {
       }
       JSGlobalPropertyCell* cell =
           JSGlobalPropertyCell::cast(dictionary->ValueAt(entry));
-      cell->set_value(heap->the_hole_value());
+      cell->set_value(cell->heap()->the_hole_value());
       dictionary->DetailsAtPut(entry, details.AsDeleted());
     } else {
       return dictionary->DeleteProperty(entry, mode);
     }
   }
-  return heap->true_value();
+  return GetHeap()->true_value();
 }
 
 
@@ -543,22 +556,60 @@ MaybeObject* Object::GetProperty(Object* receiver,
 
 
 MaybeObject* Object::GetElementWithReceiver(Object* receiver, uint32_t index) {
-  // Non-JS objects do not have integer indexed properties.
-  if (!IsJSObject()) return Isolate::Current()->heap()->undefined_value();
-  return JSObject::cast(this)->GetElementWithReceiver(JSObject::cast(receiver),
-                                                      index);
+  Object* holder = NULL;
+  if (IsSmi()) {
+    Context* global_context = Isolate::Current()->context()->global_context();
+    holder = global_context->number_function()->instance_prototype();
+  } else {
+    HeapObject* heap_object = HeapObject::cast(this);
+
+    if (heap_object->IsJSObject()) {
+      return JSObject::cast(this)->GetElementWithReceiver(receiver, index);
+    }
+    Heap* heap = heap_object->GetHeap();
+    Isolate* isolate = heap->isolate();
+
+    Context* global_context = isolate->context()->global_context();
+    if (heap_object->IsString()) {
+      holder = global_context->string_function()->instance_prototype();
+    } else if (heap_object->IsHeapNumber()) {
+      holder = global_context->number_function()->instance_prototype();
+    } else if (heap_object->IsBoolean()) {
+      holder = global_context->boolean_function()->instance_prototype();
+    } else {
+      // Undefined and null have no indexed properties.
+      ASSERT(heap_object->IsUndefined() || heap_object->IsNull());
+      return heap->undefined_value();
+    }
+  }
+
+  return JSObject::cast(holder)->GetElementWithReceiver(receiver, index);
 }
 
 
 Object* Object::GetPrototype() {
+  if (IsSmi()) {
+    Heap* heap = Isolate::Current()->heap();
+    Context* context = heap->isolate()->context()->global_context();
+    return context->number_function()->instance_prototype();
+  }
+
+  HeapObject* heap_object = HeapObject::cast(this);
+
   // The object is either a number, a string, a boolean, or a real JS object.
-  if (IsJSObject()) return JSObject::cast(this)->map()->prototype();
-  Heap* heap = Isolate::Current()->heap();
+  if (heap_object->IsJSObject()) {
+    return JSObject::cast(this)->map()->prototype();
+  }
+  Heap* heap = heap_object->GetHeap();
   Context* context = heap->isolate()->context()->global_context();
 
-  if (IsNumber()) return context->number_function()->instance_prototype();
-  if (IsString()) return context->string_function()->instance_prototype();
-  if (IsBoolean()) {
+  if (heap_object->IsHeapNumber()) {
+    return context->number_function()->instance_prototype();
+  }
+  if (heap_object->IsString()) {
+    return context->string_function()->instance_prototype();
+  }
+  if (heap_object->IsBoolean()) {
     return context->boolean_function()->instance_prototype();
   } else {
     return heap->null_value();
@@ -566,11 +617,11 @@ Object* Object::GetPrototype() {
 }
 
 
-void Object::ShortPrint() {
+void Object::ShortPrint(FILE* out) {
   HeapStringAllocator allocator;
   StringStream accumulator(&allocator);
   ShortPrint(&accumulator);
-  accumulator.OutputToStdOut();
+  accumulator.OutputToFile(out);
 }
 
 
@@ -585,8 +636,8 @@ void Object::ShortPrint(StringStream* accumulator) {
 }
 
 
-void Smi::SmiPrint() {
-  PrintF("%d", value());
+void Smi::SmiPrint(FILE* out) {
+  PrintF(out, "%d", value());
 }
 
 
@@ -600,8 +651,8 @@ void Failure::FailurePrint(StringStream* accumulator) {
 }
 
 
-void Failure::FailurePrint() {
-  PrintF("Failure(%p)", reinterpret_cast<void*>(value()));
+void Failure::FailurePrint(FILE* out) {
+  PrintF(out, "Failure(%p)", reinterpret_cast<void*>(value()));
 }
 
 
@@ -886,8 +937,9 @@ void JSObject::JSObjectShortPrint(StringStream* accumulator) {
     // All other JSObjects are rather similar to each other (JSObject,
     // JSGlobalProxy, JSGlobalObject, JSUndetectableObject, JSValue).
     default: {
-      Heap* heap = GetHeap();
-      Object* constructor = map()->constructor();
+      Map* map_of_this = map();
+      Heap* heap = map_of_this->heap();
+      Object* constructor = map_of_this->constructor();
       bool printed = false;
       if (constructor->IsHeapObject() &&
           !heap->Contains(HeapObject::cast(constructor))) {
@@ -961,8 +1013,9 @@ void HeapObject::HeapObjectShortPrint(StringStream* accumulator) {
     case BYTE_ARRAY_TYPE:
       accumulator->Add("<ByteArray[%u]>", ByteArray::cast(this)->length());
       break;
-    case PIXEL_ARRAY_TYPE:
-      accumulator->Add("<PixelArray[%u]>", PixelArray::cast(this)->length());
+    case EXTERNAL_PIXEL_ARRAY_TYPE:
+      accumulator->Add("<ExternalPixelArray[%u]>",
+                       ExternalPixelArray::cast(this)->length());
       break;
     case EXTERNAL_BYTE_ARRAY_TYPE:
       accumulator->Add("<ExternalByteArray[%u]>",
@@ -994,6 +1047,9 @@ void HeapObject::HeapObjectShortPrint(StringStream* accumulator) {
       break;
     case SHARED_FUNCTION_INFO_TYPE:
       accumulator->Add("<SharedFunctionInfo>");
+      break;
+    case JS_MESSAGE_OBJECT_TYPE:
+      accumulator->Add("<JSMessageObject>");
       break;
 #define MAKE_STRUCT_CASE(NAME, Name, name) \
   case NAME##_TYPE:                        \
@@ -1085,6 +1141,7 @@ void HeapObject::IterateBody(InstanceType type, int object_size,
     case JS_GLOBAL_PROXY_TYPE:
     case JS_GLOBAL_OBJECT_TYPE:
     case JS_BUILTINS_OBJECT_TYPE:
+    case JS_MESSAGE_OBJECT_TYPE:
       JSObject::BodyDescriptor::IterateBody(this, object_size, v);
       break;
     case JS_FUNCTION_TYPE:
@@ -1109,7 +1166,7 @@ void HeapObject::IterateBody(InstanceType type, int object_size,
     case HEAP_NUMBER_TYPE:
     case FILLER_TYPE:
     case BYTE_ARRAY_TYPE:
-    case PIXEL_ARRAY_TYPE:
+    case EXTERNAL_PIXEL_ARRAY_TYPE:
     case EXTERNAL_BYTE_ARRAY_TYPE:
     case EXTERNAL_UNSIGNED_BYTE_ARRAY_TYPE:
     case EXTERNAL_SHORT_ARRAY_TYPE:
@@ -1157,8 +1214,8 @@ Object* HeapNumber::HeapNumberToBoolean() {
 }
 
 
-void HeapNumber::HeapNumberPrint() {
-  PrintF("%.16g", Number());
+void HeapNumber::HeapNumberPrint(FILE* out) {
+  PrintF(out, "%.16g", Number());
 }
 
 
@@ -1225,12 +1282,14 @@ MaybeObject* JSObject::AddFastPropertyUsingMap(Map* new_map,
 MaybeObject* JSObject::AddFastProperty(String* name,
                                        Object* value,
                                        PropertyAttributes attributes) {
+  ASSERT(!IsJSGlobalProxy());
+
   // Normalize the object if the name is an actual string (not the
   // hidden symbols) and is not a real identifier.
   Isolate* isolate = GetHeap()->isolate();
   StringInputBuffer buffer(name);
   if (!isolate->scanner_constants()->IsIdentifier(&buffer)
-      && name != HEAP->hidden_symbol()) {
+      && name != isolate->heap()->hidden_symbol()) {
     Object* obj;
     { MaybeObject* maybe_obj =
           NormalizeProperties(CLEAR_INOBJECT_PROPERTIES, 0);
@@ -1253,12 +1312,21 @@ MaybeObject* JSObject::AddFastProperty(String* name,
     }
   }
 
-  // Only allow map transition if the object's map is NOT equal to the
-  // global object_function's map and there is not a transition for name.
+  // Only allow map transition if the object isn't the global object and there
+  // is not a transition for the name, or there's a transition for the name but
+  // it's unrelated to properties.
+  int descriptor_index = old_descriptors->Search(name);
+
+  // External array transitions are stored in the descriptor for property "",
+  // which is not a identifier and should have forced a switch to slow
+  // properties above.
+  ASSERT(descriptor_index == DescriptorArray::kNotFound ||
+      old_descriptors->GetType(descriptor_index) != EXTERNAL_ARRAY_TRANSITION);
+  bool can_insert_transition = descriptor_index == DescriptorArray::kNotFound ||
+      old_descriptors->GetType(descriptor_index) == EXTERNAL_ARRAY_TRANSITION;
   bool allow_map_transition =
-        !old_descriptors->Contains(name) &&
-        (isolate->context()->global_context()->object_function()->
-            map() != map());
+      can_insert_transition &&
+      (isolate->context()->global_context()->object_function()->map() != map());
 
   ASSERT(index < map()->inobject_properties() ||
          (index - map()->inobject_properties()) < properties()->length() ||
@@ -1312,8 +1380,7 @@ MaybeObject* JSObject::AddConstantFunctionProperty(
     String* name,
     JSFunction* function,
     PropertyAttributes attributes) {
-  Heap* heap = GetHeap();
-  ASSERT(!heap->InNewSpace(function));
+  ASSERT(!GetHeap()->InNewSpace(function));
 
   // Allocate new instance descriptors with (name, function) added
   ConstantFunctionDescriptor d(name, function, attributes);
@@ -1338,6 +1405,7 @@ MaybeObject* JSObject::AddConstantFunctionProperty(
 
   // If the old map is the global object map (from new Object()),
   // then transitions are not added to it, so we are done.
+  Heap* heap = old_map->heap();
   if (old_map == heap->isolate()->context()->global_context()->
       object_function()->map()) {
     return function;
@@ -1374,7 +1442,6 @@ MaybeObject* JSObject::AddSlowProperty(String* name,
                                        Object* value,
                                        PropertyAttributes attributes) {
   ASSERT(!HasFastProperties());
-  Heap* heap = GetHeap();
   StringDictionary* dict = property_dictionary();
   Object* store_value = value;
   if (IsGlobalObject()) {
@@ -1391,6 +1458,7 @@ MaybeObject* JSObject::AddSlowProperty(String* name,
       dict->SetEntry(entry, name, store_value, details);
       return value;
     }
+    Heap* heap = GetHeap();
     { MaybeObject* maybe_store_value =
           heap->AllocateJSGlobalPropertyCell(value);
       if (!maybe_store_value->ToObject(&store_value)) return maybe_store_value;
@@ -1409,17 +1477,24 @@ MaybeObject* JSObject::AddSlowProperty(String* name,
 
 MaybeObject* JSObject::AddProperty(String* name,
                                    Object* value,
-                                   PropertyAttributes attributes) {
+                                   PropertyAttributes attributes,
+                                   StrictModeFlag strict_mode) {
   ASSERT(!IsJSGlobalProxy());
-  Heap* heap = GetHeap();
-  if (!map()->is_extensible()) {
-    Handle<Object> args[1] = {Handle<String>(name)};
-    return heap->isolate()->Throw(
-        *FACTORY->NewTypeError("object_not_extensible", HandleVector(args, 1)));
+  Map* map_of_this = map();
+  Heap* heap = map_of_this->heap();
+  if (!map_of_this->is_extensible()) {
+    if (strict_mode == kNonStrictMode) {
+      return heap->undefined_value();
+    } else {
+      Handle<Object> args[1] = {Handle<String>(name)};
+      return heap->isolate()->Throw(
+          *FACTORY->NewTypeError("object_not_extensible",
+                                 HandleVector(args, 1)));
+    }
   }
   if (HasFastProperties()) {
     // Ensure the descriptor array does not get too big.
-    if (map()->instance_descriptors()->number_of_descriptors() <
+    if (map_of_this->instance_descriptors()->number_of_descriptors() <
         DescriptorArray::kMaxNumberOfDescriptors) {
       if (value->IsJSFunction() && !heap->InNewSpace(value)) {
         return AddConstantFunctionProperty(name,
@@ -1445,17 +1520,18 @@ MaybeObject* JSObject::AddProperty(String* name,
 MaybeObject* JSObject::SetPropertyPostInterceptor(
     String* name,
     Object* value,
-    PropertyAttributes attributes) {
+    PropertyAttributes attributes,
+    StrictModeFlag strict_mode) {
   // Check local property, ignore interceptor.
   LookupResult result;
   LocalLookupRealNamedProperty(name, &result);
   if (result.IsFound()) {
     // An existing property, a map transition or a null descriptor was
     // found.  Use set property to handle all these cases.
-    return SetProperty(&result, name, value, attributes);
+    return SetProperty(&result, name, value, attributes, strict_mode);
   }
   // Add a new real property.
-  return AddProperty(name, value, attributes);
+  return AddProperty(name, value, attributes, strict_mode);
 }
 
 
@@ -1492,7 +1568,7 @@ MaybeObject* JSObject::ConvertDescriptorToFieldAndMapTransition(
     return result;
   }
   // Do not add transitions to the map of "new Object()".
-  if (map() == GetHeap()->isolate()->context()->global_context()->
+  if (map() == old_map->heap()->isolate()->context()->global_context()->
       object_function()->map()) {
     return result;
   }
@@ -1578,7 +1654,8 @@ MaybeObject* JSObject::ConvertDescriptorToField(String* name,
 MaybeObject* JSObject::SetPropertyWithInterceptor(
     String* name,
     Object* value,
-    PropertyAttributes attributes) {
+    PropertyAttributes attributes,
+    StrictModeFlag strict_mode) {
   Isolate* isolate = GetIsolate();
   HandleScope scope(isolate);
   Handle<JSObject> this_handle(this);
@@ -1586,7 +1663,7 @@ MaybeObject* JSObject::SetPropertyWithInterceptor(
   Handle<Object> value_handle(value, isolate);
   Handle<InterceptorInfo> interceptor(GetNamedInterceptor());
   if (!interceptor->setter()->IsUndefined()) {
-    LOG(ApiNamedPropertyAccess("interceptor-named-set", this, name));
+    LOG(isolate, ApiNamedPropertyAccess("interceptor-named-set", this, name));
     CustomArguments args(isolate, interceptor->data(), this, this);
     v8::AccessorInfo info(args.end());
     v8::NamedPropertySetter setter =
@@ -1609,7 +1686,8 @@ MaybeObject* JSObject::SetPropertyWithInterceptor(
   MaybeObject* raw_result =
       this_handle->SetPropertyPostInterceptor(*name_handle,
                                               *value_handle,
-                                              attributes);
+                                              attributes,
+                                              strict_mode);
   RETURN_IF_SCHEDULED_EXCEPTION(isolate);
   return raw_result;
 }
@@ -1617,10 +1695,11 @@ MaybeObject* JSObject::SetPropertyWithInterceptor(
 
 MaybeObject* JSObject::SetProperty(String* name,
                                    Object* value,
-                                   PropertyAttributes attributes) {
+                                   PropertyAttributes attributes,
+                                   StrictModeFlag strict_mode) {
   LookupResult result;
   LocalLookup(name, &result);
-  return SetProperty(&result, name, value, attributes);
+  return SetProperty(&result, name, value, attributes, strict_mode);
 }
 
 
@@ -1655,7 +1734,7 @@ MaybeObject* JSObject::SetPropertyWithCallback(Object* structure,
     v8::AccessorSetter call_fun = v8::ToCData<v8::AccessorSetter>(call_obj);
     if (call_fun == NULL) return value;
     Handle<String> key(name);
-    LOG(ApiNamedPropertyAccess("store", this, name));
+    LOG(isolate, ApiNamedPropertyAccess("store", this, name));
     CustomArguments args(isolate, data->data(), this, JSObject::cast(holder));
     v8::AccessorInfo info(args.end());
     {
@@ -1731,8 +1810,9 @@ void JSObject::LookupCallbackSetterInPrototypes(String* name,
 }
 
 
-bool JSObject::SetElementWithCallbackSetterInPrototypes(uint32_t index,
-                                                        Object* value) {
+MaybeObject* JSObject::SetElementWithCallbackSetterInPrototypes(uint32_t index,
+                                                                Object* value,
+                                                                bool* found) {
   Heap* heap = GetHeap();
   for (Object* pt = GetPrototype();
        pt != heap->null_value();
@@ -1743,15 +1823,16 @@ bool JSObject::SetElementWithCallbackSetterInPrototypes(uint32_t index,
     NumberDictionary* dictionary = JSObject::cast(pt)->element_dictionary();
     int entry = dictionary->FindEntry(index);
     if (entry != NumberDictionary::kNotFound) {
-      Object* element = dictionary->ValueAt(entry);
       PropertyDetails details = dictionary->DetailsAt(entry);
       if (details.type() == CALLBACKS) {
-        SetElementWithCallback(element, index, value, JSObject::cast(pt));
-        return true;
+        *found = true;
+        return SetElementWithCallback(
+            dictionary->ValueAt(entry), index, value, JSObject::cast(pt));
       }
     }
   }
-  return false;
+  *found = false;
+  return heap->the_hole_value();
 }
 
 
@@ -1763,6 +1844,97 @@ void JSObject::LookupInDescriptor(String* name, LookupResult* result) {
   } else {
     result->NotFound();
   }
+}
+
+
+void Map::LookupInDescriptors(JSObject* holder,
+                              String* name,
+                              LookupResult* result) {
+  DescriptorArray* descriptors = instance_descriptors();
+  DescriptorLookupCache* cache = heap()->isolate()->descriptor_lookup_cache();
+  int number = cache->Lookup(descriptors, name);
+  if (number == DescriptorLookupCache::kAbsent) {
+    number = descriptors->Search(name);
+    cache->Update(descriptors, name, number);
+  }
+  if (number != DescriptorArray::kNotFound) {
+    result->DescriptorResult(holder, descriptors->GetDetails(number), number);
+  } else {
+    result->NotFound();
+  }
+}
+
+
+MaybeObject* Map::GetExternalArrayElementsMap(ExternalArrayType array_type,
+                                              bool safe_to_add_transition) {
+  Heap* current_heap = heap();
+  DescriptorArray* descriptors = instance_descriptors();
+  String* external_array_sentinel_name = current_heap->empty_symbol();
+
+  if (safe_to_add_transition) {
+    // It's only safe to manipulate the descriptor array if it would be
+    // safe to add a transition.
+
+    ASSERT(!is_shared());  // no transitions can be added to shared maps.
+    // Check if the external array transition already exists.
+    DescriptorLookupCache* cache =
+        current_heap->isolate()->descriptor_lookup_cache();
+    int index = cache->Lookup(descriptors, external_array_sentinel_name);
+    if (index == DescriptorLookupCache::kAbsent) {
+      index = descriptors->Search(external_array_sentinel_name);
+      cache->Update(descriptors,
+                    external_array_sentinel_name,
+                    index);
+    }
+
+    // If the transition already exists, check the type. If there is a match,
+    // return it.
+    if (index != DescriptorArray::kNotFound) {
+      PropertyDetails details(PropertyDetails(descriptors->GetDetails(index)));
+      if (details.type() == EXTERNAL_ARRAY_TRANSITION &&
+          details.array_type() == array_type) {
+        return descriptors->GetValue(index);
+      } else {
+        safe_to_add_transition = false;
+      }
+    }
+  }
+
+  // No transition to an existing external array map. Make a new one.
+  Object* obj;
+  { MaybeObject* maybe_map = CopyDropTransitions();
+    if (!maybe_map->ToObject(&obj)) return maybe_map;
+  }
+  Map* new_map = Map::cast(obj);
+
+  new_map->set_has_fast_elements(false);
+  new_map->set_has_external_array_elements(true);
+  GetIsolate()->counters()->map_to_external_array_elements()->Increment();
+
+  // Only remember the map transition if the object's map is NOT equal to the
+  // global object_function's map and there is not an already existing
+  // non-matching external array transition.
+  bool allow_map_transition =
+      safe_to_add_transition &&
+      (GetIsolate()->context()->global_context()->object_function()->map() !=
+       map());
+  if (allow_map_transition) {
+    // Allocate new instance descriptors for the old map with map transition.
+    ExternalArrayTransitionDescriptor desc(external_array_sentinel_name,
+                                           Map::cast(new_map),
+                                           array_type);
+    Object* new_descriptors;
+    MaybeObject* maybe_new_descriptors = descriptors->CopyInsert(
+        &desc,
+        KEEP_TRANSITIONS);
+    if (!maybe_new_descriptors->ToObject(&new_descriptors)) {
+      return maybe_new_descriptors;
+    }
+    descriptors = DescriptorArray::cast(new_descriptors);
+    set_instance_descriptors(descriptors);
+  }
+
+  return new_map;
 }
 
 
@@ -1838,9 +2010,9 @@ void JSObject::LookupRealNamedPropertyInPrototypes(String* name,
 // We only need to deal with CALLBACKS and INTERCEPTORS
 MaybeObject* JSObject::SetPropertyWithFailedAccessCheck(LookupResult* result,
                                                         String* name,
-                                                        Object* value) {
-  Heap* heap = GetHeap();
-  if (!result->IsProperty()) {
+                                                        Object* value,
+                                                        bool check_prototype) {
+  if (check_prototype && !result->IsProperty()) {
     LookupCallbackSetterInPrototypes(name, result);
   }
 
@@ -1866,7 +2038,8 @@ MaybeObject* JSObject::SetPropertyWithFailedAccessCheck(LookupResult* result,
           LookupResult r;
           LookupRealNamedProperty(name, &r);
           if (r.IsProperty()) {
-            return SetPropertyWithFailedAccessCheck(&r, name, value);
+            return SetPropertyWithFailedAccessCheck(&r, name, value,
+                                                    check_prototype);
           }
           break;
         }
@@ -1879,6 +2052,7 @@ MaybeObject* JSObject::SetPropertyWithFailedAccessCheck(LookupResult* result,
 
   HandleScope scope;
   Handle<Object> value_handle(value);
+  Heap* heap = GetHeap();
   heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_SET);
   return *value_handle;
 }
@@ -1887,7 +2061,8 @@ MaybeObject* JSObject::SetPropertyWithFailedAccessCheck(LookupResult* result,
 MaybeObject* JSObject::SetProperty(LookupResult* result,
                                    String* name,
                                    Object* value,
-                                   PropertyAttributes attributes) {
+                                   PropertyAttributes attributes,
+                                   StrictModeFlag strict_mode) {
   Heap* heap = GetHeap();
   // Make sure that the top context does not change when doing callbacks or
   // interceptor calls.
@@ -1908,14 +2083,15 @@ MaybeObject* JSObject::SetProperty(LookupResult* result,
   // Check access rights if needed.
   if (IsAccessCheckNeeded()
       && !heap->isolate()->MayNamedAccess(this, name, v8::ACCESS_SET)) {
-    return SetPropertyWithFailedAccessCheck(result, name, value);
+    return SetPropertyWithFailedAccessCheck(result, name, value, true);
   }
 
   if (IsJSGlobalProxy()) {
     Object* proto = GetPrototype();
     if (proto->IsNull()) return value;
     ASSERT(proto->IsJSGlobalObject());
-    return JSObject::cast(proto)->SetProperty(result, name, value, attributes);
+    return JSObject::cast(proto)->SetProperty(
+        result, name, value, attributes, strict_mode);
   }
 
   if (!result->IsProperty() && !IsJSContextExtensionObject()) {
@@ -1932,9 +2108,20 @@ MaybeObject* JSObject::SetProperty(LookupResult* result,
   }
   if (!result->IsFound()) {
     // Neither properties nor transitions found.
-    return AddProperty(name, value, attributes);
+    return AddProperty(name, value, attributes, strict_mode);
   }
-  if (result->IsReadOnly() && result->IsProperty()) return value;
+  if (result->IsReadOnly() && result->IsProperty()) {
+    if (strict_mode == kStrictMode) {
+      HandleScope scope;
+      Handle<String> key(name);
+      Handle<Object> holder(this);
+      Handle<Object> args[2] = { key, holder };
+      return heap->isolate()->Throw(*heap->isolate()->factory()->NewTypeError(
+          "strict_read_only_property", HandleVector(args, 2)));
+    } else {
+      return value;
+    }
+  }
   // This is a real property that is not read-only, or it is a
   // transition or null descriptor and there are no setters in the prototypes.
   switch (result->type()) {
@@ -1962,7 +2149,7 @@ MaybeObject* JSObject::SetProperty(LookupResult* result,
                                      value,
                                      result->holder());
     case INTERCEPTOR:
-      return SetPropertyWithInterceptor(name, value, attributes);
+      return SetPropertyWithInterceptor(name, value, attributes, strict_mode);
     case CONSTANT_TRANSITION: {
       // If the same constant function is being added we can simply
       // transition to the target map.
@@ -1983,6 +2170,7 @@ MaybeObject* JSObject::SetProperty(LookupResult* result,
       return ConvertDescriptorToFieldAndMapTransition(name, value, attributes);
     }
     case NULL_DESCRIPTOR:
+    case EXTERNAL_ARRAY_TRANSITION:
       return ConvertDescriptorToFieldAndMapTransition(name, value, attributes);
     default:
       UNREACHABLE();
@@ -1998,11 +2186,10 @@ MaybeObject* JSObject::SetProperty(LookupResult* result,
 // callback setter removed.  The two lines looking up the LookupResult
 // result are also added.  If one of the functions is changed, the other
 // should be.
-MaybeObject* JSObject::IgnoreAttributesAndSetLocalProperty(
+MaybeObject* JSObject::SetLocalPropertyIgnoreAttributes(
     String* name,
     Object* value,
     PropertyAttributes attributes) {
-  Heap* heap = GetHeap();
 
   // Make sure that the top context does not change when doing callbacks or
   // interceptor calls.
@@ -2010,16 +2197,18 @@ MaybeObject* JSObject::IgnoreAttributesAndSetLocalProperty(
   LookupResult result;
   LocalLookup(name, &result);
   // Check access rights if needed.
-  if (IsAccessCheckNeeded()
-      && !heap->isolate()->MayNamedAccess(this, name, v8::ACCESS_SET)) {
-    return SetPropertyWithFailedAccessCheck(&result, name, value);
+  if (IsAccessCheckNeeded()) {
+    Heap* heap = GetHeap();
+    if (!heap->isolate()->MayNamedAccess(this, name, v8::ACCESS_SET)) {
+      return SetPropertyWithFailedAccessCheck(&result, name, value, false);
+    }
   }
 
   if (IsJSGlobalProxy()) {
     Object* proto = GetPrototype();
     if (proto->IsNull()) return value;
     ASSERT(proto->IsJSGlobalObject());
-    return JSObject::cast(proto)->IgnoreAttributesAndSetLocalProperty(
+    return JSObject::cast(proto)->SetLocalPropertyIgnoreAttributes(
         name,
         value,
         attributes);
@@ -2028,7 +2217,7 @@ MaybeObject* JSObject::IgnoreAttributesAndSetLocalProperty(
   // Check for accessor in prototype chain removed here in clone.
   if (!result.IsFound()) {
     // Neither properties nor transitions found.
-    return AddProperty(name, value, attributes);
+    return AddProperty(name, value, attributes, kNonStrictMode);
   }
 
   PropertyDetails details = PropertyDetails(attributes, NORMAL);
@@ -2062,6 +2251,7 @@ MaybeObject* JSObject::IgnoreAttributesAndSetLocalProperty(
       // if the value is a function.
       return ConvertDescriptorToFieldAndMapTransition(name, value, attributes);
     case NULL_DESCRIPTOR:
+    case EXTERNAL_ARRAY_TRANSITION:
       return ConvertDescriptorToFieldAndMapTransition(name, value, attributes);
     default:
       UNREACHABLE();
@@ -2112,7 +2302,8 @@ PropertyAttributes JSObject::GetPropertyAttributeWithInterceptor(
   if (!interceptor->query()->IsUndefined()) {
     v8::NamedPropertyQuery query =
         v8::ToCData<v8::NamedPropertyQuery>(interceptor->query());
-    LOG(ApiNamedPropertyAccess("interceptor-named-has", *holder_handle, name));
+    LOG(isolate,
+        ApiNamedPropertyAccess("interceptor-named-has", *holder_handle, name));
     v8::Handle<v8::Integer> result;
     {
       // Leaving JavaScript.
@@ -2126,7 +2317,8 @@ PropertyAttributes JSObject::GetPropertyAttributeWithInterceptor(
   } else if (!interceptor->getter()->IsUndefined()) {
     v8::NamedPropertyGetter getter =
         v8::ToCData<v8::NamedPropertyGetter>(interceptor->getter());
-    LOG(ApiNamedPropertyAccess("interceptor-named-get-has", this, name));
+    LOG(isolate,
+        ApiNamedPropertyAccess("interceptor-named-get-has", this, name));
     v8::Handle<v8::Value> result;
     {
       // Leaving JavaScript.
@@ -2160,14 +2352,15 @@ PropertyAttributes JSObject::GetPropertyAttribute(JSObject* receiver,
                                                   LookupResult* result,
                                                   String* name,
                                                   bool continue_search) {
-  Heap* heap = GetHeap();
   // Check access rights if needed.
-  if (IsAccessCheckNeeded() &&
-      !heap->isolate()->MayNamedAccess(this, name, v8::ACCESS_HAS)) {
-    return GetPropertyAttributeWithFailedAccessCheck(receiver,
-                                                     result,
-                                                     name,
-                                                     continue_search);
+  if (IsAccessCheckNeeded()) {
+    Heap* heap = GetHeap();
+    if (!heap->isolate()->MayNamedAccess(this, name, v8::ACCESS_HAS)) {
+      return GetPropertyAttributeWithFailedAccessCheck(receiver,
+                                                       result,
+                                                       name,
+                                                       continue_search);
+    }
   }
   if (result->IsProperty()) {
     switch (result->type()) {
@@ -2203,6 +2396,7 @@ PropertyAttributes JSObject::GetLocalPropertyAttribute(String* name) {
 
 MaybeObject* NormalizedMapCache::Get(JSObject* obj,
                                      PropertyNormalizationMode mode) {
+  Isolate* isolate = obj->GetIsolate();
   Map* fast = obj->map();
   int index = Hash(fast) % kEntries;
   Object* result = get(index);
@@ -2229,7 +2423,7 @@ MaybeObject* NormalizedMapCache::Get(JSObject* obj,
     if (!maybe_result->ToObject(&result)) return maybe_result;
   }
   set(index, result);
-  COUNTERS->normalized_maps()->Increment();
+  isolate->counters()->normalized_maps()->Increment();
 
   return result;
 }
@@ -2289,7 +2483,7 @@ MaybeObject* JSObject::UpdateMapCodeCache(String* name, Code* code) {
                                                      UNIQUE_NORMALIZED_MAP);
       if (!maybe_obj->ToObject(&obj)) return maybe_obj;
     }
-    COUNTERS->normalized_maps()->Increment();
+    GetIsolate()->counters()->normalized_maps()->Increment();
 
     set_map(Map::cast(obj));
   }
@@ -2303,11 +2497,13 @@ MaybeObject* JSObject::NormalizeProperties(PropertyNormalizationMode mode,
 
   // The global object is always normalized.
   ASSERT(!IsGlobalObject());
+  // JSGlobalProxy must never be normalized
+  ASSERT(!IsJSGlobalProxy());
 
-  Heap* heap = GetHeap();
+  Map* map_of_this = map();
 
   // Allocate new content.
-  int property_count = map()->NumberOfDescribedProperties();
+  int property_count = map_of_this->NumberOfDescribedProperties();
   if (expected_additional_properties > 0) {
     property_count += expected_additional_properties;
   } else {
@@ -2320,7 +2516,7 @@ MaybeObject* JSObject::NormalizeProperties(PropertyNormalizationMode mode,
   }
   StringDictionary* dictionary = StringDictionary::cast(obj);
 
-  DescriptorArray* descs = map()->instance_descriptors();
+  DescriptorArray* descs = map_of_this->instance_descriptors();
   for (int i = 0; i < descs->number_of_descriptors(); i++) {
     PropertyDetails details = descs->GetDetails(i);
     switch (details.type()) {
@@ -2370,11 +2566,14 @@ MaybeObject* JSObject::NormalizeProperties(PropertyNormalizationMode mode,
     }
   }
 
+  Heap* current_heap = map_of_this->heap();
+
   // Copy the next enumeration index from instance descriptor.
-  int index = map()->instance_descriptors()->NextEnumerationIndex();
+  int index = map_of_this->instance_descriptors()->NextEnumerationIndex();
   dictionary->SetNextEnumerationIndex(index);
 
-  { MaybeObject* maybe_obj = heap->isolate()->context()->global_context()->
+  { MaybeObject* maybe_obj =
+        current_heap->isolate()->context()->global_context()->
         normalized_map_cache()->Get(this, mode);
     if (!maybe_obj->ToObject(&obj)) return maybe_obj;
   }
@@ -2385,17 +2584,17 @@ MaybeObject* JSObject::NormalizeProperties(PropertyNormalizationMode mode,
 
   // Resize the object in the heap if necessary.
   int new_instance_size = new_map->instance_size();
-  int instance_size_delta = map()->instance_size() - new_instance_size;
+  int instance_size_delta = map_of_this->instance_size() - new_instance_size;
   ASSERT(instance_size_delta >= 0);
-  heap->CreateFillerObjectAt(this->address() + new_instance_size,
-                             instance_size_delta);
+  current_heap->CreateFillerObjectAt(this->address() + new_instance_size,
+                                     instance_size_delta);
 
   set_map(new_map);
-  map()->set_instance_descriptors(heap->empty_descriptor_array());
+  new_map->set_instance_descriptors(current_heap->empty_descriptor_array());
 
   set_properties(dictionary);
 
-  heap->isolate()->counters()->props_to_dictionary()->Increment();
+  current_heap->isolate()->counters()->props_to_dictionary()->Increment();
 
 #ifdef DEBUG
   if (FLAG_trace_normalization) {
@@ -2416,12 +2615,13 @@ MaybeObject* JSObject::TransformToFastProperties(int unused_property_fields) {
 
 
 MaybeObject* JSObject::NormalizeElements() {
-  ASSERT(!HasPixelElements() && !HasExternalArrayElements());
+  ASSERT(!HasExternalArrayElements());
   if (HasDictionaryElements()) return this;
-  ASSERT(map()->has_fast_elements());
+  Map* old_map = map();
+  ASSERT(old_map->has_fast_elements());
 
   Object* obj;
-  { MaybeObject* maybe_obj = map()->GetSlowElementsMap();
+  { MaybeObject* maybe_obj = old_map->GetSlowElementsMap();
     if (!maybe_obj->ToObject(&obj)) return maybe_obj;
   }
   Map* new_map = Map::cast(obj);
@@ -2456,7 +2656,7 @@ MaybeObject* JSObject::NormalizeElements() {
   set_map(new_map);
   set_elements(dictionary);
 
-  new_map->GetHeap()->isolate()->counters()->elements_to_dictionary()->
+  new_map->heap()->isolate()->counters()->elements_to_dictionary()->
       Increment();
 
 #ifdef DEBUG
@@ -2473,10 +2673,9 @@ MaybeObject* JSObject::NormalizeElements() {
 MaybeObject* JSObject::DeletePropertyPostInterceptor(String* name,
                                                      DeleteMode mode) {
   // Check local property, ignore interceptor.
-  Heap* heap = GetHeap();
   LookupResult result;
   LocalLookupRealNamedProperty(name, &result);
-  if (!result.IsProperty()) return heap->true_value();
+  if (!result.IsProperty()) return GetHeap()->true_value();
 
   // Normalize object if needed.
   Object* obj;
@@ -2497,7 +2696,8 @@ MaybeObject* JSObject::DeletePropertyWithInterceptor(String* name) {
   if (!interceptor->deleter()->IsUndefined()) {
     v8::NamedPropertyDeleter deleter =
         v8::ToCData<v8::NamedPropertyDeleter>(interceptor->deleter());
-    LOG(ApiNamedPropertyAccess("interceptor-named-delete", *this_handle, name));
+    LOG(isolate,
+        ApiNamedPropertyAccess("interceptor-named-delete", *this_handle, name));
     CustomArguments args(isolate, interceptor->data(), this, this);
     v8::AccessorInfo info(args.end());
     v8::Handle<v8::Boolean> result;
@@ -2521,8 +2721,7 @@ MaybeObject* JSObject::DeletePropertyWithInterceptor(String* name) {
 
 MaybeObject* JSObject::DeleteElementPostInterceptor(uint32_t index,
                                                     DeleteMode mode) {
-  ASSERT(!HasPixelElements() && !HasExternalArrayElements());
-  Heap* heap = GetHeap();
+  ASSERT(!HasExternalArrayElements());
   switch (GetElementsKind()) {
     case FAST_ELEMENTS: {
       Object* obj;
@@ -2549,7 +2748,7 @@ MaybeObject* JSObject::DeleteElementPostInterceptor(uint32_t index,
       UNREACHABLE();
       break;
   }
-  return heap->true_value();
+  return GetHeap()->true_value();
 }
 
 
@@ -2565,7 +2764,8 @@ MaybeObject* JSObject::DeleteElementWithInterceptor(uint32_t index) {
   v8::IndexedPropertyDeleter deleter =
       v8::ToCData<v8::IndexedPropertyDeleter>(interceptor->deleter());
   Handle<JSObject> this_handle(this);
-  LOG(ApiIndexedPropertyAccess("interceptor-indexed-delete", this, index));
+  LOG(isolate,
+      ApiIndexedPropertyAccess("interceptor-indexed-delete", this, index));
   CustomArguments args(isolate, interceptor->data(), this, this);
   v8::AccessorInfo info(args.end());
   v8::Handle<v8::Boolean> result;
@@ -2624,7 +2824,7 @@ MaybeObject* JSObject::DeleteElement(uint32_t index, DeleteMode mode) {
       }
       break;
     }
-    case PIXEL_ELEMENTS:
+    case EXTERNAL_PIXEL_ELEMENTS:
     case EXTERNAL_BYTE_ELEMENTS:
     case EXTERNAL_UNSIGNED_BYTE_ELEMENTS:
     case EXTERNAL_SHORT_ELEMENTS:
@@ -2639,7 +2839,18 @@ MaybeObject* JSObject::DeleteElement(uint32_t index, DeleteMode mode) {
       NumberDictionary* dictionary = element_dictionary();
       int entry = dictionary->FindEntry(index);
       if (entry != NumberDictionary::kNotFound) {
-        return dictionary->DeleteProperty(entry, mode);
+        Object* result = dictionary->DeleteProperty(entry, mode);
+        if (mode == STRICT_DELETION && result ==
+            isolate->heap()->false_value()) {
+          // In strict mode, deleting a non-configurable property throws
+          // exception. dictionary->DeleteProperty will return false_value()
+          // if a non-configurable property is being deleted.
+          HandleScope scope;
+          Handle<Object> i = isolate->factory()->NewNumberFromUint(index);
+          Handle<Object> args[2] = { i, Handle<Object>(this) };
+          return isolate->Throw(*isolate->factory()->NewTypeError(
+              "strict_delete_property", HandleVector(args, 2)));
+        }
       }
       break;
     }
@@ -2679,6 +2890,13 @@ MaybeObject* JSObject::DeleteProperty(String* name, DeleteMode mode) {
     if (!result.IsProperty()) return isolate->heap()->true_value();
     // Ignore attributes if forcing a deletion.
     if (result.IsDontDelete() && mode != FORCE_DELETION) {
+      if (mode == STRICT_DELETION) {
+        // Deleting a non-configurable property in strict mode.
+        HandleScope scope(isolate);
+        Handle<Object> args[2] = { Handle<Object>(name), Handle<Object>(this) };
+        return isolate->Throw(*isolate->factory()->NewTypeError(
+            "strict_delete_property", HandleVector(args, 2)));
+      }
       return isolate->heap()->false_value();
     }
     // Check for interceptor.
@@ -2703,16 +2921,17 @@ MaybeObject* JSObject::DeleteProperty(String* name, DeleteMode mode) {
 
 // Check whether this object references another object.
 bool JSObject::ReferencesObject(Object* obj) {
-  Heap* heap = GetHeap();
+  Map* map_of_this = map();
+  Heap* heap = map_of_this->heap();
   AssertNoAllocation no_alloc;
 
   // Is the object the constructor for this object?
-  if (map()->constructor() == obj) {
+  if (map_of_this->constructor() == obj) {
     return true;
   }
 
   // Is the object the prototype for this object?
-  if (map()->prototype() == obj) {
+  if (map_of_this->prototype() == obj) {
     return true;
   }
 
@@ -2724,7 +2943,7 @@ bool JSObject::ReferencesObject(Object* obj) {
 
   // Check if the object is among the indexed properties.
   switch (GetElementsKind()) {
-    case PIXEL_ELEMENTS:
+    case EXTERNAL_PIXEL_ELEMENTS:
     case EXTERNAL_BYTE_ELEMENTS:
     case EXTERNAL_UNSIGNED_BYTE_ELEMENTS:
     case EXTERNAL_SHORT_ELEMENTS:
@@ -2803,6 +3022,22 @@ bool JSObject::ReferencesObject(Object* obj) {
 
 
 MaybeObject* JSObject::PreventExtensions() {
+  Isolate* isolate = GetIsolate();
+  if (IsAccessCheckNeeded() &&
+      !isolate->MayNamedAccess(this,
+                               isolate->heap()->undefined_value(),
+                               v8::ACCESS_KEYS)) {
+    isolate->ReportFailedAccessCheck(this, v8::ACCESS_KEYS);
+    return isolate->heap()->false_value();
+  }
+
+  if (IsJSGlobalProxy()) {
+    Object* proto = GetPrototype();
+    if (proto->IsNull()) return this;
+    ASSERT(proto->IsJSGlobalObject());
+    return JSObject::cast(proto)->PreventExtensions();
+  }
+
   // If there are fast elements we normalize.
   if (HasFastElements()) {
     Object* ok;
@@ -2974,13 +3209,12 @@ MaybeObject* JSObject::DefineGetterSetter(String* name,
 
   uint32_t index = 0;
   bool is_element = name->AsArrayIndex(&index);
-  if (is_element && IsJSArray()) return heap->undefined_value();
 
   if (is_element) {
     switch (GetElementsKind()) {
       case FAST_ELEMENTS:
         break;
-      case PIXEL_ELEMENTS:
+      case EXTERNAL_PIXEL_ELEMENTS:
       case EXTERNAL_BYTE_ELEMENTS:
       case EXTERNAL_UNSIGNED_BYTE_ELEMENTS:
       case EXTERNAL_SHORT_ELEMENTS:
@@ -3117,6 +3351,10 @@ MaybeObject* JSObject::SetPropertyCallback(String* name,
       if (!maybe_new_map->ToObject(&new_map)) return maybe_new_map;
     }
     set_map(Map::cast(new_map));
+    // When running crankshaft, changing the map is not enough. We
+    // need to deoptimize all functions that rely on this global
+    // object.
+    Deoptimizer::DeoptimizeGlobalObject(this);
   }
 
   // Update the dictionary with the new CALLBACKS property.
@@ -3135,8 +3373,9 @@ MaybeObject* JSObject::SetPropertyCallback(String* name,
 
 MaybeObject* JSObject::DefineAccessor(String* name,
                                       bool is_getter,
-                                      JSFunction* fun,
+                                      Object* fun,
                                       PropertyAttributes attributes) {
+  ASSERT(fun->IsJSFunction() || fun->IsUndefined());
   Isolate* isolate = GetIsolate();
   // Check access rights if needed.
   if (IsAccessCheckNeeded() &&
@@ -3201,7 +3440,7 @@ MaybeObject* JSObject::DefineAccessor(AccessorInfo* info) {
     switch (GetElementsKind()) {
       case FAST_ELEMENTS:
         break;
-      case PIXEL_ELEMENTS:
+      case EXTERNAL_PIXEL_ELEMENTS:
       case EXTERNAL_BYTE_ELEMENTS:
       case EXTERNAL_UNSIGNED_BYTE_ELEMENTS:
       case EXTERNAL_SHORT_ELEMENTS:
@@ -3302,7 +3541,6 @@ Object* JSObject::LookupAccessor(String* name, bool is_getter) {
 
 
 Object* JSObject::SlowReverseLookup(Object* value) {
-  Heap* heap = GetHeap();
   if (HasFastProperties()) {
     DescriptorArray* descs = map()->instance_descriptors();
     for (int i = 0; i < descs->number_of_descriptors(); i++) {
@@ -3316,7 +3554,7 @@ Object* JSObject::SlowReverseLookup(Object* value) {
         }
       }
     }
-    return heap->undefined_value();
+    return GetHeap()->undefined_value();
   } else {
     return property_dictionary()->SlowReverseLookup(value);
   }
@@ -3420,7 +3658,7 @@ MaybeObject* Map::UpdateCodeCache(String* name, Code* code) {
   // Allocate the code cache if not present.
   if (code_cache()->IsFixedArray()) {
     Object* result;
-    { MaybeObject* maybe_result = GetHeap()->AllocateCodeCache();
+    { MaybeObject* maybe_result = code->heap()->AllocateCodeCache();
       if (!maybe_result->ToObject(&result)) return maybe_result;
     }
     set_code_cache(result);
@@ -3606,7 +3844,6 @@ Object* CodeCache::Lookup(String* name, Code::Flags flags) {
 
 
 Object* CodeCache::LookupDefaultCache(String* name, Code::Flags flags) {
-  Heap* heap = GetHeap();
   FixedArray* cache = default_cache();
   int length = cache->length();
   for (int i = 0; i < length; i += kCodeCacheEntrySize) {
@@ -3621,7 +3858,7 @@ Object* CodeCache::LookupDefaultCache(String* name, Code::Flags flags) {
       }
     }
   }
-  return heap->undefined_value();
+  return GetHeap()->undefined_value();
 }
 
 
@@ -3712,7 +3949,7 @@ class CodeCacheHashTableKey : public HashTableKey {
   MUST_USE_RESULT MaybeObject* AsObject() {
     ASSERT(code_ != NULL);
     Object* obj;
-    { MaybeObject* maybe_obj = code_->GetHeap()->AllocateFixedArray(2);
+    { MaybeObject* maybe_obj = code_->heap()->AllocateFixedArray(2);
       if (!maybe_obj->ToObject(&obj)) return maybe_obj;
     }
     FixedArray* pair = FixedArray::cast(obj);
@@ -3790,8 +4027,7 @@ static bool HasKey(FixedArray* array, Object* key) {
 
 
 MaybeObject* FixedArray::AddKeysFromJSArray(JSArray* array) {
-  Heap* heap = GetHeap();
-  ASSERT(!array->HasPixelElements() && !array->HasExternalArrayElements());
+  ASSERT(!array->HasExternalArrayElements());
   switch (array->GetElementsKind()) {
     case JSObject::FAST_ELEMENTS:
       return UnionOfKeys(FixedArray::cast(array->elements()));
@@ -3801,7 +4037,7 @@ MaybeObject* FixedArray::AddKeysFromJSArray(JSArray* array) {
 
       // Allocate a temporary fixed array.
       Object* object;
-      { MaybeObject* maybe_object = heap->AllocateFixedArray(size);
+      { MaybeObject* maybe_object = GetHeap()->AllocateFixedArray(size);
         if (!maybe_object->ToObject(&object)) return maybe_object;
       }
       FixedArray* key_array = FixedArray::cast(object);
@@ -3821,12 +4057,11 @@ MaybeObject* FixedArray::AddKeysFromJSArray(JSArray* array) {
       UNREACHABLE();
   }
   UNREACHABLE();
-  return heap->null_value();  // Failure case needs to "return" a value.
+  return GetHeap()->null_value();  // Failure case needs to "return" a value.
 }
 
 
 MaybeObject* FixedArray::UnionOfKeys(FixedArray* other) {
-  Heap* heap = GetHeap();
   int len0 = length();
 #ifdef DEBUG
   if (FLAG_enable_slow_asserts) {
@@ -3852,7 +4087,7 @@ MaybeObject* FixedArray::UnionOfKeys(FixedArray* other) {
 
   // Allocate the result
   Object* obj;
-  { MaybeObject* maybe_obj = heap->AllocateFixedArray(len0 + extra);
+  { MaybeObject* maybe_obj = GetHeap()->AllocateFixedArray(len0 + extra);
     if (!maybe_obj->ToObject(&obj)) return maybe_obj;
   }
   // Fill in the content
@@ -4203,6 +4438,22 @@ int DescriptorArray::LinearSearch(String* name, int len) {
 }
 
 
+MaybeObject* DeoptimizationInputData::Allocate(int deopt_entry_count,
+                                               PretenureFlag pretenure) {
+  ASSERT(deopt_entry_count > 0);
+  return HEAP->AllocateFixedArray(LengthFor(deopt_entry_count),
+                                  pretenure);
+}
+
+
+MaybeObject* DeoptimizationOutputData::Allocate(int number_of_deopt_points,
+                                                PretenureFlag pretenure) {
+  if (number_of_deopt_points == 0) return HEAP->empty_fixed_array();
+  return HEAP->AllocateFixedArray(LengthOfFixedArray(number_of_deopt_points),
+                                  pretenure);
+}
+
+
 #ifdef DEBUG
 bool DescriptorArray::IsEqualTo(DescriptorArray* other) {
   if (IsEmpty()) return other->IsEmpty();
@@ -4217,7 +4468,7 @@ bool DescriptorArray::IsEqualTo(DescriptorArray* other) {
 
 
 bool String::LooksValid() {
-  if (!GetHeap()->Contains(this)) return false;
+  if (!Isolate::Current()->heap()->Contains(this)) return false;
   return true;
 }
 
@@ -4297,11 +4548,10 @@ SmartPointer<char> String::ToCString(AllowNullsFlag allow_nulls,
                                      int offset,
                                      int length,
                                      int* length_return) {
-  ASSERT(NativeAllocationChecker::allocation_allowed());
-  Heap* heap = GetHeap();
   if (robust_flag == ROBUST_STRING_TRAVERSAL && !LooksValid()) {
     return SmartPointer<char>(NULL);
   }
+  Heap* heap = GetHeap();
 
   // Negative length means the to the end of the string.
   if (length < 0) length = kMaxInt - offset;
@@ -4377,12 +4627,10 @@ const uc16* String::GetTwoByteData(unsigned start) {
 
 
 SmartPointer<uc16> String::ToWideCString(RobustnessFlag robust_flag) {
-  Heap* heap = GetHeap();
-  ASSERT(NativeAllocationChecker::allocation_allowed());
-
   if (robust_flag == ROBUST_STRING_TRAVERSAL && !LooksValid()) {
     return SmartPointer<uc16>();
   }
+  Heap* heap = GetHeap();
 
   Access<StringInputBuffer> buffer(
       heap->isolate()->objects_string_input_buffer());
@@ -5084,8 +5332,6 @@ static inline bool CompareStringContentsPartial(Isolate* isolate,
 
 
 bool String::SlowEquals(String* other) {
-  Heap* heap = GetHeap();
-
   // Fast check: negative check with lengths.
   int len = length();
   if (len != other->length()) return false;
@@ -5112,7 +5358,7 @@ bool String::SlowEquals(String* other) {
                                     Vector<const char>(str2, len));
   }
 
-  Isolate* isolate = heap->isolate();
+  Isolate* isolate = GetIsolate();
   if (lhs->IsFlat()) {
     if (lhs->IsAsciiRepresentation()) {
       Vector<const char> vec1 = lhs->ToAsciiVector();
@@ -5161,7 +5407,7 @@ bool String::MarkAsUndetectable() {
   if (StringShape(this).IsSymbol()) return false;
 
   Map* map = this->map();
-  Heap* heap = map->GetHeap();
+  Heap* heap = map->heap();
   if (map == heap->string_map()) {
     this->set_map(heap->undetectable_string_map());
     return true;
@@ -5189,19 +5435,23 @@ bool String::IsEqualTo(Vector<const char> str) {
 }
 
 
-template <typename schar>
-static inline uint32_t HashSequentialString(const schar* chars, int length) {
-  StringHasher hasher(length);
-  if (!hasher.has_trivial_hash()) {
-    int i;
-    for (i = 0; hasher.is_array_index() && (i < length); i++) {
-      hasher.AddCharacter(chars[i]);
-    }
-    for (; i < length; i++) {
-      hasher.AddCharacterNoIndex(chars[i]);
-    }
+bool String::IsAsciiEqualTo(Vector<const char> str) {
+  int slen = length();
+  if (str.length() != slen) return false;
+  for (int i = 0; i < slen; i++) {
+    if (Get(i) != static_cast<uint16_t>(str[i])) return false;
   }
-  return hasher.GetHashField();
+  return true;
+}
+
+
+bool String::IsTwoByteEqualTo(Vector<const uc16> str) {
+  int slen = length();
+  if (str.length() != slen) return false;
+  for (int i = 0; i < slen; i++) {
+    if (Get(i) != str[i]) return false;
+  }
+  return true;
 }
 
 
@@ -5355,6 +5605,7 @@ void Map::CreateBackPointers() {
   DescriptorArray* descriptors = instance_descriptors();
   for (int i = 0; i < descriptors->number_of_descriptors(); i++) {
     if (descriptors->GetType(i) == MAP_TRANSITION ||
+        descriptors->GetType(i) == EXTERNAL_ARRAY_TRANSITION ||
         descriptors->GetType(i) == CONSTANT_TRANSITION) {
       // Get target.
       Map* target = Map::cast(descriptors->GetValue(i));
@@ -5397,6 +5648,7 @@ void Map::ClearNonLiveTransitions(Heap* heap, Object* real_prototype) {
     // non-live object.
     PropertyDetails details(Smi::cast(contents->get(i + 1)));
     if (details.type() == MAP_TRANSITION ||
+        details.type() == EXTERNAL_ARRAY_TRANSITION ||
         details.type() == CONSTANT_TRANSITION) {
       Map* target = reinterpret_cast<Map*>(contents->get(i));
       ASSERT(target->IsHeapObject());
@@ -5420,6 +5672,42 @@ void JSFunction::JSFunctionIterateBody(int object_size, ObjectVisitor* v) {
   IteratePointers(v, kPropertiesOffset, kCodeEntryOffset);
   v->VisitCodeEntry(this->address() + kCodeEntryOffset);
   IteratePointers(v, kCodeEntryOffset + kPointerSize, object_size);
+}
+
+
+void JSFunction::MarkForLazyRecompilation() {
+  ASSERT(is_compiled() && !IsOptimized());
+  ASSERT(shared()->allows_lazy_compilation() ||
+         code()->optimizable());
+  Builtins* builtins = GetIsolate()->builtins();
+  ReplaceCode(builtins->builtin(Builtins::kLazyRecompile));
+}
+
+
+uint32_t JSFunction::SourceHash() {
+  uint32_t hash = 0;
+  Object* script = shared()->script();
+  if (!script->IsUndefined()) {
+    Object* source = Script::cast(script)->source();
+    if (source->IsUndefined()) hash = String::cast(source)->Hash();
+  }
+  hash ^= ComputeIntegerHash(shared()->start_position_and_type());
+  hash += ComputeIntegerHash(shared()->end_position());
+  return hash;
+}
+
+
+bool JSFunction::IsInlineable() {
+  if (IsBuiltin()) return false;
+  SharedFunctionInfo* shared_info = shared();
+  // Check that the function has a script associated with it.
+  if (!shared_info->script()->IsScript()) return false;
+  if (shared_info->optimization_disabled()) return false;
+  Code* code = shared_info->code();
+  if (code->kind() == Code::OPTIMIZED_FUNCTION) return true;
+  // If we never ran this (unlikely) then lets try to optimize it.
+  if (code->kind() != Code::FUNCTION) return true;
+  return code->optimizable();
 }
 
 
@@ -5448,17 +5736,18 @@ MaybeObject* JSFunction::SetPrototype(Object* value) {
   // used for constructing objects to the original object prototype.
   // See ECMA-262 13.2.2.
   if (!value->IsJSObject()) {
-    Heap* heap = GetHeap();
     // Copy the map so this does not affect unrelated functions.
     // Remove map transitions because they point to maps with a
     // different prototype.
-    Object* new_map;
+    Object* new_object;
     { MaybeObject* maybe_new_map = map()->CopyDropTransitions();
-      if (!maybe_new_map->ToObject(&new_map)) return maybe_new_map;
+      if (!maybe_new_map->ToObject(&new_object)) return maybe_new_map;
     }
-    set_map(Map::cast(new_map));
-    map()->set_constructor(value);
-    map()->set_non_instance_prototype(true);
+    Map* new_map = Map::cast(new_object);
+    Heap* heap = new_map->heap();
+    set_map(new_map);
+    new_map->set_constructor(value);
+    new_map->set_non_instance_prototype(true);
     construct_prototype =
         heap->isolate()->context()->global_context()->
             initial_object_prototype();
@@ -5471,10 +5760,22 @@ MaybeObject* JSFunction::SetPrototype(Object* value) {
 
 
 Object* JSFunction::RemovePrototype() {
-  ASSERT(map() == context()->global_context()->function_map());
-  Heap* heap = GetHeap();
-  set_map(context()->global_context()->function_without_prototype_map());
-  set_prototype_or_initial_map(heap->the_hole_value());
+  Context* global_context = context()->global_context();
+  Map* no_prototype_map = shared()->strict_mode()
+      ? global_context->strict_mode_function_without_prototype_map()
+      : global_context->function_without_prototype_map();
+
+  if (map() == no_prototype_map) {
+    // Be idempotent.
+    return this;
+  }
+
+  ASSERT(!shared()->strict_mode() ||
+         map() == global_context->strict_mode_function_map());
+  ASSERT(shared()->strict_mode() || map() == global_context->function_map());
+
+  set_map(no_prototype_map);
+  set_prototype_or_initial_map(no_prototype_map->heap()->the_hole_value());
   return this;
 }
 
@@ -5482,6 +5783,12 @@ Object* JSFunction::RemovePrototype() {
 Object* JSFunction::SetInstanceClassName(String* name) {
   shared()->set_instance_class_name(name);
   return this;
+}
+
+
+void JSFunction::PrintName(FILE* out) {
+  SmartPointer<char> name = shared()->DebugName()->ToCString();
+  PrintF(out, "%s", *name);
 }
 
 
@@ -5519,13 +5826,17 @@ bool SharedFunctionInfo::HasSourceCode() {
 
 
 Object* SharedFunctionInfo::GetSourceCode() {
-  Heap* heap = GetHeap();
-  HandleScope scope;
-  if (script()->IsUndefined()) return heap->undefined_value();
+  Isolate* isolate = GetIsolate();
+  if (!HasSourceCode()) return isolate->heap()->undefined_value();
+  HandleScope scope(isolate);
   Object* source = Script::cast(script())->source();
-  if (source->IsUndefined()) return heap->undefined_value();
-  return *SubString(Handle<String>(String::cast(source)),
+  return *SubString(Handle<String>(String::cast(source), isolate),
                     start_position(), end_position());
+}
+
+
+int SharedFunctionInfo::SourceSize() {
+  return end_position() - start_position();
 }
 
 
@@ -5546,8 +5857,6 @@ int SharedFunctionInfo::CalculateInObjectProperties() {
 
 
 bool SharedFunctionInfo::CanGenerateInlineConstructor(Object* prototype) {
-  Heap* heap = GetHeap();
-
   // Check the basic conditions for generating inline constructor code.
   if (!FLAG_inline_new
       || !has_only_simple_this_property_assignments()
@@ -5560,6 +5869,8 @@ bool SharedFunctionInfo::CanGenerateInlineConstructor(Object* prototype) {
     ASSERT(prototype->IsNull());
     return true;
   }
+
+  Heap* heap = GetHeap();
 
   // Traverse the proposed prototype chain looking for setters for properties of
   // the same names as are set by the inline constructor.
@@ -5649,8 +5960,7 @@ Object* SharedFunctionInfo::GetThisPropertyAssignmentConstant(int index) {
 void SharedFunctionInfo::SourceCodePrint(StringStream* accumulator,
                                          int max_length) {
   // For some native functions there is no source.
-  if (script()->IsUndefined() ||
-      Script::cast(script())->source()->IsUndefined()) {
+  if (!HasSourceCode()) {
     accumulator->Add("<No Source>");
     return;
   }
@@ -5675,14 +5985,60 @@ void SharedFunctionInfo::SourceCodePrint(StringStream* accumulator,
   }
 
   int len = end_position() - start_position();
-  if (len > max_length) {
+  if (len <= max_length || max_length < 0) {
+    accumulator->Put(script_source, start_position(), end_position());
+  } else {
     accumulator->Put(script_source,
                      start_position(),
                      start_position() + max_length);
     accumulator->Add("...\n");
-  } else {
-    accumulator->Put(script_source, start_position(), end_position());
   }
+}
+
+
+static bool IsCodeEquivalent(Code* code, Code* recompiled) {
+  if (code->instruction_size() != recompiled->instruction_size()) return false;
+  ByteArray* code_relocation = code->relocation_info();
+  ByteArray* recompiled_relocation = recompiled->relocation_info();
+  int length = code_relocation->length();
+  if (length != recompiled_relocation->length()) return false;
+  int compare = memcmp(code_relocation->GetDataStartAddress(),
+                       recompiled_relocation->GetDataStartAddress(),
+                       length);
+  return compare == 0;
+}
+
+
+void SharedFunctionInfo::EnableDeoptimizationSupport(Code* recompiled) {
+  ASSERT(!has_deoptimization_support());
+  AssertNoAllocation no_allocation;
+  Code* code = this->code();
+  if (IsCodeEquivalent(code, recompiled)) {
+    // Copy the deoptimization data from the recompiled code.
+    code->set_deoptimization_data(recompiled->deoptimization_data());
+    code->set_has_deoptimization_support(true);
+  } else {
+    // TODO(3025757): In case the recompiled isn't equivalent to the
+    // old code, we have to replace it. We should try to avoid this
+    // altogether because it flushes valuable type feedback by
+    // effectively resetting all IC state.
+    set_code(recompiled);
+  }
+  ASSERT(has_deoptimization_support());
+}
+
+
+bool SharedFunctionInfo::VerifyBailoutId(int id) {
+  // TODO(srdjan): debugging ARM crashes in hydrogen. OK to disable while
+  // we are always bailing out on ARM.
+
+  ASSERT(id != AstNode::kNoNumber);
+  Code* unoptimized = code();
+  DeoptimizationOutputData* data =
+      DeoptimizationOutputData::cast(unoptimized->deoptimization_data());
+  unsigned ignore = Deoptimizer::GetOutputInfo(data, id, this);
+  USE(ignore);
+  return true;  // Return true if there was no ASSERT.
 }
 
 
@@ -5705,9 +6061,9 @@ void SharedFunctionInfo::StartInobjectSlackTracking(Map* map) {
   }
   set_initial_map(map);
   Builtins* builtins = map->heap()->isolate()->builtins();
-  ASSERT_EQ(builtins->builtin(Builtins::JSConstructStubGeneric),
+  ASSERT_EQ(builtins->builtin(Builtins::kJSConstructStubGeneric),
             construct_stub());
-  set_construct_stub(builtins->builtin(Builtins::JSConstructStubCountdown));
+  set_construct_stub(builtins->builtin(Builtins::kJSConstructStubCountdown));
 }
 
 
@@ -5726,9 +6082,9 @@ void SharedFunctionInfo::DetachInitialMap() {
   // several more GCs) CompleteInobjectSlackTracking will eventually be called.
   set_initial_map(map->heap()->raw_unchecked_undefined_value());
   Builtins* builtins = map->heap()->isolate()->builtins();
-  ASSERT_EQ(builtins->builtin(Builtins::JSConstructStubCountdown),
+  ASSERT_EQ(builtins->builtin(Builtins::kJSConstructStubCountdown),
             *RawField(this, kConstructStubOffset));
-  set_construct_stub(builtins->builtin(Builtins::JSConstructStubGeneric));
+  set_construct_stub(builtins->builtin(Builtins::kJSConstructStubGeneric));
   // It is safe to clear the flag: it will be set again if the map is live.
   set_live_objects_may_exist(false);
 }
@@ -5742,9 +6098,9 @@ void SharedFunctionInfo::AttachInitialMap(Map* map) {
   // Resume inobject slack tracking.
   set_initial_map(map);
   Builtins* builtins = map->heap()->isolate()->builtins();
-  ASSERT_EQ(builtins->builtin(Builtins::JSConstructStubGeneric),
+  ASSERT_EQ(builtins->builtin(Builtins::kJSConstructStubGeneric),
             *RawField(this, kConstructStubOffset));
-  set_construct_stub(builtins->builtin(Builtins::JSConstructStubCountdown));
+  set_construct_stub(builtins->builtin(Builtins::kJSConstructStubCountdown));
   // The map survived the gc, so there may be objects referencing it.
   set_live_objects_may_exist(true);
 }
@@ -5776,9 +6132,9 @@ void SharedFunctionInfo::CompleteInobjectSlackTracking() {
   Heap* heap = map->heap();
   set_initial_map(heap->undefined_value());
   Builtins* builtins = heap->isolate()->builtins();
-  ASSERT_EQ(builtins->builtin(Builtins::JSConstructStubCountdown),
+  ASSERT_EQ(builtins->builtin(Builtins::kJSConstructStubCountdown),
             construct_stub());
-  set_construct_stub(builtins->builtin(Builtins::JSConstructStubGeneric));
+  set_construct_stub(builtins->builtin(Builtins::kJSConstructStubGeneric));
 
   int slack = map->unused_property_fields();
   map->TraverseTransitionTree(&GetMinInobjectSlack, &slack);
@@ -5811,6 +6167,17 @@ void ObjectVisitor::VisitCodeEntry(Address entry_address) {
 }
 
 
+void ObjectVisitor::VisitGlobalPropertyCell(RelocInfo* rinfo) {
+  ASSERT(rinfo->rmode() == RelocInfo::GLOBAL_PROPERTY_CELL);
+  Object* cell = rinfo->target_cell();
+  Object* old_cell = cell;
+  VisitPointer(&cell);
+  if (cell != old_cell) {
+    rinfo->set_target_cell(reinterpret_cast<JSGlobalPropertyCell*>(cell));
+  }
+}
+
+
 void ObjectVisitor::VisitDebugTarget(RelocInfo* rinfo) {
   ASSERT((RelocInfo::IsJSReturn(rinfo->rmode()) &&
           rinfo->IsPatchedReturnSequence()) ||
@@ -5820,6 +6187,11 @@ void ObjectVisitor::VisitDebugTarget(RelocInfo* rinfo) {
   Object* old_target = target;
   VisitPointer(&target);
   CHECK_EQ(target, old_target);  // VisitPointer doesn't change Code* *target.
+}
+
+
+void Code::InvalidateRelocation() {
+  set_relocation_info(heap()->empty_byte_array());
 }
 
 
@@ -5844,6 +6216,7 @@ void Code::CopyFrom(const CodeDesc& desc) {
   intptr_t delta = instruction_start() - desc.buffer;
   int mode_mask = RelocInfo::kCodeTargetMask |
                   RelocInfo::ModeMask(RelocInfo::EMBEDDED_OBJECT) |
+                  RelocInfo::ModeMask(RelocInfo::GLOBAL_PROPERTY_CELL) |
                   RelocInfo::kApplyMask;
   Assembler* origin = desc.origin;  // Needed to find target_object on X64.
   for (RelocIterator it(this, mode_mask); !it.done(); it.next()) {
@@ -5851,6 +6224,9 @@ void Code::CopyFrom(const CodeDesc& desc) {
     if (mode == RelocInfo::EMBEDDED_OBJECT) {
       Handle<Object> p = it.rinfo()->target_object_handle(origin);
       it.rinfo()->set_target_object(*p);
+    } else if (mode == RelocInfo::GLOBAL_PROPERTY_CELL) {
+      Handle<JSGlobalPropertyCell> cell = it.rinfo()->target_cell_handle();
+      it.rinfo()->set_target_cell(*cell);
     } else if (RelocInfo::IsCodeTarget(mode)) {
       // rewrite code handles in inline cache targets to direct
       // pointers to the first instruction in the code object
@@ -5921,20 +6297,203 @@ int Code::SourceStatementPosition(Address pc) {
 }
 
 
+SafepointEntry Code::GetSafepointEntry(Address pc) {
+  SafepointTable table(this);
+  return table.FindEntry(pc);
+}
+
+
+void Code::SetNoStackCheckTable() {
+  // Indicate the absence of a stack-check table by a table start after the
+  // end of the instructions.  Table start must be aligned, so round up.
+  set_stack_check_table_offset(RoundUp(instruction_size(), kIntSize));
+}
+
+
+Map* Code::FindFirstMap() {
+  ASSERT(is_inline_cache_stub());
+  AssertNoAllocation no_allocation;
+  int mask = RelocInfo::ModeMask(RelocInfo::EMBEDDED_OBJECT);
+  for (RelocIterator it(this, mask); !it.done(); it.next()) {
+    RelocInfo* info = it.rinfo();
+    Object* object = info->target_object();
+    if (object->IsMap()) return Map::cast(object);
+  }
+  return NULL;
+}
+
+
 #ifdef ENABLE_DISASSEMBLER
+
+#ifdef OBJECT_PRINT
+
+void DeoptimizationInputData::DeoptimizationInputDataPrint(FILE* out) {
+  disasm::NameConverter converter;
+  int deopt_count = DeoptCount();
+  PrintF(out, "Deoptimization Input Data (deopt points = %d)\n", deopt_count);
+  if (0 == deopt_count) return;
+
+  PrintF(out, "%6s  %6s  %6s  %12s\n", "index", "ast id", "argc", "commands");
+  for (int i = 0; i < deopt_count; i++) {
+    int command_count = 0;
+    PrintF(out, "%6d  %6d  %6d",
+           i, AstId(i)->value(), ArgumentsStackHeight(i)->value());
+    int translation_index = TranslationIndex(i)->value();
+    TranslationIterator iterator(TranslationByteArray(), translation_index);
+    Translation::Opcode opcode =
+        static_cast<Translation::Opcode>(iterator.Next());
+    ASSERT(Translation::BEGIN == opcode);
+    int frame_count = iterator.Next();
+    if (FLAG_print_code_verbose) {
+      PrintF(out, "  %s {count=%d}\n", Translation::StringFor(opcode),
+             frame_count);
+    }
+
+    for (int i = 0; i < frame_count; ++i) {
+      opcode = static_cast<Translation::Opcode>(iterator.Next());
+      ASSERT(Translation::FRAME == opcode);
+      int ast_id = iterator.Next();
+      int function_id = iterator.Next();
+      JSFunction* function =
+          JSFunction::cast(LiteralArray()->get(function_id));
+      unsigned height = iterator.Next();
+      if (FLAG_print_code_verbose) {
+        PrintF(out, "%24s  %s {ast_id=%d, function=",
+               "", Translation::StringFor(opcode), ast_id);
+        function->PrintName(out);
+        PrintF(out, ", height=%u}\n", height);
+      }
+
+      // Size of translation is height plus all incoming arguments including
+      // receiver.
+      int size = height + function->shared()->formal_parameter_count() + 1;
+      command_count += size;
+      for (int j = 0; j < size; ++j) {
+        opcode = static_cast<Translation::Opcode>(iterator.Next());
+        if (FLAG_print_code_verbose) {
+          PrintF(out, "%24s    %s ", "", Translation::StringFor(opcode));
+        }
+
+        if (opcode == Translation::DUPLICATE) {
+          opcode = static_cast<Translation::Opcode>(iterator.Next());
+          if (FLAG_print_code_verbose) {
+            PrintF(out, "%s ", Translation::StringFor(opcode));
+          }
+          --j;  // Two commands share the same frame index.
+        }
+
+        switch (opcode) {
+          case Translation::BEGIN:
+          case Translation::FRAME:
+          case Translation::DUPLICATE:
+            UNREACHABLE();
+            break;
+
+          case Translation::REGISTER: {
+            int reg_code = iterator.Next();
+            if (FLAG_print_code_verbose)  {
+              PrintF(out, "{input=%s}", converter.NameOfCPURegister(reg_code));
+            }
+            break;
+          }
+
+          case Translation::INT32_REGISTER: {
+            int reg_code = iterator.Next();
+            if (FLAG_print_code_verbose)  {
+              PrintF(out, "{input=%s}", converter.NameOfCPURegister(reg_code));
+            }
+            break;
+          }
+
+          case Translation::DOUBLE_REGISTER: {
+            int reg_code = iterator.Next();
+            if (FLAG_print_code_verbose)  {
+              PrintF(out, "{input=%s}",
+                     DoubleRegister::AllocationIndexToString(reg_code));
+            }
+            break;
+          }
+
+          case Translation::STACK_SLOT: {
+            int input_slot_index = iterator.Next();
+            if (FLAG_print_code_verbose)  {
+              PrintF(out, "{input=%d}", input_slot_index);
+            }
+            break;
+          }
+
+          case Translation::INT32_STACK_SLOT: {
+            int input_slot_index = iterator.Next();
+            if (FLAG_print_code_verbose)  {
+              PrintF(out, "{input=%d}", input_slot_index);
+            }
+            break;
+          }
+
+          case Translation::DOUBLE_STACK_SLOT: {
+            int input_slot_index = iterator.Next();
+            if (FLAG_print_code_verbose)  {
+              PrintF(out, "{input=%d}", input_slot_index);
+            }
+            break;
+          }
+
+          case Translation::LITERAL: {
+            unsigned literal_index = iterator.Next();
+            if (FLAG_print_code_verbose)  {
+              PrintF(out, "{literal_id=%u}", literal_index);
+            }
+            break;
+          }
+
+          case Translation::ARGUMENTS_OBJECT:
+            break;
+        }
+        if (FLAG_print_code_verbose) PrintF(out, "\n");
+      }
+    }
+    if (!FLAG_print_code_verbose) PrintF(out, "  %12d\n", command_count);
+  }
+}
+
+
+void DeoptimizationOutputData::DeoptimizationOutputDataPrint(FILE* out) {
+  PrintF(out, "Deoptimization Output Data (deopt points = %d)\n",
+         this->DeoptPoints());
+  if (this->DeoptPoints() == 0) return;
+
+  PrintF("%6s  %8s  %s\n", "ast id", "pc", "state");
+  for (int i = 0; i < this->DeoptPoints(); i++) {
+    int pc_and_state = this->PcAndState(i)->value();
+    PrintF("%6d  %8d  %s\n",
+           this->AstId(i)->value(),
+           FullCodeGenerator::PcField::decode(pc_and_state),
+           FullCodeGenerator::State2String(
+               FullCodeGenerator::StateField::decode(pc_and_state)));
+  }
+}
+
+#endif
+
+
 // Identify kind of code.
 const char* Code::Kind2String(Kind kind) {
   switch (kind) {
     case FUNCTION: return "FUNCTION";
+    case OPTIMIZED_FUNCTION: return "OPTIMIZED_FUNCTION";
     case STUB: return "STUB";
     case BUILTIN: return "BUILTIN";
     case LOAD_IC: return "LOAD_IC";
     case KEYED_LOAD_IC: return "KEYED_LOAD_IC";
+    case KEYED_EXTERNAL_ARRAY_LOAD_IC: return "KEYED_EXTERNAL_ARRAY_LOAD_IC";
     case STORE_IC: return "STORE_IC";
     case KEYED_STORE_IC: return "KEYED_STORE_IC";
+    case KEYED_EXTERNAL_ARRAY_STORE_IC: return "KEYED_EXTERNAL_ARRAY_STORE_IC";
     case CALL_IC: return "CALL_IC";
     case KEYED_CALL_IC: return "KEYED_CALL_IC";
     case BINARY_OP_IC: return "BINARY_OP_IC";
+    case TYPE_RECORDING_BINARY_OP_IC: return "TYPE_RECORDING_BINARY_OP_IC";
+    case COMPARE_IC: return "COMPARE_IC";
   }
   UNREACHABLE();
   return NULL;
@@ -5964,6 +6523,7 @@ const char* Code::PropertyType2String(PropertyType type) {
     case CALLBACKS: return "CALLBACKS";
     case INTERCEPTOR: return "INTERCEPTOR";
     case MAP_TRANSITION: return "MAP_TRANSITION";
+    case EXTERNAL_ARRAY_TRANSITION: return "EXTERNAL_ARRAY_TRANSITION";
     case CONSTANT_TRANSITION: return "CONSTANT_TRANSITION";
     case NULL_DESCRIPTOR: return "NULL_DESCRIPTOR";
   }
@@ -5971,27 +6531,107 @@ const char* Code::PropertyType2String(PropertyType type) {
   return NULL;
 }
 
-void Code::Disassemble(const char* name) {
-  PrintF("kind = %s\n", Kind2String(kind()));
+
+void Code::PrintExtraICState(FILE* out, Kind kind, ExtraICState extra) {
+  const char* name = NULL;
+  switch (kind) {
+    case CALL_IC:
+      if (extra == STRING_INDEX_OUT_OF_BOUNDS) {
+        name = "STRING_INDEX_OUT_OF_BOUNDS";
+      }
+      break;
+    case STORE_IC:
+    case KEYED_STORE_IC:
+      if (extra == kStrictMode) {
+        name = "STRICT";
+      }
+      break;
+    default:
+      break;
+  }
+  if (name != NULL) {
+    PrintF(out, "extra_ic_state = %s\n", name);
+  } else {
+    PrintF(out, "etra_ic_state = %d\n", extra);
+  }
+}
+
+
+void Code::Disassemble(const char* name, FILE* out) {
+  PrintF(out, "kind = %s\n", Kind2String(kind()));
   if (is_inline_cache_stub()) {
-    PrintF("ic_state = %s\n", ICState2String(ic_state()));
-    PrintF("ic_in_loop = %d\n", ic_in_loop() == IN_LOOP);
+    PrintF(out, "ic_state = %s\n", ICState2String(ic_state()));
+    PrintExtraICState(out, kind(), extra_ic_state());
+    PrintF(out, "ic_in_loop = %d\n", ic_in_loop() == IN_LOOP);
     if (ic_state() == MONOMORPHIC) {
-      PrintF("type = %s\n", PropertyType2String(type()));
+      PrintF(out, "type = %s\n", PropertyType2String(type()));
     }
   }
   if ((name != NULL) && (name[0] != '\0')) {
-    PrintF("name = %s\n", name);
+    PrintF(out, "name = %s\n", name);
+  }
+  if (kind() == OPTIMIZED_FUNCTION) {
+    PrintF(out, "stack_slots = %d\n", stack_slots());
   }
 
-  PrintF("Instructions (size = %d)\n", instruction_size());
-  Disassembler::Decode(NULL, this);
+  PrintF(out, "Instructions (size = %d)\n", instruction_size());
+  Disassembler::Decode(out, this);
+  PrintF(out, "\n");
+
+#ifdef DEBUG
+  if (kind() == FUNCTION) {
+    DeoptimizationOutputData* data =
+        DeoptimizationOutputData::cast(this->deoptimization_data());
+    data->DeoptimizationOutputDataPrint(out);
+  } else if (kind() == OPTIMIZED_FUNCTION) {
+    DeoptimizationInputData* data =
+        DeoptimizationInputData::cast(this->deoptimization_data());
+    data->DeoptimizationInputDataPrint(out);
+  }
   PrintF("\n");
+#endif
+
+  if (kind() == OPTIMIZED_FUNCTION) {
+    SafepointTable table(this);
+    PrintF(out, "Safepoints (size = %u)\n", table.size());
+    for (unsigned i = 0; i < table.length(); i++) {
+      unsigned pc_offset = table.GetPcOffset(i);
+      PrintF(out, "%p  %4d  ", (instruction_start() + pc_offset), pc_offset);
+      table.PrintEntry(i);
+      PrintF(out, " (sp -> fp)");
+      SafepointEntry entry = table.GetEntry(i);
+      if (entry.deoptimization_index() != Safepoint::kNoDeoptimizationIndex) {
+        PrintF(out, "  %6d", entry.deoptimization_index());
+      } else {
+        PrintF(out, "  <none>");
+      }
+      if (entry.argument_count() > 0) {
+        PrintF(out, " argc: %d", entry.argument_count());
+      }
+      PrintF(out, "\n");
+    }
+    PrintF(out, "\n");
+  } else if (kind() == FUNCTION) {
+    unsigned offset = stack_check_table_offset();
+    // If there is no stack check table, the "table start" will at or after
+    // (due to alignment) the end of the instruction stream.
+    if (static_cast<int>(offset) < instruction_size()) {
+      unsigned* address =
+          reinterpret_cast<unsigned*>(instruction_start() + offset);
+      unsigned length = address[0];
+      PrintF(out, "Stack checks (size = %u)\n", length);
+      PrintF(out, "ast_id  pc_offset\n");
+      for (unsigned i = 0; i < length; ++i) {
+        unsigned index = (2 * i) + 1;
+        PrintF(out, "%6u  %9u\n", address[index], address[index + 1]);
+      }
+      PrintF(out, "\n");
+    }
+  }
 
   PrintF("RelocInfo (size = %d)\n", relocation_size());
-  for (RelocIterator it(this); !it.done(); it.next())
-    it.rinfo()->Print();
-  PrintF("\n");
+  for (RelocIterator it(this); !it.done(); it.next()) it.rinfo()->Print(out);
+  PrintF(out, "\n");
 }
 #endif  // ENABLE_DISASSEMBLER
 
@@ -6000,7 +6640,7 @@ MaybeObject* JSObject::SetFastElementsCapacityAndLength(int capacity,
                                                         int length) {
   Heap* heap = GetHeap();
   // We should never end in here with a pixel or external array.
-  ASSERT(!HasPixelElements() && !HasExternalArrayElements());
+  ASSERT(!HasExternalArrayElements());
 
   Object* obj;
   { MaybeObject* maybe_obj = heap->AllocateFixedArrayWithHoles(capacity);
@@ -6054,7 +6694,7 @@ MaybeObject* JSObject::SetFastElementsCapacityAndLength(int capacity,
 
 MaybeObject* JSObject::SetSlowElements(Object* len) {
   // We should never end in here with a pixel or external array.
-  ASSERT(!HasPixelElements() && !HasExternalArrayElements());
+  ASSERT(!HasExternalArrayElements());
 
   uint32_t new_length = static_cast<uint32_t>(len->Number());
 
@@ -6120,13 +6760,6 @@ void JSArray::Expand(int required_size) {
 }
 
 
-// Computes the new capacity when expanding the elements of a JSObject.
-static int NewElementsCapacity(int old_capacity) {
-  // (old_capacity + 50%) + 16
-  return old_capacity + (old_capacity >> 1) + 16;
-}
-
-
 static Failure* ArrayLengthRangeError(Heap* heap) {
   HandleScope scope;
   return heap->isolate()->Throw(
@@ -6136,7 +6769,6 @@ static Failure* ArrayLengthRangeError(Heap* heap) {
 
 
 MaybeObject* JSObject::SetElementsLength(Object* len) {
-  Heap* heap = GetHeap();
   // We should never end in here with a pixel or external array.
   ASSERT(AllowsSetElementsLength());
 
@@ -6144,7 +6776,7 @@ MaybeObject* JSObject::SetElementsLength(Object* len) {
   Object* smi_length = Smi::FromInt(0);
   if (maybe_smi_length->ToObject(&smi_length) && smi_length->IsSmi()) {
     const int value = Smi::cast(smi_length)->value();
-    if (value < 0) return ArrayLengthRangeError(heap);
+    if (value < 0) return ArrayLengthRangeError(GetHeap());
     switch (GetElementsKind()) {
       case FAST_ELEMENTS: {
         int old_capacity = FixedArray::cast(elements())->length();
@@ -6210,14 +6842,14 @@ MaybeObject* JSObject::SetElementsLength(Object* len) {
     if (len->ToArrayIndex(&length)) {
       return SetSlowElements(len);
     } else {
-      return ArrayLengthRangeError(heap);
+      return ArrayLengthRangeError(GetHeap());
     }
   }
 
   // len is not a number so make the array size one and
   // set only element to len.
   Object* obj;
-  { MaybeObject* maybe_obj = heap->AllocateFixedArray(1);
+  { MaybeObject* maybe_obj = GetHeap()->AllocateFixedArray(1);
     if (!maybe_obj->ToObject(&obj)) return maybe_obj;
   }
   FixedArray::cast(obj)->set(0, len);
@@ -6287,9 +6919,8 @@ bool JSObject::HasElementPostInterceptor(JSObject* receiver, uint32_t index) {
       }
       break;
     }
-    case PIXEL_ELEMENTS: {
-      // TODO(iposva): Add testcase.
-      PixelArray* pixels = PixelArray::cast(elements());
+    case EXTERNAL_PIXEL_ELEMENTS: {
+      ExternalPixelArray* pixels = ExternalPixelArray::cast(elements());
       if (index < static_cast<uint32_t>(pixels->length())) {
         return true;
       }
@@ -6302,7 +6933,6 @@ bool JSObject::HasElementPostInterceptor(JSObject* receiver, uint32_t index) {
     case EXTERNAL_INT_ELEMENTS:
     case EXTERNAL_UNSIGNED_INT_ELEMENTS:
     case EXTERNAL_FLOAT_ELEMENTS: {
-      // TODO(kbr): Add testcase.
       ExternalArray* array = ExternalArray::cast(elements());
       if (index < static_cast<uint32_t>(array->length())) {
         return true;
@@ -6344,7 +6974,8 @@ bool JSObject::HasElementWithInterceptor(JSObject* receiver, uint32_t index) {
   if (!interceptor->query()->IsUndefined()) {
     v8::IndexedPropertyQuery query =
         v8::ToCData<v8::IndexedPropertyQuery>(interceptor->query());
-    LOG(ApiIndexedPropertyAccess("interceptor-indexed-has", this, index));
+    LOG(isolate,
+        ApiIndexedPropertyAccess("interceptor-indexed-has", this, index));
     v8::Handle<v8::Integer> result;
     {
       // Leaving JavaScript.
@@ -6358,7 +6989,8 @@ bool JSObject::HasElementWithInterceptor(JSObject* receiver, uint32_t index) {
   } else if (!interceptor->getter()->IsUndefined()) {
     v8::IndexedPropertyGetter getter =
         v8::ToCData<v8::IndexedPropertyGetter>(interceptor->getter());
-    LOG(ApiIndexedPropertyAccess("interceptor-indexed-has-get", this, index));
+    LOG(isolate,
+        ApiIndexedPropertyAccess("interceptor-indexed-has-get", this, index));
     v8::Handle<v8::Value> result;
     {
       // Leaving JavaScript.
@@ -6372,13 +7004,20 @@ bool JSObject::HasElementWithInterceptor(JSObject* receiver, uint32_t index) {
 
 
 JSObject::LocalElementType JSObject::HasLocalElement(uint32_t index) {
-  Heap* heap = GetHeap();
-
   // Check access rights if needed.
-  if (IsAccessCheckNeeded() &&
-      !heap->isolate()->MayIndexedAccess(this, index, v8::ACCESS_HAS)) {
-    heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_HAS);
-    return UNDEFINED_ELEMENT;
+  if (IsAccessCheckNeeded()) {
+    Heap* heap = GetHeap();
+    if (!heap->isolate()->MayIndexedAccess(this, index, v8::ACCESS_HAS)) {
+      heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_HAS);
+      return UNDEFINED_ELEMENT;
+    }
+  }
+
+  if (IsJSGlobalProxy()) {
+    Object* proto = GetPrototype();
+    if (proto->IsNull()) return UNDEFINED_ELEMENT;
+    ASSERT(proto->IsJSGlobalObject());
+    return JSObject::cast(proto)->HasLocalElement(index);
   }
 
   // Check for lookup interceptor
@@ -6404,8 +7043,8 @@ JSObject::LocalElementType JSObject::HasLocalElement(uint32_t index) {
       }
       break;
     }
-    case PIXEL_ELEMENTS: {
-      PixelArray* pixels = PixelArray::cast(elements());
+    case EXTERNAL_PIXEL_ELEMENTS: {
+      ExternalPixelArray* pixels = ExternalPixelArray::cast(elements());
       if (index < static_cast<uint32_t>(pixels->length())) return FAST_ELEMENT;
       break;
     }
@@ -6437,13 +7076,13 @@ JSObject::LocalElementType JSObject::HasLocalElement(uint32_t index) {
 
 
 bool JSObject::HasElementWithReceiver(JSObject* receiver, uint32_t index) {
-  Heap* heap = GetHeap();
-
   // Check access rights if needed.
-  if (IsAccessCheckNeeded() &&
-      !heap->isolate()->MayIndexedAccess(this, index, v8::ACCESS_HAS)) {
-    heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_HAS);
-    return false;
+  if (IsAccessCheckNeeded()) {
+    Heap* heap = GetHeap();
+    if (!heap->isolate()->MayIndexedAccess(this, index, v8::ACCESS_HAS)) {
+      heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_HAS);
+      return false;
+    }
   }
 
   // Check for lookup interceptor
@@ -6461,8 +7100,8 @@ bool JSObject::HasElementWithReceiver(JSObject* receiver, uint32_t index) {
           !FixedArray::cast(elements())->get(index)->IsTheHole()) return true;
       break;
     }
-    case PIXEL_ELEMENTS: {
-      PixelArray* pixels = PixelArray::cast(elements());
+    case EXTERNAL_PIXEL_ELEMENTS: {
+      ExternalPixelArray* pixels = ExternalPixelArray::cast(elements());
       if (index < static_cast<uint32_t>(pixels->length())) {
         return true;
       }
@@ -6503,7 +7142,9 @@ bool JSObject::HasElementWithReceiver(JSObject* receiver, uint32_t index) {
 
 
 MaybeObject* JSObject::SetElementWithInterceptor(uint32_t index,
-                                                 Object* value) {
+                                                 Object* value,
+                                                 StrictModeFlag strict_mode,
+                                                 bool check_prototype) {
   Isolate* isolate = GetIsolate();
   // Make sure that the top context does not change when doing
   // callbacks or interceptor calls.
@@ -6515,7 +7156,8 @@ MaybeObject* JSObject::SetElementWithInterceptor(uint32_t index,
   if (!interceptor->setter()->IsUndefined()) {
     v8::IndexedPropertySetter setter =
         v8::ToCData<v8::IndexedPropertySetter>(interceptor->setter());
-    LOG(ApiIndexedPropertyAccess("interceptor-indexed-set", this, index));
+    LOG(isolate,
+        ApiIndexedPropertyAccess("interceptor-indexed-set", this, index));
     CustomArguments args(isolate, interceptor->data(), this, this);
     v8::AccessorInfo info(args.end());
     v8::Handle<v8::Value> result;
@@ -6528,7 +7170,10 @@ MaybeObject* JSObject::SetElementWithInterceptor(uint32_t index,
     if (!result.IsEmpty()) return *value_handle;
   }
   MaybeObject* raw_result =
-      this_handle->SetElementWithoutInterceptor(index, *value_handle);
+      this_handle->SetElementWithoutInterceptor(index,
+                                                *value_handle,
+                                                strict_mode,
+                                                check_prototype);
   RETURN_IF_SCHEDULED_EXCEPTION(isolate);
   return raw_result;
 }
@@ -6551,7 +7196,7 @@ MaybeObject* JSObject::GetElementWithCallback(Object* receiver,
     Handle<JSObject> holder_handle(JSObject::cast(holder));
     Handle<Object> number = isolate->factory()->NewNumberFromUint(index);
     Handle<String> key(isolate->factory()->NumberToString(number));
-    LOG(ApiNamedPropertyAccess("load", *self, *key));
+    LOG(isolate, ApiNamedPropertyAccess("load", *self, *key));
     CustomArguments args(isolate, data->data(), *self, *holder_handle);
     v8::AccessorInfo info(args.end());
     v8::Handle<v8::Value> result;
@@ -6606,7 +7251,7 @@ MaybeObject* JSObject::SetElementWithCallback(Object* structure,
     if (call_fun == NULL) return value;
     Handle<Object> number = isolate->factory()->NewNumberFromUint(index);
     Handle<String> key(isolate->factory()->NumberToString(number));
-    LOG(ApiNamedPropertyAccess("store", this, *key));
+    LOG(isolate, ApiNamedPropertyAccess("store", this, *key));
     CustomArguments args(isolate, data->data(), this, JSObject::cast(holder));
     v8::AccessorInfo info(args.end());
     {
@@ -6642,7 +7287,10 @@ MaybeObject* JSObject::SetElementWithCallback(Object* structure,
 // Adding n elements in fast case is O(n*n).
 // Note: revisit design to have dual undefined values to capture absent
 // elements.
-MaybeObject* JSObject::SetFastElement(uint32_t index, Object* value) {
+MaybeObject* JSObject::SetFastElement(uint32_t index,
+                                      Object* value,
+                                      StrictModeFlag strict_mode,
+                                      bool check_prototype) {
   ASSERT(HasFastElements());
 
   Object* elms_obj;
@@ -6652,11 +7300,14 @@ MaybeObject* JSObject::SetFastElement(uint32_t index, Object* value) {
   FixedArray* elms = FixedArray::cast(elms_obj);
   uint32_t elms_length = static_cast<uint32_t>(elms->length());
 
-  if (!IsJSArray() && (index >= elms_length || elms->get(index)->IsTheHole())) {
-    if (SetElementWithCallbackSetterInPrototypes(index, value)) {
-      return value;
-    }
+  if (check_prototype &&
+      (index >= elms_length || elms->get(index)->IsTheHole())) {
+    bool found;
+    MaybeObject* result =
+        SetElementWithCallbackSetterInPrototypes(index, value, &found);
+    if (found) return result;
   }
+
 
   // Check whether there is extra space in fixed array..
   if (index < elms_length) {
@@ -6695,46 +7346,61 @@ MaybeObject* JSObject::SetFastElement(uint32_t index, Object* value) {
     if (!maybe_obj->ToObject(&obj)) return maybe_obj;
   }
   ASSERT(HasDictionaryElements());
-  return SetElement(index, value);
+  return SetElement(index, value, strict_mode, check_prototype);
 }
 
 
-MaybeObject* JSObject::SetElement(uint32_t index, Object* value) {
-  Heap* heap = GetHeap();
+MaybeObject* JSObject::SetElement(uint32_t index,
+                                  Object* value,
+                                  StrictModeFlag strict_mode,
+                                  bool check_prototype) {
   // Check access rights if needed.
-  if (IsAccessCheckNeeded() &&
-      !heap->isolate()->MayIndexedAccess(this, index, v8::ACCESS_SET)) {
-    HandleScope scope;
-    Handle<Object> value_handle(value);
-    heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_SET);
-    return *value_handle;
+  if (IsAccessCheckNeeded()) {
+    Heap* heap = GetHeap();
+    if (!heap->isolate()->MayIndexedAccess(this, index, v8::ACCESS_SET)) {
+      HandleScope scope;
+      Handle<Object> value_handle(value);
+      heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_SET);
+      return *value_handle;
+    }
   }
 
   if (IsJSGlobalProxy()) {
     Object* proto = GetPrototype();
     if (proto->IsNull()) return value;
     ASSERT(proto->IsJSGlobalObject());
-    return JSObject::cast(proto)->SetElement(index, value);
+    return JSObject::cast(proto)->SetElement(index,
+                                             value,
+                                             strict_mode,
+                                             check_prototype);
   }
 
   // Check for lookup interceptor
   if (HasIndexedInterceptor()) {
-    return SetElementWithInterceptor(index, value);
+    return SetElementWithInterceptor(index,
+                                     value,
+                                     strict_mode,
+                                     check_prototype);
   }
 
-  return SetElementWithoutInterceptor(index, value);
+  return SetElementWithoutInterceptor(index,
+                                      value,
+                                      strict_mode,
+                                      check_prototype);
 }
 
 
 MaybeObject* JSObject::SetElementWithoutInterceptor(uint32_t index,
-                                                    Object* value) {
-  Heap* heap = GetHeap();
+                                                    Object* value,
+                                                    StrictModeFlag strict_mode,
+                                                    bool check_prototype) {
+  Isolate* isolate = GetIsolate();
   switch (GetElementsKind()) {
     case FAST_ELEMENTS:
       // Fast case.
-      return SetFastElement(index, value);
-    case PIXEL_ELEMENTS: {
-      PixelArray* pixels = PixelArray::cast(elements());
+      return SetFastElement(index, value, strict_mode, check_prototype);
+    case EXTERNAL_PIXEL_ELEMENTS: {
+      ExternalPixelArray* pixels = ExternalPixelArray::cast(elements());
       return pixels->SetValue(index, value);
     }
     case EXTERNAL_BYTE_ELEMENTS: {
@@ -6781,24 +7447,40 @@ MaybeObject* JSObject::SetElementWithoutInterceptor(uint32_t index,
           return SetElementWithCallback(element, index, value, this);
         } else {
           dictionary->UpdateMaxNumberKey(index);
-          dictionary->ValueAtPut(entry, value);
+          // If put fails instrict mode, throw exception.
+          if (!dictionary->ValueAtPut(entry, value) &&
+              strict_mode == kStrictMode) {
+            Handle<Object> number(isolate->factory()->NewNumberFromUint(index));
+            Handle<Object> holder(this);
+            Handle<Object> args[2] = { number, holder };
+            return isolate->Throw(
+                *isolate->factory()->NewTypeError("strict_read_only_property",
+                                                  HandleVector(args, 2)));
+          }
         }
       } else {
         // Index not already used. Look for an accessor in the prototype chain.
-        if (!IsJSArray()) {
-          if (SetElementWithCallbackSetterInPrototypes(index, value)) {
-            return value;
-          }
+        if (check_prototype) {
+          bool found;
+          MaybeObject* result =
+              // Strict mode not needed. No-setter case already handled.
+              SetElementWithCallbackSetterInPrototypes(index, value, &found);
+          if (found) return result;
         }
         // When we set the is_extensible flag to false we always force
         // the element into dictionary mode (and force them to stay there).
         if (!map()->is_extensible()) {
-          Handle<Object> number(FACTORY->NewNumberFromUint(index));
-          Handle<String> index_string(FACTORY->NumberToString(number));
-          Handle<Object> args[1] = { index_string };
-          return heap->isolate()->Throw(
-              *FACTORY->NewTypeError("object_not_extensible",
-                                     HandleVector(args, 1)));
+          if (strict_mode == kNonStrictMode) {
+            return isolate->heap()->undefined_value();
+          } else {
+            Handle<Object> number(isolate->factory()->NewNumberFromUint(index));
+            Handle<String> index_string(
+                isolate->factory()->NumberToString(number));
+            Handle<Object> args[1] = { index_string };
+            return isolate->Throw(
+                *isolate->factory()->NewTypeError("object_not_extensible",
+                                                  HandleVector(args, 1)));
+          }
         }
         Object* result;
         { MaybeObject* maybe_result = dictionary->AtNumberPut(index, value);
@@ -6851,7 +7533,7 @@ MaybeObject* JSObject::SetElementWithoutInterceptor(uint32_t index,
   // All possible cases have been handled above. Add a return to avoid the
   // complaints from the compiler.
   UNREACHABLE();
-  return heap->null_value();
+  return isolate->heap()->null_value();
 }
 
 
@@ -6873,9 +7555,8 @@ MaybeObject* JSArray::JSArrayUpdateLengthFromIndex(uint32_t index,
 }
 
 
-MaybeObject* JSObject::GetElementPostInterceptor(JSObject* receiver,
+MaybeObject* JSObject::GetElementPostInterceptor(Object* receiver,
                                                  uint32_t index) {
-  Heap* heap = GetHeap();
   // Get element works for both JSObject and JSArray since
   // JSArray::length cannot change.
   switch (GetElementsKind()) {
@@ -6887,11 +7568,7 @@ MaybeObject* JSObject::GetElementPostInterceptor(JSObject* receiver,
       }
       break;
     }
-    case PIXEL_ELEMENTS: {
-      // TODO(iposva): Add testcase and implement.
-      UNIMPLEMENTED();
-      break;
-    }
+    case EXTERNAL_PIXEL_ELEMENTS:
     case EXTERNAL_BYTE_ELEMENTS:
     case EXTERNAL_UNSIGNED_BYTE_ELEMENTS:
     case EXTERNAL_SHORT_ELEMENTS:
@@ -6899,8 +7576,10 @@ MaybeObject* JSObject::GetElementPostInterceptor(JSObject* receiver,
     case EXTERNAL_INT_ELEMENTS:
     case EXTERNAL_UNSIGNED_INT_ELEMENTS:
     case EXTERNAL_FLOAT_ELEMENTS: {
-      // TODO(kbr): Add testcase and implement.
-      UNIMPLEMENTED();
+      MaybeObject* maybe_value = GetExternalElement(index);
+      Object* value;
+      if (!maybe_value->ToObject(&value)) return maybe_value;
+      if (!value->IsUndefined()) return value;
       break;
     }
     case DICTIONARY_ELEMENTS: {
@@ -6926,26 +7605,27 @@ MaybeObject* JSObject::GetElementPostInterceptor(JSObject* receiver,
 
   // Continue searching via the prototype chain.
   Object* pt = GetPrototype();
-  if (pt->IsNull()) return heap->undefined_value();
+  if (pt->IsNull()) return GetHeap()->undefined_value();
   return pt->GetElementWithReceiver(receiver, index);
 }
 
 
-MaybeObject* JSObject::GetElementWithInterceptor(JSObject* receiver,
+MaybeObject* JSObject::GetElementWithInterceptor(Object* receiver,
                                                  uint32_t index) {
   Isolate* isolate = GetIsolate();
   // Make sure that the top context does not change when doing
   // callbacks or interceptor calls.
   AssertNoContextChange ncc;
   HandleScope scope(isolate);
-  Handle<InterceptorInfo> interceptor(GetIndexedInterceptor());
-  Handle<JSObject> this_handle(receiver);
-  Handle<JSObject> holder_handle(this);
+  Handle<InterceptorInfo> interceptor(GetIndexedInterceptor(), isolate);
+  Handle<Object> this_handle(receiver, isolate);
+  Handle<JSObject> holder_handle(this, isolate);
 
   if (!interceptor->getter()->IsUndefined()) {
     v8::IndexedPropertyGetter getter =
         v8::ToCData<v8::IndexedPropertyGetter>(interceptor->getter());
-    LOG(ApiIndexedPropertyAccess("interceptor-indexed-get", this, index));
+    LOG(isolate,
+        ApiIndexedPropertyAccess("interceptor-indexed-get", this, index));
     CustomArguments args(isolate, interceptor->data(), receiver, this);
     v8::AccessorInfo info(args.end());
     v8::Handle<v8::Value> result;
@@ -6965,14 +7645,15 @@ MaybeObject* JSObject::GetElementWithInterceptor(JSObject* receiver,
 }
 
 
-MaybeObject* JSObject::GetElementWithReceiver(JSObject* receiver,
+MaybeObject* JSObject::GetElementWithReceiver(Object* receiver,
                                               uint32_t index) {
-  Heap* heap = GetHeap();
   // Check access rights if needed.
-  if (IsAccessCheckNeeded() &&
-      !heap->isolate()->MayIndexedAccess(this, index, v8::ACCESS_GET)) {
-    heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_GET);
-    return heap->undefined_value();
+  if (IsAccessCheckNeeded()) {
+    Heap* heap = GetHeap();
+    if (!heap->isolate()->MayIndexedAccess(this, index, v8::ACCESS_GET)) {
+      heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_GET);
+      return heap->undefined_value();
+    }
   }
 
   if (HasIndexedInterceptor()) {
@@ -6990,8 +7671,51 @@ MaybeObject* JSObject::GetElementWithReceiver(JSObject* receiver,
       }
       break;
     }
-    case PIXEL_ELEMENTS: {
-      PixelArray* pixels = PixelArray::cast(elements());
+    case EXTERNAL_PIXEL_ELEMENTS:
+    case EXTERNAL_BYTE_ELEMENTS:
+    case EXTERNAL_UNSIGNED_BYTE_ELEMENTS:
+    case EXTERNAL_SHORT_ELEMENTS:
+    case EXTERNAL_UNSIGNED_SHORT_ELEMENTS:
+    case EXTERNAL_INT_ELEMENTS:
+    case EXTERNAL_UNSIGNED_INT_ELEMENTS:
+    case EXTERNAL_FLOAT_ELEMENTS: {
+      MaybeObject* maybe_value = GetExternalElement(index);
+      Object* value;
+      if (!maybe_value->ToObject(&value)) return maybe_value;
+      if (!value->IsUndefined()) return value;
+      break;
+    }
+    case DICTIONARY_ELEMENTS: {
+      NumberDictionary* dictionary = element_dictionary();
+      int entry = dictionary->FindEntry(index);
+      if (entry != NumberDictionary::kNotFound) {
+        Object* element = dictionary->ValueAt(entry);
+        PropertyDetails details = dictionary->DetailsAt(entry);
+        if (details.type() == CALLBACKS) {
+          return GetElementWithCallback(receiver,
+                                        element,
+                                        index,
+                                        this);
+        }
+        return element;
+      }
+      break;
+    }
+  }
+
+  Object* pt = GetPrototype();
+  Heap* heap = GetHeap();
+  if (pt == heap->null_value()) return heap->undefined_value();
+  return pt->GetElementWithReceiver(receiver, index);
+}
+
+
+MaybeObject* JSObject::GetExternalElement(uint32_t index) {
+  // Get element works for both JSObject and JSArray since
+  // JSArray::length cannot change.
+  switch (GetElementsKind()) {
+    case EXTERNAL_PIXEL_ELEMENTS: {
+      ExternalPixelArray* pixels = ExternalPixelArray::cast(elements());
       if (index < static_cast<uint32_t>(pixels->length())) {
         uint8_t value = pixels->get(index);
         return Smi::FromInt(value);
@@ -7036,7 +7760,7 @@ MaybeObject* JSObject::GetElementWithReceiver(JSObject* receiver,
       ExternalIntArray* array = ExternalIntArray::cast(elements());
       if (index < static_cast<uint32_t>(array->length())) {
         int32_t value = array->get(index);
-        return heap->NumberFromInt32(value);
+        return GetHeap()->NumberFromInt32(value);
       }
       break;
     }
@@ -7045,7 +7769,7 @@ MaybeObject* JSObject::GetElementWithReceiver(JSObject* receiver,
           ExternalUnsignedIntArray::cast(elements());
       if (index < static_cast<uint32_t>(array->length())) {
         uint32_t value = array->get(index);
-        return heap->NumberFromUint32(value);
+        return GetHeap()->NumberFromUint32(value);
       }
       break;
     }
@@ -7053,31 +7777,16 @@ MaybeObject* JSObject::GetElementWithReceiver(JSObject* receiver,
       ExternalFloatArray* array = ExternalFloatArray::cast(elements());
       if (index < static_cast<uint32_t>(array->length())) {
         float value = array->get(index);
-        return heap->AllocateHeapNumber(value);
+        return GetHeap()->AllocateHeapNumber(value);
       }
       break;
     }
-    case DICTIONARY_ELEMENTS: {
-      NumberDictionary* dictionary = element_dictionary();
-      int entry = dictionary->FindEntry(index);
-      if (entry != NumberDictionary::kNotFound) {
-        Object* element = dictionary->ValueAt(entry);
-        PropertyDetails details = dictionary->DetailsAt(entry);
-        if (details.type() == CALLBACKS) {
-          return GetElementWithCallback(receiver,
-                                        element,
-                                        index,
-                                        this);
-        }
-        return element;
-      }
+    case FAST_ELEMENTS:
+    case DICTIONARY_ELEMENTS:
+      UNREACHABLE();
       break;
-    }
   }
-
-  Object* pt = GetPrototype();
-  if (pt->IsNull()) return heap->undefined_value();
-  return pt->GetElementWithReceiver(receiver, index);
+  return GetHeap()->undefined_value();
 }
 
 
@@ -7094,7 +7803,7 @@ bool JSObject::HasDenseElements() {
       }
       break;
     }
-    case PIXEL_ELEMENTS:
+    case EXTERNAL_PIXEL_ELEMENTS:
     case EXTERNAL_BYTE_ELEMENTS:
     case EXTERNAL_UNSIGNED_BYTE_ELEMENTS:
     case EXTERNAL_SHORT_ELEMENTS:
@@ -7160,22 +7869,22 @@ bool JSObject::ShouldConvertToFastElements() {
 // class. This requires us to have the template functions put
 // together, so even though this function belongs in objects-debug.cc,
 // we keep it here instead to satisfy certain compilers.
-#ifdef DEBUG
+#ifdef OBJECT_PRINT
 template<typename Shape, typename Key>
-void Dictionary<Shape, Key>::Print() {
+void Dictionary<Shape, Key>::Print(FILE* out) {
   int capacity = HashTable<Shape, Key>::Capacity();
   for (int i = 0; i < capacity; i++) {
     Object* k = HashTable<Shape, Key>::KeyAt(i);
     if (HashTable<Shape, Key>::IsKey(k)) {
-      PrintF(" ");
+      PrintF(out, " ");
       if (k->IsString()) {
-        String::cast(k)->StringPrint();
+        String::cast(k)->StringPrint(out);
       } else {
-        k->ShortPrint();
+        k->ShortPrint(out);
       }
-      PrintF(": ");
-      ValueAt(i)->ShortPrint();
-      PrintF("\n");
+      PrintF(out, ": ");
+      ValueAt(i)->ShortPrint(out);
+      PrintF(out, "\n");
     }
   }
 }
@@ -7222,7 +7931,6 @@ MaybeObject* JSObject::GetPropertyPostInterceptor(
     JSObject* receiver,
     String* name,
     PropertyAttributes* attributes) {
-  Heap* heap = GetHeap();
   // Check local property in holder, ignore interceptor.
   LookupResult result;
   LocalLookupRealNamedProperty(name, &result);
@@ -7232,7 +7940,7 @@ MaybeObject* JSObject::GetPropertyPostInterceptor(
   // Continue searching via the prototype chain.
   Object* pt = GetPrototype();
   *attributes = ABSENT;
-  if (pt->IsNull()) return heap->undefined_value();
+  if (pt->IsNull()) return GetHeap()->undefined_value();
   return pt->GetPropertyWithReceiver(receiver, name, attributes);
 }
 
@@ -7241,14 +7949,13 @@ MaybeObject* JSObject::GetLocalPropertyPostInterceptor(
     JSObject* receiver,
     String* name,
     PropertyAttributes* attributes) {
-  Heap* heap = GetHeap();
   // Check local property in holder, ignore interceptor.
   LookupResult result;
   LocalLookupRealNamedProperty(name, &result);
   if (result.IsProperty()) {
     return GetProperty(receiver, &result, name, attributes);
   }
-  return heap->undefined_value();
+  return GetHeap()->undefined_value();
 }
 
 
@@ -7266,7 +7973,8 @@ MaybeObject* JSObject::GetPropertyWithInterceptor(
   if (!interceptor->getter()->IsUndefined()) {
     v8::NamedPropertyGetter getter =
         v8::ToCData<v8::NamedPropertyGetter>(interceptor->getter());
-    LOG(ApiNamedPropertyAccess("interceptor-named-get", *holder_handle, name));
+    LOG(isolate,
+        ApiNamedPropertyAccess("interceptor-named-get", *holder_handle, name));
     CustomArguments args(isolate, interceptor->data(), receiver, this);
     v8::AccessorInfo info(args.end());
     v8::Handle<v8::Value> result;
@@ -7292,12 +8000,13 @@ MaybeObject* JSObject::GetPropertyWithInterceptor(
 
 
 bool JSObject::HasRealNamedProperty(String* key) {
-  Heap* heap = GetHeap();
   // Check access rights if needed.
-  if (IsAccessCheckNeeded() &&
-      !heap->isolate()->MayNamedAccess(this, key, v8::ACCESS_HAS)) {
-    heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_HAS);
-    return false;
+  if (IsAccessCheckNeeded()) {
+    Heap* heap = GetHeap();
+    if (!heap->isolate()->MayNamedAccess(this, key, v8::ACCESS_HAS)) {
+      heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_HAS);
+      return false;
+    }
   }
 
   LookupResult result;
@@ -7307,12 +8016,13 @@ bool JSObject::HasRealNamedProperty(String* key) {
 
 
 bool JSObject::HasRealElementProperty(uint32_t index) {
-  Heap* heap = GetHeap();
   // Check access rights if needed.
-  if (IsAccessCheckNeeded() &&
-      !heap->isolate()->MayIndexedAccess(this, index, v8::ACCESS_HAS)) {
-    heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_HAS);
-    return false;
+  if (IsAccessCheckNeeded()) {
+    Heap* heap = GetHeap();
+    if (!heap->isolate()->MayIndexedAccess(this, index, v8::ACCESS_HAS)) {
+      heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_HAS);
+      return false;
+    }
   }
 
   // Handle [] on String objects.
@@ -7327,8 +8037,8 @@ bool JSObject::HasRealElementProperty(uint32_t index) {
       return (index < length) &&
           !FixedArray::cast(elements())->get(index)->IsTheHole();
     }
-    case PIXEL_ELEMENTS: {
-      PixelArray* pixels = PixelArray::cast(elements());
+    case EXTERNAL_PIXEL_ELEMENTS: {
+      ExternalPixelArray* pixels = ExternalPixelArray::cast(elements());
       return index < static_cast<uint32_t>(pixels->length());
     }
     case EXTERNAL_BYTE_ELEMENTS:
@@ -7351,17 +8061,18 @@ bool JSObject::HasRealElementProperty(uint32_t index) {
   }
   // All possibilities have been handled above already.
   UNREACHABLE();
-  return heap->null_value();
+  return GetHeap()->null_value();
 }
 
 
 bool JSObject::HasRealNamedCallbackProperty(String* key) {
-  Heap* heap = GetHeap();
   // Check access rights if needed.
-  if (IsAccessCheckNeeded() &&
-      !heap->isolate()->MayNamedAccess(this, key, v8::ACCESS_HAS)) {
-    heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_HAS);
-    return false;
+  if (IsAccessCheckNeeded()) {
+    Heap* heap = GetHeap();
+    if (!heap->isolate()->MayNamedAccess(this, key, v8::ACCESS_HAS)) {
+      heap->isolate()->ReportFailedAccessCheck(this, v8::ACCESS_HAS);
+      return false;
+    }
   }
 
   LookupResult result;
@@ -7560,8 +8271,8 @@ int JSObject::GetLocalElementKeys(FixedArray* storage,
       ASSERT(!storage || storage->length() >= counter);
       break;
     }
-    case PIXEL_ELEMENTS: {
-      int length = PixelArray::cast(elements())->length();
+    case EXTERNAL_PIXEL_ELEMENTS: {
+      int length = ExternalPixelArray::cast(elements())->length();
       while (counter < length) {
         if (storage != NULL) {
           storage->set(counter, Smi::FromInt(counter));
@@ -7653,20 +8364,28 @@ class StringKey : public HashTableKey {
 // StringSharedKeys are used as keys in the eval cache.
 class StringSharedKey : public HashTableKey {
  public:
-  StringSharedKey(String* source, SharedFunctionInfo* shared)
-      : source_(source), shared_(shared) { }
+  StringSharedKey(String* source,
+                  SharedFunctionInfo* shared,
+                  StrictModeFlag strict_mode)
+      : source_(source),
+        shared_(shared),
+        strict_mode_(strict_mode) { }
 
   bool IsMatch(Object* other) {
     if (!other->IsFixedArray()) return false;
     FixedArray* pair = FixedArray::cast(other);
     SharedFunctionInfo* shared = SharedFunctionInfo::cast(pair->get(0));
     if (shared != shared_) return false;
+    StrictModeFlag strict_mode = static_cast<StrictModeFlag>(
+        Smi::cast(pair->get(2))->value());
+    if (strict_mode != strict_mode_) return false;
     String* source = String::cast(pair->get(1));
     return source->Equals(source_);
   }
 
   static uint32_t StringSharedHashHelper(String* source,
-                                         SharedFunctionInfo* shared) {
+                                         SharedFunctionInfo* shared,
+                                         StrictModeFlag strict_mode) {
     uint32_t hash = source->Hash();
     if (shared->HasSourceCode()) {
       // Instead of using the SharedFunctionInfo pointer in the hash
@@ -7676,36 +8395,41 @@ class StringSharedKey : public HashTableKey {
       // collection.
       Script* script = Script::cast(shared->script());
       hash ^= String::cast(script->source())->Hash();
+      if (strict_mode == kStrictMode) hash ^= 0x8000;
       hash += shared->start_position();
     }
     return hash;
   }
 
   uint32_t Hash() {
-    return StringSharedHashHelper(source_, shared_);
+    return StringSharedHashHelper(source_, shared_, strict_mode_);
   }
 
   uint32_t HashForObject(Object* obj) {
     FixedArray* pair = FixedArray::cast(obj);
     SharedFunctionInfo* shared = SharedFunctionInfo::cast(pair->get(0));
     String* source = String::cast(pair->get(1));
-    return StringSharedHashHelper(source, shared);
+    StrictModeFlag strict_mode = static_cast<StrictModeFlag>(
+        Smi::cast(pair->get(2))->value());
+    return StringSharedHashHelper(source, shared, strict_mode);
   }
 
   MUST_USE_RESULT MaybeObject* AsObject() {
     Object* obj;
-    { MaybeObject* maybe_obj = source_->GetHeap()->AllocateFixedArray(2);
+    { MaybeObject* maybe_obj = source_->GetHeap()->AllocateFixedArray(3);
       if (!maybe_obj->ToObject(&obj)) return maybe_obj;
     }
     FixedArray* pair = FixedArray::cast(obj);
     pair->set(0, shared_);
     pair->set(1, source_);
+    pair->set(2, Smi::FromInt(strict_mode_));
     return pair;
   }
 
  private:
   String* source_;
   SharedFunctionInfo* shared_;
+  StrictModeFlag strict_mode_;
 };
 
 
@@ -7783,6 +8507,85 @@ class Utf8SymbolKey : public HashTableKey {
   Vector<const char> string_;
   uint32_t hash_field_;
   int chars_;  // Caches the number of characters when computing the hash code.
+};
+
+
+template <typename Char>
+class SequentialSymbolKey : public HashTableKey {
+ public:
+  explicit SequentialSymbolKey(Vector<const Char> string)
+      : string_(string), hash_field_(0) { }
+
+  uint32_t Hash() {
+    StringHasher hasher(string_.length());
+
+    // Very long strings have a trivial hash that doesn't inspect the
+    // string contents.
+    if (hasher.has_trivial_hash()) {
+      hash_field_ = hasher.GetHashField();
+    } else {
+      int i = 0;
+      // Do the iterative array index computation as long as there is a
+      // chance this is an array index.
+      while (i < string_.length() && hasher.is_array_index()) {
+        hasher.AddCharacter(static_cast<uc32>(string_[i]));
+        i++;
+      }
+
+      // Process the remaining characters without updating the array
+      // index.
+      while (i < string_.length()) {
+        hasher.AddCharacterNoIndex(static_cast<uc32>(string_[i]));
+        i++;
+      }
+      hash_field_ = hasher.GetHashField();
+    }
+
+    uint32_t result = hash_field_ >> String::kHashShift;
+    ASSERT(result != 0);  // Ensure that the hash value of 0 is never computed.
+    return result;
+  }
+
+
+  uint32_t HashForObject(Object* other) {
+    return String::cast(other)->Hash();
+  }
+
+  Vector<const Char> string_;
+  uint32_t hash_field_;
+};
+
+
+
+class AsciiSymbolKey : public SequentialSymbolKey<char> {
+ public:
+  explicit AsciiSymbolKey(Vector<const char> str)
+      : SequentialSymbolKey<char>(str) { }
+
+  bool IsMatch(Object* string) {
+    return String::cast(string)->IsAsciiEqualTo(string_);
+  }
+
+  MaybeObject* AsObject() {
+    if (hash_field_ == 0) Hash();
+    return HEAP->AllocateAsciiSymbol(string_, hash_field_);
+  }
+};
+
+
+class TwoByteSymbolKey : public SequentialSymbolKey<uc16> {
+ public:
+  explicit TwoByteSymbolKey(Vector<const uc16> str)
+      : SequentialSymbolKey<uc16>(str) { }
+
+  bool IsMatch(Object* string) {
+    return String::cast(string)->IsTwoByteEqualTo(string_);
+  }
+
+  MaybeObject* AsObject() {
+    if (hash_field_ == 0) Hash();
+    return HEAP->AllocateTwoByteSymbol(string_, hash_field_);
+  }
 };
 
 
@@ -7908,7 +8711,6 @@ int StringDictionary::FindEntry(String* key) {
 
 template<typename Shape, typename Key>
 MaybeObject* HashTable<Shape, Key>::EnsureCapacity(int n, Key key) {
-  Heap* heap = GetHeap();
   int capacity = Capacity();
   int nof = NumberOfElements() + n;
   int nod = NumberOfDeletedElements();
@@ -7922,7 +8724,7 @@ MaybeObject* HashTable<Shape, Key>::EnsureCapacity(int n, Key key) {
 
   const int kMinCapacityForPretenure = 256;
   bool pretenure =
-      (capacity > kMinCapacityForPretenure) && !heap->InNewSpace(this);
+      (capacity > kMinCapacityForPretenure) && !GetHeap()->InNewSpace(this);
   Object* obj;
   { MaybeObject* maybe_obj =
         Allocate(nof * 2, pretenure ? TENURED : NOT_TENURED);
@@ -8054,7 +8856,6 @@ int HashTable<NumberDictionaryShape, uint32_t>::FindEntry(uint32_t);
 // Collates undefined and unexisting elements below limit from position
 // zero of the elements. The object stays in Dictionary mode.
 MaybeObject* JSObject::PrepareSlowElementsForSort(uint32_t limit) {
-  Heap* heap = GetHeap();
   ASSERT(HasDictionaryElements());
   // Must stay in dictionary mode, either because of requires_slow_elements,
   // or because we are not going to sort (and therefore compact) all of the
@@ -8064,7 +8865,7 @@ MaybeObject* JSObject::PrepareSlowElementsForSort(uint32_t limit) {
   if (limit > static_cast<uint32_t>(Smi::kMaxValue)) {
     // Allocate space for result before we start mutating the object.
     Object* new_double;
-    { MaybeObject* maybe_new_double = heap->AllocateHeapNumber(0.0);
+    { MaybeObject* maybe_new_double = GetHeap()->AllocateHeapNumber(0.0);
       if (!maybe_new_double->ToObject(&new_double)) return maybe_new_double;
     }
     result_double = HeapNumber::cast(new_double);
@@ -8103,10 +8904,20 @@ MaybeObject* JSObject::PrepareSlowElementsForSort(uint32_t limit) {
         if (value->IsUndefined()) {
           undefs++;
         } else {
+          if (pos > static_cast<uint32_t>(Smi::kMaxValue)) {
+            // Adding an entry with the key beyond smi-range requires
+            // allocation. Bailout.
+            return Smi::FromInt(-1);
+          }
           new_dict->AddNumberEntry(pos, value, details)->ToObjectUnchecked();
           pos++;
         }
       } else {
+        if (key > static_cast<uint32_t>(Smi::kMaxValue)) {
+          // Adding an entry with the key beyond smi-range requires
+          // allocation. Bailout.
+          return Smi::FromInt(-1);
+        }
         new_dict->AddNumberEntry(key, value, details)->ToObjectUnchecked();
       }
     }
@@ -8114,7 +8925,13 @@ MaybeObject* JSObject::PrepareSlowElementsForSort(uint32_t limit) {
 
   uint32_t result = pos;
   PropertyDetails no_details = PropertyDetails(NONE, NORMAL);
+  Heap* heap = GetHeap();
   while (undefs > 0) {
+    if (pos > static_cast<uint32_t>(Smi::kMaxValue)) {
+      // Adding an entry with the key beyond smi-range requires
+      // allocation. Bailout.
+      return Smi::FromInt(-1);
+    }
     new_dict->AddNumberEntry(pos, heap->undefined_value(), no_details)->
         ToObjectUnchecked();
     pos++;
@@ -8138,8 +8955,9 @@ MaybeObject* JSObject::PrepareSlowElementsForSort(uint32_t limit) {
 // If the object is in dictionary mode, it is converted to fast elements
 // mode.
 MaybeObject* JSObject::PrepareElementsForSort(uint32_t limit) {
+  ASSERT(!HasExternalArrayElements());
+
   Heap* heap = GetHeap();
-  ASSERT(!HasPixelElements() && !HasExternalArrayElements());
 
   if (HasDictionaryElements()) {
     // Convert to fast elements containing only the existing properties.
@@ -8251,7 +9069,7 @@ MaybeObject* JSObject::PrepareElementsForSort(uint32_t limit) {
 }
 
 
-Object* PixelArray::SetValue(uint32_t index, Object* value) {
+Object* ExternalPixelArray::SetValue(uint32_t index, Object* value) {
   uint8_t clamped_value = 0;
   if (index < static_cast<uint32_t>(length())) {
     if (value->IsSmi()) {
@@ -8385,19 +9203,18 @@ MaybeObject* ExternalFloatArray::SetValue(uint32_t index, Object* value) {
 }
 
 
-Object* GlobalObject::GetPropertyCell(LookupResult* result) {
+JSGlobalPropertyCell* GlobalObject::GetPropertyCell(LookupResult* result) {
   ASSERT(!HasFastProperties());
   Object* value = property_dictionary()->ValueAt(result->GetDictionaryEntry());
-  ASSERT(value->IsJSGlobalPropertyCell());
-  return value;
+  return JSGlobalPropertyCell::cast(value);
 }
 
 
 MaybeObject* GlobalObject::EnsurePropertyCell(String* name) {
   ASSERT(!HasFastProperties());
-  Heap* heap = GetHeap();
   int entry = property_dictionary()->FindEntry(name);
   if (entry == StringDictionary::kNotFound) {
+    Heap* heap = GetHeap();
     Object* cell;
     { MaybeObject* maybe_cell =
           heap->AllocateJSGlobalPropertyCell(heap->the_hole_value());
@@ -8523,6 +9340,19 @@ MaybeObject* SymbolTable::LookupSymbol(Vector<const char> str, Object** s) {
 }
 
 
+MaybeObject* SymbolTable::LookupAsciiSymbol(Vector<const char> str,
+                                            Object** s) {
+  AsciiSymbolKey key(str);
+  return LookupKey(&key, s);
+}
+
+
+MaybeObject* SymbolTable::LookupTwoByteSymbol(Vector<const uc16> str,
+                                              Object** s) {
+  TwoByteSymbolKey key(str);
+  return LookupKey(&key, s);
+}
+
 MaybeObject* SymbolTable::LookupKey(HashTableKey* key, Object** s) {
   int entry = FindEntry(key);
 
@@ -8559,16 +9389,17 @@ MaybeObject* SymbolTable::LookupKey(HashTableKey* key, Object** s) {
 
 
 Object* CompilationCacheTable::Lookup(String* src) {
-  Heap* heap = GetHeap();
   StringKey key(src);
   int entry = FindEntry(&key);
-  if (entry == kNotFound) return heap->undefined_value();
+  if (entry == kNotFound) return GetHeap()->undefined_value();
   return get(EntryToIndex(entry) + 1);
 }
 
 
-Object* CompilationCacheTable::LookupEval(String* src, Context* context) {
-  StringSharedKey key(src, context->closure()->shared());
+Object* CompilationCacheTable::LookupEval(String* src,
+                                          Context* context,
+                                          StrictModeFlag strict_mode) {
+  StringSharedKey key(src, context->closure()->shared(), strict_mode);
   int entry = FindEntry(&key);
   if (entry == kNotFound) return GetHeap()->undefined_value();
   return get(EntryToIndex(entry) + 1);
@@ -8577,10 +9408,9 @@ Object* CompilationCacheTable::LookupEval(String* src, Context* context) {
 
 Object* CompilationCacheTable::LookupRegExp(String* src,
                                             JSRegExp::Flags flags) {
-  Heap* heap = GetHeap();
   RegExpKey key(src, flags);
   int entry = FindEntry(&key);
-  if (entry == kNotFound) return heap->undefined_value();
+  if (entry == kNotFound) return GetHeap()->undefined_value();
   return get(EntryToIndex(entry) + 1);
 }
 
@@ -8604,8 +9434,10 @@ MaybeObject* CompilationCacheTable::Put(String* src, Object* value) {
 
 MaybeObject* CompilationCacheTable::PutEval(String* src,
                                             Context* context,
-                                            Object* value) {
-  StringSharedKey key(src, context->closure()->shared());
+                                            SharedFunctionInfo* value) {
+  StringSharedKey key(src,
+                      context->closure()->shared(),
+                      value->strict_mode() ? kStrictMode : kNonStrictMode);
   Object* obj;
   { MaybeObject* maybe_obj = EnsureCapacity(1, &key);
     if (!maybe_obj->ToObject(&obj)) return maybe_obj;
@@ -8648,6 +9480,21 @@ MaybeObject* CompilationCacheTable::PutRegExp(String* src,
 }
 
 
+void CompilationCacheTable::Remove(Object* value) {
+  Object* null_value = GetHeap()->null_value();
+  for (int entry = 0, size = Capacity(); entry < size; entry++) {
+    int entry_index = EntryToIndex(entry);
+    int value_index = entry_index + 1;
+    if (get(value_index) == value) {
+      fast_set(this, entry_index, null_value);
+      fast_set(this, value_index, null_value);
+      ElementRemoved();
+    }
+  }
+  return;
+}
+
+
 // SymbolsKey used for HashTable where key is array of symbols.
 class SymbolsKey : public HashTableKey {
  public:
@@ -8683,10 +9530,9 @@ class SymbolsKey : public HashTableKey {
 
 
 Object* MapCache::Lookup(FixedArray* array) {
-  Heap* heap = GetHeap();
   SymbolsKey key(array);
   int entry = FindEntry(&key);
-  if (entry == kNotFound) return heap->undefined_value();
+  if (entry == kNotFound) return GetHeap()->undefined_value();
   return get(EntryToIndex(entry) + 1);
 }
 
@@ -8824,7 +9670,7 @@ Object* Dictionary<Shape, Key>::DeleteProperty(int entry,
   Heap* heap = Dictionary<Shape, Key>::GetHeap();
   PropertyDetails details = DetailsAt(entry);
   // Ignore attributes if forcing a deletion.
-  if (details.IsDontDelete() && mode == JSObject::NORMAL_DELETION) {
+  if (details.IsDontDelete() && mode != JSObject::FORCE_DELETION) {
     return heap->false_value();
   }
   SetEntry(entry, heap->null_value(), heap->null_value(), Smi::FromInt(0));
@@ -9042,7 +9888,6 @@ void Dictionary<Shape, Key>::CopyKeysTo(FixedArray* storage) {
 // Backwards lookup (slow).
 template<typename Shape, typename Key>
 Object* Dictionary<Shape, Key>::SlowReverseLookup(Object* value) {
-  Heap* heap = Dictionary<Shape, Key>::GetHeap();
   int capacity = HashTable<Shape, Key>::Capacity();
   for (int i = 0; i < capacity; i++) {
     Object* k =  HashTable<Shape, Key>::KeyAt(i);
@@ -9054,13 +9899,13 @@ Object* Dictionary<Shape, Key>::SlowReverseLookup(Object* value) {
       if (e == value) return k;
     }
   }
+  Heap* heap = Dictionary<Shape, Key>::GetHeap();
   return heap->undefined_value();
 }
 
 
 MaybeObject* StringDictionary::TransformPropertiesToFastFor(
     JSObject* obj, int unused_property_fields) {
-  Heap* heap = GetHeap();
   // Make sure we preserve dictionary representation if there are too many
   // descriptors.
   if (NumberOfElements() > DescriptorArray::kMaxNumberOfDescriptors) return obj;
@@ -9079,6 +9924,8 @@ MaybeObject* StringDictionary::TransformPropertiesToFastFor(
 
   int instance_descriptor_length = 0;
   int number_of_fields = 0;
+
+  Heap* heap = GetHeap();
 
   // Compute the length of the instance descriptor.
   int capacity = Capacity();
@@ -9208,12 +10055,11 @@ bool DebugInfo::HasBreakPoint(int code_position) {
 
 // Get the break point info object for this code position.
 Object* DebugInfo::GetBreakPointInfo(int code_position) {
-  Heap* heap = GetHeap();
   // Find the index of the break point info object for this code position.
   int index = GetBreakPointInfoIndex(code_position);
 
   // Return the break point info object if any.
-  if (index == kNoBreakPointInfo) return heap->undefined_value();
+  if (index == kNoBreakPointInfo) return GetHeap()->undefined_value();
   return BreakPointInfo::cast(break_points()->get(index));
 }
 
@@ -9286,10 +10132,9 @@ void DebugInfo::SetBreakPoint(Handle<DebugInfo> debug_info,
 
 // Get the break point objects for a code position.
 Object* DebugInfo::GetBreakPointObjects(int code_position) {
-  Heap* heap = GetHeap();
   Object* break_point_info = GetBreakPointInfo(code_position);
   if (break_point_info->IsUndefined()) {
-    return heap->undefined_value();
+    return GetHeap()->undefined_value();
   }
   return BreakPointInfo::cast(break_point_info)->break_point_objects();
 }
@@ -9312,7 +10157,7 @@ int DebugInfo::GetBreakPointCount() {
 
 Object* DebugInfo::FindBreakPointInfo(Handle<DebugInfo> debug_info,
                                       Handle<Object> break_point_object) {
-  Heap* heap = Isolate::Current()->heap();
+  Heap* heap = debug_info->GetHeap();
   if (debug_info->break_points()->IsUndefined()) return heap->undefined_value();
   for (int i = 0; i < debug_info->break_points()->length(); i++) {
     if (!debug_info->break_points()->get(i)->IsUndefined()) {

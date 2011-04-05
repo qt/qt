@@ -1,4 +1,4 @@
-// Copyright 2006-2009 the V8 project authors. All rights reserved.
+// Copyright 2010 the V8 project authors. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -51,11 +51,16 @@ typedef Operand MemOperand;
 
 // Forward declaration.
 class JumpTarget;
+class PostCallGenerator;
 
 // MacroAssembler implements a collection of frequently used macros.
 class MacroAssembler: public Assembler {
  public:
-  MacroAssembler(void* buffer, int size);
+  // The isolate parameter can be NULL if the macro assembler should
+  // not use isolate-dependent functionality. In this case, it's the
+  // responsibility of the caller to never invoke such function on the
+  // macro assembler.
+  MacroAssembler(Isolate* isolate, void* buffer, int size);
 
   // ---------------------------------------------------------------------------
   // GC Support
@@ -69,10 +74,11 @@ class MacroAssembler: public Assembler {
 
   // Check if object is in new space.
   // scratch can be object itself, but it will be clobbered.
+  template <typename LabelType>
   void InNewSpace(Register object,
                   Register scratch,
                   Condition cc,  // equal for new space, not_equal otherwise.
-                  Label* branch);
+                  LabelType* branch);
 
   // For page containing |object| mark region covering [object+offset]
   // dirty. |object| is the object being stored into, |value| is the
@@ -103,12 +109,6 @@ class MacroAssembler: public Assembler {
 #endif
 
   // ---------------------------------------------------------------------------
-  // Stack limit support
-
-  // Do simple test for stack overflow. This doesn't handle an overflow.
-  void StackLimitCheck(Label* on_stack_limit_hit);
-
-  // ---------------------------------------------------------------------------
   // Activation frames
 
   void EnterInternalFrame() { EnterFrame(StackFrame::INTERNAL); }
@@ -117,18 +117,18 @@ class MacroAssembler: public Assembler {
   void EnterConstructFrame() { EnterFrame(StackFrame::CONSTRUCT); }
   void LeaveConstructFrame() { LeaveFrame(StackFrame::CONSTRUCT); }
 
-  // Enter specific kind of exit frame; either in normal or debug mode.
-  // Expects the number of arguments in register eax and
-  // sets up the number of arguments in register edi and the pointer
-  // to the first argument in register esi.
-  void EnterExitFrame();
+  // Enter specific kind of exit frame. Expects the number of
+  // arguments in register eax and sets up the number of arguments in
+  // register edi and the pointer to the first argument in register
+  // esi.
+  void EnterExitFrame(bool save_doubles);
 
   void EnterApiExitFrame(int argc);
 
   // Leave the current exit frame. Expects the return value in
   // register eax:edx (untouched) and the pointer to the first
   // argument in register esi.
-  void LeaveExitFrame();
+  void LeaveExitFrame(bool save_doubles);
 
   // Leave the current exit frame. Expects the return value in
   // register eax (untouched).
@@ -144,6 +144,15 @@ class MacroAssembler: public Assembler {
   // function and map can be the same.
   void LoadGlobalFunctionInitialMap(Register function, Register map);
 
+  // Push and pop the registers that can hold pointers.
+  void PushSafepointRegisters() { pushad(); }
+  void PopSafepointRegisters() { popad(); }
+  // Store the value in register/immediate src in the safepoint
+  // register stack slot for register dst.
+  void StoreToSafepointRegisterSlot(Register dst, Register src);
+  void StoreToSafepointRegisterSlot(Register dst, Immediate src);
+  void LoadFromSafepointRegisterSlot(Register dst, Register src);
+
   // ---------------------------------------------------------------------------
   // JavaScript invokes
 
@@ -151,27 +160,33 @@ class MacroAssembler: public Assembler {
   void InvokeCode(const Operand& code,
                   const ParameterCount& expected,
                   const ParameterCount& actual,
-                  InvokeFlag flag);
+                  InvokeFlag flag,
+                  PostCallGenerator* post_call_generator = NULL);
 
   void InvokeCode(Handle<Code> code,
                   const ParameterCount& expected,
                   const ParameterCount& actual,
                   RelocInfo::Mode rmode,
-                  InvokeFlag flag);
+                  InvokeFlag flag,
+                  PostCallGenerator* post_call_generator = NULL);
 
   // Invoke the JavaScript function in the given register. Changes the
   // current context to the context in the function before invoking.
   void InvokeFunction(Register function,
                       const ParameterCount& actual,
-                      InvokeFlag flag);
+                      InvokeFlag flag,
+                      PostCallGenerator* post_call_generator = NULL);
 
   void InvokeFunction(JSFunction* function,
                       const ParameterCount& actual,
-                      InvokeFlag flag);
+                      InvokeFlag flag,
+                      PostCallGenerator* post_call_generator = NULL);
 
   // Invoke specified builtin JavaScript function. Adds an entry to
   // the unresolved list if the name does not resolve.
-  void InvokeBuiltin(Builtins::JavaScript id, InvokeFlag flag);
+  void InvokeBuiltin(Builtins::JavaScript id,
+                     InvokeFlag flag,
+                     PostCallGenerator* post_call_generator = NULL);
 
   // Store the function for the given builtin in the target register.
   void GetBuiltinFunction(Register target, Builtins::JavaScript id);
@@ -251,6 +266,17 @@ class MacroAssembler: public Assembler {
     j(not_carry, is_smi);
   }
 
+  // Jump the register contains a smi.
+  inline void JumpIfSmi(Register value, Label* smi_label) {
+    test(value, Immediate(kSmiTagMask));
+    j(zero, smi_label, not_taken);
+  }
+  // Jump if register contain a non-smi.
+  inline void JumpIfNotSmi(Register value, Label* not_smi_label) {
+    test(value, Immediate(kSmiTagMask));
+    j(not_zero, not_smi_label, not_taken);
+  }
+
   // Assumes input is a heap object.
   void JumpIfNotNumber(Register reg, TypeInfo info, Label* on_not_number);
 
@@ -285,6 +311,11 @@ class MacroAssembler: public Assembler {
 
   // Unlink the stack handler on top of the stack from the try handler chain.
   void PopTryHandler();
+
+  // Activate the top handler in the try hander chain.
+  void Throw(Register value);
+
+  void ThrowUncatchable(UncatchableExceptionType type, Register value);
 
   // ---------------------------------------------------------------------------
   // Inline caching support
@@ -379,22 +410,13 @@ class MacroAssembler: public Assembler {
                                Register scratch2,
                                Label* gc_required);
 
-  // All registers must be distinct.  Only current_string needs valid contents
-  // on entry.  All registers may be invalid on exit.  result_operand is
-  // unchanged, padding_chars is updated correctly.
-  // The top of new space must contain a sequential ascii string with
-  // padding_chars bytes free in its top word.  The sequential ascii string
-  // current_string is concatenated to it, allocating the necessary amount
-  // of new memory.
-  void AppendStringToTopOfNewSpace(
-      Register current_string,  // Tagged pointer to string to copy.
-      Register current_string_length,
-      Register result_pos,
-      Register scratch,
-      Register new_padding_chars,
-      Operand operand_result,
-      Operand operand_padding_chars,
-      Label* bailout);
+  // Copy memory, byte-by-byte, from source to destination.  Not optimized for
+  // long or aligned copies.
+  // The contents of index and scratch are destroyed.
+  void CopyBytes(Register source,
+                 Register destination,
+                 Register length,
+                 Register scratch);
 
   // ---------------------------------------------------------------------------
   // Support functions.
@@ -457,6 +479,7 @@ class MacroAssembler: public Assembler {
 
   // Call a runtime routine.
   void CallRuntime(const Runtime::Function* f, int num_arguments);
+  void CallRuntimeSaveDoubles(Runtime::FunctionId id);
 
   // Call a runtime function, returning the CodeStub object called.
   // Try to generate the stub code if necessary.  Do not perform a GC
@@ -540,18 +563,31 @@ class MacroAssembler: public Assembler {
 
   void Ret();
 
+  // Return and drop arguments from stack, where the number of arguments
+  // may be bigger than 2^16 - 1.  Requires a scratch register.
+  void Ret(int bytes_dropped, Register scratch);
+
   // Emit code to discard a non-negative number of pointer-sized elements
   // from the stack, clobbering only the esp register.
   void Drop(int element_count);
 
   void Call(Label* target) { call(target); }
 
+  // Emit call to the code we are currently generating.
+  void CallSelf() {
+    Handle<Code> self(reinterpret_cast<Code**>(CodeObject().location()));
+    call(self, RelocInfo::CODE_TARGET);
+  }
+
   // Move if the registers are not identical.
   void Move(Register target, Register source);
 
   void Move(Register target, Handle<Object> value);
 
-  Handle<Object> CodeObject() { return code_object_; }
+  Handle<Object> CodeObject() {
+    ASSERT(!code_object_.is_null());
+    return code_object_;
+  }
 
 
   // ---------------------------------------------------------------------------
@@ -617,15 +653,16 @@ class MacroAssembler: public Assembler {
                       const ParameterCount& actual,
                       Handle<Code> code_constant,
                       const Operand& code_operand,
-                      Label* done,
-                      InvokeFlag flag);
+                      NearLabel* done,
+                      InvokeFlag flag,
+                      PostCallGenerator* post_call_generator = NULL);
 
   // Activation support.
   void EnterFrame(StackFrame::Type type);
   void LeaveFrame(StackFrame::Type type);
 
   void EnterExitFramePrologue();
-  void EnterExitFrameEpilogue(int argc);
+  void EnterExitFrameEpilogue(int argc, bool save_doubles);
 
   void LeaveExitFrameEpilogue();
 
@@ -641,7 +678,43 @@ class MacroAssembler: public Assembler {
   MUST_USE_RESULT MaybeObject* PopHandleScopeHelper(Register saved,
                                                     Register scratch,
                                                     bool gc_allowed);
+
+
+  // Compute memory operands for safepoint stack slots.
+  Operand SafepointRegisterSlot(Register reg);
+  static int SafepointRegisterStackIndex(int reg_code);
+
+  // Needs access to SafepointRegisterStackIndex for optimized frame
+  // traversal.
+  friend class OptimizedFrame;
 };
+
+
+template <typename LabelType>
+void MacroAssembler::InNewSpace(Register object,
+                                Register scratch,
+                                Condition cc,
+                                LabelType* branch) {
+  ASSERT(cc == equal || cc == not_equal);
+  if (Serializer::enabled()) {
+    // Can't do arithmetic on external references if it might get serialized.
+    mov(scratch, Operand(object));
+    // The mask isn't really an address.  We load it as an external reference in
+    // case the size of the new space is different between the snapshot maker
+    // and the running system.
+    and_(Operand(scratch),
+         Immediate(ExternalReference::new_space_mask(isolate())));
+    cmp(Operand(scratch),
+        Immediate(ExternalReference::new_space_start(isolate())));
+    j(cc, branch);
+  } else {
+    int32_t new_space_start = reinterpret_cast<int32_t>(
+        ExternalReference::new_space_start(isolate()).address());
+    lea(scratch, Operand(object, -new_space_start));
+    and_(scratch, isolate()->heap()->NewSpaceMask());
+    j(cc, branch);
+  }
+}
 
 
 // The code patcher is used to patch (typically) small parts of code e.g. for
@@ -661,6 +734,17 @@ class CodePatcher {
   byte* address_;  // The address of the code being patched.
   int size_;  // Number of bytes of the expected patch size.
   MacroAssembler masm_;  // Macro assembler used to generate the code.
+};
+
+
+// Helper class for generating code or data associated with the code
+// right after a call instruction. As an example this can be used to
+// generate safepoint data after calls for crankshaft.
+class PostCallGenerator {
+ public:
+  PostCallGenerator() { }
+  virtual ~PostCallGenerator() { }
+  virtual void Generate() = 0;
 };
 
 

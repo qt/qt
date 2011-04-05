@@ -29,6 +29,7 @@
 
 #include "v8.h"
 #include "global-handles.h"
+#include "heap-profiler.h"
 #include "scopeinfo.h"
 #include "unicode.h"
 #include "zone-inl.h"
@@ -96,51 +97,70 @@ StringsStorage::StringsStorage()
 }
 
 
-static void DeleteIndexName(char** name_ptr) {
-  DeleteArray(*name_ptr);
-}
-
-
 StringsStorage::~StringsStorage() {
   for (HashMap::Entry* p = names_.Start();
        p != NULL;
        p = names_.Next(p)) {
     DeleteArray(reinterpret_cast<const char*>(p->value));
   }
-  index_names_.Iterate(DeleteIndexName);
+}
+
+
+const char* StringsStorage::GetCopy(const char* src) {
+  int len = static_cast<int>(strlen(src));
+  Vector<char> dst = Vector<char>::New(len + 1);
+  OS::StrNCpy(dst, src, len);
+  dst[len] = '\0';
+  uint32_t hash = HashSequentialString(dst.start(), len);
+  return AddOrDisposeString(dst.start(), hash);
+}
+
+
+const char* StringsStorage::GetFormatted(const char* format, ...) {
+  va_list args;
+  va_start(args, format);
+  const char* result = GetVFormatted(format, args);
+  va_end(args);
+  return result;
+}
+
+
+const char* StringsStorage::AddOrDisposeString(char* str, uint32_t hash) {
+  HashMap::Entry* cache_entry = names_.Lookup(str, hash, true);
+  if (cache_entry->value == NULL) {
+    // New entry added.
+    cache_entry->value = str;
+  } else {
+    DeleteArray(str);
+  }
+  return reinterpret_cast<const char*>(cache_entry->value);
+}
+
+
+const char* StringsStorage::GetVFormatted(const char* format, va_list args) {
+  Vector<char> str = Vector<char>::New(1024);
+  int len = OS::VSNPrintF(str, format, args);
+  if (len == -1) {
+    DeleteArray(str.start());
+    return format;
+  }
+  uint32_t hash = HashSequentialString(str.start(), len);
+  return AddOrDisposeString(str.start(), hash);
 }
 
 
 const char* StringsStorage::GetName(String* name) {
   if (name->IsString()) {
-    char* c_name =
-        name->ToCString(DISALLOW_NULLS, ROBUST_STRING_TRAVERSAL).Detach();
-    HashMap::Entry* cache_entry = names_.Lookup(c_name, name->Hash(), true);
-    if (cache_entry->value == NULL) {
-      // New entry added.
-      cache_entry->value = c_name;
-    } else {
-      DeleteArray(c_name);
-    }
-    return reinterpret_cast<const char*>(cache_entry->value);
+    return AddOrDisposeString(
+        name->ToCString(DISALLOW_NULLS, ROBUST_STRING_TRAVERSAL).Detach(),
+        name->Hash());
   }
   return "";
 }
 
 
 const char* StringsStorage::GetName(int index) {
-  ASSERT(index >= 0);
-  if (index_names_.length() <= index) {
-    index_names_.AddBlock(
-        NULL, index - index_names_.length() + 1);
-  }
-  if (index_names_[index] == NULL) {
-    const int kMaximumNameLength = 32;
-    char* name = NewArray<char>(kMaximumNameLength);
-    OS::SNPrintF(Vector<char>(name, kMaximumNameLength), "%d", index);
-    index_names_[index] = name;
-  }
-  return index_names_[index];
+  return GetFormatted("%d", index);
 }
 
 
@@ -158,13 +178,18 @@ void CodeEntry::CopyData(const CodeEntry& source) {
 
 uint32_t CodeEntry::GetCallUid() const {
   uint32_t hash = ComputeIntegerHash(tag_);
-  hash ^= ComputeIntegerHash(
-      static_cast<uint32_t>(reinterpret_cast<uintptr_t>(name_prefix_)));
-  hash ^= ComputeIntegerHash(
-      static_cast<uint32_t>(reinterpret_cast<uintptr_t>(name_)));
-  hash ^= ComputeIntegerHash(
-      static_cast<uint32_t>(reinterpret_cast<uintptr_t>(resource_name_)));
-  hash ^= ComputeIntegerHash(line_number_);
+  if (shared_id_ != 0) {
+    hash ^= ComputeIntegerHash(
+        static_cast<uint32_t>(shared_id_));
+  } else {
+    hash ^= ComputeIntegerHash(
+        static_cast<uint32_t>(reinterpret_cast<uintptr_t>(name_prefix_)));
+    hash ^= ComputeIntegerHash(
+        static_cast<uint32_t>(reinterpret_cast<uintptr_t>(name_)));
+    hash ^= ComputeIntegerHash(
+        static_cast<uint32_t>(reinterpret_cast<uintptr_t>(resource_name_)));
+    hash ^= ComputeIntegerHash(line_number_);
+  }
   return hash;
 }
 
@@ -172,10 +197,12 @@ uint32_t CodeEntry::GetCallUid() const {
 bool CodeEntry::IsSameAs(CodeEntry* entry) const {
   return this == entry
       || (tag_ == entry->tag_
-          && name_prefix_ == entry->name_prefix_
-          && name_ == entry->name_
-          && resource_name_ == entry->resource_name_
-          && line_number_ == entry->line_number_);
+          && shared_id_ == entry->shared_id_
+          && (shared_id_ != 0
+              || (name_prefix_ == entry->name_prefix_
+                  && name_ == entry->name_
+                  && resource_name_ == entry->resource_name_
+                  && line_number_ == entry->line_number_)));
 }
 
 
@@ -293,7 +320,7 @@ struct NodesPair {
 
 class FilteredCloneCallback {
  public:
-  explicit FilteredCloneCallback(ProfileNode* dst_root, int security_token_id)
+  FilteredCloneCallback(ProfileNode* dst_root, int security_token_id)
       : stack_(10),
         security_token_id_(security_token_id) {
     stack_.Add(NodesPair(NULL, dst_root));
@@ -460,21 +487,10 @@ void CpuProfile::Print() {
 }
 
 
+CodeEntry* const CodeMap::kSharedFunctionCodeEntry = NULL;
 const CodeMap::CodeTreeConfig::Key CodeMap::CodeTreeConfig::kNoKey = NULL;
 const CodeMap::CodeTreeConfig::Value CodeMap::CodeTreeConfig::kNoValue =
     CodeMap::CodeEntryInfo(NULL, 0);
-
-
-void CodeMap::AddAlias(Address start, CodeEntry* entry, Address code_start) {
-  CodeTree::Locator locator;
-  if (tree_.Find(code_start, &locator)) {
-    const CodeEntryInfo& code_info = locator.value();
-    if (tree_.Insert(start, &locator)) {
-      entry->CopyData(*code_info.entry);
-      locator.set_value(CodeEntryInfo(entry, code_info.size));
-    }
-  }
-}
 
 
 CodeEntry* CodeMap::FindEntry(Address addr) {
@@ -486,6 +502,22 @@ CodeEntry* CodeMap::FindEntry(Address addr) {
       return entry.entry;
   }
   return NULL;
+}
+
+
+int CodeMap::GetSharedId(Address addr) {
+  CodeTree::Locator locator;
+  // For shared function entries, 'size' field is used to store their IDs.
+  if (tree_.Find(addr, &locator)) {
+    const CodeEntryInfo& entry = locator.value();
+    ASSERT(entry.entry == kSharedFunctionCodeEntry);
+    return entry.size;
+  } else {
+    tree_.Insert(addr, &locator);
+    int id = next_shared_id_++;
+    locator.set_value(CodeEntryInfo(kSharedFunctionCodeEntry, id));
+    return id;
+  }
 }
 
 
@@ -518,13 +550,16 @@ static void DeleteCpuProfile(CpuProfile** profile_ptr) {
 }
 
 static void DeleteProfilesList(List<CpuProfile*>** list_ptr) {
-  (*list_ptr)->Iterate(DeleteCpuProfile);
-  delete *list_ptr;
+  if (*list_ptr != NULL) {
+    (*list_ptr)->Iterate(DeleteCpuProfile);
+    delete *list_ptr;
+  }
 }
 
 CpuProfilesCollection::~CpuProfilesCollection() {
   delete current_profiles_semaphore_;
   current_profiles_.Iterate(DeleteCpuProfile);
+  detached_profiles_.Iterate(DeleteCpuProfile);
   profiles_by_token_.Iterate(DeleteProfilesList);
   code_entries_.Iterate(DeleteCodeEntry);
 }
@@ -589,15 +624,8 @@ CpuProfile* CpuProfilesCollection::StopProfiling(int security_token_id,
 
 CpuProfile* CpuProfilesCollection::GetProfile(int security_token_id,
                                               unsigned uid) {
-  HashMap::Entry* entry = profiles_uids_.Lookup(reinterpret_cast<void*>(uid),
-                                                static_cast<uint32_t>(uid),
-                                                false);
-  int index;
-  if (entry != NULL) {
-    index = static_cast<int>(reinterpret_cast<intptr_t>(entry->value));
-  } else {
-    return NULL;
-  }
+  int index = GetProfileIndex(uid);
+  if (index < 0) return NULL;
   List<CpuProfile*>* unabridged_list =
       profiles_by_token_[TokenToIndex(TokenEnumerator::kNoSecurityToken)];
   if (security_token_id == TokenEnumerator::kNoSecurityToken) {
@@ -605,10 +633,19 @@ CpuProfile* CpuProfilesCollection::GetProfile(int security_token_id,
   }
   List<CpuProfile*>* list = GetProfilesList(security_token_id);
   if (list->at(index) == NULL) {
-      list->at(index) =
-          unabridged_list->at(index)->FilteredClone(security_token_id);
+    (*list)[index] =
+        unabridged_list->at(index)->FilteredClone(security_token_id);
   }
   return list->at(index);
+}
+
+
+int CpuProfilesCollection::GetProfileIndex(unsigned uid) {
+  HashMap::Entry* entry = profiles_uids_.Lookup(reinterpret_cast<void*>(uid),
+                                                static_cast<uint32_t>(uid),
+                                                false);
+  return entry != NULL ?
+      static_cast<int>(reinterpret_cast<intptr_t>(entry->value)) : -1;
 }
 
 
@@ -618,6 +655,39 @@ bool CpuProfilesCollection::IsLastProfile(const char* title) {
   if (current_profiles_.length() != 1) return false;
   return StrLength(title) == 0
       || strcmp(current_profiles_[0]->title(), title) == 0;
+}
+
+
+void CpuProfilesCollection::RemoveProfile(CpuProfile* profile) {
+  // Called from VM thread for a completed profile.
+  unsigned uid = profile->uid();
+  int index = GetProfileIndex(uid);
+  if (index < 0) {
+    detached_profiles_.RemoveElement(profile);
+    return;
+  }
+  profiles_uids_.Remove(reinterpret_cast<void*>(uid),
+                        static_cast<uint32_t>(uid));
+  // Decrement all indexes above the deleted one.
+  for (HashMap::Entry* p = profiles_uids_.Start();
+       p != NULL;
+       p = profiles_uids_.Next(p)) {
+    intptr_t p_index = reinterpret_cast<intptr_t>(p->value);
+    if (p_index > index) {
+      p->value = reinterpret_cast<void*>(p_index - 1);
+    }
+  }
+  for (int i = 0; i < profiles_by_token_.length(); ++i) {
+    List<CpuProfile*>* list = profiles_by_token_[i];
+    if (list != NULL && index < list->length()) {
+      // Move all filtered clones into detached_profiles_,
+      // so we can know that they are still in use.
+      CpuProfile* cloned_profile = list->Remove(index);
+      if (cloned_profile != NULL && cloned_profile != profile) {
+        detached_profiles_.Add(cloned_profile);
+      }
+    }
+  }
 }
 
 
@@ -655,7 +725,7 @@ List<CpuProfile*>* CpuProfilesCollection::Profiles(int security_token_id) {
   const int current_count = unabridged_list->length();
   for (int i = 0; i < current_count; ++i) {
     if (list->at(i) == NULL) {
-      list->at(i) = unabridged_list->at(i)->FilteredClone(security_token_id);
+      (*list)[i] = unabridged_list->at(i)->FilteredClone(security_token_id);
     }
   }
   return list;
@@ -712,13 +782,6 @@ CodeEntry* CpuProfilesCollection::NewCodeEntry(Logger::LogEventsAndTags tag,
                                    "",
                                    v8::CpuProfileNode::kNoLineNumberInfo,
                                    TokenEnumerator::kInheritsSecurityToken);
-  code_entries_.Add(entry);
-  return entry;
-}
-
-
-CodeEntry* CpuProfilesCollection::NewCodeEntry(int security_token_id) {
-  CodeEntry* entry = new CodeEntry(security_token_id);
   code_entries_.Add(entry);
   return entry;
 }
@@ -788,19 +851,18 @@ void ProfileGenerator::RecordTickSample(const TickSample& sample) {
   if (sample.pc != NULL) {
     *entry++ = code_map_.FindEntry(sample.pc);
 
-    if (sample.function != NULL) {
-      *entry = code_map_.FindEntry(sample.function);
+    if (sample.has_external_callback) {
+      // Don't use PC when in external callback code, as it can point
+      // inside callback's code, and we will erroneously report
+      // that a callback calls itself.
+      *(entries.start()) = NULL;
+      *entry++ = code_map_.FindEntry(sample.external_callback);
+    } else if (sample.tos != NULL) {
+      // Find out, if top of stack was pointing inside a JS function
+      // meaning that we have encountered a frameless invocation.
+      *entry = code_map_.FindEntry(sample.tos);
       if (*entry != NULL && !(*entry)->is_js_function()) {
         *entry = NULL;
-      } else {
-        CodeEntry* pc_entry = *entries.start();
-        if (pc_entry == NULL) {
-          *entry = NULL;
-        } else if (pc_entry->is_js_function()) {
-          // Use function entry in favor of pc entry, as function
-          // entry has security token.
-          *entries.start() = NULL;
-        }
       }
       entry++;
     }
@@ -922,11 +984,6 @@ int HeapEntry::RetainedSize(bool exact) {
 }
 
 
-List<HeapGraphPath*>* HeapEntry::GetRetainingPaths() {
-  return snapshot_->GetRetainingPaths(this);
-}
-
-
 template<class Visitor>
 void HeapEntry::ApplyAndPaintAllReachable(Visitor* visitor) {
   List<HeapEntry*> list(10);
@@ -1017,6 +1074,7 @@ const char* HeapEntry::TypeAsString() {
     case kArray: return "/array/";
     case kRegExp: return "/regexp/";
     case kHeapNumber: return "/number/";
+    case kNative: return "/native/";
     default: return "???";
   }
 }
@@ -1084,113 +1142,6 @@ void HeapEntry::CalculateExactRetainedSize() {
 }
 
 
-class CachedHeapGraphPath {
- public:
-  CachedHeapGraphPath()
-      : nodes_(NodesMatch) { }
-  CachedHeapGraphPath(const CachedHeapGraphPath& src)
-      : nodes_(NodesMatch, &HashMap::DefaultAllocator, src.nodes_.capacity()),
-        path_(src.path_.length() + 1) {
-    for (HashMap::Entry* p = src.nodes_.Start();
-         p != NULL;
-         p = src.nodes_.Next(p)) {
-      nodes_.Lookup(p->key, p->hash, true);
-    }
-    path_.AddAll(src.path_);
-  }
-  void Add(HeapGraphEdge* edge) {
-    nodes_.Lookup(edge->to(), Hash(edge->to()), true);
-    path_.Add(edge);
-  }
-  bool ContainsNode(HeapEntry* node) {
-    return nodes_.Lookup(node, Hash(node), false) != NULL;
-  }
-  const List<HeapGraphEdge*>* path() const { return &path_; }
-
- private:
-  static uint32_t Hash(HeapEntry* entry) {
-    return static_cast<uint32_t>(reinterpret_cast<intptr_t>(entry));
-  }
-  static bool NodesMatch(void* key1, void* key2) { return key1 == key2; }
-
-  HashMap nodes_;
-  List<HeapGraphEdge*> path_;
-};
-
-
-List<HeapGraphPath*>* HeapEntry::CalculateRetainingPaths() {
-  List<HeapGraphPath*>* retaining_paths = new List<HeapGraphPath*>(4);
-  CachedHeapGraphPath path;
-  FindRetainingPaths(&path, retaining_paths);
-  return retaining_paths;
-}
-
-
-void HeapEntry::FindRetainingPaths(CachedHeapGraphPath* prev_path,
-                                   List<HeapGraphPath*>* retaining_paths) {
-  Vector<HeapGraphEdge*> rets = retainers();
-  for (int i = 0; i < rets.length(); ++i) {
-    HeapGraphEdge* ret_edge = rets[i];
-    if (prev_path->ContainsNode(ret_edge->From())) continue;
-    if (ret_edge->From() != snapshot()->root()) {
-      CachedHeapGraphPath path(*prev_path);
-      path.Add(ret_edge);
-      ret_edge->From()->FindRetainingPaths(&path, retaining_paths);
-    } else {
-      HeapGraphPath* ret_path = new HeapGraphPath(*prev_path->path());
-      ret_path->Set(0, ret_edge);
-      retaining_paths->Add(ret_path);
-    }
-  }
-}
-
-
-HeapGraphPath::HeapGraphPath(const List<HeapGraphEdge*>& path)
-    : path_(path.length() + 1) {
-  Add(NULL);
-  for (int i = path.length() - 1; i >= 0; --i) {
-    Add(path[i]);
-  }
-}
-
-
-void HeapGraphPath::Print() {
-  path_[0]->From()->Print(1, 0);
-  for (int i = 0; i < path_.length(); ++i) {
-    OS::Print(" -> ");
-    HeapGraphEdge* edge = path_[i];
-    switch (edge->type()) {
-      case HeapGraphEdge::kContextVariable:
-        OS::Print("[#%s] ", edge->name());
-        break;
-      case HeapGraphEdge::kElement:
-      case HeapGraphEdge::kHidden:
-        OS::Print("[%d] ", edge->index());
-        break;
-      case HeapGraphEdge::kInternal:
-        OS::Print("[$%s] ", edge->name());
-        break;
-      case HeapGraphEdge::kProperty:
-        OS::Print("[%s] ", edge->name());
-        break;
-      case HeapGraphEdge::kShortcut:
-        OS::Print("[^%s] ", edge->name());
-        break;
-      default:
-        OS::Print("!!! unknown edge type: %d ", edge->type());
-    }
-    edge->to()->Print(1, 0);
-  }
-  OS::Print("\n");
-}
-
-
-HeapObject *const HeapSnapshot::kInternalRootObject =
-    reinterpret_cast<HeapObject*>(1);
-HeapObject *const HeapSnapshot::kGcRootsObject =
-    reinterpret_cast<HeapObject*>(2);
-
-
 // It is very important to keep objects that form a heap snapshot
 // as small as possible.
 namespace {  // Avoid littering the global namespace.
@@ -1219,9 +1170,9 @@ HeapSnapshot::HeapSnapshot(HeapSnapshotsCollection* collection,
       uid_(uid),
       root_entry_(NULL),
       gc_roots_entry_(NULL),
+      natives_root_entry_(NULL),
       raw_entries_(NULL),
-      entries_sorted_(false),
-      retaining_paths_(HeapEntry::Match) {
+      entries_sorted_(false) {
   STATIC_ASSERT(
       sizeof(HeapGraphEdge) ==
       SnapshotSizeConstants<sizeof(void*)>::kExpectedHeapGraphEdgeSize);  // NOLINT
@@ -1230,21 +1181,14 @@ HeapSnapshot::HeapSnapshot(HeapSnapshotsCollection* collection,
       SnapshotSizeConstants<sizeof(void*)>::kExpectedHeapEntrySize);  // NOLINT
 }
 
-
-static void DeleteHeapGraphPath(HeapGraphPath** path_ptr) {
-  delete *path_ptr;
-}
-
 HeapSnapshot::~HeapSnapshot() {
   DeleteArray(raw_entries_);
-  for (HashMap::Entry* p = retaining_paths_.Start();
-       p != NULL;
-       p = retaining_paths_.Next(p)) {
-    List<HeapGraphPath*>* list =
-        reinterpret_cast<List<HeapGraphPath*>*>(p->value);
-    list->Iterate(DeleteHeapGraphPath);
-    delete list;
-  }
+}
+
+
+void HeapSnapshot::Delete() {
+  collection_->RemoveSnapshot(this);
+  delete this;
 }
 
 
@@ -1261,96 +1205,6 @@ void HeapSnapshot::AllocateEntries(int entries_count,
 }
 
 
-HeapEntry* HeapSnapshot::AddEntry(HeapObject* object,
-                                  int children_count,
-                                  int retainers_count) {
-  if (object == kInternalRootObject) {
-    ASSERT(root_entry_ == NULL);
-    ASSERT(retainers_count == 0);
-    return (root_entry_ = AddEntry(HeapEntry::kObject,
-                                   "",
-                                   HeapObjectsMap::kInternalRootObjectId,
-                                   0,
-                                   children_count,
-                                   retainers_count));
-  } else if (object == kGcRootsObject) {
-    ASSERT(gc_roots_entry_ == NULL);
-    return (gc_roots_entry_ = AddEntry(HeapEntry::kObject,
-                                       "(GC roots)",
-                                       HeapObjectsMap::kGcRootsObjectId,
-                                       0,
-                                       children_count,
-                                       retainers_count));
-  } else if (object->IsJSFunction()) {
-    JSFunction* func = JSFunction::cast(object);
-    SharedFunctionInfo* shared = func->shared();
-    return AddEntry(object,
-                    HeapEntry::kClosure,
-                    collection_->GetName(String::cast(shared->name())),
-                    children_count,
-                    retainers_count);
-  } else if (object->IsJSRegExp()) {
-    JSRegExp* re = JSRegExp::cast(object);
-    return AddEntry(object,
-                    HeapEntry::kRegExp,
-                    collection_->GetName(re->Pattern()),
-                    children_count,
-                    retainers_count);
-  } else if (object->IsJSObject()) {
-    return AddEntry(object,
-                    HeapEntry::kObject,
-                    collection_->GetName(GetConstructorNameForHeapProfile(
-                        JSObject::cast(object))),
-                    children_count,
-                    retainers_count);
-  } else if (object->IsString()) {
-    return AddEntry(object,
-                    HeapEntry::kString,
-                    collection_->GetName(String::cast(object)),
-                    children_count,
-                    retainers_count);
-  } else if (object->IsCode()) {
-    return AddEntry(object,
-                    HeapEntry::kCode,
-                    "",
-                    children_count,
-                    retainers_count);
-  } else if (object->IsSharedFunctionInfo()) {
-    SharedFunctionInfo* shared = SharedFunctionInfo::cast(object);
-    return AddEntry(object,
-                    HeapEntry::kCode,
-                    collection_->GetName(String::cast(shared->name())),
-                    children_count,
-                    retainers_count);
-  } else if (object->IsScript()) {
-    Script* script = Script::cast(object);
-    return AddEntry(object,
-                    HeapEntry::kCode,
-                    script->name()->IsString() ?
-                    collection_->GetName(String::cast(script->name())) : "",
-                    children_count,
-                    retainers_count);
-  } else if (object->IsFixedArray()) {
-    return AddEntry(object,
-                    HeapEntry::kArray,
-                    "",
-                    children_count,
-                    retainers_count);
-  } else if (object->IsHeapNumber()) {
-    return AddEntry(object,
-                    HeapEntry::kHeapNumber,
-                    "number",
-                    children_count,
-                    retainers_count);
-  }
-  return AddEntry(object,
-                  HeapEntry::kHidden,
-                  "system",
-                  children_count,
-                  retainers_count);
-}
-
-
 static void HeapEntryClearPaint(HeapEntry** entry_ptr) {
   (*entry_ptr)->clear_paint();
 }
@@ -1360,17 +1214,39 @@ void HeapSnapshot::ClearPaint() {
 }
 
 
-HeapEntry* HeapSnapshot::AddEntry(HeapObject* object,
-                                  HeapEntry::Type type,
-                                  const char* name,
-                                  int children_count,
-                                  int retainers_count) {
-  return AddEntry(type,
-                  name,
-                  collection_->GetObjectId(object->address()),
-                  object->Size(),
-                  children_count,
-                  retainers_count);
+HeapEntry* HeapSnapshot::AddRootEntry(int children_count) {
+  ASSERT(root_entry_ == NULL);
+  return (root_entry_ = AddEntry(HeapEntry::kObject,
+                                 "",
+                                 HeapObjectsMap::kInternalRootObjectId,
+                                 0,
+                                 children_count,
+                                 0));
+}
+
+
+HeapEntry* HeapSnapshot::AddGcRootsEntry(int children_count,
+                                         int retainers_count) {
+  ASSERT(gc_roots_entry_ == NULL);
+  return (gc_roots_entry_ = AddEntry(HeapEntry::kObject,
+                                     "(GC roots)",
+                                     HeapObjectsMap::kGcRootsObjectId,
+                                     0,
+                                     children_count,
+                                     retainers_count));
+}
+
+
+HeapEntry* HeapSnapshot::AddNativesRootEntry(int children_count,
+                                                 int retainers_count) {
+  ASSERT(natives_root_entry_ == NULL);
+  return (natives_root_entry_ = AddEntry(
+      HeapEntry::kObject,
+      "(Native objects)",
+      HeapObjectsMap::kNativesRootObjectId,
+      0,
+      children_count,
+      retainers_count));
 }
 
 
@@ -1386,145 +1262,10 @@ HeapEntry* HeapSnapshot::AddEntry(HeapEntry::Type type,
 }
 
 
-void HeapSnapshot::FillReversePostorderIndexes(Vector<HeapEntry*>* entries) {
-  ClearPaint();
-  int current_entry = 0;
-  List<HeapEntry*> nodes_to_visit;
-  nodes_to_visit.Add(root());
-  root()->paint_reachable();
-  while (!nodes_to_visit.is_empty()) {
-    HeapEntry* entry = nodes_to_visit.last();
-    Vector<HeapGraphEdge> children = entry->children();
-    bool has_new_edges = false;
-    for (int i = 0; i < children.length(); ++i) {
-      if (children[i].type() == HeapGraphEdge::kShortcut) continue;
-      HeapEntry* child = children[i].to();
-      if (!child->painted_reachable()) {
-        nodes_to_visit.Add(child);
-        child->paint_reachable();
-        has_new_edges = true;
-      }
-    }
-    if (!has_new_edges) {
-      entry->set_ordered_index(current_entry);
-      entries->at(current_entry++) = entry;
-      nodes_to_visit.RemoveLast();
-    }
-  }
-  entries->Truncate(current_entry);
-}
-
-
-static int Intersect(int i1, int i2, const Vector<HeapEntry*>& dominators) {
-  int finger1 = i1, finger2 = i2;
-  while (finger1 != finger2) {
-    while (finger1 < finger2) finger1 = dominators[finger1]->ordered_index();
-    while (finger2 < finger1) finger2 = dominators[finger2]->ordered_index();
-  }
-  return finger1;
-}
-
-// The algorithm is based on the article:
-// K. Cooper, T. Harvey and K. Kennedy "A Simple, Fast Dominance Algorithm"
-// Softw. Pract. Exper. 4 (2001), pp. 1–10.
-void HeapSnapshot::BuildDominatorTree(const Vector<HeapEntry*>& entries,
-                                      Vector<HeapEntry*>* dominators) {
-  if (entries.length() == 0) return;
-  const int root_index = entries.length() - 1;
-  for (int i = 0; i < root_index; ++i) dominators->at(i) = NULL;
-  dominators->at(root_index) = entries[root_index];
-  bool changed = true;
-  while (changed) {
-    changed = false;
-    for (int i = root_index - 1; i >= 0; --i) {
-      HeapEntry* new_idom = NULL;
-      Vector<HeapGraphEdge*> rets = entries[i]->retainers();
-      int j = 0;
-      for (; j < rets.length(); ++j) {
-        if (rets[j]->type() == HeapGraphEdge::kShortcut) continue;
-        HeapEntry* ret = rets[j]->From();
-        if (dominators->at(ret->ordered_index()) != NULL) {
-          new_idom = ret;
-          break;
-        }
-      }
-      for (++j; j < rets.length(); ++j) {
-        if (rets[j]->type() == HeapGraphEdge::kShortcut) continue;
-        HeapEntry* ret = rets[j]->From();
-        if (dominators->at(ret->ordered_index()) != NULL) {
-          new_idom = entries[Intersect(ret->ordered_index(),
-                                       new_idom->ordered_index(),
-                                       *dominators)];
-        }
-      }
-      if (new_idom != NULL && dominators->at(i) != new_idom) {
-        dominators->at(i) = new_idom;
-        changed = true;
-      }
-    }
-  }
-}
-
-
 void HeapSnapshot::SetDominatorsToSelf() {
   for (int i = 0; i < entries_.length(); ++i) {
     HeapEntry* entry = entries_[i];
     if (entry->dominator() == NULL) entry->set_dominator(entry);
-  }
-}
-
-
-void HeapSnapshot::SetEntriesDominators() {
-  // This array is used for maintaining reverse postorder of nodes.
-  ScopedVector<HeapEntry*> ordered_entries(entries_.length());
-  FillReversePostorderIndexes(&ordered_entries);
-  ScopedVector<HeapEntry*> dominators(ordered_entries.length());
-  BuildDominatorTree(ordered_entries, &dominators);
-  for (int i = 0; i < ordered_entries.length(); ++i) {
-    ASSERT(dominators[i] != NULL);
-    ordered_entries[i]->set_dominator(dominators[i]);
-  }
-  // For nodes unreachable from root, set dominator to itself.
-  SetDominatorsToSelf();
-}
-
-
-void HeapSnapshot::ApproximateRetainedSizes() {
-  SetEntriesDominators();
-  // As for the dominators tree we only know parent nodes, not
-  // children, to sum up total sizes we traverse the tree level by
-  // level upwards, starting from leaves.
-  for (int i = 0; i < entries_.length(); ++i) {
-    HeapEntry* entry = entries_[i];
-    entry->set_retained_size(entry->self_size());
-    entry->set_leaf();
-  }
-  while (true) {
-    bool onlyLeaves = true;
-    for (int i = 0; i < entries_.length(); ++i) {
-      HeapEntry *entry = entries_[i], *dominator = entry->dominator();
-      if (!entry->is_processed() && dominator != entry) {
-        dominator->set_non_leaf();
-        onlyLeaves = false;
-      }
-    }
-    if (onlyLeaves) break;
-
-    for (int i = 0; i < entries_.length(); ++i) {
-      HeapEntry *entry = entries_[i], *dominator = entry->dominator();
-      if (entry->is_leaf() && dominator != entry) {
-        dominator->add_retained_size(entry->retained_size());
-      }
-    }
-
-    // Mark all current leaves as processed, reset non-leaves back to leaves.
-    for (int i = 0; i < entries_.length(); ++i) {
-      HeapEntry* entry = entries_[i];
-      if (entry->is_leaf())
-        entry->set_processed();
-      else if (entry->is_non_leaf())
-        entry->set_leaf();
-    }
   }
 }
 
@@ -1543,14 +1284,7 @@ HeapEntry* HeapSnapshot::GetNextEntryToInit() {
 }
 
 
-HeapSnapshotsDiff* HeapSnapshot::CompareWith(HeapSnapshot* snapshot) {
-  return collection_->CompareSnapshots(this, snapshot);
-}
-
-
 HeapEntry* HeapSnapshot::GetEntryById(uint64_t id) {
-  // GetSortedEntriesList is used in diff algorithm and sorts
-  // entries by their id.
   List<HeapEntry*>* entries_by_id = GetSortedEntriesList();
 
   // Perform a binary search by id.
@@ -1568,16 +1302,6 @@ HeapEntry* HeapSnapshot::GetEntryById(uint64_t id) {
       return entries_by_id->at(mid);
   }
   return NULL;
-}
-
-
-List<HeapGraphPath*>* HeapSnapshot::GetRetainingPaths(HeapEntry* entry) {
-  HashMap::Entry* p =
-      retaining_paths_.Lookup(entry, HeapEntry::Hash(entry), true);
-  if (p->value == NULL) {
-    p->value = entry->CalculateRetainingPaths();
-  }
-  return reinterpret_cast<List<HeapGraphPath*>*>(p->value);
 }
 
 
@@ -1602,10 +1326,13 @@ void HeapSnapshot::Print(int max_depth) {
 }
 
 
-const uint64_t HeapObjectsMap::kInternalRootObjectId = 0;
-const uint64_t HeapObjectsMap::kGcRootsObjectId = 1;
+// We split IDs on evens for embedder objects (see
+// HeapObjectsMap::GenerateId) and odds for native objects.
+const uint64_t HeapObjectsMap::kInternalRootObjectId = 1;
+const uint64_t HeapObjectsMap::kGcRootsObjectId = 3;
+const uint64_t HeapObjectsMap::kNativesRootObjectId = 5;
 // Increase kFirstAvailableObjectId if new 'special' objects appear.
-const uint64_t HeapObjectsMap::kFirstAvailableObjectId = 2;
+const uint64_t HeapObjectsMap::kFirstAvailableObjectId = 7;
 
 HeapObjectsMap::HeapObjectsMap()
     : initial_fill_mode_(true),
@@ -1630,7 +1357,8 @@ uint64_t HeapObjectsMap::FindObject(Address addr) {
     uint64_t existing = FindEntry(addr);
     if (existing != 0) return existing;
   }
-  uint64_t id = next_id_++;
+  uint64_t id = next_id_;
+  next_id_ += 2;
   AddEntry(addr, id);
   return id;
 }
@@ -1698,6 +1426,17 @@ void HeapObjectsMap::RemoveDeadEntries() {
 }
 
 
+uint64_t HeapObjectsMap::GenerateId(v8::RetainedObjectInfo* info) {
+  uint64_t id = static_cast<uint64_t>(info->GetHash());
+  const char* label = info->GetLabel();
+  id ^= HashSequentialString(label, static_cast<int>(strlen(label)));
+  intptr_t element_count = info->GetElementCount();
+  if (element_count != -1)
+    id ^= ComputeIntegerHash(static_cast<uint32_t>(element_count));
+  return id << 1;
+}
+
+
 HeapSnapshotsCollection::HeapSnapshotsCollection()
     : is_tracking_objects_(false),
       snapshots_uids_(HeapSnapshotsMatch),
@@ -1720,15 +1459,22 @@ HeapSnapshot* HeapSnapshotsCollection::NewSnapshot(HeapSnapshot::Type type,
                                                    const char* name,
                                                    unsigned uid) {
   is_tracking_objects_ = true;  // Start watching for heap objects moves.
-  HeapSnapshot* snapshot = new HeapSnapshot(this, type, name, uid);
-  snapshots_.Add(snapshot);
-  HashMap::Entry* entry =
-      snapshots_uids_.Lookup(reinterpret_cast<void*>(snapshot->uid()),
-                             static_cast<uint32_t>(snapshot->uid()),
-                             true);
-  ASSERT(entry->value == NULL);
-  entry->value = snapshot;
-  return snapshot;
+  return new HeapSnapshot(this, type, name, uid);
+}
+
+
+void HeapSnapshotsCollection::SnapshotGenerationFinished(
+    HeapSnapshot* snapshot) {
+  ids_.SnapshotGenerationFinished();
+  if (snapshot != NULL) {
+    snapshots_.Add(snapshot);
+    HashMap::Entry* entry =
+        snapshots_uids_.Lookup(reinterpret_cast<void*>(snapshot->uid()),
+                               static_cast<uint32_t>(snapshot->uid()),
+                               true);
+    ASSERT(entry->value == NULL);
+    entry->value = snapshot;
+  }
 }
 
 
@@ -1740,10 +1486,11 @@ HeapSnapshot* HeapSnapshotsCollection::GetSnapshot(unsigned uid) {
 }
 
 
-HeapSnapshotsDiff* HeapSnapshotsCollection::CompareSnapshots(
-    HeapSnapshot* snapshot1,
-    HeapSnapshot* snapshot2) {
-  return comparator_.Compare(snapshot1, snapshot2);
+void HeapSnapshotsCollection::RemoveSnapshot(HeapSnapshot* snapshot) {
+  snapshots_.RemoveElement(snapshot);
+  unsigned uid = snapshot->uid();
+  snapshots_uids_.Remove(reinterpret_cast<void*>(uid),
+                         static_cast<uint32_t>(uid));
 }
 
 
@@ -1751,7 +1498,7 @@ HeapEntry *const HeapEntriesMap::kHeapEntryPlaceholder =
     reinterpret_cast<HeapEntry*>(1);
 
 HeapEntriesMap::HeapEntriesMap()
-    : entries_(HeapObjectsMatch),
+    : entries_(HeapThingsMatch),
       entries_count_(0),
       total_children_count_(0),
       total_retainers_count_(0) {
@@ -1765,8 +1512,25 @@ HeapEntriesMap::~HeapEntriesMap() {
 }
 
 
-HeapEntry* HeapEntriesMap::Map(HeapObject* object) {
-  HashMap::Entry* cache_entry = entries_.Lookup(object, Hash(object), false);
+void HeapEntriesMap::AllocateEntries() {
+  for (HashMap::Entry* p = entries_.Start();
+       p != NULL;
+       p = entries_.Next(p)) {
+    EntryInfo* entry_info = reinterpret_cast<EntryInfo*>(p->value);
+    entry_info->entry = entry_info->allocator->AllocateEntry(
+        p->key,
+        entry_info->children_count,
+        entry_info->retainers_count);
+    ASSERT(entry_info->entry != NULL);
+    ASSERT(entry_info->entry != kHeapEntryPlaceholder);
+    entry_info->children_count = 0;
+    entry_info->retainers_count = 0;
+  }
+}
+
+
+HeapEntry* HeapEntriesMap::Map(HeapThing thing) {
+  HashMap::Entry* cache_entry = entries_.Lookup(thing, Hash(thing), false);
   if (cache_entry != NULL) {
     EntryInfo* entry_info = reinterpret_cast<EntryInfo*>(cache_entry->value);
     return entry_info->entry;
@@ -1776,15 +1540,16 @@ HeapEntry* HeapEntriesMap::Map(HeapObject* object) {
 }
 
 
-void HeapEntriesMap::Pair(HeapObject* object, HeapEntry* entry) {
-  HashMap::Entry* cache_entry = entries_.Lookup(object, Hash(object), true);
+void HeapEntriesMap::Pair(
+    HeapThing thing, HeapEntriesAllocator* allocator, HeapEntry* entry) {
+  HashMap::Entry* cache_entry = entries_.Lookup(thing, Hash(thing), true);
   ASSERT(cache_entry->value == NULL);
-  cache_entry->value = new EntryInfo(entry);
+  cache_entry->value = new EntryInfo(entry, allocator);
   ++entries_count_;
 }
 
 
-void HeapEntriesMap::CountReference(HeapObject* from, HeapObject* to,
+void HeapEntriesMap::CountReference(HeapThing from, HeapThing to,
                                     int* prev_children_count,
                                     int* prev_retainers_count) {
   HashMap::Entry* from_cache_entry = entries_.Lookup(from, Hash(from), false);
@@ -1807,7 +1572,7 @@ void HeapEntriesMap::CountReference(HeapObject* from, HeapObject* to,
 
 
 HeapObjectsSet::HeapObjectsSet()
-    : entries_(HeapEntriesMap::HeapObjectsMatch) {
+    : entries_(HeapEntriesMap::HeapThingsMatch) {
 }
 
 
@@ -1836,250 +1601,212 @@ void HeapObjectsSet::Insert(Object* obj) {
 }
 
 
-HeapSnapshotGenerator::HeapSnapshotGenerator(HeapSnapshot* snapshot)
+HeapObject *const V8HeapExplorer::kInternalRootObject =
+    reinterpret_cast<HeapObject*>(
+        static_cast<intptr_t>(HeapObjectsMap::kInternalRootObjectId));
+HeapObject *const V8HeapExplorer::kGcRootsObject =
+    reinterpret_cast<HeapObject*>(
+        static_cast<intptr_t>(HeapObjectsMap::kGcRootsObjectId));
+
+
+V8HeapExplorer::V8HeapExplorer(
+    HeapSnapshot* snapshot,
+    SnapshottingProgressReportingInterface* progress)
     : snapshot_(snapshot),
-      collection_(snapshot->collection()),
+      collection_(snapshot_->collection()),
+      progress_(progress),
       filler_(NULL) {
 }
 
-class SnapshotCounter : public HeapSnapshotGenerator::SnapshotFillerInterface {
- public:
-  explicit SnapshotCounter(HeapEntriesMap* entries)
-      : entries_(entries) { }
-  HeapEntry* AddEntry(HeapObject* obj) {
-    entries_->Pair(obj, HeapEntriesMap::kHeapEntryPlaceholder);
-    return HeapEntriesMap::kHeapEntryPlaceholder;
-  }
-  void SetIndexedReference(HeapGraphEdge::Type,
-                           HeapObject* parent_obj,
-                           HeapEntry*,
-                           int,
-                           Object* child_obj,
-                           HeapEntry*) {
-    entries_->CountReference(parent_obj, HeapObject::cast(child_obj));
-  }
-  void SetNamedReference(HeapGraphEdge::Type,
-                         HeapObject* parent_obj,
-                         HeapEntry*,
-                         const char*,
-                         Object* child_obj,
-                         HeapEntry*) {
-    entries_->CountReference(parent_obj, HeapObject::cast(child_obj));
-  }
-  void SetRootShortcutReference(Object* child_obj, HeapEntry*) {
-    entries_->CountReference(
-        HeapSnapshot::kInternalRootObject, HeapObject::cast(child_obj));
-  }
-  void SetRootGcRootsReference() {
-    entries_->CountReference(
-        HeapSnapshot::kInternalRootObject, HeapSnapshot::kGcRootsObject);
-  }
-  void SetStrongRootReference(Object* child_obj, HeapEntry*) {
-    entries_->CountReference(
-        HeapSnapshot::kGcRootsObject, HeapObject::cast(child_obj));
-  }
- private:
-  HeapEntriesMap* entries_;
-};
 
-
-class SnapshotFiller : public HeapSnapshotGenerator::SnapshotFillerInterface {
- public:
-  explicit SnapshotFiller(HeapSnapshot* snapshot, HeapEntriesMap* entries)
-      : snapshot_(snapshot),
-        collection_(snapshot->collection()),
-        entries_(entries) { }
-  HeapEntry* AddEntry(HeapObject* obj) {
-    UNREACHABLE();
-    return NULL;
-  }
-  void SetIndexedReference(HeapGraphEdge::Type type,
-                           HeapObject* parent_obj,
-                           HeapEntry* parent_entry,
-                           int index,
-                           Object* child_obj,
-                           HeapEntry* child_entry) {
-    int child_index, retainer_index;
-    entries_->CountReference(parent_obj,
-                             HeapObject::cast(child_obj),
-                             &child_index,
-                             &retainer_index);
-    parent_entry->SetIndexedReference(
-        type, child_index, index, child_entry, retainer_index);
-  }
-  void SetNamedReference(HeapGraphEdge::Type type,
-                         HeapObject* parent_obj,
-                         HeapEntry* parent_entry,
-                         const char* reference_name,
-                         Object* child_obj,
-                         HeapEntry* child_entry) {
-    int child_index, retainer_index;
-    entries_->CountReference(parent_obj, HeapObject::cast(child_obj),
-                             &child_index, &retainer_index);
-    parent_entry->SetNamedReference(type,
-                              child_index,
-                              reference_name,
-                              child_entry,
-                              retainer_index);
-  }
-  void SetRootGcRootsReference() {
-    int child_index, retainer_index;
-    entries_->CountReference(HeapSnapshot::kInternalRootObject,
-                             HeapSnapshot::kGcRootsObject,
-                             &child_index,
-                             &retainer_index);
-    snapshot_->root()->SetIndexedReference(HeapGraphEdge::kElement,
-                                           child_index,
-                                           child_index + 1,
-                                           snapshot_->gc_roots(),
-                                           retainer_index);
-  }
-  void SetRootShortcutReference(Object* child_obj,
-                                HeapEntry* child_entry) {
-    int child_index, retainer_index;
-    entries_->CountReference(HeapSnapshot::kInternalRootObject,
-                             HeapObject::cast(child_obj),
-                             &child_index,
-                             &retainer_index);
-    snapshot_->root()->SetNamedReference(HeapGraphEdge::kShortcut,
-                                         child_index,
-                                         collection_->GetName(child_index + 1),
-                                         child_entry,
-                                         retainer_index);
-  }
-  void SetStrongRootReference(Object* child_obj,
-                              HeapEntry* child_entry) {
-    int child_index, retainer_index;
-    entries_->CountReference(HeapSnapshot::kGcRootsObject,
-                             HeapObject::cast(child_obj),
-                             &child_index,
-                             &retainer_index);
-    snapshot_->gc_roots()->SetIndexedReference(HeapGraphEdge::kElement,
-                                               child_index,
-                                               child_index + 1,
-                                               child_entry,
-                                               retainer_index);
-  }
- private:
-  HeapSnapshot* snapshot_;
-  HeapSnapshotsCollection* collection_;
-  HeapEntriesMap* entries_;
-};
-
-class SnapshotAllocator {
- public:
-  explicit SnapshotAllocator(HeapSnapshot* snapshot)
-      : snapshot_(snapshot) { }
-  HeapEntry* GetEntry(
-      HeapObject* obj, int children_count, int retainers_count) {
-    HeapEntry* entry =
-        snapshot_->AddEntry(obj, children_count, retainers_count);
-    ASSERT(entry != NULL);
-    return entry;
-  }
- private:
-  HeapSnapshot* snapshot_;
-};
-
-class RootsReferencesExtractor : public ObjectVisitor {
- public:
-  explicit RootsReferencesExtractor(HeapSnapshotGenerator* generator)
-      : generator_(generator) {
-  }
-  void VisitPointers(Object** start, Object** end) {
-    for (Object** p = start; p < end; p++) generator_->SetGcRootsReference(*p);
-  }
- private:
-  HeapSnapshotGenerator* generator_;
-};
-
-
-void HeapSnapshotGenerator::GenerateSnapshot() {
-  AssertNoAllocation no_alloc;
-
-  // Pass 1. Iterate heap contents to count entries and references.
-  SnapshotCounter counter(&entries_);
-  filler_ = &counter;
-  filler_->AddEntry(HeapSnapshot::kInternalRootObject);
-  filler_->AddEntry(HeapSnapshot::kGcRootsObject);
-  HeapIterator iterator(HeapIterator::kPreciseFiltering);
-  for (HeapObject* obj = iterator.next(); obj != NULL; obj = iterator.next()) {
-    ExtractReferences(obj);
-  }
-  SetRootGcRootsReference();
-  RootsReferencesExtractor extractor(this);
-  HEAP->IterateRoots(&extractor, VISIT_ONLY_STRONG);
-
-  // Allocate and fill entries in the snapshot, allocate references.
-  snapshot_->AllocateEntries(entries_.entries_count(),
-                             entries_.total_children_count(),
-                             entries_.total_retainers_count());
-  SnapshotAllocator allocator(snapshot_);
-  entries_.UpdateEntries(&allocator);
-
-  // Pass 2. Fill references.
-  SnapshotFiller filler(snapshot_, &entries_);
-  filler_ = &filler;
-  iterator.reset();
-  for (HeapObject* obj = iterator.next(); obj != NULL; obj = iterator.next()) {
-    ExtractReferences(obj);
-  }
-  SetRootGcRootsReference();
-  HEAP->IterateRoots(&extractor, VISIT_ONLY_STRONG);
-
-  snapshot_->ApproximateRetainedSizes();
+V8HeapExplorer::~V8HeapExplorer() {
 }
 
 
-HeapEntry* HeapSnapshotGenerator::GetEntry(Object* obj) {
-  if (!obj->IsHeapObject()) return NULL;
-  HeapObject* object = HeapObject::cast(obj);
-  HeapEntry* entry = entries_.Map(object);
-  // A new entry.
-  if (entry == NULL) entry = filler_->AddEntry(object);
-  return entry;
+HeapEntry* V8HeapExplorer::AllocateEntry(
+    HeapThing ptr, int children_count, int retainers_count) {
+  return AddEntry(
+      reinterpret_cast<HeapObject*>(ptr), children_count, retainers_count);
+}
+
+
+HeapEntry* V8HeapExplorer::AddEntry(HeapObject* object,
+                                    int children_count,
+                                    int retainers_count) {
+  if (object == kInternalRootObject) {
+    ASSERT(retainers_count == 0);
+    return snapshot_->AddRootEntry(children_count);
+  } else if (object == kGcRootsObject) {
+    return snapshot_->AddGcRootsEntry(children_count, retainers_count);
+  } else if (object->IsJSFunction()) {
+    JSFunction* func = JSFunction::cast(object);
+    SharedFunctionInfo* shared = func->shared();
+    return AddEntry(object,
+                    HeapEntry::kClosure,
+                    collection_->names()->GetName(String::cast(shared->name())),
+                    children_count,
+                    retainers_count);
+  } else if (object->IsJSRegExp()) {
+    JSRegExp* re = JSRegExp::cast(object);
+    return AddEntry(object,
+                    HeapEntry::kRegExp,
+                    collection_->names()->GetName(re->Pattern()),
+                    children_count,
+                    retainers_count);
+  } else if (object->IsJSObject()) {
+    return AddEntry(object,
+                    HeapEntry::kObject,
+                    collection_->names()->GetName(
+                        GetConstructorNameForHeapProfile(
+                            JSObject::cast(object))),
+                    children_count,
+                    retainers_count);
+  } else if (object->IsString()) {
+    return AddEntry(object,
+                    HeapEntry::kString,
+                    collection_->names()->GetName(String::cast(object)),
+                    children_count,
+                    retainers_count);
+  } else if (object->IsCode()) {
+    return AddEntry(object,
+                    HeapEntry::kCode,
+                    "",
+                    children_count,
+                    retainers_count);
+  } else if (object->IsSharedFunctionInfo()) {
+    SharedFunctionInfo* shared = SharedFunctionInfo::cast(object);
+    return AddEntry(object,
+                    HeapEntry::kCode,
+                    collection_->names()->GetName(String::cast(shared->name())),
+                    children_count,
+                    retainers_count);
+  } else if (object->IsScript()) {
+    Script* script = Script::cast(object);
+    return AddEntry(object,
+                    HeapEntry::kCode,
+                    script->name()->IsString() ?
+                        collection_->names()->GetName(
+                            String::cast(script->name()))
+                        : "",
+                    children_count,
+                    retainers_count);
+  } else if (object->IsFixedArray() || object->IsByteArray()) {
+    return AddEntry(object,
+                    HeapEntry::kArray,
+                    "",
+                    children_count,
+                    retainers_count);
+  } else if (object->IsHeapNumber()) {
+    return AddEntry(object,
+                    HeapEntry::kHeapNumber,
+                    "number",
+                    children_count,
+                    retainers_count);
+  }
+  return AddEntry(object,
+                  HeapEntry::kHidden,
+                  GetSystemEntryName(object),
+                  children_count,
+                  retainers_count);
+}
+
+
+HeapEntry* V8HeapExplorer::AddEntry(HeapObject* object,
+                                    HeapEntry::Type type,
+                                    const char* name,
+                                    int children_count,
+                                    int retainers_count) {
+  return snapshot_->AddEntry(type,
+                             name,
+                             collection_->GetObjectId(object->address()),
+                             object->Size(),
+                             children_count,
+                             retainers_count);
+}
+
+
+void V8HeapExplorer::AddRootEntries(SnapshotFillerInterface* filler) {
+  filler->AddEntry(kInternalRootObject, this);
+  filler->AddEntry(kGcRootsObject, this);
+}
+
+
+const char* V8HeapExplorer::GetSystemEntryName(HeapObject* object) {
+  switch (object->map()->instance_type()) {
+    case MAP_TYPE: return "system / Map";
+    case JS_GLOBAL_PROPERTY_CELL_TYPE: return "system / JSGlobalPropertyCell";
+    case PROXY_TYPE: return "system / Proxy";
+    case ODDBALL_TYPE: return "system / Oddball";
+#define MAKE_STRUCT_CASE(NAME, Name, name) \
+    case NAME##_TYPE: return "system / "#Name;
+  STRUCT_LIST(MAKE_STRUCT_CASE)
+#undef MAKE_STRUCT_CASE
+    default: return "system";
+  }
+}
+
+
+int V8HeapExplorer::EstimateObjectsCount() {
+  HeapIterator iterator(HeapIterator::kFilterUnreachable);
+  int objects_count = 0;
+  for (HeapObject* obj = iterator.next();
+       obj != NULL;
+       obj = iterator.next(), ++objects_count) {}
+  return objects_count;
 }
 
 
 class IndexedReferencesExtractor : public ObjectVisitor {
  public:
-  IndexedReferencesExtractor(HeapSnapshotGenerator* generator,
+  IndexedReferencesExtractor(V8HeapExplorer* generator,
                              HeapObject* parent_obj,
-                             HeapEntry* parent_entry,
-                             HeapObjectsSet* known_references = NULL)
+                             HeapEntry* parent_entry)
       : generator_(generator),
         parent_obj_(parent_obj),
         parent_(parent_entry),
-        known_references_(known_references),
         next_index_(1) {
   }
   void VisitPointers(Object** start, Object** end) {
     for (Object** p = start; p < end; p++) {
-      if (!known_references_ || !known_references_->Contains(*p)) {
-        generator_->SetHiddenReference(parent_obj_, parent_, next_index_++, *p);
-      }
+      if (CheckVisitedAndUnmark(p)) continue;
+      generator_->SetHiddenReference(parent_obj_, parent_, next_index_++, *p);
     }
   }
+  static void MarkVisitedField(HeapObject* obj, int offset) {
+    if (offset < 0) return;
+    Address field = obj->address() + offset;
+    ASSERT(!Memory::Object_at(field)->IsFailure());
+    ASSERT(Memory::Object_at(field)->IsHeapObject());
+    *field |= kFailureTag;
+  }
  private:
-  HeapSnapshotGenerator* generator_;
+  bool CheckVisitedAndUnmark(Object** field) {
+    if ((*field)->IsFailure()) {
+      intptr_t untagged = reinterpret_cast<intptr_t>(*field) & ~kFailureTagMask;
+      *field = reinterpret_cast<Object*>(untagged | kHeapObjectTag);
+      ASSERT((*field)->IsHeapObject());
+      return true;
+    }
+    return false;
+  }
+  V8HeapExplorer* generator_;
   HeapObject* parent_obj_;
   HeapEntry* parent_;
-  HeapObjectsSet* known_references_;
   int next_index_;
 };
 
 
-void HeapSnapshotGenerator::ExtractReferences(HeapObject* obj) {
+void V8HeapExplorer::ExtractReferences(HeapObject* obj) {
   HeapEntry* entry = GetEntry(obj);
   if (entry == NULL) return;  // No interest in this object.
 
-  known_references_.Clear();
   if (obj->IsJSGlobalProxy()) {
     // We need to reference JS global objects from snapshot's root.
     // We use JSGlobalProxy because this is what embedder (e.g. browser)
     // uses for the global object.
     JSGlobalProxy* proxy = JSGlobalProxy::cast(obj);
     SetRootShortcutReference(proxy->map()->prototype());
+    SetInternalReference(obj, entry, "map", obj->map(), HeapObject::kMapOffset);
     IndexedReferencesExtractor refs_extractor(this, obj, entry);
     obj->Iterate(&refs_extractor);
   } else if (obj->IsJSObject()) {
@@ -2091,14 +1818,38 @@ void HeapSnapshotGenerator::ExtractReferences(HeapObject* obj) {
     SetPropertyReference(
         obj, entry, HEAP->Proto_symbol(), js_obj->GetPrototype());
     if (obj->IsJSFunction()) {
-      JSFunction* js_fun = JSFunction::cast(obj);
-      if (js_fun->has_prototype()) {
-        SetPropertyReference(
-            obj, entry, HEAP->prototype_symbol(), js_fun->prototype());
+      JSFunction* js_fun = JSFunction::cast(js_obj);
+      Object* proto_or_map = js_fun->prototype_or_initial_map();
+      if (!proto_or_map->IsTheHole()) {
+        if (!proto_or_map->IsMap()) {
+          SetPropertyReference(
+              obj, entry,
+              HEAP->prototype_symbol(), proto_or_map,
+              JSFunction::kPrototypeOrInitialMapOffset);
+        } else {
+          SetPropertyReference(
+              obj, entry,
+              HEAP->prototype_symbol(), js_fun->prototype());
+        }
       }
+      SetInternalReference(js_fun, entry,
+                           "shared", js_fun->shared(),
+                           JSFunction::kSharedFunctionInfoOffset);
+      SetInternalReference(js_fun, entry,
+                           "context", js_fun->unchecked_context(),
+                           JSFunction::kContextOffset);
+      SetInternalReference(js_fun, entry,
+                           "literals", js_fun->literals(),
+                           JSFunction::kLiteralsOffset);
     }
-    IndexedReferencesExtractor refs_extractor(
-        this, obj, entry, &known_references_);
+    SetInternalReference(obj, entry,
+                         "properties", js_obj->properties(),
+                         JSObject::kPropertiesOffset);
+    SetInternalReference(obj, entry,
+                         "elements", js_obj->elements(),
+                         JSObject::kElementsOffset);
+    SetInternalReference(obj, entry, "map", obj->map(), HeapObject::kMapOffset);
+    IndexedReferencesExtractor refs_extractor(this, obj, entry);
     obj->Iterate(&refs_extractor);
   } else if (obj->IsString()) {
     if (obj->IsConsString()) {
@@ -2106,15 +1857,49 @@ void HeapSnapshotGenerator::ExtractReferences(HeapObject* obj) {
       SetInternalReference(obj, entry, 1, cs->first());
       SetInternalReference(obj, entry, 2, cs->second());
     }
+  } else if (obj->IsMap()) {
+    Map* map = Map::cast(obj);
+    SetInternalReference(obj, entry,
+                         "prototype", map->prototype(), Map::kPrototypeOffset);
+    SetInternalReference(obj, entry,
+                         "constructor", map->constructor(),
+                         Map::kConstructorOffset);
+    SetInternalReference(obj, entry,
+                         "descriptors", map->instance_descriptors(),
+                         Map::kInstanceDescriptorsOffset);
+    SetInternalReference(obj, entry,
+                         "code_cache", map->code_cache(),
+                         Map::kCodeCacheOffset);
+    SetInternalReference(obj, entry, "map", obj->map(), HeapObject::kMapOffset);
+    IndexedReferencesExtractor refs_extractor(this, obj, entry);
+    obj->Iterate(&refs_extractor);
+  } else if (obj->IsSharedFunctionInfo()) {
+    SharedFunctionInfo* shared = SharedFunctionInfo::cast(obj);
+    SetInternalReference(obj, entry,
+                         "name", shared->name(),
+                         SharedFunctionInfo::kNameOffset);
+    SetInternalReference(obj, entry,
+                         "code", shared->unchecked_code(),
+                         SharedFunctionInfo::kCodeOffset);
+    SetInternalReference(obj, entry,
+                         "instance_class_name", shared->instance_class_name(),
+                         SharedFunctionInfo::kInstanceClassNameOffset);
+    SetInternalReference(obj, entry,
+                         "script", shared->script(),
+                         SharedFunctionInfo::kScriptOffset);
+    SetInternalReference(obj, entry, "map", obj->map(), HeapObject::kMapOffset);
+    IndexedReferencesExtractor refs_extractor(this, obj, entry);
+    obj->Iterate(&refs_extractor);
   } else {
+    SetInternalReference(obj, entry, "map", obj->map(), HeapObject::kMapOffset);
     IndexedReferencesExtractor refs_extractor(this, obj, entry);
     obj->Iterate(&refs_extractor);
   }
 }
 
 
-void HeapSnapshotGenerator::ExtractClosureReferences(JSObject* js_obj,
-                                                     HeapEntry* entry) {
+void V8HeapExplorer::ExtractClosureReferences(JSObject* js_obj,
+                                              HeapEntry* entry) {
   if (js_obj->IsJSFunction()) {
     HandleScope hs;
     JSFunction* func = JSFunction::cast(js_obj);
@@ -2131,26 +1916,34 @@ void HeapSnapshotGenerator::ExtractClosureReferences(JSObject* js_obj,
         SetClosureReference(js_obj, entry, local_name, context->get(idx));
       }
     }
-    SetInternalReference(js_obj, entry, "code", func->shared());
   }
 }
 
 
-void HeapSnapshotGenerator::ExtractPropertyReferences(JSObject* js_obj,
-                                                      HeapEntry* entry) {
+void V8HeapExplorer::ExtractPropertyReferences(JSObject* js_obj,
+                                               HeapEntry* entry) {
   if (js_obj->HasFastProperties()) {
     DescriptorArray* descs = js_obj->map()->instance_descriptors();
     for (int i = 0; i < descs->number_of_descriptors(); i++) {
       switch (descs->GetType(i)) {
         case FIELD: {
           int index = descs->GetFieldIndex(i);
-          SetPropertyReference(
-              js_obj, entry, descs->GetKey(i), js_obj->FastPropertyAt(index));
+          if (index < js_obj->map()->inobject_properties()) {
+            SetPropertyReference(
+                js_obj, entry,
+                descs->GetKey(i), js_obj->InObjectPropertyAt(index),
+                js_obj->GetInObjectPropertyOffset(index));
+          } else {
+            SetPropertyReference(
+                js_obj, entry,
+                descs->GetKey(i), js_obj->FastPropertyAt(index));
+          }
           break;
         }
         case CONSTANT_FUNCTION:
           SetPropertyReference(
-              js_obj, entry, descs->GetKey(i), descs->GetConstantFunction(i));
+              js_obj, entry,
+              descs->GetKey(i), descs->GetConstantFunction(i));
           break;
         default: ;
       }
@@ -2178,8 +1971,8 @@ void HeapSnapshotGenerator::ExtractPropertyReferences(JSObject* js_obj,
 }
 
 
-void HeapSnapshotGenerator::ExtractElementReferences(JSObject* js_obj,
-                                                     HeapEntry* entry) {
+void V8HeapExplorer::ExtractElementReferences(JSObject* js_obj,
+                                              HeapEntry* entry) {
   if (js_obj->HasFastElements()) {
     FixedArray* elements = FixedArray::cast(js_obj->elements());
     int length = js_obj->IsJSArray() ?
@@ -2205,37 +1998,82 @@ void HeapSnapshotGenerator::ExtractElementReferences(JSObject* js_obj,
 }
 
 
-void HeapSnapshotGenerator::ExtractInternalReferences(JSObject* js_obj,
-                                                      HeapEntry* entry) {
+void V8HeapExplorer::ExtractInternalReferences(JSObject* js_obj,
+                                               HeapEntry* entry) {
   int length = js_obj->GetInternalFieldCount();
   for (int i = 0; i < length; ++i) {
     Object* o = js_obj->GetInternalField(i);
-    SetInternalReference(js_obj, entry, i, o);
+    SetInternalReference(
+        js_obj, entry, i, o, js_obj->GetInternalFieldOffset(i));
   }
 }
 
 
-void HeapSnapshotGenerator::SetClosureReference(HeapObject* parent_obj,
-                                                HeapEntry* parent_entry,
-                                                String* reference_name,
-                                                Object* child_obj) {
+HeapEntry* V8HeapExplorer::GetEntry(Object* obj) {
+  if (!obj->IsHeapObject()) return NULL;
+  return filler_->FindOrAddEntry(obj, this);
+}
+
+
+class RootsReferencesExtractor : public ObjectVisitor {
+ public:
+  explicit RootsReferencesExtractor(V8HeapExplorer* explorer)
+      : explorer_(explorer) {
+  }
+  void VisitPointers(Object** start, Object** end) {
+    for (Object** p = start; p < end; p++) explorer_->SetGcRootsReference(*p);
+  }
+ private:
+  V8HeapExplorer* explorer_;
+};
+
+
+bool V8HeapExplorer::IterateAndExtractReferences(
+    SnapshotFillerInterface* filler) {
+  filler_ = filler;
+  HeapIterator iterator(HeapIterator::kFilterUnreachable);
+  bool interrupted = false;
+  // Heap iteration with filtering must be finished in any case.
+  for (HeapObject* obj = iterator.next();
+       obj != NULL;
+       obj = iterator.next(), progress_->ProgressStep()) {
+    if (!interrupted) {
+      ExtractReferences(obj);
+      if (!progress_->ProgressReport(false)) interrupted = true;
+    }
+  }
+  if (interrupted) {
+    filler_ = NULL;
+    return false;
+  }
+  SetRootGcRootsReference();
+  RootsReferencesExtractor extractor(this);
+  HEAP->IterateRoots(&extractor, VISIT_ALL);
+  filler_ = NULL;
+  return progress_->ProgressReport(false);
+}
+
+
+void V8HeapExplorer::SetClosureReference(HeapObject* parent_obj,
+                                         HeapEntry* parent_entry,
+                                         String* reference_name,
+                                         Object* child_obj) {
   HeapEntry* child_entry = GetEntry(child_obj);
   if (child_entry != NULL) {
     filler_->SetNamedReference(HeapGraphEdge::kContextVariable,
                                parent_obj,
                                parent_entry,
-                               collection_->GetName(reference_name),
+                               collection_->names()->GetName(reference_name),
                                child_obj,
                                child_entry);
-    known_references_.Insert(child_obj);
   }
 }
 
 
-void HeapSnapshotGenerator::SetElementReference(HeapObject* parent_obj,
-                                                HeapEntry* parent_entry,
-                                                int index,
-                                                Object* child_obj) {
+void V8HeapExplorer::SetElementReference(HeapObject* parent_obj,
+                                         HeapEntry* parent_entry,
+                                         int index,
+                                         Object* child_obj) {
   HeapEntry* child_entry = GetEntry(child_obj);
   if (child_entry != NULL) {
     filler_->SetIndexedReference(HeapGraphEdge::kElement,
@@ -2244,15 +2082,15 @@ void HeapSnapshotGenerator::SetElementReference(HeapObject* parent_obj,
                                  index,
                                  child_obj,
                                  child_entry);
-    known_references_.Insert(child_obj);
   }
 }
 
 
-void HeapSnapshotGenerator::SetInternalReference(HeapObject* parent_obj,
-                                                 HeapEntry* parent_entry,
-                                                 const char* reference_name,
-                                                 Object* child_obj) {
+void V8HeapExplorer::SetInternalReference(HeapObject* parent_obj,
+                                          HeapEntry* parent_entry,
+                                          const char* reference_name,
+                                          Object* child_obj,
+                                          int field_offset) {
   HeapEntry* child_entry = GetEntry(child_obj);
   if (child_entry != NULL) {
     filler_->SetNamedReference(HeapGraphEdge::kInternal,
@@ -2261,32 +2099,33 @@ void HeapSnapshotGenerator::SetInternalReference(HeapObject* parent_obj,
                                reference_name,
                                child_obj,
                                child_entry);
-    known_references_.Insert(child_obj);
+    IndexedReferencesExtractor::MarkVisitedField(parent_obj, field_offset);
   }
 }
 
 
-void HeapSnapshotGenerator::SetInternalReference(HeapObject* parent_obj,
-                                                 HeapEntry* parent_entry,
-                                                 int index,
-                                                 Object* child_obj) {
+void V8HeapExplorer::SetInternalReference(HeapObject* parent_obj,
+                                          HeapEntry* parent_entry,
+                                          int index,
+                                          Object* child_obj,
+                                          int field_offset) {
   HeapEntry* child_entry = GetEntry(child_obj);
   if (child_entry != NULL) {
     filler_->SetNamedReference(HeapGraphEdge::kInternal,
                                parent_obj,
                                parent_entry,
-                               collection_->GetName(index),
+                               collection_->names()->GetName(index),
                                child_obj,
                                child_entry);
-    known_references_.Insert(child_obj);
+    IndexedReferencesExtractor::MarkVisitedField(parent_obj, field_offset);
   }
 }
 
 
-void HeapSnapshotGenerator::SetHiddenReference(HeapObject* parent_obj,
-                                               HeapEntry* parent_entry,
-                                               int index,
-                                               Object* child_obj) {
+void V8HeapExplorer::SetHiddenReference(HeapObject* parent_obj,
+                                        HeapEntry* parent_entry,
+                                        int index,
+                                        Object* child_obj) {
   HeapEntry* child_entry = GetEntry(child_obj);
   if (child_entry != NULL) {
     filler_->SetIndexedReference(HeapGraphEdge::kHidden,
@@ -2299,10 +2138,11 @@ void HeapSnapshotGenerator::SetHiddenReference(HeapObject* parent_obj,
 }
 
 
-void HeapSnapshotGenerator::SetPropertyReference(HeapObject* parent_obj,
-                                                 HeapEntry* parent_entry,
-                                                 String* reference_name,
-                                                 Object* child_obj) {
+void V8HeapExplorer::SetPropertyReference(HeapObject* parent_obj,
+                                          HeapEntry* parent_entry,
+                                          String* reference_name,
+                                          Object* child_obj,
+                                          int field_offset) {
   HeapEntry* child_entry = GetEntry(child_obj);
   if (child_entry != NULL) {
     HeapGraphEdge::Type type = reference_name->length() > 0 ?
@@ -2310,125 +2150,572 @@ void HeapSnapshotGenerator::SetPropertyReference(HeapObject* parent_obj,
     filler_->SetNamedReference(type,
                                parent_obj,
                                parent_entry,
-                               collection_->GetName(reference_name),
+                               collection_->names()->GetName(reference_name),
                                child_obj,
                                child_entry);
-    known_references_.Insert(child_obj);
+    IndexedReferencesExtractor::MarkVisitedField(parent_obj, field_offset);
   }
 }
 
 
-void HeapSnapshotGenerator::SetPropertyShortcutReference(
-    HeapObject* parent_obj,
-    HeapEntry* parent_entry,
-    String* reference_name,
-    Object* child_obj) {
+void V8HeapExplorer::SetPropertyShortcutReference(HeapObject* parent_obj,
+                                                  HeapEntry* parent_entry,
+                                                  String* reference_name,
+                                                  Object* child_obj) {
   HeapEntry* child_entry = GetEntry(child_obj);
   if (child_entry != NULL) {
     filler_->SetNamedReference(HeapGraphEdge::kShortcut,
                                parent_obj,
                                parent_entry,
-                               collection_->GetName(reference_name),
+                               collection_->names()->GetName(reference_name),
                                child_obj,
                                child_entry);
   }
 }
 
 
-void HeapSnapshotGenerator::SetRootGcRootsReference() {
-  filler_->SetRootGcRootsReference();
+void V8HeapExplorer::SetRootGcRootsReference() {
+  filler_->SetIndexedAutoIndexReference(
+      HeapGraphEdge::kElement,
+      kInternalRootObject, snapshot_->root(),
+      kGcRootsObject, snapshot_->gc_roots());
 }
 
 
-void HeapSnapshotGenerator::SetRootShortcutReference(Object* child_obj) {
+void V8HeapExplorer::SetRootShortcutReference(Object* child_obj) {
   HeapEntry* child_entry = GetEntry(child_obj);
   ASSERT(child_entry != NULL);
-  filler_->SetRootShortcutReference(child_obj, child_entry);
+  filler_->SetNamedAutoIndexReference(
+      HeapGraphEdge::kShortcut,
+      kInternalRootObject, snapshot_->root(),
+      child_obj, child_entry);
 }
 
 
-void HeapSnapshotGenerator::SetGcRootsReference(Object* child_obj) {
+void V8HeapExplorer::SetGcRootsReference(Object* child_obj) {
   HeapEntry* child_entry = GetEntry(child_obj);
   if (child_entry != NULL) {
-    filler_->SetStrongRootReference(child_obj, child_entry);
+    filler_->SetIndexedAutoIndexReference(
+        HeapGraphEdge::kElement,
+        kGcRootsObject, snapshot_->gc_roots(),
+        child_obj, child_entry);
   }
 }
 
 
-void HeapSnapshotsDiff::CreateRoots(int additions_count, int deletions_count) {
-  raw_additions_root_ =
-      NewArray<char>(HeapEntry::EntriesSize(1, additions_count, 0));
-  additions_root()->Init(
-      snapshot2_, HeapEntry::kHidden, "", 0, 0, additions_count, 0);
-  raw_deletions_root_ =
-      NewArray<char>(HeapEntry::EntriesSize(1, deletions_count, 0));
-  deletions_root()->Init(
-      snapshot1_, HeapEntry::kHidden, "", 0, 0, deletions_count, 0);
+class GlobalHandlesExtractor : public ObjectVisitor {
+ public:
+  explicit GlobalHandlesExtractor(NativeObjectsExplorer* explorer)
+      : explorer_(explorer) {}
+  virtual ~GlobalHandlesExtractor() {}
+  virtual void VisitPointers(Object** start, Object** end) {
+    UNREACHABLE();
+  }
+  virtual void VisitEmbedderReference(Object** p, uint16_t class_id) {
+    explorer_->VisitSubtreeWrapper(p, class_id);
+  }
+ private:
+  NativeObjectsExplorer* explorer_;
+};
+
+HeapThing const NativeObjectsExplorer::kNativesRootObject =
+    reinterpret_cast<HeapThing>(
+        static_cast<intptr_t>(HeapObjectsMap::kNativesRootObjectId));
+
+
+NativeObjectsExplorer::NativeObjectsExplorer(
+    HeapSnapshot* snapshot, SnapshottingProgressReportingInterface* progress)
+    : snapshot_(snapshot),
+      collection_(snapshot_->collection()),
+      progress_(progress),
+      embedder_queried_(false),
+      objects_by_info_(RetainedInfosMatch),
+      filler_(NULL) {
 }
 
 
-static void DeleteHeapSnapshotsDiff(HeapSnapshotsDiff** diff_ptr) {
-  delete *diff_ptr;
+NativeObjectsExplorer::~NativeObjectsExplorer() {
+  for (HashMap::Entry* p = objects_by_info_.Start();
+       p != NULL;
+       p = objects_by_info_.Next(p)) {
+    v8::RetainedObjectInfo* info =
+        reinterpret_cast<v8::RetainedObjectInfo*>(p->key);
+    info->Dispose();
+    List<HeapObject*>* objects =
+        reinterpret_cast<List<HeapObject*>* >(p->value);
+    delete objects;
+  }
 }
 
-HeapSnapshotsComparator::~HeapSnapshotsComparator() {
-  diffs_.Iterate(DeleteHeapSnapshotsDiff);
+
+HeapEntry* NativeObjectsExplorer::AllocateEntry(
+    HeapThing ptr, int children_count, int retainers_count) {
+  if (ptr == kNativesRootObject) {
+    return snapshot_->AddNativesRootEntry(children_count, retainers_count);
+  } else {
+    v8::RetainedObjectInfo* info =
+        reinterpret_cast<v8::RetainedObjectInfo*>(ptr);
+    intptr_t elements = info->GetElementCount();
+    intptr_t size = info->GetSizeInBytes();
+    return snapshot_->AddEntry(
+        HeapEntry::kNative,
+        elements != -1 ?
+            collection_->names()->GetFormatted(
+                "%s / %" V8_PTR_PREFIX "d entries",
+                info->GetLabel(),
+                info->GetElementCount()) :
+                collection_->names()->GetCopy(info->GetLabel()),
+        HeapObjectsMap::GenerateId(info),
+        size != -1 ? static_cast<int>(size) : 0,
+        children_count,
+        retainers_count);
+  }
 }
 
 
-HeapSnapshotsDiff* HeapSnapshotsComparator::Compare(HeapSnapshot* snapshot1,
-                                                    HeapSnapshot* snapshot2) {
-  snapshot1->ClearPaint();
-  snapshot1->root()->PaintAllReachable();
-  snapshot2->ClearPaint();
-  snapshot2->root()->PaintAllReachable();
+void NativeObjectsExplorer::AddRootEntries(SnapshotFillerInterface* filler) {
+  if (EstimateObjectsCount() <= 0) return;
+  filler->AddEntry(kNativesRootObject, this);
+}
 
-  List<HeapEntry*>* entries1 = snapshot1->GetSortedEntriesList();
-  List<HeapEntry*>* entries2 = snapshot2->GetSortedEntriesList();
-  int i = 0, j = 0;
-  List<HeapEntry*> added_entries, deleted_entries;
-  while (i < entries1->length() && j < entries2->length()) {
-    uint64_t id1 = entries1->at(i)->id();
-    uint64_t id2 = entries2->at(j)->id();
-    if (id1 == id2) {
-      HeapEntry* entry1 = entries1->at(i++);
-      HeapEntry* entry2 = entries2->at(j++);
-      if (entry1->painted_reachable() != entry2->painted_reachable()) {
-        if (entry1->painted_reachable())
-          deleted_entries.Add(entry1);
-        else
-          added_entries.Add(entry2);
-      }
-    } else if (id1 < id2) {
-      HeapEntry* entry = entries1->at(i++);
-      deleted_entries.Add(entry);
-    } else {
-      HeapEntry* entry = entries2->at(j++);
-      added_entries.Add(entry);
+
+int NativeObjectsExplorer::EstimateObjectsCount() {
+  FillRetainedObjects();
+  return objects_by_info_.occupancy();
+}
+
+
+void NativeObjectsExplorer::FillRetainedObjects() {
+  if (embedder_queried_) return;
+  Isolate* isolate = Isolate::Current();
+  // Record objects that are joined into ObjectGroups.
+  isolate->heap()->CallGlobalGCPrologueCallback();
+  List<ObjectGroup*>* groups = isolate->global_handles()->object_groups();
+  for (int i = 0; i < groups->length(); ++i) {
+    ObjectGroup* group = groups->at(i);
+    if (group->info_ == NULL) continue;
+    List<HeapObject*>* list = GetListMaybeDisposeInfo(group->info_);
+    for (int j = 0; j < group->objects_.length(); ++j) {
+      HeapObject* obj = HeapObject::cast(*group->objects_[j]);
+      list->Add(obj);
+      in_groups_.Insert(obj);
+    }
+    group->info_ = NULL;  // Acquire info object ownership.
+  }
+  isolate->global_handles()->RemoveObjectGroups();
+  isolate->heap()->CallGlobalGCEpilogueCallback();
+  // Record objects that are not in ObjectGroups, but have class ID.
+  GlobalHandlesExtractor extractor(this);
+  isolate->global_handles()->IterateAllRootsWithClassIds(&extractor);
+  embedder_queried_ = true;
+}
+
+
+List<HeapObject*>* NativeObjectsExplorer::GetListMaybeDisposeInfo(
+    v8::RetainedObjectInfo* info) {
+  HashMap::Entry* entry =
+      objects_by_info_.Lookup(info, InfoHash(info), true);
+  if (entry->value != NULL) {
+    info->Dispose();
+  } else {
+    entry->value = new List<HeapObject*>(4);
+  }
+  return reinterpret_cast<List<HeapObject*>* >(entry->value);
+}
+
+
+bool NativeObjectsExplorer::IterateAndExtractReferences(
+    SnapshotFillerInterface* filler) {
+  if (EstimateObjectsCount() <= 0) return true;
+  filler_ = filler;
+  FillRetainedObjects();
+  for (HashMap::Entry* p = objects_by_info_.Start();
+       p != NULL;
+       p = objects_by_info_.Next(p)) {
+    v8::RetainedObjectInfo* info =
+        reinterpret_cast<v8::RetainedObjectInfo*>(p->key);
+    SetNativeRootReference(info);
+    List<HeapObject*>* objects =
+        reinterpret_cast<List<HeapObject*>* >(p->value);
+    for (int i = 0; i < objects->length(); ++i) {
+      SetWrapperNativeReferences(objects->at(i), info);
     }
   }
-  while (i < entries1->length()) {
-    HeapEntry* entry = entries1->at(i++);
-    deleted_entries.Add(entry);
-  }
-  while (j < entries2->length()) {
-    HeapEntry* entry = entries2->at(j++);
-    added_entries.Add(entry);
-  }
+  SetRootNativesRootReference();
+  filler_ = NULL;
+  return true;
+}
 
-  HeapSnapshotsDiff* diff = new HeapSnapshotsDiff(snapshot1, snapshot2);
-  diffs_.Add(diff);
-  diff->CreateRoots(added_entries.length(), deleted_entries.length());
 
-  for (int i = 0; i < deleted_entries.length(); ++i) {
-    HeapEntry* entry = deleted_entries[i];
-    diff->AddDeletedEntry(i, i + 1, entry);
+void NativeObjectsExplorer::SetNativeRootReference(
+    v8::RetainedObjectInfo* info) {
+  HeapEntry* child_entry = filler_->FindOrAddEntry(info, this);
+  ASSERT(child_entry != NULL);
+  filler_->SetIndexedAutoIndexReference(
+      HeapGraphEdge::kElement,
+      kNativesRootObject, snapshot_->natives_root(),
+      info, child_entry);
+}
+
+
+void NativeObjectsExplorer::SetWrapperNativeReferences(
+    HeapObject* wrapper, v8::RetainedObjectInfo* info) {
+  HeapEntry* wrapper_entry = filler_->FindEntry(wrapper);
+  ASSERT(wrapper_entry != NULL);
+  HeapEntry* info_entry = filler_->FindOrAddEntry(info, this);
+  ASSERT(info_entry != NULL);
+  filler_->SetNamedReference(HeapGraphEdge::kInternal,
+                             wrapper, wrapper_entry,
+                             "native",
+                             info, info_entry);
+  filler_->SetIndexedAutoIndexReference(HeapGraphEdge::kElement,
+                                        info, info_entry,
+                                        wrapper, wrapper_entry);
+}
+
+
+void NativeObjectsExplorer::SetRootNativesRootReference() {
+  filler_->SetIndexedAutoIndexReference(
+      HeapGraphEdge::kElement,
+      V8HeapExplorer::kInternalRootObject, snapshot_->root(),
+      kNativesRootObject, snapshot_->natives_root());
+}
+
+
+void NativeObjectsExplorer::VisitSubtreeWrapper(Object** p, uint16_t class_id) {
+  if (in_groups_.Contains(*p)) return;
+  Isolate* isolate = Isolate::Current();
+  v8::RetainedObjectInfo* info =
+      isolate->heap_profiler()->ExecuteWrapperClassCallback(class_id, p);
+  if (info == NULL) return;
+  GetListMaybeDisposeInfo(info)->Add(HeapObject::cast(*p));
+}
+
+
+HeapSnapshotGenerator::HeapSnapshotGenerator(HeapSnapshot* snapshot,
+                                             v8::ActivityControl* control)
+    : snapshot_(snapshot),
+      control_(control),
+      v8_heap_explorer_(snapshot_, this),
+      dom_explorer_(snapshot_, this) {
+}
+
+
+class SnapshotCounter : public SnapshotFillerInterface {
+ public:
+  explicit SnapshotCounter(HeapEntriesMap* entries) : entries_(entries) { }
+  HeapEntry* AddEntry(HeapThing ptr, HeapEntriesAllocator* allocator) {
+    entries_->Pair(ptr, allocator, HeapEntriesMap::kHeapEntryPlaceholder);
+    return HeapEntriesMap::kHeapEntryPlaceholder;
   }
-  for (int i = 0; i < added_entries.length(); ++i) {
-    HeapEntry* entry = added_entries[i];
-    diff->AddAddedEntry(i, i + 1, entry);
+  HeapEntry* FindEntry(HeapThing ptr) {
+    return entries_->Map(ptr);
   }
-  return diff;
+  HeapEntry* FindOrAddEntry(HeapThing ptr, HeapEntriesAllocator* allocator) {
+    HeapEntry* entry = FindEntry(ptr);
+    return entry != NULL ? entry : AddEntry(ptr, allocator);
+  }
+  void SetIndexedReference(HeapGraphEdge::Type,
+                           HeapThing parent_ptr,
+                           HeapEntry*,
+                           int,
+                           HeapThing child_ptr,
+                           HeapEntry*) {
+    entries_->CountReference(parent_ptr, child_ptr);
+  }
+  void SetIndexedAutoIndexReference(HeapGraphEdge::Type,
+                                    HeapThing parent_ptr,
+                                    HeapEntry*,
+                                    HeapThing child_ptr,
+                                    HeapEntry*) {
+    entries_->CountReference(parent_ptr, child_ptr);
+  }
+  void SetNamedReference(HeapGraphEdge::Type,
+                         HeapThing parent_ptr,
+                         HeapEntry*,
+                         const char*,
+                         HeapThing child_ptr,
+                         HeapEntry*) {
+    entries_->CountReference(parent_ptr, child_ptr);
+  }
+  void SetNamedAutoIndexReference(HeapGraphEdge::Type,
+                                  HeapThing parent_ptr,
+                                  HeapEntry*,
+                                  HeapThing child_ptr,
+                                  HeapEntry*) {
+    entries_->CountReference(parent_ptr, child_ptr);
+  }
+ private:
+  HeapEntriesMap* entries_;
+};
+
+
+class SnapshotFiller : public SnapshotFillerInterface {
+ public:
+  explicit SnapshotFiller(HeapSnapshot* snapshot, HeapEntriesMap* entries)
+      : snapshot_(snapshot),
+        collection_(snapshot->collection()),
+        entries_(entries) { }
+  HeapEntry* AddEntry(HeapThing ptr, HeapEntriesAllocator* allocator) {
+    UNREACHABLE();
+    return NULL;
+  }
+  HeapEntry* FindEntry(HeapThing ptr) {
+    return entries_->Map(ptr);
+  }
+  HeapEntry* FindOrAddEntry(HeapThing ptr, HeapEntriesAllocator* allocator) {
+    HeapEntry* entry = FindEntry(ptr);
+    return entry != NULL ? entry : AddEntry(ptr, allocator);
+  }
+  void SetIndexedReference(HeapGraphEdge::Type type,
+                           HeapThing parent_ptr,
+                           HeapEntry* parent_entry,
+                           int index,
+                           HeapThing child_ptr,
+                           HeapEntry* child_entry) {
+    int child_index, retainer_index;
+    entries_->CountReference(
+        parent_ptr, child_ptr, &child_index, &retainer_index);
+    parent_entry->SetIndexedReference(
+        type, child_index, index, child_entry, retainer_index);
+  }
+  void SetIndexedAutoIndexReference(HeapGraphEdge::Type type,
+                                    HeapThing parent_ptr,
+                                    HeapEntry* parent_entry,
+                                    HeapThing child_ptr,
+                                    HeapEntry* child_entry) {
+    int child_index, retainer_index;
+    entries_->CountReference(
+        parent_ptr, child_ptr, &child_index, &retainer_index);
+    parent_entry->SetIndexedReference(
+        type, child_index, child_index + 1, child_entry, retainer_index);
+  }
+  void SetNamedReference(HeapGraphEdge::Type type,
+                         HeapThing parent_ptr,
+                         HeapEntry* parent_entry,
+                         const char* reference_name,
+                         HeapThing child_ptr,
+                         HeapEntry* child_entry) {
+    int child_index, retainer_index;
+    entries_->CountReference(
+        parent_ptr, child_ptr, &child_index, &retainer_index);
+    parent_entry->SetNamedReference(
+        type, child_index, reference_name, child_entry, retainer_index);
+  }
+  void SetNamedAutoIndexReference(HeapGraphEdge::Type type,
+                                  HeapThing parent_ptr,
+                                  HeapEntry* parent_entry,
+                                  HeapThing child_ptr,
+                                  HeapEntry* child_entry) {
+    int child_index, retainer_index;
+    entries_->CountReference(
+        parent_ptr, child_ptr, &child_index, &retainer_index);
+    parent_entry->SetNamedReference(type,
+                              child_index,
+                              collection_->names()->GetName(child_index + 1),
+                              child_entry,
+                              retainer_index);
+  }
+ private:
+  HeapSnapshot* snapshot_;
+  HeapSnapshotsCollection* collection_;
+  HeapEntriesMap* entries_;
+};
+
+
+bool HeapSnapshotGenerator::GenerateSnapshot() {
+  AssertNoAllocation no_alloc;
+
+  SetProgressTotal(4);  // 2 passes + dominators + sizes.
+
+  // Pass 1. Iterate heap contents to count entries and references.
+  if (!CountEntriesAndReferences()) return false;
+
+  // Allocate and fill entries in the snapshot, allocate references.
+  snapshot_->AllocateEntries(entries_.entries_count(),
+                             entries_.total_children_count(),
+                             entries_.total_retainers_count());
+  entries_.AllocateEntries();
+
+  // Pass 2. Fill references.
+  if (!FillReferences()) return false;
+
+  if (!SetEntriesDominators()) return false;
+  if (!ApproximateRetainedSizes()) return false;
+
+  progress_counter_ = progress_total_;
+  if (!ProgressReport(true)) return false;
+  return true;
+}
+
+
+void HeapSnapshotGenerator::ProgressStep() {
+  ++progress_counter_;
+}
+
+
+bool HeapSnapshotGenerator::ProgressReport(bool force) {
+  const int kProgressReportGranularity = 10000;
+  if (control_ != NULL
+      && (force || progress_counter_ % kProgressReportGranularity == 0)) {
+      return
+          control_->ReportProgressValue(progress_counter_, progress_total_) ==
+          v8::ActivityControl::kContinue;
+  }
+  return true;
+}
+
+
+void HeapSnapshotGenerator::SetProgressTotal(int iterations_count) {
+  if (control_ == NULL) return;
+  progress_total_ = (
+      v8_heap_explorer_.EstimateObjectsCount() +
+      dom_explorer_.EstimateObjectsCount()) * iterations_count;
+  progress_counter_ = 0;
+}
+
+
+bool HeapSnapshotGenerator::CountEntriesAndReferences() {
+  SnapshotCounter counter(&entries_);
+  v8_heap_explorer_.AddRootEntries(&counter);
+  dom_explorer_.AddRootEntries(&counter);
+  return
+      v8_heap_explorer_.IterateAndExtractReferences(&counter) &&
+      dom_explorer_.IterateAndExtractReferences(&counter);
+}
+
+
+bool HeapSnapshotGenerator::FillReferences() {
+  SnapshotFiller filler(snapshot_, &entries_);
+  return
+      v8_heap_explorer_.IterateAndExtractReferences(&filler) &&
+      dom_explorer_.IterateAndExtractReferences(&filler);
+}
+
+
+void HeapSnapshotGenerator::FillReversePostorderIndexes(
+    Vector<HeapEntry*>* entries) {
+  snapshot_->ClearPaint();
+  int current_entry = 0;
+  List<HeapEntry*> nodes_to_visit;
+  nodes_to_visit.Add(snapshot_->root());
+  snapshot_->root()->paint_reachable();
+  while (!nodes_to_visit.is_empty()) {
+    HeapEntry* entry = nodes_to_visit.last();
+    Vector<HeapGraphEdge> children = entry->children();
+    bool has_new_edges = false;
+    for (int i = 0; i < children.length(); ++i) {
+      if (children[i].type() == HeapGraphEdge::kShortcut) continue;
+      HeapEntry* child = children[i].to();
+      if (!child->painted_reachable()) {
+        nodes_to_visit.Add(child);
+        child->paint_reachable();
+        has_new_edges = true;
+      }
+    }
+    if (!has_new_edges) {
+      entry->set_ordered_index(current_entry);
+      (*entries)[current_entry++] = entry;
+      nodes_to_visit.RemoveLast();
+    }
+  }
+  entries->Truncate(current_entry);
+}
+
+
+static int Intersect(int i1, int i2, const Vector<HeapEntry*>& dominators) {
+  int finger1 = i1, finger2 = i2;
+  while (finger1 != finger2) {
+    while (finger1 < finger2) finger1 = dominators[finger1]->ordered_index();
+    while (finger2 < finger1) finger2 = dominators[finger2]->ordered_index();
+  }
+  return finger1;
+}
+
+// The algorithm is based on the article:
+// K. Cooper, T. Harvey and K. Kennedy "A Simple, Fast Dominance Algorithm"
+// Softw. Pract. Exper. 4 (2001), pp. 1-10.
+bool HeapSnapshotGenerator::BuildDominatorTree(
+    const Vector<HeapEntry*>& entries,
+    Vector<HeapEntry*>* dominators) {
+  if (entries.length() == 0) return true;
+  const int entries_length = entries.length(), root_index = entries_length - 1;
+  for (int i = 0; i < root_index; ++i) (*dominators)[i] = NULL;
+  (*dominators)[root_index] = entries[root_index];
+  int changed = 1;
+  const int base_progress_counter = progress_counter_;
+  while (changed != 0) {
+    changed = 0;
+    for (int i = root_index - 1; i >= 0; --i) {
+      HeapEntry* new_idom = NULL;
+      Vector<HeapGraphEdge*> rets = entries[i]->retainers();
+      int j = 0;
+      for (; j < rets.length(); ++j) {
+        if (rets[j]->type() == HeapGraphEdge::kShortcut) continue;
+        HeapEntry* ret = rets[j]->From();
+        if (dominators->at(ret->ordered_index()) != NULL) {
+          new_idom = ret;
+          break;
+        }
+      }
+      for (++j; j < rets.length(); ++j) {
+        if (rets[j]->type() == HeapGraphEdge::kShortcut) continue;
+        HeapEntry* ret = rets[j]->From();
+        if (dominators->at(ret->ordered_index()) != NULL) {
+          new_idom = entries[Intersect(ret->ordered_index(),
+                                       new_idom->ordered_index(),
+                                       *dominators)];
+        }
+      }
+      if (new_idom != NULL && dominators->at(i) != new_idom) {
+        (*dominators)[i] = new_idom;
+        ++changed;
+      }
+    }
+    int remaining = entries_length - changed;
+    if (remaining < 0) remaining = 0;
+    progress_counter_ = base_progress_counter + remaining;
+    if (!ProgressReport(true)) return false;
+  }
+  return true;
+}
+
+
+bool HeapSnapshotGenerator::SetEntriesDominators() {
+  // This array is used for maintaining reverse postorder of nodes.
+  ScopedVector<HeapEntry*> ordered_entries(snapshot_->entries()->length());
+  FillReversePostorderIndexes(&ordered_entries);
+  ScopedVector<HeapEntry*> dominators(ordered_entries.length());
+  if (!BuildDominatorTree(ordered_entries, &dominators)) return false;
+  for (int i = 0; i < ordered_entries.length(); ++i) {
+    ASSERT(dominators[i] != NULL);
+    ordered_entries[i]->set_dominator(dominators[i]);
+  }
+  return true;
+}
+
+
+bool HeapSnapshotGenerator::ApproximateRetainedSizes() {
+  // As for the dominators tree we only know parent nodes, not
+  // children, to sum up total sizes we "bubble" node's self size
+  // adding it to all of its parents.
+  for (int i = 0; i < snapshot_->entries()->length(); ++i) {
+    HeapEntry* entry = snapshot_->entries()->at(i);
+    entry->set_retained_size(entry->self_size());
+  }
+  for (int i = 0;
+       i < snapshot_->entries()->length();
+       ++i, ProgressStep()) {
+    HeapEntry* entry = snapshot_->entries()->at(i);
+    int entry_size = entry->self_size();
+    for (HeapEntry* dominator = entry->dominator();
+         dominator != entry;
+         entry = dominator, dominator = entry->dominator()) {
+      dominator->add_retained_size(entry_size);
+    }
+    if (!ProgressReport()) return false;
+  }
+  return true;
 }
 
 
@@ -2643,7 +2930,8 @@ void HeapSnapshotJSONSerializer::SerializeNodes() {
             "," JSON_S("code")
             "," JSON_S("closure")
             "," JSON_S("regexp")
-            "," JSON_S("number"))
+            "," JSON_S("number")
+            "," JSON_S("native"))
         "," JSON_S("string")
         "," JSON_S("number")
         "," JSON_S("number")

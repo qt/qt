@@ -28,7 +28,9 @@
 #ifndef V8_V8_COUNTERS_H_
 #define V8_V8_COUNTERS_H_
 
+#include "allocation.h"
 #include "counters.h"
+#include "v8globals.h"
 
 namespace v8 {
 namespace internal {
@@ -126,6 +128,7 @@ namespace internal {
   SC(gc_last_resort_from_handles, V8.GCLastResortFromHandles)         \
   SC(map_slow_to_fast_elements, V8.MapSlowToFastElements)             \
   SC(map_fast_to_slow_elements, V8.MapFastToSlowElements)             \
+  SC(map_to_external_array_elements, V8.MapToExternalArrayElements)   \
   /* How is the generic keyed-load stub used? */                      \
   SC(keyed_load_generic_smi, V8.KeyedLoadGenericSmi)                  \
   SC(keyed_load_generic_symbol, V8.KeyedLoadGenericSymbol)            \
@@ -159,7 +162,20 @@ namespace internal {
   SC(named_load_global_stub, V8.NamedLoadGlobalStub)                  \
   SC(named_load_global_stub_miss, V8.NamedLoadGlobalStubMiss)         \
   SC(keyed_store_field, V8.KeyedStoreField)                           \
+  SC(named_store_inline_field, V8.NamedStoreInlineField)              \
   SC(keyed_store_inline, V8.KeyedStoreInline)                         \
+  SC(named_load_inline_generic, V8.NamedLoadInlineGeneric)            \
+  SC(named_load_inline_field, V8.NamedLoadInlineFast)                 \
+  SC(keyed_load_inline_generic, V8.KeyedLoadInlineGeneric)            \
+  SC(keyed_load_inline_fast, V8.KeyedLoadInlineFast)                  \
+  SC(named_load_full, V8.NamedLoadFull)                               \
+  SC(keyed_load_full, V8.KeyedLoadFull)                               \
+  SC(keyed_store_inline_generic, V8.KeyedStoreInlineGeneric)          \
+  SC(keyed_store_inline_fast, V8.KeyedStoreInlineFast)                \
+  SC(named_store_inline_generic, V8.NamedStoreInlineGeneric)          \
+  SC(named_store_inline_fast, V8.NamedStoreInlineFast)                \
+  SC(keyed_store_full, V8.KeyedStoreFull)                             \
+  SC(named_store_full, V8.NamedStoreFull)                             \
   SC(keyed_store_inline_miss, V8.KeyedStoreInlineMiss)                \
   SC(named_store_global_inline, V8.NamedStoreGlobalInline)            \
   SC(named_store_global_inline_miss, V8.NamedStoreGlobalInlineMiss)   \
@@ -186,13 +202,8 @@ namespace internal {
   SC(array_function_runtime, V8.ArrayFunctionRuntime)                 \
   SC(array_function_native, V8.ArrayFunctionNative)                   \
   SC(for_in, V8.ForIn)                                                \
-  SC(memcopy_aligned, V8.MemCopyAligned)                              \
-  SC(memcopy_unaligned, V8.MemCopyUnaligned)                          \
-  SC(memcopy_noxmm, V8.MemCopyNoXMM)                                  \
   SC(enum_cache_hits, V8.EnumCacheHits)                               \
   SC(enum_cache_misses, V8.EnumCacheMisses)                           \
-  SC(reloc_info_count, V8.RelocInfoCount)                             \
-  SC(reloc_info_size, V8.RelocInfoSize)                               \
   SC(zone_segment_bytes, V8.ZoneSegmentBytes)                         \
   SC(compute_entry_frame, V8.ComputeEntryFrame)                       \
   SC(generic_binary_stub_calls, V8.GenericBinaryStubCalls)            \
@@ -225,8 +236,16 @@ namespace internal {
   SC(math_tan, V8.MathTan)                                            \
   SC(transcendental_cache_hit, V8.TranscendentalCacheHit)             \
   SC(transcendental_cache_miss, V8.TranscendentalCacheMiss)           \
+  SC(stack_interrupts, V8.StackInterrupts)                            \
+  SC(runtime_profiler_ticks, V8.RuntimeProfilerTicks)                 \
+  SC(other_ticks, V8.OtherTicks)                                      \
+  SC(js_opt_ticks, V8.JsOptTicks)                                     \
+  SC(js_non_opt_ticks, V8.JsNonoptTicks)                              \
+  SC(js_other_ticks, V8.JsOtherTicks)                                 \
+  SC(smi_checks_removed, V8.SmiChecksRemoved)                         \
+  SC(map_checks_removed, V8.MapChecksRemoved)                         \
   SC(quote_json_char_count, V8.QuoteJsonCharacterCount)               \
-  SC(quote_json_char_recount, V8.QuoteJsonCharacterReCount)           \
+  SC(quote_json_char_recount, V8.QuoteJsonCharacterReCount)
 
 
 // This file contains all the v8 counters that are in use.
@@ -286,8 +305,6 @@ class Counters {
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(Counters);
 };
-
-#define COUNTERS Isolate::Current()->counters()
 
 } }  // namespace v8::internal
 

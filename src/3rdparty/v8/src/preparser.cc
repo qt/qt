@@ -25,11 +25,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "v8.h"
-
-/*
-TODO(isolates): I incldue v8.h instead of these because we need Isolate and 
-some classes (NativeAllocationChecker) are moved into isolate.h 
 #include "../include/v8stdint.h"
 #include "unicode.h"
 #include "globals.h"
@@ -37,7 +32,6 @@ some classes (NativeAllocationChecker) are moved into isolate.h
 #include "allocation.h"
 #include "utils.h"
 #include "list.h"
-*/
 
 #include "scanner-base.h"
 #include "preparse-data.h"
@@ -89,6 +83,7 @@ void PreParser::ReportUnexpectedToken(i::Token::Value token) {
     return ReportMessageAt(source_location.beg_pos, source_location.end_pos,
                            "unexpected_token_string", NULL);
   case i::Token::IDENTIFIER:
+  case i::Token::FUTURE_RESERVED_WORD:
     return ReportMessageAt(source_location.beg_pos, source_location.end_pos,
                            "unexpected_token_identifier", NULL);
   default:
@@ -796,7 +791,7 @@ PreParser::Expression PreParser::ParseMemberWithNewPrefixesExpression(
   Expression result = kUnknownExpression;
   if (peek() == i::Token::FUNCTION) {
     Consume(i::Token::FUNCTION);
-    if (peek() == i::Token::IDENTIFIER) {
+    if (peek_any_identifier()) {
       ParseIdentifier(CHECK_OK);
     }
     result = ParseFunctionLiteral(CHECK_OK);
@@ -864,7 +859,8 @@ PreParser::Expression PreParser::ParsePrimaryExpression(bool* ok) {
       break;
     }
 
-    case i::Token::IDENTIFIER: {
+    case i::Token::IDENTIFIER:
+    case i::Token::FUTURE_RESERVED_WORD: {
       ParseIdentifier(CHECK_OK);
       result = kIdentifierExpression;
       break;
@@ -901,6 +897,7 @@ PreParser::Expression PreParser::ParsePrimaryExpression(bool* ok) {
 
     case i::Token::LPAREN:
       Consume(i::Token::LPAREN);
+      parenthesized_function_ = (peek() == i::Token::FUNCTION);
       result = ParseExpression(true, CHECK_OK);
       Expect(i::Token::RPAREN, CHECK_OK);
       if (result == kIdentifierExpression) result = kUnknownExpression;
@@ -951,18 +948,24 @@ PreParser::Expression PreParser::ParseObjectLiteral(bool* ok) {
   while (peek() != i::Token::RBRACE) {
     i::Token::Value next = peek();
     switch (next) {
-      case i::Token::IDENTIFIER: {
+      case i::Token::IDENTIFIER:
+      case i::Token::FUTURE_RESERVED_WORD: {
         bool is_getter = false;
         bool is_setter = false;
         ParseIdentifierOrGetOrSet(&is_getter, &is_setter, CHECK_OK);
         if ((is_getter || is_setter) && peek() != i::Token::COLON) {
             i::Token::Value name = Next();
+            bool is_keyword = i::Token::IsKeyword(name);
             if (name != i::Token::IDENTIFIER &&
+                name != i::Token::FUTURE_RESERVED_WORD &&
                 name != i::Token::NUMBER &&
                 name != i::Token::STRING &&
-                !i::Token::IsKeyword(name)) {
+                !is_keyword) {
               *ok = false;
               return kUnknownExpression;
+            }
+            if (!is_keyword) {
+              LogSymbol();
             }
             ParseFunctionLiteral(CHECK_OK);
             if (peek() != i::Token::RBRACE) {
@@ -1074,8 +1077,10 @@ PreParser::Expression PreParser::ParseFunctionLiteral(bool* ok) {
   // Determine if the function will be lazily compiled.
   // Currently only happens to top-level functions.
   // Optimistically assume that all top-level functions are lazily compiled.
-  bool is_lazily_compiled =
-      (outer_scope_type == kTopLevelScope && !inside_with && allow_lazy_);
+  bool is_lazily_compiled = (outer_scope_type == kTopLevelScope &&
+                             !inside_with && allow_lazy_ &&
+                             !parenthesized_function_);
+  parenthesized_function_ = false;
 
   if (is_lazily_compiled) {
     log_->PauseRecording();
@@ -1085,6 +1090,7 @@ PreParser::Expression PreParser::ParseFunctionLiteral(bool* ok) {
 
     Expect(i::Token::RBRACE, CHECK_OK);
 
+    // Position right after terminal '}'.
     int end_pos = scanner_->location().end_pos;
     log_->LogFunction(function_block_pos, end_pos,
                       function_scope.materialized_literal_count(),
@@ -1126,30 +1132,32 @@ void PreParser::ExpectSemicolon(bool* ok) {
 }
 
 
-PreParser::Identifier PreParser::GetIdentifierSymbol() {
-  const char* literal_chars = scanner_->literal_string();
-  int literal_length = scanner_->literal_length();
+void PreParser::LogSymbol() {
   int identifier_pos = scanner_->location().beg_pos;
+  if (scanner_->is_literal_ascii()) {
+    log_->LogAsciiSymbol(identifier_pos, scanner_->literal_ascii_string());
+  } else {
+    log_->LogUC16Symbol(identifier_pos, scanner_->literal_uc16_string());
+  }
+}
 
-  log_->LogSymbol(identifier_pos, literal_chars, literal_length);
 
-  return kUnknownExpression;
+PreParser::Identifier PreParser::GetIdentifierSymbol() {
+  LogSymbol();
+  return kUnknownIdentifier;
 }
 
 
 PreParser::Expression PreParser::GetStringSymbol() {
-  const char* literal_chars = scanner_->literal_string();
-  int literal_length = scanner_->literal_length();
-
-  int literal_position = scanner_->location().beg_pos;
-  log_->LogSymbol(literal_position, literal_chars, literal_length);
-
+  LogSymbol();
   return kUnknownExpression;
 }
 
 
 PreParser::Identifier PreParser::ParseIdentifier(bool* ok) {
-  Expect(i::Token::IDENTIFIER, ok);
+  if (!Check(i::Token::FUTURE_RESERVED_WORD)) {
+    Expect(i::Token::IDENTIFIER, ok);
+  }
   if (!*ok) return kUnknownIdentifier;
   return GetIdentifierSymbol();
 }
@@ -1160,10 +1168,12 @@ PreParser::Identifier PreParser::ParseIdentifierName(bool* ok) {
   if (i::Token::IsKeyword(next)) {
     int pos = scanner_->location().beg_pos;
     const char* keyword = i::Token::String(next);
-    log_->LogSymbol(pos, keyword, i::StrLength(keyword));
+    log_->LogAsciiSymbol(pos, i::Vector<const char>(keyword,
+                                                    i::StrLength(keyword)));
     return kUnknownExpression;
   }
-  if (next == i::Token::IDENTIFIER) {
+  if (next == i::Token::IDENTIFIER ||
+      next == i::Token::FUTURE_RESERVED_WORD) {
     return GetIdentifierSymbol();
   }
   *ok = false;
@@ -1172,19 +1182,23 @@ PreParser::Identifier PreParser::ParseIdentifierName(bool* ok) {
 
 
 // This function reads an identifier and determines whether or not it
-// is 'get' or 'set'.  The reason for not using ParseIdentifier and
-// checking on the output is that this involves heap allocation which
-// we can't do during preparsing.
+// is 'get' or 'set'.
 PreParser::Identifier PreParser::ParseIdentifierOrGetOrSet(bool* is_get,
                                                            bool* is_set,
                                                            bool* ok) {
-  Expect(i::Token::IDENTIFIER, CHECK_OK);
-  if (scanner_->literal_length() == 3) {
-    const char* token = scanner_->literal_string();
+  PreParser::Identifier result = ParseIdentifier(CHECK_OK);
+  if (scanner_->is_literal_ascii() && scanner_->literal_length() == 3) {
+    const char* token = scanner_->literal_ascii_string().start();
     *is_get = strncmp(token, "get", 3) == 0;
     *is_set = !*is_get && strncmp(token, "set", 3) == 0;
   }
-  return GetIdentifierSymbol();
+  return result;
+}
+
+bool PreParser::peek_any_identifier() {
+  i::Token::Value next = peek();
+  return next == i::Token::IDENTIFIER ||
+         next == i::Token::FUTURE_RESERVED_WORD;
 }
 
 #undef CHECK_OK

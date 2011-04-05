@@ -28,8 +28,10 @@
 #ifndef V8_ISOLATE_H_
 #define V8_ISOLATE_H_
 
+#include "../include/v8-debug.h"
 #include "allocation.h"
 #include "apiutils.h"
+#include "atomicops.h"
 #include "builtins.h"
 #include "contexts.h"
 #include "execution.h"
@@ -38,20 +40,9 @@
 #include "handles.h"
 #include "heap.h"
 #include "regexp-stack.h"
+#include "runtime-profiler.h"
 #include "runtime.h"
 #include "zone.h"
-#include "../include/v8-debug.h"
-
-
-#if !defined(__arm__) && defined(V8_TARGET_ARCH_ARM)
-namespace assembler {
-namespace arm {
-class Redirection;
-class Simulator;
-}
-}
-#endif
-
 
 namespace v8 {
 namespace internal {
@@ -59,13 +50,14 @@ namespace internal {
 class AstSentinels;
 class Bootstrapper;
 class CodeGenerator;
+class CodeRange;
 class CompilationCache;
 class ContextSlotCache;
 class ContextSwitcher;
-class CodeRange;
 class Counters;
 class CpuFeatures;
 class CpuProfiler;
+class DeoptimizerData;
 class Deserializer;
 class EmptyStatement;
 class ExternalReferenceTable;
@@ -75,26 +67,36 @@ class HandleScopeImplementer;
 class HeapProfiler;
 class InlineRuntimeFunctionsTable;
 class NoAllocationStringAllocator;
+class PcToCodeCache;
 class PreallocatedMemoryThread;
 class ProducerHeapProfile;
 class RegExpStack;
 class SaveContext;
-class StubCache;
+class ScannerConstants;
 class StringInputBuffer;
 class StringTracker;
-class ScannerConstants;
-class ThreadVisitor;  // Defined in v8threads.h
+class StubCache;
 class ThreadManager;
 class ThreadState;
+class ThreadVisitor;  // Defined in v8threads.h
 class VMState;
 
-typedef void* ExternalReferenceRedirector(void* original, bool fp_return);
+// 'void function pointer', used to roundtrip the
+// ExternalReference::ExternalReferenceRedirector since we can not include
+// assembler.h, where it is defined, here.
+typedef void* ExternalReferenceRedirectorPointer();
 
 
 #ifdef ENABLE_DEBUGGER_SUPPORT
 class Debug;
 class Debugger;
 class DebuggerAgent;
+#endif
+
+#if !defined(__arm__) && defined(V8_TARGET_ARCH_ARM) || \
+    !defined(__mips__) && defined(V8_TARGET_ARCH_MIPS)
+class Redirection;
+class Simulator;
 #endif
 
 
@@ -109,6 +111,15 @@ typedef ZoneList<Handle<Object> > ZoneObjectList;
 #define RETURN_IF_SCHEDULED_EXCEPTION(isolate)    \
   if (isolate->has_scheduled_exception())         \
       return isolate->PromoteScheduledException()
+
+#define RETURN_IF_EMPTY_HANDLE_VALUE(isolate, call, value) \
+  if (call.is_null()) {                                    \
+    ASSERT(isolate->has_pending_exception());              \
+    return value;                                          \
+  }
+
+#define RETURN_IF_EMPTY_HANDLE(isolate, call)                       \
+  RETURN_IF_EMPTY_HANDLE_VALUE(isolate, call, Failure::Exception())
 
 #define ISOLATE_ADDRESS_LIST(C)            \
   C(handler_address)                       \
@@ -186,19 +197,18 @@ class ThreadLocalTop BASE_EMBEDDED {
   Address handler_;   // try-blocks are chained through the stack
 
 #ifdef USE_SIMULATOR
-#ifdef V8_TARGET_ARCH_ARM
-  assembler::arm::Simulator* simulator_;
-#elif V8_TARGET_ARCH_MIPS
-  assembler::mips::Simulator* simulator_;
+#if defined(V8_TARGET_ARCH_ARM) || defined(V8_TARGET_ARCH_MIPS)
+  Simulator* simulator_;
 #endif
 #endif  // USE_SIMULATOR
 
 #ifdef ENABLE_LOGGING_AND_PROFILING
   Address js_entry_sp_;  // the stack pointer of the bottom js entry frame
+  Address external_callback_;  // the external callback we're currently in
 #endif
 
 #ifdef ENABLE_VMSTATE_TRACKING
-  VMState* current_vm_state_;
+  StateTag current_vm_state_;
 #endif
 
   // Generated code scratch locations.
@@ -211,13 +221,15 @@ class ThreadLocalTop BASE_EMBEDDED {
   Address try_catch_handler_address_;
 };
 
-#if defined(V8_TARGET_ARCH_ARM)
+#if defined(V8_TARGET_ARCH_ARM) || defined(V8_TARGET_ARCH_MIPS)
 
 #define ISOLATE_PLATFORM_INIT_LIST(V)                                          \
   /* VirtualFrame::SpilledScope state */                                       \
-  V(bool, is_virtual_frame_in_spilled_scope, false)
+  V(bool, is_virtual_frame_in_spilled_scope, false)                            \
+  /* CodeGenerator::EmitNamedStore state */                                    \
+  V(int, inlined_write_barrier_size, -1)
 
-#if !defined(__arm__)
+#if !defined(__arm__) && !defined(__mips__)
 class HashMap;
 #endif
 
@@ -230,6 +242,7 @@ class HashMap;
 #ifdef ENABLE_DEBUGGER_SUPPORT
 
 #define ISOLATE_DEBUGGER_INIT_LIST(V)                                          \
+  V(uint64_t, enabled_cpu_features, 0)                                         \
   V(v8::Debug::EventCallback, debug_event_callback, NULL)                      \
   V(DebuggerAgent*, debugger_agent_instance, NULL)
 #else
@@ -280,14 +293,12 @@ typedef List<HeapObject*, PreallocatedStorage> DebugObjectCache;
   /* Assembler state. */                                                       \
   /* A previously allocated buffer of kMinimalBufferSize bytes, or NULL. */    \
   V(byte*, assembler_spare_buffer, NULL)                                       \
-  /*This static counter ensures that NativeAllocationCheckers can be nested.*/ \
-  V(int, allocation_disallowed, 0)                                             \
   V(FatalErrorCallback, exception_behavior, NULL)                              \
   V(v8::Debug::MessageHandler, message_handler, NULL)                          \
   /* To distinguish the function templates, so that we can find them in the */ \
   /* function cache of the global context. */                                  \
   V(int, next_serial_number, 0)                                                \
-  V(ExternalReferenceRedirector*, external_reference_redirector, NULL)         \
+  V(ExternalReferenceRedirectorPointer*, external_reference_redirector, NULL)  \
   V(bool, always_allow_natives_syntax, false)                                  \
   /* Part of the state of liveedit. */                                         \
   V(FunctionInfoListener*, active_function_info_listener, NULL)                \
@@ -302,6 +313,11 @@ typedef List<HeapObject*, PreallocatedStorage> DebugObjectCache;
   V(int*, irregexp_interpreter_backtrack_stack_cache, NULL)                    \
   /* Serializer state. */                                                      \
   V(ExternalReferenceTable*, external_reference_table, NULL)                   \
+  /* AstNode state. */                                                         \
+  V(unsigned, ast_node_id, 0)                                                  \
+  V(unsigned, ast_node_count, 0)                                               \
+  /* SafeStackFrameIterator activations count. */                              \
+  V(int, safe_stack_iterator_counter, 0)                                       \
   ISOLATE_PLATFORM_INIT_LIST(V)                                                \
   ISOLATE_LOGGING_INIT_LIST(V)                                                 \
   ISOLATE_DEBUGGER_INIT_LIST(V)
@@ -326,7 +342,8 @@ class Isolate {
           thread_id_(thread_id),
           stack_limit_(0),
           thread_state_(NULL),
-#if !defined(__arm__) && defined(V8_TARGET_ARCH_ARM)
+#if !defined(__arm__) && defined(V8_TARGET_ARCH_ARM) || \
+    !defined(__mips__) && defined(V8_TARGET_ARCH_MIPS)
           simulator_(NULL),
 #endif
           next_(NULL),
@@ -338,9 +355,10 @@ class Isolate {
     ThreadState* thread_state() const { return thread_state_; }
     void set_thread_state(ThreadState* value) { thread_state_ = value; }
 
-#if !defined(__arm__) && defined(V8_TARGET_ARCH_ARM)
-    assembler::arm::Simulator* simulator() const { return simulator_; }
-    void set_simulator(assembler::arm::Simulator* simulator) {
+#if !defined(__arm__) && defined(V8_TARGET_ARCH_ARM) || \
+    !defined(__mips__) && defined(V8_TARGET_ARCH_MIPS)
+    Simulator* simulator() const { return simulator_; }
+    void set_simulator(Simulator* simulator) {
       simulator_ = simulator;
     }
 #endif
@@ -355,8 +373,9 @@ class Isolate {
     uintptr_t stack_limit_;
     ThreadState* thread_state_;
 
-#if !defined(__arm__) && defined(V8_TARGET_ARCH_ARM)
-    assembler::arm::Simulator* simulator_;
+#if !defined(__arm__) && defined(V8_TARGET_ARCH_ARM) || \
+    !defined(__mips__) && defined(V8_TARGET_ARCH_MIPS)
+    Simulator* simulator_;
 #endif
 
     PerIsolateThreadData* next_;
@@ -387,7 +406,8 @@ class Isolate {
 
   // Returns the isolate inside which the current thread is running.
   INLINE(static Isolate* Current()) {
-    Isolate* isolate = UncheckedCurrent();
+    Isolate* isolate = reinterpret_cast<Isolate*>(
+        Thread::GetExistingThreadLocal(isolate_key_));
     ASSERT(isolate != NULL);
     return isolate;
   }
@@ -415,6 +435,14 @@ class Isolate {
   // example if you are using V8 from within the body of a static initializer.
   // Safe to call multiple times.
   static void EnsureDefaultIsolate();
+
+  // Get the debugger from the default isolate. Preinitializes the
+  // default isolate if needed.
+  static Debugger* GetDefaultIsolateDebugger();
+
+  // Get the stack guard from the default isolate. Preinitializes the
+  // default isolate if needed.
+  static StackGuard* GetDefaultIsolateStackGuard();
 
   // Returns the key used to store the pointer to the current isolate.
   // Used internally for V8 threads that do not execute JavaScript but still
@@ -509,11 +537,11 @@ class Isolate {
     thread_local_top_.scheduled_exception_ = heap_.the_hole_value();
   }
 
-  void setup_external_caught() {
-    thread_local_top_.external_caught_exception_ =
-        has_pending_exception() &&
-        (thread_local_top_.catcher_ != NULL) &&
-        (try_catch_handler() == thread_local_top_.catcher_);
+  bool IsExternallyCaught();
+
+  bool is_catchable_by_javascript(MaybeObject* exception) {
+    return (exception != Failure::OutOfMemoryException()) &&
+        (exception != heap()->termination_exception());
   }
 
   // JS execution stack (see frames.h).
@@ -534,16 +562,6 @@ class Isolate {
   }
   inline Address* js_entry_sp_address() {
     return &thread_local_top_.js_entry_sp_;
-  }
-#endif
-
-#ifdef ENABLE_VMSTATE_TRACKING
-  VMState* current_vm_state() {
-    return thread_local_top_.current_vm_state_;
-  }
-
-  void set_current_vm_state(VMState* state) {
-    thread_local_top_.current_vm_state_ = state;
   }
 #endif
 
@@ -621,7 +639,9 @@ class Isolate {
   void DoThrow(MaybeObject* exception,
                MessageLocation* location,
                const char* message);
-  bool ShouldReturnException(bool* is_caught_externally,
+  // Checks if exception should be reported and finds out if it's
+  // caught externally.
+  bool ShouldReportException(bool* can_be_caught_externally,
                              bool catchable_by_javascript);
 
   // Attempts to compute the current source location, storing the
@@ -662,14 +682,23 @@ class Isolate {
   static const int kBMMaxShift = 250;        // See StringSearchBase.
 
   // Accessors.
-#define GLOBAL_ACCESSOR(type, name, initialvalue)                              \
-  type name() const { return name##_; }                                        \
-  void set_##name(type value) { name##_ = value; }
+#define GLOBAL_ACCESSOR(type, name, initialvalue)                       \
+  inline type name() const {                                            \
+    ASSERT(OFFSET_OF(Isolate, name##_) == name##_debug_offset_);        \
+    return name##_;                                                     \
+  }                                                                     \
+  inline void set_##name(type value) {                                  \
+    ASSERT(OFFSET_OF(Isolate, name##_) == name##_debug_offset_);        \
+    name##_ = value;                                                    \
+  }
   ISOLATE_INIT_LIST(GLOBAL_ACCESSOR)
 #undef GLOBAL_ACCESSOR
 
-#define GLOBAL_ARRAY_ACCESSOR(type, name, length)                              \
-  type* name() { return &(name##_[0]); }
+#define GLOBAL_ARRAY_ACCESSOR(type, name, length)                       \
+  inline type* name() {                                                 \
+    ASSERT(OFFSET_OF(Isolate, name##_) == name##_debug_offset_);        \
+    return &(name##_)[0];                                               \
+  }
   ISOLATE_INIT_ARRAY_LIST(GLOBAL_ARRAY_ACCESSOR)
 #undef GLOBAL_ARRAY_ACCESSOR
 
@@ -682,14 +711,15 @@ class Isolate {
 
   Bootstrapper* bootstrapper() { return bootstrapper_; }
   Counters* counters() { return counters_; }
-  CpuFeatures* cpu_features() { return cpu_features_; }
   CodeRange* code_range() { return code_range_; }
+  RuntimeProfiler* runtime_profiler() { return runtime_profiler_; }
   CompilationCache* compilation_cache() { return compilation_cache_; }
   Logger* logger() { return logger_; }
   StackGuard* stack_guard() { return &stack_guard_; }
   Heap* heap() { return &heap_; }
   StatsTable* stats_table() { return stats_table_; }
   StubCache* stub_cache() { return stub_cache_; }
+  DeoptimizerData* deoptimizer_data() { return deoptimizer_data_; }
   ThreadLocalTop* thread_local_top() { return &thread_local_top_; }
 
   TranscendentalCache* transcendental_cache() const {
@@ -824,7 +854,8 @@ class Isolate {
   int* code_kind_statistics() { return code_kind_statistics_; }
 #endif
 
-#if defined(V8_TARGET_ARCH_ARM) && !defined(__arm__)
+#if defined(V8_TARGET_ARCH_ARM) && !defined(__arm__) || \
+    defined(V8_TARGET_ARCH_MIPS) && !defined(__mips__)
   bool simulator_initialized() { return simulator_initialized_; }
   void set_simulator_initialized(bool initialized) {
     simulator_initialized_ = initialized;
@@ -835,10 +866,10 @@ class Isolate {
     simulator_i_cache_ = hash_map;
   }
 
-  assembler::arm::Redirection* simulator_redirection() {
+  Redirection* simulator_redirection() {
     return simulator_redirection_;
   }
-  void set_simulator_redirection(assembler::arm::Redirection* redirection) {
+  void set_simulator_redirection(Redirection* redirection) {
     simulator_redirection_ = redirection;
   }
 #endif
@@ -850,6 +881,36 @@ class Isolate {
 
   static const int kJSRegexpStaticOffsetsVectorSize = 50;
 
+#ifdef ENABLE_LOGGING_AND_PROFILING
+  Address external_callback() {
+    return thread_local_top_.external_callback_;
+  }
+  void set_external_callback(Address callback) {
+    thread_local_top_.external_callback_ = callback;
+  }
+#endif
+
+#ifdef ENABLE_VMSTATE_TRACKING
+  StateTag current_vm_state() {
+    return thread_local_top_.current_vm_state_;
+  }
+
+  void SetCurrentVMState(StateTag state) {
+    if (RuntimeProfiler::IsEnabled()) {
+      if (state == JS) {
+        // JS or non-JS -> JS transition.
+        RuntimeProfiler::IsolateEnteredJS(this);
+      } else if (thread_local_top_.current_vm_state_ == JS) {
+        // JS -> non-JS transition.
+        ASSERT(RuntimeProfiler::IsSomeIsolateInJS());
+        RuntimeProfiler::IsolateExitedJS(this);
+      }
+    }
+    thread_local_top_.current_vm_state_ = state;
+  }
+#endif
+
+  void ResetEagerOptimizingData();
 
  private:
   Isolate();
@@ -876,7 +937,7 @@ class Isolate {
   // not entered by any thread and can be Disposed.
   // If the same thread enters the Isolate more then once, the entry_count_
   // is incremented rather then a new item pushed to the stack.
-  struct EntryStackItem {
+  class EntryStackItem {
    public:
     EntryStackItem(PerIsolateThreadData* previous_thread_data,
                    Isolate* previous_isolate,
@@ -964,9 +1025,9 @@ class Isolate {
   NoAllocationStringAllocator* preallocated_message_space_;
 
   Bootstrapper* bootstrapper_;
+  RuntimeProfiler* runtime_profiler_;
   CompilationCache* compilation_cache_;
   Counters* counters_;
-  CpuFeatures* cpu_features_;
   CodeRange* code_range_;
   Mutex* break_access_;
   Heap heap_;
@@ -974,6 +1035,7 @@ class Isolate {
   StackGuard stack_guard_;
   StatsTable* stats_table_;
   StubCache* stub_cache_;
+  DeoptimizerData* deoptimizer_data_;
   ThreadLocalTop thread_local_top_;
   bool capture_stack_trace_for_uncaught_exceptions_;
   int stack_trace_for_uncaught_exceptions_frame_limit_;
@@ -1014,10 +1076,11 @@ class Isolate {
   ZoneObjectList frame_element_constant_list_;
   ZoneObjectList result_constant_list_;
 
-#if defined(V8_TARGET_ARCH_ARM) && !defined(__arm__)
+#if defined(V8_TARGET_ARCH_ARM) && !defined(__arm__) || \
+    defined(V8_TARGET_ARCH_MIPS) && !defined(__mips__)
   bool simulator_initialized_;
   HashMap* simulator_i_cache_;
-  assembler::arm::Redirection* simulator_redirection_;
+  Redirection* simulator_redirection_;
 #endif
 
 #ifdef DEBUG
@@ -1046,6 +1109,18 @@ class Isolate {
   ISOLATE_INIT_ARRAY_LIST(GLOBAL_ARRAY_BACKING_STORE)
 #undef GLOBAL_ARRAY_BACKING_STORE
 
+#ifdef DEBUG
+  // This class is huge and has a number of fields controlled by
+  // preprocessor defines. Make sure the offsets of these fields agree
+  // between compilation units.
+#define ISOLATE_FIELD_OFFSET(type, name, ignored)                              \
+  static const intptr_t name##_debug_offset_;
+  ISOLATE_INIT_LIST(ISOLATE_FIELD_OFFSET)
+  ISOLATE_INIT_ARRAY_LIST(ISOLATE_FIELD_OFFSET)
+#undef ISOLATE_FIELD_OFFSET
+#endif
+
+  friend class ExecutionAccess;
   friend class IsolateInitializer;
   friend class v8::Isolate;
   friend class v8::Locker;
@@ -1069,7 +1144,7 @@ class SaveContext BASE_EMBEDDED {
     isolate->set_save_context(this);
 
     // If there is no JS frame under the current C frame, use the value 0.
-    JavaScriptFrameIterator it;
+    JavaScriptFrameIterator it(isolate);
     js_sp_ = it.done() ? 0 : it.frame()->sp();
   }
 
@@ -1107,7 +1182,8 @@ class AssertNoContextChange BASE_EMBEDDED {
 #ifdef DEBUG
  public:
   AssertNoContextChange() :
-      context_(Isolate::Current()->context()) {
+      scope_(Isolate::Current()),
+      context_(Isolate::Current()->context(), Isolate::Current()) {
   }
 
   ~AssertNoContextChange() {
@@ -1126,8 +1202,20 @@ class AssertNoContextChange BASE_EMBEDDED {
 
 class ExecutionAccess BASE_EMBEDDED {
  public:
-  ExecutionAccess();
-  ~ExecutionAccess();
+  explicit ExecutionAccess(Isolate* isolate) : isolate_(isolate) {
+    Lock(isolate);
+  }
+  ~ExecutionAccess() { Unlock(isolate_); }
+
+  static void Lock(Isolate* isolate) { isolate->break_access_->Lock(); }
+  static void Unlock(Isolate* isolate) { isolate->break_access_->Unlock(); }
+
+  static bool TryLock(Isolate* isolate) {
+    return isolate->break_access_->TryLock();
+  }
+
+ private:
+  Isolate* isolate_;
 };
 
 

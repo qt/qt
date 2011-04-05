@@ -34,18 +34,22 @@
 #include "codegen.h"
 #include "compilation-cache.h"
 #include "debug.h"
+#include "deoptimizer.h"
 #include "heap-profiler.h"
+#include "hydrogen.h"
 #include "isolate.h"
+#include "lithium-allocator.h"
 #include "log.h"
 #include "regexp-stack.h"
-#include "serialize.h"
+#include "runtime-profiler.h"
 #include "scanner.h"
 #include "scopeinfo.h"
+#include "serialize.h"
 #include "simulator.h"
-#include "stub-cache.h"
 #include "spaces.h"
-#include "oprofile-agent.h"
+#include "stub-cache.h"
 #include "version.h"
+
 
 namespace v8 {
 namespace internal {
@@ -122,7 +126,7 @@ class PreallocatedMemoryThread: public Thread {
 
  private:
   explicit PreallocatedMemoryThread(Isolate* isolate)
-      : Thread(isolate),
+      : Thread(isolate, "v8:PreallocMem"),
         keep_running_(true),
         wait_for_ever_semaphore_(OS::CreateSemaphore(0)),
         data_ready_semaphore_(OS::CreateSemaphore(0)),
@@ -164,13 +168,85 @@ void Isolate::PreallocatedMemoryThreadStop() {
 }
 
 
+void Isolate::PreallocatedStorageInit(size_t size) {
+  ASSERT(free_list_.next_ == &free_list_);
+  ASSERT(free_list_.previous_ == &free_list_);
+  PreallocatedStorage* free_chunk =
+      reinterpret_cast<PreallocatedStorage*>(new char[size]);
+  free_list_.next_ = free_list_.previous_ = free_chunk;
+  free_chunk->next_ = free_chunk->previous_ = &free_list_;
+  free_chunk->size_ = size - sizeof(PreallocatedStorage);
+  preallocated_storage_preallocated_ = true;
+}
+
+
+void* Isolate::PreallocatedStorageNew(size_t size) {
+  if (!preallocated_storage_preallocated_) {
+    return FreeStoreAllocationPolicy::New(size);
+  }
+  ASSERT(free_list_.next_ != &free_list_);
+  ASSERT(free_list_.previous_ != &free_list_);
+
+  size = (size + kPointerSize - 1) & ~(kPointerSize - 1);
+  // Search for exact fit.
+  for (PreallocatedStorage* storage = free_list_.next_;
+       storage != &free_list_;
+       storage = storage->next_) {
+    if (storage->size_ == size) {
+      storage->Unlink();
+      storage->LinkTo(&in_use_list_);
+      return reinterpret_cast<void*>(storage + 1);
+    }
+  }
+  // Search for first fit.
+  for (PreallocatedStorage* storage = free_list_.next_;
+       storage != &free_list_;
+       storage = storage->next_) {
+    if (storage->size_ >= size + sizeof(PreallocatedStorage)) {
+      storage->Unlink();
+      storage->LinkTo(&in_use_list_);
+      PreallocatedStorage* left_over =
+          reinterpret_cast<PreallocatedStorage*>(
+              reinterpret_cast<char*>(storage + 1) + size);
+      left_over->size_ = storage->size_ - size - sizeof(PreallocatedStorage);
+      ASSERT(size + left_over->size_ + sizeof(PreallocatedStorage) ==
+             storage->size_);
+      storage->size_ = size;
+      left_over->LinkTo(&free_list_);
+      return reinterpret_cast<void*>(storage + 1);
+    }
+  }
+  // Allocation failure.
+  ASSERT(false);
+  return NULL;
+}
+
+
+// We don't attempt to coalesce.
+void Isolate::PreallocatedStorageDelete(void* p) {
+  if (p == NULL) {
+    return;
+  }
+  if (!preallocated_storage_preallocated_) {
+    FreeStoreAllocationPolicy::Delete(p);
+    return;
+  }
+  PreallocatedStorage* storage = reinterpret_cast<PreallocatedStorage*>(p) - 1;
+  ASSERT(storage->next_->previous_ == storage);
+  ASSERT(storage->previous_->next_ == storage);
+  storage->Unlink();
+  storage->LinkTo(&free_list_);
+}
+
+
 Isolate* Isolate::default_isolate_ = NULL;
 Thread::LocalStorageKey Isolate::isolate_key_;
 Thread::LocalStorageKey Isolate::thread_id_key_;
 Thread::LocalStorageKey Isolate::per_isolate_thread_data_key_;
-Mutex* Isolate::process_wide_mutex_ = NULL;
+Mutex* Isolate::process_wide_mutex_ = OS::CreateMutex();
 Isolate::ThreadDataTable* Isolate::thread_data_table_ = NULL;
 Isolate::ThreadId Isolate::highest_thread_id_ = 0;
+
 
 class IsolateInitializer {
  public:
@@ -234,11 +310,6 @@ Isolate::PerIsolateThreadData*
 
 
 void Isolate::EnsureDefaultIsolate() {
-  // Assume there is only one static-initializing thread.
-  if (process_wide_mutex_ == NULL) {
-    process_wide_mutex_ = OS::CreateMutex();
-  }
-
   ScopedLock lock(process_wide_mutex_);
   if (default_isolate_ == NULL) {
     isolate_key_ = Thread::CreateThreadLocalKey();
@@ -251,6 +322,18 @@ void Isolate::EnsureDefaultIsolate() {
   // becase a non-null thread data may be already set.
   Thread::SetThreadLocal(isolate_key_, default_isolate_);
   CHECK(default_isolate_->PreInit());
+}
+
+
+Debugger* Isolate::GetDefaultIsolateDebugger() {
+  EnsureDefaultIsolate();
+  return default_isolate_->debugger();
+}
+
+
+StackGuard* Isolate::GetDefaultIsolateStackGuard() {
+  EnsureDefaultIsolate();
+  return default_isolate_->stack_guard();
 }
 
 
@@ -328,14 +411,15 @@ Isolate::Isolate()
       preallocated_memory_thread_(NULL),
       preallocated_message_space_(NULL),
       bootstrapper_(NULL),
+      runtime_profiler_(NULL),
       compilation_cache_(NULL),
       counters_(new Counters()),
-      cpu_features_(NULL),
       code_range_(NULL),
       break_access_(OS::CreateMutex()),
       logger_(new Logger()),
       stats_table_(new StatsTable()),
       stub_cache_(NULL),
+      deoptimizer_data_(NULL),
       capture_stack_trace_for_uncaught_exceptions_(false),
       stack_trace_for_uncaught_exceptions_frame_limit_(0),
       stack_trace_for_uncaught_exceptions_options_(StackTrace::kOverview),
@@ -368,7 +452,8 @@ Isolate::Isolate()
   zone_.isolate_ = this;
   stack_guard_.isolate_ = this;
 
-#if defined(V8_TARGET_ARCH_ARM) && !defined(__arm__)
+#if defined(V8_TARGET_ARCH_ARM) && !defined(__arm__) || \
+    defined(V8_TARGET_ARCH_MIPS) && !defined(__mips__)
   simulator_initialized_ = false;
   simulator_i_cache_ = NULL;
   simulator_redirection_ = NULL;
@@ -429,7 +514,13 @@ void Isolate::Deinit() {
   if (state_ == INITIALIZED) {
     TRACE_ISOLATE(deinit);
 
-    OProfileAgent::TearDown();
+    if (FLAG_hydrogen_stats) HStatistics::Instance()->Print();
+
+    // We must stop the logger before we tear down other components.
+    logger_->EnsureTickerStopped();
+
+    delete deoptimizer_data_;
+    deoptimizer_data_ = NULL;
     if (FLAG_preemption) {
       v8::Locker locker;
       v8::Locker::StopPreemption();
@@ -444,6 +535,11 @@ void Isolate::Deinit() {
 
     HeapProfiler::TearDown();
     CpuProfiler::TearDown();
+    if (runtime_profiler_ != NULL) {
+      runtime_profiler_->TearDown();
+      delete runtime_profiler_;
+      runtime_profiler_ = NULL;
+    }
     heap_.TearDown();
     logger_->TearDown();
 
@@ -496,8 +592,6 @@ Isolate::~Isolate() {
 
   delete counters_;
   counters_ = NULL;
-  delete cpu_features_;
-  cpu_features_ = NULL;
 
   delete handle_scope_implementer_;
   handle_scope_implementer_ = NULL;
@@ -573,7 +667,7 @@ bool Isolate::PreInit() {
   string_tracker_->isolate_ = this;
   thread_manager_ = new ThreadManager();
   thread_manager_->isolate_ = this;
-  compilation_cache_ = new CompilationCache();
+  compilation_cache_ = new CompilationCache(this);
   transcendental_cache_ = new TranscendentalCache();
   keyed_lookup_cache_ = new KeyedLookupCache();
   context_slot_cache_ = new ContextSlotCache();
@@ -583,7 +677,6 @@ bool Isolate::PreInit() {
   write_input_buffer_ = new StringInputBuffer();
   global_handles_ = new GlobalHandles(this);
   bootstrapper_ = new Bootstrapper();
-  cpu_features_ = new CpuFeatures();
   handle_scope_implementer_ = new HandleScopeImplementer();
   stub_cache_ = new StubCache(this);
   ast_sentinels_ = new AstSentinels();
@@ -628,15 +721,10 @@ bool Isolate::Init(Deserializer* des) {
   CpuProfiler::Setup();
   HeapProfiler::Setup();
 
-  // Setup the platform OS support.
-  OS::Setup();
-
   // Initialize other runtime facilities
 #if defined(USE_SIMULATOR)
-#if defined(V8_TARGET_ARCH_ARM)
-  ::assembler::arm::Simulator::Initialize();
-#elif defined(V8_TARGET_ARCH_MIPS)
-  ::assembler::mips::Simulator::Initialize();
+#if defined(V8_TARGET_ARCH_ARM) || defined(V8_TARGET_ARCH_MIPS)
+  Simulator::Initialize();
 #endif
 #endif
 
@@ -644,7 +732,7 @@ bool Isolate::Init(Deserializer* des) {
     // Ensure that the thread has a valid stack guard.  The v8::Locker object
     // will ensure this too, but we don't have to use lockers if we are only
     // using one thread.
-    ExecutionAccess lock;
+    ExecutionAccess lock(this);
     stack_guard_.InitThread(lock);
   }
 
@@ -691,19 +779,16 @@ bool Isolate::Init(Deserializer* des) {
   // stack guard.
   heap_.SetStackLimits();
 
-  // Setup the CPU support. Must be done after heap setup and after
-  // any deserialization because we have to have the initial heap
-  // objects in place for creating the code object used for probing.
-  CPU::Setup();
-
-  OProfileAgent::Initialize();
+  deoptimizer_data_ = new DeoptimizerData;
+  runtime_profiler_ = new RuntimeProfiler(this);
+  runtime_profiler_->Setup();
 
   // If we are deserializing, log non-function code objects and compiled
   // functions found in the snapshot.
   if (des != NULL && FLAG_log_code) {
     HandleScope scope;
-    LOG(LogCodeObjects());
-    LOG(LogCompiledFunctions());
+    LOG(this, LogCodeObjects());
+    LOG(this, LogCompiledFunctions());
   }
 
   state_ = INITIALIZED;
@@ -780,5 +865,19 @@ void Isolate::Exit() {
   // Reinit the current thread for the isolate it was running before this one.
   SetIsolateThreadLocals(previous_isolate, previous_thread_data);
 }
+
+
+void Isolate::ResetEagerOptimizingData() {
+  compilation_cache_->ResetEagerOptimizingData();
+}
+
+
+#ifdef DEBUG
+#define ISOLATE_FIELD_OFFSET(type, name, ignored)                       \
+const intptr_t Isolate::name##_debug_offset_ = OFFSET_OF(Isolate, name##_);
+ISOLATE_INIT_LIST(ISOLATE_FIELD_OFFSET)
+ISOLATE_INIT_ARRAY_LIST(ISOLATE_FIELD_OFFSET)
+#undef ISOLATE_FIELD_OFFSET
+#endif
 
 } }  // namespace v8::internal

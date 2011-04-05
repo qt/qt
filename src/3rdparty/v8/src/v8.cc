@@ -1,4 +1,4 @@
-// Copyright 2006-2009 the V8 project authors. All rights reserved.
+// Copyright 2011 the V8 project authors. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -27,26 +27,33 @@
 
 #include "v8.h"
 
+#include "isolate.h"
 #include "bootstrapper.h"
 #include "debug.h"
-#include "isolate.h"
-#include "serialize.h"
-#include "simulator.h"
-#include "stub-cache.h"
+#include "deoptimizer.h"
 #include "heap-profiler.h"
-#include "oprofile-agent.h"
+#include "hydrogen.h"
+#include "lithium-allocator.h"
 #include "log.h"
+#include "runtime-profiler.h"
+#include "serialize.h"
 
 namespace v8 {
 namespace internal {
+
+static Mutex* init_once_mutex = OS::CreateMutex();
+static bool init_once_called = false;
 
 bool V8::is_running_ = false;
 bool V8::has_been_setup_ = false;
 bool V8::has_been_disposed_ = false;
 bool V8::has_fatal_error_ = false;
+bool V8::use_crankshaft_ = true;
 
 
 bool V8::Initialize(Deserializer* des) {
+  InitializeOncePerProcess();
+
   // The current thread may not yet had entered an isolate to run.
   // Note the Isolate::Current() may be non-null because for various
   // initialization purposes an initializing thread may be assigned an isolate
@@ -61,18 +68,15 @@ bool V8::Initialize(Deserializer* des) {
   ASSERT(i::Isolate::CurrentPerIsolateThreadData()->isolate() ==
          i::Isolate::Current());
 
-  Isolate* isolate = Isolate::Current();
-  if (isolate->IsDefaultIsolate()) {
-    if (has_been_disposed_ || has_fatal_error_) return false;
-    if (IsRunning()) return true;
+  if (IsDead()) return false;
 
-    is_running_ = true;
-    has_been_setup_ = true;
-    has_fatal_error_ = false;
-    has_been_disposed_ = false;
-  } else {
-    if (isolate->IsInitialized()) return true;
-  }
+  Isolate* isolate = Isolate::Current();
+  if (isolate->IsInitialized()) return true;
+
+  is_running_ = true;
+  has_been_setup_ = true;
+  has_fatal_error_ = false;
+  has_been_disposed_ = false;
 
   return isolate->Init(des);
 }
@@ -163,8 +167,8 @@ typedef union {
 } double_int_union;
 
 
-Object* V8::FillHeapNumberWithRandom(Object* heap_number) {
-  uint64_t random_bits = Random(Isolate::Current());
+Object* V8::FillHeapNumberWithRandom(Object* heap_number, Isolate* isolate) {
+  uint64_t random_bits = Random(isolate);
   // Make a double* from address (heap_number + sizeof(double)).
   double_int_union* r = reinterpret_cast<double_int_union*>(
       reinterpret_cast<char*>(heap_number) +
@@ -178,6 +182,34 @@ Object* V8::FillHeapNumberWithRandom(Object* heap_number) {
   r->double_value -= binary_million;
 
   return heap_number;
+}
+
+
+void V8::InitializeOncePerProcess() {
+  ScopedLock lock(init_once_mutex);
+  if (init_once_called) return;
+  init_once_called = true;
+
+  // Setup the platform OS support.
+  OS::Setup();
+
+#if defined(V8_TARGET_ARCH_ARM) && !defined(USE_ARM_EABI)
+  use_crankshaft_ = false;
+#else
+  use_crankshaft_ = FLAG_crankshaft;
+#endif
+
+  if (Serializer::enabled()) {
+    use_crankshaft_ = false;
+  }
+
+  CPU::Setup();
+  if (!CPU::SupportsCrankshaft()) {
+    use_crankshaft_ = false;
+  }
+
+  // Peephole optimization might interfere with deoptimization.
+  FLAG_peephole_optimization = !use_crankshaft_;
 }
 
 } }  // namespace v8::internal

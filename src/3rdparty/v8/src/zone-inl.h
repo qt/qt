@@ -1,4 +1,4 @@
-// Copyright 2006-2008 the V8 project authors. All rights reserved.
+// Copyright 2011 the V8 project authors. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -59,6 +59,7 @@ inline void* Zone::New(int size) {
 
   // Check that the result has the proper alignment and return it.
   ASSERT(IsAddressAligned(result, kAlignment, 0));
+  allocation_size_ += size;
   return reinterpret_cast<void*>(result);
 }
 
@@ -94,6 +95,10 @@ ZoneSplayTree<Config>::~ZoneSplayTree() {
 //                 allocated.
 void* ZoneObject::operator new(size_t size) {
   return ZONE->New(static_cast<int>(size));
+}
+
+void* ZoneObject::operator new(size_t size, Zone* zone) {
+  return zone->New(static_cast<int>(size));
 }
 
 

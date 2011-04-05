@@ -397,6 +397,12 @@ template <class T> class Persistent : public Handle<T> {
    */
   inline bool IsWeak() const;
 
+  /**
+   * Assigns a wrapper class ID to the handle. See RetainedObjectInfo
+   * interface description in v8-profiler.h for details.
+   */
+  inline void SetWrapperClassId(uint16_t class_id);
+
  private:
   friend class ImplementationUtilities;
   friend class ObjectTemplate;
@@ -652,13 +658,6 @@ class V8EXPORT Script {
    */
   Local<Value> Run();
 
-#ifdef QT_BUILD_SCRIPT_LIB
-  /**
-   * Same as Run() but allow to give a different value for the 'this' variable
-   */
-  Local<Value> Run(Handle<Object> receiver);
-#endif
-
   /**
    * Returns the script id value.
    */
@@ -670,17 +669,6 @@ class V8EXPORT Script {
    * debugger API.
    */
   void SetData(Handle<String> data);
-
-#ifdef QT_BUILD_SCRIPT_LIB
-  static Local<Script> CompileEval(Handle<String> source,
-                                   ScriptOrigin* origin = NULL,
-                                   ScriptData* pre_data = NULL,
-                                   Handle<String> script_data = Handle<String>());
-
-  static Local<Script> CompileEval(Handle<String> source,
-                                   Handle<Value> file_name,
-                                   Handle<String> script_data = Handle<String>());
-#endif
 };
 
 
@@ -767,12 +755,7 @@ class V8EXPORT StackTrace {
     kIsEval = 1 << 4,
     kIsConstructor = 1 << 5,
     kScriptNameOrSourceURL = 1 << 6,
-#ifdef QT_BUILD_SCRIPT_LIB
-    kScriptId = 1 << 7,
-    kOverview = kLineNumber | kColumnOffset | kScriptName | kFunctionName | kScriptId,
-#else
     kOverview = kLineNumber | kColumnOffset | kScriptName | kFunctionName,
-#endif
     kDetailed = kOverview | kIsEval | kIsConstructor | kScriptNameOrSourceURL
   };
 
@@ -831,14 +814,6 @@ class V8EXPORT StackFrame {
    * function for this StackFrame.
    */
   Local<String> GetScriptName() const;
-
-#ifdef QT_BUILD_SCRIPT_LIB
-  /**
-   * Returns the id of the resource that contains the script for the
-   * function for this StackFrame.
-   */
-  Local<Value> GetScriptId() const;
-#endif
 
   /**
    * Returns the name of the resource that contains the script for the
@@ -953,11 +928,6 @@ class Value : public Data {
    */
   V8EXPORT bool IsRegExp() const;
 
-  /**
-   * Returns true if this value is an Error.
-   */
-  V8EXPORT bool IsError() const;
-
   V8EXPORT Local<Boolean> ToBoolean() const;
   V8EXPORT Local<Number> ToNumber() const;
   V8EXPORT Local<String> ToString() const;
@@ -1030,18 +1000,23 @@ class String : public Primitive {
    * the contents of the string and the NULL terminator into the
    * buffer.
    *
+   * WriteUtf8 will not write partial UTF-8 sequences, preferring to stop
+   * before the end of the buffer.
+   *
    * Copies up to length characters into the output buffer.
    * Only null-terminates if there is enough space in the buffer.
    *
    * \param buffer The buffer into which the string will be copied.
    * \param start The starting position within the string at which
    * copying begins.
-   * \param length The number of bytes to copy from the string.
+   * \param length The number of characters to copy from the string.  For
+   *    WriteUtf8 the number of bytes in the buffer.
    * \param nchars_ref The number of characters written, can be NULL.
    * \param hints Various hints that might affect performance of this or
    *    subsequent operations.
-   * \return The number of bytes copied to the buffer
-   * excluding the NULL terminator.
+   * \return The number of characters copied to the buffer excluding the null
+   *    terminator.  For WriteUtf8: The number of bytes copied to the buffer
+   *    including the null terminator.
    */
   enum WriteHints {
     NO_HINTS = 0,
@@ -1060,10 +1035,6 @@ class String : public Primitive {
                          int length = -1,
                          int* nchars_ref = NULL,
                          WriteHints hints = NO_HINTS) const;  // UTF-8
-
-  V8EXPORT uint32_t Hash() const;
-
-  V8EXPORT bool Equals(Handle<String> other) const;
 
   /**
    * A zero length string.
@@ -1392,6 +1363,21 @@ class Date : public Value {
   V8EXPORT double NumberValue() const;
 
   static inline Date* Cast(v8::Value* obj);
+
+  /**
+   * Notification that the embedder has changed the time zone,
+   * daylight savings time, or other date / time configuration
+   * parameters.  V8 keeps a cache of various values used for
+   * date / time computation.  This notification will reset
+   * those cached values for the current context so that date /
+   * time configuration changes would be reflected in the Date
+   * object.
+   *
+   * This API should not be called more than needed as it will
+   * negatively impact the performance of date operations.
+   */
+  V8EXPORT static void DateTimeConfigurationChangeNotification();
+
  private:
   V8EXPORT static void CheckCast(v8::Value* obj);
 };
@@ -1458,7 +1444,8 @@ enum ExternalArrayType {
   kExternalUnsignedShortArray,
   kExternalIntArray,
   kExternalUnsignedIntArray,
-  kExternalFloatArray
+  kExternalFloatArray,
+  kExternalPixelArray
 };
 
 /**
@@ -1666,6 +1653,11 @@ class Object : public Value {
   V8EXPORT Local<Object> Clone();
 
   /**
+   * Returns the context in which the object was created.
+   */
+  V8EXPORT Local<Context> CreationContext();
+
+  /**
    * Set the backing store of the indexed properties to be managed by the
    * embedding layer. Access to the indexed properties will follow the rules
    * spelled out in CanvasPixelArray.
@@ -1673,9 +1665,9 @@ class Object : public Value {
    *       the backing store is preserved while V8 has a reference.
    */
   V8EXPORT void SetIndexedPropertiesToPixelData(uint8_t* data, int length);
-  bool HasIndexedPropertiesInPixelData();
-  uint8_t* GetIndexedPropertiesPixelData();
-  int GetIndexedPropertiesPixelDataLength();
+  V8EXPORT bool HasIndexedPropertiesInPixelData();
+  V8EXPORT uint8_t* GetIndexedPropertiesPixelData();
+  V8EXPORT int GetIndexedPropertiesPixelDataLength();
 
   /**
    * Set the backing store of the indexed properties to be managed by the
@@ -1688,29 +1680,13 @@ class Object : public Value {
       void* data,
       ExternalArrayType array_type,
       int number_of_elements);
-  bool HasIndexedPropertiesInExternalArrayData();
-  void* GetIndexedPropertiesExternalArrayData();
-  ExternalArrayType GetIndexedPropertiesExternalArrayDataType();
-  int GetIndexedPropertiesExternalArrayDataLength();
+  V8EXPORT bool HasIndexedPropertiesInExternalArrayData();
+  V8EXPORT void* GetIndexedPropertiesExternalArrayData();
+  V8EXPORT ExternalArrayType GetIndexedPropertiesExternalArrayDataType();
+  V8EXPORT int GetIndexedPropertiesExternalArrayDataLength();
 
   V8EXPORT static Local<Object> New();
   static inline Object* Cast(Value* obj);
-
-#ifdef QT_BUILD_SCRIPT_LIB
-  /**
-   * Returns wether the object can be called as a function
-   */
-  V8EXPORT bool IsCallable();
-  /**
-   * Call the object as a function
-   */
-  V8EXPORT Local<Value> Call(Handle<Object> recv,
-                             int argc,
-                             Handle<Value> argv[]);
-
-  V8EXPORT Local<Object> NewInstance(int argc, Handle<Value> argv[]) const;
-#endif
-
  private:
   V8EXPORT Object();
   V8EXPORT static void CheckCast(Value* obj);
@@ -1738,7 +1714,12 @@ class Array : public Object {
    */
   V8EXPORT Local<Object> CloneElementAt(uint32_t index);
 
+  /**
+   * Creates a JavaScript array with the given length. If the length
+   * is negative the returned array will have length 0.
+   */
   V8EXPORT static Local<Array> New(int length = 0);
+
   static inline Array* Cast(Value* obj);
  private:
   V8EXPORT Array();
@@ -2469,8 +2450,6 @@ typedef void* (*CreateHistogramCallback)(const char* name,
 
 typedef void (*AddHistogramSampleCallback)(void* histogram, int sample);
 
-typedef void (*UserCallback)(void *data);
-
 // --- M e m o r y  A l l o c a t i o n   C a l l b a c k ---
   enum ObjectSpace {
     kObjectSpaceNewSpace = 1 << 0,
@@ -2555,6 +2534,7 @@ class V8EXPORT HeapStatistics {
   size_t total_heap_size() { return total_heap_size_; }
   size_t total_heap_size_executable() { return total_heap_size_executable_; }
   size_t used_heap_size() { return used_heap_size_; }
+  size_t heap_size_limit() { return heap_size_limit_; }
 
  private:
   void set_total_heap_size(size_t size) { total_heap_size_ = size; }
@@ -2562,14 +2542,18 @@ class V8EXPORT HeapStatistics {
     total_heap_size_executable_ = size;
   }
   void set_used_heap_size(size_t size) { used_heap_size_ = size; }
+  void set_heap_size_limit(size_t size) { heap_size_limit_ = size; }
 
   size_t total_heap_size_;
   size_t total_heap_size_executable_;
   size_t used_heap_size_;
+  size_t heap_size_limit_;
 
   friend class V8;
 };
 
+
+class RetainedObjectInfo;
 
 /**
  * Isolate represents an isolated instance of the V8 engine.  V8
@@ -2824,8 +2808,22 @@ class V8EXPORT V8 {
    * intended to be used in the before-garbage-collection callback
    * function, for instance to simulate DOM tree connections among JS
    * wrapper objects.
+   * See v8-profiler.h for RetainedObjectInfo interface description.
    */
-  static void AddObjectGroup(Persistent<Value>* objects, size_t length);
+  static void AddObjectGroup(Persistent<Value>* objects,
+                             size_t length,
+                             RetainedObjectInfo* info = NULL);
+
+  /**
+   * Allows the host application to declare implicit references between
+   * the objects: if |parent| is alive, all |children| are alive too.
+   * After each garbage collection, all implicit references
+   * are removed.  It is intended to be used in the before-garbage-collection
+   * callback function.
+   */
+  static void AddImplicitReferences(Persistent<Object> parent,
+                                    Persistent<Value>* children,
+                                    size_t length);
 
   /**
    * Initializes from snapshot if possible. Otherwise, attempts to
@@ -2966,12 +2964,16 @@ class V8EXPORT V8 {
   static void TerminateExecution(int thread_id);
 
   /**
-   * Forcefully terminate the current thread of JavaScript execution.
+   * Forcefully terminate the current thread of JavaScript execution
+   * in the given isolate. If no isolate is provided, the default
+   * isolate is used.
    *
    * This method can be used by any thread even if that thread has not
    * acquired the V8 lock with a Locker object.
+   *
+   * \param isolate The isolate in which to terminate the current JS execution.
    */
-  static void TerminateExecution();
+  static void TerminateExecution(Isolate* isolate = NULL);
 
   /**
    * Is V8 terminating JavaScript execution.
@@ -3023,15 +3025,6 @@ class V8EXPORT V8 {
    */
   static int ContextDisposedNotification();
 
-#ifdef QT_BUILD_SCRIPT_LIB
-  /**
-   * Will call the callback with the data as parameter as soon as possible
-   * from the thread running the script
-   * This method can be used by any thread even if that thread has not
-   * acquired the V8 lock with a Locker object.
-   */
-  static void ExecuteUserCallback(UserCallback Callback, void *data);
-#endif
  private:
   V8();
 
@@ -3043,6 +3036,8 @@ class V8EXPORT V8 {
   static void ClearWeak(internal::Object** global_handle);
   static bool IsGlobalNearDeath(internal::Object** global_handle);
   static bool IsGlobalWeak(internal::Object** global_handle);
+  static void SetWrapperClassId(internal::Object** global_handle,
+                                uint16_t class_id);
 
   template <class T> friend class Handle;
   template <class T> friend class Local;
@@ -3183,7 +3178,22 @@ class V8EXPORT ExtensionConfiguration {
  */
 class V8EXPORT Context {
  public:
-  /** Returns the global object of the context. */
+  /**
+   * Returns the global proxy object or global object itself for
+   * detached contexts.
+   *
+   * Global proxy object is a thin wrapper whose prototype points to
+   * actual context's global object with the properties like Object, etc.
+   * This is done that way for security reasons (for more details see
+   * https://wiki.mozilla.org/Gecko:SplitWindow).
+   *
+   * Please note that changes to global proxy object prototype most probably
+   * would break VM---v8 expects only global object as a prototype of
+   * global proxy object.
+   *
+   * If DetachGlobal() has been invoked, Global() would return actual global
+   * object until global is reattached with ReattachGlobal().
+   */
   Local<Object> Global();
 
   /**
@@ -3209,6 +3219,18 @@ class V8EXPORT Context {
    * Returns a persistent handle to the newly allocated context. This
    * persistent handle has to be disposed when the context is no
    * longer used so the context can be garbage collected.
+   *
+   * \param extensions An optional extension configuration containing
+   * the extensions to be installed in the newly created context.
+   *
+   * \param global_template An optional object template from which the
+   * global object for the newly created context will be created.
+   *
+   * \param global_object An optional global object to be reused for
+   * the newly created context. This global object must have been
+   * created by a previous call to Context::New with the same global
+   * template. The state of the global object will be completely reset
+   * and only object identify will remain.
    */
   static Persistent<Context> New(
       ExtensionConfiguration* extensions = NULL,
@@ -3281,54 +3303,6 @@ class V8EXPORT Context {
    private:
     Handle<Context> context_;
   };
-
-#ifdef QT_BUILD_SCRIPT_LIB
-  /**
-   * Creates a new scope context.
-   *
-   * The currently entered context will be the new context's previous
-   * scope.
-   *
-   * Properties on the given object, scope_object, are accessible from
-   * the new scope.
-   */
-  static Local<Context> NewScopeContext(Handle<Object> scope_object);
-
-  /**
-   * Creates a new function context.
-   *
-   * The currently entered context will be the new context's previous
-   * scope.
-   */
-  static Local<Context> NewFunctionContext();
-
-  /**
-   * Returns the extension object of this context.
-   *
-   * For a scope context, the extension object is the object that was
-   * passed to NewScopeContext().
-   *
-   * For a function context, the extension object is the object that's
-   * used to hold the context's dynamically instantiated variables
-   * (e.g. by eval()).
-   */
-  Local<Object> GetExtensionObject();
-
-  /**
-   * Set the extention object
-   */
-  void SetExtensionObject(Handle<Object>);
-
-  /**
-   * Gets the previous context.
-   */
-  Local<Context> GetPrevious();
-
-  /**
-   * Gets the context corresponding to the top-most JavaScript caller.
-   */
-  static Local<Context> GetCallerContext();
-#endif
 
  private:
   friend class Value;
@@ -3493,6 +3467,24 @@ class V8EXPORT OutputStream {  // NOLINT
 };
 
 
+/**
+ * An interface for reporting progress and controlling long-running
+ * activities.
+ */
+class V8EXPORT ActivityControl {  // NOLINT
+ public:
+  enum ControlOption {
+    kContinue = 0,
+    kAbort = 1
+  };
+  virtual ~ActivityControl() {}
+  /**
+   * Notify about current progress. The activity can be stopped by
+   * returning kAbort as the callback result.
+   */
+  virtual ControlOption ReportProgressValue(int done, int total) = 0;
+};
+
 
 // --- I m p l e m e n t a t i o n ---
 
@@ -3512,10 +3504,10 @@ const int kSmiTag = 0;
 const int kSmiTagSize = 1;
 const intptr_t kSmiTagMask = (1 << kSmiTagSize) - 1;
 
-template <size_t ptr_size> struct SmiConstants;
+template <size_t ptr_size> struct SmiTagging;
 
 // Smi constants for 32-bit systems.
-template <> struct SmiConstants<4> {
+template <> struct SmiTagging<4> {
   static const int kSmiShiftSize = 0;
   static const int kSmiValueSize = 31;
   static inline int SmiToInt(internal::Object* value) {
@@ -3523,10 +3515,15 @@ template <> struct SmiConstants<4> {
     // Throw away top 32 bits and shift down (requires >> to be sign extending).
     return static_cast<int>(reinterpret_cast<intptr_t>(value)) >> shift_bits;
   }
+
+  // For 32-bit systems any 2 bytes aligned pointer can be encoded as smi
+  // with a plain reinterpret_cast.
+  static const uintptr_t kEncodablePointerMask = 0x1;
+  static const int kPointerToSmiShift = 0;
 };
 
 // Smi constants for 64-bit systems.
-template <> struct SmiConstants<8> {
+template <> struct SmiTagging<8> {
   static const int kSmiShiftSize = 31;
   static const int kSmiValueSize = 32;
   static inline int SmiToInt(internal::Object* value) {
@@ -3534,10 +3531,26 @@ template <> struct SmiConstants<8> {
     // Shift down and throw away top 32 bits.
     return static_cast<int>(reinterpret_cast<intptr_t>(value) >> shift_bits);
   }
+
+  // To maximize the range of pointers that can be encoded
+  // in the available 32 bits, we require them to be 8 bytes aligned.
+  // This gives 2 ^ (32 + 3) = 32G address space covered.
+  // It might be not enough to cover stack allocated objects on some platforms.
+  static const int kPointerAlignment = 3;
+
+  static const uintptr_t kEncodablePointerMask =
+      ~(uintptr_t(0xffffffff) << kPointerAlignment);
+
+  static const int kPointerToSmiShift =
+      kSmiTagSize + kSmiShiftSize - kPointerAlignment;
 };
 
-const int kSmiShiftSize = SmiConstants<kApiPointerSize>::kSmiShiftSize;
-const int kSmiValueSize = SmiConstants<kApiPointerSize>::kSmiValueSize;
+typedef SmiTagging<kApiPointerSize> PlatformSmiTagging;
+const int kSmiShiftSize = PlatformSmiTagging::kSmiShiftSize;
+const int kSmiValueSize = PlatformSmiTagging::kSmiValueSize;
+const uintptr_t kEncodablePointerMask =
+    PlatformSmiTagging::kEncodablePointerMask;
+const int kPointerToSmiShift = PlatformSmiTagging::kPointerToSmiShift;
 
 template <size_t ptr_size> struct InternalConstants;
 
@@ -3562,7 +3575,7 @@ class Internals {
   // These values match non-compiler-dependent values defined within
   // the implementation of v8.
   static const int kHeapObjectMapOffset = 0;
-  static const int kMapInstanceTypeOffset = 2 * kApiPointerSize + kApiIntSize;
+  static const int kMapInstanceTypeOffset = 1 * kApiPointerSize + kApiIntSize;
   static const int kStringResourceOffset =
       InternalConstants<kApiPointerSize>::kStringResourceOffset;
 
@@ -3571,7 +3584,7 @@ class Internals {
   static const int kFullStringRepresentationMask = 0x07;
   static const int kExternalTwoByteRepresentationTag = 0x02;
 
-  static const int kJSObjectType = 0x9f;
+  static const int kJSObjectType = 0xa0;
   static const int kFirstNonstringType = 0x80;
   static const int kProxyType = 0x85;
 
@@ -3585,7 +3598,7 @@ class Internals {
   }
 
   static inline int SmiValue(internal::Object* value) {
-    return SmiConstants<kApiPointerSize>::SmiToInt(value);
+    return PlatformSmiTagging::SmiToInt(value);
   }
 
   static inline int GetInstanceType(internal::Object* obj) {
@@ -3594,9 +3607,14 @@ class Internals {
     return ReadField<uint8_t>(map, kMapInstanceTypeOffset);
   }
 
+  static inline void* GetExternalPointerFromSmi(internal::Object* value) {
+    const uintptr_t address = reinterpret_cast<uintptr_t>(value);
+    return reinterpret_cast<void*>(address >> kPointerToSmiShift);
+  }
+
   static inline void* GetExternalPointer(internal::Object* obj) {
     if (HasSmiTag(obj)) {
-      return obj;
+      return GetExternalPointerFromSmi(obj);
     } else if (GetInstanceType(obj) == kProxyType) {
       return ReadField<void*>(obj, kProxyProxyOffset);
     } else {
@@ -3692,6 +3710,10 @@ void Persistent<T>::ClearWeak() {
   V8::ClearWeak(reinterpret_cast<internal::Object**>(**this));
 }
 
+template <class T>
+void Persistent<T>::SetWrapperClassId(uint16_t class_id) {
+  V8::SetWrapperClassId(reinterpret_cast<internal::Object**>(**this), class_id);
+}
 
 Arguments::Arguments(internal::Object** implicit_args,
                      internal::Object** values, int length,

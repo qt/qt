@@ -38,13 +38,22 @@ namespace internal {
 // TranscendentalCache runtime function.
 class TranscendentalCacheStub: public CodeStub {
  public:
-  explicit TranscendentalCacheStub(TranscendentalCache::Type type)
-      : type_(type) {}
+  enum ArgumentType {
+    TAGGED = 0 << TranscendentalCache::kTranscendentalTypeBits,
+    UNTAGGED = 1 << TranscendentalCache::kTranscendentalTypeBits
+  };
+
+  TranscendentalCacheStub(TranscendentalCache::Type type,
+                          ArgumentType argument_type)
+      : type_(type), argument_type_(argument_type) { }
   void Generate(MacroAssembler* masm);
  private:
   TranscendentalCache::Type type_;
+  ArgumentType argument_type_;
+  void GenerateCallCFunction(MacroAssembler* masm, Register scratch);
+
   Major MajorKey() { return TranscendentalCache; }
-  int MinorKey() { return type_; }
+  int MinorKey() { return type_ | argument_type_; }
   Runtime::FunctionId RuntimeFunction();
 };
 
@@ -77,7 +86,7 @@ class GenericBinaryOpStub : public CodeStub {
         rhs_(rhs),
         constant_rhs_(constant_rhs),
         specialized_on_rhs_(RhsIsOneWeWantToOptimizeFor(op, constant_rhs)),
-        runtime_operands_type_(BinaryOpIC::DEFAULT),
+        runtime_operands_type_(BinaryOpIC::UNINIT_OR_SMI),
         name_(NULL) { }
 
   GenericBinaryOpStub(int key, BinaryOpIC::TypeInfo type_info)
@@ -106,9 +115,9 @@ class GenericBinaryOpStub : public CodeStub {
   // Minor key encoding in 17 bits.
   class ModeBits: public BitField<OverwriteMode, 0, 2> {};
   class OpBits: public BitField<Token::Value, 2, 6> {};
-  class TypeInfoBits: public BitField<int, 8, 2> {};
-  class RegisterBits: public BitField<bool, 10, 1> {};
-  class KnownIntBits: public BitField<int, 11, kKnownRhsKeyBits> {};
+  class TypeInfoBits: public BitField<int, 8, 3> {};
+  class RegisterBits: public BitField<bool, 11, 1> {};
+  class KnownIntBits: public BitField<int, 12, kKnownRhsKeyBits> {};
 
   Major MajorKey() { return GenericBinaryOp; }
   int MinorKey() {
@@ -178,6 +187,10 @@ class GenericBinaryOpStub : public CodeStub {
     return lhs_is_r0 ? r1 : r0;
   }
 
+  bool HasSmiSmiFastPath() {
+    return op_ != Token::DIV;
+  }
+
   bool ShouldGenerateSmiCode() {
     return ((op_ != Token::DIV && op_ != Token::MOD) || specialized_on_rhs_) &&
         runtime_operands_type_ != BinaryOpIC::HEAP_NUMBERS &&
@@ -196,6 +209,10 @@ class GenericBinaryOpStub : public CodeStub {
 
   const char* GetName();
 
+  virtual void FinishCode(Code* code) {
+    code->set_binary_op_type(runtime_operands_type_);
+  }
+
 #ifdef DEBUG
   void Print() {
     if (!specialized_on_rhs_) {
@@ -210,27 +227,154 @@ class GenericBinaryOpStub : public CodeStub {
 };
 
 
+class TypeRecordingBinaryOpStub: public CodeStub {
+ public:
+  TypeRecordingBinaryOpStub(Token::Value op, OverwriteMode mode)
+      : op_(op),
+        mode_(mode),
+        operands_type_(TRBinaryOpIC::UNINITIALIZED),
+        result_type_(TRBinaryOpIC::UNINITIALIZED),
+        name_(NULL) {
+    use_vfp3_ = CpuFeatures::IsSupported(VFP3);
+    ASSERT(OpBits::is_valid(Token::NUM_TOKENS));
+  }
+
+  TypeRecordingBinaryOpStub(
+      int key,
+      TRBinaryOpIC::TypeInfo operands_type,
+      TRBinaryOpIC::TypeInfo result_type = TRBinaryOpIC::UNINITIALIZED)
+      : op_(OpBits::decode(key)),
+        mode_(ModeBits::decode(key)),
+        use_vfp3_(VFP3Bits::decode(key)),
+        operands_type_(operands_type),
+        result_type_(result_type),
+        name_(NULL) { }
+
+ private:
+  enum SmiCodeGenerateHeapNumberResults {
+    ALLOW_HEAPNUMBER_RESULTS,
+    NO_HEAPNUMBER_RESULTS
+  };
+
+  Token::Value op_;
+  OverwriteMode mode_;
+  bool use_vfp3_;
+
+  // Operand type information determined at runtime.
+  TRBinaryOpIC::TypeInfo operands_type_;
+  TRBinaryOpIC::TypeInfo result_type_;
+
+  char* name_;
+
+  const char* GetName();
+
+#ifdef DEBUG
+  void Print() {
+    PrintF("TypeRecordingBinaryOpStub %d (op %s), "
+           "(mode %d, runtime_type_info %s)\n",
+           MinorKey(),
+           Token::String(op_),
+           static_cast<int>(mode_),
+           TRBinaryOpIC::GetName(operands_type_));
+  }
+#endif
+
+  // Minor key encoding in 16 bits RRRTTTVOOOOOOOMM.
+  class ModeBits: public BitField<OverwriteMode, 0, 2> {};
+  class OpBits: public BitField<Token::Value, 2, 7> {};
+  class VFP3Bits: public BitField<bool, 9, 1> {};
+  class OperandTypeInfoBits: public BitField<TRBinaryOpIC::TypeInfo, 10, 3> {};
+  class ResultTypeInfoBits: public BitField<TRBinaryOpIC::TypeInfo, 13, 3> {};
+
+  Major MajorKey() { return TypeRecordingBinaryOp; }
+  int MinorKey() {
+    return OpBits::encode(op_)
+           | ModeBits::encode(mode_)
+           | VFP3Bits::encode(use_vfp3_)
+           | OperandTypeInfoBits::encode(operands_type_)
+           | ResultTypeInfoBits::encode(result_type_);
+  }
+
+  void Generate(MacroAssembler* masm);
+  void GenerateGeneric(MacroAssembler* masm);
+  void GenerateSmiSmiOperation(MacroAssembler* masm);
+  void GenerateFPOperation(MacroAssembler* masm,
+                           bool smi_operands,
+                           Label* not_numbers,
+                           Label* gc_required);
+  void GenerateSmiCode(MacroAssembler* masm,
+                       Label* gc_required,
+                       SmiCodeGenerateHeapNumberResults heapnumber_results);
+  void GenerateLoadArguments(MacroAssembler* masm);
+  void GenerateReturn(MacroAssembler* masm);
+  void GenerateUninitializedStub(MacroAssembler* masm);
+  void GenerateSmiStub(MacroAssembler* masm);
+  void GenerateInt32Stub(MacroAssembler* masm);
+  void GenerateHeapNumberStub(MacroAssembler* masm);
+  void GenerateOddballStub(MacroAssembler* masm);
+  void GenerateStringStub(MacroAssembler* masm);
+  void GenerateGenericStub(MacroAssembler* masm);
+  void GenerateAddStrings(MacroAssembler* masm);
+  void GenerateCallRuntime(MacroAssembler* masm);
+
+  void GenerateHeapResultAllocation(MacroAssembler* masm,
+                                    Register result,
+                                    Register heap_number_map,
+                                    Register scratch1,
+                                    Register scratch2,
+                                    Label* gc_required);
+  void GenerateRegisterArgsPush(MacroAssembler* masm);
+  void GenerateTypeTransition(MacroAssembler* masm);
+  void GenerateTypeTransitionWithSavedArgs(MacroAssembler* masm);
+
+  virtual int GetCodeKind() { return Code::TYPE_RECORDING_BINARY_OP_IC; }
+
+  virtual InlineCacheState GetICState() {
+    return TRBinaryOpIC::ToState(operands_type_);
+  }
+
+  virtual void FinishCode(Code* code) {
+    code->set_type_recording_binary_op_type(operands_type_);
+    code->set_type_recording_binary_op_result_type(result_type_);
+  }
+
+  friend class CodeGenerator;
+};
+
+
 // Flag that indicates how to generate code for the stub StringAddStub.
 enum StringAddFlags {
   NO_STRING_ADD_FLAGS = 0,
-  NO_STRING_CHECK_IN_STUB = 1 << 0  // Omit string check in stub.
+  // Omit left string check in stub (left is definitely a string).
+  NO_STRING_CHECK_LEFT_IN_STUB = 1 << 0,
+  // Omit right string check in stub (right is definitely a string).
+  NO_STRING_CHECK_RIGHT_IN_STUB = 1 << 1,
+  // Omit both string checks in stub.
+  NO_STRING_CHECK_IN_STUB =
+      NO_STRING_CHECK_LEFT_IN_STUB | NO_STRING_CHECK_RIGHT_IN_STUB
 };
 
 
 class StringAddStub: public CodeStub {
  public:
-  explicit StringAddStub(StringAddFlags flags) {
-    string_check_ = ((flags & NO_STRING_CHECK_IN_STUB) == 0);
-  }
+  explicit StringAddStub(StringAddFlags flags) : flags_(flags) {}
 
  private:
   Major MajorKey() { return StringAdd; }
-  int MinorKey() { return string_check_ ? 0 : 1; }
+  int MinorKey() { return flags_; }
 
   void Generate(MacroAssembler* masm);
 
-  // Should the stub check whether arguments are strings?
-  bool string_check_;
+  void GenerateConvertArgument(MacroAssembler* masm,
+                               int stack_offset,
+                               Register arg,
+                               Register scratch1,
+                               Register scratch2,
+                               Register scratch3,
+                               Register scratch4,
+                               Label* slow);
+
+  const StringAddFlags flags_;
 };
 
 
@@ -433,43 +577,6 @@ class NumberToStringStub: public CodeStub {
 };
 
 
-class RecordWriteStub : public CodeStub {
- public:
-  RecordWriteStub(Register object, Register offset, Register scratch)
-      : object_(object), offset_(offset), scratch_(scratch) { }
-
-  void Generate(MacroAssembler* masm);
-
- private:
-  Register object_;
-  Register offset_;
-  Register scratch_;
-
-  // Minor key encoding in 12 bits. 4 bits for each of the three
-  // registers (object, offset and scratch) OOOOAAAASSSS.
-  class ScratchBits: public BitField<uint32_t, 0, 4> {};
-  class OffsetBits: public BitField<uint32_t, 4, 4> {};
-  class ObjectBits: public BitField<uint32_t, 8, 4> {};
-
-  Major MajorKey() { return RecordWrite; }
-
-  int MinorKey() {
-    // Encode the registers.
-    return ObjectBits::encode(object_.code()) |
-           OffsetBits::encode(offset_.code()) |
-           ScratchBits::encode(scratch_.code());
-  }
-
-#ifdef DEBUG
-  void Print() {
-    PrintF("RecordWriteStub (object reg %d), (offset reg %d),"
-           " (scratch reg %d)\n",
-           object_.code(), offset_.code(), scratch_.code());
-  }
-#endif
-};
-
-
 // Enter C code from generated RegExp code in a way that allows
 // the C code to fix the return address in case of a GC.
 // Currently only needed on ARM.
@@ -482,7 +589,32 @@ class RegExpCEntryStub: public CodeStub {
  private:
   Major MajorKey() { return RegExpCEntry; }
   int MinorKey() { return 0; }
+
+  bool NeedsImmovableCode() { return true; }
+
   const char* GetName() { return "RegExpCEntryStub"; }
+};
+
+
+// Trampoline stub to call into native code. To call safely into native code
+// in the presence of compacting GC (which can move code objects) we need to
+// keep the code which called into native pinned in the memory. Currently the
+// simplest approach is to generate such stub early enough so it can never be
+// moved by GC
+class DirectCEntryStub: public CodeStub {
+ public:
+  DirectCEntryStub() {}
+  void Generate(MacroAssembler* masm);
+  void GenerateCall(MacroAssembler* masm, ExternalReference function);
+  void GenerateCall(MacroAssembler* masm, Register target);
+
+ private:
+  Major MajorKey() { return DirectCEntry; }
+  int MinorKey() { return 0; }
+
+  bool NeedsImmovableCode() { return true; }
+
+  const char* GetName() { return "DirectCEntryStub"; }
 };
 
 

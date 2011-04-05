@@ -1,11 +1,11 @@
 This is a snapshot of v8 from
 
-        http://v8.googlecode.com/svn/branches/experimental/isolates
+        http://v8.googlecode.com/svn/branches/bleeding_edge
 
 The commit imported was from the
 
-        v8-snapshot-31012011 branch/tag
+        v8-snapshot-05042011 branch/tag
 
 and has the sha1 checksum
 
-        9ca7a692d2def12f177f7459a225ddf6276dbd0e
+        eab749c43efba1fdd862dd1f3a4faceddf1c8d8f

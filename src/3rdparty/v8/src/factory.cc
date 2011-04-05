@@ -1,4 +1,4 @@
-// Copyright 2006-2008 the V8 project authors. All rights reserved.
+// Copyright 2010 the V8 project authors. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -32,6 +32,7 @@
 #include "execution.h"
 #include "factory.h"
 #include "macro-assembler.h"
+#include "objects.h"
 #include "objects-visiting.h"
 
 namespace v8 {
@@ -81,10 +82,44 @@ Handle<DescriptorArray> Factory::NewDescriptorArray(int number_of_descriptors) {
 }
 
 
+Handle<DeoptimizationInputData> Factory::NewDeoptimizationInputData(
+    int deopt_entry_count,
+    PretenureFlag pretenure) {
+  ASSERT(deopt_entry_count > 0);
+  CALL_HEAP_FUNCTION(isolate(),
+                     DeoptimizationInputData::Allocate(deopt_entry_count,
+                                                       pretenure),
+                     DeoptimizationInputData);
+}
+
+
+Handle<DeoptimizationOutputData> Factory::NewDeoptimizationOutputData(
+    int deopt_entry_count,
+    PretenureFlag pretenure) {
+  ASSERT(deopt_entry_count > 0);
+  CALL_HEAP_FUNCTION(isolate(),
+                     DeoptimizationOutputData::Allocate(deopt_entry_count,
+                                                        pretenure),
+                     DeoptimizationOutputData);
+}
+
+
 // Symbols are created in the old generation (data space).
 Handle<String> Factory::LookupSymbol(Vector<const char> string) {
   CALL_HEAP_FUNCTION(isolate(),
                      isolate()->heap()->LookupSymbol(string),
+                     String);
+}
+
+Handle<String> Factory::LookupAsciiSymbol(Vector<const char> string) {
+  CALL_HEAP_FUNCTION(isolate(),
+                     isolate()->heap()->LookupAsciiSymbol(string),
+                     String);
+}
+
+Handle<String> Factory::LookupTwoByteSymbol(Vector<const uc16> string) {
+  CALL_HEAP_FUNCTION(isolate(),
+                     isolate()->heap()->LookupTwoByteSymbol(string),
                      String);
 }
 
@@ -272,19 +307,6 @@ Handle<ByteArray> Factory::NewByteArray(int length, PretenureFlag pretenure) {
 }
 
 
-Handle<PixelArray> Factory::NewPixelArray(int length,
-                                          uint8_t* external_pointer,
-                                          PretenureFlag pretenure) {
-  ASSERT(0 <= length);
-  CALL_HEAP_FUNCTION(
-      isolate(),
-      isolate()->heap()->AllocatePixelArray(length,
-                                            external_pointer,
-                                            pretenure),
-      PixelArray);
-}
-
-
 Handle<ExternalArray> Factory::NewExternalArray(int length,
                                                 ExternalArrayType array_type,
                                                 void* external_pointer,
@@ -297,6 +319,15 @@ Handle<ExternalArray> Factory::NewExternalArray(int length,
                                                external_pointer,
                                                pretenure),
       ExternalArray);
+}
+
+
+Handle<JSGlobalPropertyCell> Factory::NewJSGlobalPropertyCell(
+    Handle<Object> value) {
+  CALL_HEAP_FUNCTION(
+      isolate(),
+      isolate()->heap()->AllocateJSGlobalPropertyCell(*value),
+      JSGlobalPropertyCell);
 }
 
 
@@ -361,6 +392,17 @@ Handle<Map> Factory::GetSlowElementsMap(Handle<Map> src) {
 }
 
 
+Handle<Map> Factory::GetExternalArrayElementsMap(
+    Handle<Map> src,
+    ExternalArrayType array_type,
+    bool safe_to_add_transition) {
+  CALL_HEAP_FUNCTION(isolate(),
+                     src->GetExternalArrayElementsMap(array_type,
+                                                      safe_to_add_transition),
+                     Map);
+}
+
+
 Handle<FixedArray> Factory::CopyFixedArray(Handle<FixedArray> array) {
   CALL_HEAP_FUNCTION(isolate(), array->Copy(), FixedArray);
 }
@@ -385,7 +427,12 @@ Handle<JSFunction> Factory::NewFunctionFromSharedFunctionInfo(
     Handle<Context> context,
     PretenureFlag pretenure) {
   Handle<JSFunction> result = BaseNewFunctionFromSharedFunctionInfo(
-      function_info, isolate()->function_map(), pretenure);
+      function_info,
+      function_info->strict_mode()
+          ? isolate()->strict_mode_function_map()
+          : isolate()->function_map(),
+      pretenure);
+
   result->set_context(*context);
   int number_of_literals = function_info->num_literals();
   Handle<FixedArray> literals = NewFixedArray(number_of_literals, pretenure);
@@ -397,6 +444,15 @@ Handle<JSFunction> Factory::NewFunctionFromSharedFunctionInfo(
                   context->global_context());
   }
   result->set_literals(*literals);
+  result->set_next_function_link(isolate()->heap()->undefined_value());
+
+  if (V8::UseCrankshaft() &&
+      FLAG_always_opt &&
+      result->is_compiled() &&
+      !function_info->is_toplevel() &&
+      function_info->allows_lazy_compilation()) {
+    result->MarkForLazyRecompilation();
+  }
   return result;
 }
 
@@ -601,14 +657,16 @@ Handle<JSFunction> Factory::NewFunctionWithPrototype(Handle<String> name,
   // Set function.prototype and give the prototype a constructor
   // property that refers to the function.
   SetPrototypeProperty(function, prototype);
-  SetProperty(prototype, constructor_symbol(), function, DONT_ENUM);
+  // Currently safe because it is only invoked from Genesis.
+  SetLocalPropertyNoThrow(prototype, constructor_symbol(), function, DONT_ENUM);
   return function;
 }
 
 
 Handle<JSFunction> Factory::NewFunctionWithoutPrototype(Handle<String> name,
                                                         Handle<Code> code) {
-  Handle<JSFunction> function = NewFunctionWithoutPrototype(name);
+  Handle<JSFunction> function = NewFunctionWithoutPrototype(name,
+                                                            kNonStrictMode);
   function->shared()->set_code(*code);
   function->set_code(*code);
   ASSERT(!function->has_initial_map());
@@ -619,9 +677,11 @@ Handle<JSFunction> Factory::NewFunctionWithoutPrototype(Handle<String> name,
 
 Handle<Code> Factory::NewCode(const CodeDesc& desc,
                               Code::Flags flags,
-                              Handle<Object> self_ref) {
+                              Handle<Object> self_ref,
+                              bool immovable) {
   CALL_HEAP_FUNCTION(isolate(),
-                     isolate()->heap()->CreateCode(desc, flags, self_ref),
+                     isolate()->heap()->CreateCode(
+                         desc, flags, self_ref, immovable),
                      Code);
 }
 
@@ -753,12 +813,11 @@ Handle<JSObject> Factory::NewJSObjectFromMap(Handle<Map> map) {
 }
 
 
-Handle<JSArray> Factory::NewJSArray(int length,
+Handle<JSArray> Factory::NewJSArray(int capacity,
                                     PretenureFlag pretenure) {
-  Handle<JSObject> obj =
-      NewJSObject(isolate()->array_function(), pretenure);
+  Handle<JSObject> obj = NewJSObject(isolate()->array_function(), pretenure);
   CALL_HEAP_FUNCTION(isolate(),
-                     Handle<JSArray>::cast(obj)->Initialize(length),
+                     Handle<JSArray>::cast(obj)->Initialize(capacity),
                      JSArray);
 }
 
@@ -792,6 +851,25 @@ Handle<SharedFunctionInfo> Factory::NewSharedFunctionInfo(
   return shared;
 }
 
+
+Handle<JSMessageObject> Factory::NewJSMessageObject(
+    Handle<String> type,
+    Handle<JSArray> arguments,
+    int start_position,
+    int end_position,
+    Handle<Object> script,
+    Handle<Object> stack_trace,
+    Handle<Object> stack_frames) {
+  CALL_HEAP_FUNCTION(isolate(),
+                     isolate()->heap()->AllocateJSMessageObject(*type,
+                         *arguments,
+                         start_position,
+                         end_position,
+                         *script,
+                         *stack_trace,
+                         *stack_frames),
+                     JSMessageObject);
+}
 
 Handle<SharedFunctionInfo> Factory::NewSharedFunctionInfo(Handle<String> name) {
   CALL_HEAP_FUNCTION(isolate(),
@@ -837,19 +915,25 @@ Handle<JSFunction> Factory::NewFunction(Handle<String> name,
 
 
 Handle<JSFunction> Factory::NewFunctionWithoutPrototypeHelper(
-    Handle<String> name) {
+    Handle<String> name,
+    StrictModeFlag strict_mode) {
   Handle<SharedFunctionInfo> function_share = NewSharedFunctionInfo(name);
+  Handle<Map> map = strict_mode == kStrictMode
+      ? isolate()->strict_mode_function_without_prototype_map()
+      : isolate()->function_without_prototype_map();
   CALL_HEAP_FUNCTION(isolate(),
                      isolate()->heap()->AllocateFunction(
-                         *isolate()->function_without_prototype_map(),
+                         *map,
                          *function_share,
                          *the_hole_value()),
                      JSFunction);
 }
 
 
-Handle<JSFunction> Factory::NewFunctionWithoutPrototype(Handle<String> name) {
-  Handle<JSFunction> fun = NewFunctionWithoutPrototypeHelper(name);
+Handle<JSFunction> Factory::NewFunctionWithoutPrototype(
+    Handle<String> name,
+    StrictModeFlag strict_mode) {
+  Handle<JSFunction> fun = NewFunctionWithoutPrototypeHelper(name, strict_mode);
   fun->set_context(isolate()->context()->global_context());
   return fun;
 }
@@ -909,11 +993,8 @@ Handle<JSObject> Factory::NewArgumentsObject(Handle<Object> callee,
 
 Handle<JSFunction> Factory::CreateApiFunction(
     Handle<FunctionTemplateInfo> obj, ApiInstanceType instance_type) {
-  Handle<Code> code = Handle<Code>(isolate()->builtins()->builtin(
-      Builtins::HandleApiCall));
-  Handle<Code> construct_stub =
-      Handle<Code>(isolate()->builtins()->builtin(
-          Builtins::JSConstructStubApi));
+  Handle<Code> code = isolate()->builtins()->HandleApiCall();
+  Handle<Code> construct_stub = isolate()->builtins()->JSConstructStubApi();
 
   int internal_field_count = 0;
   if (!obj->instance_template()->IsUndefined()) {

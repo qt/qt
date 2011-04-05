@@ -1,4 +1,4 @@
-// Copyright 2006-2008 the V8 project authors. All rights reserved.
+// Copyright 2006-2010 the V8 project authors. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -662,13 +662,23 @@ class MemoryAllocator {
   // 8K * 8K * 16 = 1G bytes.
 #ifdef V8_TARGET_ARCH_X64
   static const int kPagesPerChunk = 32;
+  // On 64 bit the chunk table consists of 4 levels of 4096-entry tables.
+  static const int kPagesPerChunkLog2 = 5;
+  static const int kChunkTableLevels = 4;
+  static const int kChunkTableBitsPerLevel = 12;
 #else
   static const int kPagesPerChunk = 16;
+  // On 32 bit the chunk table consists of 2 levels of 256-entry tables.
+  static const int kPagesPerChunkLog2 = 4;
+  static const int kChunkTableLevels = 2;
+  static const int kChunkTableBitsPerLevel = 8;
 #endif
-  static const int kChunkSize = kPagesPerChunk * Page::kPageSize;
 
  private:
   MemoryAllocator();
+
+  static const int kChunkSize = kPagesPerChunk * Page::kPageSize;
+  static const int kChunkSizeLog2 = kPagesPerChunkLog2 + kPageSizeBits;
 
   // Maximum space size in bytes.
   intptr_t capacity_;
@@ -1038,6 +1048,8 @@ class PagedSpace : public Space {
   // Checks whether an object/address is in this space.
   inline bool Contains(Address a);
   bool Contains(HeapObject* o) { return Contains(o->address()); }
+  // Never crashes even if a is not a valid pointer.
+  inline bool SafeContains(Address a);
 
   // Given an address occupied by a live object, return that object if it is
   // in this space, or Failure::Exception() if it is not. The implementation
@@ -1610,6 +1622,11 @@ class NewSpace : public Space {
 
   virtual bool ReserveSpace(int bytes);
 
+  // Resizes a sequential string which must be the most recent thing that was
+  // allocated in new space.
+  template <typename StringType>
+  inline void ShrinkStringAtAllocationBoundary(String* string, int len);
+
 #ifdef ENABLE_HEAP_PROTECTION
   // Protect/unprotect the space by marking it read-only/writable.
   virtual void Protect();
@@ -1704,11 +1721,11 @@ class FreeListNode: public HeapObject {
   // function also writes a map to the first word of the block so that it
   // looks like a heap object to the garbage collector and heap iteration
   // functions.
-  void set_size(int size_in_bytes);
+  void set_size(Heap* heap, int size_in_bytes);
 
   // Accessors for the next field.
-  inline Address next();
-  inline void set_next(Address next);
+  inline Address next(Heap* heap);
+  inline void set_next(Heap* heap, Address next);
 
  private:
   static const int kNextOffset = POINTER_SIZE_ALIGN(ByteArray::kHeaderSize);
@@ -1720,7 +1737,7 @@ class FreeListNode: public HeapObject {
 // The free list for the old space.
 class OldSpaceFreeList BASE_EMBEDDED {
  public:
-  explicit OldSpaceFreeList(AllocationSpace owner);
+  OldSpaceFreeList(Heap* heap, AllocationSpace owner);
 
   // Clear the free list.
   void Reset();
@@ -1749,6 +1766,8 @@ class OldSpaceFreeList BASE_EMBEDDED {
   // will always result in waste.)
   static const int kMinBlockSize = 2 * kPointerSize;
   static const int kMaxBlockSize = Page::kMaxHeapObjectSize;
+
+  Heap* heap_;
 
   // The identity of the owning space, for building allocation Failure
   // objects.
@@ -1824,7 +1843,7 @@ class OldSpaceFreeList BASE_EMBEDDED {
 // The free list for the map space.
 class FixedSizeFreeList BASE_EMBEDDED {
  public:
-  FixedSizeFreeList(AllocationSpace owner, int object_size);
+  FixedSizeFreeList(Heap* heap, AllocationSpace owner, int object_size);
 
   // Clear the free list.
   void Reset();
@@ -1845,6 +1864,9 @@ class FixedSizeFreeList BASE_EMBEDDED {
   void MarkNodes();
 
  private:
+
+  Heap* heap_;
+
   // Available bytes on the free list.
   intptr_t available_;
 
@@ -1876,7 +1898,8 @@ class OldSpace : public PagedSpace {
            intptr_t max_capacity,
            AllocationSpace id,
            Executability executable)
-      : PagedSpace(heap, max_capacity, id, executable), free_list_(id) {
+      : PagedSpace(heap, max_capacity, id, executable),
+        free_list_(heap, id) {
     page_extra_ = 0;
   }
 
@@ -1953,7 +1976,7 @@ class FixedSpace : public PagedSpace {
       : PagedSpace(heap, max_capacity, id, NOT_EXECUTABLE),
         object_size_in_bytes_(object_size_in_bytes),
         name_(name),
-        free_list_(id, object_size_in_bytes) {
+        free_list_(heap, id, object_size_in_bytes) {
     page_extra_ = Page::kObjectAreaSize % object_size_in_bytes;
   }
 
@@ -2089,6 +2112,12 @@ class MapSpace : public FixedSpace {
     accounting_stats_.DeallocateBytes(accounting_stats_.Size());
     accounting_stats_.AllocateBytes(new_size);
 
+    // Flush allocation watermarks.
+    for (Page* p = first_page_; p != top_page; p = p->next_page()) {
+      p->SetAllocationWatermark(p->AllocationTop());
+    }
+    top_page->SetAllocationWatermark(new_top);
+
 #ifdef DEBUG
     if (FLAG_enable_slow_asserts) {
       intptr_t actual_size = 0;
@@ -2160,10 +2189,10 @@ class LargeObjectChunk {
   // Allocates a new LargeObjectChunk that contains a large object page
   // (Page::kPageSize aligned) that has at least size_in_bytes (for a large
   // object) bytes after the object area start of that page.
-  // The allocated chunk size is set in the output parameter chunk_size.
-  static LargeObjectChunk* New(int size_in_bytes,
-                               size_t* chunk_size,
-                               Executability executable);
+  static LargeObjectChunk* New(int size_in_bytes, Executability executable);
+
+  // Free the memory associated with the chunk.
+  inline void Free(Executability executable);
 
   // Interpret a raw address as a large object chunk.
   static LargeObjectChunk* FromAddress(Address address) {
@@ -2176,12 +2205,13 @@ class LargeObjectChunk {
   // Accessors for the fields of the chunk.
   LargeObjectChunk* next() { return next_; }
   void set_next(LargeObjectChunk* chunk) { next_ = chunk; }
-
   size_t size() { return size_ & ~Page::kPageFlagMask; }
-  void set_size(size_t size_in_bytes) { size_ = size_in_bytes; }
+
+  // Compute the start address in the chunk.
+  inline Address GetStartAddress();
 
   // Returns the object in this chunk.
-  inline HeapObject* GetObject();
+  HeapObject* GetObject() { return HeapObject::FromAddress(GetStartAddress()); }
 
   // Given a requested size returns the physical size of a chunk to be
   // allocated.
@@ -2198,7 +2228,7 @@ class LargeObjectChunk {
   // A pointer to the next large object chunk in the space or NULL.
   LargeObjectChunk* next_;
 
-  // The size of this chunk.
+  // The total size of this chunk.
   size_t size_;
 
  public:

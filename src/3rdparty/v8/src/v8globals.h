@@ -69,19 +69,21 @@ const intptr_t kFailureTagMask = (1 << kFailureTagSize) - 1;
 
 
 // Zap-value: The value used for zapping dead objects.
-// Should be a recognizable hex value tagged as a heap object pointer.
+// Should be a recognizable hex value tagged as a failure.
 #ifdef V8_HOST_ARCH_64_BIT
 const Address kZapValue =
-    reinterpret_cast<Address>(V8_UINT64_C(0xdeadbeedbeadbeed));
+    reinterpret_cast<Address>(V8_UINT64_C(0xdeadbeedbeadbeef));
 const Address kHandleZapValue =
-    reinterpret_cast<Address>(V8_UINT64_C(0x1baddead0baddead));
+    reinterpret_cast<Address>(V8_UINT64_C(0x1baddead0baddeaf));
 const Address kFromSpaceZapValue =
-    reinterpret_cast<Address>(V8_UINT64_C(0x1beefdad0beefdad));
-const uint64_t kDebugZapValue = 0xbadbaddbbadbaddb;
+    reinterpret_cast<Address>(V8_UINT64_C(0x1beefdad0beefdaf));
+const uint64_t kDebugZapValue = V8_UINT64_C(0xbadbaddbbadbaddb);
+const uint64_t kSlotsZapValue = V8_UINT64_C(0xbeefdeadbeefdeef);
 #else
-const Address kZapValue = reinterpret_cast<Address>(0xdeadbeed);
-const Address kHandleZapValue = reinterpret_cast<Address>(0xbaddead);
-const Address kFromSpaceZapValue = reinterpret_cast<Address>(0xbeefdad);
+const Address kZapValue = reinterpret_cast<Address>(0xdeadbeef);
+const Address kHandleZapValue = reinterpret_cast<Address>(0xbaddeaf);
+const Address kFromSpaceZapValue = reinterpret_cast<Address>(0xbeefdaf);
+const uint32_t kSlotsZapValue = 0xbeefdeef;
 const uint32_t kDebugZapValue = 0xbadbaddb;
 #endif
 
@@ -285,6 +287,14 @@ enum InlineCacheState {
 };
 
 
+enum CheckType {
+  RECEIVER_MAP_CHECK,
+  STRING_CHECK,
+  NUMBER_CHECK,
+  BOOLEAN_CHECK
+};
+
+
 enum InLoopFlag {
   NOT_IN_LOOP,
   IN_LOOP
@@ -308,14 +318,15 @@ enum InlineCacheHolderFlag {
 // Must fit in the BitField PropertyDetails::TypeField.
 // A copy of this is in mirror-debugger.js.
 enum PropertyType {
-  NORMAL              = 0,  // only in slow mode
-  FIELD               = 1,  // only in fast mode
-  CONSTANT_FUNCTION   = 2,  // only in fast mode
-  CALLBACKS           = 3,
-  INTERCEPTOR         = 4,  // only in lookup results, not in descriptors.
-  MAP_TRANSITION      = 5,  // only in fast mode
-  CONSTANT_TRANSITION = 6,  // only in fast mode
-  NULL_DESCRIPTOR     = 7,  // only in fast mode
+  NORMAL                    = 0,  // only in slow mode
+  FIELD                     = 1,  // only in fast mode
+  CONSTANT_FUNCTION         = 2,  // only in fast mode
+  CALLBACKS                 = 3,
+  INTERCEPTOR               = 4,  // only in lookup results, not in descriptors.
+  MAP_TRANSITION            = 5,  // only in fast mode
+  EXTERNAL_ARRAY_TRANSITION = 6,
+  CONSTANT_TRANSITION       = 7,  // only in fast mode
+  NULL_DESCRIPTOR           = 8,  // only in fast mode
   // All properties before MAP_TRANSITION are real.
   FIRST_PHANTOM_PROPERTY_TYPE = MAP_TRANSITION,
   // There are no IC stubs for NULL_DESCRIPTORS. Therefore,
@@ -457,7 +468,18 @@ enum CpuFeature { SSE4_1 = 32 + 19,  // x86
                   CPUID = 10,  // x86
                   VFP3 = 1,    // ARM
                   ARMv7 = 2,   // ARM
-                  SAHF = 0};   // x86
+                  SAHF = 0,    // x86
+                  FPU = 1};    // MIPS
+
+// The Strict Mode (ECMA-262 5th edition, 4.2.2).
+enum StrictModeFlag {
+  kNonStrictMode,
+  kStrictMode,
+  // This value is never used, but is needed to prevent GCC 4.5 from failing
+  // to compile when we assert that a flag is either kNonStrictMode or
+  // kStrictMode.
+  kInvalidStrictFlag
+};
 
 } }  // namespace v8::internal
 

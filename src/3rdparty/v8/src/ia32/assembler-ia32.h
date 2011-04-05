@@ -30,7 +30,7 @@
 
 // The original source code covered by the above license above has been
 // modified significantly by Google Inc.
-// Copyright 2006-2008 the V8 project authors. All rights reserved.
+// Copyright 2011 the V8 project authors. All rights reserved.
 
 // A light-weight IA32 Assembler.
 
@@ -65,7 +65,20 @@ namespace internal {
 // and best performance in optimized code.
 //
 struct Register {
-  bool is_valid() const { return 0 <= code_ && code_ < 8; }
+  static const int kNumAllocatableRegisters = 6;
+  static const int kNumRegisters = 8;
+
+  static inline const char* AllocationIndexToString(int index);
+
+  static inline int ToAllocationIndex(Register reg);
+
+  static inline Register FromAllocationIndex(int index);
+
+  static Register from_code(int code) {
+    Register r = { code };
+    return r;
+  }
+  bool is_valid() const { return 0 <= code_ && code_ < kNumRegisters; }
   bool is(Register reg) const { return code_ == reg.code_; }
   // eax, ebx, ecx and edx are byte registers, the rest are not.
   bool is_byte_register() const { return code_ <= 3; }
@@ -82,6 +95,7 @@ struct Register {
   int code_;
 };
 
+
 const Register eax = { 0 };
 const Register ecx = { 1 };
 const Register edx = { 2 };
@@ -93,8 +107,61 @@ const Register edi = { 7 };
 const Register no_reg = { -1 };
 
 
+inline const char* Register::AllocationIndexToString(int index) {
+  ASSERT(index >= 0 && index < kNumAllocatableRegisters);
+  // This is the mapping of allocation indices to registers.
+  const char* const kNames[] = { "eax", "ecx", "edx", "ebx", "esi", "edi" };
+  return kNames[index];
+}
+
+
+inline int Register::ToAllocationIndex(Register reg) {
+  ASSERT(reg.is_valid() && !reg.is(esp) && !reg.is(ebp));
+  return (reg.code() >= 6) ? reg.code() - 2 : reg.code();
+}
+
+
+inline Register Register::FromAllocationIndex(int index)  {
+  ASSERT(index >= 0 && index < kNumAllocatableRegisters);
+  return (index >= 4) ? from_code(index + 2) : from_code(index);
+}
+
+
 struct XMMRegister {
-  bool is_valid() const { return 0 <= code_ && code_ < 8; }
+  static const int kNumAllocatableRegisters = 7;
+  static const int kNumRegisters = 8;
+
+  static int ToAllocationIndex(XMMRegister reg) {
+    ASSERT(reg.code() != 0);
+    return reg.code() - 1;
+  }
+
+  static XMMRegister FromAllocationIndex(int index) {
+    ASSERT(index >= 0 && index < kNumAllocatableRegisters);
+    return from_code(index + 1);
+  }
+
+  static const char* AllocationIndexToString(int index) {
+    ASSERT(index >= 0 && index < kNumAllocatableRegisters);
+    const char* const names[] = {
+      "xmm1",
+      "xmm2",
+      "xmm3",
+      "xmm4",
+      "xmm5",
+      "xmm6",
+      "xmm7"
+    };
+    return names[index];
+  }
+
+  static XMMRegister from_code(int code) {
+    XMMRegister r = { code };
+    return r;
+  }
+
+  bool is_valid() const { return 0 <= code_ && code_ < kNumRegisters; }
+  bool is(XMMRegister reg) const { return code_ == reg.code_; }
   int code() const {
     ASSERT(is_valid());
     return code_;
@@ -102,6 +169,7 @@ struct XMMRegister {
 
   int code_;
 };
+
 
 const XMMRegister xmm0 = { 0 };
 const XMMRegister xmm1 = { 1 };
@@ -111,6 +179,10 @@ const XMMRegister xmm4 = { 4 };
 const XMMRegister xmm5 = { 5 };
 const XMMRegister xmm6 = { 6 };
 const XMMRegister xmm7 = { 7 };
+
+
+typedef XMMRegister DoubleRegister;
+
 
 enum Condition {
   // any value < 0 is considered no_condition
@@ -203,6 +275,7 @@ class Immediate BASE_EMBEDDED {
   inline explicit Immediate(const ExternalReference& ext);
   inline explicit Immediate(Handle<Object> handle);
   inline explicit Immediate(Smi* value);
+  inline explicit Immediate(Address addr);
 
   static Immediate CodeRelativeOffset(Label* label) {
     return Immediate(label);
@@ -280,6 +353,11 @@ class Operand BASE_EMBEDDED {
                              const ExternalReference& arr) {
     return Operand(index, scale, reinterpret_cast<int32_t>(arr.address()),
                    RelocInfo::EXTERNAL_REFERENCE);
+  }
+
+  static Operand Cell(Handle<JSGlobalPropertyCell> cell) {
+    return Operand(reinterpret_cast<int32_t>(cell.location()),
+                   RelocInfo::GLOBAL_PROPERTY_CELL);
   }
 
   // Returns true if this Operand is a wrapper for the specified register.
@@ -368,13 +446,15 @@ class Displacement BASE_EMBEDDED {
 //   } else {
 //     // Generate standard x87 floating point code.
 //   }
-class CpuFeatures {
+class CpuFeatures : public AllStatic {
  public:
   // Detect features of the target CPU. Set safe defaults if the serializer
   // is enabled (snapshots must be portable).
-  void Probe();
+  static void Probe();
+
   // Check whether a feature is supported by the target CPU.
-  bool IsSupported(CpuFeature f) const {
+  static bool IsSupported(CpuFeature f) {
+    ASSERT(initialized_);
     if (f == SSE2 && !FLAG_enable_sse2) return false;
     if (f == SSE3 && !FLAG_enable_sse3) return false;
     if (f == SSE4_1 && !FLAG_enable_sse4_1) return false;
@@ -382,52 +462,91 @@ class CpuFeatures {
     if (f == RDTSC && !FLAG_enable_rdtsc) return false;
     return (supported_ & (static_cast<uint64_t>(1) << f)) != 0;
   }
+
+#ifdef DEBUG
   // Check whether a feature is currently enabled.
-  bool IsEnabled(CpuFeature f) const {
-    return (enabled_ & (static_cast<uint64_t>(1) << f)) != 0;
+  static bool IsEnabled(CpuFeature f) {
+    ASSERT(initialized_);
+    Isolate* isolate = Isolate::UncheckedCurrent();
+    if (isolate == NULL) {
+      // When no isolate is available, work as if we're running in
+      // release mode.
+      return IsSupported(f);
+    }
+    uint64_t enabled = isolate->enabled_cpu_features();
+    return (enabled & (static_cast<uint64_t>(1) << f)) != 0;
   }
+#endif
+
   // Enable a specified feature within a scope.
   class Scope BASE_EMBEDDED {
 #ifdef DEBUG
    public:
-    explicit Scope(CpuFeature f)
-        : cpu_features_(Isolate::Current()->cpu_features()),
-          isolate_(Isolate::Current()) {
+    explicit Scope(CpuFeature f) {
       uint64_t mask = static_cast<uint64_t>(1) << f;
-      ASSERT(cpu_features_->IsSupported(f));
+      ASSERT(CpuFeatures::IsSupported(f));
       ASSERT(!Serializer::enabled() ||
-          (cpu_features_->found_by_runtime_probing_ & mask) == 0);
-      old_enabled_ = cpu_features_->enabled_;
-      cpu_features_->enabled_ |= mask;
+             (CpuFeatures::found_by_runtime_probing_ & mask) == 0);
+      isolate_ = Isolate::UncheckedCurrent();
+      old_enabled_ = 0;
+      if (isolate_ != NULL) {
+        old_enabled_ = isolate_->enabled_cpu_features();
+        isolate_->set_enabled_cpu_features(old_enabled_ | mask);
+      }
     }
     ~Scope() {
-      ASSERT_EQ(Isolate::Current(), isolate_);
-      cpu_features_->enabled_ = old_enabled_;
+      ASSERT_EQ(Isolate::UncheckedCurrent(), isolate_);
+      if (isolate_ != NULL) {
+        isolate_->set_enabled_cpu_features(old_enabled_);
+      }
     }
    private:
-    uint64_t old_enabled_;
-    CpuFeatures* cpu_features_;
     Isolate* isolate_;
+    uint64_t old_enabled_;
 #else
    public:
     explicit Scope(CpuFeature f) {}
 #endif
   };
 
+  class TryForceFeatureScope BASE_EMBEDDED {
+   public:
+    explicit TryForceFeatureScope(CpuFeature f)
+        : old_supported_(CpuFeatures::supported_) {
+      if (CanForce()) {
+        CpuFeatures::supported_ |= (static_cast<uint64_t>(1) << f);
+      }
+    }
+
+    ~TryForceFeatureScope() {
+      if (CanForce()) {
+        CpuFeatures::supported_ = old_supported_;
+      }
+    }
+
+   private:
+    static bool CanForce() {
+      // It's only safe to temporarily force support of CPU features
+      // when there's only a single isolate, which is guaranteed when
+      // the serializer is enabled.
+      return Serializer::enabled();
+    }
+
+    const uint64_t old_supported_;
+  };
+
  private:
-  CpuFeatures();
-
-  uint64_t supported_;
-  uint64_t enabled_;
-  uint64_t found_by_runtime_probing_;
-
-  friend class Isolate;
+#ifdef DEBUG
+  static bool initialized_;
+#endif
+  static uint64_t supported_;
+  static uint64_t found_by_runtime_probing_;
 
   DISALLOW_COPY_AND_ASSIGN(CpuFeatures);
 };
 
 
-class Assembler : public Malloced {
+class Assembler : public AssemblerBase {
  private:
   // We check before assembling an instruction that there is sufficient
   // space to write an instruction and its relocation information.
@@ -454,8 +573,12 @@ class Assembler : public Malloced {
   // for code generation and assumes its size to be buffer_size. If the buffer
   // is too small, a fatal error occurs. No deallocation of the buffer is done
   // upon destruction of the assembler.
-  Assembler(void* buffer, int buffer_size);
+  // TODO(vitalyr): the assembler does not need an isolate.
+  Assembler(Isolate* isolate, void* buffer, int buffer_size);
   ~Assembler();
+
+  // Overrides the default provided by FLAG_debug_code.
+  void set_emit_debug_code(bool value) { emit_debug_code_ = value; }
 
   // GetCode emits any pending (non-emitted) code and fills the descriptor
   // desc. GetCode() is idempotent; it returns the same result if no other
@@ -500,6 +623,20 @@ class Assembler : public Malloced {
   // The debug break slot must be able to contain a call instruction.
   static const int kDebugBreakSlotLength = kCallInstructionLength;
 
+  // One byte opcode for test eax,0xXXXXXXXX.
+  static const byte kTestEaxByte = 0xA9;
+  // One byte opcode for test al, 0xXX.
+  static const byte kTestAlByte = 0xA8;
+  // One byte opcode for nop.
+  static const byte kNopByte = 0x90;
+
+  // One byte opcode for a short unconditional jump.
+  static const byte kJmpShortOpcode = 0xEB;
+  // One byte prefix for a short conditional jump.
+  static const byte kJccShortPrefix = 0x70;
+  static const byte kJncShortOpcode = kJccShortPrefix | not_carry;
+  static const byte kJcShortOpcode = kJccShortPrefix | carry;
+
   // ---------------------------------------------------------------------------
   // Code generation
   //
@@ -535,6 +672,7 @@ class Assembler : public Malloced {
   void popfd();
 
   void push(const Immediate& x);
+  void push_imm32(int32_t imm32);
   void push(Register src);
   void push(const Operand& src);
 
@@ -805,6 +943,7 @@ class Assembler : public Malloced {
 
   void cvtsi2sd(XMMRegister dst, const Operand& src);
   void cvtss2sd(XMMRegister dst, XMMRegister src);
+  void cvtsd2ss(XMMRegister dst, XMMRegister src);
 
   void addsd(XMMRegister dst, XMMRegister src);
   void subsd(XMMRegister dst, XMMRegister src);
@@ -832,12 +971,25 @@ class Assembler : public Malloced {
   void movdbl(const Operand& dst, XMMRegister src);
 
   void movd(XMMRegister dst, const Operand& src);
+  void movd(const Operand& src, XMMRegister dst);
   void movsd(XMMRegister dst, XMMRegister src);
 
+  void movss(XMMRegister dst, const Operand& src);
+  void movss(const Operand& src, XMMRegister dst);
+  void movss(XMMRegister dst, XMMRegister src);
+
+  void pand(XMMRegister dst, XMMRegister src);
   void pxor(XMMRegister dst, XMMRegister src);
+  void por(XMMRegister dst, XMMRegister src);
   void ptest(XMMRegister dst, XMMRegister src);
 
-  void psllq(XMMRegister reg, int8_t imm8);
+  void psllq(XMMRegister reg, int8_t shift);
+  void psllq(XMMRegister dst, XMMRegister src);
+  void psrlq(XMMRegister reg, int8_t shift);
+  void psrlq(XMMRegister dst, XMMRegister src);
+  void pshufd(XMMRegister dst, XMMRegister src, int8_t shuffle);
+  void pextrd(const Operand& dst, XMMRegister src, int8_t offset);
+  void pinsrd(XMMRegister dst, const Operand& src, int8_t offset);
 
   // Parallel XMM operations.
   void movntdqa(XMMRegister src, const Operand& dst);
@@ -861,12 +1013,14 @@ class Assembler : public Malloced {
   void RecordDebugBreakSlot();
 
   // Record a comment relocation entry that can be used by a disassembler.
-  // Use --debug_code to enable.
-  void RecordComment(const char* msg);
+  // Use --code-comments to enable, or provide "force = true" flag to always
+  // write a comment.
+  void RecordComment(const char* msg, bool force = false);
 
-  // Writes a single word of data in the code stream.
-  // Used for inline tables, e.g., jump-tables.
-  void dd(uint32_t data, RelocInfo::Mode reloc_info);
+  // Writes a single byte or word of data in the code stream.  Used for
+  // inline tables, e.g., jump-tables.
+  void db(uint8_t data);
+  void dd(uint32_t data);
 
   int pc_offset() const { return pc_ - buffer_; }
 
@@ -882,11 +1036,17 @@ class Assembler : public Malloced {
 
   PositionsRecorder* positions_recorder() { return &positions_recorder_; }
 
+  int relocation_writer_size() {
+    return (buffer_ + buffer_size_) - reloc_info_writer.pos();
+  }
+
   // Avoid overflows for displacements etc.
   static const int kMaximalBufferSize = 512*MB;
   static const int kMinimalBufferSize = 4*KB;
 
  protected:
+  bool emit_debug_code() const { return emit_debug_code_; }
+
   void movsd(XMMRegister dst, const Operand& src);
   void movsd(const Operand& dst, XMMRegister src);
 
@@ -894,8 +1054,9 @@ class Assembler : public Malloced {
   void emit_sse_operand(XMMRegister dst, XMMRegister src);
   void emit_sse_operand(Register dst, XMMRegister src);
 
+  byte* addr_at(int pos) { return buffer_ + pos; }
+
  private:
-  byte* addr_at(int pos)  { return buffer_ + pos; }
   byte byte_at(int pos)  { return buffer_[pos]; }
   void set_byte_at(int pos, byte value) { buffer_[pos] = value; }
   uint32_t long_at(int pos)  {
@@ -959,6 +1120,8 @@ class Assembler : public Malloced {
   byte* last_pc_;
 
   PositionsRecorder positions_recorder_;
+
+  bool emit_debug_code_;
 
   friend class PositionsRecorder;
 };

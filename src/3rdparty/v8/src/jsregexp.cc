@@ -50,6 +50,8 @@
 #include "x64/regexp-macro-assembler-x64.h"
 #elif V8_TARGET_ARCH_ARM
 #include "arm/regexp-macro-assembler-arm.h"
+#elif V8_TARGET_ARCH_MIPS
+#include "mips/regexp-macro-assembler-mips.h"
 #else
 #error Unsupported target architecture.
 #endif
@@ -96,11 +98,12 @@ static inline void ThrowRegExpException(Handle<JSRegExp> re,
                                         Handle<String> error_text,
                                         const char* message) {
   Isolate* isolate = re->GetIsolate();
-  Handle<JSArray> array = isolate->factory()->NewJSArray(2);
-  SetElement(array, 0, pattern);
-  SetElement(array, 1, error_text);
-  Handle<Object> regexp_err = isolate->factory()->NewSyntaxError(message,
-                                                                 array);
+  Factory* factory = isolate->factory();
+  Handle<FixedArray> elements = factory->NewFixedArray(2);
+  elements->set(0, *pattern);
+  elements->set(1, *error_text);
+  Handle<JSArray> array = factory->NewJSArrayWithElements(elements);
+  Handle<Object> regexp_err = factory->NewSyntaxError(message, array);
   isolate->Throw(*regexp_err);
 }
 
@@ -116,7 +119,7 @@ Handle<Object> RegExpImpl::Compile(Handle<JSRegExp> re,
   CompilationCache* compilation_cache = isolate->compilation_cache();
   Handle<FixedArray> cached = compilation_cache->LookupRegExp(pattern, flags);
   bool in_cache = !cached.is_null();
-  LOG(RegExpCompileEvent(re, in_cache));
+  LOG(isolate, RegExpCompileEvent(re, in_cache));
 
   Handle<Object> result;
   if (in_cache) {
@@ -337,14 +340,15 @@ bool RegExpImpl::CompileIrregexp(Handle<JSRegExp> re, bool is_ascii) {
                             is_ascii);
   if (result.error_message != NULL) {
     // Unable to compile regexp.
-    Handle<JSArray> array = isolate->factory()->NewJSArray(2);
-    SetElement(array, 0, pattern);
-    SetElement(array,
-               1,
-               isolate->factory()->
-                   NewStringFromUtf8(CStrVector(result.error_message)));
+    Factory* factory = isolate->factory();
+    Handle<FixedArray> elements = factory->NewFixedArray(2);
+    elements->set(0, *pattern);
+    Handle<String> error_message =
+        factory->NewStringFromUtf8(CStrVector(result.error_message));
+    elements->set(1, *error_message);
+    Handle<JSArray> array = factory->NewJSArrayWithElements(elements);
     Handle<Object> regexp_err =
-        isolate->factory()->NewSyntaxError("malformed_regexp", array);
+        factory->NewSyntaxError("malformed_regexp", array);
     isolate->Throw(*regexp_err);
     re->SetDataAt(JSRegExp::code_index(is_ascii), *regexp_err);
     return false;
@@ -438,8 +442,10 @@ RegExpImpl::IrregexpResult RegExpImpl::IrregexpExecOnce(
     Handle<JSRegExp> regexp,
     Handle<String> subject,
     int index,
-    Vector<int32_t> output) {
-  Handle<FixedArray> irregexp(FixedArray::cast(regexp->data()));
+    Vector<int> output) {
+  Isolate* isolate = regexp->GetIsolate();
+
+  Handle<FixedArray> irregexp(FixedArray::cast(regexp->data()), isolate);
 
   ASSERT(index >= 0);
   ASSERT(index <= subject->length());
@@ -447,25 +453,24 @@ RegExpImpl::IrregexpResult RegExpImpl::IrregexpExecOnce(
 
   // A flat ASCII string might have a two-byte first part.
   if (subject->IsConsString()) {
-    subject = Handle<String>(ConsString::cast(*subject)->first());
+    subject = Handle<String>(ConsString::cast(*subject)->first(), isolate);
   }
 
 #ifndef V8_INTERPRETED_REGEXP
-  ASSERT(output.length() >=
-      (IrregexpNumberOfCaptures(*irregexp) + 1) * 2);
+  ASSERT(output.length() >= (IrregexpNumberOfCaptures(*irregexp) + 1) * 2);
   do {
     bool is_ascii = subject->IsAsciiRepresentation();
-    Handle<Code> code(IrregexpNativeCode(*irregexp, is_ascii));
+    Handle<Code> code(IrregexpNativeCode(*irregexp, is_ascii), isolate);
     NativeRegExpMacroAssembler::Result res =
         NativeRegExpMacroAssembler::Match(code,
                                           subject,
                                           output.start(),
                                           output.length(),
                                           index,
-                                          regexp->GetIsolate());
+                                          isolate);
     if (res != NativeRegExpMacroAssembler::RETRY) {
       ASSERT(res != NativeRegExpMacroAssembler::EXCEPTION ||
-             Isolate::Current()->has_pending_exception());
+             isolate->has_pending_exception());
       STATIC_ASSERT(
           static_cast<int>(NativeRegExpMacroAssembler::SUCCESS) == RE_SUCCESS);
       STATIC_ASSERT(
@@ -496,9 +501,10 @@ RegExpImpl::IrregexpResult RegExpImpl::IrregexpExecOnce(
   for (int i = number_of_capture_registers - 1; i >= 0; i--) {
     register_vector[i] = -1;
   }
-  Handle<ByteArray> byte_codes(IrregexpByteCode(*irregexp, is_ascii));
+  Handle<ByteArray> byte_codes(IrregexpByteCode(*irregexp, is_ascii), isolate);
 
-  if (IrregexpInterpreter::Match(byte_codes,
+  if (IrregexpInterpreter::Match(isolate,
+                                 byte_codes,
                                  subject,
                                  register_vector,
                                  index)) {
@@ -535,8 +541,8 @@ Handle<Object> RegExpImpl::IrregexpExec(Handle<JSRegExp> jsregexp,
   OffsetsVector registers(required_registers);
 
   IrregexpResult res = RegExpImpl::IrregexpExecOnce(
-      jsregexp, subject, previous_index, Vector<int32_t>(registers.vector(),
-                                                         registers.length()));
+      jsregexp, subject, previous_index, Vector<int>(registers.vector(),
+                                                     registers.length()));
   if (res == RE_SUCCESS) {
     int capture_register_count =
         (IrregexpNumberOfCaptures(FixedArray::cast(jsregexp->data())) + 1) * 2;
@@ -558,7 +564,7 @@ Handle<Object> RegExpImpl::IrregexpExec(Handle<JSRegExp> jsregexp,
     return Handle<Object>::null();
   }
   ASSERT(res == RE_FAILURE);
-  return FACTORY->null_value();
+  return Isolate::Current()->factory()->null_value();
 }
 
 
@@ -872,9 +878,11 @@ RegExpEngine::CompilationResult RegExpCompiler::Assemble(
   if (reg_exp_too_big_) return IrregexpRegExpTooBig();
 
   Handle<Object> code = macro_assembler_->GetCode(pattern);
-
   work_list_ = NULL;
 #ifdef DEBUG
+  if (FLAG_print_code) {
+    Handle<Code>::cast(code)->Disassemble(*pattern->ToCString());
+  }
   if (FLAG_trace_regexp_assembler) {
     delete macro_assembler_;
   }
@@ -5334,6 +5342,8 @@ RegExpEngine::CompilationResult RegExpEngine::Compile(RegExpCompileData* data,
   RegExpMacroAssemblerX64 macro_assembler(mode, (data->capture_count + 1) * 2);
 #elif V8_TARGET_ARCH_ARM
   RegExpMacroAssemblerARM macro_assembler(mode, (data->capture_count + 1) * 2);
+#elif V8_TARGET_ARCH_MIPS
+  RegExpMacroAssemblerMIPS macro_assembler(mode, (data->capture_count + 1) * 2);
 #endif
 
 #else  // V8_INTERPRETED_REGEXP

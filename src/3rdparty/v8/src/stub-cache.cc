@@ -29,8 +29,10 @@
 
 #include "api.h"
 #include "arguments.h"
+#include "gdb-jit.h"
 #include "ic-inl.h"
 #include "stub-cache.h"
+#include "vm-state-inl.h"
 
 namespace v8 {
 namespace internal {
@@ -62,7 +64,7 @@ Code* StubCache::Set(String* name, Map* map, Code* code) {
 
   // Validate that the name does not move on scavenge, and that we
   // can use identity checks instead of string equality checks.
-  ASSERT(!isolate_->heap()->InNewSpace(name));
+  ASSERT(!heap()->InNewSpace(name));
   ASSERT(name->IsSymbol());
 
   // The state bits are not important to the hash function because
@@ -82,7 +84,7 @@ Code* StubCache::Set(String* name, Map* map, Code* code) {
 
   // If the primary entry has useful data in it, we retire it to the
   // secondary cache before overwriting it.
-  if (hit != isolate_->builtins()->builtin(Builtins::Illegal)) {
+  if (hit != isolate_->builtins()->builtin(Builtins::kIllegal)) {
     Code::Flags primary_flags = Code::RemoveTypeFromFlags(hit->flags());
     int secondary_offset =
         SecondaryOffset(primary->key, primary_flags, primary_offset);
@@ -106,10 +108,10 @@ MaybeObject* StubCache::ComputeLoadNonexistent(String* name,
   // there are global objects involved, we need to check global
   // property cells in the stub and therefore the stub will be
   // specific to the name.
-  String* cache_name = isolate_->heap()->empty_string();
+  String* cache_name = heap()->empty_string();
   if (receiver->IsGlobalObject()) cache_name = name;
   JSObject* last = receiver;
-  while (last->GetPrototype() != isolate_->heap()->null_value()) {
+  while (last->GetPrototype() != heap()->null_value()) {
     last = JSObject::cast(last->GetPrototype());
     if (last->IsGlobalObject()) cache_name = name;
   }
@@ -124,7 +126,9 @@ MaybeObject* StubCache::ComputeLoadNonexistent(String* name,
           compiler.CompileLoadNonexistent(cache_name, receiver, last);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::LOAD_IC_TAG, Code::cast(code), cache_name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::LOAD_IC_TAG, Code::cast(code), cache_name));
+    GDBJIT(AddCode(GDBJITInterface::LOAD_IC, cache_name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(cache_name, Code::cast(code));
@@ -148,7 +152,9 @@ MaybeObject* StubCache::ComputeLoadField(String* name,
           compiler.CompileLoadField(receiver, holder, field_index, name);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::LOAD_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::LOAD_IC_TAG, Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::LOAD_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(name, Code::cast(code));
@@ -173,7 +179,9 @@ MaybeObject* StubCache::ComputeLoadCallback(String* name,
           compiler.CompileLoadCallback(name, receiver, holder, callback);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::LOAD_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::LOAD_IC_TAG, Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::LOAD_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(name, Code::cast(code));
@@ -198,7 +206,9 @@ MaybeObject* StubCache::ComputeLoadConstant(String* name,
           compiler.CompileLoadConstant(receiver, holder, value, name);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::LOAD_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::LOAD_IC_TAG, Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::LOAD_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(name, Code::cast(code));
@@ -221,7 +231,9 @@ MaybeObject* StubCache::ComputeLoadInterceptor(String* name,
           compiler.CompileLoadInterceptor(receiver, holder, name);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::LOAD_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::LOAD_IC_TAG, Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::LOAD_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(name, Code::cast(code));
@@ -233,7 +245,7 @@ MaybeObject* StubCache::ComputeLoadInterceptor(String* name,
 
 
 MaybeObject* StubCache::ComputeLoadNormal() {
-  return isolate_->builtins()->builtin(Builtins::LoadIC_Normal);
+  return isolate_->builtins()->builtin(Builtins::kLoadIC_Normal);
 }
 
 
@@ -254,7 +266,9 @@ MaybeObject* StubCache::ComputeLoadGlobal(String* name,
                                                            is_dont_delete);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::LOAD_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::LOAD_IC_TAG, Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::LOAD_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(name, Code::cast(code));
@@ -278,7 +292,9 @@ MaybeObject* StubCache::ComputeKeyedLoadField(String* name,
           compiler.CompileLoadField(name, receiver, holder, field_index);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG, Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::KEYED_LOAD_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(name, Code::cast(code));
@@ -303,7 +319,9 @@ MaybeObject* StubCache::ComputeKeyedLoadConstant(String* name,
           compiler.CompileLoadConstant(name, receiver, holder, value);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG, Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::KEYED_LOAD_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(name, Code::cast(code));
@@ -327,7 +345,9 @@ MaybeObject* StubCache::ComputeKeyedLoadInterceptor(String* name,
           compiler.CompileLoadInterceptor(receiver, holder, name);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG, Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::KEYED_LOAD_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(name, Code::cast(code));
@@ -352,7 +372,9 @@ MaybeObject* StubCache::ComputeKeyedLoadCallback(String* name,
           compiler.CompileLoadCallback(name, receiver, holder, callback);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG, Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::KEYED_LOAD_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(name, Code::cast(code));
@@ -375,7 +397,9 @@ MaybeObject* StubCache::ComputeKeyedLoadArrayLength(String* name,
     { MaybeObject* maybe_code = compiler.CompileLoadArrayLength(name);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG, Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::KEYED_LOAD_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(name, Code::cast(code));
@@ -397,7 +421,9 @@ MaybeObject* StubCache::ComputeKeyedLoadStringLength(String* name,
     { MaybeObject* maybe_code = compiler.CompileLoadStringLength(name);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG, Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::KEYED_LOAD_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result = map->UpdateCodeCache(name, Code::cast(code));
       if (!maybe_result->ToObject(&result)) return maybe_result;
@@ -418,7 +444,37 @@ MaybeObject* StubCache::ComputeKeyedLoadFunctionPrototype(
     { MaybeObject* maybe_code = compiler.CompileLoadFunctionPrototype(name);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG, Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::KEYED_LOAD_IC, name, Code::cast(code)));
+    Object* result;
+    { MaybeObject* maybe_result =
+          receiver->UpdateMapCodeCache(name, Code::cast(code));
+      if (!maybe_result->ToObject(&result)) return maybe_result;
+    }
+  }
+  return code;
+}
+
+
+MaybeObject* StubCache::ComputeKeyedLoadSpecialized(JSObject* receiver) {
+  // Using NORMAL as the PropertyType for array element loads is a misuse. The
+  // generated stub always accesses fast elements, not slow-mode fields, but
+  // some property type is required for the stub lookup. Note that overloading
+  // the NORMAL PropertyType is only safe as long as no stubs are generated for
+  // other keyed field loads. This is guaranteed to be the case since all field
+  // keyed loads that are not array elements go through a generic builtin stub.
+  Code::Flags flags =
+      Code::ComputeMonomorphicFlags(Code::KEYED_LOAD_IC, NORMAL);
+  String* name = heap()->KeyedLoadSpecialized_symbol();
+  Object* code = receiver->map()->FindInCodeCache(name, flags);
+  if (code->IsUndefined()) {
+    KeyedLoadStubCompiler compiler;
+    { MaybeObject* maybe_code = compiler.CompileLoadSpecialized(receiver);
+      if (!maybe_code->ToObject(&code)) return maybe_code;
+    }
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG, Code::cast(code), 0));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(name, Code::cast(code));
@@ -432,17 +488,21 @@ MaybeObject* StubCache::ComputeKeyedLoadFunctionPrototype(
 MaybeObject* StubCache::ComputeStoreField(String* name,
                                           JSObject* receiver,
                                           int field_index,
-                                          Map* transition) {
+                                          Map* transition,
+                                          StrictModeFlag strict_mode) {
   PropertyType type = (transition == NULL) ? FIELD : MAP_TRANSITION;
-  Code::Flags flags = Code::ComputeMonomorphicFlags(Code::STORE_IC, type);
+  Code::Flags flags = Code::ComputeMonomorphicFlags(
+      Code::STORE_IC, type, strict_mode);
   Object* code = receiver->map()->FindInCodeCache(name, flags);
   if (code->IsUndefined()) {
-    StoreStubCompiler compiler;
+    StoreStubCompiler compiler(strict_mode);
     { MaybeObject* maybe_code =
           compiler.CompileStoreField(receiver, field_index, transition, name);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::STORE_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::STORE_IC_TAG, Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::STORE_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(name, Code::cast(code));
@@ -453,23 +513,174 @@ MaybeObject* StubCache::ComputeStoreField(String* name,
 }
 
 
-MaybeObject* StubCache::ComputeStoreNormal() {
-  return isolate_->builtins()->builtin(Builtins::StoreIC_Normal);
+MaybeObject* StubCache::ComputeKeyedStoreSpecialized(
+    JSObject* receiver,
+    StrictModeFlag strict_mode) {
+  Code::Flags flags =
+      Code::ComputeMonomorphicFlags(Code::KEYED_STORE_IC, NORMAL, strict_mode);
+  String* name = heap()->KeyedStoreSpecialized_symbol();
+  Object* code = receiver->map()->FindInCodeCache(name, flags);
+  if (code->IsUndefined()) {
+    KeyedStoreStubCompiler compiler(strict_mode);
+    { MaybeObject* maybe_code = compiler.CompileStoreSpecialized(receiver);
+      if (!maybe_code->ToObject(&code)) return maybe_code;
+    }
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::KEYED_STORE_IC_TAG, Code::cast(code), 0));
+    Object* result;
+    { MaybeObject* maybe_result =
+          receiver->UpdateMapCodeCache(name, Code::cast(code));
+      if (!maybe_result->ToObject(&result)) return maybe_result;
+    }
+  }
+  return code;
+}
+
+
+namespace {
+
+ExternalArrayType ElementsKindToExternalArrayType(JSObject::ElementsKind kind) {
+  switch (kind) {
+    case JSObject::EXTERNAL_BYTE_ELEMENTS:
+      return kExternalByteArray;
+    case JSObject::EXTERNAL_UNSIGNED_BYTE_ELEMENTS:
+      return kExternalUnsignedByteArray;
+    case JSObject::EXTERNAL_SHORT_ELEMENTS:
+      return kExternalShortArray;
+    case JSObject::EXTERNAL_UNSIGNED_SHORT_ELEMENTS:
+      return kExternalUnsignedShortArray;
+    case JSObject::EXTERNAL_INT_ELEMENTS:
+      return kExternalIntArray;
+    case JSObject::EXTERNAL_UNSIGNED_INT_ELEMENTS:
+      return kExternalUnsignedIntArray;
+    case JSObject::EXTERNAL_FLOAT_ELEMENTS:
+      return kExternalFloatArray;
+    case JSObject::EXTERNAL_PIXEL_ELEMENTS:
+      return kExternalPixelArray;
+    default:
+      UNREACHABLE();
+      return static_cast<ExternalArrayType>(0);
+  }
+}
+
+String* ExternalArrayTypeToStubName(Heap* heap,
+                                    ExternalArrayType array_type,
+                                    bool is_store) {
+  if (is_store) {
+    switch (array_type) {
+      case kExternalByteArray:
+        return heap->KeyedStoreExternalByteArray_symbol();
+      case kExternalUnsignedByteArray:
+        return heap->KeyedStoreExternalUnsignedByteArray_symbol();
+      case kExternalShortArray:
+        return heap->KeyedStoreExternalShortArray_symbol();
+      case kExternalUnsignedShortArray:
+        return heap->KeyedStoreExternalUnsignedShortArray_symbol();
+      case kExternalIntArray:
+        return heap->KeyedStoreExternalIntArray_symbol();
+      case kExternalUnsignedIntArray:
+        return heap->KeyedStoreExternalUnsignedIntArray_symbol();
+      case kExternalFloatArray:
+        return heap->KeyedStoreExternalFloatArray_symbol();
+      case kExternalPixelArray:
+        return heap->KeyedStoreExternalPixelArray_symbol();
+      default:
+        UNREACHABLE();
+        return NULL;
+    }
+  } else {
+    switch (array_type) {
+      case kExternalByteArray:
+        return heap->KeyedLoadExternalByteArray_symbol();
+      case kExternalUnsignedByteArray:
+        return heap->KeyedLoadExternalUnsignedByteArray_symbol();
+      case kExternalShortArray:
+        return heap->KeyedLoadExternalShortArray_symbol();
+      case kExternalUnsignedShortArray:
+        return heap->KeyedLoadExternalUnsignedShortArray_symbol();
+      case kExternalIntArray:
+        return heap->KeyedLoadExternalIntArray_symbol();
+      case kExternalUnsignedIntArray:
+        return heap->KeyedLoadExternalUnsignedIntArray_symbol();
+      case kExternalFloatArray:
+        return heap->KeyedLoadExternalFloatArray_symbol();
+      case kExternalPixelArray:
+        return heap->KeyedLoadExternalPixelArray_symbol();
+      default:
+        UNREACHABLE();
+        return NULL;
+    }
+  }
+}
+
+}  // anonymous namespace
+
+
+MaybeObject* StubCache::ComputeKeyedLoadOrStoreExternalArray(
+    JSObject* receiver,
+    bool is_store,
+    StrictModeFlag strict_mode) {
+  Code::Flags flags =
+      Code::ComputeMonomorphicFlags(
+          is_store ? Code::KEYED_EXTERNAL_ARRAY_STORE_IC :
+                     Code::KEYED_EXTERNAL_ARRAY_LOAD_IC,
+          NORMAL,
+          strict_mode);
+  ExternalArrayType array_type =
+      ElementsKindToExternalArrayType(receiver->GetElementsKind());
+  String* name = ExternalArrayTypeToStubName(heap(), array_type, is_store);
+  Object* code = receiver->map()->FindInCodeCache(name, flags);
+  if (code->IsUndefined()) {
+    ExternalArrayStubCompiler compiler;
+    { MaybeObject* maybe_code =
+          is_store ?
+              compiler.CompileKeyedStoreStub(receiver, array_type, flags) :
+              compiler.CompileKeyedLoadStub(receiver, array_type, flags);
+      if (!maybe_code->ToObject(&code)) return maybe_code;
+    }
+    Code::cast(code)->set_external_array_type(array_type);
+    if (is_store) {
+      PROFILE(isolate_,
+          CodeCreateEvent(Logger::KEYED_EXTERNAL_ARRAY_STORE_IC_TAG,
+                          Code::cast(code), 0));
+    } else {
+      PROFILE(isolate_,
+          CodeCreateEvent(Logger::KEYED_EXTERNAL_ARRAY_LOAD_IC_TAG,
+                          Code::cast(code), 0));
+    }
+    Object* result;
+    { MaybeObject* maybe_result =
+          receiver->UpdateMapCodeCache(name, Code::cast(code));
+      if (!maybe_result->ToObject(&result)) return maybe_result;
+    }
+  }
+  return code;
+}
+
+
+MaybeObject* StubCache::ComputeStoreNormal(StrictModeFlag strict_mode) {
+  return isolate_->builtins()->builtin((strict_mode == kStrictMode)
+                            ? Builtins::kStoreIC_Normal_Strict
+                            : Builtins::kStoreIC_Normal);
 }
 
 
 MaybeObject* StubCache::ComputeStoreGlobal(String* name,
                                            GlobalObject* receiver,
-                                           JSGlobalPropertyCell* cell) {
-  Code::Flags flags = Code::ComputeMonomorphicFlags(Code::STORE_IC, NORMAL);
+                                           JSGlobalPropertyCell* cell,
+                                           StrictModeFlag strict_mode) {
+  Code::Flags flags = Code::ComputeMonomorphicFlags(
+      Code::STORE_IC, NORMAL, strict_mode);
   Object* code = receiver->map()->FindInCodeCache(name, flags);
   if (code->IsUndefined()) {
-    StoreStubCompiler compiler;
+    StoreStubCompiler compiler(strict_mode);
     { MaybeObject* maybe_code =
           compiler.CompileStoreGlobal(receiver, cell, name);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::STORE_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::STORE_IC_TAG, Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::STORE_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(name, Code::cast(code));
@@ -480,19 +691,24 @@ MaybeObject* StubCache::ComputeStoreGlobal(String* name,
 }
 
 
-MaybeObject* StubCache::ComputeStoreCallback(String* name,
-                                             JSObject* receiver,
-                                             AccessorInfo* callback) {
+MaybeObject* StubCache::ComputeStoreCallback(
+    String* name,
+    JSObject* receiver,
+    AccessorInfo* callback,
+    StrictModeFlag strict_mode) {
   ASSERT(v8::ToCData<Address>(callback->setter()) != 0);
-  Code::Flags flags = Code::ComputeMonomorphicFlags(Code::STORE_IC, CALLBACKS);
+  Code::Flags flags = Code::ComputeMonomorphicFlags(
+      Code::STORE_IC, CALLBACKS, strict_mode);
   Object* code = receiver->map()->FindInCodeCache(name, flags);
   if (code->IsUndefined()) {
-    StoreStubCompiler compiler;
+    StoreStubCompiler compiler(strict_mode);
     { MaybeObject* maybe_code =
           compiler.CompileStoreCallback(receiver, callback, name);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::STORE_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::STORE_IC_TAG, Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::STORE_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(name, Code::cast(code));
@@ -503,18 +719,22 @@ MaybeObject* StubCache::ComputeStoreCallback(String* name,
 }
 
 
-MaybeObject* StubCache::ComputeStoreInterceptor(String* name,
-                                                JSObject* receiver) {
-  Code::Flags flags =
-      Code::ComputeMonomorphicFlags(Code::STORE_IC, INTERCEPTOR);
+MaybeObject* StubCache::ComputeStoreInterceptor(
+    String* name,
+    JSObject* receiver,
+    StrictModeFlag strict_mode) {
+  Code::Flags flags = Code::ComputeMonomorphicFlags(
+      Code::STORE_IC, INTERCEPTOR, strict_mode);
   Object* code = receiver->map()->FindInCodeCache(name, flags);
   if (code->IsUndefined()) {
-    StoreStubCompiler compiler;
+    StoreStubCompiler compiler(strict_mode);
     { MaybeObject* maybe_code =
           compiler.CompileStoreInterceptor(receiver, name);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(Logger::STORE_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate_,
+            CodeCreateEvent(Logger::STORE_IC_TAG, Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::STORE_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(name, Code::cast(code));
@@ -528,18 +748,22 @@ MaybeObject* StubCache::ComputeStoreInterceptor(String* name,
 MaybeObject* StubCache::ComputeKeyedStoreField(String* name,
                                                JSObject* receiver,
                                                int field_index,
-                                               Map* transition) {
+                                               Map* transition,
+                                               StrictModeFlag strict_mode) {
   PropertyType type = (transition == NULL) ? FIELD : MAP_TRANSITION;
-  Code::Flags flags = Code::ComputeMonomorphicFlags(Code::KEYED_STORE_IC, type);
+  Code::Flags flags = Code::ComputeMonomorphicFlags(
+      Code::KEYED_STORE_IC, type, strict_mode);
   Object* code = receiver->map()->FindInCodeCache(name, flags);
   if (code->IsUndefined()) {
-    KeyedStoreStubCompiler compiler;
+    KeyedStoreStubCompiler compiler(strict_mode);
     { MaybeObject* maybe_code =
           compiler.CompileStoreField(receiver, field_index, transition, name);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
-    PROFILE(CodeCreateEvent(
-        Logger::KEYED_STORE_IC_TAG, Code::cast(code), name));
+    PROFILE(isolate(),
+            CodeCreateEvent(Logger::KEYED_STORE_IC_TAG,
+                            Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::KEYED_STORE_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           receiver->UpdateMapCodeCache(name, Code::cast(code));
@@ -555,6 +779,7 @@ MaybeObject* StubCache::ComputeKeyedStoreField(String* name,
 MaybeObject* StubCache::ComputeCallConstant(int argc,
                                             InLoopFlag in_loop,
                                             Code::Kind kind,
+                                            Code::ExtraICState extra_ic_state,
                                             String* name,
                                             Object* object,
                                             JSObject* holder,
@@ -565,21 +790,21 @@ MaybeObject* StubCache::ComputeCallConstant(int argc,
   JSObject* map_holder = IC::GetCodeCacheHolder(object, cache_holder);
 
   // Compute check type based on receiver/holder.
-  StubCompiler::CheckType check = StubCompiler::RECEIVER_MAP_CHECK;
+  CheckType check = RECEIVER_MAP_CHECK;
   if (object->IsString()) {
-    check = StubCompiler::STRING_CHECK;
+    check = STRING_CHECK;
   } else if (object->IsNumber()) {
-    check = StubCompiler::NUMBER_CHECK;
+    check = NUMBER_CHECK;
   } else if (object->IsBoolean()) {
-    check = StubCompiler::BOOLEAN_CHECK;
+    check = BOOLEAN_CHECK;
   }
 
-  Code::Flags flags =
-      Code::ComputeMonomorphicFlags(kind,
-                                    CONSTANT_FUNCTION,
-                                    cache_holder,
-                                    in_loop,
-                                    argc);
+  Code::Flags flags = Code::ComputeMonomorphicFlags(kind,
+                                                    CONSTANT_FUNCTION,
+                                                    extra_ic_state,
+                                                    cache_holder,
+                                                    in_loop,
+                                                    argc);
   Object* code = map_holder->map()->FindInCodeCache(name, flags);
   if (code->IsUndefined()) {
     // If the function hasn't been compiled yet, we cannot do it now
@@ -588,14 +813,18 @@ MaybeObject* StubCache::ComputeCallConstant(int argc,
     // caches.
     if (!function->is_compiled()) return Failure::InternalError();
     // Compile the stub - only create stubs for fully compiled functions.
-    CallStubCompiler compiler(argc, in_loop, kind, cache_holder);
+    CallStubCompiler compiler(
+        argc, in_loop, kind, extra_ic_state, cache_holder);
     { MaybeObject* maybe_code =
           compiler.CompileCallConstant(object, holder, function, name, check);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
+    Code::cast(code)->set_check_type(check);
     ASSERT_EQ(flags, Code::cast(code)->flags());
-    PROFILE(CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_IC_TAG),
+    PROFILE(isolate_,
+            CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_IC_TAG),
                             Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::CALL_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           map_holder->UpdateMapCodeCache(name, Code::cast(code));
@@ -627,12 +856,14 @@ MaybeObject* StubCache::ComputeCallField(int argc,
 
   Code::Flags flags = Code::ComputeMonomorphicFlags(kind,
                                                     FIELD,
+                                                    Code::kNoExtraICState,
                                                     cache_holder,
                                                     in_loop,
                                                     argc);
   Object* code = map_holder->map()->FindInCodeCache(name, flags);
   if (code->IsUndefined()) {
-    CallStubCompiler compiler(argc, in_loop, kind, cache_holder);
+    CallStubCompiler compiler(
+        argc, in_loop, kind, Code::kNoExtraICState, cache_holder);
     { MaybeObject* maybe_code =
           compiler.CompileCallField(JSObject::cast(object),
                                     holder,
@@ -641,8 +872,10 @@ MaybeObject* StubCache::ComputeCallField(int argc,
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
     ASSERT_EQ(flags, Code::cast(code)->flags());
-    PROFILE(CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_IC_TAG),
+    PROFILE(isolate_,
+            CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_IC_TAG),
                             Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::CALL_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           map_holder->UpdateMapCodeCache(name, Code::cast(code));
@@ -670,22 +903,25 @@ MaybeObject* StubCache::ComputeCallInterceptor(int argc,
     object = holder;
   }
 
-  Code::Flags flags =
-      Code::ComputeMonomorphicFlags(kind,
-                                    INTERCEPTOR,
-                                    cache_holder,
-                                    NOT_IN_LOOP,
-                                    argc);
+  Code::Flags flags = Code::ComputeMonomorphicFlags(kind,
+                                                    INTERCEPTOR,
+                                                    Code::kNoExtraICState,
+                                                    cache_holder,
+                                                    NOT_IN_LOOP,
+                                                    argc);
   Object* code = map_holder->map()->FindInCodeCache(name, flags);
   if (code->IsUndefined()) {
-    CallStubCompiler compiler(argc, NOT_IN_LOOP, kind, cache_holder);
+    CallStubCompiler compiler(
+        argc, NOT_IN_LOOP, kind, Code::kNoExtraICState, cache_holder);
     { MaybeObject* maybe_code =
           compiler.CompileCallInterceptor(JSObject::cast(object), holder, name);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
     ASSERT_EQ(flags, Code::cast(code)->flags());
-    PROFILE(CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_IC_TAG),
+    PROFILE(isolate(),
+            CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_IC_TAG),
                             Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::CALL_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           map_holder->UpdateMapCodeCache(name, Code::cast(code));
@@ -720,12 +956,12 @@ MaybeObject* StubCache::ComputeCallGlobal(int argc,
   InlineCacheHolderFlag cache_holder =
       IC::GetCodeCacheForObject(receiver, holder);
   JSObject* map_holder = IC::GetCodeCacheHolder(receiver, cache_holder);
-  Code::Flags flags =
-      Code::ComputeMonomorphicFlags(kind,
-                                    NORMAL,
-                                    cache_holder,
-                                    in_loop,
-                                    argc);
+  Code::Flags flags = Code::ComputeMonomorphicFlags(kind,
+                                                    NORMAL,
+                                                    Code::kNoExtraICState,
+                                                    cache_holder,
+                                                    in_loop,
+                                                    argc);
   Object* code = map_holder->map()->FindInCodeCache(name, flags);
   if (code->IsUndefined()) {
     // If the function hasn't been compiled yet, we cannot do it now
@@ -733,14 +969,17 @@ MaybeObject* StubCache::ComputeCallGlobal(int argc,
     // internal error which will make sure we do not update any
     // caches.
     if (!function->is_compiled()) return Failure::InternalError();
-    CallStubCompiler compiler(argc, in_loop, kind, cache_holder);
+    CallStubCompiler compiler(
+        argc, in_loop, kind, Code::kNoExtraICState, cache_holder);
     { MaybeObject* maybe_code =
           compiler.CompileCallGlobal(receiver, holder, cell, function, name);
       if (!maybe_code->ToObject(&code)) return maybe_code;
     }
     ASSERT_EQ(flags, Code::cast(code)->flags());
-    PROFILE(CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_IC_TAG),
+    PROFILE(isolate(),
+            CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_IC_TAG),
                             Code::cast(code), name));
+    GDBJIT(AddCode(GDBJITInterface::CALL_IC, name, Code::cast(code)));
     Object* result;
     { MaybeObject* maybe_result =
           map_holder->UpdateMapCodeCache(name, Code::cast(code));
@@ -802,10 +1041,14 @@ static MaybeObject* FillCache(Isolate* isolate, MaybeObject* maybe_code) {
 Code* StubCache::FindCallInitialize(int argc,
                                     InLoopFlag in_loop,
                                     Code::Kind kind) {
-  Code::Flags flags =
-      Code::ComputeFlags(kind, in_loop, UNINITIALIZED, NORMAL, argc);
-  Object* result = ProbeCache(isolate_, flags)->ToObjectUnchecked();
-  ASSERT(result != isolate_->heap()->undefined_value());
+  Code::Flags flags = Code::ComputeFlags(kind,
+                                         in_loop,
+                                         UNINITIALIZED,
+                                         Code::kNoExtraICState,
+                                         NORMAL,
+                                         argc);
+  Object* result = ProbeCache(isolate(), flags)->ToObjectUnchecked();
+  ASSERT(result != heap()->undefined_value());
   // This might be called during the marking phase of the collector
   // hence the unchecked cast.
   return reinterpret_cast<Code*>(result);
@@ -815,8 +1058,12 @@ Code* StubCache::FindCallInitialize(int argc,
 MaybeObject* StubCache::ComputeCallInitialize(int argc,
                                               InLoopFlag in_loop,
                                               Code::Kind kind) {
-  Code::Flags flags =
-      Code::ComputeFlags(kind, in_loop, UNINITIALIZED, NORMAL, argc);
+  Code::Flags flags = Code::ComputeFlags(kind,
+                                         in_loop,
+                                         UNINITIALIZED,
+                                         Code::kNoExtraICState,
+                                         NORMAL,
+                                         argc);
   Object* probe;
   { MaybeObject* maybe_probe = ProbeCache(isolate_, flags);
     if (!maybe_probe->ToObject(&probe)) return maybe_probe;
@@ -860,8 +1107,12 @@ Handle<Code> StubCache::ComputeKeyedCallInitialize(int argc,
 MaybeObject* StubCache::ComputeCallPreMonomorphic(int argc,
                                                   InLoopFlag in_loop,
                                                   Code::Kind kind) {
-  Code::Flags flags =
-      Code::ComputeFlags(kind, in_loop, PREMONOMORPHIC, NORMAL, argc);
+  Code::Flags flags = Code::ComputeFlags(kind,
+                                         in_loop,
+                                         PREMONOMORPHIC,
+                                         Code::kNoExtraICState,
+                                         NORMAL,
+                                         argc);
   Object* probe;
   { MaybeObject* maybe_probe = ProbeCache(isolate_, flags);
     if (!maybe_probe->ToObject(&probe)) return maybe_probe;
@@ -875,8 +1126,12 @@ MaybeObject* StubCache::ComputeCallPreMonomorphic(int argc,
 MaybeObject* StubCache::ComputeCallNormal(int argc,
                                           InLoopFlag in_loop,
                                           Code::Kind kind) {
-  Code::Flags flags =
-      Code::ComputeFlags(kind, in_loop, MONOMORPHIC, NORMAL, argc);
+  Code::Flags flags = Code::ComputeFlags(kind,
+                                         in_loop,
+                                         MONOMORPHIC,
+                                         Code::kNoExtraICState,
+                                         NORMAL,
+                                         argc);
   Object* probe;
   { MaybeObject* maybe_probe = ProbeCache(isolate_, flags);
     if (!maybe_probe->ToObject(&probe)) return maybe_probe;
@@ -890,8 +1145,12 @@ MaybeObject* StubCache::ComputeCallNormal(int argc,
 MaybeObject* StubCache::ComputeCallMegamorphic(int argc,
                                                InLoopFlag in_loop,
                                                Code::Kind kind) {
-  Code::Flags flags =
-      Code::ComputeFlags(kind, in_loop, MEGAMORPHIC, NORMAL, argc);
+  Code::Flags flags = Code::ComputeFlags(kind,
+                                         in_loop,
+                                         MEGAMORPHIC,
+                                         Code::kNoExtraICState,
+                                         NORMAL,
+                                         argc);
   Object* probe;
   { MaybeObject* maybe_probe = ProbeCache(isolate_, flags);
     if (!maybe_probe->ToObject(&probe)) return maybe_probe;
@@ -905,8 +1164,13 @@ MaybeObject* StubCache::ComputeCallMegamorphic(int argc,
 MaybeObject* StubCache::ComputeCallMiss(int argc, Code::Kind kind) {
   // MONOMORPHIC_PROTOTYPE_FAILURE state is used to make sure that miss stubs
   // and monomorphic stubs are not mixed up together in the stub cache.
-  Code::Flags flags = Code::ComputeFlags(
-     kind, NOT_IN_LOOP, MONOMORPHIC_PROTOTYPE_FAILURE, NORMAL, argc);
+  Code::Flags flags = Code::ComputeFlags(kind,
+                                         NOT_IN_LOOP,
+                                         MONOMORPHIC_PROTOTYPE_FAILURE,
+                                         Code::kNoExtraICState,
+                                         NORMAL,
+                                         argc,
+                                         OWN_MAP);
   Object* probe;
   { MaybeObject* maybe_probe = ProbeCache(isolate_, flags);
     if (!maybe_probe->ToObject(&probe)) return maybe_probe;
@@ -919,8 +1183,12 @@ MaybeObject* StubCache::ComputeCallMiss(int argc, Code::Kind kind) {
 
 #ifdef ENABLE_DEBUGGER_SUPPORT
 MaybeObject* StubCache::ComputeCallDebugBreak(int argc, Code::Kind kind) {
-  Code::Flags flags =
-      Code::ComputeFlags(kind, NOT_IN_LOOP, DEBUG_BREAK, NORMAL, argc);
+  Code::Flags flags = Code::ComputeFlags(kind,
+                                         NOT_IN_LOOP,
+                                         DEBUG_BREAK,
+                                         Code::kNoExtraICState,
+                                         NORMAL,
+                                         argc);
   Object* probe;
   { MaybeObject* maybe_probe = ProbeCache(isolate_, flags);
     if (!maybe_probe->ToObject(&probe)) return maybe_probe;
@@ -933,12 +1201,12 @@ MaybeObject* StubCache::ComputeCallDebugBreak(int argc, Code::Kind kind) {
 
 MaybeObject* StubCache::ComputeCallDebugPrepareStepIn(int argc,
                                                       Code::Kind kind) {
-  Code::Flags flags =
-      Code::ComputeFlags(kind,
-                         NOT_IN_LOOP,
-                         DEBUG_PREPARE_STEP_IN,
-                         NORMAL,
-                         argc);
+  Code::Flags flags = Code::ComputeFlags(kind,
+                                         NOT_IN_LOOP,
+                                         DEBUG_PREPARE_STEP_IN,
+                                         Code::kNoExtraICState,
+                                         NORMAL,
+                                         argc);
   Object* probe;
   { MaybeObject* maybe_probe = ProbeCache(isolate_, flags);
     if (!maybe_probe->ToObject(&probe)) return maybe_probe;
@@ -952,14 +1220,56 @@ MaybeObject* StubCache::ComputeCallDebugPrepareStepIn(int argc,
 
 void StubCache::Clear() {
   for (int i = 0; i < kPrimaryTableSize; i++) {
-    primary_[i].key = isolate_->heap()->empty_string();
+    primary_[i].key = heap()->empty_string();
     primary_[i].value = isolate_->builtins()->builtin(
-        Builtins::Illegal);
+        Builtins::kIllegal);
   }
   for (int j = 0; j < kSecondaryTableSize; j++) {
-    secondary_[j].key = isolate_->heap()->empty_string();
+    secondary_[j].key = heap()->empty_string();
     secondary_[j].value = isolate_->builtins()->builtin(
-        Builtins::Illegal);
+        Builtins::kIllegal);
+  }
+}
+
+
+void StubCache::CollectMatchingMaps(ZoneMapList* types,
+                                    String* name,
+                                    Code::Flags flags) {
+  for (int i = 0; i < kPrimaryTableSize; i++) {
+    if (primary_[i].key == name) {
+      Map* map = primary_[i].value->FindFirstMap();
+      // Map can be NULL, if the stub is constant function call
+      // with a primitive receiver.
+      if (map == NULL) continue;
+
+      int offset = PrimaryOffset(name, flags, map);
+      if (entry(primary_, offset) == &primary_[i]) {
+        types->Add(Handle<Map>(map));
+      }
+    }
+  }
+
+  for (int i = 0; i < kSecondaryTableSize; i++) {
+    if (secondary_[i].key == name) {
+      Map* map = secondary_[i].value->FindFirstMap();
+      // Map can be NULL, if the stub is constant function call
+      // with a primitive receiver.
+      if (map == NULL) continue;
+
+      // Lookup in primary table and skip duplicates.
+      int primary_offset = PrimaryOffset(name, flags, map);
+      Entry* primary_entry = entry(primary_, primary_offset);
+      if (primary_entry->key == name) {
+        Map* primary_map = primary_entry->value->FindFirstMap();
+        if (map == primary_map) continue;
+      }
+
+      // Lookup in secondary table and add matches.
+      int offset = SecondaryOffset(name, flags, primary_offset);
+      if (entry(secondary_, offset) == &secondary_[i]) {
+        types->Add(Handle<Map>(map));
+      }
+    }
   }
 }
 
@@ -968,8 +1278,7 @@ void StubCache::Clear() {
 // StubCompiler implementation.
 
 
-MaybeObject* LoadCallbackProperty(RUNTIME_CALLING_CONVENTION) {
-  RUNTIME_GET_ISOLATE;
+RUNTIME_FUNCTION(MaybeObject*, LoadCallbackProperty) {
   ASSERT(args[0]->IsJSObject());
   ASSERT(args[1]->IsJSObject());
   AccessorInfo* callback = AccessorInfo::cast(args[3]);
@@ -982,9 +1291,7 @@ MaybeObject* LoadCallbackProperty(RUNTIME_CALLING_CONVENTION) {
   {
     // Leaving JavaScript.
     VMState state(isolate, EXTERNAL);
-#ifdef ENABLE_LOGGING_AND_PROFILING
-    state.set_external_callback(getter_address);
-#endif
+    ExternalCallbackScope call_scope(isolate, getter_address);
     result = fun(v8::Utils::ToLocal(args.at<String>(4)), info);
   }
   RETURN_IF_SCHEDULED_EXCEPTION(isolate);
@@ -993,8 +1300,7 @@ MaybeObject* LoadCallbackProperty(RUNTIME_CALLING_CONVENTION) {
 }
 
 
-MaybeObject* StoreCallbackProperty(RUNTIME_CALLING_CONVENTION) {
-  RUNTIME_GET_ISOLATE;
+RUNTIME_FUNCTION(MaybeObject*, StoreCallbackProperty) {
   JSObject* recv = JSObject::cast(args[0]);
   AccessorInfo* callback = AccessorInfo::cast(args[1]);
   Address setter_address = v8::ToCData<Address>(callback->setter());
@@ -1003,15 +1309,13 @@ MaybeObject* StoreCallbackProperty(RUNTIME_CALLING_CONVENTION) {
   Handle<String> name = args.at<String>(2);
   Handle<Object> value = args.at<Object>(3);
   HandleScope scope(isolate);
-  LOG(ApiNamedPropertyAccess("store", recv, *name));
+  LOG(isolate, ApiNamedPropertyAccess("store", recv, *name));
   CustomArguments custom_args(isolate, callback->data(), recv, recv);
   v8::AccessorInfo info(custom_args.end());
   {
     // Leaving JavaScript.
     VMState state(isolate, EXTERNAL);
-#ifdef ENABLE_LOGGING_AND_PROFILING
-    state.set_external_callback(setter_address);
-#endif
+    ExternalCallbackScope call_scope(isolate, setter_address);
     fun(v8::Utils::ToLocal(name), v8::Utils::ToLocal(value), info);
   }
   RETURN_IF_SCHEDULED_EXCEPTION(isolate);
@@ -1029,8 +1333,7 @@ static const int kAccessorInfoOffsetInInterceptorArgs = 2;
  * Returns |Heap::no_interceptor_result_sentinel()| if interceptor doesn't
  * provide any value for the given name.
  */
-MaybeObject* LoadPropertyWithInterceptorOnly(RUNTIME_CALLING_CONVENTION) {
-  RUNTIME_GET_ISOLATE;
+RUNTIME_FUNCTION(MaybeObject*, LoadPropertyWithInterceptorOnly) {
   Handle<String> name_handle = args.at<String>(0);
   Handle<InterceptorInfo> interceptor_info = args.at<InterceptorInfo>(1);
   ASSERT(kAccessorInfoOffsetInInterceptorArgs == 2);
@@ -1129,8 +1432,7 @@ static MaybeObject* LoadWithInterceptor(Arguments* args,
  * Loads a property with an interceptor performing post interceptor
  * lookup if interceptor failed.
  */
-MaybeObject* LoadPropertyWithInterceptorForLoad(RUNTIME_CALLING_CONVENTION) {
-  RUNTIME_GET_ISOLATE;
+RUNTIME_FUNCTION(MaybeObject*, LoadPropertyWithInterceptorForLoad) {
   PropertyAttributes attr = NONE;
   Object* result;
   { MaybeObject* maybe_result = LoadWithInterceptor(&args, &attr);
@@ -1143,8 +1445,7 @@ MaybeObject* LoadPropertyWithInterceptorForLoad(RUNTIME_CALLING_CONVENTION) {
 }
 
 
-MaybeObject* LoadPropertyWithInterceptorForCall(RUNTIME_CALLING_CONVENTION) {
-  RUNTIME_GET_ISOLATE;
+RUNTIME_FUNCTION(MaybeObject*, LoadPropertyWithInterceptorForCall) {
   PropertyAttributes attr;
   MaybeObject* result = LoadWithInterceptor(&args, &attr);
   RETURN_IF_SCHEDULED_EXCEPTION(isolate);
@@ -1155,20 +1456,23 @@ MaybeObject* LoadPropertyWithInterceptorForCall(RUNTIME_CALLING_CONVENTION) {
 }
 
 
-MaybeObject* StoreInterceptorProperty(RUNTIME_CALLING_CONVENTION) {
-  RUNTIME_GET_ISOLATE;
+RUNTIME_FUNCTION(MaybeObject*, StoreInterceptorProperty) {
+  ASSERT(args.length() == 4);
   JSObject* recv = JSObject::cast(args[0]);
   String* name = String::cast(args[1]);
   Object* value = args[2];
+  StrictModeFlag strict_mode =
+      static_cast<StrictModeFlag>(Smi::cast(args[3])->value());
+  ASSERT(strict_mode == kStrictMode || strict_mode == kNonStrictMode);
   ASSERT(recv->HasNamedInterceptor());
   PropertyAttributes attr = NONE;
-  MaybeObject* result = recv->SetPropertyWithInterceptor(name, value, attr);
+  MaybeObject* result = recv->SetPropertyWithInterceptor(
+      name, value, attr, strict_mode);
   return result;
 }
 
 
-MaybeObject* KeyedLoadPropertyWithInterceptor(RUNTIME_CALLING_CONVENTION) {
-  RUNTIME_GET_ISOLATE;
+RUNTIME_FUNCTION(MaybeObject*, KeyedLoadPropertyWithInterceptor) {
   JSObject* receiver = JSObject::cast(args[0]);
   ASSERT(Smi::cast(args[1])->value() >= 0);
   uint32_t index = Smi::cast(args[1])->value();
@@ -1177,7 +1481,7 @@ MaybeObject* KeyedLoadPropertyWithInterceptor(RUNTIME_CALLING_CONVENTION) {
 
 
 MaybeObject* StubCompiler::CompileCallInitialize(Code::Flags flags) {
-  HandleScope scope;
+  HandleScope scope(isolate());
   int argc = Code::ExtractArgumentsCountFromFlags(flags);
   Code::Kind kind = Code::ExtractKindFromFlags(flags);
   if (kind == Code::CALL_IC) {
@@ -1190,17 +1494,19 @@ MaybeObject* StubCompiler::CompileCallInitialize(Code::Flags flags) {
         GetCodeWithFlags(flags, "CompileCallInitialize");
     if (!maybe_result->ToObject(&result)) return maybe_result;
   }
-  COUNTERS->call_initialize_stubs()->Increment();
+  isolate()->counters()->call_initialize_stubs()->Increment();
   Code* code = Code::cast(result);
   USE(code);
-  PROFILE(CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_INITIALIZE_TAG),
+  PROFILE(isolate(),
+          CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_INITIALIZE_TAG),
                           code, code->arguments_count()));
+  GDBJIT(AddCode(GDBJITInterface::CALL_INITIALIZE, Code::cast(code)));
   return result;
 }
 
 
 MaybeObject* StubCompiler::CompileCallPreMonomorphic(Code::Flags flags) {
-  HandleScope scope;
+  HandleScope scope(isolate());
   int argc = Code::ExtractArgumentsCountFromFlags(flags);
   // The code of the PreMonomorphic stub is the same as the code
   // of the Initialized stub.  They just differ on the code object flags.
@@ -1215,17 +1521,19 @@ MaybeObject* StubCompiler::CompileCallPreMonomorphic(Code::Flags flags) {
         GetCodeWithFlags(flags, "CompileCallPreMonomorphic");
     if (!maybe_result->ToObject(&result)) return maybe_result;
   }
-  COUNTERS->call_premonomorphic_stubs()->Increment();
+  isolate()->counters()->call_premonomorphic_stubs()->Increment();
   Code* code = Code::cast(result);
   USE(code);
-  PROFILE(CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_PRE_MONOMORPHIC_TAG),
+  PROFILE(isolate(),
+          CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_PRE_MONOMORPHIC_TAG),
                           code, code->arguments_count()));
+  GDBJIT(AddCode(GDBJITInterface::CALL_PRE_MONOMORPHIC, Code::cast(code)));
   return result;
 }
 
 
 MaybeObject* StubCompiler::CompileCallNormal(Code::Flags flags) {
-  HandleScope scope;
+  HandleScope scope(isolate());
   int argc = Code::ExtractArgumentsCountFromFlags(flags);
   Code::Kind kind = Code::ExtractKindFromFlags(flags);
   if (kind == Code::CALL_IC) {
@@ -1237,17 +1545,19 @@ MaybeObject* StubCompiler::CompileCallNormal(Code::Flags flags) {
   { MaybeObject* maybe_result = GetCodeWithFlags(flags, "CompileCallNormal");
     if (!maybe_result->ToObject(&result)) return maybe_result;
   }
-  COUNTERS->call_normal_stubs()->Increment();
+  isolate()->counters()->call_normal_stubs()->Increment();
   Code* code = Code::cast(result);
   USE(code);
-  PROFILE(CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_NORMAL_TAG),
+  PROFILE(isolate(),
+          CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_NORMAL_TAG),
                           code, code->arguments_count()));
+  GDBJIT(AddCode(GDBJITInterface::CALL_NORMAL, Code::cast(code)));
   return result;
 }
 
 
 MaybeObject* StubCompiler::CompileCallMegamorphic(Code::Flags flags) {
-  HandleScope scope;
+  HandleScope scope(isolate());
   int argc = Code::ExtractArgumentsCountFromFlags(flags);
   Code::Kind kind = Code::ExtractKindFromFlags(flags);
   if (kind == Code::CALL_IC) {
@@ -1260,17 +1570,19 @@ MaybeObject* StubCompiler::CompileCallMegamorphic(Code::Flags flags) {
         GetCodeWithFlags(flags, "CompileCallMegamorphic");
     if (!maybe_result->ToObject(&result)) return maybe_result;
   }
-  COUNTERS->call_megamorphic_stubs()->Increment();
+  isolate()->counters()->call_megamorphic_stubs()->Increment();
   Code* code = Code::cast(result);
   USE(code);
-  PROFILE(CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_MEGAMORPHIC_TAG),
+  PROFILE(isolate(),
+          CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_MEGAMORPHIC_TAG),
                           code, code->arguments_count()));
+  GDBJIT(AddCode(GDBJITInterface::CALL_MEGAMORPHIC, Code::cast(code)));
   return result;
 }
 
 
 MaybeObject* StubCompiler::CompileCallMiss(Code::Flags flags) {
-  HandleScope scope;
+  HandleScope scope(isolate());
   int argc = Code::ExtractArgumentsCountFromFlags(flags);
   Code::Kind kind = Code::ExtractKindFromFlags(flags);
   if (kind == Code::CALL_IC) {
@@ -1282,18 +1594,20 @@ MaybeObject* StubCompiler::CompileCallMiss(Code::Flags flags) {
   { MaybeObject* maybe_result = GetCodeWithFlags(flags, "CompileCallMiss");
     if (!maybe_result->ToObject(&result)) return maybe_result;
   }
-  COUNTERS->call_megamorphic_stubs()->Increment();
+  isolate()->counters()->call_megamorphic_stubs()->Increment();
   Code* code = Code::cast(result);
   USE(code);
-  PROFILE(CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_MISS_TAG),
+  PROFILE(isolate(),
+          CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_MISS_TAG),
                           code, code->arguments_count()));
+  GDBJIT(AddCode(GDBJITInterface::CALL_MISS, Code::cast(code)));
   return result;
 }
 
 
 #ifdef ENABLE_DEBUGGER_SUPPORT
 MaybeObject* StubCompiler::CompileCallDebugBreak(Code::Flags flags) {
-  HandleScope scope;
+  HandleScope scope(isolate());
   Debug::GenerateCallICDebugBreak(masm());
   Object* result;
   { MaybeObject* maybe_result =
@@ -1304,14 +1618,15 @@ MaybeObject* StubCompiler::CompileCallDebugBreak(Code::Flags flags) {
   USE(code);
   Code::Kind kind = Code::ExtractKindFromFlags(flags);
   USE(kind);
-  PROFILE(CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_DEBUG_BREAK_TAG),
+  PROFILE(isolate(),
+          CodeCreateEvent(CALL_LOGGER_TAG(kind, CALL_DEBUG_BREAK_TAG),
                           code, code->arguments_count()));
   return result;
 }
 
 
 MaybeObject* StubCompiler::CompileCallDebugPrepareStepIn(Code::Flags flags) {
-  HandleScope scope;
+  HandleScope scope(isolate());
   // Use the same code for the the step in preparations as we do for
   // the miss case.
   int argc = Code::ExtractArgumentsCountFromFlags(flags);
@@ -1328,10 +1643,11 @@ MaybeObject* StubCompiler::CompileCallDebugPrepareStepIn(Code::Flags flags) {
   }
   Code* code = Code::cast(result);
   USE(code);
-  PROFILE(CodeCreateEvent(
-      CALL_LOGGER_TAG(kind, CALL_DEBUG_PREPARE_STEP_IN_TAG),
-      code,
-      code->arguments_count()));
+  PROFILE(isolate(),
+          CodeCreateEvent(
+              CALL_LOGGER_TAG(kind, CALL_DEBUG_PREPARE_STEP_IN_TAG),
+              code,
+              code->arguments_count()));
   return result;
 }
 #endif
@@ -1346,7 +1662,7 @@ MaybeObject* StubCompiler::GetCodeWithFlags(Code::Flags flags,
   // Create code object in the heap.
   CodeDesc desc;
   masm_.GetCode(&desc);
-  MaybeObject* result = HEAP->CreateCode(desc, flags, masm_.CodeObject());
+  MaybeObject* result = heap()->CreateCode(desc, flags, masm_.CodeObject());
 #ifdef ENABLE_DISASSEMBLER
   if (FLAG_print_code_stubs && !result->IsFailure()) {
     Code::cast(result->ToObjectUnchecked())->Disassemble(name);
@@ -1383,9 +1699,13 @@ MaybeObject* LoadStubCompiler::GetCode(PropertyType type, String* name) {
   Code::Flags flags = Code::ComputeMonomorphicFlags(Code::LOAD_IC, type);
   MaybeObject* result = GetCodeWithFlags(flags, name);
   if (!result->IsFailure()) {
-    PROFILE(CodeCreateEvent(Logger::LOAD_IC_TAG,
+    PROFILE(isolate(),
+            CodeCreateEvent(Logger::LOAD_IC_TAG,
                             Code::cast(result->ToObjectUnchecked()),
                             name));
+    GDBJIT(AddCode(GDBJITInterface::LOAD_IC,
+                   name,
+                   Code::cast(result->ToObjectUnchecked())));
   }
   return result;
 }
@@ -1395,33 +1715,47 @@ MaybeObject* KeyedLoadStubCompiler::GetCode(PropertyType type, String* name) {
   Code::Flags flags = Code::ComputeMonomorphicFlags(Code::KEYED_LOAD_IC, type);
   MaybeObject* result = GetCodeWithFlags(flags, name);
   if (!result->IsFailure()) {
-    PROFILE(CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG,
+    PROFILE(isolate(),
+            CodeCreateEvent(Logger::KEYED_LOAD_IC_TAG,
                             Code::cast(result->ToObjectUnchecked()),
                             name));
+    GDBJIT(AddCode(GDBJITInterface::LOAD_IC,
+                   name,
+                   Code::cast(result->ToObjectUnchecked())));
   }
   return result;
 }
 
 
 MaybeObject* StoreStubCompiler::GetCode(PropertyType type, String* name) {
-  Code::Flags flags = Code::ComputeMonomorphicFlags(Code::STORE_IC, type);
+  Code::Flags flags = Code::ComputeMonomorphicFlags(
+      Code::STORE_IC, type, strict_mode_);
   MaybeObject* result = GetCodeWithFlags(flags, name);
   if (!result->IsFailure()) {
-    PROFILE(CodeCreateEvent(Logger::STORE_IC_TAG,
+    PROFILE(isolate(),
+            CodeCreateEvent(Logger::STORE_IC_TAG,
                             Code::cast(result->ToObjectUnchecked()),
                             name));
+    GDBJIT(AddCode(GDBJITInterface::STORE_IC,
+                   name,
+                   Code::cast(result->ToObjectUnchecked())));
   }
   return result;
 }
 
 
 MaybeObject* KeyedStoreStubCompiler::GetCode(PropertyType type, String* name) {
-  Code::Flags flags = Code::ComputeMonomorphicFlags(Code::KEYED_STORE_IC, type);
+  Code::Flags flags = Code::ComputeMonomorphicFlags(
+      Code::KEYED_STORE_IC, type, strict_mode_);
   MaybeObject* result = GetCodeWithFlags(flags, name);
   if (!result->IsFailure()) {
-    PROFILE(CodeCreateEvent(Logger::KEYED_STORE_IC_TAG,
+    PROFILE(isolate(),
+            CodeCreateEvent(Logger::KEYED_STORE_IC_TAG,
                             Code::cast(result->ToObjectUnchecked()),
                             name));
+    GDBJIT(AddCode(GDBJITInterface::KEYED_STORE_IC,
+                   name,
+                   Code::cast(result->ToObjectUnchecked())));
   }
   return result;
 }
@@ -1430,34 +1764,61 @@ MaybeObject* KeyedStoreStubCompiler::GetCode(PropertyType type, String* name) {
 CallStubCompiler::CallStubCompiler(int argc,
                                    InLoopFlag in_loop,
                                    Code::Kind kind,
+                                   Code::ExtraICState extra_ic_state,
                                    InlineCacheHolderFlag cache_holder)
-    : arguments_(argc)
-    , in_loop_(in_loop)
-    , kind_(kind)
-    , cache_holder_(cache_holder) {
+    : arguments_(argc),
+      in_loop_(in_loop),
+      kind_(kind),
+      extra_ic_state_(extra_ic_state),
+      cache_holder_(cache_holder) {
 }
 
 
-MaybeObject* CallStubCompiler::CompileCustomCall(int generator_id,
-                                                 Object* object,
+bool CallStubCompiler::HasCustomCallGenerator(JSFunction* function) {
+  SharedFunctionInfo* info = function->shared();
+  if (info->HasBuiltinFunctionId()) {
+    BuiltinFunctionId id = info->builtin_function_id();
+#define CALL_GENERATOR_CASE(name) if (id == k##name) return true;
+    CUSTOM_CALL_IC_GENERATORS(CALL_GENERATOR_CASE)
+#undef CALL_GENERATOR_CASE
+  }
+  CallOptimization optimization(function);
+  if (optimization.is_simple_api_call()) {
+    return true;
+  }
+  return false;
+}
+
+
+MaybeObject* CallStubCompiler::CompileCustomCall(Object* object,
                                                  JSObject* holder,
                                                  JSGlobalPropertyCell* cell,
                                                  JSFunction* function,
                                                  String* fname) {
-  ASSERT(generator_id >= 0 && generator_id < kNumCallGenerators);
-  switch (generator_id) {
-#define CALL_GENERATOR_CASE(ignored1, ignored2, name)           \
-    case k##name##CallGenerator:                                \
-      return CallStubCompiler::Compile##name##Call(object,      \
-                                                   holder,      \
-                                                   cell,        \
-                                                   function,    \
-                                                   fname);
+  ASSERT(HasCustomCallGenerator(function));
+
+  SharedFunctionInfo* info = function->shared();
+  if (info->HasBuiltinFunctionId()) {
+    BuiltinFunctionId id = info->builtin_function_id();
+#define CALL_GENERATOR_CASE(name)                           \
+    if (id == k##name) {                                    \
+      return CallStubCompiler::Compile##name##Call(object,  \
+                                                  holder,   \
+                                                  cell,     \
+                                                  function, \
+                                                  fname);   \
+    }
     CUSTOM_CALL_IC_GENERATORS(CALL_GENERATOR_CASE)
 #undef CALL_GENERATOR_CASE
   }
-  UNREACHABLE();
-  return HEAP->undefined_value();
+  CallOptimization optimization(function);
+  ASSERT(optimization.is_simple_api_call());
+  return CompileFastApiCall(optimization,
+                            object,
+                            holder,
+                            cell,
+                            function,
+                            fname);
 }
 
 
@@ -1465,6 +1826,7 @@ MaybeObject* CallStubCompiler::GetCode(PropertyType type, String* name) {
   int argc = arguments_.immediate();
   Code::Flags flags = Code::ComputeMonomorphicFlags(kind_,
                                                     type,
+                                                    extra_ic_state_,
                                                     cache_holder_,
                                                     in_loop_,
                                                     argc);
@@ -1489,7 +1851,8 @@ MaybeObject* ConstructStubCompiler::GetCode() {
   }
   Code* code = Code::cast(result);
   USE(code);
-  PROFILE(CodeCreateEvent(Logger::STUB_TAG, code, "ConstructStub"));
+  PROFILE(isolate(), CodeCreateEvent(Logger::STUB_TAG, code, "ConstructStub"));
+  GDBJIT(AddCode(GDBJITInterface::STUB, "ConstructStub", Code::cast(code)));
   return result;
 }
 
@@ -1558,6 +1921,19 @@ void CallOptimization::AnalyzePossibleApiFunction(JSFunction* function) {
   }
 
   is_simple_api_call_ = true;
+}
+
+
+MaybeObject* ExternalArrayStubCompiler::GetCode(Code::Flags flags) {
+  Object* result;
+  { MaybeObject* maybe_result = GetCodeWithFlags(flags, "ExternalArrayStub");
+    if (!maybe_result->ToObject(&result)) return maybe_result;
+  }
+  Code* code = Code::cast(result);
+  USE(code);
+  PROFILE(isolate(),
+          CodeCreateEvent(Logger::STUB_TAG, code, "ExternalArrayStub"));
+  return result;
 }
 
 
