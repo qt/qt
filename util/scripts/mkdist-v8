@@ -5,7 +5,7 @@ die() {
     exit 1
 }
 
-default_tag="v8-snapshot-08092010"
+default_tag="v8-snapshot-05042011"
 
 if [ $# -eq 0 ]; then
     tag="$default_tag"
@@ -20,13 +20,16 @@ if [ -z "$repository" ]; then
     die "error: cannot locate v8 git repository. please run git config --global v8.url /path-or-url/to/v8/repo"
 fi
 
-excluded_directories="$excluded_directories benchmarks samples test"
+excluded_directories="$excluded_directories build benchmarks samples test .svn"
 
 
 files_to_remove=""
 files_to_remove="$files_to_remove .gitignore"
 files_to_remove="$files_to_remove SConstruct"
 files_to_remove="$files_to_remove src/SConscript"
+files_to_remove="$files_to_remove *.svn*"
+files_to_remove="$files_to_remove preparser/SConscript"
+files_to_remove="$files_to_remove src/d8.gyp"
 
 require_clean_work_tree() {
     # test if working tree is dirty
@@ -108,7 +111,7 @@ echo "generating extra sources"
 cat >$srcdir/VERSION <<EOT
 This is a snapshot of v8 from
 
-        http://v8.googlecode.com/svn/branches/experimental/isolates
+        http://v8.googlecode.com/svn/branches/bleeding_edge
 
 The commit imported was from the
 
