@@ -51,6 +51,7 @@ class QSGCustomMaterialShader : public QSGMaterialShader
 {
 public:
     QSGCustomMaterialShader(const QSGShaderEffectMaterialKey &key, const QVector<const char *> &attributes);
+    virtual void deactivate();
     virtual void updateState(const RenderState &state, QSGMaterial *newEffect, QSGMaterial *oldEffect);
     virtual char const *const *attributeNames() const;
 
@@ -77,11 +78,14 @@ QSGCustomMaterialShader::QSGCustomMaterialShader(const QSGShaderEffectMaterialKe
 {
 }
 
+void QSGCustomMaterialShader::deactivate()
+{
+    glDisable(GL_CULL_FACE);
+}
+
 void QSGCustomMaterialShader::updateState(const RenderState &state, QSGMaterial *newEffect, QSGMaterial *oldEffect)
 {
     Q_ASSERT(newEffect != 0);
-    Q_UNUSED(oldEffect);
-    Q_UNUSED(newEffect);
 
     const QSGShaderEffectMaterial *material = static_cast<const QSGShaderEffectMaterial *>(newEffect);
 
@@ -153,6 +157,23 @@ void QSGCustomMaterialShader::updateState(const RenderState &state, QSGMaterial 
         }
     }
 
+    const QSGShaderEffectMaterial *oldMaterial = static_cast<const QSGShaderEffectMaterial *>(oldEffect);
+    if (oldEffect == 0 || material->cullMode() != oldMaterial->cullMode()) {
+        switch (material->cullMode()) {
+        case QSGShaderEffectMaterial::FrontFaceCulling:
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_FRONT);
+            break;
+        case QSGShaderEffectMaterial::BackFaceCulling:
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+            break;
+        default:
+            glDisable(GL_CULL_FACE);
+            break;
+        }
+    }
+
     if ((state.isMatrixDirty()) && material->m_source.respectsMatrix)
         m_program.setUniformValue(m_matrixLoc, state.combinedMatrix());
 }
@@ -193,6 +214,7 @@ uint qHash(const QSGShaderEffectMaterialKey &key)
 QHash<QSGShaderEffectMaterialKey, QSharedPointer<QSGMaterialType> > QSGShaderEffectMaterial::materialMap;
 
 QSGShaderEffectMaterial::QSGShaderEffectMaterial()
+    : m_cullMode(NoCulling)
 {
     setFlag(Blending, true);
 }
@@ -210,6 +232,16 @@ QSGMaterialShader *QSGShaderEffectMaterial::createShader() const
 int QSGShaderEffectMaterial::compare(const QSGMaterial *other) const
 {
     return this - static_cast<const QSGShaderEffectMaterial *>(other);
+}
+
+void QSGShaderEffectMaterial::setCullMode(QSGShaderEffectMaterial::CullMode face)
+{
+    m_cullMode = face;
+}
+
+QSGShaderEffectMaterial::CullMode QSGShaderEffectMaterial::cullMode() const
+{
+    return m_cullMode;
 }
 
 void QSGShaderEffectMaterial::setProgramSource(const QSGShaderEffectProgram &source)

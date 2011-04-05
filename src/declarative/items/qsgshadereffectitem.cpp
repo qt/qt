@@ -79,6 +79,7 @@ static const char qt_emptyAttributeName[] = "";
 QSGShaderEffectItem::QSGShaderEffectItem(QSGItem *parent)
     : QSGItem(parent)
     , m_mesh_resolution(1, 1)
+    , m_cullMode(NoCulling)
     , m_blending(true)
     , m_dirtyData(true)
     , m_programDirty(true)
@@ -139,6 +140,16 @@ void QSGShaderEffectItem::setMeshResolution(const QSize &size)
 
     m_mesh_resolution = size;
     update();
+    emit meshResolutionChanged();
+}
+
+void QSGShaderEffectItem::setCullMode(CullMode face)
+{
+    if (face == m_cullMode)
+        return;
+    m_cullMode = face;
+    update();
+    emit cullModeChanged();
 }
 
 void QSGShaderEffectItem::changeSource(int index)
@@ -355,6 +366,11 @@ QSGNode *QSGShaderEffectItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeD
     // Update blending
     if (bool(m_material.flags() & QSGMaterial::Blending) != m_blending) {
         m_material.setFlag(QSGMaterial::Blending, m_blending);
+        node->markDirty(QSGNode::DirtyMaterial);
+    }
+
+    if (int(m_material.cullMode()) != int(m_cullMode)) {
+        m_material.setCullMode(QSGShaderEffectMaterial::CullMode(m_cullMode));
         node->markDirty(QSGNode::DirtyMaterial);
     }
 
