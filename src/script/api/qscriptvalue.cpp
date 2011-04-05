@@ -53,6 +53,28 @@ QScriptValue::QScriptValue(bool value)
 }
 
 /*!
+    \enum QScriptValue::PropertyFlag
+
+    This enum describes the attributes of a property.
+
+    \value ReadOnly The property is read-only. Attempts by Qt Script code to write to the property will be ignored.
+
+    \value Undeletable Attempts by Qt Script code to \c{delete} the property will be ignored.
+
+    \value SkipInEnumeration The property is not to be enumerated by a \c{for-in} enumeration.
+
+    \value PropertyGetter The property is defined by a function which will be called to get the property value.
+
+    \value PropertySetter The property is defined by a function which will be called to set the property value.
+
+    \omitvalue QObjectMember This flag is used to indicate that an existing property is a QObject member (a property or method).
+
+    \value KeepExistingFlags This value is used to indicate to setProperty() that the property's flags should be left unchanged. If the property doesn't exist, the default flags (0) will be used.
+
+    \omitvalue UserRange Flags in this range are not used by Qt Script, and can be used for custom purposes.
+*/
+
+/*!
   Constructs a new QScriptValue with a number \a value.
 */
 QScriptValue::QScriptValue(int value)

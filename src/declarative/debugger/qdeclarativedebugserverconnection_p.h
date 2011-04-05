@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -62,6 +62,7 @@ public:
     virtual bool isConnected() const = 0;
     virtual void send(const QByteArray &message) = 0;
     virtual void disconnect() = 0;
+    virtual bool waitForMessage() = 0;
 };
 
 Q_DECLARE_INTERFACE(QDeclarativeDebugServerConnection, "com.trolltech.Qt.QDeclarativeDebugServerConnection/1.0")

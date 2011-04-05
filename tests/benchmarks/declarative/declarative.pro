@@ -3,6 +3,7 @@ TEMPLATE = subdirs
 SUBDIRS += \
            binding \
            creation \
+           holistic \
            pointers \
            qdeclarativecomponent \
            qdeclarativeimage \

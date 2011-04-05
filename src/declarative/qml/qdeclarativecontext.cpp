@@ -46,9 +46,9 @@
 #include "private/qdeclarativeexpression_p.h"
 #include "private/qdeclarativeengine_p.h"
 #include "qdeclarativeengine.h"
-#include "private/qdeclarativecompiledbindings_p.h"
 #include "qdeclarativeinfo.h"
 #include "private/qdeclarativeglobalscriptclass_p.h"
+#include "private/qdeclarativev4bindings_p.h"
 
 #include <qscriptengine.h>
 #include <QtCore/qvarlengtharray.h>
@@ -498,7 +498,7 @@ QObject *QDeclarativeContextPrivate::context_at(QDeclarativeListProperty<QObject
 
 
 QDeclarativeContextData::QDeclarativeContextData()
-: parent(0), engine(0), isInternal(false), publicContext(0), propertyNames(0), contextObject(0),
+: parent(0), engine(0), isInternal(false), ownedByParent(false), publicContext(0), propertyNames(0), contextObject(0),
   imports(0), childContexts(0), nextChild(0), prevChild(0), expressions(0), contextObjects(0),
   contextGuards(0), idValues(0), idValueCount(0), optimizedBindings(0), linkedContext(0),
   componentAttached(0)
@@ -506,7 +506,7 @@ QDeclarativeContextData::QDeclarativeContextData()
 }
 
 QDeclarativeContextData::QDeclarativeContextData(QDeclarativeContext *ctxt)
-: parent(0), engine(0), isInternal(false), publicContext(ctxt), propertyNames(0), contextObject(0),
+: parent(0), engine(0), isInternal(false), ownedByParent(false), publicContext(ctxt), propertyNames(0), contextObject(0),
   imports(0), childContexts(0), nextChild(0), prevChild(0), expressions(0), contextObjects(0),
   contextGuards(0), idValues(0), idValueCount(0), optimizedBindings(0), linkedContext(0),
   componentAttached(0)
@@ -515,8 +515,13 @@ QDeclarativeContextData::QDeclarativeContextData(QDeclarativeContext *ctxt)
 
 void QDeclarativeContextData::invalidate()
 {
-    while (childContexts) 
-        childContexts->invalidate();
+    while (childContexts) {
+        if (childContexts->ownedByParent) {
+            childContexts->destroy();
+        } else {
+            childContexts->invalidate();
+        }
+    }
 
     while (componentAttached) {
         QDeclarativeComponentAttached *a = componentAttached;
@@ -614,7 +619,7 @@ void QDeclarativeContextData::destroy()
     delete this;
 }
 
-void QDeclarativeContextData::setParent(QDeclarativeContextData *p)
+void QDeclarativeContextData::setParent(QDeclarativeContextData *p, bool parentTakesOwnership)
 {
     if (p) {
         parent = p;
@@ -623,6 +628,7 @@ void QDeclarativeContextData::setParent(QDeclarativeContextData *p)
         if (nextChild) nextChild->prevChild = &nextChild;
         prevChild = &p->childContexts;
         p->childContexts = this;
+        ownedByParent = parentTakesOwnership;
     }
 }
 
@@ -660,83 +666,6 @@ void QDeclarativeContextData::addObject(QObject *o)
         data->nextContextObject->prevContextObject = &data->nextContextObject;
     data->prevContextObject = &contextObjects;
     contextObjects = data;
-}
-
-void QDeclarativeContextData::addImportedScript(const QDeclarativeParser::Object::ScriptBlock &script)
-{
-    if (!engine) 
-        return;
-
-    QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
-    QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
-
-    const QString &code = script.code;
-    const QString &url = script.file;
-    const QDeclarativeParser::Object::ScriptBlock::Pragmas &pragmas = script.pragmas;
-
-    Q_ASSERT(!url.isEmpty());
-
-    if (pragmas & QDeclarativeParser::Object::ScriptBlock::Shared) {
-
-        QHash<QString, QScriptValue>::Iterator iter = enginePriv->m_sharedScriptImports.find(url);
-        if (iter == enginePriv->m_sharedScriptImports.end()) {
-            QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
-
-            scriptContext->pushScope(enginePriv->contextClass->newUrlContext(url));
-            scriptContext->pushScope(enginePriv->globalClass->staticGlobalObject());
-        
-            QScriptValue scope = scriptContext->activationObject();// QScriptDeclarativeClass::newStaticScopeObject(scriptEngine);
-            scriptContext->pushScope(scope);
-
-            scriptEngine->evaluate(code, url, 1);
-
-            if (scriptEngine->hasUncaughtException()) {
-                QDeclarativeError error;
-                QDeclarativeExpressionPrivate::exceptionToError(scriptEngine, error);
-                enginePriv->warning(error);
-            }
-
-            scriptEngine->popContext();
-
-            iter = enginePriv->m_sharedScriptImports.insert(url, scope);
-        }
-
-        importedScripts.append(*iter);
-
-    } else {
-
-        QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
-
-        scriptContext->pushScope(enginePriv->contextClass->newUrlContext(this, 0, url));
-        scriptContext->pushScope(enginePriv->globalClass->staticGlobalObject());
-
-        // TODO: In the JSC-based back-end, newStaticScopeObject()
-        // created a JSVariableObject, so that variables and function
-        // declarations correctly ended up in this object, no matter
-        // where in the scope chain it was (JSC searches for the first
-        // JSVariableObject instance). However, in V8, variables and
-        // function declarations always end up in the function context
-        // (AKA "activation object"). This means we should set the new
-        // scope object as the context's activation object. However,
-        // since QScriptContext::setActivationObject() is not yet
-        // implemented, we use the default (empty) activation object
-        // as the scope to get the desired behavior.
-        QScriptValue scope = scriptContext->activationObject();// QScriptDeclarativeClass::newStaticScopeObject(scriptEngine);
-        scriptContext->pushScope(scope);
-
-        scriptEngine->evaluate(code, url, 1);
-
-        if (scriptEngine->hasUncaughtException()) {
-            QDeclarativeError error;
-            QDeclarativeExpressionPrivate::exceptionToError(scriptEngine, error);
-            enginePriv->warning(error);
-        }
-
-        scriptEngine->popContext();
-
-        importedScripts.append(scope);
-
-    }
 }
 
 void QDeclarativeContextData::setIdProperty(int idx, QObject *obj)

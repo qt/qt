@@ -647,6 +647,7 @@ int QDeclarativeVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                     return -1; // We can't run the method
 
                 QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(ctxt->engine);
+                ep->referenceScarceResources(); // "hold" scarce resources in memory during evaluation.
 
                 QScriptValue function = method(id);
 
@@ -657,10 +658,19 @@ int QDeclarativeVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                         args << ep->scriptValueFromVariant(*(QVariant *)a[ii + 1]);
                     }
                 }
+
                 QScriptValue rv = function.call(ep->objectClass->newQObject(object), args);
+                if (ep->scriptEngine.hasUncaughtException()) {
+                    QDeclarativeError error;
+                    QDeclarativeExpressionPrivate::exceptionToError(&ep->scriptEngine, error);
+                    if (error.isValid()) {
+                        ep->warning(error);
+                    }
+                }
 
                 if (a[0]) *reinterpret_cast<QVariant *>(a[0]) = ep->scriptValueToVariant(rv);
 
+                ep->dereferenceScarceResources(); // "release" scarce resources if top-level expression evaluation is complete.
                 return -1;
             }
             return -1;

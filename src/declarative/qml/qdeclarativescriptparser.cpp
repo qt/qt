@@ -59,6 +59,22 @@ QT_BEGIN_NAMESPACE
 using namespace QDeclarativeJS;
 using namespace QDeclarativeParser;
 
+void QDeclarativeScriptParser::Import::extractVersion(int *maj, int *min) const
+{
+    *maj = -1; *min = -1;
+
+    if (!version.isEmpty()) {
+        int dot = version.indexOf(QLatin1Char('.'));
+        if (dot < 0) {
+            *maj = version.toInt();
+            *min = 0;
+        } else {
+            *maj = version.left(dot).toInt();
+            *min = version.mid(dot+1).toInt();
+        }
+    }
+}
+
 namespace {
 
 class ProcessAST: protected AST::Visitor
@@ -776,7 +792,10 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
             f = f->finish();
         }
 
-        QString body = textAt(funDecl->lbraceToken, funDecl->rbraceToken);
+        AST::SourceLocation loc = funDecl->rparenToken;
+        loc.offset = loc.end();
+        loc.startColumn += 1;
+        QString body = textAt(loc, funDecl->rbraceToken);
         slot.name = funDecl->name->asString().toUtf8();
         slot.body = body;
         obj->dynamicSlots << slot;
@@ -893,6 +912,19 @@ static void replaceWithSpace(QString &str, int idx, int n)
         *data++ = space;
 }
 
+static QDeclarativeParser::LocationSpan
+locationFromLexer(const QDeclarativeJS::Lexer &lex, int startLine, int startColumn, int startOffset)
+{
+    QDeclarativeParser::LocationSpan l;
+
+    l.start.line = startLine; l.start.column = startColumn;
+    l.end.line = lex.endLineNo(); l.end.column = lex.endColumnNo();
+    l.range.offset = startOffset;
+    l.range.length = lex.tokenOffset() + lex.tokenLength() - startOffset;
+
+    return l;
+}
+
 /*
 Searches for ".pragma <value>" declarations within \a script.  Currently supported pragmas
 are:
@@ -937,7 +969,7 @@ QDeclarativeParser::Object::ScriptBlock::Pragmas QDeclarativeScriptParser::extra
         if (l.currentLineNo() == startLine)
             return rv;
 
-        if (pragmaValue == QLatin1String("library")) {
+        if (pragmaValue == library) {
             rv |= QDeclarativeParser::Object::ScriptBlock::Shared;
             replaceWithSpace(script, startOffset, endOffset - startOffset);
         } else {
@@ -1021,7 +1053,8 @@ QDeclarativeScriptParser::JavaScriptMetaData QDeclarativeScriptParser::extractMe
             return rv;
 
         int startOffset = l.tokenOffset();
-        int startLine = l.currentLineNo();
+        int startLine = l.startLineNo();
+        int startColumn = l.startColumnNo();
 
         token = l.lex();
 
@@ -1059,8 +1092,11 @@ QDeclarativeScriptParser::JavaScriptMetaData QDeclarativeScriptParser::extractMe
                 if (!importId.at(0).isUpper())
                     return rv;
 
+                QDeclarativeParser::LocationSpan location =
+                    locationFromLexer(l, startLine, startColumn, startOffset);
+
                 token = l.lex();
-                if (l.currentLineNo() == startLine)
+                if (l.startLineNo() == startLine)
                     return rv;
 
                 replaceWithSpace(script, startOffset, endOffset - startOffset);
@@ -1069,9 +1105,9 @@ QDeclarativeScriptParser::JavaScriptMetaData QDeclarativeScriptParser::extractMe
                 import.type = Import::Script;
                 import.uri = file;
                 import.qualifier = importId;
+                import.location = location;
 
                 rv.imports << import;
-
             } else {
                 // URI
                 QString uri;
@@ -1114,8 +1150,11 @@ QDeclarativeScriptParser::JavaScriptMetaData QDeclarativeScriptParser::extractMe
                 if (!importId.at(0).isUpper())
                     return rv;
 
+                QDeclarativeParser::LocationSpan location =
+                    locationFromLexer(l, startLine, startColumn, startOffset);
+
                 token = l.lex();
-                if (l.currentLineNo() == startLine)
+                if (l.startLineNo() == startLine)
                     return rv;
 
                 replaceWithSpace(script, startOffset, endOffset - startOffset);
@@ -1125,6 +1164,7 @@ QDeclarativeScriptParser::JavaScriptMetaData QDeclarativeScriptParser::extractMe
                 import.uri = uri;
                 import.version = version;
                 import.qualifier = importId;
+                import.location = location;
 
                 rv.imports << import;
             }
@@ -1140,7 +1180,7 @@ QDeclarativeScriptParser::JavaScriptMetaData QDeclarativeScriptParser::extractMe
             QString pragmaValue = script.mid(l.tokenOffset(), l.tokenLength());
             int endOffset = l.tokenLength() + l.tokenOffset();
 
-            if (pragmaValue == QLatin1String("library")) {
+            if (pragmaValue == library) {
                 pragmas |= QDeclarativeParser::Object::ScriptBlock::Shared;
                 replaceWithSpace(script, startOffset, endOffset - startOffset);
             } else {

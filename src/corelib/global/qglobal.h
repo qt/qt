@@ -1685,7 +1685,7 @@ inline void qUnused(T &x) { (void)x; }
 #endif
 
 #ifndef qPrintable
-#  define qPrintable(string) (string).toLocal8Bit().constData()
+#  define qPrintable(string) QString(string).toLocal8Bit().constData()
 #endif
 
 Q_CORE_EXPORT void qDebug(const char *, ...) /* print debug message */
@@ -2515,7 +2515,10 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #ifdef SYMBIAN_GRAPHICS_TRANSITION_EFFECTS_SIGNALING_AVAILABLE
 #  define Q_SYMBIAN_TRANSITION_EFFECTS
 #endif
+#endif
 
+#ifdef SYMBIAN_WSERV_AND_CONE_MULTIPLE_SCREENS
+#define Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS
 #endif
 
 //Symbian does not support data imports from a DLL
@@ -2721,10 +2724,6 @@ QT_LICENSED_MODULE(DBus)
 #  define QT_NO_SHAREDMEMORY
 // QNX currently doesn't support forking in a thread, so disable QProcess
 #  define QT_NO_PROCESS
-#endif
-
-#ifdef Q_OS_NACL
-#include <QtCore/qnaclunimplemented.h>
 #endif
 
 #if defined (__ELF__)

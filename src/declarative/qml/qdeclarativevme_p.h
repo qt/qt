@@ -62,6 +62,8 @@
 QT_BEGIN_NAMESPACE
 
 class QObject;
+class QScriptValue;
+class QDeclarativeScriptData;
 class QDeclarativeInstruction;
 class QDeclarativeCompiledData;
 class QDeclarativeCompiledData;
@@ -103,6 +105,8 @@ public:
     QObject *run(QDeclarativeContextData *, QDeclarativeCompiledData *, 
                  int start = -1, int count = -1, 
                  const QBitField & = QBitField());
+    QScriptValue run(QDeclarativeContextData *, QDeclarativeScriptData *);
+
     void runDeferred(QObject *);
 
     bool isError() const;

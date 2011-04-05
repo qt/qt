@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -147,6 +147,36 @@ void QWindowSystemInterface::handleKeyEvent(QWidget *tlw, ulong timestamp, QEven
 
     QWindowSystemInterfacePrivate::KeyEvent * e =
             new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, t, k, mods, text, autorep, count);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleExtendedKeyEvent(QWidget *w, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
+                                                    quint32 nativeScanCode, quint32 nativeVirtualKey,
+                                                    quint32 nativeModifiers,
+                                                    const QString& text, bool autorep,
+                                                    ushort count)
+{
+    unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    handleExtendedKeyEvent(w, time, type, key, modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers,
+                           text, autorep, count);
+}
+
+void QWindowSystemInterface::handleExtendedKeyEvent(QWidget *tlw, ulong timestamp, QEvent::Type type, int key,
+                                                    Qt::KeyboardModifiers modifiers,
+                                                    quint32 nativeScanCode, quint32 nativeVirtualKey,
+                                                    quint32 nativeModifiers,
+                                                    const QString& text, bool autorep,
+                                                    ushort count)
+{
+    if (tlw) {
+        QWidgetData *data = qt_qwidget_data(tlw);
+        if (data->in_destructor)
+            tlw = 0;
+    }
+
+    QWindowSystemInterfacePrivate::KeyEvent * e =
+            new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, type, key, modifiers,
+                nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorep, count);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 

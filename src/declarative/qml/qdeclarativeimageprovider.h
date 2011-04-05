@@ -52,13 +52,15 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeImageProviderPrivate;
+class QSGTexture;
 
 class Q_DECLARATIVE_EXPORT QDeclarativeImageProvider
 {
 public:
     enum ImageType {
         Image,
-        Pixmap
+        Pixmap,
+        Texture
     };
 
     QDeclarativeImageProvider(ImageType type);
@@ -68,6 +70,7 @@ public:
 
     virtual QImage requestImage(const QString &id, QSize *size, const QSize& requestedSize);
     virtual QPixmap requestPixmap(const QString &id, QSize *size, const QSize& requestedSize);
+    virtual QSGTexture *requestTexture(const QString &id, QSize *size, const QSize &requestedSize);
 
 private:
     QDeclarativeImageProviderPrivate *d;

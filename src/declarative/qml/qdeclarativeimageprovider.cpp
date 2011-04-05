@@ -159,6 +159,8 @@ public:
         requestImage() method will be called for all image requests.
     \value Pixmap The Image Provider provides QPixmap images. The 
         requestPixmap() method will be called for all image requests.
+    \value Texture The Image Provider provides QSGTextureProvider based images.
+        The requestTexture() method will be called for all image requests. \omitvalue
 */
 
 /*!
@@ -241,6 +243,37 @@ QPixmap QDeclarativeImageProvider::requestPixmap(const QString &id, QSize *size,
     if (d->type == Pixmap)
         qWarning("ImageProvider supports Pixmap type but has not implemented requestPixmap()");
     return QPixmap();
+}
+
+
+/*!
+    Implement this method to return the texture with \a id. The default
+    implementation returns 0.
+
+    The \a id is the requested image source, with the "image:" scheme and
+    provider identifier removed. For example, if the image \l{Image::}{source}
+    was "image://myprovider/icons/home", the given \a id would be "icons/home".
+
+    The \a requestedSize corresponds to the \l {Image::sourceSize} requested by
+    an Image element. If \a requestedSize is a valid size, the image
+    returned should be of that size.
+
+    In all cases, \a size must be set to the original size of the image. This
+    is used to set the \l {Item::}{width} and \l {Item::}{height} of the
+    relevant \l Image if these values have not been set explicitly.
+
+    \note this method may be called by multiple threads, so ensure the
+    implementation of this method is reentrant.
+*/
+
+QSGTexture *QDeclarativeImageProvider::requestTexture(const QString &id, QSize *size, const QSize &requestedSize)
+{
+    Q_UNUSED(id);
+    Q_UNUSED(size);
+    Q_UNUSED(requestedSize);
+    if (d->type == Texture)
+        qWarning("ImageProvider supports Texture type but has not implemented requestTexture()");
+    return 0;
 }
 
 QT_END_NAMESPACE

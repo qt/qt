@@ -53,6 +53,9 @@
 
 QT_BEGIN_HEADER
 
+#define QML_VERSION     0x020000
+#define QML_VERSION_STR "2.0"
+
 #define QML_DECLARE_TYPE(TYPE) \
     Q_DECLARE_METATYPE(TYPE *) \
     Q_DECLARE_METATYPE(QDeclarativeListProperty<TYPE>) 
@@ -392,6 +395,8 @@ int qmlRegisterCustomType(const char *uri, int versionMajor, int versionMinor,
 
 class QDeclarativeContext;
 class QDeclarativeEngine;
+class QScriptValue;
+class QScriptEngine;
 Q_DECLARATIVE_EXPORT void qmlExecuteDeferred(QObject *);
 Q_DECLARATIVE_EXPORT QDeclarativeContext *qmlContext(const QObject *);
 Q_DECLARATIVE_EXPORT QDeclarativeEngine *qmlEngine(const QObject *);
@@ -403,6 +408,34 @@ QObject *qmlAttachedPropertiesObject(const QObject *obj, bool create = true)
 {
     static int idx = -1;
     return qmlAttachedPropertiesObject(&idx, obj, &T::staticMetaObject, create);
+}
+
+inline int qmlRegisterModuleApi(const char *uri, int versionMajor, int versionMinor,
+                                QScriptValue (*callback)(QDeclarativeEngine *, QScriptEngine *))
+{
+    QDeclarativePrivate::RegisterModuleApi api = {
+        0,
+
+        uri, versionMajor, versionMinor,
+
+        callback, 0
+    };
+
+    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::ModuleApiRegistration, &api);
+}
+
+inline int qmlRegisterModuleApi(const char *uri, int versionMajor, int versionMinor,
+                                QObject *(*callback)(QDeclarativeEngine *, QScriptEngine *))
+{
+    QDeclarativePrivate::RegisterModuleApi api = {
+        0,
+
+        uri, versionMajor, versionMinor,
+
+        0, callback
+    };
+
+    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::ModuleApiRegistration, &api);
 }
 
 QT_END_NAMESPACE

@@ -70,6 +70,7 @@ private slots:
     void remoteImportWithUnquotedUri();
     void versionNotInstalled();
     void versionNotInstalled_data();
+    void implicitQmldir();
 };
 
 #ifdef Q_OS_SYMBIAN
@@ -118,7 +119,6 @@ inline QUrl TEST_FILE(const QString &filename)
     QFileInfo fileInfo(__FILE__);
     return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath(filename));
 }
-
 
 void tst_qdeclarativemoduleplugin::importsPlugin()
 {
@@ -307,6 +307,53 @@ void tst_qdeclarativemoduleplugin::versionNotInstalled()
     QDeclarativeComponent component(&engine, TEST_FILE(file));
     VERIFY_ERRORS(errorFile.toLatin1().constData());
 }
+
+
+// test that errors are reporting correctly for plugin loading and qmldir parsing
+void tst_qdeclarativemoduleplugin::implicitQmldir()
+{
+    QDeclarativeEngine engine;
+
+    QObject *obj = 0;
+    QList<QDeclarativeError> errors;
+    QString qmldirUrl;
+    QStringList expectedErrors;
+
+    // parsing qmldir succeeds, but plugin specified in the qmldir file doesn't exist
+    QDeclarativeComponent c(&engine, TEST_FILE("data/implicit1/temptest.qml"));
+    qmldirUrl = TEST_FILE("data/implicit1/qmldir").toString();
+    errors = c.errors();
+    QString moduleName = TEST_FILE("data/implicit1").toString().remove(0,7).replace(QLatin1String("/"), QLatin1String("."));
+    expectedErrors << QString(QLatin1String(": module \"") + moduleName + QLatin1String("\" plugin \"AType\" not found"));
+    QVERIFY(errors.size() == expectedErrors.size());
+    for (int i = 0; i < errors.size(); ++i) {
+        QString msg = qmldirUrl + expectedErrors.at(i);
+        QCOMPARE(errors.at(i).toString(), msg); // ensure that the expected message matches the real message.
+    }
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeComponent: Component is not ready");
+    obj = c.create();
+    QVERIFY(!obj);
+    delete obj;
+
+    // parsing qmldir fails due to syntax errors etc.
+    QDeclarativeComponent c2(&engine, TEST_FILE("data/implicit2/temptest2.qml"));
+    qmldirUrl = TEST_FILE("data/implicit2/qmldir").toString();
+    errors = c2.errors();
+    expectedErrors = QStringList();
+    expectedErrors << QLatin1String(":1:12: unexpected token");
+    expectedErrors << QLatin1String(":1: expected '.'");
+    expectedErrors << QLatin1String(":2:17: unexpected token");
+    QVERIFY(errors.size() == expectedErrors.size());
+    for (int i = 0; i < errors.size(); ++i) {
+        QString msg = qmldirUrl + expectedErrors.at(i);
+        QCOMPARE(errors.at(i).toString(), msg); // ensure that the expected message matches the real message.
+    }
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeComponent: Component is not ready");
+    obj = c2.create();
+    QVERIFY(!obj);
+    delete obj;
+}
+
 
 QTEST_MAIN(tst_qdeclarativemoduleplugin)
 

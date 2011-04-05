@@ -167,7 +167,7 @@ Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
 
 QUnifiedTimer::QUnifiedTimer() :
     QObject(), defaultDriver(this), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
-    currentAnimationIdx(0), consistentTiming(false), slowMode(false),
+    insideTick(false), currentAnimationIdx(0), consistentTiming(false), slowMode(false),
     slowdownFactor(5.0f), isPauseTimerActive(false), runningLeafAnimations(0)
 {
     time.invalidate();
@@ -206,6 +206,10 @@ void QUnifiedTimer::ensureTimerUpdate()
 
 void QUnifiedTimer::updateAnimationsTime()
 {
+    //setCurrentTime can get this called again while we're the for loop. At least with pauseAnimations
+    if(insideTick)
+        return;
+
     qint64 totalElapsed = time.elapsed();
     // ignore consistentTiming in case the pause timer is active
     int delta = (consistentTiming && !isPauseTimerActive) ?
@@ -223,12 +227,14 @@ void QUnifiedTimer::updateAnimationsTime()
     //it might happen in some cases that the time doesn't change because events are delayed
     //when the CPU load is high
     if (delta) {
+        insideTick = true;
         for (currentAnimationIdx = 0; currentAnimationIdx < animations.count(); ++currentAnimationIdx) {
             QAbstractAnimation *animation = animations.at(currentAnimationIdx);
             int elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
                           + (animation->direction() == QAbstractAnimation::Forward ? delta : -delta);
             animation->setCurrentTime(elapsed);
         }
+        insideTick = false;
         currentAnimationIdx = 0;
     }
 }
@@ -254,7 +260,8 @@ void QUnifiedTimer::restartAnimationTimer()
     } else if (!driver->isRunning() || isPauseTimerActive) {
         driver->start();
         isPauseTimerActive = false;
-    }
+    } else if (runningLeafAnimations == 0)
+        driver->stop();
 }
 
 void QUnifiedTimer::setTimingInterval(int interval)
@@ -383,18 +390,39 @@ int QUnifiedTimer::closestPauseAnimationTimeToFinish()
     return closestTimeToFinish;
 }
 
+
 void QUnifiedTimer::installAnimationDriver(QAnimationDriver *d)
 {
-    if (driver->isRunning()) {
-        qWarning("QUnifiedTimer: Cannot change animation driver while animations are running");
+    if (driver != &defaultDriver) {
+        qWarning("QUnifiedTimer: animation driver already installed...");
         return;
     }
 
-    if (driver && driver != &defaultDriver)
-        delete driver;
+    if (driver->isRunning()) {
+        driver->stop();
+        d->start();
+    }
 
     driver = d;
+
 }
+
+
+void QUnifiedTimer::uninstallAnimationDriver(QAnimationDriver *d)
+{
+    if (driver != d) {
+        qWarning("QUnifiedTimer: trying to uninstall a driver that is not installed...");
+        return;
+    }
+
+    driver = &defaultDriver;
+
+    if (d->isRunning()) {
+        d->stop();
+        driver->start();
+    }
+}
+
 
 /*!
    \class QAnimationDriver
@@ -445,6 +473,15 @@ void QAnimationDriver::install()
 {
     QUnifiedTimer *timer = QUnifiedTimer::instance(true);
     timer->installAnimationDriver(this);
+}
+
+/*!
+    Uninstalls this animation driver.
+ */
+void QAnimationDriver::uninstall()
+{
+    QUnifiedTimer *timer = QUnifiedTimer::instance(true);
+    timer->uninstallAnimationDriver(this);
 }
 
 bool QAnimationDriver::isRunning() const

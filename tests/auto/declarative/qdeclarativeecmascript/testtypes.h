@@ -51,6 +51,7 @@
 #include <QtGui/qmatrix.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qvector3d.h>
+#include <QtGui/QPixmap>
 #include <QtCore/qdatetime.h>
 #include <QtScript/qscriptvalue.h>
 #include <QtDeclarative/qdeclarativescriptstring.h>
@@ -907,6 +908,56 @@ QML_DECLARE_TYPE(MyRevisionedBaseClassUnregistered)
 QML_DECLARE_TYPE(MyRevisionedClass)
 QML_DECLARE_TYPE(MyRevisionedSubclass)
 Q_DECLARE_METATYPE(MyQmlObject::MyType)
+
+
+class ScarceResourceObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QPixmap scarceResource READ scarceResource WRITE setScarceResource NOTIFY scarceResourceChanged)
+public:
+    ScarceResourceObject(QObject *parent = 0) : QObject(parent), m_value(100, 100) { m_value.fill(Qt::blue); }
+    ~ScarceResourceObject() {}
+
+    QPixmap scarceResource() const { return m_value; }
+    void setScarceResource(QPixmap v) { m_value = v; emit scarceResourceChanged(); }
+
+    bool scarceResourceIsDetached() const { return m_value.isDetached(); }
+
+signals:
+    void scarceResourceChanged();
+
+private:
+    QPixmap m_value;
+};
+
+class testQObjectApi : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY (int qobjectTestProperty READ qobjectTestProperty NOTIFY qobjectTestPropertyChanged)
+    Q_PROPERTY (int qobjectTestWritableProperty READ qobjectTestWritableProperty WRITE setQObjectTestWritableProperty NOTIFY qobjectTestWritablePropertyChanged)
+
+public:
+    testQObjectApi(QObject* parent = 0)
+        : QObject(parent), m_testProperty(0)
+    {
+    }
+
+    ~testQObjectApi() {}
+
+    int qobjectTestProperty() const { return m_testProperty; }
+    void setQObjectTestProperty(int tp) { m_testProperty = tp; emit qobjectTestPropertyChanged(tp); }
+
+    int qobjectTestWritableProperty() const { return m_testWritableProperty; }
+    void setQObjectTestWritableProperty(int tp) { m_testWritableProperty = tp; emit qobjectTestWritablePropertyChanged(tp); }
+
+signals:
+    void qobjectTestPropertyChanged(int testProperty);
+    void qobjectTestWritablePropertyChanged(int testWritableProperty);
+
+private:
+    int m_testProperty;
+    int m_testWritableProperty;
+};
 
 void registerTypes();
 

@@ -55,8 +55,11 @@
 
 #include <QtCore/qobject.h>
 #include <QtNetwork/qnetworkreply.h>
+#include <QtScript/qscriptvalue.h>
+#include <QtScript/qscriptprogram.h>
 #include <QtDeclarative/qdeclarativeerror.h>
 #include <QtDeclarative/qdeclarativeengine.h>
+#include <private/qdeclarativecleanup_p.h>
 #include <private/qdeclarativescriptparser_p.h>
 #include <private/qdeclarativedirparser_p.h>
 #include <private/qdeclarativeimport_p.h>
@@ -64,6 +67,7 @@
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeScriptData;
+class QDeclarativeScriptBlob;
 class QDeclarativeQmldirData;
 class QDeclarativeTypeLoader;
 class QDeclarativeCompiledData;
@@ -140,7 +144,7 @@ private:
     QUrl m_finalUrl;
 
     // List of QDeclarativeDataBlob's that are waiting for me to complete.
-    QList<QDeclarativeDataBlob *> m_waitingOnMe;     
+    QList<QDeclarativeDataBlob *> m_waitingOnMe;
 
     // List of QDeclarativeDataBlob's that I am waiting for to complete.
     QList<QDeclarativeDataBlob *> m_waitingFor;
@@ -178,7 +182,6 @@ private:
     NetworkReplies m_networkReplies;
 };
 
-
 class Q_AUTOTEST_EXPORT QDeclarativeTypeLoader : public QDeclarativeDataLoader
 {
     Q_OBJECT
@@ -196,11 +199,11 @@ public:
     QDeclarativeTypeData *get(const QByteArray &, const QUrl &url, Options = None);
     void clearCache();
 
-    QDeclarativeScriptData *getScript(const QUrl &);
+    QDeclarativeScriptBlob *getScript(const QUrl &);
     QDeclarativeQmldirData *getQmldir(const QUrl &);
 private:
     typedef QHash<QUrl, QDeclarativeTypeData *> TypeCache;
-    typedef QHash<QUrl, QDeclarativeScriptData *> ScriptCache;
+    typedef QHash<QUrl, QDeclarativeScriptBlob *> ScriptCache;
     typedef QHash<QUrl, QDeclarativeQmldirData *> QmldirCache;
 
     TypeCache m_typeCache;
@@ -230,7 +233,7 @@ public:
 
         QDeclarativeParser::Location location;
         QString qualifier;
-        QDeclarativeScriptData *script;
+        QDeclarativeScriptBlob *script;
     };
 
     QDeclarativeTypeData(const QUrl &, QDeclarativeTypeLoader::Options, QDeclarativeTypeLoader *);
@@ -285,20 +288,65 @@ private:
     QDeclarativeTypeLoader *m_typeLoader;
 };
 
-class Q_AUTOTEST_EXPORT QDeclarativeScriptData : public QDeclarativeDataBlob
+class Q_AUTOTEST_EXPORT QDeclarativeScriptData : public QDeclarativeRefCount, public QDeclarativeCleanup
 {
 public:
-    QDeclarativeScriptData(const QUrl &);
+    QDeclarativeScriptData(QDeclarativeEngine *);
+    ~QDeclarativeScriptData();
+
+    QUrl url;
+    QDeclarativeTypeNameCache *importCache;
+    QList<QDeclarativeScriptBlob *> scripts;
+    QDeclarativeParser::Object::ScriptBlock::Pragmas pragmas;
+
+protected:
+    virtual void clear(); // From QDeclarativeCleanup
+
+private:
+    friend class QDeclarativeVME;
+    friend class QDeclarativeScriptBlob;
+
+    bool m_loaded;
+    QScriptProgram m_program;
+    QScriptValue m_value;
+};
+
+class Q_AUTOTEST_EXPORT QDeclarativeScriptBlob : public QDeclarativeDataBlob
+{
+public:
+    QDeclarativeScriptBlob(const QUrl &, QDeclarativeTypeLoader *);
+    ~QDeclarativeScriptBlob();
+
+    struct ScriptReference
+    {
+        ScriptReference() : script(0) {}
+
+        QDeclarativeParser::Location location;
+        QString qualifier;
+        QDeclarativeScriptBlob *script;
+    };
 
     QDeclarativeParser::Object::ScriptBlock::Pragmas pragmas() const;
     QString scriptSource() const;
 
+    QDeclarativeTypeLoader *typeLoader() const;
+    const QDeclarativeImports &imports() const;
+
+    QDeclarativeScriptData *scriptData() const;
+
 protected:
     virtual void dataReceived(const QByteArray &);
+    virtual void done();
 
 private:
     QDeclarativeParser::Object::ScriptBlock::Pragmas m_pragmas;
     QString m_source;
+
+    QDeclarativeImports m_imports;
+    QList<ScriptReference> m_scripts;
+    QDeclarativeScriptData *m_scriptData;
+
+    QDeclarativeTypeLoader *m_typeLoader;
 };
 
 class Q_AUTOTEST_EXPORT QDeclarativeQmldirData : public QDeclarativeDataBlob

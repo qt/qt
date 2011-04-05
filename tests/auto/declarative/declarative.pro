@@ -26,6 +26,9 @@ SUBDIRS += \
            qmlvisual \
            moduleqt47
 
+SUBDIRS += \
+           qsgitem \
+
 contains(QT_CONFIG, private_tests) {
     SUBDIRS += \
            qdeclarativeanchors \
@@ -75,7 +78,9 @@ contains(QT_CONFIG, private_tests) {
            qdeclarativevisualdatamodel \
            qdeclarativeworkerscript \
            qdeclarativexmllistmodel \
-           qpacketprotocol
+           qpacketprotocol \
+           qdeclarativev4 \
+           qsgmousearea
 
 contains(QT_CONFIG, webkit) {
     SUBDIRS += \

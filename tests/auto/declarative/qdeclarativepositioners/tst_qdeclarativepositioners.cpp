@@ -45,6 +45,7 @@
 #include <private/qdeclarativerectangle_p.h>
 #include <private/qdeclarativepositioners_p.h>
 #include <private/qdeclarativetransition_p.h>
+#include <private/qdeclarativeitem_p.h>
 #include <qdeclarativeexpression.h>
 #include <QtGui/qgraphicswidget.h>
 #include "../../../shared/util.h"
@@ -87,6 +88,7 @@ private slots:
     void test_flow_implicit_resize();
     void test_conflictinganchors();
     void test_vertical_qgraphicswidget();
+    void test_mirroring();
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
 private:
@@ -452,7 +454,7 @@ void tst_QDeclarativePositioners::test_grid()
 
     QDeclarativeGrid *grid = canvas->rootObject()->findChild<QDeclarativeGrid*>("grid");
     QCOMPARE(grid->flow(), QDeclarativeGrid::LeftToRight);
-    QCOMPARE(grid->width(), 120.0);
+    QCOMPARE(grid->width(), 100.0);
     QCOMPARE(grid->height(), 100.0);
 
     delete canvas;
@@ -494,7 +496,9 @@ void tst_QDeclarativePositioners::test_grid_topToBottom()
 
 void tst_QDeclarativePositioners::test_grid_rightToLeft()
 {
-    QDeclarativeView *canvas = createView(SRCDIR "/data/grid-righttoleft.qml");
+    QDeclarativeView *canvas = createView(SRCDIR "/data/gridtest.qml");
+
+    canvas->rootObject()->setProperty("testRightToLeft", true);
 
     QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
     QVERIFY(one != 0);
@@ -507,20 +511,20 @@ void tst_QDeclarativePositioners::test_grid_rightToLeft()
     QDeclarativeRectangle *five = canvas->rootObject()->findChild<QDeclarativeRectangle*>("five");
     QVERIFY(five != 0);
 
-    QCOMPARE(one->x(), 70.0);
+    QCOMPARE(one->x(), 50.0);
     QCOMPARE(one->y(), 0.0);
-    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(two->x(), 30.0);
     QCOMPARE(two->y(), 0.0);
     QCOMPARE(three->x(), 0.0);
     QCOMPARE(three->y(), 0.0);
-    QCOMPARE(four->x(), 70.0);
+    QCOMPARE(four->x(), 50.0);
     QCOMPARE(four->y(), 50.0);
-    QCOMPARE(five->x(), 60.0);
+    QCOMPARE(five->x(), 40.0);
     QCOMPARE(five->y(), 50.0);
 
     QDeclarativeGrid *grid = canvas->rootObject()->findChild<QDeclarativeGrid*>("grid");
     QCOMPARE(grid->layoutDirection(), Qt::RightToLeft);
-    QCOMPARE(grid->width(), 120.0);
+    QCOMPARE(grid->width(), 100.0);
     QCOMPARE(grid->height(), 100.0);
 
     delete canvas;
@@ -1080,80 +1084,94 @@ void tst_QDeclarativePositioners::test_conflictinganchors()
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QVERIFY(warningMessage.isEmpty());
+    delete item;
 
     component.setData("import QtQuick 1.0\nRow { Item {} }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QVERIFY(warningMessage.isEmpty());
+    delete item;
 
     component.setData("import QtQuick 1.0\nGrid { Item {} }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QVERIFY(warningMessage.isEmpty());
+    delete item;
 
     component.setData("import QtQuick 1.0\nFlow { Item {} }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QVERIFY(warningMessage.isEmpty());
+    delete item;
 
     component.setData("import QtQuick 1.0\nColumn { Item { anchors.top: parent.top } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Column: Cannot specify top, bottom, verticalCenter, fill or centerIn anchors for items inside Column"));
     warningMessage.clear();
+    delete item;
 
     component.setData("import QtQuick 1.0\nColumn { Item { anchors.centerIn: parent } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Column: Cannot specify top, bottom, verticalCenter, fill or centerIn anchors for items inside Column"));
     warningMessage.clear();
+    delete item;
 
     component.setData("import QtQuick 1.0\nColumn { Item { anchors.left: parent.left } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QVERIFY(warningMessage.isEmpty());
     warningMessage.clear();
+    delete item;
 
     component.setData("import QtQuick 1.0\nRow { Item { anchors.left: parent.left } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Row: Cannot specify left, right, horizontalCenter, fill or centerIn anchors for items inside Row"));
     warningMessage.clear();
+    delete item;
 
     component.setData("import QtQuick 1.0\nRow { Item { anchors.fill: parent } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Row: Cannot specify left, right, horizontalCenter, fill or centerIn anchors for items inside Row"));
     warningMessage.clear();
+    delete item;
 
     component.setData("import QtQuick 1.0\nRow { Item { anchors.top: parent.top } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QVERIFY(warningMessage.isEmpty());
     warningMessage.clear();
+    delete item;
 
     component.setData("import QtQuick 1.0\nGrid { Item { anchors.horizontalCenter: parent.horizontalCenter } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Grid: Cannot specify anchors for items inside Grid"));
     warningMessage.clear();
+    delete item;
 
     component.setData("import QtQuick 1.0\nGrid { Item { anchors.centerIn: parent } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Grid: Cannot specify anchors for items inside Grid"));
     warningMessage.clear();
+    delete item;
 
     component.setData("import QtQuick 1.0\nFlow { Item { anchors.verticalCenter: parent.verticalCenter } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Flow: Cannot specify anchors for items inside Flow"));
+    delete item;
 
     component.setData("import QtQuick 1.0\nFlow { Item { anchors.fill: parent } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Flow: Cannot specify anchors for items inside Flow"));
     qInstallMsgHandler(oldMsgHandler);
+    delete item;
 }
 
 void tst_QDeclarativePositioners::test_vertical_qgraphicswidget()
@@ -1196,6 +1214,66 @@ void tst_QDeclarativePositioners::test_vertical_qgraphicswidget()
     QCOMPARE(three->y(), 0.0);
 
     delete canvas;
+}
+
+void tst_QDeclarativePositioners::test_mirroring()
+{
+    QList<QString> qmlFiles;
+    qmlFiles << "horizontal.qml" << "gridtest.qml" << "flowtest.qml";
+    QList<QString> objectNames;
+    objectNames << "one" << "two" << "three" << "four" << "five";
+
+    foreach(const QString qmlFile, qmlFiles) {
+        QDeclarativeView *canvasA = createView(QString(SRCDIR) + "/data/" + qmlFile);
+        QDeclarativeItem *rootA = qobject_cast<QDeclarativeItem*>(canvasA->rootObject());
+
+        QDeclarativeView *canvasB = createView(QString(SRCDIR) + "/data/" + qmlFile);
+        QDeclarativeItem *rootB = qobject_cast<QDeclarativeItem*>(canvasB->rootObject());
+
+        rootA->setProperty("testRightToLeft", true); // layoutDirection: Qt.RightToLeft
+
+        // LTR != RTL
+        foreach(const QString objectName, objectNames) {
+            // horizontal.qml only has three items
+            if (qmlFile == QString("horizontal.qml") && objectName == QString("four"))
+                break;
+            QDeclarativeItem *itemA = rootA->findChild<QDeclarativeItem*>(objectName);
+            QDeclarativeItem *itemB = rootB->findChild<QDeclarativeItem*>(objectName);
+            QVERIFY(itemA->x() != itemB->x());
+        }
+
+        QDeclarativeItemPrivate* rootPrivateB = QDeclarativeItemPrivate::get(rootB);
+
+        rootPrivateB->effectiveLayoutMirror = true; // LayoutMirroring.enabled: true
+        rootPrivateB->isMirrorImplicit = false;
+        rootPrivateB->inheritMirrorFromItem = true; // LayoutMirroring.childrenInherit: true
+        rootPrivateB->resolveLayoutMirror();
+
+        // RTL == mirror
+        foreach(const QString objectName, objectNames) {
+            // horizontal.qml only has three items
+            if (qmlFile == QString("horizontal.qml") && objectName == QString("four"))
+                break;
+            QDeclarativeItem *itemA = rootA->findChild<QDeclarativeItem*>(objectName);
+            QDeclarativeItem *itemB = rootB->findChild<QDeclarativeItem*>(objectName);
+            QCOMPARE(itemA->x(), itemB->x());
+        }
+
+        rootA->setProperty("testRightToLeft", false); // layoutDirection: Qt.LeftToRight
+        rootB->setProperty("testRightToLeft", true); // layoutDirection: Qt.RightToLeft
+
+        // LTR == RTL + mirror
+        foreach(const QString objectName, objectNames) {
+            // horizontal.qml only has three items
+            if (qmlFile == QString("horizontal.qml") && objectName == QString("four"))
+                break;
+            QDeclarativeItem *itemA = rootA->findChild<QDeclarativeItem*>(objectName);
+            QDeclarativeItem *itemB = rootB->findChild<QDeclarativeItem*>(objectName);
+            QCOMPARE(itemA->x(), itemB->x());
+        }
+        delete canvasA;
+        delete canvasB;
+    }
 }
 
 void tst_QDeclarativePositioners::testQtQuick11Attributes()

@@ -181,6 +181,9 @@ QDeclarativeCompiledData::~QDeclarativeCompiledData()
     for (int ii = 0; ii < contextCaches.count(); ++ii)
         contextCaches.at(ii)->release();
 
+    for (int ii = 0; ii < scripts.count(); ++ii)
+        scripts.at(ii)->release();
+
     if (importCache)
         importCache->release();
 

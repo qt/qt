@@ -117,7 +117,6 @@ private:
 
     Q_DISABLE_COPY(QDeclarativeComponent)
     friend class QDeclarativeVME;
-    friend class QDeclarativeCompositeTypeData;
     friend class QDeclarativeTypeData;
 };
 

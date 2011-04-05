@@ -4,10 +4,11 @@ var maxColumn = 10;
 var maxRow = 15;
 var maxIndex = maxColumn*maxRow;
 var board = new Array(maxIndex);
-var blockSrc = "SamegameCore/BoomBlock.qml";
+var blockSrc = "BoomBlock.qml";
 var scoresURL = "";
 var gameDuration;
 var component = Qt.createComponent(blockSrc);
+var highScoreBar = 0;
 
 // Index function used instead of a 2D array
 function index(column, row)
@@ -152,11 +153,15 @@ function victoryCheck()
     // Checks for game over
     if (deservesBonus || !(floodMoveCheck(0, maxRow - 1, -1))) {
         gameDuration = new Date() - gameDuration;
-        nameInputDialog.show("You won! Please enter your name:                 ");
-        nameInputDialog.initialWidth = nameInputDialog.text.width + 20;
-        if (nameInputDialog.name == "")
-            nameInputDialog.width = nameInputDialog.initialWidth;
-        nameInputDialog.text.opacity = 0; // Just a spacer
+        if(gameCanvas.score > highScoreBar){
+            nameInputDialog.show("You won! Please enter your name:                 ");
+            nameInputDialog.initialWidth = nameInputDialog.text.width + 20;
+            if (nameInputDialog.name == "")
+                nameInputDialog.width = nameInputDialog.initialWidth;
+            nameInputDialog.text.opacity = 0; // Just a spacer
+        }else{
+            dialog.show("You won!");
+        }
     }
 }
 
@@ -203,6 +208,30 @@ function createBlock(column,row)
     return true;
 }
 
+function initHighScoreBar()
+{
+    if(scoresURL != "")
+        return true;//don't query remote scores
+    var db = openDatabaseSync(
+        "SameGameScores",
+        "1.0",
+        "Local SameGame High Scores",
+        100
+    );
+    db.transaction(
+        function(tx) {
+            tx.executeSql('CREATE TABLE IF NOT EXISTS Scores(name TEXT, score NUMBER, gridSize TEXT, time NUMBER)');
+            // Only show results for the current grid size
+            var rs = tx.executeSql('SELECT * FROM Scores WHERE gridSize = "'
+                + maxColumn + "x" + maxRow + '" ORDER BY score desc LIMIT 10');
+            if(rs.rows.length < 10)
+                highScoreBar = 0;
+            else 
+                highScoreBar = rs.rows.item(rs.rows.length - 1).score;
+        }
+    );
+}
+
 function saveHighScore(name)
 {
     if (scoresURL != "")
@@ -235,6 +264,8 @@ function saveHighScore(name)
                     + rs.rows.item(i).score + ' points in '
                     + rs.rows.item(i).time + ' seconds.\n';
             }
+            if(rs.rows.length == 10)
+                highScoreBar = rs.rows.item(9).score;
             dialog.show(r);
         }
     );

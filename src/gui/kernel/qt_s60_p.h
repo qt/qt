@@ -64,6 +64,7 @@
 #include "qapplication.h"
 #include "qelapsedtimer.h"
 #include "QtCore/qthreadstorage.h"
+#include "qwidget_p.h"
 #include <w32std.h>
 #include <coecntrl.h>
 #include <eikenv.h>
@@ -83,6 +84,8 @@ QT_BEGIN_NAMESPACE
 // Application internal HandleResourceChangeL events,
 // system events seems to start with 0x10
 const TInt KInternalStatusPaneChange = 0x50000000;
+
+static const int qt_symbian_max_screens = 4;
 
 //this macro exists because EColor16MAP enum value doesn't exist in Symbian OS 9.2
 #define Q_SYMBIAN_ECOLOR16MAP TDisplayMode(13)
@@ -142,7 +145,10 @@ public:
     int avkonComponentsSupportTransparency : 1;
     int menuBeingConstructed : 1;
     int orientationSet : 1;
+    int partial_keyboard : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
+    QPointer<QWidget> splitViewLastWidget;
+
     static CEikButtonGroupContainer *cba;
 
     enum ScanCodeState {
@@ -154,8 +160,14 @@ public:
 
     static inline void updateScreenSize();
     inline RWsSession& wsSession();
+    static inline int screenCount();
     static inline RWindowGroup& windowGroup();
+    static inline RWindowGroup& windowGroup(const QWidget *widget);
+    static inline RWindowGroup& windowGroup(int screenNumber);
     inline CWsScreenDevice* screenDevice();
+    inline CWsScreenDevice* screenDevice(const QWidget *widget);
+    inline CWsScreenDevice* screenDevice(int screenNumber);
+    static inline int screenNumberForWidget(const QWidget *widget);
     static inline CCoeAppUi* appUi();
     static inline CEikMenuBar* menuBar();
 #ifdef Q_WS_S60
@@ -172,6 +184,11 @@ public:
 #ifdef Q_OS_SYMBIAN
     TTrapHandler *s60InstalledTrapHandler;
 #endif
+
+    int screenWidthInPixelsForScreen[qt_symbian_max_screens];
+    int screenHeightInPixelsForScreen[qt_symbian_max_screens];
+    int screenWidthInTwipsForScreen[qt_symbian_max_screens];
+    int screenHeightInTwipsForScreen[qt_symbian_max_screens];
 };
 
 Q_AUTOTEST_EXPORT QS60Data* qGlobalS60Data();
@@ -252,6 +269,7 @@ private:
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
     void translateAdvancedPointerEvent(const TAdvancedPointerEvent *event);
 #endif
+    bool isSplitViewWidget(QWidget *widget);
 
 public:
     void handleClientAreaChange();
@@ -270,6 +288,8 @@ private:
     // Fader object used to fade everything except this menu and the CBA.
     TAknPopupFader popupFader;
 #endif
+
+    bool m_inExternalScreenOverride : 1;
 };
 
 inline QS60Data::QS60Data()
@@ -297,6 +317,7 @@ inline QS60Data::QS60Data()
   avkonComponentsSupportTransparency(0),
   menuBeingConstructed(0),
   orientationSet(0),
+  partial_keyboard(0),
   s60ApplicationFactory(0)
 #ifdef Q_OS_SYMBIAN
   ,s60InstalledTrapHandler(0)
@@ -320,6 +341,17 @@ inline void QS60Data::updateScreenSize()
     S60->defaultDpiY = S60->screenHeightInPixels / inches;
     inches = S60->screenWidthInTwips / (TReal)KTwipsPerInch;
     S60->defaultDpiX = S60->screenWidthInPixels / inches;
+
+    int screens = S60->screenCount();
+    for (int i = 0; i < screens; ++i) {
+        CWsScreenDevice *dev = S60->screenDevice(i);
+        mode = dev->CurrentScreenMode();
+        dev->GetScreenModeSizeAndRotation(mode, params);
+        S60->screenWidthInPixelsForScreen[i] = params.iPixelSize.iWidth;
+        S60->screenHeightInPixelsForScreen[i] = params.iPixelSize.iHeight;
+        S60->screenWidthInTwipsForScreen[i] = params.iTwipsSize.iWidth;
+        S60->screenHeightInTwipsForScreen[i] = params.iTwipsSize.iHeight;
+    }
 }
 
 inline RWsSession& QS60Data::wsSession()
@@ -330,9 +362,36 @@ inline RWsSession& QS60Data::wsSession()
     return tls.localData()->wsSession;
 }
 
+inline int QS60Data::screenCount()
+{
+#if defined(Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS)
+    CCoeEnv *env = CCoeEnv::Static();
+    if (env) {
+        return qMin(env->WsSession().NumberOfScreens(), qt_symbian_max_screens);
+    }
+#endif
+    return 1;
+}
+
 inline RWindowGroup& QS60Data::windowGroup()
 {
     return CCoeEnv::Static()->RootWin();
+}
+
+inline RWindowGroup& QS60Data::windowGroup(const QWidget *widget)
+{
+    return windowGroup(screenNumberForWidget(widget));
+}
+
+inline RWindowGroup& QS60Data::windowGroup(int screenNumber)
+{
+#if defined(Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS)
+    RWindowGroup *wg = CCoeEnv::Static()->RootWin(screenNumber);
+    return wg ? *wg : windowGroup();
+#else
+    Q_UNUSED(screenNumber);
+    return windowGroup();
+#endif
 }
 
 inline CWsScreenDevice* QS60Data::screenDevice()
@@ -341,6 +400,36 @@ inline CWsScreenDevice* QS60Data::screenDevice()
         tls.setLocalData(new QS60ThreadLocalData);
     }
     return tls.localData()->screenDevice;
+}
+
+inline CWsScreenDevice* QS60Data::screenDevice(const QWidget *widget)
+{
+    return screenDevice(screenNumberForWidget(widget));
+}
+
+inline CWsScreenDevice* QS60Data::screenDevice(int screenNumber)
+{
+#if defined(Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS)
+    CCoeEnv *env = CCoeEnv::Static();
+    if (env) {
+        CWsScreenDevice *dev = env->ScreenDevice(screenNumber);
+        return dev ? dev : screenDevice();
+    } else {
+        return screenDevice();
+    }
+#else
+    return screenDevice();
+#endif
+}
+
+inline int QS60Data::screenNumberForWidget(const QWidget *widget)
+{
+    if (!widget)
+        return 0;
+    const QWidget *w = widget;
+    while (w->parentWidget())
+        w = w->parentWidget();
+    return qt_widget_private(const_cast<QWidget *>(w))->symbianScreenNumber;
 }
 
 inline CCoeAppUi* QS60Data::appUi()

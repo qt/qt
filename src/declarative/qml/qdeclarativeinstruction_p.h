@@ -88,6 +88,7 @@ public:
         //    StoreInteger - Store a int or uint in a core property
         //    StoreBool - Store a bool in a core property
         //    StoreString - Store a QString in a core property
+        //    StoreByteArray - Store a QByteArray in a core property
         //    StoreUrl - Store a QUrl in a core property
         //    StoreColor - Store a QColor in a core property
         //    StoreDate - Store a QDate in a core property
@@ -101,6 +102,7 @@ public:
         StoreInteger,             /* storeInteger */
         StoreBool,                /* storeBool */
         StoreString,              /* storeString */
+        StoreByteArray,           /* storeByteArray */
         StoreUrl,                 /* storeUrl */
         StoreColor,               /* storeColor */
         StoreDate,                /* storeDate */
@@ -245,6 +247,10 @@ public:
         int propertyIndex;
         int value;
     };
+    struct StoreByteArrayInstruction {
+        int propertyIndex;
+        int value;
+    };
     struct StoreScriptStringInstruction {
         int propertyIndex;
         int value;
@@ -332,6 +338,7 @@ public:
         StoreIntegerInstruction storeInteger;
         StoreBoolInstruction storeBool;
         StoreStringInstruction storeString;
+        StoreByteArrayInstruction storeByteArray;
         StoreScriptStringInstruction storeScriptString;
         StoreScriptInstruction storeScript;
         StoreUrlInstruction storeUrl;

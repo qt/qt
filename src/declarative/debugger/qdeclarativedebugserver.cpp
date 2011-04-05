@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -90,7 +90,11 @@ public:
     QHash<QString, QDeclarativeDebugService *> plugins;
     QStringList clientPlugins;
     bool gotHello;
+    QString waitingForMsgFromService;
 
+private:
+    // private slot
+    void _q_deliverMessage(const QString &serviceName, const QByteArray &message);
     static QDeclarativeDebugServerConnection *loadConnectionPlugin();
 };
 
@@ -221,7 +225,6 @@ void QDeclarativeDebugServer::receiveMessage(const QByteArray &message)
 
     QDataStream in(message);
     if (!d->gotHello) {
-
         QString name;
         int op;
         in >> name >> op;
@@ -290,14 +293,30 @@ void QDeclarativeDebugServer::receiveMessage(const QByteArray &message)
             QByteArray message;
             in >> message;
 
-            QHash<QString, QDeclarativeDebugService *>::Iterator iter =
-                d->plugins.find(name);
-            if (iter == d->plugins.end()) {
-                qWarning() << "QDeclarativeDebugServer: Message received for missing plugin" << name;
+            if (d->waitingForMsgFromService == name) {
+                // deliver directly so that it is delivered before waitForMessage is returning.
+                d->_q_deliverMessage(name, message);
+                d->waitingForMsgFromService.clear();
             } else {
-                (*iter)->messageReceived(message);
+                // deliver message in next event loop run.
+                // Fixes the case that the service does start it's own event loop ...,
+                // but the networking code doesn't deliver any new messages because readyRead
+                // hasn't returned.
+                QMetaObject::invokeMethod(this, "_q_deliverMessage", Qt::QueuedConnection,
+                                          Q_ARG(QString, name),
+                                          Q_ARG(QByteArray, message));
             }
         }
+    }
+}
+
+void QDeclarativeDebugServerPrivate::_q_deliverMessage(const QString &serviceName, const QByteArray &message)
+{
+    QHash<QString, QDeclarativeDebugService *>::Iterator iter = plugins.find(serviceName);
+    if (iter == plugins.end()) {
+        qWarning() << "QDeclarativeDebugServer: Message received for missing plugin" << serviceName;
+    } else {
+        (*iter)->messageReceived(message);
     }
 }
 
@@ -358,4 +377,23 @@ void QDeclarativeDebugServer::sendMessage(QDeclarativeDebugService *service,
     d->connection->send(msg);
 }
 
+bool QDeclarativeDebugServer::waitForMessage(QDeclarativeDebugService *service)
+{
+    Q_D(QDeclarativeDebugServer);
+
+    if (!service
+            || !d->plugins.contains(service->name())
+            || !d->waitingForMsgFromService.isEmpty())
+        return false;
+
+    d->waitingForMsgFromService = service->name();
+
+    do {
+        d->connection->waitForMessage();
+    } while (!d->waitingForMsgFromService.isEmpty());
+    return true;
+}
+
 QT_END_NAMESPACE
+
+#include "moc_qdeclarativedebugserver_p.cpp"

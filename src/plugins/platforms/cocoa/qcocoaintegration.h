@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,6 +75,7 @@ public:
     QCocoaIntegration();
     ~QCocoaIntegration();
 
+    bool hasCapability(QPlatformIntegration::Capability cap) const;
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;

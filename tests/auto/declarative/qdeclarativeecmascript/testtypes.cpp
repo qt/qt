@@ -41,6 +41,8 @@
 #include "testtypes.h"
 #include <QWidget>
 #include <QPlainTextEdit>
+#include <QDeclarativeEngine>
+#include <QScriptEngine>
 
 class BaseExtensionObject : public QObject
 {
@@ -99,6 +101,37 @@ public:
     void setWidth(int) { }
 };
 
+static QScriptValue script_api(QDeclarativeEngine *engine, QScriptEngine *scriptEngine)
+{
+    Q_UNUSED(engine)
+    Q_UNUSED(scriptEngine)
+
+    static int testProperty = 13;
+    QScriptValue v = scriptEngine->newObject();
+    v.setProperty("scriptTestProperty", testProperty++);
+    return v;
+}
+
+static QObject *qobject_api(QDeclarativeEngine *engine, QScriptEngine *scriptEngine)
+{
+    Q_UNUSED(engine)
+    Q_UNUSED(scriptEngine)
+
+    testQObjectApi *o = new testQObjectApi();
+    o->setQObjectTestProperty(20);
+    o->setQObjectTestWritableProperty(50);
+    return o;
+}
+
+static QObject *qobject_api_engine_parent(QDeclarativeEngine *engine, QScriptEngine *scriptEngine)
+{
+    Q_UNUSED(scriptEngine)
+
+    static int testProperty = 26;
+    testQObjectApi *o = new testQObjectApi(engine);
+    o->setQObjectTestProperty(testProperty++);
+    return o;
+}
 
 void registerTypes()
 {
@@ -116,6 +149,9 @@ void registerTypes()
     qmlRegisterType<MyRevisionedClass>("Qt.test",1,0,"MyRevisionedClass");
     qmlRegisterType<MyRevisionedClass,1>("Qt.test",1,1,"MyRevisionedClass");
 
+    // test scarce resource property binding post-evaluation optimisation
+    qmlRegisterType<ScarceResourceObject>("Qt.test", 1,0, "MyScarceResourceObject");
+
     // Register the uncreatable base class
     qmlRegisterRevision<MyRevisionedBaseClassRegistered,1>("Qt.test",1,1);
     // MyRevisionedSubclass 1.0 uses MyRevisionedClass revision 0
@@ -127,6 +163,14 @@ void registerTypes()
     qmlRegisterType<QPlainTextEdit>("Qt.test",1,0,"QPlainTextEdit");
 
     qRegisterMetaType<MyQmlObject::MyType>("MyQmlObject::MyType");
+
+    qmlRegisterModuleApi("Qt.test",1,0,script_api);             // register (script) module API for an existing uri which contains elements
+    qmlRegisterModuleApi("Qt.test",1,0,qobject_api);            // register (qobject) for an existing uri for which another module API was previously regd.  Should replace!
+    qmlRegisterModuleApi("Qt.test.scriptApi",1,0,script_api);   // register (script) module API for a uri which doesn't contain elements
+    qmlRegisterModuleApi("Qt.test.qobjectApi",1,0,qobject_api); // register (qobject) module API for a uri which doesn't contain elements
+    qmlRegisterModuleApi("Qt.test.qobjectApi",1,3,qobject_api); // register (qobject) module API for a uri which doesn't contain elements, minor version set
+    qmlRegisterModuleApi("Qt.test.qobjectApi",2,0,qobject_api); // register (qobject) module API for a uri which doesn't contain elements, major version set
+    qmlRegisterModuleApi("Qt.test.qobjectApiParented",1,0,qobject_api_engine_parent); // register (parented qobject) module API for a uri which doesn't contain elements
 }
 
 #include "testtypes.moc"

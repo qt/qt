@@ -299,6 +299,8 @@ Q_OPENGL_EXPORT bool operator!=(const QGLFormat&, const QGLFormat&);
 Q_OPENGL_EXPORT QDebug operator<<(QDebug, const QGLFormat &);
 #endif
 
+class QGLFunctions;
+
 class Q_OPENGL_EXPORT QGLContext
 {
     Q_DECLARE_PRIVATE(QGLContext)
@@ -324,6 +326,8 @@ public:
 
     virtual void swapBuffers() const;
 
+    QGLFunctions *functions() const;
+
     enum BindOption {
         NoBindOption                            = 0x0000,
         InvertedYBindOption                     = 0x0001,
@@ -333,6 +337,7 @@ public:
 
         MemoryManagedBindOption                 = 0x0010, // internal flag
         CanFlipNativePixmapBindOption           = 0x0020, // internal flag
+        TemporarilyCachedBindOption             = 0x0040, // internal flag
 
         DefaultBindOption                       = LinearFilteringBindOption
                                                   | InvertedYBindOption
@@ -457,6 +462,7 @@ private:
     friend class QX11GLPixmapData;
     friend class QX11GLSharedContexts;
     friend class QGLContextResourceBase;
+    friend class DistanceFieldGlyphCache;
 private:
     Q_DISABLE_COPY(QGLContext)
 };
@@ -580,6 +586,11 @@ protected:
     virtual void glDraw();
     int fontDisplayListBase(const QFont & fnt, int listBase = 2000); // ### Qt 5: remove
 
+    QGLWidget(QGLWidgetPrivate &dd,
+              const QGLFormat &format = QGLFormat(),
+              QWidget *parent = 0,
+              const QGLWidget* shareWidget = 0,
+              Qt::WindowFlags f = 0);
 private:
     Q_DISABLE_COPY(QGLWidget)
 

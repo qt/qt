@@ -59,6 +59,7 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qbitarray.h>
 #include <private/qdeclarativeglobal_p.h>
+#include <QtScript/qscriptvalue.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -106,6 +107,25 @@ public:
     static bool isModule(const QByteArray &module, int versionMajor, int versionMinor);
 
     static QList<QDeclarativePrivate::AutoParentFunction> parentFunctions();
+
+    struct ModuleApiInstance {
+        ModuleApiInstance()
+            : scriptCallback(0), qobjectCallback(0), qobjectApi(0) {}
+
+        QScriptValue (*scriptCallback)(QDeclarativeEngine *, QScriptEngine *);
+        QObject *(*qobjectCallback)(QDeclarativeEngine *, QScriptEngine *);
+        QScriptValue scriptApi;
+        QObject *qobjectApi;
+    };
+    struct ModuleApi {
+        inline ModuleApi();
+        inline bool operator==(const ModuleApi &) const;
+        int major;
+        int minor;
+        QScriptValue (*script)(QDeclarativeEngine *, QScriptEngine *);
+        QObject *(*qobject)(QDeclarativeEngine *, QScriptEngine *);
+    };
+    static ModuleApi moduleApi(const QByteArray &, int, int);
 };
 
 class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeType
@@ -167,6 +187,25 @@ private:
 
     QDeclarativeTypePrivate *d;
 };
+
+QDeclarativeMetaType::ModuleApi::ModuleApi()
+//    : major(0), minor(0), script(0), qobject(0)
+{
+    major = 0;
+    minor = 0;
+    script = 0;
+    qobject = 0;
+}
+
+bool QDeclarativeMetaType::ModuleApi::operator==(const ModuleApi &other) const
+{
+    return major == other.major && minor == other.minor && script == other.script && qobject == other.qobject;
+}
+
+inline uint qHash(const QDeclarativeMetaType::ModuleApi &import)
+{
+    return import.major ^ import.minor ^ quintptr(import.script) ^ quintptr(import.qobject);
+}
 
 QT_END_NAMESPACE
 

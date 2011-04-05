@@ -63,7 +63,7 @@ struct TypeNameData : public QScriptDeclarativeClass::Object {
 
 QDeclarativeTypeNameScriptClass::QDeclarativeTypeNameScriptClass(QDeclarativeEngine *bindEngine)
 : QScriptDeclarativeClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)), 
-  engine(bindEngine), object(0), type(0)
+  engine(bindEngine), object(0), type(0), api(0)
 {
 }
 
@@ -95,14 +95,35 @@ QDeclarativeTypeNameScriptClass::queryProperty(Object *obj, const Identifier &na
 
     object = 0;
     type = 0;
+    api = 0;
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
 
     if (data->typeNamespace) {
-
         QDeclarativeTypeNameCache::Data *d = data->typeNamespace->data(name);
         if (d && d->type) {
             type = d->type;
             return QScriptClass::HandlesReadAccess;
+        } else if (QDeclarativeMetaType::ModuleApiInstance *moduleApi = data->typeNamespace->moduleApi()) {
+            if (moduleApi->scriptCallback) {
+                moduleApi->scriptApi = moduleApi->scriptCallback(engine, &ep->scriptEngine);
+                moduleApi->scriptCallback = 0;
+                moduleApi->qobjectCallback = 0;
+            } else if (moduleApi->qobjectCallback) {
+                moduleApi->qobjectApi = moduleApi->qobjectCallback(engine, &ep->scriptEngine);
+                moduleApi->scriptCallback = 0;
+                moduleApi->qobjectCallback = 0;
+            }
+
+            api = moduleApi;
+            if (api->qobjectApi) {
+                return ep->objectClass->queryProperty(api->qobjectApi, name, flags, 0,
+                                                      QDeclarativeObjectScriptClass::SkipAttachedProperties);
+            } else {
+                return QScriptClass::HandlesReadAccess;
+            }
+
+            return 0;
+
         } else {
             return 0;
         }
@@ -147,6 +168,10 @@ QDeclarativeTypeNameScriptClass::property(Object *obj, const Identifier &name)
         return Value(scriptEngine, newObject(((TypeNameData *)obj)->object, type, ((TypeNameData *)obj)->mode));
     } else if (object) {
         return ep->objectClass->property(object, name);
+    } else if (api && api->qobjectApi) {
+        return ep->objectClass->property(api->qobjectApi, name);
+    } else if (api) {
+        return propertyValue(api->scriptApi, name);
     } else {
         return Value(scriptEngine, enumValue);
     }
@@ -154,11 +179,16 @@ QDeclarativeTypeNameScriptClass::property(Object *obj, const Identifier &name)
 
 void QDeclarativeTypeNameScriptClass::setProperty(Object *o, const Identifier &n, const QScriptValue &v)
 {
-    Q_ASSERT(object);
     Q_ASSERT(!type);
 
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
-    ep->objectClass->setProperty(((TypeNameData *)o)->object, n, v, context());
+    if (api) {
+        Q_ASSERT(api->qobjectApi);
+        ep->objectClass->setProperty(api->qobjectApi, n, v, context());
+    } else {
+        Q_ASSERT(object);
+        ep->objectClass->setProperty(((TypeNameData *)o)->object, n, v, context());
+    }
 }
 
 QT_END_NAMESPACE

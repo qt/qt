@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,10 +75,13 @@ public:
     void sendMessage(QDeclarativeDebugService *service, const QByteArray &message);
     void receiveMessage(const QByteArray &message);
 
+    bool waitForMessage(QDeclarativeDebugService *service);
+
 private:
     friend class QDeclarativeDebugService;
     friend class QDeclarativeDebugServicePrivate;
     QDeclarativeDebugServer();
+    Q_PRIVATE_SLOT(d_func(), void _q_deliverMessage(QString, QByteArray))
 };
 
 QT_END_NAMESPACE

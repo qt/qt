@@ -134,6 +134,7 @@ private slots:
     void dontDoubleCallClassBegin();
     void reservedWords_data();
     void reservedWords();
+    void inlineAssignmentsOverrideBindings();
 
     void basicRemote_data();
     void basicRemote();
@@ -272,6 +273,7 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("wrongType (int for string)") << "wrongType.14.qml" << "wrongType.14.errors.txt" << false;
     QTest::newRow("wrongType (int for url)") << "wrongType.15.qml" << "wrongType.15.errors.txt" << false;
     QTest::newRow("wrongType (invalid object)") << "wrongType.16.qml" << "wrongType.16.errors.txt" << false;
+    QTest::newRow("wrongType (int for enum)") << "wrongType.17.qml" << "wrongType.17.errors.txt" << false;
 
     QTest::newRow("readOnly.1") << "readOnly.1.qml" << "readOnly.1.errors.txt" << false;
     QTest::newRow("readOnly.2") << "readOnly.2.qml" << "readOnly.2.errors.txt" << false;
@@ -1413,9 +1415,18 @@ void tst_qdeclarativelanguage::testType(const QString& qml, const QString& type,
     }
 }
 
+// QTBUG-17276
+void tst_qdeclarativelanguage::inlineAssignmentsOverrideBindings()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("inlineAssignmentsOverrideBindings.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test").toInt(), 11);
+    delete o;
+}
 
 // Import tests (QT-558)
-
 void tst_qdeclarativelanguage::importsBuiltin_data()
 {
     // QT-610

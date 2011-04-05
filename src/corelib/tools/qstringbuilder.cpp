@@ -150,8 +150,8 @@ QT_BEGIN_NAMESPACE
 void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out)
 {
 #ifndef QT_NO_TEXTCODEC
-    if (QString::codecForCStrings) {
-        QString tmp = QString::fromAscii(a);
+    if (QString::codecForCStrings && len) {
+        QString tmp = QString::fromAscii(a, len > 0 ? len - 1 : -1);
         memcpy(out, reinterpret_cast<const char *>(tmp.constData()), sizeof(QChar) * tmp.size());
         out += tmp.length();
         return;

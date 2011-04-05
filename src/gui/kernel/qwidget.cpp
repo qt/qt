@@ -310,6 +310,8 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , needWindowChange(0)
       , window_event(0)
       , qd_hd(0)
+#elif defined(Q_OS_SYMBIAN)
+      , symbianScreenNumber(0)
 #endif
 {
     if (!qApp) {
@@ -1294,6 +1296,10 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
         // programmer specified desktop widget
         xinfo = desktopWidget->d_func()->xinfo;
     }
+#elif defined(Q_OS_SYMBIAN)
+    if (desktopWidget) {
+        symbianScreenNumber = qt_widget_private(desktopWidget)->symbianScreenNumber;
+    }
 #elif defined(Q_WS_QPA)
     if (desktopWidget) {
         int screen = desktopWidget->d_func()->topData()->screenIndex;
@@ -1336,8 +1342,8 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     //give potential windows a bigger "pre-initial" size; create_sys() will give them a new size later
 #ifdef Q_OS_SYMBIAN
     if (isGLWidget) {
-        // Don't waste GPU mem for unnecessary large egl surface
-        data.crect = QRect(0,0,2,2);
+        // Don't waste GPU mem for unnecessary large egl surface until resized by application
+        data.crect = QRect(0,0,1,1);
     } else {
         data.crect = parentWidget ? QRect(0,0,100,30) : QRect(0,0,360,640);
     }

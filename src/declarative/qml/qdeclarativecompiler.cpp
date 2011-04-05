@@ -63,7 +63,7 @@
 #include "private/qdeclarativeglobal_p.h"
 #include "private/qdeclarativescriptparser_p.h"
 #include "private/qdeclarativebinding_p.h"
-#include "private/qdeclarativecompiledbindings_p.h"
+#include "private/qdeclarativev4compiler_p.h"
 #include "private/qdeclarativeglobalscriptclass_p.h"
 
 #include <QColor>
@@ -79,7 +79,6 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP);
 DEFINE_BOOL_CONFIG_OPTION(compilerStatDump, QML_COMPILER_STATS);
-DEFINE_BOOL_CONFIG_OPTION(bindingsDump, QML_BINDINGS_DUMP);
 
 using namespace QDeclarativeParser;
 
@@ -201,6 +200,9 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
         case QVariant::String:
             if (!v->value.isString()) COMPILE_EXCEPTION(v, tr("Invalid property assignment: string expected"));
             break;
+        case QVariant::ByteArray:
+            if (!v->value.isString()) COMPILE_EXCEPTION(v, tr("Invalid property assignment: byte array expected"));
+            break;
         case QVariant::Url:
             if (!v->value.isString()) COMPILE_EXCEPTION(v, tr("Invalid property assignment: url expected"));
             break;
@@ -320,16 +322,20 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
 void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
                                        QDeclarativeParser::Value *v)
 {
-    QString string = v->value.asString();
-
     QDeclarativeInstruction instr;
     instr.line = v->location.start.line;
     if (prop.isEnumType()) {
         int value;
-        if (prop.isFlagType()) {
-            value = prop.enumerator().keysToValue(string.toUtf8().constData());
-        } else
-            value = prop.enumerator().keyToValue(string.toUtf8().constData());
+        if (v->value.isNumber()) {
+            // Preresolved enum
+            value = (int)v->value.asNumber();
+        } else {
+            // Must be a string
+            if (prop.isFlagType()) {
+                value = prop.enumerator().keysToValue(v->value.asString().toUtf8().constData());
+            } else
+                value = prop.enumerator().keyToValue(v->value.asString().toUtf8().constData());
+        }
 
         instr.type = QDeclarativeInstruction::StoreInteger;
         instr.storeInteger.propertyIndex = prop.propertyIndex();
@@ -337,6 +343,8 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
         output->bytecode << instr;
         return;
     }
+
+    QString string = v->value.asString();
 
     int type = prop.userType();
     switch(type) {
@@ -369,6 +377,13 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
             instr.type = QDeclarativeInstruction::StoreString;
             instr.storeString.propertyIndex = prop.propertyIndex();
             instr.storeString.value = output->indexForString(string);
+            }
+            break;
+        case QVariant::ByteArray:
+            {
+            instr.type = QDeclarativeInstruction::StoreByteArray;
+            instr.storeByteArray.propertyIndex = prop.propertyIndex();
+            instr.storeByteArray.value = output->indexForByteArray(string.toLatin1());
             }
             break;
         case QVariant::Url:
@@ -642,6 +657,31 @@ void QDeclarativeCompiler::compileTree(QDeclarativeParser::Object *tree)
     compileState.root = tree;
     componentStat.lineNumber = tree->location.start.line;
 
+    // Build global import scripts
+    QStringList importedScriptIndexes;
+
+    foreach (const QDeclarativeTypeData::ScriptReference &script, unit->resolvedScripts()) {
+        importedScriptIndexes.append(script.qualifier);
+
+        QDeclarativeInstruction import;
+        import.type = QDeclarativeInstruction::StoreImportedScript;
+        import.line = 0;
+        import.storeScript.value = output->scripts.count();
+
+        QDeclarativeScriptData *scriptData = script.script->scriptData();
+        scriptData->addref();
+        output->scripts << scriptData;
+        output->bytecode << import;
+    }
+
+    // We generate the importCache before we build the tree so that
+    // it can be used in the binding compiler.  Given we "expect" the
+    // QML compilation to succeed, this isn't a waste.
+    output->importCache = new QDeclarativeTypeNameCache(engine);
+    for (int ii = 0; ii < importedScriptIndexes.count(); ++ii) 
+        output->importCache->add(importedScriptIndexes.at(ii), ii);
+    unit->imports().populateCache(output->importCache, engine);
+
     if (!buildObject(tree, BindingContext()) || !completeComponentBuild())
         return;
 
@@ -657,51 +697,12 @@ void QDeclarativeCompiler::compileTree(QDeclarativeParser::Object *tree)
         init.init.compiledBinding = output->indexForByteArray(compileState.compiledBindingData);
     output->bytecode << init;
 
-    // Build global import scripts
-    QHash<QString, Object::ScriptBlock> importedScripts;
-    QStringList importedScriptIndexes;
-
-    foreach (const QDeclarativeTypeData::ScriptReference &script, unit->resolvedScripts()) {
-        QString scriptCode = script.script->scriptSource();
-        Object::ScriptBlock::Pragmas pragmas = script.script->pragmas();
-
-        Q_ASSERT(!importedScripts.contains(script.qualifier));
-
-        if (!scriptCode.isEmpty()) {
-            Object::ScriptBlock &scriptBlock = importedScripts[script.qualifier];
-
-            scriptBlock.code = scriptCode;
-            scriptBlock.file = script.script->finalUrl().toString();
-            scriptBlock.pragmas = pragmas;
-        }
-    }
-
-    for (QHash<QString, Object::ScriptBlock>::Iterator iter = importedScripts.begin(); 
-         iter != importedScripts.end(); ++iter) {
-
-        importedScriptIndexes.append(iter.key());
-
-        QDeclarativeInstruction import;
-        import.type = QDeclarativeInstruction::StoreImportedScript;
-        import.line = 0;
-        import.storeScript.value = output->scripts.count();
-        output->scripts << *iter;
-        output->bytecode << import;
-    }
-
     genObject(tree);
 
     QDeclarativeInstruction def;
     init.line = 0;
     def.type = QDeclarativeInstruction::SetDefault;
     output->bytecode << def;
-
-    output->importCache = new QDeclarativeTypeNameCache(engine);
-
-    for (int ii = 0; ii < importedScriptIndexes.count(); ++ii) 
-        output->importCache->add(importedScriptIndexes.at(ii), ii);
-
-    unit->imports().populateCache(output->importCache, engine);
 
     Q_ASSERT(tree->metatype);
 
@@ -1283,6 +1284,7 @@ bool QDeclarativeCompiler::buildComponentFromRoot(QDeclarativeParser::Object *ob
 
     compileState = ComponentCompileState();
     compileState.root = obj;
+    compileState.nested = true;
 
     componentStat = ComponentStat();
     componentStat.lineNumber = obj->location.start.line;
@@ -2227,20 +2229,35 @@ bool QDeclarativeCompiler::testQualifiedEnumAssignment(const QMetaProperty &prop
             objTypeName = objType->qmlTypeName();
     }
 
-    if (!type || objTypeName != type->qmlTypeName())
+    if (!type)
         return true;
 
     QString enumValue = parts.at(1);
-    int value;
-    if (prop.isFlagType()) {
-        value = prop.enumerator().keysToValue(enumValue.toUtf8().constData());
-    } else
-        value = prop.enumerator().keyToValue(enumValue.toUtf8().constData());
+    int value = -1;
+
+    if (objTypeName == type->qmlTypeName()) {
+        // When these two match, we can short cut the search
+        if (prop.isFlagType()) {
+            value = prop.enumerator().keysToValue(enumValue.toUtf8().constData());
+        } else {
+            value = prop.enumerator().keyToValue(enumValue.toUtf8().constData());
+        }
+    } else {
+        // Otherwise we have to search the whole type
+        // This matches the logic in QDeclarativeTypeNameScriptClass
+        QByteArray enumName = enumValue.toUtf8();
+        const QMetaObject *metaObject = type->baseMetaObject();
+        for (int ii = metaObject->enumeratorCount() - 1; value == -1 && ii >= 0; --ii) {
+            QMetaEnum e = metaObject->enumerator(ii);
+            value = e.keyToValue(enumName.constData());
+        }
+    }
+
     if (value == -1)
         return true;
 
     v->type = Value::Literal;
-    v->value = QDeclarativeParser::Variant(enumValue);
+    v->value = QDeclarativeParser::Variant((double)value);
     *isAssignment = true;
 
     return true;
@@ -2412,7 +2429,7 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
     newClassName.append("_QML_");
     int idx = classIndexCounter()->fetchAndAddRelaxed(1);
     newClassName.append(QByteArray::number(idx));
-    if (compileState.root == obj) {
+    if (compileState.root == obj && !compileState.nested) {
         QString path = output->url.path();
         int lastSlash = path.lastIndexOf(QLatin1Char('/'));
         if (lastSlash > -1) {
@@ -2888,25 +2905,26 @@ bool QDeclarativeCompiler::completeComponentBuild()
         COMPILE_CHECK(buildDynamicMeta(aliasObject, ResolveAliases));
     }
 
-    QDeclarativeBindingCompiler::Expression expr;
+    QDeclarativeV4Compiler::Expression expr;
     expr.component = compileState.root;
     expr.ids = compileState.ids;
+    expr.importCache = output->importCache;
+    expr.imports = unit->imports();
 
-    QDeclarativeBindingCompiler bindingCompiler;
+    QDeclarativeV4Compiler bindingCompiler;
 
     for (QHash<QDeclarativeParser::Value*,BindingReference>::Iterator iter = compileState.bindings.begin(); 
          iter != compileState.bindings.end(); ++iter) {
 
         BindingReference &binding = *iter;
 
-        expr.context = binding.bindingContext.object;
-        expr.property = binding.property;
-        expr.expression = binding.expression;
-        expr.imports = unit->imports();
-
         // ### We don't currently optimize for bindings on alias's - because 
         // of the solution to QTBUG-13719
         if (!binding.property->isAlias) {
+            expr.context = binding.bindingContext.object;
+            expr.property = binding.property;
+            expr.expression = binding.expression;
+
             int index = bindingCompiler.compile(expr, enginePrivate);
             if (index != -1) {
                 binding.dataType = BindingReference::Experimental;
@@ -2947,11 +2965,8 @@ bool QDeclarativeCompiler::completeComponentBuild()
         componentStat.scriptBindings.append(iter.key()->location);
     }
 
-    if (bindingCompiler.isValid()) {
+    if (bindingCompiler.isValid()) 
         compileState.compiledBindingData = bindingCompiler.program();
-        if (bindingsDump()) 
-            QDeclarativeBindingCompiler::dump(compileState.compiledBindingData);
-    }
 
     saveComponentState();
 

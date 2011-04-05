@@ -144,6 +144,9 @@ private slots:
     void numberAssignment();
     void propertySplicing();
     void signalWithUnknownTypes();
+    void moduleApi();
+    void importScripts();
+    void scarceResources();
 
     void bug1();
     void bug2();
@@ -260,6 +263,7 @@ void tst_qdeclarativeecmascript::idShortcutInvalidates()
         QVERIFY(object->objectProperty() != 0);
         delete object->objectProperty();
         QVERIFY(object->objectProperty() == 0);
+        delete object;
     }
 
     {
@@ -269,6 +273,7 @@ void tst_qdeclarativeecmascript::idShortcutInvalidates()
         QVERIFY(object->objectProperty() != 0);
         delete object->objectProperty();
         QVERIFY(object->objectProperty() == 0);
+        delete object;
     }
 }
 
@@ -279,12 +284,14 @@ void tst_qdeclarativeecmascript::boolPropertiesEvaluateAsBool()
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->stringProperty(), QLatin1String("pass"));
+        delete object;
     }
     {
         QDeclarativeComponent component(&engine, TEST_FILE("boolPropertiesEvaluateAsBool.2.qml"));
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->stringProperty(), QLatin1String("pass"));
+        delete object;
     }
 }
 
@@ -297,6 +304,7 @@ void tst_qdeclarativeecmascript::signalAssignment()
         QCOMPARE(object->string(), QString());
         emit object->basicSignal();
         QCOMPARE(object->string(), QString("pass"));
+        delete object;
     }
 
     {
@@ -306,6 +314,7 @@ void tst_qdeclarativeecmascript::signalAssignment()
         QCOMPARE(object->string(), QString());
         emit object->argumentSignal(19, "Hello world!", 10.25);
         QCOMPARE(object->string(), QString("pass 19 Hello world! 10.25"));
+        delete object;
     }
 }
 
@@ -320,6 +329,7 @@ void tst_qdeclarativeecmascript::methods()
         emit object->basicSignal();
         QCOMPARE(object->methodCalled(), true);
         QCOMPARE(object->methodIntCalled(), false);
+        delete object;
     }
 
     {
@@ -331,6 +341,7 @@ void tst_qdeclarativeecmascript::methods()
         emit object->basicSignal();
         QCOMPARE(object->methodCalled(), false);
         QCOMPARE(object->methodIntCalled(), true);
+        delete object;
     }
 
     {
@@ -338,6 +349,7 @@ void tst_qdeclarativeecmascript::methods()
         QObject *object = component.create();
         QVERIFY(object != 0);
         QCOMPARE(object->property("test").toInt(), 19);
+        delete object;
     }
 
     {
@@ -347,6 +359,7 @@ void tst_qdeclarativeecmascript::methods()
         QCOMPARE(object->property("test").toInt(), 19);
         QCOMPARE(object->property("test2").toInt(), 17);
         QCOMPARE(object->property("test3").toInt(), 16);
+        delete object;
     }
 
     {
@@ -354,6 +367,7 @@ void tst_qdeclarativeecmascript::methods()
         QObject *object = component.create();
         QVERIFY(object != 0);
         QCOMPARE(object->property("test").toInt(), 9);
+        delete object;
     }
 }
 
@@ -364,6 +378,7 @@ void tst_qdeclarativeecmascript::bindingLoop()
     QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
     QObject *object = component.create();
     QVERIFY(object != 0);
+    delete object;
 }
 
 void tst_qdeclarativeecmascript::basicExpressions_data()
@@ -508,6 +523,7 @@ void tst_qdeclarativeecmascript::contextPropertiesTriggerReeval()
         QCOMPARE(expr.evaluate(), QVariant::fromValue((QObject *)object3));
     }
 
+    delete object3;
 }
 
 void tst_qdeclarativeecmascript::objectPropertiesTriggerReeval()
@@ -582,6 +598,8 @@ void tst_qdeclarativeecmascript::deferredProperties()
     QCOMPARE(qmlObject->value(), 10);
     object->setValue(19);
     QCOMPARE(qmlObject->value(), 19);
+
+    delete object;
 }
 
 // Check errors on deferred properties are correctly emitted
@@ -625,6 +643,7 @@ void tst_qdeclarativeecmascript::extensionObjects()
     QCOMPARE(nested->coreProperty(), 11);
     QCOMPARE(nested->baseProperty(), 92);
 
+    delete object;
 }
 
 void tst_qdeclarativeecmascript::overrideExtensionProperties()
@@ -635,6 +654,8 @@ void tst_qdeclarativeecmascript::overrideExtensionProperties()
     QVERIFY(object != 0);
     QVERIFY(object->secondProperty() != 0);
     QVERIFY(object->firstProperty() == 0);
+
+    delete object;
 }
 
 void tst_qdeclarativeecmascript::attachedProperties()
@@ -646,6 +667,8 @@ void tst_qdeclarativeecmascript::attachedProperties()
     QCOMPARE(object->property("b").toInt(), 19);
     QCOMPARE(object->property("c").toInt(), 19);
     QCOMPARE(object->property("d").toInt(), 19);
+
+    delete object;
 
     // ### Need to test attached property assignment
 }
@@ -668,6 +691,8 @@ void tst_qdeclarativeecmascript::enums()
     QCOMPARE(object->property("h").toInt(), 3);
     QCOMPARE(object->property("i").toInt(), 19);
     QCOMPARE(object->property("j").toInt(), 19);
+
+    delete object;
     }
     // Non-existent enums
     {
@@ -682,6 +707,8 @@ void tst_qdeclarativeecmascript::enums()
     QVERIFY(object != 0);
     QCOMPARE(object->property("a").toInt(), 0);
     QCOMPARE(object->property("b").toInt(), 0);
+
+    delete object;
     }
 }
 
@@ -692,6 +719,8 @@ void tst_qdeclarativeecmascript::valueTypeFunctions()
     QVERIFY(obj != 0);
     QCOMPARE(obj->rectProperty(), QRect(0,0,100,100));
     QCOMPARE(obj->rectFProperty(), QRectF(0,0.5,100,99.5));
+
+    delete obj;
 }
 
 /* 
@@ -715,6 +744,8 @@ void tst_qdeclarativeecmascript::constantsOverrideBindings()
         QCOMPARE(object->property("c2").toInt(), 13);
         object->setProperty("c1", QVariant(8));
         QCOMPARE(object->property("c2").toInt(), 13);
+
+        delete object;
     }
 
     // During construction
@@ -728,6 +759,8 @@ void tst_qdeclarativeecmascript::constantsOverrideBindings()
         object->setProperty("c1", QVariant(9));
         QCOMPARE(object->property("c1").toInt(), 9);
         QCOMPARE(object->property("c2").toInt(), 10);
+
+        delete object;
     }
 
 #if 0
@@ -746,6 +779,8 @@ void tst_qdeclarativeecmascript::constantsOverrideBindings()
         object->setProperty("c1", QVariant(7));
         QCOMPARE(object->property("c1").toInt(), 7);
         QCOMPARE(object->property("c2").toInt(), 13);
+
+        delete object;
     }
 #endif
 
@@ -760,6 +795,8 @@ void tst_qdeclarativeecmascript::constantsOverrideBindings()
         object->setProperty("c1", QVariant(9));
         QCOMPARE(object->property("c1").toInt(), 9);
         QCOMPARE(object->property("c3").toInt(), 10);
+
+        delete object;
     }
 }
 
@@ -787,6 +824,8 @@ void tst_qdeclarativeecmascript::outerBindingOverridesInnerBinding()
     QCOMPARE(object->property("c1").toInt(), 9);
     QCOMPARE(object->property("c2").toInt(), 8);
     QCOMPARE(object->property("c3").toInt(), 8);
+
+    delete object;
 }
 
 /*
@@ -803,6 +842,8 @@ void tst_qdeclarativeecmascript::nonExistentAttachedObject()
 
     QObject *object = component.create();
     QVERIFY(object != 0);
+
+    delete object;
 }
 
 void tst_qdeclarativeecmascript::scope()
@@ -822,6 +863,8 @@ void tst_qdeclarativeecmascript::scope()
         QCOMPARE(object->property("test8").toInt(), 2);
         QCOMPARE(object->property("test9").toInt(), 1);
         QCOMPARE(object->property("test10").toInt(), 3);
+
+        delete object;
     }
 
     {
@@ -835,6 +878,8 @@ void tst_qdeclarativeecmascript::scope()
         QCOMPARE(object->property("test4").toInt(), 14);
         QCOMPARE(object->property("test5").toInt(), 24);
         QCOMPARE(object->property("test6").toInt(), 24);
+
+        delete object;
     }
 
     {
@@ -845,6 +890,8 @@ void tst_qdeclarativeecmascript::scope()
         QCOMPARE(object->property("test1").toBool(), true);
         QCOMPARE(object->property("test2").toBool(), true);
         QCOMPARE(object->property("test3").toBool(), true);
+
+        delete object;
     }
 
     // Signal argument scope
@@ -881,6 +928,8 @@ void tst_qdeclarativeecmascript::signalParameterTypes()
     QCOMPARE(object->property("realProperty").toReal(), 19.2);
     QVERIFY(object->property("colorProperty").value<QColor>() == QColor(255, 255, 0, 255));
     QVERIFY(object->property("variantProperty") == QVariant::fromValue(QColor(255, 0, 255, 255)));
+
+    delete object;
 }
 
 /*
@@ -897,6 +946,8 @@ void tst_qdeclarativeecmascript::objectsCompareAsEqual()
     QCOMPARE(object->property("test3").toBool(), true);
     QCOMPARE(object->property("test4").toBool(), true);
     QCOMPARE(object->property("test5").toBool(), true);
+
+    delete object;
 }
 
 /*
@@ -917,6 +968,8 @@ void tst_qdeclarativeecmascript::aliasPropertyAndBinding()
 
     QCOMPARE(object->property("c2").toInt(), 19);
     QCOMPARE(object->property("c3").toInt(), 19);
+
+    delete object;
 }
 
 void tst_qdeclarativeecmascript::dynamicCreation_data()
@@ -946,6 +999,8 @@ void tst_qdeclarativeecmascript::dynamicCreation()
     QObject *created = object->objectProperty();
     QVERIFY(created);
     QCOMPARE(created->objectName(), createdName);
+
+    delete object;
 }
 
 /*
@@ -994,6 +1049,8 @@ void tst_qdeclarativeecmascript::objectToString()
     QMetaObject::invokeMethod(object, "testToString");
     QVERIFY(object->stringProperty().startsWith("MyQmlObject_QML_"));
     QVERIFY(object->stringProperty().endsWith(", \"objName\")"));
+
+    delete object;
 }
 
 /*
@@ -1008,6 +1065,7 @@ void tst_qdeclarativeecmascript::selfDeletingBinding()
         QObject *object = component.create();
         QVERIFY(object != 0);
         object->setProperty("triggerDelete", true);
+        delete object;
     }
 
     {
@@ -1015,6 +1073,7 @@ void tst_qdeclarativeecmascript::selfDeletingBinding()
         QObject *object = component.create();
         QVERIFY(object != 0);
         object->setProperty("triggerDelete", true);
+        delete object;
     }
 }
 
@@ -1030,6 +1089,7 @@ void tst_qdeclarativeecmascript::extendedObjectPropertyLookup()
     QDeclarativeComponent component(&engine, TEST_FILE("extendedObjectPropertyLookup.qml"));
     QObject *object = component.create();
     QVERIFY(object != 0);
+    delete object;
 }
 
 /*
@@ -1065,6 +1125,8 @@ void tst_qdeclarativeecmascript::scriptErrors()
 
     QTest::ignoreMessage(QtWarningMsg, warning8.toLatin1().constData());
     emit object->thirdBasicSignal();
+
+    delete object;
 }
 
 /*
@@ -1081,6 +1143,16 @@ void tst_qdeclarativeecmascript::functionErrors()
 
     QObject *object = component.create();
     QVERIFY(object != 0);
+    delete object;
+
+    // test that if an exception occurs while invoking js function from cpp, it is reported as expected.
+    QDeclarativeComponent componentTwo(&engine, TEST_FILE("scarceresources/scarceResourceFunctionFail.qml"));
+    url = componentTwo.url().toString();
+    object = componentTwo.create();
+    QVERIFY(object != 0);
+    warning = url + QLatin1String(":16: TypeError: Result of expression 'scarceResourceProvider.scarceResource' [[object Object]] is not a function.");
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData()); // we expect a meaningful warning to be printed.
+    QMetaObject::invokeMethod(object, "retrieveScarceResource");
     delete object;
 }
 
@@ -1130,6 +1202,8 @@ void tst_qdeclarativeecmascript::signalTriggeredBindings()
     QCOMPARE(object->property("base").toReal(), 400.);
     QCOMPARE(object->property("test1").toReal(), 400.);
     QCOMPARE(object->property("test2").toReal(), 400.);
+
+    delete object;
 }
 
 /*
@@ -1145,6 +1219,8 @@ void tst_qdeclarativeecmascript::listProperties()
     QCOMPARE(object->property("test2").toInt(), 2);
     QCOMPARE(object->property("test3").toBool(), true);
     QCOMPARE(object->property("test4").toBool(), true);
+
+    delete object;
 }
 
 void tst_qdeclarativeecmascript::exceptionClearsOnReeval()
@@ -1166,6 +1242,8 @@ void tst_qdeclarativeecmascript::exceptionClearsOnReeval()
     object->setObjectProperty(&object2);
 
     QCOMPARE(object->property("test").toBool(), true);
+
+    delete object;
 }
 
 void tst_qdeclarativeecmascript::exceptionSlotProducesWarning()
@@ -1178,6 +1256,7 @@ void tst_qdeclarativeecmascript::exceptionSlotProducesWarning()
     QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
+    delete object;
 }
 
 void tst_qdeclarativeecmascript::exceptionBindingProducesWarning()
@@ -1190,6 +1269,7 @@ void tst_qdeclarativeecmascript::exceptionBindingProducesWarning()
     QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
+    delete object;
 }
 
 static int transientErrorsMsgCount = 0;
@@ -1213,6 +1293,8 @@ void tst_qdeclarativeecmascript::transientErrors()
     qInstallMsgHandler(old);
 
     QCOMPARE(transientErrorsMsgCount, 0);
+
+    delete object;
     }
 
     // One binding erroring multiple times, but then resolving
@@ -1228,6 +1310,8 @@ void tst_qdeclarativeecmascript::transientErrors()
     qInstallMsgHandler(old);
 
     QCOMPARE(transientErrorsMsgCount, 0);
+
+    delete object;
     }
 }
 
@@ -1343,6 +1427,8 @@ void tst_qdeclarativeecmascript::dynamicCreationCrash()
     QMetaObject::invokeMethod(object, "dontCrash");
     QObject *created = object->objectProperty();
     QVERIFY(created == 0);
+
+    delete object;
 }
 
 //QTBUG-9367
@@ -1352,6 +1438,7 @@ void tst_qdeclarativeecmascript::regExpBug()
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
     QCOMPARE(object->regExp().pattern(), QLatin1String("[a-zA-z]"));
+    delete object;
 }
 
 void tst_qdeclarativeecmascript::callQtInvokables()
@@ -2125,6 +2212,8 @@ void tst_qdeclarativeecmascript::ownership()
 
         delete object;
     }
+
+    delete context;
 }
 
 class CppOwnershipReturnValue : public QObject
@@ -2243,6 +2332,7 @@ void tst_qdeclarativeecmascript::qlistqobjectMethods()
     QCOMPARE(object->property("test2").toBool(), true);
 
     delete object;
+    delete context;
 }
 
 // QTBUG-9205
@@ -2360,6 +2450,285 @@ void tst_qdeclarativeecmascript::signalWithUnknownTypes()
     QCOMPARE(result.value, type.value);
 
 
+    delete object;
+}
+
+void tst_qdeclarativeecmascript::moduleApi()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("moduleApi.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("existingUriTest").toInt(), 20);
+    QCOMPARE(object->property("scriptTest").toInt(), 13);
+    QCOMPARE(object->property("qobjectTest").toInt(), 20);
+    QCOMPARE(object->property("qobjectMinorVersionTest").toInt(), 20);
+    QCOMPARE(object->property("qobjectMajorVersionTest").toInt(), 20);
+    QCOMPARE(object->property("qobjectParentedTest").toInt(), 26);
+    delete object;
+
+    // test that caching of module apis works correctly.
+    QDeclarativeComponent componentTwo(&engine, TEST_FILE("moduleApiCaching.qml"));
+    object = componentTwo.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("existingUriTest").toInt(), 20);
+    QCOMPARE(object->property("scriptTest").toInt(), 13);            // shouldn't have incremented.
+    QCOMPARE(object->property("qobjectParentedTest").toInt(), 26);   // shouldn't have incremented.
+    delete object;
+
+    // test that writing to a property of module apis works correctly.
+    QDeclarativeComponent componentThree(&engine, TEST_FILE("moduleApiWriting.qml"));
+    QString expectedWarning = QLatin1String("file://") + TEST_FILE("moduleApiWriting.qml").toLocalFile() + QLatin1String(":15: Error: Cannot assign to read-only property \"qobjectTestProperty\"");
+    QTest::ignoreMessage(QtWarningMsg, expectedWarning.toAscii().constData());
+    object = componentThree.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("readOnlyProperty").toInt(), 20);
+    QCOMPARE(object->property("writableProperty").toInt(), 50);
+    QVERIFY(object->setProperty("firstProperty", QVariant(30))); // shouldn't affect value of readOnlyProperty
+    QVERIFY(object->setProperty("writableProperty", QVariant(30))); // SHOULD affect value of writableProperty
+    QCOMPARE(object->property("readOnlyProperty").toInt(), 20);
+    QCOMPARE(object->property("writableProperty").toInt(), 30);
+    delete object;
+
+    QDeclarativeComponent failOne(&engine, TEST_FILE("moduleApiMajorVersionFail.qml"));
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeComponent: Component is not ready");
+    object = failOne.create();
+    QVERIFY(object == 0); // should have failed: invalid major version
+
+    QDeclarativeComponent failTwo(&engine, TEST_FILE("moduleApiMinorVersionFail.qml"));
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeComponent: Component is not ready");
+    object = failTwo.create();
+    QVERIFY(object == 0); // should have failed: invalid minor version
+}
+
+void tst_qdeclarativeecmascript::importScripts()
+{
+    QObject *object = 0;
+
+    // first, ensure that the required behaviour works.
+    QDeclarativeComponent component(&engine, TEST_FILE("jsimport/testImport.qml"));
+    object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("importedScriptStringValue"), QVariant(QString(QLatin1String("Hello, World!"))));
+    QCOMPARE(object->property("importedScriptFunctionValue"), QVariant(20));
+    QCOMPARE(object->property("importedModuleAttachedPropertyValue"), QVariant(19));
+    QCOMPARE(object->property("importedModuleEnumValue"), QVariant(2));
+    delete object;
+
+    QDeclarativeComponent componentTwo(&engine, TEST_FILE("jsimport/testImportScoping.qml"));
+    object = componentTwo.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("componentError"), QVariant(5));
+    delete object;
+
+    // then, ensure that unintended behaviour does not work.
+    QDeclarativeComponent failOneComponent(&engine, TEST_FILE("jsimportfail/failOne.qml"));
+    QString expectedWarning = QLatin1String("file://") + TEST_FILE("jsimportfail/failOne.qml").toLocalFile() + QLatin1String(":6: TypeError: Result of expression 'TestScriptImport.ImportOneJs' [undefined] is not an object.");
+    QTest::ignoreMessage(QtWarningMsg, expectedWarning.toAscii().constData());
+    object = failOneComponent.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("importScriptFunctionValue").toString().isEmpty());
+    delete object;
+    QDeclarativeComponent failTwoComponent(&engine, TEST_FILE("jsimportfail/failTwo.qml"));
+    expectedWarning = QLatin1String("file://") + TEST_FILE("jsimportfail/failTwo.qml").toLocalFile() + QLatin1String(":6: ReferenceError: Can't find variable: ImportOneJs");
+    QTest::ignoreMessage(QtWarningMsg, expectedWarning.toAscii().constData());
+    object = failTwoComponent.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("importScriptFunctionValue").toString().isEmpty());
+    delete object;
+    QDeclarativeComponent failThreeComponent(&engine, TEST_FILE("jsimportfail/failThree.qml"));
+    expectedWarning = QLatin1String("file://") + TEST_FILE("jsimportfail/failThree.qml").toLocalFile() + QLatin1String(":7: TypeError: Result of expression 'testQtObject.TestModuleImport.JsQtTest' [undefined] is not an object.");
+    QTest::ignoreMessage(QtWarningMsg, expectedWarning.toAscii().constData());
+    object = failThreeComponent.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("importedModuleAttachedPropertyValue"), QVariant(false));
+    delete object;
+    QDeclarativeComponent failFourComponent(&engine, TEST_FILE("jsimportfail/failFour.qml"));
+    expectedWarning = QLatin1String("file://") + TEST_FILE("jsimportfail/failFour.qml").toLocalFile() + QLatin1String(":6: ReferenceError: Can't find variable: JsQtTest");
+    QTest::ignoreMessage(QtWarningMsg, expectedWarning.toAscii().constData());
+    object = failFourComponent.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("importedModuleEnumValue"), QVariant(0));
+    delete object;
+    QDeclarativeComponent failFiveComponent(&engine, TEST_FILE("jsimportfail/failFive.qml"));
+    expectedWarning = QLatin1String("file://") + TEST_FILE("jsimportfail/importWithImports.js").toLocalFile() + QLatin1String(":8: ReferenceError: Can't find variable: Component");
+    QTest::ignoreMessage(QtWarningMsg, expectedWarning.toAscii().constData());
+    expectedWarning = QLatin1String("file://") + TEST_FILE("jsimportfail/importPragmaLibrary.js").toLocalFile() + QLatin1String(":6: ReferenceError: Can't find variable: Component");
+    QTest::ignoreMessage(QtWarningMsg, expectedWarning.toAscii().constData());
+    object = failFiveComponent.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("componentError"), QVariant(0));
+    delete object;
+
+    // also, test that importing scripts with .pragma library works as required
+    QDeclarativeComponent pragmaLibraryComponent(&engine, TEST_FILE("jsimport/testImportPragmaLibrary.qml"));
+    object = pragmaLibraryComponent.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("testValue"), QVariant(31));
+    delete object;
+
+    // and that .pragma library scripts don't inherit imports from any .qml file
+    QDeclarativeComponent pragmaLibraryComponentTwo(&engine, TEST_FILE("jsimportfail/testImportPragmaLibrary.qml"));
+    object = pragmaLibraryComponentTwo.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("testValue"), QVariant(0));
+    delete object;
+}
+
+void tst_qdeclarativeecmascript::scarceResources()
+{
+    QPixmap origPixmap(100, 100);
+    origPixmap.fill(Qt::blue);
+
+    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(&engine);
+    ScarceResourceObject *eo = 0;
+    QObject *object = 0;
+
+    // in the following three cases, the instance created from the component
+    // has a property which is a copy of the scarce resource; hence, the
+    // resource should NOT be detached prior to deletion of the object instance,
+    // unless the resource is destroyed explicitly.
+    QDeclarativeComponent component(&engine, TEST_FILE("scarceresources/scarceResourceCopy.qml"));
+    object = component.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("scarceResourceCopy").isValid());
+    QCOMPARE(object->property("scarceResourceCopy").value<QPixmap>(), origPixmap);
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(!eo->scarceResourceIsDetached()); // there are two copies of it in existence: the property of object, and the property of eo.
+    delete object;
+
+    QDeclarativeComponent componentTwo(&engine, TEST_FILE("scarceresources/scarceResourceCopyFromJs.qml"));
+    object = componentTwo.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("scarceResourceCopy").isValid());
+    QCOMPARE(object->property("scarceResourceCopy").value<QPixmap>(), origPixmap);
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(!eo->scarceResourceIsDetached()); // there are two copies of it in existence: the property of object, and the property of eo.
+    delete object;
+
+    QDeclarativeComponent componentThree(&engine, TEST_FILE("scarceresources/scarceResourceDestroyedCopy.qml"));
+    object = componentThree.create();
+    QVERIFY(object != 0);
+    QVERIFY(!(object->property("scarceResourceCopy").isValid())); // was manually released prior to being returned.
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // should have explicitly been released during the evaluation of the binding.
+    delete object;
+
+    // in the following three cases, no other copy should exist in memory,
+    // and so it should be detached (unless explicitly preserved).
+    QDeclarativeComponent componentFour(&engine, TEST_FILE("scarceresources/scarceResourceTest.qml"));
+    object = componentFour.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("scarceResourceTest").isValid());
+    QCOMPARE(object->property("scarceResourceTest").toInt(), 100);
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // the resource should have been released after the binding was evaluated.
+    delete object;
+
+    QDeclarativeComponent componentFive(&engine, TEST_FILE("scarceresources/scarceResourceTestPreserve.qml"));
+    object = componentFive.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("scarceResourceTest").isValid());
+    QCOMPARE(object->property("scarceResourceTest").toInt(), 100);
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(!eo->scarceResourceIsDetached()); // this won't be detached since we explicitly preserved it.
+    delete object;
+
+    QDeclarativeComponent componentSix(&engine, TEST_FILE("scarceresources/scarceResourceTestMultiple.qml"));
+    object = componentSix.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("scarceResourceTest").isValid());
+    QCOMPARE(object->property("scarceResourceTest").toInt(), 100);
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // all resources were released manually or automatically released.
+    delete object;
+
+    // test that scarce resources are handled correctly for imports
+    QDeclarativeComponent componentSeven(&engine, TEST_FILE("scarceresources/scarceResourceCopyImportNoBinding.qml"));
+    object = componentSeven.create();
+    QVERIFY(object != 0); // the import should have caused the addition of a resource to the ScarceResources list
+    QVERIFY(ep->scarceResources == 0); // but they should have been released by this point.
+    delete object;
+
+    QDeclarativeComponent componentEight(&engine, TEST_FILE("scarceresources/scarceResourceCopyImportFail.qml"));
+    object = componentEight.create();
+    QVERIFY(object != 0);
+    QVERIFY(!object->property("scarceResourceCopy").isValid()); // wasn't preserved, so shouldn't be valid.
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    delete object;
+
+    QDeclarativeComponent componentNine(&engine, TEST_FILE("scarceresources/scarceResourceCopyImport.qml"));
+    object = componentNine.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("scarceResourceCopy").isValid()); // preserved, so should be valid.
+    QCOMPARE(object->property("scarceResourceCopy").value<QPixmap>(), origPixmap);
+    QVERIFY(object->property("scarceResourceAssignedCopyOne").isValid()); // assigned before destroy(), so should be valid.
+    QCOMPARE(object->property("scarceResourceAssignedCopyOne").value<QPixmap>(), origPixmap);
+    QVERIFY(!object->property("scarceResourceAssignedCopyTwo").isValid()); // assigned after destroy(), so should be invalid.
+    QVERIFY(ep->scarceResources == 0); // this will still be zero, because "preserve()" REMOVES it from this list.
+    delete object;
+
+    // test that scarce resources are handled properly in signal invocation
+    QDeclarativeComponent componentTen(&engine, TEST_FILE("scarceresources/scarceResourceSignal.qml"));
+    object = componentTen.create();
+    QVERIFY(object != 0);
+    QObject *srsc = object->findChild<QObject*>("srsc");
+    QVERIFY(srsc);
+    QVERIFY(!srsc->property("scarceResourceCopy").isValid()); // hasn't been instantiated yet.
+    QCOMPARE(srsc->property("width"), QVariant(5)); // default value is 5.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // should be no other copies of it at this stage.
+    QMetaObject::invokeMethod(srsc, "testSignal");
+    QVERIFY(!srsc->property("scarceResourceCopy").isValid()); // still hasn't been instantiated
+    QCOMPARE(srsc->property("width"), QVariant(10)); // but width was assigned to 10.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // should still be no other copies of it at this stage.
+    QMetaObject::invokeMethod(srsc, "testSignal2"); // assigns scarceResourceCopy to the scarce pixmap.
+    QVERIFY(srsc->property("scarceResourceCopy").isValid());
+    QCOMPARE(srsc->property("scarceResourceCopy").value<QPixmap>(), origPixmap);
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(!(eo->scarceResourceIsDetached())); // should be another copy of the resource now.
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    delete object;
+
+    // test that scarce resources are handled properly from js functions in qml files
+    QDeclarativeComponent componentEleven(&engine, TEST_FILE("scarceresources/scarceResourceFunction.qml"));
+    object = componentEleven.create();
+    QVERIFY(object != 0);
+    QVERIFY(!object->property("scarceResourceCopy").isValid()); // not yet assigned, so should not be valid
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // should be no other copies of it at this stage.
+    QMetaObject::invokeMethod(object, "retrieveScarceResource");
+    QVERIFY(object->property("scarceResourceCopy").isValid()); // assigned, so should be valid.
+    QCOMPARE(object->property("scarceResourceCopy").value<QPixmap>(), origPixmap);
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(!eo->scarceResourceIsDetached()); // should be a copy of the resource at this stage.
+    QMetaObject::invokeMethod(object, "releaseScarceResource");
+    QVERIFY(!object->property("scarceResourceCopy").isValid()); // just released, so should not be valid
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // should be no other copies of it at this stage.
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    delete object;
+
+    // test that if an exception occurs while invoking js function from cpp, that the resources are released.
+    QDeclarativeComponent componentTwelve(&engine, TEST_FILE("scarceresources/scarceResourceFunctionFail.qml"));
+    object = componentTwelve.create();
+    QVERIFY(object != 0);
+    QVERIFY(!object->property("scarceResourceCopy").isValid()); // not yet assigned, so should not be valid
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // should be no other copies of it at this stage.
+    QString expectedWarning = QLatin1String("file://") + TEST_FILE("scarceresources/scarceResourceFunctionFail.qml").toLocalFile() + QLatin1String(":16: TypeError: Result of expression 'scarceResourceProvider.scarceResource' [[object Object]] is not a function.");
+    QTest::ignoreMessage(QtWarningMsg, expectedWarning.toAscii().constData()); // we expect a meaningful warning to be printed.
+    QMetaObject::invokeMethod(object, "retrieveScarceResource");
+    QVERIFY(!object->property("scarceResourceCopy").isValid()); // due to exception, assignment will NOT have occurred.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // should be no other copies of it at this stage.
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
     delete object;
 }
 
@@ -2944,6 +3313,7 @@ void tst_qdeclarativeecmascript::revisionErrors()
         QTest::ignoreMessage(QtWarningMsg, warning3.toLatin1().constData());
         MyRevisionedClass *object = qobject_cast<MyRevisionedClass *>(component.create());
         QVERIFY(object != 0);
+        delete object;
     }
     {
         QDeclarativeComponent component(&engine, TEST_FILE("metaobjectRevisionErrors2.qml"));
@@ -2965,6 +3335,7 @@ void tst_qdeclarativeecmascript::revisionErrors()
         QTest::ignoreMessage(QtWarningMsg, warning5.toLatin1().constData());
         MyRevisionedClass *object = qobject_cast<MyRevisionedClass *>(component.create());
         QVERIFY(object != 0);
+        delete object;
     }
     {
         QDeclarativeComponent component(&engine, TEST_FILE("metaobjectRevisionErrors3.qml"));
@@ -2980,6 +3351,7 @@ void tst_qdeclarativeecmascript::revisionErrors()
         QTest::ignoreMessage(QtWarningMsg, warning3.toLatin1().constData());
         MyRevisionedClass *object = qobject_cast<MyRevisionedClass *>(component.create());
         QVERIFY(object != 0);
+        delete object;
     }
 }
 
@@ -2991,6 +3363,7 @@ void tst_qdeclarativeecmascript::revision()
 
         MyRevisionedClass *object = qobject_cast<MyRevisionedClass *>(component.create());
         QVERIFY(object != 0);
+        delete object;
     }
     {
         QDeclarativeComponent component(&engine, TEST_FILE("metaobjectRevision2.qml"));
@@ -2998,6 +3371,7 @@ void tst_qdeclarativeecmascript::revision()
 
         MyRevisionedClass *object = qobject_cast<MyRevisionedClass *>(component.create());
         QVERIFY(object != 0);
+        delete object;
     }
     {
         QDeclarativeComponent component(&engine, TEST_FILE("metaobjectRevision3.qml"));
@@ -3005,6 +3379,7 @@ void tst_qdeclarativeecmascript::revision()
 
         MyRevisionedClass *object = qobject_cast<MyRevisionedClass *>(component.create());
         QVERIFY(object != 0);
+        delete object;
     }
     // Test that non-root classes can resolve revisioned methods
     {

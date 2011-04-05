@@ -753,6 +753,8 @@ void tst_qdeclarativelistmodel::get()
     QCOMPARE(spyResult.at(0).toInt(), index);
     QCOMPARE(spyResult.at(1).toInt(), 1);  // only 1 item is modified at a time
     QCOMPARE(spyResult.at(2).value<QList<int> >(), (QList<int>() << role));
+
+    delete model;
 }
 
 void tst_qdeclarativelistmodel::get_data()
@@ -912,6 +914,8 @@ void tst_qdeclarativelistmodel::get_nested()
         QCOMPARE(spyResult.at(1).toInt(), 1);  // only 1 item is modified at a time
         QCOMPARE(spyResult.at(2).value<QList<int> >(), (QList<int>() << role));
     }
+
+    delete model;
 }
 
 void tst_qdeclarativelistmodel::get_nested_data()
@@ -932,6 +936,8 @@ void tst_qdeclarativelistmodel::crash_model_with_multiple_roles()
 
     // used to cause a crash in QDeclarativeVisualDataModel
     model->setProperty(0, "black", true);
+
+    delete rootItem;
 }
 
 //QTBUG-15190
@@ -943,6 +949,8 @@ void tst_qdeclarativelistmodel::set_model_cache()
     QVERIFY2(component.errorString().isEmpty(), QTest::toString(component.errorString()));
     QVERIFY(model != 0);
     QVERIFY(model->property("ok").toBool());
+
+    delete model;
 }
 
 void tst_qdeclarativelistmodel::property_changes()

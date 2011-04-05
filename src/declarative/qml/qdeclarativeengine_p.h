@@ -67,6 +67,7 @@
 #include "private/qdeclarativeproperty_p.h"
 #include "private/qdeclarativepropertycache_p.h"
 #include "private/qdeclarativeobjectscriptclass_p.h"
+#include "private/qdeclarativescarceresourcescriptclass_p.h"
 #include "private/qdeclarativecontextscriptclass_p.h"
 #include "private/qdeclarativevaluetypescriptclass_p.h"
 #include "private/qdeclarativemetatype_p.h"
@@ -93,6 +94,8 @@ class QDeclarativeExpression;
 class QDeclarativeContextScriptClass;
 class QDeclarativeImportDatabase;
 class QDeclarativeObjectScriptClass;
+class QDeclarativeScarceResourceScriptClass;
+class ScarceResourceData;
 class QDeclarativeTypeNameScriptClass;
 class QDeclarativeValueTypeScriptClass;
 class QScriptEngineDebugger;
@@ -110,6 +113,8 @@ class QDeclarativeDelayedError;
 class QDeclarativeWorkerScriptEngine;
 class QDeclarativeGlobalScriptClass;
 class QDir;
+class QSGTexture;
+class QSGContext;
 
 class QDeclarativeScriptEngine : public QScriptEngine
 {
@@ -169,6 +174,7 @@ public:
     QDeclarativeContextData *sharedContext;
     QObject *sharedScope;
     QDeclarativeObjectScriptClass *objectClass;
+    QDeclarativeScarceResourceScriptClass *scarceResourceClass;
     QDeclarativeValueTypeScriptClass *valueTypeClass;
     QDeclarativeTypeNameScriptClass *typeNameClass;
     QDeclarativeListScriptClass *listClass;
@@ -233,8 +239,21 @@ public:
 
     QHash<QString,QSharedPointer<QDeclarativeImageProvider> > imageProviders;
     QDeclarativeImageProvider::ImageType getImageProviderType(const QUrl &url);
+    QSGTexture *getTextureFromProvider(const QUrl &url, QSize *size, const QSize& req_size);
     QImage getImageFromProvider(const QUrl &url, QSize *size, const QSize& req_size);
     QPixmap getPixmapFromProvider(const QUrl &url, QSize *size, const QSize& req_size);
+
+    /*
+       A scarce resource (like a large pixmap or texture) will be cached in a
+       JavaScript wrapper object when accessed in a binding or other js expression.
+       We need some way to automatically release that scarce resource prior to normal
+       garbage collection (unless the user explicitly preserves the resource).
+     */
+    ScarceResourceData* scarceResources;
+    int scarceResourcesRefCount;
+    static bool variantIsScarceResource(const QVariant& val);
+    void referenceScarceResources();
+    void dereferenceScarceResources();
 
     mutable QMutex mutex;
 
@@ -249,6 +268,8 @@ public:
     }
 
     QDeclarativeValueTypeFactory valueTypes;
+
+    QHash<QDeclarativeMetaType::ModuleApi, QDeclarativeMetaType::ModuleApiInstance *> moduleApiInstances;
 
     QHash<const QMetaObject *, QDeclarativePropertyCache *> propertyCache;
     QHash<QPair<QDeclarativeType *, int>, QDeclarativePropertyCache *> typePropertyCache;
@@ -269,8 +290,6 @@ public:
     const QMetaObject *metaObjectForType(int) const;
     QHash<int, int> m_qmlLists;
     QHash<int, QDeclarativeCompiledData *> m_compositeTypes;
-
-    QHash<QString, QScriptValue> m_sharedScriptImports;
 
     QScriptValue scriptValueFromVariant(const QVariant &);
     QVariant scriptValueToVariant(const QScriptValue &, int hint = QVariant::Invalid);
@@ -327,6 +346,8 @@ public:
     static void defineModule();
 
     static bool qml_debugging_enabled;
+
+    QSGContext *sgContext;
 };
 
 /*!
