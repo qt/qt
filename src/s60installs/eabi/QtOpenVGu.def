@@ -209,4 +209,9 @@ EXPORTS
 	_ZN13QVGPixmapData12updateSerialEv @ 208 NONAME ABSENT
 	_ZN13QVGPixmapData4copyEPK11QPixmapDataRK5QRect @ 209 NONAME ABSENT
 	_ZNK13QVGPixmapData11idealFormatEP6QImage6QFlagsIN2Qt19ImageConversionFlagEE @ 210 NONAME ABSENT
+	_ZN13QVGPixmapData24releaseNativeImageHandleEv @ 211 NONAME
+	_ZN13QVGPixmapData25initFromNativeImageHandleEPvRK7QString @ 212 NONAME
+	_ZN13QVGPixmapData35createFromNativeImageHandleProviderEv @ 213 NONAME
+	_ZNK13QVGPixmapData14ensureReadbackEb @ 214 NONAME
+	_ZNK16QVGWindowSurface24hasStaticContentsSupportEv @ 215 NONAME
 

@@ -797,6 +797,8 @@ QImage::QImage()
     Constructs an image with the given \a width, \a height and \a
     format.
 
+    A \l{isNull()}{null} image will be returned if memory cannot be allocated.
+
     \warning This will create a QImage with uninitialized data. Call
     fill() to fill the image with an appropriate pixel value before
     drawing onto it with QPainter.
@@ -809,6 +811,8 @@ QImage::QImage(int width, int height, Format format)
 
 /*!
     Constructs an image with the given \a size and \a format.
+
+    A \l{isNull()}{null} image is returned if memory cannot be allocated.
 
     \warning This will create a QImage with uninitialized data. Call
     fill() to fill the image with an appropriate pixel value before

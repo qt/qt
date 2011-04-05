@@ -146,7 +146,7 @@
     application that attempts to dynamically load the Qt for Windows CE
     libraries using \c LoadLibrary. The following code can be used for this:
     
-    \snippet doc/src/snippets/code/doc_src_wince-customization.qdoc 9
+    \snippet doc/src/snippets/code/doc_src_wince-customization.cpp 9
 
     Once you have compiled and deployed the application as well as the Qt
     libraries, start a remote debugger. The debugger will then print the

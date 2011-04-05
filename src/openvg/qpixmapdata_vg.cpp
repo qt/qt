@@ -458,7 +458,7 @@ void QVGPixmapData::hibernate()
     if (skipHibernate)
         return;
 
-    forceToImage();
+    forceToImage(false); // no readback allowed here
     destroyImageAndContext();
 }
 
@@ -502,12 +502,13 @@ int QVGPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 
 // Ensures that the pixmap is backed by some valid data and forces the data to
 // be re-uploaded to the VGImage when toVGImage() is called next time.
-void QVGPixmapData::forceToImage()
+void QVGPixmapData::forceToImage(bool allowReadback)
 {
     if (!isValid())
         return;
 
-    ensureReadback(false);
+    if (allowReadback)
+        ensureReadback(false);
 
     if (source.isNull())
         source = QVolatileImage(w, h, sourceFormat());

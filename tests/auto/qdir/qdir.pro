@@ -4,7 +4,7 @@ RESOURCES += qdir.qrc
 QT        = core
 
 wince*|symbian {
-  DirFiles.files = testdir testdata searchdir resources entrylist types tst_qdir.cpp
+  DirFiles.files = testdir testData searchdir resources entrylist types tst_qdir.cpp
   DirFiles.path = .
   DEPLOYMENT += DirFiles
 }

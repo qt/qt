@@ -90,16 +90,16 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_SYMBIAN)
-#define QT_GL_NO_SCISSOR_TEST
-#endif
-
 #if defined(Q_WS_WIN)
 extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif
 
 #ifdef Q_WS_MAC
 extern bool qt_applefontsmoothing_enabled;
+#endif
+
+#if !defined(QT_MAX_CACHED_GLYPH_SIZE)
+#  define QT_MAX_CACHED_GLYPH_SIZE 64
 #endif
 
 Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
@@ -1477,7 +1477,8 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
     // don't try to cache huge fonts or vastly transformed fonts
     const qreal pixelSize = ti.fontEngine->fontDef.pixelSize;
-    if (pixelSize * pixelSize * qAbs(det) >= 64 * 64 || det < 0.25f || det > 4.f)
+    if (pixelSize * pixelSize * qAbs(det) >= QT_MAX_CACHED_GLYPH_SIZE * QT_MAX_CACHED_GLYPH_SIZE ||
+        det < 0.25f || det > 4.f)
         drawCached = false;
 
     QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0
@@ -1581,8 +1582,13 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     // cache so this text is performed before we test if the cache size has changed.
     if (recreateVertexArrays) {
         cache->setPaintEnginePrivate(this);
-        cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
-                        staticTextItem->glyphs, staticTextItem->glyphPositions);
+        if (!cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
+                             staticTextItem->glyphs, staticTextItem->glyphPositions)) {
+            // No space for glyphs in cache. We need to reset it and try again.
+            cache->clear();
+            cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
+                            staticTextItem->glyphs, staticTextItem->glyphPositions);
+        }
         cache->fillInPendingGlyphs();
     }
 

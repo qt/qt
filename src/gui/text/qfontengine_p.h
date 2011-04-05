@@ -117,6 +117,8 @@ public:
         // S60 types
         S60FontEngine, // Cannot be simply called "S60". Reason is qt_s60Data.h
 
+        DirectWrite,
+
         TestFontEngine = 0x1000
     };
 

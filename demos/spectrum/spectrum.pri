@@ -41,9 +41,9 @@ win32 {
     #     ..$${spectrum_build_dir}
     # without the result having a trailing slash where spectrum_build_dir
     # is undefined.
-    spectrum_build_dir = /release
-    if (!debug_and_release|build_pass): CONFIG(debug, debug|release) {
-        spectrum_build_dir = /debug
+    build_pass {
+        CONFIG(release, release|debug): spectrum_build_dir = /release
+        CONFIG(debug, release|debug): spectrum_build_dir = /debug
     }
 }
 

@@ -69,6 +69,7 @@
 
 #if !defined(QT_OPENGL_ES_1)
 #include "gl2paintengineex/qpaintengineex_opengl2_p.h"
+#include <private/qwindowsurface_gl_p.h>
 #endif
 
 #ifndef QT_OPENGL_ES_2
@@ -90,14 +91,13 @@
 #include <private/qpixmapdata_p.h>
 #include <private/qpixmapdata_gl_p.h>
 #include <private/qglpixelbuffer_p.h>
-#include <private/qwindowsurface_gl_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
 #include "qcolormap.h"
 #include "qfile.h"
 #include "qlibrary.h"
 #include <qmutex.h>
 
-#ifdef QT_OPENGL_ES
+#if defined(QT_OPENGL_ES) && !defined(QT_NO_EGL)
 #include <EGL/egl.h>
 #endif
 #ifdef QGL_USE_TEXTURE_POOL
@@ -1738,6 +1738,9 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     workaround_brokenTextureFromPixmap = false;
     workaround_brokenTextureFromPixmap_init = false;
 
+    workaround_brokenAlphaTexSubImage = false;
+    workaround_brokenAlphaTexSubImage_init = false;
+
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
         vertexAttributeArraysEnabledState[i] = false;
 }
@@ -3326,8 +3329,10 @@ bool QGLContext::create(const QGLContext* shareContext)
         QWidgetPrivate *wd = qt_widget_private(static_cast<QWidget *>(d->paintDevice));
         wd->usesDoubleBufferedGLContext = d->glFormat.doubleBuffer();
     }
+#ifndef Q_WS_QPA //We do this in choose context->setupSharing()
     if (d->sharing)  // ok, we managed to share
         QGLContextGroup::addShare(this, shareContext);
+#endif
     return d->valid;
 }
 
@@ -5599,6 +5604,21 @@ void *QGLContextGroupResourceBase::value(const QGLContext *context)
 {
     QGLContextGroup *group = QGLContextPrivate::contextGroup(context);
     return group->m_resources.value(this, 0);
+}
+
+void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx)
+{
+    void *resource = value(ctx);
+
+    if (resource != 0) {
+        QGLShareContextScope scope(ctx);
+        freeResource(resource);
+
+        QGLContextGroup *group = QGLContextPrivate::contextGroup(ctx);
+        group->m_resources.remove(this);
+        m_groups.removeOne(group);
+        active.deref();
+    }
 }
 
 void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx, void *value)

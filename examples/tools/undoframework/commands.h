@@ -87,6 +87,7 @@ class AddCommand : public QUndoCommand
 public:
     AddCommand(DiagramItem::DiagramType addType, QGraphicsScene *graphicsScene,
                QUndoCommand *parent = 0);
+    ~AddCommand();
 
     void undo();
     void redo();

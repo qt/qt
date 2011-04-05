@@ -49,6 +49,7 @@
 #include <private/qgl_p.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qimage_p.h>
+#include <private/qnativeimagehandleprovider_p.h>
 
 #include <private/qpaintengineex_opengl2_p.h>
 
@@ -247,13 +248,15 @@ void QGLPixmapGLPaintDevice::setPixmapData(QGLPixmapData* d)
     data = d;
 }
 
-static int qt_gl_pixmap_serial = 0;
+int qt_gl_pixmap_serial = 0;
 
 QGLPixmapData::QGLPixmapData(PixelType type)
     : QPixmapData(type, OpenGLClass)
     , m_renderFbo(0)
     , m_engine(0)
     , m_ctx(0)
+    , nativeImageHandleProvider(0)
+    , nativeImageHandle(0)
     , m_dirty(false)
     , m_hasFillColor(false)
     , m_hasAlpha(false)
@@ -292,6 +295,8 @@ void QGLPixmapData::destroyTexture()
     }
     m_texture.id = 0;
     inTexturePool = false;
+
+    releaseNativeImageHandle();
 }
 
 QPixmapData *QGLPixmapData::createCompatiblePixmapData() const
@@ -330,7 +335,7 @@ void QGLPixmapData::resize(int width, int height)
 
     destroyTexture();
 
-    m_source = QImage();
+    m_source = QVolatileImage();
     m_dirty = isValid();
     setSerialNumber(++qt_gl_pixmap_serial);
 }
@@ -341,6 +346,9 @@ void QGLPixmapData::ensureCreated() const
         return;
 
     m_dirty = false;
+
+    if (nativeImageHandleProvider && !nativeImageHandle)
+        const_cast<QGLPixmapData *>(this)->createFromNativeImageHandleProvider();
 
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
     m_ctx = ctx;
@@ -353,6 +361,11 @@ void QGLPixmapData::ensureCreated() const
 #endif
     const GLenum target = GL_TEXTURE_2D;
 
+    GLenum type = GL_UNSIGNED_BYTE;
+    // Avoid conversion when pixmap is created from CFbsBitmap of EColor64K.
+    if (!m_source.isNull() && m_source.format() == QImage::Format_RGB16)
+        type = GL_UNSIGNED_SHORT_5_6_5;
+
     m_texture.options &= ~QGLContext::MemoryManagedBindOption;
 
     if (!m_texture.id) {
@@ -361,7 +374,7 @@ void QGLPixmapData::ensureCreated() const
                                                                 0, internal_format,
                                                                 w, h,
                                                                 external_format,
-                                                                GL_UNSIGNED_BYTE,
+                                                                type,
                                                                 const_cast<QGLPixmapData*>(this));
         if (!m_texture.id) {
             failedToAlloc = true;
@@ -378,21 +391,35 @@ void QGLPixmapData::ensureCreated() const
 
     if (!m_source.isNull() && m_texture.id) {
         if (external_format == GL_RGB) {
-            const QImage tx = m_source.convertToFormat(QImage::Format_RGB888).mirrored(false, true);
+            m_source.beginDataAccess();
+            QImage tx;
+            if (type == GL_UNSIGNED_BYTE)
+                tx = m_source.imageRef().convertToFormat(QImage::Format_RGB888).mirrored(false, true);
+            else if (type == GL_UNSIGNED_SHORT_5_6_5)
+                tx = m_source.imageRef().mirrored(false, true);
+            m_source.endDataAccess(true);
 
             glBindTexture(target, m_texture.id);
-            glTexSubImage2D(target, 0, 0, 0, w, h, external_format,
-                            GL_UNSIGNED_BYTE, tx.bits());
+            if (!tx.isNull())
+                glTexSubImage2D(target, 0, 0, 0, w, h, external_format,
+                                type, tx.constBits());
+            else
+                qWarning("QGLPixmapData: Failed to create GL_RGB image of size %dx%d", w, h);
         } else {
             // do byte swizzling ARGB -> RGBA
-            const QImage tx = ctx->d_func()->convertToGLFormat(m_source, true, external_format);
+            m_source.beginDataAccess();
+            const QImage tx = ctx->d_func()->convertToGLFormat(m_source.imageRef(), true, external_format);
+            m_source.endDataAccess(true);
             glBindTexture(target, m_texture.id);
-            glTexSubImage2D(target, 0, 0, 0, w, h, external_format,
-                            GL_UNSIGNED_BYTE, tx.bits());
+            if (!tx.isNull())
+                glTexSubImage2D(target, 0, 0, 0, w, h, external_format,
+                                type, tx.constBits());
+            else
+                qWarning("QGLPixmapData: Failed to create GL_RGBA image of size %dx%d", w, h);
         }
 
         if (useFramebufferObjects())
-            m_source = QImage();
+            m_source = QVolatileImage();
     }
 }
 
@@ -437,7 +464,7 @@ bool QGLPixmapData::fromFile(const QString &filename, const char *format,
                 is_null = false;
                 d = 32;
                 m_hasAlpha = alpha;
-                m_source = QImage();
+                m_source = QVolatileImage();
                 m_dirty = isValid();
                 return true;
             }
@@ -469,7 +496,7 @@ bool QGLPixmapData::fromData(const uchar *buffer, uint len, const char *format,
             is_null = false;
             d = 32;
             m_hasAlpha = alpha;
-            m_source = QImage();
+            m_source = QVolatileImage();
             m_dirty = isValid();
             return true;
         }
@@ -487,9 +514,20 @@ bool QGLPixmapData::fromData(const uchar *buffer, uint len, const char *format,
     return !isNull();
 }
 
-/*!
-    out-of-place conversion (inPlace == false) will always detach()
- */
+QImage::Format QGLPixmapData::idealFormat(QImage &image, Qt::ImageConversionFlags flags)
+{
+    QImage::Format format = QImage::Format_RGB32;
+    if (qApp->desktop()->depth() == 16)
+        format = QImage::Format_RGB16;
+
+    if (image.hasAlphaChannel()
+        && ((flags & Qt::NoOpaqueDetection)
+            || const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels()))
+        format = QImage::Format_ARGB32_Premultiplied;
+
+    return format;
+}
+
 void QGLPixmapData::createPixmapForImage(QImage &image, Qt::ImageConversionFlags flags, bool inPlace)
 {
     if (image.size() == QSize(w, h))
@@ -498,26 +536,25 @@ void QGLPixmapData::createPixmapForImage(QImage &image, Qt::ImageConversionFlags
     resize(image.width(), image.height());
 
     if (pixelType() == BitmapType) {
-        m_source = image.convertToFormat(QImage::Format_MonoLSB);
+        QImage convertedImage = image.convertToFormat(QImage::Format_MonoLSB);
+        if (image.format() == QImage::Format_MonoLSB)
+            convertedImage.detach();
+
+        m_source = QVolatileImage(convertedImage);
 
     } else {
-        QImage::Format format = QImage::Format_RGB32;
-        if (qApp->desktop()->depth() == 16)
-            format = QImage::Format_RGB16;
-
-        if (image.hasAlphaChannel()
-            && ((flags & Qt::NoOpaqueDetection)
-                || const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels()))
-            format = QImage::Format_ARGB32_Premultiplied;
+        QImage::Format format = idealFormat(image, flags);
 
         if (inPlace && image.data_ptr()->convertInPlace(format, flags)) {
-            m_source = image;
+            m_source = QVolatileImage(image);
         } else {
-            m_source = image.convertToFormat(format);
+            QImage convertedImage = image.convertToFormat(format);
 
             // convertToFormat won't detach the image if format stays the same.
             if (image.format() == format)
-                m_source.detach();
+                convertedImage.detach();
+
+            m_source = QVolatileImage(convertedImage);
         }
     }
 
@@ -596,16 +633,13 @@ void QGLPixmapData::fill(const QColor &color)
     }
 
     if (useFramebufferObjects()) {
-        m_source = QImage();
+        m_source = QVolatileImage();
         m_hasFillColor = true;
         m_fillColor = color;
     } else {
+        forceToImage();
 
-        if (m_source.isNull()) {
-            m_fillColor = color;
-            m_hasFillColor = true;
-
-        } else if (m_source.depth() == 32) {
+        if (m_source.depth() == 32) {
             m_source.fill(PREMUL(color.rgba()));
 
         } else if (m_source.depth() == 1) {
@@ -656,13 +690,15 @@ QImage QGLPixmapData::toImage() const
     if (m_renderFbo) {
         copyBackFromRenderFbo(true);
     } else if (!m_source.isNull()) {
-        QImageData *data = const_cast<QImage &>(m_source).data_ptr();
-        if (data->paintEngine && data->paintEngine->isActive()
-            && data->paintEngine->paintDevice() == &m_source)
-        {
-            return m_source.copy();
+        // QVolatileImage::toImage() will make a copy always so no check
+        // for active painting is needed.
+        QImage img = m_source.toImage();
+        if (img.format() == QImage::Format_MonoLSB) {
+            img.setColorCount(2);
+            img.setColor(0, QColor(Qt::color0).rgba());
+            img.setColor(1, QColor(Qt::color1).rgba());
         }
-        return m_source;
+        return img;
     } else if (m_dirty || m_hasFillColor) {
         return fillImage(m_fillColor);
     } else {
@@ -802,7 +838,7 @@ GLuint QGLPixmapData::bind(bool copyBack) const
 
     if (m_hasFillColor) {
         if (!useFramebufferObjects()) {
-            m_source = QImage(w, h, QImage::Format_ARGB32_Premultiplied);
+            m_source = QVolatileImage(w, h, QImage::Format_ARGB32_Premultiplied);
             m_source.fill(PREMUL(m_fillColor.rgba()));
         }
 
@@ -811,7 +847,7 @@ GLuint QGLPixmapData::bind(bool copyBack) const
         GLenum format = qt_gl_preferredTextureFormat();
         QImage tx(w, h, QImage::Format_ARGB32_Premultiplied);
         tx.fill(qt_gl_convertToGLFormat(m_fillColor.rgba(), format));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, format, GL_UNSIGNED_BYTE, tx.bits());
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, format, GL_UNSIGNED_BYTE, tx.constBits());
     }
 
     return id;
@@ -832,9 +868,16 @@ void QGLPixmapData::detachTextureFromPool()
 
 void QGLPixmapData::hibernate()
 {
-    // If the texture was imported (e.g, from an SgImage under Symbian),
-    // then we cannot copy it back to main memory for storage.
-    if (m_texture.id && m_source.isNull())
+    // If the image was imported (e.g, from an SgImage under Symbian), then
+    // skip the hibernation, there is no sense in copying it back to main
+    // memory because the data is most likely shared between several processes.
+    bool skipHibernate = (m_texture.id && m_source.isNull());
+#if defined(Q_OS_SYMBIAN)
+    // However we have to proceed normally if the image was retrieved via
+    // a handle provider.
+    skipHibernate &= !nativeImageHandleProvider;
+#endif
+    if (skipHibernate)
         return;
 
     forceToImage();
@@ -888,8 +931,12 @@ void QGLPixmapData::forceToImage()
     if (!isValid())
         return;
 
-    if (m_source.isNull())
-        m_source = QImage(w, h, QImage::Format_ARGB32_Premultiplied);
+    if (m_source.isNull()) {
+        QImage::Format format = QImage::Format_ARGB32_Premultiplied;
+        if (pixelType() == BitmapType)
+            format = QImage::Format_MonoLSB;
+        m_source = QVolatileImage(w, h, format);
+    }
 
     m_dirty = true;
 }

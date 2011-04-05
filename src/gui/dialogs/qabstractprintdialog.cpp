@@ -381,19 +381,11 @@ void QAbstractPrintDialogPrivate::setPrinter(QPrinter *newPrinter)
     If the dialog is accepted by the user, the QPrinter object is
     correctly configured for printing.
 
-    \raw HTML
-    <table align="center">
-    <tr><td>
-    \endraw
-    \inlineimage plastique-printdialog.png
-    \raw HTML
-    </td><td>
-    \endraw
-    \inlineimage plastique-printdialog-properties.png
-    \raw HTML
-    </td></tr>
-    </table>
-    \endraw
+    \table
+    \row
+    \o \inlineimage plastique-printdialog.png
+    \o \inlineimage plastique-printdialog-properties.png
+    \endtable
 
     The printer dialog (shown above in Plastique style) enables access to common
     printing properties. On X11 platforms that use the CUPS printing system, the

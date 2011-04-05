@@ -1025,11 +1025,10 @@ void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode m
     case QPainter::CompositionMode_DestinationOut:
         surface->SetPorterDuff(surface, DSPD_DST_OUT);
         break;
-#if (Q_DIRECTFB_VERSION >= 0x010209)
     case QPainter::CompositionMode_Destination:
-        surface->SetPorterDuff(surface, DSPD_DST);
+        surface->SetSrcBlendFunction(surface, DSBF_ZERO);
+        surface->SetDstBlendFunction(surface, DSBF_ONE);
         break;
-#endif
 #if (Q_DIRECTFB_VERSION >= 0x010000)
     case QPainter::CompositionMode_SourceAtop:
         surface->SetPorterDuff(surface, DSPD_SRC_ATOP);

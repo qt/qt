@@ -354,10 +354,15 @@ QTranslator::~QTranslator()
 }
 
 /*!
-    Loads \a filename + \a suffix (".qm" if the \a suffix is
-    not specified), which may be an absolute file name or relative
-    to \a directory. Returns true if the translation is successfully
-    loaded; otherwise returns false.
+
+    Loads \a filename + \a suffix (".qm" if the \a suffix is not
+    specified), which may be an absolute file name or relative to \a
+    directory. Returns true if the translation is successfully loaded;
+    otherwise returns false.
+
+    If \a directory is not specified, the directory of the
+    application's executable is used (i.e., as
+    \l{QCoreApplication::}{applicationDirPath()}). 
 
     The previous contents of this translator object are discarded.
 

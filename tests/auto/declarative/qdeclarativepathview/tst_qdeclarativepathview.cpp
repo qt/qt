@@ -111,6 +111,7 @@ private slots:
     void undefinedPath();
     void mouseDrag();
     void treeModel();
+    void changePreferredHighlight();
 
 private:
     QDeclarativeView *createView();
@@ -944,6 +945,45 @@ void tst_QDeclarativePathView::treeModel()
 
     QTRY_VERIFY(item = findItem<QDeclarativeText>(pathview, "wrapper", 0));
     QTRY_COMPARE(item->text(), QLatin1String("Row 2 Child Item"));
+
+    delete canvas;
+}
+
+void tst_QDeclarativePathView::changePreferredHighlight()
+{
+    QDeclarativeView *canvas = createView();
+    canvas->setFixedSize(400,200);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/dragpath.qml"));
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QDeclarativePathView *pathview = qobject_cast<QDeclarativePathView*>(canvas->rootObject());
+    QVERIFY(pathview != 0);
+
+    int current = pathview->currentIndex();
+    QCOMPARE(current, 0);
+
+    QDeclarativeRectangle *firstItem = findItem<QDeclarativeRectangle>(pathview, "wrapper", 0);
+    QVERIFY(firstItem);
+    QDeclarativePath *path = qobject_cast<QDeclarativePath*>(pathview->path());
+    QVERIFY(path);
+    QPointF start = path->pointAt(0.5);
+    start.setX(qRound(start.x()));
+    start.setY(qRound(start.y()));
+    QPointF offset;//Center of item is at point, but pos is from corner
+    offset.setX(firstItem->width()/2);
+    offset.setY(firstItem->height()/2);
+    QTRY_COMPARE(firstItem->pos() + offset, start);
+
+    pathview->setPreferredHighlightBegin(0.8);
+    pathview->setPreferredHighlightEnd(0.8);
+    start = path->pointAt(0.8);
+    start.setX(qRound(start.x()));
+    start.setY(qRound(start.y()));
+    QTRY_COMPARE(firstItem->pos() + offset, start);
+    QCOMPARE(pathview->currentIndex(), 0);
 
     delete canvas;
 }
