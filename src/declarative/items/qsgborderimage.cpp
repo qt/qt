@@ -326,24 +326,21 @@ QSGNode *QSGBorderImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *
     }
 
     QSGNinePatchNode *node = static_cast<QSGNinePatchNode *>(oldNode);
-    if (node && d->pixmapChanged) {
-        delete node;
-        node = 0;
-    }
-    d->pixmapChanged = false;
-
-    // XXX Does not support mirror property
 
     if (!node) {
-        // XXX akennedy - Doesn't support all the tiling modes
-        const QSGScaleGrid *border = d->getScaleGrid();
-        QRect inner(border->left(), border->top(), d->pix.width() - border->right() - border->left(),
-                    d->pix.height() - border->bottom() - border->top());
-        node = new QSGNinePatchNode(QRectF(0, 0, width(), height()), d->pix.texture(), inner, d->smooth);
-    } else {
-        node->setRect(QRectF(0, 0, width(), height()));
-        node->setLinearFiltering(d->smooth);
+        node = new QSGNinePatchNode();
     }
+
+    node->setTexture(d->pix.texture());
+
+    const QSGScaleGrid *border = d->getScaleGrid();
+    node->setInnerRect(QRectF(border->left(),
+                              border->top(),
+                              d->pix.width() - border->right() - border->left(),
+                              d->pix.height() - border->bottom() - border->top()));
+    node->setRect(QRectF(0, 0, width(), height()));
+    node->setLinearFiltering(d->smooth);
+    node->update();
 
     return node;
 }

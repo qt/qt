@@ -104,7 +104,7 @@ public:
     virtual QRectF boundingRect() const { return m_bounding_rect; }
     virtual void setBoundingRect(const QRectF &bounds) { m_bounding_rect = bounds; }
 
-    virtual void setPreferredAntialiasingMode(AntialiasingMode mode) = 0;
+    virtual void setPreferredAntialiasingMode(AntialiasingMode) = 0;
 
 protected:
     QRectF m_bounding_rect;

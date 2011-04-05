@@ -63,7 +63,7 @@ public:
     virtual void setGlyphs(const QPointF &position, const QGlyphs &glyphs);
     virtual void setColor(const QColor &color);
 
-    virtual void setPreferredAntialiasingMode(AntialiasingMode mode) { }
+    virtual void setPreferredAntialiasingMode(AntialiasingMode) { }
 
 private:
     QGlyphs m_glyphs;

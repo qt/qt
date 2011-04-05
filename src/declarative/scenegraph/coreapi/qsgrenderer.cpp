@@ -116,8 +116,8 @@ void BindableFbo::bind() const
 
 QSGRenderer::QSGRenderer(QSGContext *context)
     : QObject()
-    , m_render_opacity(1)
     , m_clear_color(Qt::transparent)
+    , m_render_opacity(1)
     , m_context(context)
     , m_root_node(0)
     , m_node_updater(0)

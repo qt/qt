@@ -146,6 +146,7 @@ public:
         return *this;
     }
 
+
     bool isNull() const { return m_texture == 0; }
 
 private:
@@ -153,6 +154,8 @@ private:
 
     QSGTexture *m_texture;
 };
+
+inline bool operator==(const QSGTextureRef &a, const QSGTextureRef &b) { return a.texture() == b.texture(); }
 
 QT_END_NAMESPACE
 
