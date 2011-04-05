@@ -206,7 +206,9 @@ QString QHostInfo::localHostName()
 
 QString QHostInfo::localDomainName()
 {
-    // TODO - fill with code.
+    // This concept does not exist on Symbian OS because the device can be on
+    // multiple networks with multiple "local domain" names.
+    // For now, return a null string.
     return QString();
 }
 
