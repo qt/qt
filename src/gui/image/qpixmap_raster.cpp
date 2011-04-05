@@ -41,6 +41,8 @@
 
 #include "qpixmap.h"
 
+#include <private/qfont_p.h>
+
 #include "qpixmap_raster_p.h"
 #include "qnativeimage_p.h"
 #include "qimage_p.h"
@@ -54,7 +56,6 @@
 #include <private/qsimd_p.h>
 #include <private/qwidget_p.h>
 #include <private/qdrawhelper_p.h>
-#include <private/qfont_p.h>
 
 QT_BEGIN_NAMESPACE
 
