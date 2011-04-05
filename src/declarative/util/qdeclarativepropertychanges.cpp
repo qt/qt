@@ -118,12 +118,13 @@ QT_BEGIN_NAMESPACE
 
     \section2 Immediate property changes in transitions
 
-    When \l Transitions are used to animate state changes, they animate 
-    properties from their values in the current state to those defined in the
-    new state (as defined by PropertyChanges objects). However, 
-    it is sometimes desirable to set a property value \e immediately during a 
-    \l Transition, without animation; in these cases, the PropertyAction 
-    element can be used to force an immediate property change.
+    When \l{QML Animation and Transitions}{Transitions} are used to animate
+    state changes, they animate properties from their values in the current
+    state to those defined in the new state (as defined by PropertyChanges
+    objects). However, it is sometimes desirable to set a property value
+    \e immediately during a \l Transition, without animation; in these cases,
+    the PropertyAction element can be used to force an immediate property
+    change.
 
     See the PropertyAction documentation for more details.
 

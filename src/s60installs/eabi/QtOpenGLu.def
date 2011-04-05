@@ -739,4 +739,22 @@ EXPORTS
 	_ZTV27QGLContextGroupResourceBase @ 738 NONAME
 	_ZThn104_N20QGLTextureGlyphCacheD0Ev @ 739 NONAME
 	_ZThn104_N20QGLTextureGlyphCacheD1Ev @ 740 NONAME
+	_ZN13QGLPixmapData12forceToImageEv @ 741 NONAME
+	_ZN13QGLPixmapData14destroyTextureEv @ 742 NONAME
+	_ZN13QGLPixmapData14reclaimTextureEv @ 743 NONAME
+	_ZN13QGLPixmapData21detachTextureFromPoolEv @ 744 NONAME
+	_ZN13QGLPixmapData9hibernateEv @ 745 NONAME
+	_ZN17QGLGraphicsSystem22releaseCachedResourcesEv @ 746 NONAME
+	_ZN22QGLEngineSharedShaders15qShaderSnippetsE @ 747 NONAME DATA 216
+	_ZN22QGLEngineSharedShaders16staticMetaObjectE @ 748 NONAME DATA 16
+	_ZN22QGLEngineSharedShaders17shadersForContextEPK10QGLContext @ 749 NONAME
+	_ZN22QGLEngineSharedShaders18cleanupCustomStageEP20QGLCustomShaderStage @ 750 NONAME
+	_ZN22QGLEngineSharedShaders18findProgramInCacheERK19QGLEngineShaderProg @ 751 NONAME
+	_ZN22QGLEngineSharedShaders19getStaticMetaObjectEv @ 752 NONAME
+	_ZN22QGLEngineSharedShadersC1EPK10QGLContext @ 753 NONAME
+	_ZN22QGLEngineSharedShadersC2EPK10QGLContext @ 754 NONAME
+	_ZN22QGLEngineSharedShadersD1Ev @ 755 NONAME
+	_ZN22QGLEngineSharedShadersD2Ev @ 756 NONAME
+	_ZNK16QGLWindowSurface23hasPartialUpdateSupportEv @ 757 NONAME
+	_ZThn8_NK16QGLWindowSurface23hasPartialUpdateSupportEv @ 758 NONAME
 

@@ -61,7 +61,7 @@
     \o{2,1} \l{A Quick Start to Qt Designer}{\bold{Qt Designer}}
     \o{2,1} \l{Qt Linguist Manual: Programmers#Tutorials}{\bold {Qt Linguist}}
     \row
-    \o \image designer-examples.png QtDesigner
+    \o \image designer-examples.png
     \o
     A quick guide through \QD showing the basic steps to create a
     form with this interactive tool.
@@ -72,17 +72,18 @@
     tools provided for developers, translators and release managers.
 
 
-    \row
+\row
     \o{2,1} \l{modelview.html}{\bold{ModelView}}
-    \o{2,1}
-    
+    \o{2,1} \l{thread-basics.html}{\bold {Threads}}
     \row
     \o \image treeview_sml.png ModelView
-    \o This tutorial gives an introduction to ModelView programming using the Qt cross-platform framework
+    \o
+    This tutorial gives an introduction to ModelView programming using the Qt cross-platform framework
 
+    \o \image threads-examples.png Threads
     \o
-    \o
-    
+    A short tutorial about thread concepts in general and basic Qt classes to handle threads.
+
     \row
     \o{2,1} \l{QML Tutorial}{\bold QML Tutorial}
     \o{2,1} \l{QML Advanced Tutorial}{\bold SameGame}

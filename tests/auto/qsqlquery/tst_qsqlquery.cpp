@@ -928,13 +928,12 @@ void tst_QSqlQuery::record()
     QSqlQuery q( db );
     QVERIFY( q.record().isEmpty() );
     QVERIFY_SQL( q, exec( "select id, t_varchar, t_char from " + qtest + " order by id" ) );
-    QSqlRecord rec = q.record();
     QCOMPARE( q.record().fieldName( 0 ).toLower(), QString( "id" ) );
     QCOMPARE( q.record().fieldName( 1 ).toLower(), QString( "t_varchar" ) );
     QCOMPARE( q.record().fieldName( 2 ).toLower(), QString( "t_char" ) );
-    QVERIFY( !q.record().value( 0 ).isValid() );
-    QVERIFY( !q.record().value( 1 ).isValid() );
-    QVERIFY( !q.record().value( 2 ).isValid() );
+    QCOMPARE(q.record().value(0), QVariant(q.record().field(0).type()));
+    QCOMPARE(q.record().value(1), QVariant(q.record().field(1).type()));
+    QCOMPARE(q.record().value(2), QVariant(q.record().field(2).type()));
 
     QVERIFY( q.next() );
     QVERIFY( q.next() );

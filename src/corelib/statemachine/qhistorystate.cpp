@@ -168,6 +168,9 @@ QAbstractState *QHistoryState::defaultState() const
 /*!
   Sets this history state's default state to be the given \a state.
   \a state must be a sibling of this history state.
+
+  Note that this function does not set \a state as the initial state
+  of its parent.
 */
 void QHistoryState::setDefaultState(QAbstractState *state)
 {

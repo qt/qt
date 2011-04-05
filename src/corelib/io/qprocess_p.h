@@ -94,6 +94,8 @@ public:
 
     static QProcessEnvironment fromList(const QStringList &list);
     QStringList toList() const;
+    QStringList keys() const;
+    void insert(const Hash &hash);
 };
 
 class QProcessPrivate : public QIODevicePrivate

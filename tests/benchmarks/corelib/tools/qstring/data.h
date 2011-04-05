@@ -55,4 +55,16 @@ extern const ushort stringCollectionData[];
 extern const StringCollection stringCollection[];
 extern const int stringCollectionCount;
 
+struct StringData
+{
+    const int *entries;
+    union {
+        const char *charData;
+        const ushort *ushortData;
+    };
+
+    int entryCount;
+    int maxLength;
+};
+
 #endif // DATA_H

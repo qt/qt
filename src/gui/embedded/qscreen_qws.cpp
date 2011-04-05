@@ -64,7 +64,6 @@ QT_BEGIN_NAMESPACE
 // #define QT_USE_MEMCPY_DUFF
 
 #ifndef QT_NO_QWS_CURSOR
-bool qt_sw_cursor=false;
 Q_GUI_EXPORT QScreenCursor * qt_screencursor = 0;
 #endif
 Q_GUI_EXPORT QScreen * qt_screen = 0;
@@ -118,8 +117,6 @@ ClearCacheFunc QScreen::clearCacheFunc = 0;
 
     Returns a pointer to the application's unique screen cursor.
 */
-
-extern bool qws_sw_cursor;
 
 /*!
     Constructs a screen cursor

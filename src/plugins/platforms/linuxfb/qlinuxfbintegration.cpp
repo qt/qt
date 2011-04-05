@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -781,6 +781,15 @@ void QLinuxFbIntegration::blank(bool on)
 
     d_ptr->blank = on;
 }
+
+bool QLinuxFbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case ThreadedPixmaps: return true;
+    default: return QPlatformIntegration::hasCapability(cap);
+    }
+}
+
 
 QPixmapData *QLinuxFbIntegration::createPixmapData(QPixmapData::PixelType type) const
 {

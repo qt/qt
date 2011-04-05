@@ -221,6 +221,24 @@ QProcessEnvironment QProcessEnvironmentPrivate::fromList(const QStringList &list
     return env;
 }
 
+QStringList QProcessEnvironmentPrivate::keys() const
+{
+    QStringList result;
+    QHash<Unit, Unit>::ConstIterator it = hash.constBegin(),
+                                    end = hash.constEnd();
+    for ( ; it != end; ++it)
+        result << nameToString(it.key());
+    return result;
+}
+
+void QProcessEnvironmentPrivate::insert(const Hash &h)
+{
+    QHash<Unit, Unit>::ConstIterator it = h.constBegin(),
+                                    end = h.constEnd();
+    for ( ; it != end; ++it)
+        hash.insert(it.key(), it.value());
+}
+
 /*!
     Creates a new QProcessEnvironment object. This constructor creates an
     empty environment. If set on a QProcess, this will cause the current
@@ -394,6 +412,33 @@ QString QProcessEnvironment::value(const QString &name, const QString &defaultVa
 QStringList QProcessEnvironment::toStringList() const
 {
     return d ? d->toList() : QStringList();
+}
+
+/*!
+    \since 4.8
+
+    Returns a list containing all the variable names in this QProcessEnvironment
+    object.
+*/
+QStringList QProcessEnvironment::keys() const
+{
+    return d ? d->keys() : QStringList();
+}
+
+/*!
+    \overload
+    \since 4.8
+
+    Inserts the contents of \a e in this QProcessEnvironment object. Variables in
+    this object that also exist in \a e will be overwritten.
+*/
+void QProcessEnvironment::insert(const QProcessEnvironment &e)
+{
+    if (!e.d)
+        return;
+
+    // d detaches from null
+    d->insert(e.d->hash);
 }
 
 void QProcessPrivate::Channel::clear()
@@ -2235,10 +2280,10 @@ bool QProcess::startDetached(const QString &program)
 }
 
 QT_BEGIN_INCLUDE_NAMESPACE
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
 # include <crt_externs.h>
 # define environ (*_NSGetEnviron())
-#elif defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#elif defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN) || (defined(Q_OS_MAC) && defined(QT_NO_CORESERVICES))
   static char *qt_empty_environ[] = { 0 };
 #define environ qt_empty_environ
 #elif !defined(Q_OS_WIN)

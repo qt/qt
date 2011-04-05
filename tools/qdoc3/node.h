@@ -262,12 +262,21 @@ class InnerNode : public Node
     NodeList overloads(const QString &funcName) const;
     const QStringList& includes() const { return inc; }
 
+    QString author() const { return author_; }
+    void setAuthor(const QString& author) { author_ = author; }
+    QString publisher() const { return publisher_; }
+    void setPublisher(const QString& publisher) { publisher_ = publisher; }
+    QString permissions() const { return permissions_; }
+    void setPermissions(const QString& permissions) { permissions_ = permissions; }
     QStringList primaryKeys();
     QStringList secondaryKeys();
     const QStringList& pageKeywords() const { return pageKeywds; }
     virtual void addPageKeywords(const QString& t) { pageKeywds << t; }
     virtual bool isAbstract() const { return false; }
     virtual void setAbstract(bool ) { }
+    bool hasOtherMetadata() const { return !otherMetadataMap.isEmpty(); }
+    void insertOtherMetadata(const QString& name, const QString& content);
+    const QMap<QString, QString>& otherMetadata() const { return otherMetadataMap; }
 
  protected:
     InnerNode(Type type, InnerNode* parent, const QString& name);
@@ -280,6 +289,9 @@ class InnerNode : public Node
     void removeChild(Node* child);
     void removeRelated(Node* pseudoChild);
 
+    QString author_;
+    QString publisher_;
+    QString permissions_;
     QStringList pageKeywds;
     QStringList inc;
     NodeList children;
@@ -288,6 +300,7 @@ class InnerNode : public Node
     QMap<QString, Node*> childMap;
     QMap<QString, Node*> primaryFunctionMap;
     QMap<QString, NodeList> secondaryFunctionMap;
+    QMap<QString, QString> otherMetadataMap;
 };
 
 class LeafNode : public Node
@@ -465,6 +478,8 @@ class QmlPropertyNode : public LeafNode
     bool isWritable(const Tree* tree) const;
     bool isAttached() const { return att; }
     virtual bool isQmlNode() const { return true; }
+
+    const PropertyNode *correspondingProperty(const Tree *tree) const;
 
     const QString& element() const { return static_cast<QmlPropGroupNode*>(parent())->element(); }
 
@@ -689,6 +704,7 @@ class PropertyNode : public LeafNode
     void setRuntimeScrFunc(const QString& scrf) { runtimeScrFunc = scrf; }
     void setConstant() { cst = true; }
     void setFinal() { fnl = true; }
+    void setRevision(int revision) { rev = revision; }
 
     const QString &dataType() const { return dt; }
     QString qualifiedDataType() const;
@@ -732,6 +748,7 @@ class PropertyNode : public LeafNode
     Trool usr;
     bool cst;
     bool fnl;
+    int rev;
     const PropertyNode* overrides;
 };
 

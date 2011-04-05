@@ -68,7 +68,7 @@
 
     An example of a simple \c{__init__.js}:
 
-    \snippet doc/src/snippets/code/doc_src_qtscriptextensions.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qtscriptextensions.js 0
 
     QScriptEngine will look for a QScriptExtensionPlugin that provides
     the relevant extension by querying each plugin for its keys()

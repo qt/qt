@@ -179,8 +179,8 @@ void tst_QSoftKeyManager::handleCommand()
 //    QTest::keyPress(&w, Qt::Key_Context1);
 //    QTest::keyPress(&w, Qt::Key_Context2);
 
-    simulateSymbianCommand(6000);
-    simulateSymbianCommand(6001);
+    simulateSymbianCommand(s60CommandStart); //0 = LSK position
+    simulateSymbianCommand(s60CommandStart + 2); //2 = RSK position
 
     QApplication::processEvents();
 
@@ -205,28 +205,32 @@ void tst_QSoftKeyManager::checkSoftkeyEnableStates()
     w.show();
     QApplication::processEvents();
 
-    QSignalSpy spy0(w.actions()[0], SIGNAL(triggered())); //restore defaults action
-    QSignalSpy spy1(w.actions()[1], SIGNAL(triggered())); //disabled help action
+    //According to StandardButton enum in QDialogButtonBox the Help action
+    //is inserted before RestoreDefaults and thus help action is in index 0
+    QSignalSpy spy0(w.actions()[0], SIGNAL(triggered())); //disabled help action
+    QSignalSpy spy1(w.actions()[1], SIGNAL(triggered())); //restore defaults action
 
     //Verify that enabled button gets all the action trigger signals and
     //disabled button gets none.
     for (int i = 0; i < 10; i++) {
-        //simulate "Restore Defaults" softkey press
-        simulateSymbianCommand(s60CommandStart);
         //simulate "help" softkey press
-        simulateSymbianCommand(s60CommandStart + 1);
+        simulateSymbianCommand(s60CommandStart);
+        //simulate "Restore Defaults" softkey press
+        simulateSymbianCommand(s60CommandStart + 2);
     }
     QApplication::processEvents();
-    QCOMPARE(spy0.count(), 10);
-    QCOMPARE(spy1.count(), 0);
+    //Restore defaults button is enabled and its signals are recorded to spy1
+    QCOMPARE(spy0.count(), 0);
+    QCOMPARE(spy1.count(), 10);
+
     spy0.clear();
     spy1.clear();
 
     for (int i = 0; i < 10; i++) {
-        //simulate "Restore Defaults" softkey press
-        simulateSymbianCommand(s60CommandStart);
         //simulate "help" softkey press
-        simulateSymbianCommand(s60CommandStart + 1);
+        simulateSymbianCommand(s60CommandStart);
+        //simulate "Restore Defaults" softkey press
+        simulateSymbianCommand(s60CommandStart + 2);
         //switch enabled button to disabled and vice versa
         pBHelp->setEnabled(!pBHelp->isEnabled());
         pBDefaults->setEnabled(!pBDefaults->isEnabled());
@@ -261,7 +265,7 @@ void tst_QSoftKeyManager::noMergingOverWindowBoundary()
 
     //Verify that both base softkeys emit triggered signals
     simulateSymbianCommand(s60CommandStart);
-    simulateSymbianCommand(s60CommandStart + 1);
+    simulateSymbianCommand(s60CommandStart + 2);
 
     QCOMPARE(baseLeftSpy.count(), 1);
     QCOMPARE(baseRightSpy.count(), 1);
@@ -275,7 +279,7 @@ void tst_QSoftKeyManager::noMergingOverWindowBoundary()
     QApplication::processEvents();
 
     simulateSymbianCommand(s60CommandStart);
-    simulateSymbianCommand(s60CommandStart + 1);
+    simulateSymbianCommand(s60CommandStart + 2);
 
     QCOMPARE(baseLeftSpy.count(), 0);
     QCOMPARE(baseRightSpy.count(), 0);
@@ -291,7 +295,7 @@ void tst_QSoftKeyManager::noMergingOverWindowBoundary()
     QApplication::processEvents();
 
     simulateSymbianCommand(s60CommandStart);
-    simulateSymbianCommand(s60CommandStart + 1);
+    simulateSymbianCommand(s60CommandStart + 2);
 
     QCOMPARE(baseLeftSpy.count(), 0);
     QCOMPARE(baseRightSpy.count(), 0);

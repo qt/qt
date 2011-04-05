@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qdebug.h>
 #include <QtOpenGL/qgl.h>
 #include <QtOpenGL/qglpixelbuffer.h>
 #include "qgl_p.h"
@@ -50,6 +51,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+QEglProperties *QGLContextPrivate::extraWindowSurfaceCreationProps = NULL;
 
 void qt_eglproperties_set_glformat(QEglProperties& eglProperties, const QGLFormat& glFormat)
 {
@@ -195,6 +198,7 @@ void QGLContext::makeCurrent()
                 // PowerVR MBX/SGX chips needs to clear all buffers when starting to render
                 // a new frame, otherwise there will be a performance penalty to pay for
                 // each frame.
+                qDebug() << "Found SGX/MBX driver, enabling FullClearOnEveryFrame";
                 d->workaround_needsFullClearOnEveryFrame = true;
 
                 // Older PowerVR SGX drivers (like the one in the N900) have a
@@ -202,10 +206,31 @@ void QGLContext::makeCurrent()
                 // or GL_ALPHA texture bound to an FBO. The only way to
                 // identify that driver is to check the EGL version number for it.
                 const char *egl_version = eglQueryString(d->eglContext->display(), EGL_VERSION);
-                if (egl_version && strstr(egl_version, "1.3"))
+
+                if (egl_version && strstr(egl_version, "1.3")) {
+                    qDebug() << "Found v1.3 driver, enabling brokenFBOReadBack";
                     d->workaround_brokenFBOReadBack = true;
-                else if (egl_version && strstr(egl_version, "1.4"))
+                } else if (egl_version && strstr(egl_version, "1.4")) {
+                    qDebug() << "Found v1.4 driver, enabling brokenTexSubImage";
                     d->workaround_brokenTexSubImage = true;
+
+                    // this is a bit complicated; 1.4 version SGX drivers from
+                    // Nokia have fixed the brokenFBOReadBack problem, but
+                    // official drivers from TI haven't, meaning that things
+                    // like the beagleboard are broken unless we hack around it
+                    // - but at the same time, we want to not reduce performance
+                    // by not enabling this elsewhere.
+                    //
+                    // so, let's check for a Nokia-specific addon, and only
+                    // enable if it isn't present.
+                    // (see MeeGo bug #5616)
+                    if (!QEgl::hasExtension("EGL_NOK_image_shared")) {
+                        // no Nokia extension, this is probably a standard SGX
+                        // driver, so enable the workaround
+                        qDebug() << "Found non-Nokia v1.4 driver, enabling brokenFBOReadBack";
+                        d->workaround_brokenFBOReadBack = true;
+                    }
+                }
             }
         }
     }
@@ -284,6 +309,11 @@ void QGLContextPrivate::swapRegion(const QRegion &region)
         return;
 
     eglContext->swapBuffersRegion2NOK(eglSurfaceForDevice(), &region);
+}
+
+void QGLContextPrivate::setExtraWindowSurfaceCreationProps(QEglProperties *props)
+{
+    extraWindowSurfaceCreationProps = props;
 }
 
 void QGLWidget::setMouseTracking(bool enable)

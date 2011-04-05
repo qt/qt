@@ -1393,10 +1393,10 @@ QRectF QDeclarativeText::boundingRect() const
     case AlignTop:
         break;
     case AlignBottom:
-        rect.setY(h - rect.height());
+        rect.moveTop(h - rect.height());
         break;
     case AlignVCenter:
-        rect.setY((h - rect.height()) / 2);
+        rect.moveTop((h - rect.height()) / 2);
         break;
     }
 

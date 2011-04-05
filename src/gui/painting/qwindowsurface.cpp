@@ -52,8 +52,6 @@ class QWindowSurfacePrivate
 public:
     QWindowSurfacePrivate(QWidget *w)
         : window(w)
-        , staticContentsSupport(0)
-        , partialUpdateSupport(1)
     {
     }
 
@@ -65,8 +63,6 @@ public:
 #endif //Q_WS_QPA
     QRegion staticContents;
     QList<QImage*> bufferImages;
-    uint staticContentsSupport : 1;
-    uint partialUpdateSupport : 1;
 };
 
 /*!
@@ -311,20 +307,6 @@ QPoint QWindowSurface::offset(const QWidget *widget) const
   window surface.
 */
 
-bool QWindowSurface::hasStaticContentsSupport() const
-{
-    return d_ptr->staticContentsSupport;
-}
-
-void QWindowSurface::setStaticContentsSupport(bool enable)
-{
-    if (enable && !d_ptr->partialUpdateSupport) {
-        qWarning("QWindowSurface::setStaticContentsSupport: static contents support requires partial update support");
-        return;
-    }
-    d_ptr->staticContentsSupport = enable;
-}
-
 void QWindowSurface::setStaticContents(const QRegion &region)
 {
     d_ptr->staticContents = region;
@@ -337,21 +319,12 @@ QRegion QWindowSurface::staticContents() const
 
 bool QWindowSurface::hasStaticContents() const
 {
-    return d_ptr->staticContentsSupport && !d_ptr->staticContents.isEmpty();
+    return hasFeature(QWindowSurface::StaticContents) && !d_ptr->staticContents.isEmpty();
 }
 
-bool QWindowSurface::hasPartialUpdateSupport() const
+QWindowSurface::WindowSurfaceFeatures QWindowSurface::features() const
 {
-    return d_ptr->partialUpdateSupport;
-}
-
-void QWindowSurface::setPartialUpdateSupport(bool enable)
-{
-    if (!enable && d_ptr->staticContentsSupport) {
-        qWarning("QWindowSurface::setPartialUpdateSupport: static contents support requires partial update support");
-        return;
-    }
-    d_ptr->partialUpdateSupport = enable;
+    return PartialUpdates | PreservedContents;
 }
 
 #ifdef Q_WS_QPA

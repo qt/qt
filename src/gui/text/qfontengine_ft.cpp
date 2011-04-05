@@ -174,9 +174,7 @@ int QFreetypeFace::fsType() const
 
 HB_Error QFreetypeFace::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints)
 {
-    int load_flags = (flags & HB_ShaperFlag_UseDesignMetrics) ? FT_LOAD_NO_HINTING : FT_LOAD_DEFAULT;
-
-    if (HB_Error error = (HB_Error)FT_Load_Glyph(face, glyph, load_flags))
+    if (HB_Error error = (HB_Error)FT_Load_Glyph(face, glyph, flags))
         return error;
 
     if (face->glyph->format != FT_GLYPH_FORMAT_OUTLINE)
@@ -760,12 +758,9 @@ void QFontEngineFT::setDefaultHintStyle(HintStyle style)
     default_hint_style = style;
 }
 
-QFontEngineFT::Glyph *QFontEngineFT::loadGlyphMetrics(QGlyphSet *set, uint glyph, GlyphFormat format) const
+int QFontEngineFT::loadFlags(QGlyphSet *set, GlyphFormat format, int flags,
+                             bool &hsubpixel, int &vfactor) const
 {
-    Glyph *g = set->getGlyph(glyph);
-    if (g && g->format == format)
-        return g;
-
     int load_flags = FT_LOAD_DEFAULT | default_load_flags;
     int load_target = default_hint_style == HintLight
                       ? FT_LOAD_TARGET_LIGHT
@@ -777,19 +772,34 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphMetrics(QGlyphSet *set, uint glyph
         if (subpixelType == QFontEngineFT::Subpixel_RGB || subpixelType == QFontEngineFT::Subpixel_BGR) {
             if (default_hint_style == HintFull)
                 load_target = FT_LOAD_TARGET_LCD;
+            hsubpixel = true;
         } else if (subpixelType == QFontEngineFT::Subpixel_VRGB || subpixelType == QFontEngineFT::Subpixel_VBGR) {
             if (default_hint_style == HintFull)
                 load_target = FT_LOAD_TARGET_LCD_V;
+            vfactor = 3;
         }
     }
 
-    if (set->outline_drawing)
+    if (set && set->outline_drawing)
         load_flags = FT_LOAD_NO_BITMAP;
 
-    if (default_hint_style == HintNone)
+    if (default_hint_style == HintNone || (flags & HB_ShaperFlag_UseDesignMetrics))
         load_flags |= FT_LOAD_NO_HINTING;
     else
         load_flags |= load_target;
+
+    return load_flags;
+}
+
+QFontEngineFT::Glyph *QFontEngineFT::loadGlyphMetrics(QGlyphSet *set, uint glyph, GlyphFormat format) const
+{
+    Glyph *g = set->getGlyph(glyph);
+    if (g && g->format == format)
+        return g;
+
+    bool hsubpixel = false;
+    int vfactor = 1;
+    int load_flags = loadFlags(set, format, 0, hsubpixel, vfactor);
 
     // apply our matrix to this, but note that the metrics will not be affected by this.
     FT_Face face = lockFace();
@@ -881,7 +891,10 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphMetrics(QGlyphSet *set, uint glyph
     return g;
 }
 
-QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph, GlyphFormat format, bool fetchMetricsOnly) const
+QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
+                                               QFixed subPixelPosition,
+                                               GlyphFormat format,
+                                               bool fetchMetricsOnly) const
 {
 //     Q_ASSERT(freetype->lock == 1);
 
@@ -896,10 +909,10 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph, Glyph
         }
     }
 
-    Glyph *g = set->getGlyph(glyph);
+    Glyph *g = set->getGlyph(glyph, subPixelPosition);
     if (g && g->format == format) {
         if (uploadToServer && !g->uploadedToServer) {
-            set->setGlyph(glyph, 0);
+            set->setGlyph(glyph, subPixelPosition, 0);
             delete g;
             g = 0;
         } else {
@@ -912,33 +925,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph, Glyph
     Q_ASSERT(format != Format_None);
     bool hsubpixel = false;
     int vfactor = 1;
-    int load_flags = FT_LOAD_DEFAULT | default_load_flags;
-
-    int load_target = default_hint_style == HintLight
-                      ? FT_LOAD_TARGET_LIGHT
-                      : FT_LOAD_TARGET_NORMAL;
-
-    if (set->outline_drawing)
-        load_flags |= FT_LOAD_NO_BITMAP;
-
-    if (format == Format_Mono) {
-        load_target = FT_LOAD_TARGET_MONO;
-    } else if (format == Format_A32) {
-        if (subpixelType == QFontEngineFT::Subpixel_RGB || subpixelType == QFontEngineFT::Subpixel_BGR) {
-            if (default_hint_style == HintFull)
-                load_target = FT_LOAD_TARGET_LCD;
-            hsubpixel = true;
-        } else if (subpixelType == QFontEngineFT::Subpixel_VRGB || subpixelType == QFontEngineFT::Subpixel_VBGR) {
-            if (default_hint_style == HintFull)
-                load_target = FT_LOAD_TARGET_LCD_V;
-            vfactor = 3;
-        }
-    }
-
-    if (default_hint_style == HintNone)
-        load_flags |= FT_LOAD_NO_HINTING;
-    else
-        load_flags |= load_target;
+    int load_flags = loadFlags(set, format, 0, hsubpixel, vfactor);
 
 #ifndef Q_WS_QWS
     if (format != Format_Mono && !embeddedbitmap)
@@ -955,6 +942,12 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph, Glyph
         load_flags |= FT_LOAD_NO_BITMAP;
 
     FT_Face face = freetype->face;
+
+    FT_Vector v;
+    v.x = format == Format_Mono ? 0 : FT_Pos(subPixelPosition.toReal() * 64);
+    v.y = 0;
+    FT_Set_Transform(face, &freetype->matrix, &v);
+
     FT_Error err = FT_Load_Glyph(face, glyph, load_flags);
     if (err && (load_flags & FT_LOAD_NO_BITMAP)) {
         load_flags &= ~FT_LOAD_NO_BITMAP;
@@ -1055,6 +1048,10 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph, Glyph
     top = CEIL(top);
 
     int hpixels = TRUNC(right - left);
+    // subpixel position requires one more pixel
+    if (subPixelPosition > 0 && format != Format_Mono)
+        hpixels++;
+
     if (hsubpixel)
         hpixels = hpixels*3 + 8;
     info.width = hpixels;
@@ -1197,7 +1194,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph, Glyph
         uploadGlyphToServer(set, glyph, g, &info, glyph_buffer_size);
     }
 
-    set->setGlyph(glyph, g);
+    set->setGlyph(glyph, subPixelPosition, g);
 
     return g;
 }
@@ -1430,12 +1427,30 @@ QFontEngineFT::QGlyphSet *QFontEngineFT::loadTransformedGlyphSet(const QTransfor
     return gs;
 }
 
-bool QFontEngineFT::loadGlyphs(QGlyphSet *gs, glyph_t *glyphs, int num_glyphs, GlyphFormat format)
+QFixed QFontEngineFT::subPixelPositionForX(QFixed x)
+{
+    int m_subPixelPositionCount = 4;
+    if (!supportsSubPixelPositions())
+        return 0;
+
+    QFixed subPixelPosition;
+    if (x != 0) {
+        subPixelPosition = x - x.floor();
+        QFixed fraction = (subPixelPosition / QFixed::fromReal(1.0 / m_subPixelPositionCount)).floor();
+        subPixelPosition = fraction / QFixed(m_subPixelPositionCount);
+    }
+    return subPixelPosition;
+}
+
+bool QFontEngineFT::loadGlyphs(QGlyphSet *gs, const glyph_t *glyphs, int num_glyphs,
+                               const QFixedPoint *positions,
+                               GlyphFormat format)
 {
     FT_Face face = 0;
 
     for (int i = 0; i < num_glyphs; ++i) {
-        Glyph *glyph = gs->getGlyph(glyphs[i]);
+        QFixed spp = subPixelPositionForX(positions[i].x);
+        Glyph *glyph = gs->getGlyph(glyphs[i], spp);
         if (glyph == 0 || glyph->format != format) {
             if (!face) {
                 face = lockFace();
@@ -1444,7 +1459,7 @@ bool QFontEngineFT::loadGlyphs(QGlyphSet *gs, glyph_t *glyphs, int num_glyphs, G
                 FT_Set_Transform(face, &m, 0);
                 freetype->matrix = m;
             }
-            if (!loadGlyph(gs, glyphs[i], format)) {
+            if (!loadGlyph(gs, glyphs[i], spp, format)) {
                 unlockFace();
                 return false;
             }
@@ -1668,32 +1683,23 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
 void QFontEngineFT::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const
 {
     FT_Face face = 0;
-    if (flags & QTextEngine::DesignMetrics) {
-        for (int i = 0; i < glyphs->numGlyphs; i++) {
-            Glyph *g = defaultGlyphSet.getGlyph(glyphs->glyphs[i]);
-            if (g) {
-                glyphs->advances_x[i] = QFixed::fromFixed(g->linearAdvance);
-            } else {
-                if (!face)
-                    face = lockFace();
-                g = loadGlyph(glyphs->glyphs[i], Format_None, true);
-                glyphs->advances_x[i] = QFixed::fromFixed(face->glyph->linearHoriAdvance >> 10);
-            }
-            glyphs->advances_y[i] = 0;
+    bool design = (default_hint_style == HintNone ||
+                   default_hint_style == HintLight ||
+                   (flags & HB_ShaperFlag_UseDesignMetrics));
+    for (int i = 0; i < glyphs->numGlyphs; i++) {
+        Glyph *g = defaultGlyphSet.getGlyph(glyphs->glyphs[i]);
+        if (g) {
+            glyphs->advances_x[i] = design ? QFixed::fromFixed(g->linearAdvance) : QFixed(g->advance);
+        } else {
+            if (!face)
+                face = lockFace();
+            g = loadGlyph(glyphs->glyphs[i], 0, Format_None, true);
+            glyphs->advances_x[i] = design ? QFixed::fromFixed(face->glyph->linearHoriAdvance >> 10)
+                                           : QFixed::fromFixed(face->glyph->metrics.horiAdvance).round();
         }
-    } else {
-        for (int i = 0; i < glyphs->numGlyphs; i++) {
-            Glyph *g = defaultGlyphSet.getGlyph(glyphs->glyphs[i]);
-            if (g) {
-                glyphs->advances_x[i] = QFixed(g->advance);
-            } else {
-                if (!face)
-                    face = lockFace();
-                g = loadGlyph(glyphs->glyphs[i], Format_None, true);
-                glyphs->advances_x[i] = QFixed::fromFixed(face->glyph->metrics.horiAdvance).round();
-            }
-            glyphs->advances_y[i] = 0;
-        }
+        if (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+            glyphs->advances_x[i] = glyphs->advances_x[i].round();
+        glyphs->advances_y[i] = 0;
     }
     if (face)
         unlockFace();
@@ -1716,7 +1722,7 @@ glyph_metrics_t QFontEngineFT::boundingBox(const QGlyphLayout &glyphs)
         if (!g) {
             if (!face)
                 face = lockFace();
-            g = loadGlyph(glyphs.glyphs[i], Format_None, true);
+            g = loadGlyph(glyphs.glyphs[i], 0, Format_None, true);
         }
         if (g) {
             QFixed x = overall.xoff + glyphs.offsets[i].x + g->x;
@@ -1757,7 +1763,7 @@ glyph_metrics_t QFontEngineFT::boundingBox(glyph_t glyph)
     Glyph *g = defaultGlyphSet.getGlyph(glyph);
     if (!g) {
         face = lockFace();
-        g = loadGlyph(glyph, Format_None, true);
+        g = loadGlyph(glyph, 0, Format_None, true);
     }
     if (g) {
         overall.x = g->x;
@@ -1765,6 +1771,8 @@ glyph_metrics_t QFontEngineFT::boundingBox(glyph_t glyph)
         overall.width = g->width;
         overall.height = g->height;
         overall.xoff = g->advance;
+        if (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+            overall.xoff = overall.xoff.round();
     } else {
         int left  = FLOOR(face->glyph->metrics.horiBearingX);
         int right = CEIL(face->glyph->metrics.horiBearingX + face->glyph->metrics.width);
@@ -1860,13 +1868,13 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, const QTransfo
     return overall;
 }
 
-QImage QFontEngineFT::alphaMapForGlyph(glyph_t g)
+QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition)
 {
     lockFace();
 
     GlyphFormat glyph_format = antialias ? Format_A8 : Format_Mono;
 
-    Glyph *glyph = defaultGlyphSet.outline_drawing ? 0 : loadGlyph(g, glyph_format);
+    Glyph *glyph = defaultGlyphSet.outline_drawing ? 0 : loadGlyph(g, subPixelPosition, glyph_format);
     if (!glyph) {
         unlockFace();
         return QFontEngine::alphaMapForGlyph(g);
@@ -1905,7 +1913,7 @@ QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, in
 
     GlyphFormat glyph_format = Format_A32;
 
-    Glyph *glyph = defaultGlyphSet.outline_drawing ? 0 : loadGlyph(g, glyph_format);
+    Glyph *glyph = defaultGlyphSet.outline_drawing ? 0 : loadGlyph(g, subPixelPosition, glyph_format);
     if (!glyph) {
         unlockFace();
         return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, margin, t);
@@ -1920,7 +1928,7 @@ QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, in
 
 void QFontEngineFT::removeGlyphFromCache(glyph_t glyph)
 {
-    defaultGlyphSet.removeGlyphFromCache(glyph);
+    defaultGlyphSet.removeGlyphFromCache(glyph, 0);
 }
 
 int QFontEngineFT::glyphCount() const
@@ -2000,9 +2008,9 @@ void QFontEngineFT::QGlyphSet::clear()
     glyph_data.clear();
 }
 
-void QFontEngineFT::QGlyphSet::removeGlyphFromCache(int index)
+void QFontEngineFT::QGlyphSet::removeGlyphFromCache(glyph_t index, QFixed subPixelPosition)
 {
-    if (index < 256) {
+    if (useFastGlyphData(index, subPixelPosition)) {
         if (fast_glyph_data[index]) {
             delete fast_glyph_data[index];
             fast_glyph_data[index] = 0;
@@ -2010,18 +2018,18 @@ void QFontEngineFT::QGlyphSet::removeGlyphFromCache(int index)
                 --fast_glyph_count;
         }
     } else {
-        delete glyph_data.take(index);
+        delete glyph_data.take(GlyphAndSubPixelPosition(index, subPixelPosition));
     }
 }
 
-void QFontEngineFT::QGlyphSet::setGlyph(int index, Glyph *glyph)
+void QFontEngineFT::QGlyphSet::setGlyph(glyph_t index, QFixed subPixelPosition, Glyph *glyph)
 {
-    if (index < 256) {
+    if (useFastGlyphData(index, subPixelPosition)) {
         if (!fast_glyph_data[index])
             ++fast_glyph_count;
         fast_glyph_data[index] = glyph;
     } else {
-        glyph_data.insert(index, glyph);
+        glyph_data.insert(GlyphAndSubPixelPosition(index, subPixelPosition), glyph);
     }
 }
 
@@ -2038,7 +2046,10 @@ void QFontEngineFT::freeServerGlyphSet(unsigned long id)
 HB_Error QFontEngineFT::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints)
 {
     lockFace();
-    HB_Error result = freetype->getPointInOutline(glyph, flags, point, xpos, ypos, nPoints);
+    bool hsubpixel = true;
+    int vfactor = 1;
+    int load_flags = loadFlags(0, Format_A8, flags, hsubpixel, vfactor);
+    HB_Error result = freetype->getPointInOutline(glyph, load_flags, point, xpos, ypos, nPoints);
     unlockFace();
     return result;
 }

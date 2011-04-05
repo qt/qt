@@ -112,6 +112,7 @@ public:
      If switch events are enabled, two events will be emitted for each switch --
      one before the switch (QMeeGoSwitchEvent::WillSwitch) and one after the
      switch (QMeeGoSwitchEvent::DidSwitch).
+     If the switch policy is set to NoSwitch, this function has no effect.
     */
     static void switchToMeeGo();
 
@@ -124,8 +125,26 @@ public:
      Calling this function will emit QMeeGoSwitchEvent to the top level widgets. If switch
      events are enabled, two events will be emitted for each switch -- one before the
      switch (QMeeGoSwitchEvent::WillSwitch) and one after the switch (QMeeGoSwitchEvent::DidSwitch).
+     If the switch policy is set to NoSwitch, this function has no effect.
     */
     static void switchToRaster();
+
+    //! Used to specify the policy for graphics system switching.
+    enum SwitchPolicy {
+        AutomaticSwitch,    /**< Automatic switching */
+        ManualSwitch,       /**< Switching is controleld by the application */
+        NoSwitch            /**< Switching is disabled completely */
+    };
+
+    //! Sets the policy of graphicssystem switching
+    /*!
+     By default, the switch to raster happens automatically when all windows are either
+     minimized or when the last window is destroyed. This function lets the application
+     change the graphicssystem switching policy to prevent the switching from happening
+     automatically (that is if the application doesn't want switching at all or wishes
+     to control the switching manually).
+    */
+    static void setSwitchPolicy(SwitchPolicy policy);
 
     //! Returns the name of the active graphics system
     /*!

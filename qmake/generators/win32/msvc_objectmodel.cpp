@@ -355,7 +355,7 @@ VCCLCompilerTool::VCCLCompilerTool()
         TreatWChar_tAsBuiltInType(unset),
         TurnOffAssemblyGeneration(unset),
         UndefineAllPreprocessorDefinitions(unset),
-        UsePrecompiledHeader(pchNone),
+        UsePrecompiledHeader(pchUnset),
         UseUnicodeForAssemblerListing(unset),
         WarnAsError(unset),
         WarningLevel(warningLevel_0),
@@ -389,7 +389,7 @@ inline XmlOutput::xml_output xformUsePrecompiledHeaderForNET2005(pchOption whatP
         if (whatPch ==  pchGenerateAuto) whatPch = (pchOption)0;
         if (whatPch ==  pchUseUsingSpecific) whatPch = (pchOption)2;
     }
-    return attrE(_UsePrecompiledHeader, whatPch);
+    return attrE(_UsePrecompiledHeader, whatPch, /*ifNot*/ pchUnset);
 }
 
 inline XmlOutput::xml_output xformExceptionHandlingNET2005(exceptionHandling eh, DotNET compilerVersion)
@@ -2146,7 +2146,7 @@ void VCFilter::modifyPCHstage(QString str)
     useCompilerTool = true;
     // Setup PCH options
     CompilerTool.UsePrecompiledHeader     = (isCFile ? pchNone : pchCreateUsingSpecific);
-    CompilerTool.PrecompiledHeaderThrough = (isCPPFile ? QString("$(INHERIT)") : QString("$(NOINHERIT)"));
+    CompilerTool.PrecompiledHeaderThrough = (isCPPFile ? Project->precompHFilename : QString("$(NOINHERIT)"));
     CompilerTool.ForcedIncludeFiles       = QStringList("$(NOINHERIT)");
 }
 
@@ -2514,7 +2514,7 @@ void VCProjectWriter::write(XmlOutput &xml, const VCCLCompilerTool &tool)
         << attrT(_TurnOffAssemblyGeneration, tool.TurnOffAssemblyGeneration)
         << attrT(_UndefineAllPreprocessorDefinitions, tool.UndefineAllPreprocessorDefinitions)
         << attrX(_UndefinePreprocessorDefinitions, tool.UndefinePreprocessorDefinitions)
-        << (!tool.PrecompiledHeaderFile.isEmpty() || !tool.PrecompiledHeaderThrough.isEmpty() ? xformUsePrecompiledHeaderForNET2005(tool.UsePrecompiledHeader, tool.config->CompilerVersion) : noxml())
+        << xformUsePrecompiledHeaderForNET2005(tool.UsePrecompiledHeader, tool.config->CompilerVersion)
         << attrT(_WarnAsError, tool.WarnAsError)
         << attrE(_WarningLevel, tool.WarningLevel, /*ifNot*/ warningLevelUnknown)
         << attrT(_WholeProgramOptimization, tool.WholeProgramOptimization)

@@ -265,7 +265,7 @@ void QAbstractSliderPrivate::setSteps(int single, int page)
 /*!
     Constructs an abstract slider.
 
-    The \a parent arguments is sent to the QWidget constructor.
+    The \a parent argument is sent to the QWidget constructor.
 
     The \l minimum defaults to 0, the \l maximum to 99, with a \l
     singleStep size of 1 and a \l pageStep size of 10, and an initial

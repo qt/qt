@@ -385,7 +385,7 @@ void QDeclarativeBasePositioner::finishApplyTransitions()
 
   Items with a width or height of 0 will not be positioned.
 
-  \sa Row, Grid, Flow, {declarative/positioners/addandremove}{Positioners example}
+  \sa Row, Grid, Flow, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Column::add
@@ -425,7 +425,7 @@ void QDeclarativeBasePositioner::finishApplyTransitions()
     }
     \endqml
 
-    \sa add, {declarative/positioners/addandremove}{Positioners example}
+    \sa add, {declarative/positioners}{Positioners example}
 */
 /*!
   \qmlproperty int Column::spacing
@@ -528,7 +528,7 @@ void QDeclarativeColumn::reportConflictingAnchors()
 
   Items with a width or height of 0 will not be positioned.
 
-  \sa Column, Grid, Flow, {declarative/positioners/addandremove}{Positioners example}
+  \sa Column, Grid, Flow, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Row::add
@@ -567,7 +567,7 @@ void QDeclarativeColumn::reportConflictingAnchors()
     }
     \endqml
 
-    \sa add, {declarative/positioners/addandremove}{Positioners example}
+    \sa add, {declarative/positioners}{Positioners example}
 */
 /*!
   \qmlproperty int Row::spacing
@@ -597,7 +597,7 @@ QDeclarativeRow::QDeclarativeRow(QDeclarativeItem *parent)
     the right anchor remains to the right of the row.
     \endlist
 
-    \sa Grid::layoutDirection, Flow::layoutDirection, {declarative/positioners/layoutdirection}{Layout directions example}
+    \sa Grid::layoutDirection, Flow::layoutDirection, {declarative/righttoleft/layoutdirection}{Layout directions example}
 */
 Qt::LayoutDirection QDeclarativeRow::layoutDirection() const
 {
@@ -609,6 +609,11 @@ void QDeclarativeRow::setLayoutDirection(Qt::LayoutDirection layoutDirection)
     QDeclarativeBasePositionerPrivate *d = static_cast<QDeclarativeBasePositionerPrivate* >(QDeclarativeBasePositionerPrivate::get(this));
     if (d->layoutDirection != layoutDirection) {
         d->layoutDirection = layoutDirection;
+        // For RTL layout the positioning changes when the width changes.
+        if (d->layoutDirection == Qt::RightToLeft)
+            d->addItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
+        else
+            d->removeItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
         prePositioning();
         emit layoutDirectionChanged();
         emit effectiveLayoutDirectionChanged();
@@ -753,7 +758,7 @@ void QDeclarativeRow::reportConflictingAnchors()
 
   Items with a width or height of 0 will not be positioned.
 
-  \sa Flow, Row, Column, {declarative/positioners/addandremove}{Positioners example}
+  \sa Flow, Row, Column, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Grid::add
@@ -791,7 +796,7 @@ void QDeclarativeRow::reportConflictingAnchors()
     }
     \endqml
 
-    \sa add, {declarative/positioners/addandremove}{Positioners example}
+    \sa add, {declarative/positioners}{Positioners example}
 */
 /*!
   \qmlproperty int Grid::spacing
@@ -895,7 +900,7 @@ void QDeclarativeGrid::setFlow(Flow flow)
     \l Grid::flow property.
     \endlist
 
-    \sa Flow::layoutDirection, Row::layoutDirection, {declarative/positioners/layoutdirection}{Layout directions example}
+    \sa Flow::layoutDirection, Row::layoutDirection, {declarative/righttoleft/layoutdirection}{Layout directions example}
 */
 Qt::LayoutDirection QDeclarativeGrid::layoutDirection() const
 {
@@ -907,6 +912,11 @@ void QDeclarativeGrid::setLayoutDirection(Qt::LayoutDirection layoutDirection)
     QDeclarativeBasePositionerPrivate *d = static_cast<QDeclarativeBasePositionerPrivate*>(QDeclarativeBasePositionerPrivate::get(this));
     if (d->layoutDirection != layoutDirection) {
         d->layoutDirection = layoutDirection;
+        // For RTL layout the positioning changes when the width changes.
+        if (d->layoutDirection == Qt::RightToLeft)
+            d->addItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
+        else
+            d->removeItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
         prePositioning();
         emit layoutDirectionChanged();
         emit effectiveLayoutDirectionChanged();
@@ -1137,7 +1147,7 @@ void QDeclarativeGrid::reportConflictingAnchors()
 
   Items with a width or height of 0 will not be positioned.
 
-  \sa Column, Row, Grid, {declarative/positioners/addandremove}{Positioners example}
+  \sa Column, Row, Grid, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Flow::add
@@ -1176,7 +1186,7 @@ void QDeclarativeGrid::reportConflictingAnchors()
     }
     \endqml
 
-    \sa add, {declarative/positioners/addandremove}{Positioners example}
+    \sa add, {declarative/positioners}{Positioners example}
 */
 /*!
   \qmlproperty int Flow::spacing
@@ -1255,7 +1265,7 @@ void QDeclarativeFlow::setFlow(Flow flow)
     \l Flow::flow property.
     \endlist
 
-    \sa Grid::layoutDirection, Row::layoutDirection, {declarative/positioners/layoutdirection}{Layout directions example}
+    \sa Grid::layoutDirection, Row::layoutDirection, {declarative/righttoleft/layoutdirection}{Layout directions example}
 */
 
 Qt::LayoutDirection QDeclarativeFlow::layoutDirection() const

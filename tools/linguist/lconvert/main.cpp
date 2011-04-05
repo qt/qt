@@ -65,7 +65,7 @@ static int usage(const QStringList &args)
     foreach (Translator::FileFormat format, Translator::registeredFileFormats())
         loaders += line.arg(format.extension, -5).arg(format.description);
 
-    std::cerr << qPrintable(LC::tr("\nUsage:\n"
+    std::cout << qPrintable(LC::tr("\nUsage:\n"
         "    lconvert [options] <infile> [<infile>...]\n\n"
         "lconvert is part of Qt's Linguist tool chain. It can be used as a\n"
         "stand-alone tool to convert and filter translation data files.\n"

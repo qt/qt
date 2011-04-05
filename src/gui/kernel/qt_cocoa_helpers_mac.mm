@@ -1794,7 +1794,29 @@ void qt_mac_display(QWidget *widget)
 {
     NSView *theNSView = qt_mac_nativeview_for(widget);
     [theNSView display];
-    return;
+}
+
+void qt_mac_setNeedsDisplay(QWidget *widget)
+{
+    NSView *theNSView = qt_mac_nativeview_for(widget);
+    [theNSView setNeedsDisplay:YES];
+}
+
+void qt_mac_setNeedsDisplayInRect(QWidget *widget, QRegion region)
+{
+    NSView *theNSView = qt_mac_nativeview_for(widget);
+    if (region.isEmpty()) {
+        [theNSView setNeedsDisplay:YES];
+        return;
+    }
+
+    QVector<QRect> rects = region.rects();
+    for (int i = 0; i < rects.count(); ++i) {
+        const QRect &rect = rects.at(i);
+        NSRect nsrect = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
+        [theNSView setNeedsDisplayInRect:nsrect];
+    }
+
 }
 
 #endif // QT_MAC_USE_COCOA

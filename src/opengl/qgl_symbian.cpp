@@ -41,15 +41,14 @@
 
 
 #include "qgl.h"
-#include <coemain.h>
-#include <coecntrl.h>
-#include <w32std.h>
+#include <fbs.h>
 #include <private/qt_s60_p.h>
 #include <private/qpixmap_s60_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
 #include <private/qgl_p.h>
 #include <private/qpaintengine_opengl_p.h>
 #include <private/qwidget_p.h> // to access QWExtra
+#include <private/qnativeimagehandleprovider_p.h>
 #include "qgl_egl_p.h"
 #include "qpixmapdata_gl_p.h"
 #include "qgltexturepool_p.h"
@@ -71,6 +70,8 @@ QT_BEGIN_NAMESPACE
 #define QGL_NO_PRESERVED_SWAP 1
 #endif
 #endif
+
+extern int qt_gl_pixmap_serial;
 
 /*
     QGLTemporaryContext implementation
@@ -228,13 +229,20 @@ bool QGLContext::chooseContext(const QGLContext* shareContext) // almost same as
 
         d->eglSurface = QEgl::createSurface(device(), d->eglContext->config());
 
-#if !defined(QGL_NO_PRESERVED_SWAP)
-        eglGetError();  // Clear error state first.
-        eglSurfaceAttrib(QEgl::display(), d->eglSurface,
-                EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
-        if (eglGetError() != EGL_SUCCESS) {
-            qWarning("QGLContext: could not enable preserved swap");
-        }
+    eglGetError();  // Clear error state first.
+
+#ifdef QGL_NO_PRESERVED_SWAP
+    eglSurfaceAttrib(QEgl::display(), d->eglSurface,
+            EGL_SWAP_BEHAVIOR, EGL_BUFFER_DESTROYED);
+
+    if (eglGetError() != EGL_SUCCESS)
+        qWarning("QGLContext: could not enable destroyed swap behaviour");
+#else
+    eglSurfaceAttrib(QEgl::display(), d->eglSurface,
+            EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
+
+    if (eglGetError() != EGL_SUCCESS)
+        qWarning("QGLContext: could not enable preserved swap behaviour");
 #endif
 
         setWindowCreated(true);
@@ -361,117 +369,104 @@ void QGLWidgetPrivate::recreateEglSurface()
     eglSurfaceWindowId = currentId;
 }
 
-/*
- * Symbian specific QGLPixmapData functions
- */
-
-static CFbsBitmap* createBlitCopy(CFbsBitmap* bitmap)
+static inline bool knownGoodFormat(QImage::Format format)
 {
-    CFbsBitmap *copy = q_check_ptr(new CFbsBitmap);
-    if (!copy)
-        return 0;
-
-    if (copy->Create(bitmap->SizeInPixels(), bitmap->DisplayMode()) != KErrNone) {
-        delete copy;
-        copy = 0;
-
-        return 0;
+    switch (format) {
+        case QImage::Format_RGB16: // EColor64K
+        case QImage::Format_RGB32: // EColor16MU
+        case QImage::Format_ARGB32_Premultiplied: // EColor16MAP
+            return true;
+        default:
+            return false;
     }
-
-    CFbsBitmapDevice* bitmapDevice = 0;
-    CFbsBitGc *bitmapGc = 0;
-    QT_TRAP_THROWING(bitmapDevice = CFbsBitmapDevice::NewL(copy));
-    QT_TRAP_THROWING(bitmapGc = CFbsBitGc::NewL());
-    bitmapGc->Activate(bitmapDevice);
-
-    bitmapGc->BitBlt(TPoint(), bitmap);
-
-    delete bitmapGc;
-    delete bitmapDevice;
-
-    return copy;
 }
 
 void QGLPixmapData::fromNativeType(void* pixmap, NativeType type)
 {
     if (type == QPixmapData::FbsBitmap) {
-        CFbsBitmap *bitmap = reinterpret_cast<CFbsBitmap*>(pixmap);
-
-        bool deleteSourceBitmap = false;
-#ifdef Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
-
-        // Rasterize extended bitmaps
-
-        TUid extendedBitmapType = bitmap->ExtendedBitmapType();
-        if (extendedBitmapType != KNullUid) {
-            bitmap = createBlitCopy(bitmap);
-            deleteSourceBitmap = true;
+        CFbsBitmap *bitmap = reinterpret_cast<CFbsBitmap *>(pixmap);
+        QSize size(bitmap->SizeInPixels().iWidth, bitmap->SizeInPixels().iHeight);
+        if (size.width() == w && size.height() == h)
+            setSerialNumber(++qt_gl_pixmap_serial);
+        resize(size.width(), size.height());
+        m_source = QVolatileImage(bitmap);
+        if (pixelType() == BitmapType) {
+            m_source.ensureFormat(QImage::Format_MonoLSB);
+        } else if (!knownGoodFormat(m_source.format())) {
+            m_source.beginDataAccess();
+            QImage::Format format = idealFormat(m_source.imageRef(), Qt::AutoColor);
+            m_source.endDataAccess(true);
+            m_source.ensureFormat(format);
         }
-#endif
+        m_hasAlpha = m_source.hasAlphaChannel();
+        m_hasFillColor = false;
+        m_dirty = true;
 
-        if (bitmap->IsCompressedInRAM()) {
-            bitmap = createBlitCopy(bitmap);
-            deleteSourceBitmap = true;
-        }
-
-        TDisplayMode displayMode = bitmap->DisplayMode();
-        QImage::Format format = qt_TDisplayMode2Format(displayMode);
-
-        TSize size = bitmap->SizeInPixels();
-        int bytesPerLine = bitmap->ScanLineLength(size.iWidth, displayMode);
-
-        bitmap->BeginDataAccess();
-        uchar *bytes = (uchar*)bitmap->DataAddress();
-        QImage img = QImage(bytes, size.iWidth, size.iHeight, bytesPerLine, format);
-        img = img.copy();
-        bitmap->EndDataAccess();
-
-        if (displayMode == EGray2) {
-            //Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
-            //So invert mono bitmaps so that masks work correctly.
-            img.invertPixels();
-        } else if (displayMode == EColor16M) {
-            img = img.rgbSwapped(); // EColor16M is BGR
-        }
-
-        fromImage(img, Qt::AutoColor);
-
-        if (deleteSourceBitmap)
-            delete bitmap;
+    } else if (type == QPixmapData::VolatileImage && pixmap) {
+        // Support QS60Style in more efficient skin graphics retrieval.
+        QVolatileImage *img = static_cast<QVolatileImage *>(pixmap);
+        if (img->width() == w && img->height() == h)
+            setSerialNumber(++qt_gl_pixmap_serial);
+        resize(img->width(), img->height());
+        m_source = *img;
+        m_hasAlpha = m_source.hasAlphaChannel();
+        m_hasFillColor = false;
+        m_dirty = true;
+    } else if (type == QPixmapData::NativeImageHandleProvider && pixmap) {
+        destroyTexture();
+        nativeImageHandleProvider = static_cast<QNativeImageHandleProvider *>(pixmap);
+        // Cannot defer the retrieval, we need at least the size right away.
+        createFromNativeImageHandleProvider();
     }
 }
 
 void* QGLPixmapData::toNativeType(NativeType type)
 {
     if (type == QPixmapData::FbsBitmap) {
-        CFbsBitmap *bitmap = q_check_ptr(new CFbsBitmap);
-
-        if (bitmap) {
-            QImage image = toImage();
-
-            TDisplayMode displayMode(EColor16MU);
-            if (image.format()==QImage::Format_ARGB32_Premultiplied)
-                displayMode = EColor16MAP;
-
-            if (bitmap->Create(TSize(image.width(), image.height()),
-                              displayMode) == KErrNone) {
-                const uchar *sptr = const_cast<const QImage&>(image).bits();
-                bitmap->BeginDataAccess();
-
-                uchar *dptr = (uchar*)bitmap->DataAddress();
-                Mem::Copy(dptr, sptr, image.byteCount());
-
-                bitmap->EndDataAccess();
-            } else {
-                delete bitmap;
-                bitmap = 0;
-            }
-        }
-
-        return reinterpret_cast<void*>(bitmap);
+        if (m_source.isNull())
+            m_source = QVolatileImage(w, h, QImage::Format_ARGB32_Premultiplied);
+        return m_source.duplicateNativeImage();
     }
+
     return 0;
 }
 
-QT_END_NAMESPACE
+bool QGLPixmapData::initFromNativeImageHandle(void *handle, const QString &type)
+{
+    if (type == QLatin1String("RSgImage")) {
+        fromNativeType(handle, QPixmapData::SgImage);
+        return true;
+    } else if (type == QLatin1String("CFbsBitmap")) {
+        fromNativeType(handle, QPixmapData::FbsBitmap);
+        return true;
+    }
+    return false;
+}
 
+void QGLPixmapData::createFromNativeImageHandleProvider()
+{
+    void *handle = 0;
+    QString type;
+    nativeImageHandleProvider->get(&handle, &type);
+    if (handle) {
+        if (initFromNativeImageHandle(handle, type)) {
+            nativeImageHandle = handle;
+            nativeImageType = type;
+        } else {
+            qWarning("QGLPixmapData: Unknown native image type '%s'", qPrintable(type));
+        }
+    } else {
+        qWarning("QGLPixmapData: Native handle is null");
+    }
+}
+
+void QGLPixmapData::releaseNativeImageHandle()
+{
+    if (nativeImageHandleProvider && nativeImageHandle) {
+        nativeImageHandleProvider->release(nativeImageHandle, nativeImageType);
+        nativeImageHandle = 0;
+        nativeImageType = QString();
+    }
+}
+
+QT_END_NAMESPACE
