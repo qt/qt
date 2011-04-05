@@ -60,6 +60,7 @@ QT_MODULE(Declarative)
 
 class QSGNode;
 class UpdatePaintNodeData;
+class QGLFramebufferObject;
 
 class QSGShaderEffectTextureProvider : public QSGTextureProvider
 {
