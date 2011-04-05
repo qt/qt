@@ -77,11 +77,20 @@ void tst_QPointer::constructors()
 
 void tst_QPointer::destructor()
 {
+    // Make two QPointer's to the same object
     QObject *object = new QObject;
-    QPointer<QObject> p = object;
-    QCOMPARE(p, QPointer<QObject>(object));
+    QPointer<QObject> p1 = object;
+    QPointer<QObject> p2 = object;
+    // Check that they point to the correct object
+    QCOMPARE(p1, QPointer<QObject>(object));
+    QCOMPARE(p2, QPointer<QObject>(object));
+    QCOMPARE(p1, p2);
+    // Destroy the guarded object
     delete object;
-    QCOMPARE(p, QPointer<QObject>(0));
+    // Check that both pointers were zeroed
+    QCOMPARE(p1, QPointer<QObject>(0));
+    QCOMPARE(p2, QPointer<QObject>(0));
+    QCOMPARE(p1, p2);
 }
 
 void tst_QPointer::assignment_operators()
@@ -89,19 +98,21 @@ void tst_QPointer::assignment_operators()
     QPointer<QObject> p1;
     QPointer<QObject> p2;
 
+    // Test assignment with a QObject-derived object pointer
     p1 = this;
     p2 = p1;
-
     QCOMPARE(p1, QPointer<QObject>(this));
     QCOMPARE(p2, QPointer<QObject>(this));
     QCOMPARE(p1, QPointer<QObject>(p2));
 
+    // Test assignment with a null pointer
     p1 = 0;
     p2 = p1;
     QCOMPARE(p1, QPointer<QObject>(0));
     QCOMPARE(p2, QPointer<QObject>(0));
     QCOMPARE(p1, QPointer<QObject>(p2));
 
+    // Test assignment with a real QObject pointer
     QObject *object = new QObject;
 
     p1 = object;
@@ -110,10 +121,8 @@ void tst_QPointer::assignment_operators()
     QCOMPARE(p2, QPointer<QObject>(object));
     QCOMPARE(p1, QPointer<QObject>(p2));
 
+    // Cleanup
     delete object;
-    QCOMPARE(p1, QPointer<QObject>(0));
-    QCOMPARE(p2, QPointer<QObject>(0));
-    QCOMPARE(p1, QPointer<QObject>(p2));
 }
 
 void tst_QPointer::equality_operators()
@@ -180,6 +189,7 @@ void tst_QPointer::dereference_operators()
 
 void tst_QPointer::disconnect()
 {
+    // Verify that pointer remains guarded when all signals are disconencted.
     QPointer<QObject> p1 = new QObject;
     QVERIFY(!p1.isNull());
     p1->disconnect();
