@@ -46,6 +46,7 @@
 #include <private/qgraphicssystem_p.h>
 #include <private/qt_s60_p.h>
 #include <private/qpaintengine_s60_p.h>
+#include <private/qfont_p.h>
 
 #include "qpixmap.h"
 #include "qpixmap_raster_p.h"
@@ -600,9 +601,6 @@ bool QS60PixmapData::scroll(int dx, int dy, const QRect &rect)
     endDataAccess();
     return res;
 }
-
-Q_GUI_EXPORT int qt_defaultDpiX();
-Q_GUI_EXPORT int qt_defaultDpiY();
 
 int QS60PixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
