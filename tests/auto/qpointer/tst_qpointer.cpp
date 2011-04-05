@@ -39,11 +39,8 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
-#include <QApplication>
-#include <QDebug>
 #include <QPointer>
 #include <QWidget>
 
@@ -51,17 +48,9 @@ class tst_QPointer : public QObject
 {
     Q_OBJECT
 public:
-    tst_QPointer();
-    ~tst_QPointer();
-
     inline tst_QPointer *me() const
     { return const_cast<tst_QPointer *>(this); }
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
 private slots:
     void constructors();
     void destructor();
@@ -75,24 +64,6 @@ private slots:
     void dataSignature() const;
     void threadSafety();
 };
-
-tst_QPointer::tst_QPointer()
-{ }
-
-tst_QPointer::~tst_QPointer()
-{ }
-
-void tst_QPointer::initTestCase()
-{ }
-
-void tst_QPointer::cleanupTestCase()
-{ }
-
-void tst_QPointer::init()
-{ }
-
-void tst_QPointer::cleanup()
-{ }
 
 void tst_QPointer::constructors()
 {
