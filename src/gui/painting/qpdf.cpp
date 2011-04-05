@@ -47,14 +47,13 @@
 #include "private/qcups_p.h"
 #include "qprinterinfo.h"
 #include <qnumeric.h>
+#include "private/qfont_p.h"
 
 #ifdef Q_OS_UNIX
 #include "private/qcore_unix_p.h" // overrides QT_OPEN
 #endif
 
 QT_BEGIN_NAMESPACE
-
-Q_GUI_EXPORT extern int qt_defaultDpi();
 
 #ifndef QT_NO_PRINTER
 

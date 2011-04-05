@@ -77,9 +77,6 @@ static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
 
 #if !defined(QVG_NO_DRAW_GLYPHS)
 
-Q_GUI_EXPORT int qt_defaultDpiX();
-Q_GUI_EXPORT int qt_defaultDpiY();
-
 class QVGPaintEnginePrivate;
 
 typedef QHash<QFontEngine*, QVGFontGlyphCache*> QVGFontCache;

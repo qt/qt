@@ -54,6 +54,7 @@
 #include <private/qsimd_p.h>
 #include <private/qwidget_p.h>
 #include <private/qdrawhelper_p.h>
+#include <private/qfont_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -345,9 +346,6 @@ QPaintEngine* QRasterPixmapData::paintEngine() const
 {
     return image.paintEngine();
 }
-
-Q_GUI_EXPORT extern int qt_defaultDpiX();
-Q_GUI_EXPORT extern int qt_defaultDpiY();
 
 int QRasterPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
