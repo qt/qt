@@ -43,20 +43,12 @@
 #include "particle.h"
 #include <cmath>
 QT_BEGIN_NAMESPACE
+
 FollowEmitter::FollowEmitter(QSGItem *parent) :
     ParticleEmitter(parent)
-  , m_particleSize(16)
-  , m_particleEndSize(-1)
-  , m_particleSizeVariation(0)
-  , m_xSpeed(0)
-  , m_ySpeed(0)
-  , m_xSpeedVariation(0)
-  , m_ySpeedVariation(0)
-  , m_xAccel(0)
-  , m_yAccel(0)
-  , m_xAccelVariation(0)
-  , m_yAccelVariation(0)
   , m_lastTimeStamp(0)
+  , m_emitterXVariation(0)
+  , m_emitterYVariation(0)
 {
     connect(this, SIGNAL(followChanged(QString)),
             this, SLOT(recalcParticlesPerSecond()));
