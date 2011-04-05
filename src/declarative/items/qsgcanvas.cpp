@@ -930,6 +930,10 @@ QSGCanvas::~QSGCanvas()
 {
     Q_D(QSGCanvas);
 
+    // manually clear the canvas for the root item (item destructor only handles canvas clearing when an item is parented)
+    QSGItemPrivate *rootItemPrivate = QSGItemPrivate::get(d->rootItem);
+    rootItemPrivate->canvas = 0;
+
     delete d->rootItem; d->rootItem = 0;
     d->cleanupNodes();
 }
