@@ -188,7 +188,7 @@ protected:
     QString nativeImageType;
 #endif
 
-    void forceToImage();
+    void forceToImage(bool allowReadback = true);
     QImage::Format sourceFormat() const;
     QImage::Format idealFormat(QImage *image, Qt::ImageConversionFlags flags) const;
     void updateSerial();

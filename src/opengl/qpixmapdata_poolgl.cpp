@@ -49,6 +49,7 @@
 #include <private/qgl_p.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qimage_p.h>
+#include <private/qnativeimagehandleprovider_p.h>
 
 #include <private/qpaintengineex_opengl2_p.h>
 
@@ -241,6 +242,8 @@ QGLPixmapData::QGLPixmapData(PixelType type)
     , m_renderFbo(0)
     , m_engine(0)
     , m_ctx(0)
+    , nativeImageHandleProvider(0)
+    , nativeImageHandle(0)
     , m_dirty(false)
     , m_hasFillColor(false)
     , m_hasAlpha(false)
@@ -279,6 +282,8 @@ void QGLPixmapData::destroyTexture()
     }
     m_texture.id = 0;
     inTexturePool = false;
+
+    releaseNativeImageHandle();
 }
 
 QPixmapData *QGLPixmapData::createCompatiblePixmapData() const
@@ -328,6 +333,9 @@ void QGLPixmapData::ensureCreated() const
         return;
 
     m_dirty = false;
+
+    if (nativeImageHandleProvider && !nativeImageHandle)
+        const_cast<QGLPixmapData *>(this)->createFromNativeImageHandleProvider();
 
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
     m_ctx = ctx;
@@ -847,9 +855,16 @@ void QGLPixmapData::detachTextureFromPool()
 
 void QGLPixmapData::hibernate()
 {
-    // If the texture was imported (e.g, from an SgImage under Symbian),
-    // then we cannot copy it back to main memory for storage.
-    if (m_texture.id && m_source.isNull())
+    // If the image was imported (e.g, from an SgImage under Symbian), then
+    // skip the hibernation, there is no sense in copying it back to main
+    // memory because the data is most likely shared between several processes.
+    bool skipHibernate = (m_texture.id && m_source.isNull());
+#if defined(Q_OS_SYMBIAN)
+    // However we have to proceed normally if the image was retrieved via
+    // a handle provider.
+    skipHibernate &= !nativeImageHandleProvider;
+#endif
+    if (skipHibernate)
         return;
 
     forceToImage();

@@ -319,7 +319,9 @@ class DitaXmlGenerator : public PageGenerator
     bool writeMetadataElement(const InnerNode* inner, 
                               DitaXmlGenerator::DitaTag t, 
                               bool force=true);
+    bool writeMetadataElements(const InnerNode* inner, DitaXmlGenerator::DitaTag t);
     QString getMetadataElement(const InnerNode* inner, DitaXmlGenerator::DitaTag t);
+    QStringList getMetadataElements(const InnerNode* inner, DitaXmlGenerator::DitaTag t);
 
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
@@ -516,7 +518,7 @@ class DitaXmlGenerator : public PageGenerator
     static QString ditaTags[];
     QStack<QXmlStreamWriter*> xmlWriterStack;
     QStack<DitaTag> tagStack;
-    QStringMap metadataDefaults;
+    QStringMultiMap metadataDefaults;
 };
 
 #define DITAXMLGENERATOR_ADDRESS           "address"

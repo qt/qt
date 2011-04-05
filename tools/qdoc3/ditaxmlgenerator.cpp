@@ -5566,30 +5566,46 @@ void DitaXmlGenerator::writeDitaMap()
   \note If \a t is found in the metadata map, it is erased.
   i.e. Once you call this function for a particular \a t,
   you consume \a t.
-
-  At the moment, it doesn't chaeck to see if there is a
-  default value for the tag. But it will eventually.
  */
 bool DitaXmlGenerator::writeMetadataElement(const InnerNode* inner,
                                             DitaXmlGenerator::DitaTag t,
                                             bool force)
 {
-    QString s;
-    QStringMap& metaTagMap = const_cast<QStringMap&>(inner->doc().metaTagMap());
-    QStringMap::iterator i = metaTagMap.find(ditaTags[t]);
-    if (i == metaTagMap.end()) {
-        s = metadataDefault(t);
-    }
-    else {
-        s = i.value();
-        metaTagMap.erase(i);
-    }
+    QString s = getMetadataElement(inner,t);
     if (s.isEmpty() && !force)
         return false;
     writeStartTag(t);
     if (!s.isEmpty())
         xmlWriter().writeCharacters(s);
     writeEndTag();
+    return true;
+}
+
+
+/*!
+  Looks up the tag name for \a t in the map of metadata
+  values for the current topic in \a inner. If one or more
+  value sfor the tag are found, the elements are written.
+  Otherwise nothing is written.
+
+  Returns true or false depending on whether it writes
+  at least one element using the tag \a t.
+
+  \note If \a t is found in the metadata map, it is erased.
+  i.e. Once you call this function for a particular \a t,
+  you consume \a t.
+ */
+bool DitaXmlGenerator::writeMetadataElements(const InnerNode* inner,
+                                             DitaXmlGenerator::DitaTag t)
+{
+    QStringList s = getMetadataElements(inner,t);
+    if (s.isEmpty())
+        return false;
+    for (int i=0; i<s.size(); ++i) {
+        writeStartTag(t);
+        xmlWriter().writeCharacters(s[i]);
+        writeEndTag();
+    }
     return true;
 }
 
@@ -5604,16 +5620,29 @@ bool DitaXmlGenerator::writeMetadataElement(const InnerNode* inner,
  */
 QString DitaXmlGenerator::getMetadataElement(const InnerNode* inner, DitaXmlGenerator::DitaTag t)
 {
-    QString s;
-    QStringMap& metaTagMap = const_cast<QStringMap&>(inner->doc().metaTagMap());
-    QStringMap::iterator i = metaTagMap.find(ditaTags[t]);
-    if (i != metaTagMap.end()) {
-        s = i.value();
-        metaTagMap.erase(i);
-    }
-    else {
+    QString s = Generator::getMetadataElement(inner, ditaTags[t]);
+    if (s.isEmpty())
         s = metadataDefault(t);
-    }
+    return s;
+}
+
+/*!
+  Looks up the tag name for \a t in the map of metadata
+  values for the current topic in \a inner. If values
+  for the tag are found, they are returned in a string
+  list.
+
+  \note If \a t is found in the metadata map, all the
+  pairs having the key \a t are erased. i.e. Once you
+  all this function for a particular \a t, you consume
+  \a t.
+ */
+QStringList DitaXmlGenerator::getMetadataElements(const InnerNode* inner,
+                                                  DitaXmlGenerator::DitaTag t)
+{
+    QStringList s = Generator::getMetadataElements(inner,ditaTags[t]);
+    if (s.isEmpty())
+        s.append(metadataDefault(t));
     return s;
 }
 
@@ -5671,7 +5700,7 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
     if (!inner)
         return;
     writeStartTag(DT_prolog);
-    writeMetadataElement(inner,DT_author);
+    writeMetadataElements(inner,DT_author);
     writeMetadataElement(inner,DT_publisher);
     QString s = getMetadataElement(inner,DT_copyryear);
     QString t = getMetadataElement(inner,DT_copyrholder);
@@ -5690,11 +5719,13 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
     xmlWriter().writeAttribute("view",s);
     writeEndTag(); // </permissions>
     writeStartTag(DT_metadata);
-    s = getMetadataElement(inner,DT_audience);
-    if (!s.isEmpty()) {
-        writeStartTag(DT_audience);
-        xmlWriter().writeAttribute("type",s);
-        writeEndTag(); // </audience>
+    QStringList sl = getMetadataElements(inner,DT_audience);
+    if (!sl.isEmpty()) {
+        for (int i=0; i<sl.size(); ++i) {
+            writeStartTag(DT_audience);
+            xmlWriter().writeAttribute("type",sl[i]);
+            writeEndTag(); // </audience>
+        }
     }
     if (!writeMetadataElement(inner,DT_category,false)) {
         writeStartTag(DT_category);
@@ -5755,7 +5786,7 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
         }
         writeEndTag(); // </prodinfo>
     }
-    const QStringMap& metaTagMap = inner->doc().metaTagMap(); 
+    const QStringMultiMap& metaTagMap = inner->doc().metaTagMap(); 
     QMapIterator<QString, QString> i(metaTagMap);
     while (i.hasNext()) {
         i.next();

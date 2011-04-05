@@ -37,6 +37,8 @@ as atraditional bubble level. The application provides a calibration feature to
 handle any possible errors in accelerometer readings. The example is hosted in
 Projects Forum Nokia: https://projects.forum.nokia.com/qtbubblelevel
 
+\note This demonstration requires QtMobility libraries.
+
     \image qml-qtbubblelevel-demo.png
 
     \section1 Initialising the application

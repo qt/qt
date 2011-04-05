@@ -40,5 +40,6 @@ code to the Qt Quick UI.
 
     The example is hosted in Projects Forum Nokia: https://projects.forum.nokia.com/guitartuner
 
+\note This demonstration requires QtMobility libraries.
     \image qml-guitartuner-example.png
 */
