@@ -348,6 +348,11 @@ qint64 QLocalSocket::writeData(const char *data, qint64 maxSize)
 
 void QLocalSocket::abort()
 {
+    Q_D(QLocalSocket);
+    if (d->pipeWriter) {
+        delete d->pipeWriter;
+        d->pipeWriter = 0;
+    }
     close();
 }
 
