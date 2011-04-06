@@ -60,7 +60,6 @@ private slots:
     void dereference_operators();
     void disconnect();
     void castDuringDestruction();
-    void dataSignature() const;
     void threadSafety();
 };
 
@@ -306,22 +305,6 @@ void tst_QPointer::castDuringDestruction()
 
     {
         delete new DerivedParent();
-    }
-}
-
-void tst_QPointer::dataSignature() const
-{
-    /* data() should be const. */
-    {
-        const QPointer<QObject> p;
-        p.data();
-    }
-
-    /* The return type should be T. */
-    {
-        const QPointer<QWidget> p;
-        /* If the types differs, the QCOMPARE will fail to instansiate. */
-        QCOMPARE(p.data(), static_cast<QWidget *>(0));
     }
 }
 
