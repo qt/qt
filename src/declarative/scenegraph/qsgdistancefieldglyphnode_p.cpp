@@ -309,7 +309,7 @@ protected:
     virtual void initialize();
     virtual const char *fragmentShader() const;
 
-    void updateOutlineAlphaRange();
+    void updateOutlineAlphaRange(int dfRadius);
 
     int m_outlineAlphaMax0_id;
     int m_outlineAlphaMax1_id;
@@ -344,9 +344,9 @@ void DistanceFieldOutlineTextMaterialShader::initialize()
     m_outlineAlphaMax1_id = m_program.uniformLocation("outlineAlphaMax1");
 }
 
-void DistanceFieldOutlineTextMaterialShader::updateOutlineAlphaRange()
+void DistanceFieldOutlineTextMaterialShader::updateOutlineAlphaRange(int dfRadius)
 {
-    qreal outlineLimit = qMax(qreal(0.1), qreal(0.5 - 0.1 / m_fontScale));
+    qreal outlineLimit = qMax(qreal(0.2), qreal(0.5 - 0.5 / dfRadius / m_fontScale));
 
     qreal combinedScale = m_fontScale * m_matrixScale;
     qreal alphaMin = qMax(0.0, 0.5 - 0.07 / combinedScale);
@@ -366,7 +366,7 @@ void DistanceFieldOutlineTextMaterialShader::updateState(const RenderState &stat
     if (oldMaterial == 0
             || material->glyphCache()->fontScale() != oldMaterial->glyphCache()->fontScale()
             || state.isMatrixDirty())
-        updateOutlineAlphaRange();
+        updateOutlineAlphaRange(material->glyphCache()->distanceFieldRadius());
 }
 
 

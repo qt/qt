@@ -89,6 +89,7 @@ public:
     QSize textureSize() const;
     int maxTextureSize() const;
     qreal fontScale() const;
+    int distanceFieldRadius() const;
     QImage renderDistanceFieldGlyph(glyph_t glyph) const;
 
     int glyphCount() const;
@@ -131,12 +132,14 @@ private:
         int currX;
         int currY;
         QImage image;
+        bool doubleGlyphResolution;
 
         DistanceFieldTextureData(const QGLContext *)
             : texture(0)
             , fbo(0)
             , currX(0)
             , currY(0)
+            , doubleGlyphResolution(false)
         { }
     };
     DistanceFieldTextureData *textureData();
