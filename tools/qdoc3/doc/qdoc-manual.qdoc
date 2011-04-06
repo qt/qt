@@ -3999,20 +3999,11 @@
 
     Here are links to the \c .qdocinc files used above:
     \l{signalandslots.qdocinc}, \l{objectmodel.qdocinc},
-    \l{layoutmanagement.qdocinc}. QDoc renders this page as:
-
-            \quotation
-                \raw HTML
-                <h1>Core Features</h1>
-                \endraw
-
-                \input examples/signalandslots.qdocinc
-                \input examples/objectmodel.qdocinc
-                \input examples/layoutmanagement.qdocinc
-            \endquotation
+    \l{layoutmanagement.qdocinc}. QDoc renders this page 
+    \l{corefeatures.html} {as shown here}.
 
     \target 2-argument-form}
-    \section2 \\include filename snippet-identifier
+    \section2 \\include filename snippet-identifier \span {class="newStuff"} {(new)}
 
     It is kind of a pain to make a separate \c .qdocinc file for every
     QDoc include snippet you want to use in multiple places in the
