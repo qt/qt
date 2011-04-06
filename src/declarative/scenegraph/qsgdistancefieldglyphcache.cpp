@@ -701,6 +701,8 @@ void QSGDistanceFieldGlyphCache::createTexture(int width, int height)
     if (ctx->d_ptr->workaround_brokenFBOReadBack && m_textureData->image.isNull())
         m_textureData->image = QImage(width, height, QImage::Format_ARGB32_Premultiplied);
 
+    while (glGetError() != GL_NO_ERROR) { }
+
     glGenTextures(1, &m_textureData->texture);
     glBindTexture(GL_TEXTURE_2D, m_textureData->texture);
 

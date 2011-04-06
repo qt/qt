@@ -68,7 +68,21 @@ public:
     void setImage(const QImage &image);
     QSGTextureRef texture();
 
+    virtual WrapMode horizontalWrapMode() const;
+    virtual WrapMode verticalWrapMode() const;
+    virtual Filtering filtering() const;
+    virtual Filtering mipmapFiltering() const;
+
+    void setHorizontalWrapMode(WrapMode mode);
+    void setVerticalWrapMode(WrapMode mode);
+    void setFiltering(Filtering filtering);
+
     QSGTextureRef tex;
+
+private:
+    uint m_hWrapMode : 1;
+    uint m_vWrapMode : 1;
+    uint m_filtering : 2;
 };
 
 class QSGImagePrivate : public QSGImageBasePrivate

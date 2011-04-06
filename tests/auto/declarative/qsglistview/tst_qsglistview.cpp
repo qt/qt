@@ -115,8 +115,6 @@ private slots:
     void onAdd_data();
     void onRemove();
     void onRemove_data();
-    void testQtQuick11Attributes();
-    void testQtQuick11Attributes_data();
     void rightToLeft();
     void test_mirroring();
 
@@ -575,6 +573,7 @@ void tst_QSGListView::removed(bool animated)
     ctxt->setContextProperty("testObject", testObject);
 
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listviewtest.qml"));
+    canvas->show();
     qApp->processEvents();
 
     QSGListView *listview = findItem<QSGListView>(canvas->rootObject(), "list");
@@ -1138,20 +1137,20 @@ void tst_QSGListView::sectionsDelegate()
     // ensure view has settled.
     QTRY_COMPARE(findItems<QSGItem>(contentItem, "wrapper").count(), 10);
     // Drag view up beyond bounds
-    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(20,20)));
+    QTest::mousePress(canvas, Qt::LeftButton, 0, QPoint(20,20));
     {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,0)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
+        QMouseEvent mv(QEvent::MouseMove, QPoint(20,0), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas, &mv);
     }
     {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,-50)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
+        QMouseEvent mv(QEvent::MouseMove, QPoint(20,-50), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas, &mv);
     }
     {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,-200)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
+        QMouseEvent mv(QEvent::MouseMove, QPoint(20,-200), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas, &mv);
     }
-    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(20,-200)));
+    QTest::mouseRelease(canvas, Qt::LeftButton, 0, QPoint(20,-200));
     // view should settle back at 0
     QTRY_COMPARE(listview->contentY(), 0.0);
 
@@ -1225,7 +1224,6 @@ void tst_QSGListView::currentIndex()
     qt_x11_wait_for_window_manager(canvas);
 #endif
     QTRY_VERIFY(canvas->hasFocus());
-    QTRY_VERIFY(canvas->scene()->hasFocus());
     qApp->processEvents();
 
     QTest::keyClick(canvas, Qt::Key_Down);
@@ -1310,7 +1308,7 @@ void tst_QSGListView::itemList()
     QSGItem *contentItem = listview->contentItem();
     QTRY_VERIFY(contentItem != 0);
 
-    QDeclarativeVisualItemModel *model = canvas->rootObject()->findChild<QDeclarativeVisualItemModel*>("itemModel");
+    QSGVisualItemModel *model = canvas->rootObject()->findChild<QSGVisualItemModel*>("itemModel");
     QTRY_VERIFY(model != 0);
 
     QTRY_VERIFY(model->count() == 3);
@@ -1672,10 +1670,10 @@ void tst_QSGListView::componentChanges()
     QTRY_VERIFY(listView);
 
     QDeclarativeComponent component(canvas->engine());
-    component.setData("import QtQuick 1.0; Rectangle { color: \"blue\"; }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 2.0; Rectangle { color: \"blue\"; }", QUrl::fromLocalFile(""));
 
     QDeclarativeComponent delegateComponent(canvas->engine());
-    delegateComponent.setData("import QtQuick 1.0; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
+    delegateComponent.setData("import QtQuick 2.0; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
 
     QSignalSpy highlightSpy(listView, SIGNAL(highlightChanged()));
     QSignalSpy delegateSpy(listView, SIGNAL(delegateChanged()));
@@ -1734,7 +1732,7 @@ void tst_QSGListView::modelChanges()
     listView->setModel(QVariant());
     QTRY_COMPARE(modelSpy.count(),2);
 
-    delete canvas;
+//    delete canvas;
 }
 
 void tst_QSGListView::QTBUG_9791()
@@ -1942,6 +1940,7 @@ void tst_QSGListView::footer()
     ctxt->setContextProperty("testModel", &model);
 
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/footer.qml"));
+    canvas->show();
     qApp->processEvents();
 
     QSGListView *listview = findItem<QSGListView>(canvas->rootObject(), "list");
@@ -2190,6 +2189,7 @@ void tst_QSGListView::QTBUG_14821()
 void tst_QSGListView::resizeDelegate()
 {
     QSGView *canvas = createView();
+    canvas->show();
 
     QStringList strings;
     for (int i = 0; i < 30; ++i)
@@ -2265,6 +2265,7 @@ void tst_QSGListView::resizeDelegate()
 void tst_QSGListView::QTBUG_16037()
 {
     QSGView *canvas = createView();
+    canvas->show();
 
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/qtbug16037.qml"));
     qApp->processEvents();
@@ -2447,45 +2448,6 @@ void tst_QSGListView::onRemove_data()
     QTest::newRow("ten items, remove 4-10") << 10 << 4 << 6;
 }
 
-void tst_QSGListView::testQtQuick11Attributes()
-{
-    QFETCH(QString, code);
-    QFETCH(QString, warning);
-    QFETCH(QString, error);
-
-    QDeclarativeEngine engine;
-    QObject *obj;
-
-    QDeclarativeComponent valid(&engine);
-    valid.setData("import QtQuick 1.1; ListView { " + code.toUtf8() + " }", QUrl(""));
-    obj = valid.create();
-    QVERIFY(obj);
-    QVERIFY(valid.errorString().isEmpty());
-    delete obj;
-
-    QDeclarativeComponent invalid(&engine);
-    invalid.setData("import QtQuick 1.0; ListView { " + code.toUtf8() + " }", QUrl(""));
-    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
-    obj = invalid.create();
-    QCOMPARE(invalid.errorString(), error);
-    delete obj;
-}
-
-void tst_QSGListView::testQtQuick11Attributes_data()
-{
-    QTest::addColumn<QString>("code");
-    QTest::addColumn<QString>("warning");
-    QTest::addColumn<QString>("error");
-
-    QTest::newRow("positionViewAtBeginning") << "Component.onCompleted: positionViewAtBeginning()"
-        << "<Unknown File>:1: ReferenceError: Can't find variable: positionViewAtBeginning"
-        << "";
-
-    QTest::newRow("positionViewAtEnd") << "Component.onCompleted: positionViewAtEnd()"
-        << "<Unknown File>:1: ReferenceError: Can't find variable: positionViewAtEnd"
-        << "";
-}
-
 void tst_QSGListView::rightToLeft()
 {
     QSGView *canvas = createView();
@@ -2500,7 +2462,7 @@ void tst_QSGListView::rightToLeft()
     QSGItem *contentItem = listview->contentItem();
     QTRY_VERIFY(contentItem != 0);
 
-    QDeclarativeVisualItemModel *model = canvas->rootObject()->findChild<QDeclarativeVisualItemModel*>("itemModel");
+    QSGVisualItemModel *model = canvas->rootObject()->findChild<QSGVisualItemModel*>("itemModel");
     QTRY_VERIFY(model != 0);
 
     QTRY_VERIFY(model->count() == 3);

@@ -930,8 +930,10 @@ QSGCanvas::~QSGCanvas()
 {
     Q_D(QSGCanvas);
 
-    // manually clear the canvas for the root item (item destructor only handles canvas clearing when an item is parented)
+    // ### should we change ~QSGItem to handle this better?
+    // manually cleanup for the root item (item destructor only handles these when an item is parented)
     QSGItemPrivate *rootItemPrivate = QSGItemPrivate::get(d->rootItem);
+    rootItemPrivate->removeFromDirtyList();
     rootItemPrivate->canvas = 0;
 
     delete d->rootItem; d->rootItem = 0;

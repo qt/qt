@@ -131,8 +131,16 @@ void QSGTextureProviderMaterialShader::updateState(const RenderState &state, QSG
 void QSGTextureProviderMaterial::setTexture(QSGTextureProvider *texture)
 {
     m_texture = texture;
-    bool opaque = m_texture ? m_texture->opaque() : true;
-    setFlag(Blending, !opaque);
+}
+
+void QSGTextureProviderMaterial::setBlending(bool enable)
+{
+    setFlag(Blending, enable);
+}
+
+bool QSGTextureProviderMaterial::blending() const
+{
+    return flags() & Blending;
 }
 
 QSGMaterialType *QSGTextureProviderMaterial::type() const
@@ -151,15 +159,13 @@ int QSGTextureProviderMaterial::compare(const QSGMaterial *o) const
     const QSGTextureProviderMaterial *other = static_cast<const QSGTextureProviderMaterial *>(o);
     if (int diff = m_texture->texture().texture() - other->texture()->texture().texture())
         return diff;
-    if (int diff = int(m_texture->opaque()) - int(other->m_texture->opaque()))
-        return diff;
     if (int diff = int(m_texture->horizontalWrapMode()) - int(other->m_texture->horizontalWrapMode()))
         return diff;
     if (int diff = int(m_texture->verticalWrapMode()) - int(other->m_texture->verticalWrapMode()))
         return diff;
     if (int diff = int(m_texture->filtering()) - int(other->m_texture->filtering()))
         return diff;
-    return int(m_texture->mipmap()) - int(other->m_texture->mipmap());
+    return int(m_texture->mipmapFiltering()) - int(other->m_texture->mipmapFiltering());
 }
 
 bool QSGTextureProviderMaterial::is(const QSGMaterial *effect)
@@ -263,6 +269,8 @@ void QSGDefaultImageNode::setTexture(QSGTextureProvider *texture)
     m_texture = texture;
     m_material.setTexture(texture);
     m_materialO.setTexture(texture);
+    if (texture && !texture->texture().isNull())
+        m_material.setBlending(texture->texture()->hasAlphaChannel());
     markDirty(DirtyMaterial);
 
     // Because the texture can be a different part of the atlas, we need to update it...
@@ -278,6 +286,11 @@ void QSGDefaultImageNode::update()
 void QSGDefaultImageNode::preprocess()
 {
     m_texture->updateTexture();
+    bool alpha = m_material.blending();
+    if (!m_texture->texture().isNull() && alpha != m_texture->texture()->hasAlphaChannel()) {
+        m_material.setBlending(!alpha);
+        markDirty(DirtyMaterial);
+    }
     updateGeometry();
 }
 

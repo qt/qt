@@ -83,10 +83,20 @@ class QSGCustomMaterialShader;
 class QSGShaderEffectMaterial : public QSGMaterial
 {
 public:
+    enum CullMode
+    {
+        NoCulling,
+        BackFaceCulling,
+        FrontFaceCulling
+    };
+
     QSGShaderEffectMaterial();
     virtual QSGMaterialType *type() const;
     virtual QSGMaterialShader *createShader() const;
     virtual int compare(const QSGMaterial *other) const;
+
+    void setCullMode(CullMode face);
+    CullMode cullMode() const;
 
     void setProgramSource(const QSGShaderEffectProgram &);
     void setUniforms(const QVector<QPair<QByteArray, QVariant> > &uniformValues);
@@ -109,6 +119,7 @@ protected:
     QSGShaderEffectProgram m_source;
     QVector<QPair<QByteArray, QVariant> > m_uniformValues;
     QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > m_textures;
+    CullMode m_cullMode;
 
     static QHash<QSGShaderEffectMaterialKey, QSharedPointer<QSGMaterialType> > materialMap;
 };

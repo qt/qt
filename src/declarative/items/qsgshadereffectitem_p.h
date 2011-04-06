@@ -67,8 +67,17 @@ class QSGShaderEffectItem : public QSGItem
     Q_PROPERTY(QByteArray vertexShader READ vertexShader WRITE setVertexShader NOTIFY vertexShaderChanged)
     Q_PROPERTY(bool blending READ blending WRITE setBlending NOTIFY blendingChanged)
     Q_PROPERTY(QSize meshResolution READ meshResolution WRITE setMeshResolution NOTIFY meshResolutionChanged)
+    Q_PROPERTY(CullMode culling READ cullMode WRITE setCullMode NOTIFY cullModeChanged)
+    Q_ENUMS(CullMode)
 
 public:
+    enum CullMode
+    {
+        NoCulling = QSGShaderEffectMaterial::NoCulling,
+        BackFaceCulling = QSGShaderEffectMaterial::BackFaceCulling,
+        FrontFaceCulling = QSGShaderEffectMaterial::FrontFaceCulling
+    };
+
     QSGShaderEffectItem(QSGItem *parent = 0);
     ~QSGShaderEffectItem();
 
@@ -86,12 +95,16 @@ public:
     QSize meshResolution() const { return m_mesh_resolution; }
     void setMeshResolution(const QSize &size);
 
+    CullMode cullMode() const { return m_cullMode; }
+    void setCullMode(CullMode face);
+
 Q_SIGNALS:
     void fragmentShaderChanged();
     void vertexShaderChanged();
     void blendingChanged();
     void marginsChanged();
     void meshResolutionChanged();
+    void cullModeChanged();
 
 protected:
     virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
@@ -113,6 +126,7 @@ private:
 
     QSGShaderEffectProgram m_source;
     QSize m_mesh_resolution;
+    CullMode m_cullMode;
 
     struct SourceData
     {

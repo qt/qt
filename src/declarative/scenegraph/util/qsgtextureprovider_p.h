@@ -76,20 +76,10 @@ public:
 
     void bind(QSGTexture *oldTexture = 0);
 
-    bool opaque() const { return m_opaque; }
-    void setOpaque(bool enabled) { m_opaque = enabled; }
-
-    WrapMode horizontalWrapMode() const { return WrapMode(m_hWrapMode); }
-    void setHorizontalWrapMode(WrapMode mode) { m_hWrapMode = mode; }
-
-    WrapMode verticalWrapMode() const { return WrapMode(m_vWrapMode); }
-    void setVerticalWrapMode(WrapMode mode) { m_vWrapMode = mode; }
-
-    Filtering filtering() const { return Filtering(m_filtering); }
-    void setFiltering(Filtering filtering) { m_filtering = filtering; }
-
-    Filtering mipmap() const { return Filtering(m_mipmap); }
-    void setMipmap(Filtering filtering) { m_mipmap = filtering; }
+    virtual WrapMode horizontalWrapMode() const = 0;
+    virtual WrapMode verticalWrapMode() const = 0;
+    virtual Filtering filtering() const = 0;
+    virtual Filtering mipmapFiltering() const = 0;
 
     GLint glTextureWrapS() const;
     GLint glTextureWrapT() const;
@@ -98,13 +88,6 @@ public:
 
 Q_SIGNALS:
     void textureChanged();
-
-protected:
-    uint m_opaque : 1;
-    uint m_hWrapMode : 1;
-    uint m_vWrapMode : 1;
-    uint m_filtering : 2;
-    uint m_mipmap : 2;
 };
 
 

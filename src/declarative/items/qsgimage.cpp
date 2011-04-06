@@ -45,7 +45,6 @@
 
 #include <private/qsgcontext_p.h>
 #include <private/qsgadaptationlayer_p.h>
-#include <private/qsgtextureitem_p.h>
 
 #include <QtGui/qpainter.h>
 
@@ -53,6 +52,9 @@ QT_BEGIN_NAMESPACE
 
 QSGImageTextureProvider::QSGImageTextureProvider(QObject *parent)
     : QSGTextureProvider(parent)
+    , m_hWrapMode(ClampToEdge)
+    , m_vWrapMode(ClampToEdge)
+    , m_filtering(Nearest)
 {
 }
 
@@ -60,7 +62,6 @@ QSGImageTextureProvider::QSGImageTextureProvider(QObject *parent)
 void QSGImageTextureProvider::setImage(const QImage &image)
 {
     tex = QSGContext::current->createTexture(image);
-    setOpaque(!image.hasAlphaChannel());
     emit textureChanged();
 }
 
@@ -68,6 +69,41 @@ void QSGImageTextureProvider::setImage(const QImage &image)
 QSGTextureRef QSGImageTextureProvider::texture()
 {
     return tex;
+}
+
+QSGTextureProvider::WrapMode QSGImageTextureProvider::horizontalWrapMode() const
+{
+    return WrapMode(m_hWrapMode);
+}
+
+QSGTextureProvider::WrapMode QSGImageTextureProvider::verticalWrapMode() const
+{
+    return WrapMode(m_vWrapMode);
+}
+
+QSGTextureProvider::Filtering QSGImageTextureProvider::filtering() const
+{
+    return Filtering(m_filtering);
+}
+
+QSGTextureProvider::Filtering QSGImageTextureProvider::mipmapFiltering() const
+{
+    return None;
+}
+
+void QSGImageTextureProvider::setHorizontalWrapMode(WrapMode mode)
+{
+    m_hWrapMode = mode;
+}
+
+void QSGImageTextureProvider::setVerticalWrapMode(WrapMode mode)
+{
+    m_vWrapMode = mode;
+}
+
+void QSGImageTextureProvider::setFiltering(Filtering filtering)
+{
+    m_filtering = filtering;
 }
 
 
@@ -217,8 +253,6 @@ QSGNode *QSGImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         node = QSGContext::current->createImageNode();
         QSGTextureRef t = d->pix.texture();
         d->textureProvider->tex = t;
-        if (!t.isNull())
-            d->textureProvider->setOpaque(!t->hasAlphaChannel());
         node->setTexture(d->textureProvider);
     }
 
@@ -227,8 +261,6 @@ QSGNode *QSGImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         // geometry and the likes when a atlas segment has changed.
         QSGTextureRef t = d->pix.texture();
         d->textureProvider->tex = t;
-        if (!t.isNull())
-            d->textureProvider->setOpaque(!t->hasAlphaChannel());
         node->setTexture(0);
         node->setTexture(d->textureProvider);
         d->pixmapChanged = false;
