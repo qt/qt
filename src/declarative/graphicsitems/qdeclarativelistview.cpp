@@ -1354,6 +1354,7 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
     } else {
         QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
     }
+    data.inOvershoot = false;
     fixupMode = Normal;
 }
 
@@ -1428,10 +1429,10 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
                 data.flickTarget = isRightToLeft() ? -data.flickTarget+size() : data.flickTarget;
                 if (overShoot) {
                     if (data.flickTarget >= minExtent) {
-                        overshootDist = overShootDistance(v, vSize);
+                        overshootDist = overShootDistance(vSize);
                         data.flickTarget += overshootDist;
                     } else if (data.flickTarget <= maxExtent) {
-                        overshootDist = overShootDistance(v, vSize);
+                        overshootDist = overShootDistance(vSize);
                         data.flickTarget -= overshootDist;
                     }
                 }
@@ -1451,10 +1452,10 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             } else if (overShoot) {
                 data.flickTarget = data.move.value() - dist;
                 if (data.flickTarget >= minExtent) {
-                    overshootDist = overShootDistance(v, vSize);
+                    overshootDist = overShootDistance(vSize);
                     data.flickTarget += overshootDist;
                 } else if (data.flickTarget <= maxExtent) {
-                    overshootDist = overShootDistance(v, vSize);
+                    overshootDist = overShootDistance(vSize);
                     data.flickTarget -= overshootDist;
                 }
             }
@@ -2581,7 +2582,7 @@ void QDeclarativeListView::viewportMoved()
         d->inFlickCorrection = true;
         // Near an end and it seems that the extent has changed?
         // Recalculate the flick so that we don't end up in an odd position.
-        if (yflick()) {
+        if (yflick() && !d->vData.inOvershoot) {
             if (d->vData.velocity > 0) {
                 const qreal minY = minYExtent();
                 if ((minY - d->vData.move.value() < height()/2 || d->vData.flickTarget - d->vData.move.value() < height()/2)
@@ -2597,7 +2598,7 @@ void QDeclarativeListView::viewportMoved()
             }
         }
 
-        if (xflick()) {
+        if (xflick() && !d->hData.inOvershoot) {
             if (d->hData.velocity > 0) {
                 const qreal minX = minXExtent();
                 if ((minX - d->hData.move.value() < width()/2 || d->hData.flickTarget - d->hData.move.value() < width()/2)
