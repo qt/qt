@@ -1785,7 +1785,7 @@ static QPointF qt_radial_gradient_adapt_focal_point(const QPointF &center,
     // We have a one pixel buffer zone to avoid numerical instability on the
     // circle border
     //### this is hacky because technically we should adjust based on current matrix
-    const qreal compensated_radius = radius - radius * 0.001;
+    const qreal compensated_radius = radius - radius * qreal(0.001);
     QLineF line(center, focalPoint);
     if (line.length() > (compensated_radius))
         line.setLength(compensated_radius);
