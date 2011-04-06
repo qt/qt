@@ -53,6 +53,8 @@
 
 #include <stdio.h>
 
+#include <qdebug.h>
+
 class QXcbShmImage : public QXcbObject
 {
 public:
@@ -93,13 +95,21 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size)
                                           0,
                                           ~0,
                                           0);
+
     m_shm_info.shmid = shmget (IPC_PRIVATE,
           m_xcb_image->stride * m_xcb_image->height, IPC_CREAT|0777);
 
     m_shm_info.shmaddr = m_xcb_image->data = (quint8 *)shmat (m_shm_info.shmid, 0, 0);
     m_shm_info.shmseg = xcb_generate_id(xcb_connection());
 
-    Q_XCB_CALL(xcb_shm_attach(xcb_connection(), m_shm_info.shmseg, m_shm_info.shmid, false));
+    xcb_generic_error_t *error = xcb_request_check(xcb_connection(), xcb_shm_attach_checked(xcb_connection(), m_shm_info.shmseg, m_shm_info.shmid, false));
+    if (error) {
+        qWarning() << "QXcbWindowSurface: Unable to attach to shared memory segment";
+        free(error);
+    }
+
+    if (shmctl(m_shm_info.shmid, IPC_RMID, 0) == -1)
+        qWarning() << "QXcbWindowSurface: Error while marking the shared memory segment to be destroyed";
 
     m_qimage = QImage( (uchar*) m_xcb_image->data, m_xcb_image->width, m_xcb_image->height, m_xcb_image->stride, screen->format());
 }
