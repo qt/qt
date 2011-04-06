@@ -76,14 +76,14 @@ Rectangle {
             }
         }
         Item{
-            ParticleSystem{ id: particleSystem }
+            ParticleSystem{ id: particleSystem; }
             ColoredParticle {
                 system: particleSystem
                 particles: ["red"]
                 color: Qt.darker("red");//Actually want desaturated...
                 image: "SamegameCore/pics/particle.png"
                 colorVariation: 0.4
-                additive: 0.9
+                alpha: 0.1
             }
             ColoredParticle {
                 system: particleSystem
@@ -91,7 +91,7 @@ Rectangle {
                 color: Qt.darker("green");//Actually want desaturated...
                 image: "SamegameCore/pics/particle.png"
                 colorVariation: 0.4
-                additive: 0.9
+                alpha: 0.1
             }
             ColoredParticle {
                 system: particleSystem
@@ -99,7 +99,7 @@ Rectangle {
                 color: Qt.darker("blue");//Actually want desaturated...
                 image: "SamegameCore/pics/particle.png"
                 colorVariation: 0.4
-                additive: 0.9
+                alpha: 0.1
             }
             id: aboveGameCanvas
             anchors.fill: gameCanvas
