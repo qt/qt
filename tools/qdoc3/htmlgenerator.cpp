@@ -1494,8 +1494,10 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
 
         QString allQmlMembersLink = generateAllQmlMembersFile(qml_cn, marker);
         if (!allQmlMembersLink.isEmpty()) {
+            out() << "<ul>\n";
             out() << "<li><a href=\"" << allQmlMembersLink << "\">"
                   << "List of all members, including inherited members</a></li>\n";
+            out() << "</ul>\n";
         }
 
         s = sections.begin();

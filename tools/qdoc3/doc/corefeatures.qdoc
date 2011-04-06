@@ -1,0 +1,8 @@
+/*!
+    \page corefeatures.html
+    \title Core Features
+
+    \input examples/signalandslots.qdocinc
+    \input examples/objectmodel.qdocinc
+    \input examples/layoutmanagement.qdocinc
+*/
