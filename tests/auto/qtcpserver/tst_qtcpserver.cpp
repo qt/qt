@@ -97,6 +97,7 @@ private slots:
     void constructing();
     void clientServerLoop();
     void ipv6Server();
+    void ipv6ServerMapped();
     void crashTests();
     void maxPendingConnections();
     void listenError();
@@ -262,6 +263,40 @@ void tst_QTcpServer::ipv6Server()
     QVERIFY((serverSocket = server.nextPendingConnection()));
     serverSocket->close();
     delete serverSocket;
+}
+
+//----------------------------------------------------------------------------------
+void tst_QTcpServer::ipv6ServerMapped()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QTcpServer server;
+    QVERIFY(server.listen(QHostAddress::LocalHost));
+
+    // let's try the normal case
+    QTcpSocket client1;
+    client1.connectToHost("127.0.0.1", server.serverPort());
+    QVERIFY(server.waitForNewConnection(5000));
+    delete server.nextPendingConnection();
+
+    // let's try the mapped one in the nice format
+    QTcpSocket client2;
+    client2.connectToHost("::ffff:127.0.0.1", server.serverPort());
+    QVERIFY(server.waitForNewConnection(5000));
+    delete server.nextPendingConnection();
+
+    // let's try the mapped in hex format
+    QTcpSocket client3;
+    client3.connectToHost("::ffff:7F00:0001", server.serverPort());
+    QVERIFY(server.waitForNewConnection(5000));
+    delete server.nextPendingConnection();
+
+    // However connecting to the v6 localhost should not work
+    QTcpSocket client4;
+    client4.connectToHost("::1", server.serverPort());
+    QVERIFY(!server.waitForNewConnection(5000));
 }
 
 //----------------------------------------------------------------------------------
