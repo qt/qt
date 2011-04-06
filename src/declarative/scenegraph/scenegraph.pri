@@ -13,7 +13,7 @@ HEADERS += \
     $$PWD/coreapi/qsgmatrix4x4stack_p.h \
     $$PWD/coreapi/qsgnode.h \
     $$PWD/coreapi/qsgnodeupdater_p.h \
-    $$PWD/coreapi/qsgrenderer_p.h \
+    $$PWD/coreapi/qsgrenderer_p.h
 SOURCES += \
     $$PWD/coreapi/qsgdefaultrenderer.cpp \
     $$PWD/coreapi/qsggeometry.cpp \
