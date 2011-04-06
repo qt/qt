@@ -108,7 +108,7 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , const QPlatformWindow
     }
 
     if (!chosenConfig)
-        qWarning("Warning no context created");
+        qWarning("Warning: no suitable glx confiuration found");
 
     return chosenConfig;
 }
