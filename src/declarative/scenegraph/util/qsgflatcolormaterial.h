@@ -62,7 +62,6 @@ public:
 
 private:
     QColor m_color;
-    void *reserved;
 };
 
 QT_END_NAMESPACE

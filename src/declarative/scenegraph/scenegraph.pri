@@ -13,7 +13,7 @@ HEADERS += \
     $$PWD/coreapi/qsgmatrix4x4stack_p.h \
     $$PWD/coreapi/qsgnode.h \
     $$PWD/coreapi/qsgnodeupdater_p.h \
-    $$PWD/coreapi/qsgrenderer_p.h
+    $$PWD/coreapi/qsgrenderer_p.h \
 SOURCES += \
     $$PWD/coreapi/qsgdefaultrenderer.cpp \
     $$PWD/coreapi/qsggeometry.cpp \
@@ -30,6 +30,7 @@ HEADERS += \
     $$PWD/util/qsgflatcolormaterial.h \
     $$PWD/util/qsgsimplerectnode.h \
     $$PWD/util/qsgtexturematerial.h \
+    $$PWD/util/qsgtexturematerial_p.h \
     $$PWD/util/qsgvertexcolormaterial_p.h \
     $$PWD/util/qsgtexture.h \
     $$PWD/util/qsgtexture_p.h \
@@ -67,4 +68,3 @@ SOURCES += \
     $$PWD/qsgdistancefieldglyphnode_p.cpp \
     $$PWD/qsgdefaultimagenode.cpp \
     $$PWD/qsgdefaultrectanglenode.cpp
-

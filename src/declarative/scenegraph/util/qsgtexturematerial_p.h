@@ -39,11 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef TEXTUREMATERIAL_H
-#define TEXTUREMATERIAL_H
+#ifndef TEXTUREMATERIAL_P_H
+#define TEXTUREMATERIAL_P_H
 
-#include "qsgmaterial.h"
-#include <qsgtexture.h>
+#include "qsgtexturematerial.h"
 
 QT_BEGIN_HEADER
 
@@ -51,54 +50,24 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-
-class Q_DECLARATIVE_EXPORT QSGTextureMaterial : public QSGMaterial
+class Q_DECLARATIVE_EXPORT QSGTextureMaterialShader : public QSGMaterialShader
 {
 public:
-    QSGTextureMaterial()
-        : m_texture(0)
-        , m_opaque(true)
-        , m_linear_filtering(false)
-        , m_clamp_to_edge(true)
-    {
-    }
+    virtual void updateState(const RenderState &state, QSGMaterial *newEffect, QSGMaterial *oldEffect);
+    virtual char const *const *attributeNames() const;
 
-    virtual QSGMaterialType *type() const;
-    virtual QSGMaterialShader *createShader() const;
-    virtual int compare(const QSGMaterial *other) const;
-
-    // ### gunnar: opaque -> alpha, as "hasAlphaChannel()" is what we normally use
-    void setTexture(const QSGTextureRef &texture, bool opaque = false);
-    const QSGTextureRef &texture() const { return m_texture; }
-
-    void setLinearFiltering(bool linearFiltering) { m_linear_filtering = linearFiltering; }
-    bool linearFiltering() const { return m_linear_filtering; }
-
-    void setClampToEdge(bool clamp) { m_clamp_to_edge = clamp; }
-    bool clampToEdge() const { return m_clamp_to_edge; }
-
-    static bool is(const QSGMaterial *effect);
+    static QSGMaterialType type;
 
 protected:
-    QSGTextureRef m_texture;
+    virtual void initialize();
+    virtual const char *vertexShader() const;
+    virtual const char *fragmentShader() const;
 
-    uint m_opaque : 1;
-    uint m_linear_filtering : 1;
-    uint m_clamp_to_edge : 1;
-};
-
-
-class Q_DECLARATIVE_EXPORT QSGTextureMaterialWithOpacity : public QSGTextureMaterial
-{
-public:
-    virtual QSGMaterialType *type() const;
-    virtual QSGMaterialShader *createShader() const;
-
-    static bool is(const QSGMaterial *effect);
+    int m_matrix_id;
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // TEXTUREMATERIAL_H
+#endif // QSGTEXTUREMATERIAL_P_H

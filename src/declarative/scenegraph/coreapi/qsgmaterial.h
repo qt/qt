@@ -125,7 +125,7 @@ protected:
 
 private:
     Flags m_flags;
-
+    void *m_reserved;
     Q_DISABLE_COPY(QSGMaterial)
 };
 

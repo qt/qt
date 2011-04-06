@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qsgtexturematerial.h"
+#include "qsgtexturematerial_p.h"
 
 #include <qglshaderprogram.h>
 
