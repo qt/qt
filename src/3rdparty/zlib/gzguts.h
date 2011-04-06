@@ -3,6 +3,11 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+#ifdef _MSC_VER
+#  define _CRT_SECURE_NO_DEPRECATE
+#  define _CRT_NONSTDC_NO_DEPRECATE
+#endif
+
 #ifdef _LARGEFILE64_SOURCE
 #  ifndef _LARGEFILE_SOURCE
 #    define _LARGEFILE_SOURCE 1
@@ -25,7 +30,9 @@
 #  include <stdlib.h>
 #  include <limits.h>
 #endif
+#if !defined(_WIN32_WCE)
 #include <fcntl.h>
+#endif
 
 #ifdef NO_DEFLATE       /* for compatibility with old definition */
 #  define NO_GZCOMPRESS
