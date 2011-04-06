@@ -4265,6 +4265,7 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp_data()
 
 void tst_QNetworkReply::ioGetFromBuiltinHttp()
 {
+    QSKIP("Limiting is broken right now, check QTBUG-15065", SkipAll);
     QFETCH(bool, https);
     QFETCH(int, bufferSize);
 
