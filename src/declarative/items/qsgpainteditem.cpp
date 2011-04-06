@@ -176,12 +176,11 @@ QSGNode *QSGPaintedItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *
     }
 
     QSGImageNode *node = static_cast<QSGImageNode *>(oldNode);
-    if (!node) {
+    if (!node)
         node = QSGContext::current->createImageNode();
-        node->setTexture(d->textureProvider);
-    }
 
-    QImage image(width(), height(), QImage::Format_ARGB32_Premultiplied);
+    QImage image(width(), height(), d->opaquePainting ? QImage::Format_RGB32
+                                                      : QImage::Format_ARGB32_Premultiplied);
     if (!d->opaquePainting)
         image.fill(0);
 
@@ -195,6 +194,8 @@ QSGNode *QSGPaintedItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *
     d->textureProvider->setVerticalWrapMode(QSGTextureProvider::ClampToEdge);
     d->textureProvider->setFiltering(d->smooth ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
     d->textureProvider->setImage(image);
+    node->setTexture(0); // Force update.
+    node->setTexture(d->textureProvider);
     node->update();
 
     return node;
