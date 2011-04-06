@@ -111,9 +111,7 @@ void QWaylandShmWindowSurface::beginPaint(const QRegion &)
 {
     QWaylandShmWindow *waylandWindow = static_cast<QWaylandShmWindow *>(window()->platformWindow());
     Q_ASSERT(waylandWindow->windowType() == QWaylandWindow::Shm);
-    while (waylandWindow->waitingForFrameSync()) {
-        mDisplay->iterate();
-    }
+    waylandWindow->waitForFrameSync();
 }
 
 void QWaylandShmWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)

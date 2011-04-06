@@ -47,6 +47,7 @@
 
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
+#include <QtGui/QPlatformNativeInterface>
 
 #include "qxlibstatic.h"
 
@@ -70,6 +71,8 @@ public:
     QPlatformFontDatabase *fontDatabase() const;
     QPlatformClipboard *clipboard() const;
 
+    QPlatformNativeInterface *nativeInterface() const;
+
     bool hasOpenGL() const;
 
 private:
@@ -78,6 +81,7 @@ private:
     QList<QPlatformScreen *> mScreens;
     QPlatformFontDatabase *mFontDb;
     QPlatformClipboard *mClipboard;
+    QPlatformNativeInterface *mNativeInterface;
 };
 
 QT_END_NAMESPACE

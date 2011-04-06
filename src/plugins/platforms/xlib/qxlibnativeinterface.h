@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,20 +39,37 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDSHMWINDOW_H
-#define QWAYLANDSHMWINDOW_H
+#ifndef QXLIBNATIVEINTERFACE_H
+#define QXLIBNATIVEINTERFACE_H
 
-#include "qwaylandwindow.h"
-#include <QtGui/QRegion>
+#include "qxlibscreen.h"
 
-class QWaylandShmWindow : public QWaylandWindow
+#include <QtGui/QPlatformNativeInterface>
+
+class QXlibNativeInterface : public QPlatformNativeInterface
 {
 public:
-    QWaylandShmWindow(QWidget *widget);
-    ~QWaylandShmWindow();
+    enum ResourceType {
+        Display,
+        EglDisplay,
+        Connection,
+        Screen,
+        GraphicsDevice,
+        EglContext
+    };
 
-    WindowType windowType() const;
-    QPlatformGLContext *glContext() const;
+    void *nativeResourceForWidget(const QByteArray &resourceString, QWidget *widget);
+
+    void *displayForWidget(QWidget *widget);
+    void *eglDisplayForWidget(QWidget *widget);
+    void *connectionForWidget(QWidget *widget);
+    void *screenForWidget(QWidget *widget);
+    void *graphicsDeviceForWidget(QWidget *widget);
+    void *eglContextForWidget(QWidget *widget);
+
+private:
+    static QXlibScreen *qPlatformScreenForWidget(QWidget *widget);
 };
 
-#endif // QWAYLANDSHMWINDOW_H
+
+#endif // QXLIBNATIVEINTERFACE_H

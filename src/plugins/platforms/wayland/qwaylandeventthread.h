@@ -39,69 +39,49 @@
 **
 ****************************************************************************/
 
-#include "qwaylandscreen.h"
+#ifndef QWAYLANDEVENTTHREAD_H
+#define QWAYLANDEVENTTHREAD_H
 
 #include "qwaylanddisplay.h"
-#include "qwaylandcursor.h"
 
-QWaylandScreen::QWaylandScreen(QWaylandDisplay *waylandDisplay, struct wl_output *output, QRect geometry)
-    : QPlatformScreen()
-    , mWaylandDisplay(waylandDisplay)
-    , mOutput(output)
-    , mGeometry(geometry)
-    , mDepth(32)
-    , mFormat(QImage::Format_ARGB32_Premultiplied)
-    , mWaylandCursor(new QWaylandCursor(this))
+#include <QtCore/QObject>
+#include <QtCore/QThread>
+#include <QtCore/QSocketNotifier>
+#include <QtCore/QMutex>
+
+class QWaylandEventThread : public QObject
 {
-    moveToThread(waylandDisplay->thread());
-}
+    Q_OBJECT
+public:
+    explicit QWaylandEventThread(QWaylandDisplay *display);
+    ~QWaylandEventThread();
 
-QWaylandScreen::~QWaylandScreen()
-{
-    delete mWaylandCursor;
-}
+    static int sourceUpdate(uint32_t mask, void *data);
 
-QWaylandDisplay * QWaylandScreen::display() const
-{
-    return mWaylandDisplay;
-}
+    void waitForScreens();
 
-QRect QWaylandScreen::geometry() const
-{
-    return mGeometry;
-}
+signals:
+public slots:
+    void runningInThread();
+    void readEvents();
+    void flushRequests();
+private:
+    QWaylandDisplay *mDisplay;
+    QSocketNotifier *mReadNotifier;
+    QSocketNotifier *mWriteNotifier;
+    int mFd;
+    QWaitCondition mWaitForScreens;
+    bool mScreensInitialized;
 
-int QWaylandScreen::depth() const
-{
-    return mDepth;
-}
+    static const struct wl_output_listener outputListener;
+    static void displayHandleGlobal(struct wl_display *display,
+                                    uint32_t id,
+                                    const char *interface,
+                                    uint32_t version, void *data);
+    static void outputHandleGeometry(void *data,
+                                     struct wl_output *output,
+                                     int32_t x, int32_t y,
+                                     int32_t width, int32_t height);
+};
 
-QImage::Format QWaylandScreen::format() const
-{
-    return mFormat;
-}
-
-QWaylandScreen * QWaylandScreen::waylandScreenFromWidget(QWidget *widget)
-{
-    QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWidget(widget);
-    return static_cast<QWaylandScreen *>(platformScreen);
-}
-
-wl_visual * QWaylandScreen::visual() const
-{
-    struct wl_visual *visual;
-
-    switch (format()) {
-    case QImage::Format_ARGB32:
-        visual = mWaylandDisplay->argbVisual();
-        break;
-    case QImage::Format_ARGB32_Premultiplied:
-        visual = mWaylandDisplay->argbPremultipliedVisual();
-        break;
-    default:
-        qDebug("unsupported buffer format %d requested\n", format());
-        visual = mWaylandDisplay->argbVisual();
-        break;
-    }
-    return visual;
-}
+#endif // QWAYLANDEVENTTHREAD_H

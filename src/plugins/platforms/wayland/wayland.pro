@@ -14,7 +14,8 @@ SOURCES =   main.cpp \
             qwaylanddisplay.cpp \
             qwaylandwindow.cpp \
             qwaylandscreen.cpp \
-            qwaylandshmwindow.cpp
+            qwaylandshmwindow.cpp \
+            qwaylandeventthread.cpp
 
 HEADERS =   qwaylandintegration.h \
             qwaylandcursor.h \
@@ -23,7 +24,8 @@ HEADERS =   qwaylandintegration.h \
             qwaylandscreen.h \
             qwaylandshmsurface.h \
             qwaylandbuffer.h \
-            qwaylandshmwindow.h
+            qwaylandshmwindow.h \
+            qwaylandeventthread.h
 
 INCLUDEPATH += $$QMAKE_INCDIR_WAYLAND
 LIBS += $$QMAKE_LIBS_WAYLAND

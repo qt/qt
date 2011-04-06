@@ -45,10 +45,10 @@
 
 #include <QtCore/QVector>
 
+#include <QtCore/QDebug>
+
 QWaylandShmWindow::QWaylandShmWindow(QWidget *widget)
     : QWaylandWindow(widget)
-    , mBuffer(0)
-    , mWaitingForFrameSync(false)
 {
     newSurfaceCreated();
 }
@@ -69,36 +69,3 @@ QPlatformGLContext * QWaylandShmWindow::glContext() const
     return 0;
 }
 
-void QWaylandShmWindow::attach(QWaylandBuffer *buffer)
-{
-    mBuffer = buffer;
-    if (mSurface) {
-        wl_surface_attach(mSurface, buffer->buffer(),0,0);
-    }
-}
-
-
-void QWaylandShmWindow::damage(const QRegion &region)
-{
-    QVector<QRect> rects = region.rects();
-    for (int i = 0; i < rects.size(); i++) {
-        const QRect rect = rects.at(i);
-        wl_surface_damage(mSurface,
-                          rect.x(), rect.y(), rect.width(), rect.height());
-    }
-    mWaitingForFrameSync = true;
-    mDisplay->frameCallback(QWaylandShmWindow::frameCallback, this);
-}
-
-void QWaylandShmWindow::newSurfaceCreated()
-{
-    if (mBuffer) {
-        wl_surface_attach(mSurface,mBuffer->buffer(),0,0);
-    }
-}
-
-void QWaylandShmWindow::frameCallback(void *data, uint32_t time)
-{
-    QWaylandShmWindow *self = static_cast<QWaylandShmWindow*>(data);
-    self->mWaitingForFrameSync = false;
-}
