@@ -53,6 +53,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <errno.h>
 
 struct wl_surface *QWaylandDisplay::createSurface(void *handle)
 {
@@ -186,8 +187,8 @@ QWaylandDisplay::QWaylandDisplay(void)
 {
     mDisplay = wl_display_connect(NULL);
     if (mDisplay == NULL) {
-        fprintf(stderr, "failed to create display: %m\n");
-        return;
+        qErrnoWarning(errno, "Failed to create display");
+        qFatal("No wayland connection available.");
     }
 
     wl_display_add_global_listener(mDisplay,

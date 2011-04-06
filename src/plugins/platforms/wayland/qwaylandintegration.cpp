@@ -115,3 +115,12 @@ QPlatformFontDatabase *QWaylandIntegration::fontDatabase() const
 {
     return mFontDb;
 }
+
+bool QWaylandIntegration::hasOpenGL() const
+{
+#ifdef QT_WAYLAND_GL_SUPPORT
+    return true;
+#else
+    return false;
+#endif
+}

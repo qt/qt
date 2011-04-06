@@ -61,6 +61,8 @@ QWaylandWindow::QWaylandWindow(QWidget *window)
 
 QWaylandWindow::~QWaylandWindow()
 {
+    if (mSurface)
+        wl_surface_destroy(mSurface);
 }
 
 WId QWaylandWindow::winId() const
