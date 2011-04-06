@@ -17,3 +17,7 @@ xpixmap_egl {
 xpixmap_glx {
     include ($$PWD/xpixmap_glx/xpixmap_glx.pri)
 }
+
+xcomposite_glx {
+    include ($$PWD/xcomposite_glx/xcomposite_glx.pri)
+}
