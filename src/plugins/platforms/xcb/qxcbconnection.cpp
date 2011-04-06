@@ -105,6 +105,8 @@ QXcbConnection::QXcbConnection(const char *displayName)
 #endif //XCB_USE_XLIB
     m_setup = xcb_get_setup(xcb_connection());
 
+    initializeAllAtoms();
+
     xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
 
     int screenNumber = 0;
@@ -114,8 +116,6 @@ QXcbConnection::QXcbConnection(const char *displayName)
     }
 
     m_keyboard = new QXcbKeyboard(this);
-
-    initializeAllAtoms();
 
 #ifdef XCB_USE_DRI2
     initializeDri2();
@@ -379,6 +379,34 @@ void QXcbConnection::log(const char *file, int line, int sequence)
 }
 #endif
 
+void QXcbConnection::handleXcbError(xcb_generic_error_t *error)
+{
+    uint clamped_error_code = qMin<uint>(error->error_code, (sizeof(xcb_errors) / sizeof(xcb_errors[0])) - 1);
+    uint clamped_major_code = qMin<uint>(error->major_code, (sizeof(xcb_protocol_request_codes) / sizeof(xcb_protocol_request_codes[0])) - 1);
+
+    printf("XCB error: %d (%s), sequence: %d, resource id: %d, major code: %d (%s), minor code: %d\n",
+           int(error->error_code), xcb_errors[clamped_error_code],
+           int(error->sequence), int(error->resource_id),
+           int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
+           int(error->minor_code));
+#ifdef Q_XCB_DEBUG
+    int i = 0;
+    for (; i < m_callLog.size(); ++i) {
+        if (m_callLog.at(i).sequence == error->sequence) {
+            printf("Caused by: %s:%d\n", qPrintable(m_callLog.at(i).file), m_callLog.at(i).line);
+            break;
+        } else if (m_callLog.at(i).sequence > error->sequence) {
+            printf("Caused some time before: %s:%d\n", qPrintable(m_callLog.at(i).file), m_callLog.at(i).line);
+            if (i > 0)
+                printf("and after: %s:%d\n", qPrintable(m_callLog.at(i-1).file), m_callLog.at(i-1).line);
+            break;
+        }
+    }
+    if (i == m_callLog.size() && !m_callLog.isEmpty())
+        printf("Caused some time after: %s:%d\n", qPrintable(m_callLog.first().file), m_callLog.first().line);
+#endif
+}
+
 void QXcbConnection::processXcbEvents()
 {
     while (xcb_generic_event_t *event = xcb_poll_for_event(xcb_connection())) {
@@ -387,32 +415,7 @@ void QXcbConnection::processXcbEvents()
         uint response_type = event->response_type & ~0x80;
 
         if (!response_type) {
-            xcb_generic_error_t *error = (xcb_generic_error_t *)event;
-
-            uint clamped_error_code = qMin<uint>(error->error_code, (sizeof(xcb_errors) / sizeof(xcb_errors[0])) - 1);
-            uint clamped_major_code = qMin<uint>(error->major_code, (sizeof(xcb_protocol_request_codes) / sizeof(xcb_protocol_request_codes[0])) - 1);
-
-            printf("XCB error: %d (%s), sequence: %d, resource id: %d, major code: %d (%s), minor code: %d\n",
-                   int(error->error_code), xcb_errors[clamped_error_code],
-                   int(error->sequence), int(error->resource_id),
-                   int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
-                   int(error->minor_code));
-#ifdef Q_XCB_DEBUG
-            int i = 0;
-            for (; i < m_callLog.size(); ++i) {
-                if (m_callLog.at(i).sequence == error->sequence) {
-                    printf("Caused by: %s:%d\n", qPrintable(m_callLog.at(i).file), m_callLog.at(i).line);
-                    break;
-                } else if (m_callLog.at(i).sequence > error->sequence) {
-                    printf("Caused some time before: %s:%d\n", qPrintable(m_callLog.at(i).file), m_callLog.at(i).line);
-                    if (i > 0)
-                        printf("and after: %s:%d\n", qPrintable(m_callLog.at(i-1).file), m_callLog.at(i-1).line);
-                    break;
-                }
-            }
-            if (i == m_callLog.size() && !m_callLog.isEmpty())
-                printf("Caused some time after: %s:%d\n", qPrintable(m_callLog.first().file), m_callLog.first().line);
-#endif
+            handleXcbError((xcb_generic_error_t *)event);
             continue;
         }
 

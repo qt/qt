@@ -66,6 +66,42 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
     };
 
     xcb_change_window_attributes(xcb_connection(), screen->root, mask, values);
+
+    xcb_generic_error_t *error;
+
+    xcb_get_property_reply_t *reply =
+        xcb_get_property_reply(xcb_connection(),
+            xcb_get_property(xcb_connection(), false, screen->root,
+                             atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK),
+                             XCB_ATOM_WINDOW, 0, 1024), &error);
+
+    if (reply && reply->format == 32 && reply->type == XCB_ATOM_WINDOW) {
+        xcb_window_t windowManager = *((xcb_window_t *)xcb_get_property_value(reply));
+
+        if (windowManager != XCB_WINDOW_NONE) {
+            xcb_get_property_reply_t *windowManagerReply =
+                xcb_get_property_reply(xcb_connection(),
+                    xcb_get_property(xcb_connection(), false, windowManager,
+                                     atom(QXcbAtom::_NET_WM_NAME),
+                                     atom(QXcbAtom::UTF8_STRING), 0, 1024), &error);
+            if (windowManagerReply && windowManagerReply->format == 8 && windowManagerReply->type == atom(QXcbAtom::UTF8_STRING)) {
+                m_windowManagerName = QString::fromUtf8((const char *)xcb_get_property_value(windowManagerReply), xcb_get_property_value_length(windowManagerReply));
+                printf("Running window manager: %s\n", qPrintable(m_windowManagerName));
+            } else if (error) {
+                connection->handleXcbError(error);
+                free(error);
+            }
+
+            free(windowManagerReply);
+        }
+    } else if (error) {
+        connection->handleXcbError(error);
+        free(error);
+    }
+
+    free(reply);
+
+    m_syncRequestSupported = m_windowManagerName != QLatin1String("KWin");
 }
 
 QXcbScreen::~QXcbScreen()

@@ -252,6 +252,7 @@ public:
 #endif
 
     void sync();
+    void handleXcbError(xcb_generic_error_t *error);
 
 private slots:
     void processXcbEvents();

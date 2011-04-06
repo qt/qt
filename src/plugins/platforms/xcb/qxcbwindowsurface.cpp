@@ -170,6 +170,7 @@ void QXcbShmImage::preparePaint(const QRegion &region)
 QXcbWindowSurface::QXcbWindowSurface(QWidget *widget, bool setDefaultSurface)
     : QWindowSurface(widget, setDefaultSurface)
     , m_image(0)
+    , m_syncingResize(false)
 {
     QXcbScreen *screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(widget));
     setConnection(screen->connection());
@@ -213,10 +214,20 @@ void QXcbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoi
         m_image->put(window->window(), rects.at(i).topLeft() - widgetOffset, rects.at(i).translated(offset));
 
     Q_XCB_NOOP(connection());
+
+    if (m_syncingResize) {
+        xcb_flush(xcb_connection());
+        connection()->sync();
+        m_syncingResize = false;
+        window->updateSyncRequestCounter();
+    }
 }
 
 void QXcbWindowSurface::resize(const QSize &size)
 {
+    if (size == QWindowSurface::size())
+        return;
+
     Q_XCB_NOOP(connection());
     QWindowSurface::resize(size);
 
@@ -225,6 +236,8 @@ void QXcbWindowSurface::resize(const QSize &size)
     delete m_image;
     m_image = new QXcbShmImage(screen, size);
     Q_XCB_NOOP(connection());
+
+    m_syncingResize = true;
 }
 
 extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
