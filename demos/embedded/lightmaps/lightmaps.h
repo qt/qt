@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,48 +39,50 @@
 **
 ****************************************************************************/
 
-#ifndef QMLVISITOR_H
-#define QMLVISITOR_H
+#ifndef LIGHTMAPS_H
+#define LIGHTMAPS_H
 
-#include <QString>
-#include "declarativeparser/qdeclarativejsastvisitor_p.h"
-#include "node.h"
-#include "tree.h"
+#include <QBasicTimer>
+#include <QWidget>
 
-QT_BEGIN_NAMESPACE
+class SlippyMap;
 
-class QmlDocVisitor : public QDeclarativeJS::AST::Visitor
+class LightMaps: public QWidget
 {
+    Q_OBJECT
+
 public:
-    QmlDocVisitor(const QString &filePath, const QString &code,
-               QDeclarativeJS::Engine *engine, Tree *tree, QSet<QString> &commands);
-    virtual ~QmlDocVisitor();
+    LightMaps(QWidget *parent = 0);
+    void setCenter(qreal lat, qreal lng);
 
-    bool visit(QDeclarativeJS::AST::UiImportList *imports);
+public slots:
+    void toggleNightMode();
 
-    bool visit(QDeclarativeJS::AST::UiObjectDefinition *definition);
-    void endVisit(QDeclarativeJS::AST::UiObjectDefinition *definition);
+protected:
+    void activateZoom();
+    void resizeEvent(QResizeEvent *);
+    void paintEvent(QPaintEvent *event);
+    void timerEvent(QTimerEvent *);
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *);
+    void keyPressEvent(QKeyEvent *event);
 
-    bool visit(QDeclarativeJS::AST::UiPublicMember *member);
-    void endVisit(QDeclarativeJS::AST::UiPublicMember *definition);
-
-    bool visit(QDeclarativeJS::AST::IdentifierPropertyName *idproperty);
+private slots:
+    void updateMap(const QRect &r);
 
 private:
-    QDeclarativeJS::AST::SourceLocation precedingComment(unsigned offset) const;
-    void applyDocumentation(QDeclarativeJS::AST::SourceLocation location, Node *node);
-
-    QDeclarativeJS::Engine *engine;
-    quint32 lastEndOffset;
-    QString filePath;
-    QString name;
-    QString document;
-    QList<QPair<QString, QString> > importList;
-    QSet<QString> commands;
-    Tree *tree;
-    InnerNode *current;
+    SlippyMap *m_normalMap;
+    SlippyMap *m_largeMap;
+    bool pressed;
+    bool snapped;
+    QPoint pressPos;
+    QPoint dragPos;
+    QBasicTimer tapTimer;
+    bool zoomed;
+    QPixmap zoomPixmap;
+    QPixmap maskPixmap;
+    bool invert;
 };
-
-QT_END_NAMESPACE
 
 #endif

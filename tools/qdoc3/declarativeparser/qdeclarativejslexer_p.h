@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "private/qdeclarativejsglobal_p.h"
+#include "qdeclarativejsglobal_p.h"
 
 #include <QtCore/QString>
 

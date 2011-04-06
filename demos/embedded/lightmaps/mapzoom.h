@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,48 +39,31 @@
 **
 ****************************************************************************/
 
-#ifndef QMLVISITOR_H
-#define QMLVISITOR_H
+#ifndef MAPZOOM_H
+#define MAPZOOM_H
 
-#include <QString>
-#include "declarativeparser/qdeclarativejsastvisitor_p.h"
-#include "node.h"
-#include "tree.h"
+#include <QMainWindow>
 
-QT_BEGIN_NAMESPACE
+class QNetworkSession;
+class LightMaps;
 
-class QmlDocVisitor : public QDeclarativeJS::AST::Visitor
+class MapZoom : public QMainWindow
 {
+    Q_OBJECT
+
 public:
-    QmlDocVisitor(const QString &filePath, const QString &code,
-               QDeclarativeJS::Engine *engine, Tree *tree, QSet<QString> &commands);
-    virtual ~QmlDocVisitor();
+    MapZoom();
 
-    bool visit(QDeclarativeJS::AST::UiImportList *imports);
-
-    bool visit(QDeclarativeJS::AST::UiObjectDefinition *definition);
-    void endVisit(QDeclarativeJS::AST::UiObjectDefinition *definition);
-
-    bool visit(QDeclarativeJS::AST::UiPublicMember *member);
-    void endVisit(QDeclarativeJS::AST::UiPublicMember *definition);
-
-    bool visit(QDeclarativeJS::AST::IdentifierPropertyName *idproperty);
+private slots:
+    void sessionOpened();
+    void chooseOslo();
+    void chooseBerlin();
+    void chooseJakarta();
+    void aboutOsm();
 
 private:
-    QDeclarativeJS::AST::SourceLocation precedingComment(unsigned offset) const;
-    void applyDocumentation(QDeclarativeJS::AST::SourceLocation location, Node *node);
-
-    QDeclarativeJS::Engine *engine;
-    quint32 lastEndOffset;
-    QString filePath;
-    QString name;
-    QString document;
-    QList<QPair<QString, QString> > importList;
-    QSet<QString> commands;
-    Tree *tree;
-    InnerNode *current;
+    LightMaps *map;
+    QNetworkSession *networkSession;
 };
-
-QT_END_NAMESPACE
 
 #endif

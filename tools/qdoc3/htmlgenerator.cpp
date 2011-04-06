@@ -1327,6 +1327,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
         generateBody(inner, marker);
         out() << "</div>\n"; // QTBUG-9504
         generateAlsoList(inner, marker);
+        generateMaintainerList(inner, marker);
         generateExtractionMark(inner, EndMark);
     }
 
@@ -1605,7 +1606,10 @@ void HtmlGenerator::generateBreadCrumbs(const QString &title,
         const ClassNode *cn = static_cast<const ClassNode *>(node);
         QString name =  node->moduleName();
         breadcrumbs << Atom(Atom::ListItemLeft)
-                    << Atom(Atom::AutoLink, QLatin1String("Modules"))
+                    << Atom(Atom::Link, QLatin1String("All Modules"))
+                    << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                    << Atom(Atom::String, QLatin1String("Modules"))
+                    << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
                     << Atom(Atom::ListItemRight);
         if (!name.isEmpty())
             breadcrumbs << Atom(Atom::ListItemLeft)
@@ -1620,7 +1624,10 @@ void HtmlGenerator::generateBreadCrumbs(const QString &title,
         const FakeNode* fn = static_cast<const FakeNode*>(node);
         if (node->subType() == Node::Module) {
             breadcrumbs << Atom(Atom::ListItemLeft)
-                        << Atom(Atom::AutoLink, QLatin1String("Modules"))
+                        << Atom(Atom::Link, QLatin1String("All Modules"))
+                        << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                        << Atom(Atom::String, QLatin1String("Modules"))
+                        << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
                         << Atom(Atom::ListItemRight);
             QString name =  node->name();
             if (!name.isEmpty())
@@ -1630,9 +1637,7 @@ void HtmlGenerator::generateBreadCrumbs(const QString &title,
         }
         else if (node->subType() == Node::Group) {
             if (fn->name() == QString("modules"))
-                breadcrumbs << Atom(Atom::ListItemLeft)
-                            << Atom(Atom::AutoLink, QLatin1String("Modules"))
-                            << Atom(Atom::ListItemRight);
+                breadcrumbs << Atom(Atom::String, QLatin1String("Modules"));
             else
                 breadcrumbs << Atom(Atom::ListItemLeft)
                             << Atom(Atom::String, protectEnc(title))
@@ -1641,7 +1646,10 @@ void HtmlGenerator::generateBreadCrumbs(const QString &title,
         else if (node->subType() == Node::Page) {
             if (fn->name() == QString("qdeclarativeexamples.html")) {
                 breadcrumbs << Atom(Atom::ListItemLeft)
-                            << Atom(Atom::AutoLink, QLatin1String("Examples"))
+                            << Atom(Atom::Link, QLatin1String("Qt Examples"))
+                            << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                            << Atom(Atom::String, QLatin1String("Examples"))
+                            << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
                             << Atom(Atom::ListItemRight);
                 breadcrumbs << Atom(Atom::ListItemLeft)
                             << Atom(Atom::AutoLink, QLatin1String("QML Examples & Demos"))
@@ -1649,16 +1657,17 @@ void HtmlGenerator::generateBreadCrumbs(const QString &title,
             }
             else if (fn->name().startsWith("examples-")) {
                 breadcrumbs << Atom(Atom::ListItemLeft)
-                            << Atom(Atom::AutoLink, QLatin1String("Examples"))
+                            << Atom(Atom::Link, QLatin1String("Qt Examples"))
+                            << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                            << Atom(Atom::String, QLatin1String("Examples"))
+                            << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
                             << Atom(Atom::ListItemRight);
                 breadcrumbs << Atom(Atom::ListItemLeft)
                             << Atom(Atom::String, protectEnc(title))
                             << Atom(Atom::ListItemRight);
             }
             else if (fn->name() == QString("namespaces.html"))
-                breadcrumbs << Atom(Atom::ListItemLeft)
-                            << Atom(Atom::AutoLink, QLatin1String("Namespaces"))
-                            << Atom(Atom::ListItemRight);
+                breadcrumbs << Atom(Atom::String, QLatin1String("Namespaces"));
             else
                 breadcrumbs << Atom(Atom::ListItemLeft)
                             << Atom(Atom::String, protectEnc(title))
@@ -1674,7 +1683,10 @@ void HtmlGenerator::generateBreadCrumbs(const QString &title,
         }
         else if (node->subType() == Node::Example) {
             breadcrumbs << Atom(Atom::ListItemLeft)
-                        << Atom(Atom::AutoLink, QLatin1String("Examples"))
+                        << Atom(Atom::Link, QLatin1String("Qt Examples"))
+                        << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                        << Atom(Atom::String, QLatin1String("Examples"))
+                        << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
                         << Atom(Atom::ListItemRight);
             QStringList sl = fn->name().split('/');
             if (sl.contains("declarative"))
@@ -1692,7 +1704,10 @@ void HtmlGenerator::generateBreadCrumbs(const QString &title,
     }
     else if (node->type() == Node::Namespace) {
         breadcrumbs << Atom(Atom::ListItemLeft)
-                    << Atom(Atom::AutoLink, QLatin1String("Namespaces"))
+                    << Atom(Atom::Link, QLatin1String("All Namespaces"))
+                    << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                    << Atom(Atom::String, QLatin1String("Namespaces"))
+                    << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
                     << Atom(Atom::ListItemRight);
         breadcrumbs << Atom(Atom::ListItemLeft)
                     << Atom(Atom::String, protectEnc(title))
