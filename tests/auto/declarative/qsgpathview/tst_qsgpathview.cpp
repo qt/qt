@@ -361,6 +361,7 @@ void tst_QSGPathView::path()
 void tst_QSGPathView::dataModel()
 {
     QSGView *canvas = createView();
+    canvas->show();
 
     QDeclarativeContext *ctxt = canvas->rootContext();
     TestObject *testObject = new TestObject;
@@ -465,6 +466,7 @@ void tst_QSGPathView::dataModel()
 void tst_QSGPathView::pathMoved()
 {
     QSGView *canvas = createView();
+    canvas->show();
 
     TestModel model;
     model.addItem("Ben", "12345");
@@ -521,6 +523,7 @@ void tst_QSGPathView::pathMoved()
 void tst_QSGPathView::setCurrentIndex()
 {
     QSGView *canvas = createView();
+    canvas->show();
 
     TestModel model;
     model.addItem("Ben", "12345");
@@ -730,7 +733,7 @@ void tst_QSGPathView::componentChanges()
     QVERIFY(pathView);
 
     QDeclarativeComponent delegateComponent(canvas->engine());
-    delegateComponent.setData("import QtQuick 1.0; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
+    delegateComponent.setData("import QtQuick 2.0; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
 
     QSignalSpy delegateSpy(pathView, SIGNAL(delegateChanged()));
 
@@ -907,20 +910,20 @@ void tst_QSGPathView::mouseDrag()
 
     int current = pathview->currentIndex();
 
-    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(10,100)));
+    QTest::mousePress(canvas, Qt::LeftButton, 0, QPoint(10,100));
 
     {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(30,100)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
+        QMouseEvent mv(QEvent::MouseMove, QPoint(30,100), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas, &mv);
     }
     {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(90,100)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
+        QMouseEvent mv(QEvent::MouseMove, QPoint(90,100), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas, &mv);
     }
 
     QVERIFY(pathview->currentIndex() != current);
 
-    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(40,100)));
+    QTest::mouseRelease(canvas, Qt::LeftButton, 0, QPoint(40,100));
 
     delete canvas;
 }
@@ -928,6 +931,7 @@ void tst_QSGPathView::mouseDrag()
 void tst_QSGPathView::treeModel()
 {
     QSGView *canvas = createView();
+    canvas->show();
 
     QStandardItemModel model;
     initStandardTreeModel(&model);

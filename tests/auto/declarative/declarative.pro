@@ -87,6 +87,7 @@ contains(QT_CONFIG, private_tests) {
            qsggridview \
            qsgloader \
            qsgmousearea \
+           qsgpathview \
            qsgpincharea \
            qsgpositioners \
            qsgrepeater \
