@@ -157,6 +157,20 @@ QT_END_NAMESPACE
     [NSApp terminate:sender];
 }
 
+- (void)setLevel:(NSInteger)windowLevel
+{
+    // Cocoa will upon activating/deactivating applications level modal
+    // windows up and down, regardsless of any explicit set window level.
+    // To ensure that modal stays-on-top dialogs actually stays on top after
+    // the application is activated (and therefore stacks in front of
+    // other stays-on-top windows), we need to add this little special-case override:
+    QWidget *widget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
+    if (widget && widget->isModal() && (widget->windowFlags() & Qt::WindowStaysOnTopHint))
+        [super setLevel:NSPopUpMenuWindowLevel];
+    else
+        [super setLevel:windowLevel];
+}
+
 - (void)sendEvent:(NSEvent *)event
 {
     if ([event type] == NSApplicationDefined) {

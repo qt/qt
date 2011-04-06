@@ -2794,14 +2794,18 @@ void QWidgetPrivate::transferChildren()
 #ifdef QT_MAC_USE_COCOA
 void QWidgetPrivate::setSubWindowStacking(bool set)
 {
+    // After hitting too many unforeseen bugs trying to put Qt on top of the cocoa child
+    // window API, we have decided to revert this behaviour. For compability
+    // reasons we leave the code here for applications depending on it:
+    static bool use_behaviour_qt473 = !qgetenv("QT_MAC_USE_CHILDWINDOWS").isEmpty();
+    if (use_behaviour_qt473 == false)
+        return;
+
     // This will set/remove a visual relationship between parent and child on screen.
     // The reason for doing this is to ensure that a child always stacks infront of
-    // its parent (expecially if both windows are modal, and the child blocks input to
-    // the parent while at the same time hiding behind it). Unfortunatly is turns out
-    // that [NSWindow addChildWindow] has
+    // its parent. Unfortunatly is turns out that [NSWindow addChildWindow] has
     // several unwanted side-effects, one of them being the moving of a child when
-    // moving the parent, which we choose to accept (if this is unacceptable, consider
-    // using Qt::WA_MacNoCocoaChildWindow). A way tougher side-effect is
+    // moving the parent, which we choose to accept. A way tougher side-effect is
     // that Cocoa will hide the parent if you hide the child. And in the case of
     // a tool window, since it will normally hide when you deactivate the
     // application, Cocoa will hide the parent upon deactivate as well. The result often
@@ -2824,14 +2828,12 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
     if (QWidget *parent = q->parentWidget()) {
         if (NSWindow *pwin = [qt_mac_nativeview_for(parent) window]) {
             if (set) {
-                if (!q->testAttribute(Qt::WA_MacNoCocoaChildWindow)) {
-                    Qt::WindowType ptype = parent->window()->windowType();
-                    if ([pwin isVisible] && (ptype == Qt::Window || ptype == Qt::Dialog) && ![qwin parentWindow]) {
-                        NSInteger level = [qwin level];
-                        [pwin addChildWindow:qwin ordered:NSWindowAbove];
-                        if ([qwin level] < level)
-                            [qwin setLevel:level];
-                    }
+                Qt::WindowType ptype = parent->window()->windowType();
+                if ([pwin isVisible] && (ptype == Qt::Window || ptype == Qt::Dialog) && ![qwin parentWindow]) {
+                    NSInteger level = [qwin level];
+                    [pwin addChildWindow:qwin ordered:NSWindowAbove];
+                    if ([qwin level] < level)
+                        [qwin setLevel:level];
                 }
             } else {
                 [pwin removeChildWindow:qwin];
@@ -2845,8 +2847,6 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
         if (child && child->isWindow()) {
             if (NSWindow *cwin = [qt_mac_nativeview_for(child) window]) {
                 if (set) {
-                    if (child->testAttribute(Qt::WA_MacNoCocoaChildWindow))
-                        continue;
                     Qt::WindowType ctype = child->window()->windowType();
                     if ([cwin isVisible] && (ctype == Qt::Window || ctype == Qt::Dialog) && ![cwin parentWindow]) {
                         NSInteger level = [cwin level];
