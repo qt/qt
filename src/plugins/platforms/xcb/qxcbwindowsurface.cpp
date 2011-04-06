@@ -186,8 +186,10 @@ void QXcbWindowSurface::endPaint(const QRegion &)
 
 void QXcbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
-    Q_UNUSED(region);
-    Q_UNUSED(offset);
+    QRect bounds = region.boundingRect();
+
+    if (size().isEmpty() || !geometry().contains(bounds))
+        return;
 
     Q_XCB_NOOP(connection());
 
