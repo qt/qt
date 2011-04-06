@@ -356,7 +356,7 @@ typedef uLong FAR uLongf;
    typedef Byte       *voidp;
 #endif
 
-#ifdef HAVE_UNISTD_H    /* may be set to #if 1 by ./configure */
+#if defined(HAVE_UNISTD_H) || !defined(WIN32)
 #  define Z_HAVE_UNISTD_H
 #endif
 
