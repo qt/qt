@@ -60,7 +60,6 @@ private slots:
     void dereference_operators();
     void disconnect();
     void castDuringDestruction();
-    void data() const;
     void dataSignature() const;
     void threadSafety();
 };
@@ -183,15 +182,23 @@ void tst_QPointer::isNull()
 void tst_QPointer::dereference_operators()
 {
     QPointer<tst_QPointer> p1 = this;
+    QPointer<tst_QPointer> p2;
 
+    // operator->() -- only makes sense if not null
     QObject *object = p1->me();
     QCOMPARE(object, this);
 
+    // operator*() -- only makes sense if not null
     QObject &ref = *p1;
     QCOMPARE(&ref, this);
 
-    object = static_cast<QObject *>(p1);
-    QCOMPARE(object, this);
+    // operator T*()
+    QCOMPARE(static_cast<QObject *>(p1), this);
+    QCOMPARE(static_cast<QObject *>(p2), static_cast<QObject *>(0));
+
+    // data()
+    QCOMPARE(p1.data(), this);
+    QCOMPARE(p2.data(), static_cast<QObject *>(0));
 }
 
 void tst_QPointer::disconnect()
@@ -299,22 +306,6 @@ void tst_QPointer::castDuringDestruction()
 
     {
         delete new DerivedParent();
-    }
-}
-
-void tst_QPointer::data() const
-{
-    /* Check value of a default constructed object. */
-    {
-        QPointer<QObject> p;
-        QCOMPARE(p.data(), static_cast<QObject *>(0));
-    }
-
-    /* Check value of a default constructed object. */
-    {
-        QObject *const object = new QObject();
-        QPointer<QObject> p(object);
-        QCOMPARE(p.data(), object);
     }
 }
 
