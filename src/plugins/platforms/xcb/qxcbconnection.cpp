@@ -462,6 +462,8 @@ void QXcbConnection::processXcbEvents()
         else
             printXcbEvent("Unhandled XCB event", event);
     }
+
+    xcb_flush(xcb_connection());
 }
 
 static const char * xcb_atomnames = {
