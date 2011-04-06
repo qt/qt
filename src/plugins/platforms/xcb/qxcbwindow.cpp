@@ -169,7 +169,7 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
     int propertyCount = 0;
     properties[propertyCount++] = atom(QXcbAtom::WM_DELETE_WINDOW);
     properties[propertyCount++] = atom(QXcbAtom::WM_TAKE_FOCUS);
-//    properties[propertyCount++] = atom(QXcbAtom::_NET_WM_PING);
+    properties[propertyCount++] = atom(QXcbAtom::_NET_WM_PING);
 
     if (tlw->windowFlags() & Qt::WindowContextHelpButtonHint)
         properties[propertyCount++] = atom(QXcbAtom::_NET_WM_CONTEXT_HELP);
@@ -466,6 +466,14 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
     if (event->format == 32 && event->type == atom(QXcbAtom::WM_PROTOCOLS)) {
         if (event->data.data32[0] == atom(QXcbAtom::WM_DELETE_WINDOW)) {
             QWindowSystemInterface::handleCloseEvent(widget());
+        } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_PING)) {
+            xcb_client_message_event_t reply = *event;
+
+            reply.response_type = XCB_CLIENT_MESSAGE;
+            reply.window = m_screen->root();
+
+            xcb_send_event(xcb_connection(), 0, m_screen->root(), XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&reply);
+            xcb_flush(xcb_connection());
         }
     }
 }
