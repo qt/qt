@@ -2139,7 +2139,7 @@ void tst_qdeclarativeecmascript::scriptDisconnect()
         emit object->basicSignal();
         QCOMPARE(object->property("test").toInt(), 2);
         emit object->argumentSignal(19, "Hello world!", 10.25);
-        QCOMPARE(object->property("test").toInt(), 3);
+        QCOMPARE(object->property("test").toInt(), 2);
 
         delete object;
     }
@@ -2154,6 +2154,7 @@ void tst_qdeclarativeecmascript::scriptDisconnect()
         QCOMPARE(object->property("test").toInt(), 1);
         emit object->argumentSignal(19, "Hello world!", 10.25);
         QCOMPARE(object->property("test").toInt(), 2);
+        QTest::ignoreMessage(QtWarningMsg, "<Unknown File>:12: Error: QtSignal.disconnect(): function not connected to this signal");
         emit object->basicSignal();
         QCOMPARE(object->property("test").toInt(), 2);
         emit object->argumentSignal(19, "Hello world!", 10.25);

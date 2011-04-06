@@ -197,6 +197,9 @@ private:
     inline bool isNumberBased() const;
     inline bool isStringBased() const;
     inline bool prepareArgumentsForCall(v8::Handle<v8::Value> argv[], const QScriptValueList& arguments) const;
+
+    friend bool qScriptConnect(QObject *, const char *, const QScriptValue &, const QScriptValue &);
+    friend bool qScriptDisconnect(QObject *, const char *, const QScriptValue &, const QScriptValue &);
 };
 
 template<>

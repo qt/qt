@@ -218,6 +218,7 @@ private:
 private:
     Q_DECLARE_PRIVATE(QScriptEngine)
     Q_DISABLE_COPY(QScriptEngine)
+    Q_PRIVATE_SLOT(d_func(), void _q_removeConnectedObject(QObject*))
 };
 
 #define Q_SCRIPT_DECLARE_QMETAOBJECT(T, _Arg1) \

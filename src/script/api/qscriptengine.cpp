@@ -2501,28 +2501,90 @@ QScriptEngineAgent *QScriptEngine::agent() const
     return agent ? QScriptEngineAgentPrivate::get(agent) : 0;
 }
 
+inline v8::Persistent<v8::Object> QScriptEnginePrivate::v8ObjectForConnectedObject(const QObject *o) const
+{
+    return m_connectedObjects.value(o);
+}
+
+inline void QScriptEnginePrivate::addV8ObjectForConnectedObject(const QObject *o, v8::Persistent<v8::Object> v8Object)
+{
+    m_connectedObjects.insert(o, v8Object);
+}
+
+void QScriptEnginePrivate::_q_removeConnectedObject(QObject *o)
+{
+    m_connectedObjects.take(o).Dispose();
+}
+
 bool qScriptConnect(QObject *sender, const char *signal,
                     const QScriptValue &receiver,
                     const QScriptValue &function)
 {
-    Q_UNUSED(sender);
-    Q_UNUSED(signal);
-    Q_UNUSED(receiver);
-    Q_UNUSED(function);
-    Q_UNIMPLEMENTED();
-    return false;
+    if (!sender || !signal)
+        return false;
+    if (!function.isFunction()) {
+        qWarning("qScriptConnect(): 'function' is not a function");
+        return false;
+    }
+    if (receiver.isObject() && (receiver.engine() != function.engine())) {
+        qWarning("qScriptConnect(): 'receiver' and 'function' don't share the same engine");
+        return false;
+    }
+
+    QScriptEnginePrivate *engine = QScriptEnginePrivate::get(function.engine());
+    v8::Handle<v8::Object> v8Sender = engine->v8ObjectForConnectedObject(sender);
+    if (v8Sender.IsEmpty()) {
+        v8Sender = v8::Handle<v8::Object>::Cast(engine->newQObject(sender));
+        engine->addV8ObjectForConnectedObject(sender, v8::Persistent<v8::Object>::New(v8Sender));
+        QObject::connect(sender, SIGNAL(destroyed(QObject*)),
+                         function.engine(), SLOT(_q_removeConnectedObject(QObject*)));
+    }
+
+    QString signalName(signal);
+    signalName.remove(0, 1);
+
+    v8::Handle<v8::Object> signalData =  v8Sender->Get(QScriptConverter::toString(signalName))->ToObject();
+    if (signalData.IsEmpty() || signalData->IsError() || signalData->IsUndefined()) {
+        qWarning("qScriptConnect(): signal '%s' is undefined", qPrintable(signalName));
+        return false;
+    }
+    v8::Handle<v8::Object> v8Receiver;
+    if (receiver.isObject())
+        v8Receiver = v8::Handle<v8::Object>(*QScriptValuePrivate::get(receiver));
+    return !QScriptSignalData::get(signalData)->connect(v8Receiver, v8::Handle<v8::Object>(*QScriptValuePrivate::get(function)))->IsError();
 }
 
 bool qScriptDisconnect(QObject *sender, const char *signal,
                        const QScriptValue &receiver,
                        const QScriptValue &function)
 {
-    Q_UNUSED(sender);
-    Q_UNUSED(signal);
-    Q_UNUSED(receiver);
-    Q_UNUSED(function);
-    Q_UNIMPLEMENTED();
-    return false;
+    if (!sender || !signal)
+        return false;
+    if (!function.isFunction()) {
+        qWarning("qScriptDisconnect(): 'function' is not a function");
+        return false;
+    }
+    if (receiver.isObject() && (receiver.engine() != function.engine())) {
+        qWarning("qScriptDisconnect(): 'receiver' and 'function' don't share the same engine");
+        return false;
+    }
+
+    QScriptEnginePrivate *engine = QScriptEnginePrivate::get(function.engine());
+    v8::Handle<v8::Object> v8Sender = engine->v8ObjectForConnectedObject(sender);
+    if (v8Sender.IsEmpty()) {
+        qWarning("qScriptDisconnect(): 'sender' and ('receiver','function') were not connected with qScriptConnect()");
+        return false;
+    }
+
+    QString signalName(signal);
+    signalName.remove(0, 1);
+
+    v8::Handle<v8::Object> signalData =  v8Sender->Get(QScriptConverter::toString(signalName))->ToObject();
+    if (signalData.IsEmpty() || signalData->IsError() || signalData->IsUndefined()) {
+        qWarning("qScriptDisconnect(): signal '%s' is undefined", qPrintable(signalName));
+        return false;
+    }
+    return !QScriptSignalData::get(signalData)->disconnect(v8::Handle<v8::Function>::Cast(v8::Handle<v8::Value>(*QScriptValuePrivate::get(function))))->IsError();
 }
 
 #ifdef QT_BUILD_INTERNAL
@@ -2576,3 +2638,5 @@ QScriptValue::PropertyFlags QScriptEnginePrivate::getPropertyFlagsFromScriptClas
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qscriptengine.cpp"

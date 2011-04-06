@@ -191,6 +191,11 @@ public:
 
     QScriptValue scriptValueFromInternal(v8::Handle<v8::Value>) const;
 
+    v8::Persistent<v8::Object> v8ObjectForConnectedObject(const QObject *o) const;
+    void addV8ObjectForConnectedObject(const QObject *o, v8::Persistent<v8::Object> v8Object);
+    // private slot
+    void _q_removeConnectedObject(QObject*);
+
     inline operator v8::Handle<v8::Context>();
     inline void clearExceptions();
     inline void setException(v8::Handle<v8::Value> value, v8::Handle<v8::Message> message = v8::Handle<v8::Message>());
@@ -324,6 +329,7 @@ private:
     QScriptBagContainer<QScriptablePrivate> m_scriptable;
     QScriptBagContainer<QScriptEngineAgentPrivate> m_agents;
     QScriptBagContainer<QScriptEngineAgentPrivate::UnloadData> m_scripts;
+    QHash<const QObject *, v8::Persistent<v8::Object> > m_connectedObjects;
 
     QScriptEngineAgentPrivate *m_currentAgent;
     class ProcessEventTimeoutThread;
