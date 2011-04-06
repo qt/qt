@@ -834,6 +834,7 @@ void QSGDistanceFieldGlyphCache::resizeTexture(int width, int height)
     ctx->functions()->glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
                                              GL_TEXTURE_2D, tmp_texture, 0);
 
+    ctx->functions()->glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, oldTexture);
 
     glDisable(GL_STENCIL_TEST);
