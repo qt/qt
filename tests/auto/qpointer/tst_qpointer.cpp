@@ -185,13 +185,13 @@ void tst_QPointer::dereference_operators()
     QPointer<tst_QPointer> p1 = this;
 
     QObject *object = p1->me();
-    QVERIFY(object == this);
+    QCOMPARE(object, this);
 
     QObject &ref = *p1;
-    QVERIFY(&ref == this);
+    QCOMPARE(&ref, this);
 
     object = static_cast<QObject *>(p1);
-    QVERIFY(object == this);
+    QCOMPARE(object, this);
 }
 
 void tst_QPointer::disconnect()
