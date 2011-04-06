@@ -163,4 +163,37 @@ void runScenario()
         QCOMPARE(r, r2);
     }
 
+    //operator QString  +=
+    {
+        QString str = QString::fromUtf8(UTF8_LITERAL);
+        str +=  QLatin1String(LITERAL) P str;
+        QCOMPARE(str, QString::fromUtf8(UTF8_LITERAL LITERAL UTF8_LITERAL));
+#ifndef QT_NO_CAST_FROM_ASCII
+        str = (QString::fromUtf8(UTF8_LITERAL) += QLatin1String(LITERAL) P UTF8_LITERAL);
+        QCOMPARE(str, QString::fromUtf8(UTF8_LITERAL LITERAL UTF8_LITERAL));
+#endif
+    }
+
+    //operator QByteArray  +=
+    {
+        QByteArray ba = UTF8_LITERAL;
+        ba +=  QByteArray(LITERAL) P UTF8_LITERAL;
+        QCOMPARE(ba, QByteArray(UTF8_LITERAL LITERAL UTF8_LITERAL));
+        ba += LITERAL P QByteArray::fromRawData(UTF8_LITERAL_EXTRA, UTF8_LITERAL_LEN);
+        QCOMPARE(ba, QByteArray(UTF8_LITERAL LITERAL UTF8_LITERAL LITERAL UTF8_LITERAL));
+        QByteArray withZero = QByteArray(LITERAL "\0" LITERAL, LITERAL_LEN*2+1);
+        QByteArray ba2 = withZero;
+        ba2 += ba2 P withZero;
+        QCOMPARE(ba2, QByteArray(withZero + withZero + withZero));
+#ifndef QT_NO_CAST_TO_ASCII
+        ba = UTF8_LITERAL;
+        ba2 = (ba += QLatin1String(LITERAL) + QString::fromUtf8(UTF8_LITERAL));
+        QCOMPARE(ba2, ba);
+        QCOMPARE(ba, QByteArray(UTF8_LITERAL LITERAL UTF8_LITERAL));
+        ba = UTF8_LITERAL;
+        ba += QLatin1String(LITERAL) P withZero;
+        QCOMPARE(ba, QByteArray(UTF8_LITERAL LITERAL + withZero));
+#endif
+    }
+
 }
