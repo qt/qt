@@ -459,6 +459,7 @@ QSymbianControl::QSymbianControl(QWidget *w)
     , m_ignoreFocusChanged(0)
     , m_symbianPopupIsOpen(0)
     , m_inExternalScreenOverride(false)
+    , m_lastStatusPaneVisibility(0)
 {
 }
 
@@ -1427,7 +1428,13 @@ void QSymbianControl::HandleResourceChange(int resourceType)
     }
     break;
     case KInternalStatusPaneChange:
-        handleClientAreaChange();
+        // When status pane is not visible, only handle client area change if status pane was
+        // previously visible, as size changes to hidden status pane should not affect
+        // client area.
+        if (S60->statusPane() && (S60->statusPane()->IsVisible() || m_lastStatusPaneVisibility)) {
+            m_lastStatusPaneVisibility = S60->statusPane()->IsVisible();
+            handleClientAreaChange();
+        }
         if (IsFocused() && IsVisible()) {
             qwidget->d_func()->setWindowIcon_sys(true);
             qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());

@@ -295,6 +295,7 @@ private:
 #endif
 
     bool m_inExternalScreenOverride : 1;
+    bool m_lastStatusPaneVisibility : 1;
 };
 
 inline QS60Data::QS60Data()
