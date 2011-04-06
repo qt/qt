@@ -1,7 +1,7 @@
 // This example demonstrates how item positioning
 // changes in right-to-left layout direction
 
-import QtQuick 1.1
+import QtQuick 2.0
 
 Rectangle {
     color: "lightgray"

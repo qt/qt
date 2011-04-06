@@ -283,6 +283,7 @@ void tst_QSGGridView::changed()
 void tst_QSGGridView::inserted()
 {
     QSGView *canvas = createView();
+    canvas->show();
 
     TestModel model;
     model.addItem("Fred", "12345");
@@ -361,6 +362,7 @@ void tst_QSGGridView::inserted()
 void tst_QSGGridView::removed()
 {
     QSGView *canvas = createView();
+    canvas->show();
 
     TestModel model;
     for (int i = 0; i < 40; i++)
@@ -718,7 +720,6 @@ void tst_QSGGridView::currentIndex()
     qt_x11_wait_for_window_manager(canvas);
 #endif
     QTRY_VERIFY(canvas->hasFocus());
-    QTRY_VERIFY(canvas->scene()->hasFocus());
     qApp->processEvents();
 
     QTest::keyClick(canvas, Qt::Key_Down);
@@ -735,7 +736,6 @@ void tst_QSGGridView::currentIndex()
     qt_x11_wait_for_window_manager(canvas);
 #endif
     QTRY_VERIFY(canvas->hasFocus());
-    QTRY_VERIFY(canvas->scene()->hasFocus());
     qApp->processEvents();
 
     QTest::keyClick(canvas, Qt::Key_Right);
@@ -785,7 +785,6 @@ void tst_QSGGridView::currentIndex()
     qt_x11_wait_for_window_manager(canvas);
 #endif
     QTRY_VERIFY(canvas->hasFocus());
-    QTRY_VERIFY(canvas->scene()->hasFocus());
     qApp->processEvents();
 
     gridview->setCurrentIndex(35);
@@ -1804,6 +1803,7 @@ void tst_QSGGridView::manualHighlight()
 void tst_QSGGridView::footer()
 {
     QSGView *canvas = createView();
+    canvas->show();
 
     TestModel model;
     for (int i = 0; i < 7; i++)
