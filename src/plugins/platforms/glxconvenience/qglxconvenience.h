@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the Declarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,25 +39,18 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDINCLUDE_H
-#define QWAYLANDINCLUDE_H
+#ifndef QGLXCONVENIENCE_H
+#define QGLXCONVENIENCE_H
 
-#include <wayland-client.h>
+#include <QPlatformWindowFormat>
 
-#ifdef QT_WAYLAND_GL_SUPPORT
-#include <wayland-egl.h>
+#include <X11/Xlib.h>
+#include <GL/glx.h>
 
-#define GL_GLEXT_PROTOTYPES
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+XVisualInfo *qglx_findVisualInfo(Display *display, int screen, const QPlatformWindowFormat &format);
+GLXFBConfig qglx_findConfig(Display *display, int screen, const QPlatformWindowFormat &format, int drawableBit = GLX_WINDOW_BIT);
+QPlatformWindowFormat qglx_platformWindowFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext context);
+QVector<int> qglx_buildSpec(const QPlatformWindowFormat &format, int drawableBit = GLX_WINDOW_BIT);
+QPlatformWindowFormat qglx_reducePlatformWindowFormat(const QPlatformWindowFormat &format, bool *reduced);
 
-#define EGL_EGLEXT_PROTOTYPES
- #include <EGL/egl.h>
- #include <EGL/eglext.h>
-
-#else
-typedef void* EGLDisplay;
-typedef void* EGLConfig;
-#endif
-
-#endif // QWAYLANDINCLUDE_H
+#endif // QGLXCONVENIENCE_H

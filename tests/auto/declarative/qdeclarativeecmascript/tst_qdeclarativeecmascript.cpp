@@ -669,14 +669,13 @@ void tst_qdeclarativeecmascript::attachedProperties()
         QCOMPARE(object->property("b").toInt(), 19);
         QCOMPARE(object->property("c").toInt(), 19);
         QCOMPARE(object->property("d").toInt(), 19);
+        delete object;
     }
 
     {
         QDeclarativeComponent component(&engine, TEST_FILE("writeAttachedProperty.qml"));
         QObject *object = component.create();
         QVERIFY(object != 0);
-
-        delete object;
 
         QMetaObject::invokeMethod(object, "writeValue2");
 
@@ -685,6 +684,7 @@ void tst_qdeclarativeecmascript::attachedProperties()
         QVERIFY(attached != 0);
 
         QCOMPARE(attached->value2(), 9);
+        delete object;
     }
 }
 

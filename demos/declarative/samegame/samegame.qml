@@ -39,13 +39,14 @@
 **
 ****************************************************************************/
 
-import QtQuick 1.1
+import QtQuick 2.0
+import Qt.labs.particles 2.0
 import "SamegameCore"
 import "SamegameCore/samegame.js" as Logic
 
 Rectangle {
     id: screen
-    width: 490; height: 720
+    width: 360; height: 640
     property bool inAnotherDemo: false //Samegame often is just plonked straight into other demos
 
     SystemPalette { id: activePalette }
@@ -73,6 +74,36 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent; onClicked: Logic.handleClick(mouse.x,mouse.y);
             }
+        }
+        Item{
+            ParticleSystem{ id: particleSystem; }
+            ColoredParticle {
+                system: particleSystem
+                particles: ["red"]
+                color: Qt.darker("red");//Actually want desaturated...
+                image: "SamegameCore/pics/particle.png"
+                colorVariation: 0.4
+                alpha: 0.1
+            }
+            ColoredParticle {
+                system: particleSystem
+                particles: ["green"]
+                color: Qt.darker("green");//Actually want desaturated...
+                image: "SamegameCore/pics/particle.png"
+                colorVariation: 0.4
+                alpha: 0.1
+            }
+            ColoredParticle {
+                system: particleSystem
+                particles: ["blue"]
+                color: Qt.darker("blue");//Actually want desaturated...
+                image: "SamegameCore/pics/particle.png"
+                colorVariation: 0.4
+                alpha: 0.1
+            }
+            id: aboveGameCanvas
+            anchors.fill: gameCanvas
+            z: gameCanvas.z + 1
         }
     }
 

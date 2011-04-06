@@ -39,23 +39,26 @@
 **
 ****************************************************************************/
 
-import QtQuick 1.1
+import QtQuick 2.0
 
 Rectangle {
     id: page
 
     property Item text: dialogText
+    property bool open: false
 
     signal closed
     signal opened
     function forceClose() {
-        if(page.opacity == 0)
+        if(!open)
             return; //already closed
+        page.open = false;
         page.closed();
         page.opacity = 0;
     }
 
     function show(txt) {
+        page.open = true;
         page.opened();
         dialogText.text = txt;
         page.opacity = 1;

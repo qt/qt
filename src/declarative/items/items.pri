@@ -100,10 +100,8 @@ SOURCES += \
     $$PWD/qsgshadereffectitem.cpp \
     $$PWD/qsgshadereffectnode.cpp \
     $$PWD/qsgshadereffectsource.cpp \
-    $$PWD/qsgtextureitem.cpp
 
 HEADERS += \
     $$PWD/qsgshadereffectitem_p.h \
     $$PWD/qsgshadereffectnode_p.h \
     $$PWD/qsgshadereffectsource_p.h \
-    $$PWD/qsgtextureitem_p.h

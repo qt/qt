@@ -2455,7 +2455,6 @@ void QSGGridView::itemsRemoved(int modelIndex, int count)
             d->setPosition(0);
             d->updateHeader();
             d->updateFooter();
-            update();
         }
     }
 

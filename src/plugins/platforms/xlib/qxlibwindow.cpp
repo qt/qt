@@ -58,6 +58,7 @@
 #if !defined(QT_NO_OPENGL)
 #if !defined(QT_OPENGL_ES_2)
 #include "qglxintegration.h"
+#include "qglxconvenience.h"
 #else
 #include "../eglconvenience/qeglconvenience.h"
 #include "../eglconvenience/qeglplatformcontext.h"
@@ -83,13 +84,13 @@ QXlibWindow::QXlibWindow(QWidget *window)
             && QApplicationPrivate::platformIntegration()->hasOpenGL() ) {
 #if !defined(QT_NO_OPENGL)
 #if !defined(QT_OPENGL_ES_2)
-        XVisualInfo *visualInfo = QGLXContext::findVisualInfo(mScreen,window->platformWindowFormat());
+        XVisualInfo *visualInfo = qglx_findVisualInfo(mScreen->display()->nativeDisplay(),mScreen->xScreenNumber(),window->platformWindowFormat());
 #else
         QPlatformWindowFormat windowFormat = correctColorBuffers(window->platformWindowFormat());
 
-        EGLDisplay eglDisplay = eglGetDisplay(mScreen->display()->nativeDisplay());
+        EGLDisplay eglDisplay = mScreen->eglDisplay();
         EGLConfig eglConfig = q_configFromQPlatformWindowFormat(eglDisplay,windowFormat);
-        VisualID id = QXlibEglIntegration::getCompatibleVisualId(mScreen->display()->nativeDisplay(),eglConfig);
+        VisualID id = QXlibEglIntegration::getCompatibleVisualId(mScreen->display()->nativeDisplay(), eglDisplay, eglConfig);
 
         XVisualInfo visualInfoTemplate;
         memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
@@ -136,7 +137,7 @@ QXlibWindow::QXlibWindow(QWidget *window)
     int n = 0;
     protocols[n++] = QXlibStatic::atom(QXlibStatic::WM_DELETE_WINDOW);        // support del window protocol
     protocols[n++] = QXlibStatic::atom(QXlibStatic::WM_TAKE_FOCUS);                // support take focus window protocol
-    protocols[n++] = QXlibStatic::atom(QXlibStatic::_NET_WM_PING);                // support _NET_WM_PING protocol
+//    protocols[n++] = QXlibStatic::atom(QXlibStatic::_NET_WM_PING);                // support _NET_WM_PING protocol
 #ifndef QT_NO_XSYNC
     protocols[n++] = QXlibStatic::atom(QXlibStatic::_NET_WM_SYNC_REQUEST);        // support _NET_WM_SYNC_REQUEST protocol
 #endif // QT_NO_XSYNC
@@ -663,7 +664,7 @@ QPlatformGLContext *QXlibWindow::glContext() const
 #if !defined(QT_OPENGL_ES_2)
         that->mGLContext = new QGLXContext(x_window, mScreen,widget()->platformWindowFormat());
 #else
-        EGLDisplay display = eglGetDisplay(mScreen->display()->nativeDisplay());
+        EGLDisplay display = mScreen->eglDisplay();
 
         QPlatformWindowFormat windowFormat = correctColorBuffers(widget()->platformWindowFormat());
 

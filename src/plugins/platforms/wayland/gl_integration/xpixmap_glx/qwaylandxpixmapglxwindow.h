@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the Declarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,30 +39,27 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDEGLWINDOW_H
-#define QWAYLANDEGLWINDOW_H
+#ifndef QWAYLANDXPIXMAPGLXWINDOW_H
+#define QWAYLANDXPIXMAPGLXWINDOW_H
 
-#include "qwaylandwindow.h"
+#include "qwaylandshmwindow.h"
+#include "qwaylandxpixmapglxintegration.h"
+#include "qwaylandxpixmapglxcontext.h"
 
-class QWaylandGLContext;
-
-class QWaylandEglWindow : public QWaylandWindow
+class QWaylandXPixmapGLXWindow : public QWaylandShmWindow
 {
 public:
-    QWaylandEglWindow(QWidget *window);
-    ~QWaylandEglWindow();
+    QWaylandXPixmapGLXWindow(QWidget *window, QWaylandXPixmapGLXIntegration *glxIntegration);
     WindowType windowType() const;
-    void setGeometry(const QRect &rect);
-    void setParent(const QPlatformWindow *parent);
-    QPlatformGLContext *glContext() const;
-protected:
-    void newSurfaceCreated();
-private:
-    QWaylandGLContext *mGLContext;
-    struct wl_egl_window *mWaylandEglWindow;
-    EGLConfig mConfig;
 
-    const QWaylandWindow *mParentWindow;
+    QPlatformGLContext *glContext() const;
+
+    void setGeometry(const QRect &rect);
+
+private:
+    QWaylandXPixmapGLXIntegration *mGlxIntegration;
+    QWaylandXPixmapGLXContext *mContext;
+
 };
 
-#endif // QWAYLANDEGLWINDOW_H
+#endif // QWAYLANDXPIXMAPGLXWINDOW_H

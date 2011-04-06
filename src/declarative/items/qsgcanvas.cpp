@@ -930,6 +930,12 @@ QSGCanvas::~QSGCanvas()
 {
     Q_D(QSGCanvas);
 
+    // ### should we change ~QSGItem to handle this better?
+    // manually cleanup for the root item (item destructor only handles these when an item is parented)
+    QSGItemPrivate *rootItemPrivate = QSGItemPrivate::get(d->rootItem);
+    rootItemPrivate->removeFromDirtyList();
+    rootItemPrivate->canvas = 0;
+
     delete d->rootItem; d->rootItem = 0;
     d->cleanupNodes();
 }

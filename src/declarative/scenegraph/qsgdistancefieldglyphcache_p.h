@@ -43,6 +43,7 @@
 #define DISTANCEFIELDGLYPHCACHE_H
 
 #include <qgl.h>
+#include <private/qgl_p.h>
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
 
@@ -52,10 +53,13 @@ void qt_disableFontHinting(QFont &font);
 
 class QGLShaderProgram;
 
-class Q_DECLARATIVE_EXPORT QSGDistanceFieldGlyphCache
+class Q_DECLARATIVE_EXPORT QSGDistanceFieldGlyphCache : public QObject
 {
+    Q_OBJECT
 public:
-    static QSGDistanceFieldGlyphCache *get(const QFont &font);
+    ~QSGDistanceFieldGlyphCache();
+
+    static QSGDistanceFieldGlyphCache *get(const QGLContext *ctx, const QFont &font);
 
     struct Metrics {
         qreal width;
@@ -85,10 +89,10 @@ public:
     QSize textureSize() const;
     int maxTextureSize() const;
     qreal fontScale() const;
+    int distanceFieldRadius() const;
     QImage renderDistanceFieldGlyph(glyph_t glyph) const;
 
     int glyphCount() const;
-    qreal glyphMargin() const;
 
     void populate(int count, const glyph_t *glyphs);
     void derefGlyphs(int count, const glyph_t *glyphs);
@@ -98,8 +102,11 @@ public:
 
     static bool distanceFieldEnabled();
 
+private Q_SLOTS:
+    void onContextDestroyed(const QGLContext *context);
+
 private:
-    QSGDistanceFieldGlyphCache(const QFont &font);
+    QSGDistanceFieldGlyphCache(const QGLContext *c, const QFont &font);
 
     void createTexture(int width, int height);
     void resizeTexture(int width, int height);
@@ -125,17 +132,19 @@ private:
         int currX;
         int currY;
         QImage image;
+        bool doubleGlyphResolution;
 
-        DistanceFieldTextureData()
+        DistanceFieldTextureData(const QGLContext *)
             : texture(0)
             , fbo(0)
             , currX(0)
             , currY(0)
+            , doubleGlyphResolution(false)
         { }
     };
     DistanceFieldTextureData *textureData();
     DistanceFieldTextureData *m_textureData;
-    static QHash<QString, DistanceFieldTextureData *> m_textures_data;
+    static QHash<QString, QGLContextGroupResource<DistanceFieldTextureData> > m_textures_data;
 
     const QGLContext *ctx;
     QGLShaderProgram *m_blitProgram;

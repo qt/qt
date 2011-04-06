@@ -248,6 +248,7 @@ struct Options
         , fullscreen(false)
         , scenegraphOnGraphicsview(false)
         , clip(false)
+        , versionDetection(true)
     {
     }
 
@@ -258,6 +259,7 @@ struct Options
     bool fullscreen;
     bool scenegraphOnGraphicsview;
     bool clip;
+    bool versionDetection;
 };
 
 #if defined(QMLSCENE_BUNDLE)
@@ -335,6 +337,50 @@ static int displayOptionsDialog(Options *options)
 }
 #endif
 
+static void checkAndAdaptVersion(const QUrl &url)
+{
+    if (!qgetenv("QMLSCENE_IMPORT_NAME").isEmpty()) {
+        return;
+    }
+
+    QString fileName = url.toLocalFile();
+    if (fileName.isEmpty())
+        return;
+
+    QFile f(fileName);
+    if (!f.open(QFile::ReadOnly | QFile::Text)) {
+        qWarning("qmlscene: failed to check version of file '%s', could not open...",
+                 qPrintable(fileName));
+        return;
+    }
+
+    QRegExp quick1("import +QtQuick +1\\.");
+    QRegExp qt47("import +Qt +4\\.7");
+
+    QString envToWrite;
+    QString compat;
+
+    QTextStream stream(&f);
+    bool codeFound= false;
+    while (!codeFound && envToWrite.isEmpty()) {
+        QString line = stream.readLine();
+        if (line.contains("{"))
+            codeFound = true;
+        if (quick1.indexIn(line) >= 0) {
+            envToWrite = QLatin1String("quick1");
+            compat = QLatin1String("QtQuick 1.0");
+        } else if (qt47.indexIn(line) >= 0) {
+            envToWrite = QLatin1String("qt");
+            compat = QLatin1String("Qt 4.7");
+        }
+    }
+
+    if (!envToWrite.isEmpty()) {
+        qWarning("qmlscene: Autodetecting compatibility import \"%s\"...", qPrintable(compat));
+        setenv("QMLSCENE_IMPORT_NAME", envToWrite.toLatin1().constData(), 0);
+    }
+}
+
 static void displayFileDialog(Options *options)
 {
     QString fileName = QFileDialog::getOpenFileName(0, "Open QML file", QString(), "QML Files (*.qml)");
@@ -389,7 +435,7 @@ static void usage()
 #ifndef QT_NO_SCENEGRAPHITEM
     qWarning("  --sg-on-gv [--clip] ....................... Scenegraph on graphicsview (and clip to item)");
 #endif
-    qWarning("  --no-vbo .................................. Do not use vertex buffers for geometry data");
+    qWarning("  --no-version-detection .................... Do not try to detect the version of the .qml file");
 
     qWarning(" ");
     exit(1);
@@ -420,6 +466,8 @@ int main(int argc, char ** argv)
             options.scenegraphOnGraphicsview = true;
         else if (QString::fromLatin1(argv[i]).toLower() == QLatin1String("--clip"))
             options.clip = true;
+        else if (QString::fromLatin1(argv[i]).toLower() == QLatin1String("--no-version-detection"))
+            options.versionDetection = false;
         else if (QString::fromLatin1(argv[i]).toLower() == QLatin1String("-i") && i + 1 < argc)
             imports.append(QString::fromLatin1(argv[++i]));
         else if (QString::fromLatin1(argv[i]).toLower() == QLatin1String("--help")
@@ -465,6 +513,8 @@ int main(int argc, char ** argv)
         } else 
 #endif
         if (!options.originalQml && !options.originalQmlRaster) {
+            if (options.versionDetection)
+                checkAndAdaptVersion(options.file);
             QSGView *qxView = new MyQSGView();
             engine = qxView->engine();
             for (int i = 0; i < imports.size(); ++i)

@@ -116,8 +116,8 @@ void BindableFbo::bind() const
 
 QSGRenderer::QSGRenderer(QSGContext *context)
     : QObject()
-    , m_render_opacity(1)
     , m_clear_color(Qt::transparent)
+    , m_render_opacity(1)
     , m_context(context)
     , m_root_node(0)
     , m_node_updater(0)
@@ -519,7 +519,7 @@ void QSGRenderer::bindGeometry(QSGMaterialShader *material, const QSGGeometry *g
             continue;
         Q_ASSERT_X(j < g->attributeCount(), "QSGRenderer::bindGeometry()", "Geometry lacks attribute required by material");
         const QSGGeometry::Attribute &a = g->attributes()[j];
-        Q_ASSERT_X(j == a.position, "QSGRenderer::bindGeometry()", "Geometry does not have continous attribute positions");
+        Q_ASSERT_X(j == a.position, "QSGRenderer::bindGeometry()", "Geometry does not have continuous attribute positions");
 #if defined(QT_OPENGL_ES_2)
         GLboolean normalize = a.type != GL_FLOAT;
 #else
@@ -528,31 +528,6 @@ void QSGRenderer::bindGeometry(QSGMaterialShader *material, const QSGGeometry *g
         glVertexAttribPointer(a.position, a.tupleSize, a.type, normalize, g->stride(), (char *) g->vertexData() + offset);
         offset += a.tupleSize * size_of_type(a.type);
     }
-}
-
-
-float QSGMaterialShader::RenderState::opacity() const
-{
-    Q_ASSERT(m_data);
-    return static_cast<const QSGRenderer *>(m_data)->renderOpacity();
-}
-
-
-QMatrix4x4 QSGMaterialShader::RenderState::combinedMatrix() const
-{
-    Q_ASSERT(m_data);
-    return static_cast<const QSGRenderer *>(m_data)->combinedMatrix();
-}
-
-QMatrix4x4 QSGMaterialShader::RenderState::modelViewMatrix() const
-{
-    Q_ASSERT(m_data);
-    return const_cast<QSGRenderer *>(static_cast<const QSGRenderer *>(m_data))->modelViewMatrix().top();
-}
-
-const QGLContext *QSGMaterialShader::RenderState::context() const
-{
-    return static_cast<const QSGRenderer *>(m_data)->glContext();
 }
 
 

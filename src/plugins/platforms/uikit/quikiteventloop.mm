@@ -78,10 +78,6 @@
         }
         QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->platformWindow());
         platformWindow->ensureNativeWindow();
-        QUIKitWindowSurface *surface = static_cast<QUIKitWindowSurface*>(widget->windowSurface());
-        UIView *view = surface->nativeView();
-        [platformWindow->nativeWindow() addSubview:view];
-        [platformWindow->nativeWindow() makeKeyAndVisible];
     }
     return YES;
 }

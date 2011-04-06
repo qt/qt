@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,62 +39,37 @@
 **
 ****************************************************************************/
 
-#ifndef TEXTUREITEM_H
-#define TEXTUREITEM_H
+#ifndef QXLIBNATIVEINTERFACE_H
+#define QXLIBNATIVEINTERFACE_H
 
-#include "qsgitem.h"
-#include <private/qsgtextureprovider_p.h>
-#include "qsgtexturematerial.h"
-#include "qsgnode.h"
-#include "qobject.h"
-#include "qpointer.h"
+#include "qxlibscreen.h"
 
-QT_BEGIN_HEADER
+#include <QtGui/QPlatformNativeInterface>
 
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class QSGTextureProvider;
-class QSGRenderer;
-class QGLFramebufferObject;
-
-class TextureItem : public QSGItem, public QSGTextureProviderInterface
+class QXlibNativeInterface : public QPlatformNativeInterface
 {
-    Q_OBJECT
-    Q_INTERFACES(QSGTextureProviderInterface)
-    Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
-    Q_ENUMS(WrapMode)
-    // TODO: property mipmapFiltering
 public:
-    enum WrapMode {
-        ClampToEdge,
-        RepeatHorizontally,
-        RepeatVertically,
-        Repeat
+    enum ResourceType {
+        Display,
+        EglDisplay,
+        Connection,
+        Screen,
+        GraphicsDevice,
+        EglContext
     };
 
-    TextureItem(QSGItem *parent = 0);
+    void *nativeResourceForWidget(const QByteArray &resourceString, QWidget *widget);
 
-    virtual QSGTextureProvider *textureProvider() const;
-    void setTextureProvider(QSGTextureProvider *provider, bool requiresPreprocess);
-    
-    WrapMode wrapMode() const;
-    void setWrapMode(WrapMode mode);
+    void *displayForWidget(QWidget *widget);
+    void *eglDisplayForWidget(QWidget *widget);
+    void *connectionForWidget(QWidget *widget);
+    void *screenForWidget(QWidget *widget);
+    void *graphicsDeviceForWidget(QWidget *widget);
+    void *eglContextForWidget(QWidget *widget);
 
-Q_SIGNALS:
-    void wrapModeChanged();
-
-protected:
-    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
-
-    QSGTextureProvider *m_textureProvider;
-    WrapMode m_wrapMode;
-    uint m_requiresPreprocess : 1;
+private:
+    static QXlibScreen *qPlatformScreenForWidget(QWidget *widget);
 };
 
-QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif
+#endif // QXLIBNATIVEINTERFACE_H

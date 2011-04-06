@@ -43,27 +43,27 @@
 
 #include "qwaylanddisplay.h"
 #include "qwaylandwindow.h"
-#include "qwaylanddrmsurface.h"
 
-#include "../eglconvenience/qeglconvenience.h"
+#include "../../../eglconvenience/qeglconvenience.h"
 
 #include <QtGui/QPlatformGLContext>
 #include <QtGui/QPlatformWindowFormat>
+#include <QtCore/QMutex>
 
 Q_GLOBAL_STATIC(QMutex,qt_defaultSharedContextMutex)
 
-QWaylandGLContext::QWaylandGLContext(QWaylandDisplay *wd, const QPlatformWindowFormat &format)
+QWaylandGLContext::QWaylandGLContext(EGLDisplay eglDisplay, const QPlatformWindowFormat &format)
     : QPlatformGLContext()
-    , mDisplay(wd)
+    , mEglDisplay(eglDisplay)
     , mSurface(EGL_NO_SURFACE)
-    , mConfig(q_configFromQPlatformWindowFormat(mDisplay->eglDisplay(),format,true))
-    , mFormat(qt_qPlatformWindowFormatFromConfig(mDisplay->eglDisplay(),mConfig))
+    , mConfig(q_configFromQPlatformWindowFormat(mEglDisplay,format,true))
+    , mFormat(qt_qPlatformWindowFormatFromConfig(mEglDisplay,mConfig))
 {
     QPlatformGLContext *sharePlatformContext = 0;
     if (format.useDefaultSharedContext()) {
         if (!QPlatformGLContext::defaultSharedContext()) {
             if (qt_defaultSharedContextMutex()->tryLock()){
-                createDefaultSharedContex(wd);
+                createDefaultSharedContext(eglDisplay);
                 qt_defaultSharedContextMutex()->unlock();
             } else {
                 qt_defaultSharedContextMutex()->lock(); //wait to the the shared context is created
@@ -86,13 +86,13 @@ QWaylandGLContext::QWaylandGLContext(QWaylandDisplay *wd, const QPlatformWindowF
     eglContextAttrs.append(2);
     eglContextAttrs.append(EGL_NONE);
 
-    mContext = eglCreateContext(mDisplay->eglDisplay(), mConfig,
+    mContext = eglCreateContext(mEglDisplay, mConfig,
                                 shareEGLContext, eglContextAttrs.constData());
 }
 
 QWaylandGLContext::QWaylandGLContext()
     : QPlatformGLContext()
-    , mDisplay(0)
+    , mEglDisplay(0)
     , mContext(EGL_NO_CONTEXT)
     , mSurface(EGL_NO_SURFACE)
     , mConfig(0)
@@ -100,7 +100,7 @@ QWaylandGLContext::QWaylandGLContext()
 
 QWaylandGLContext::~QWaylandGLContext()
 {
-    eglDestroyContext(mDisplay->eglDisplay(),mContext);
+    eglDestroyContext(mEglDisplay,mContext);
 }
 
 void QWaylandGLContext::makeCurrent()
@@ -109,18 +109,18 @@ void QWaylandGLContext::makeCurrent()
     if (mSurface == EGL_NO_SURFACE) {
         qWarning("makeCurrent with EGL_NO_SURFACE");
     }
-    eglMakeCurrent(mDisplay->eglDisplay(), mSurface, mSurface, mContext);
+    eglMakeCurrent(mEglDisplay, mSurface, mSurface, mContext);
 }
 
 void QWaylandGLContext::doneCurrent()
 {
     QPlatformGLContext::doneCurrent();
-    eglMakeCurrent(mDisplay->eglDisplay(), EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    eglMakeCurrent(mEglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 }
 
 void QWaylandGLContext::swapBuffers()
 {
-    eglSwapBuffers(mDisplay->eglDisplay(),mSurface);
+    eglSwapBuffers(mEglDisplay,mSurface);
 }
 
 void *QWaylandGLContext::getProcAddress(const QString &string)
@@ -128,7 +128,7 @@ void *QWaylandGLContext::getProcAddress(const QString &string)
     return (void *) eglGetProcAddress(string.toLatin1().data());
 }
 
-void QWaylandGLContext::createDefaultSharedContex(QWaylandDisplay *display)
+void QWaylandGLContext::createDefaultSharedContext(EGLDisplay display)
 {
     QVector<EGLint> eglContextAttrs;
     eglContextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
@@ -136,8 +136,8 @@ void QWaylandGLContext::createDefaultSharedContex(QWaylandDisplay *display)
     eglContextAttrs.append(EGL_NONE);
 
     QWaylandGLContext *defaultSharedContext = new QWaylandGLContext;
-    defaultSharedContext->mDisplay = display;
-    defaultSharedContext->mContext = eglCreateContext(mDisplay->eglDisplay(),mConfig,
+    defaultSharedContext->mEglDisplay = display;
+    defaultSharedContext->mContext = eglCreateContext(mEglDisplay,mConfig,
                                                       EGL_NO_CONTEXT, eglContextAttrs.constData());
     QPlatformGLContext::setDefaultSharedContext(defaultSharedContext);
 }

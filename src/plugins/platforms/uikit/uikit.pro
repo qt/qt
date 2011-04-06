@@ -2,6 +2,8 @@ TARGET = quikit
 include(../../qpluginbase.pri)
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
+QT += opengl
+
 OBJECTIVE_SOURCES = main.mm \
     quikitintegration.mm \
     quikitwindow.mm \

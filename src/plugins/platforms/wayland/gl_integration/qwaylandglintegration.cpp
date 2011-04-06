@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the Declarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,32 +39,14 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDDRMSURFACE_H
-#define QWAYLANDDRMSURFACE_H
+#include "qwaylandglintegration.h"
 
-#include "qwaylanddisplay.h"
-
-#include <QtGui/private/qwindowsurface_p.h>
-
-class QGLFramebufferObject;
-
-class QWaylandDrmWindowSurface : public QWindowSurface
+QWaylandGLIntegration::QWaylandGLIntegration()
 {
-public:
-    QWaylandDrmWindowSurface(QWidget *window);
-    ~QWaylandDrmWindowSurface();
 
-    void beginPaint(const QRegion &);
+}
 
-    QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+QWaylandGLIntegration::~QWaylandGLIntegration()
+{
 
-    void resize(const QSize &size);
-
-private:
-
-    QWaylandDisplay *mDisplay;
-    QGLFramebufferObject *mPaintDevice;
-};
-
-#endif // QWAYLANDDRMSURFACE_H
+}

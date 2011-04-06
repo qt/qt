@@ -329,7 +329,18 @@ void QSGViewPrivate::setRootObject(QObject *obj)
         root = sgItem;
         sgItem->setParentItem(q->QSGCanvas::rootItem());
     } else {
-        qWarning() << "QSGView only supports loading of root objects that derive from QSGItem";
+        qWarning() << "QSGView only supports loading of root objects that derive from QSGItem." << endl
+                   << endl
+                   << "If your example is using QML 2, (such as qmlscene) and the .qml file you" << endl
+                   << "loaded has 'import QtQuick 1.0' or 'import Qt 4.7', this error will occur." << endl
+                   << endl
+                   << "To load files with 'import QtQuick 1.0' with QML 2, specify:" << endl
+                   << "  QMLSCENE_IMPORT_NAME=quick1" << endl
+                   << "on as an environment variable prior to launching the application." << endl
+                   << endl
+                   << "To load files with 'import Qt 4.7' with QML 2, specify:" << endl
+                   << "  QMLSCENE_IMPORT_NAME=qt" << endl
+                   << "on as an environment variable prior to launching the application." << endl;
         delete obj;
         root = 0;
     }

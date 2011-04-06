@@ -91,12 +91,20 @@ public:
 class Q_DECLARATIVE_EXPORT QSGGlyphNode : public QSGGeometryNode
 {
 public:
+    enum AntialiasingMode
+    {
+        GrayAntialiasing,
+        SubPixelAntialiasing
+    };
+
     virtual void setGlyphs(const QPointF &position, const QGlyphs &glyphs) = 0;
     virtual void setColor(const QColor &color) = 0;
     virtual QPointF baseLine() const = 0;
 
     virtual QRectF boundingRect() const { return m_bounding_rect; }
     virtual void setBoundingRect(const QRectF &bounds) { m_bounding_rect = bounds; }
+
+    virtual void setPreferredAntialiasingMode(AntialiasingMode) = 0;
 
 protected:
     QRectF m_bounding_rect;

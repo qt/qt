@@ -64,7 +64,7 @@ QSGNode::~QSGNode()
 /*!
     \fn bool QSGNode::isSubtreeBlocked() const
 
-    Returns wether this node and its subtree is available for use.
+    Returns whether this node and its subtree is available for use.
 
     Blocked subtrees will not get their dirty states updated and they
     will not be rendered.
@@ -351,7 +351,7 @@ QSGClipNode::~QSGClipNode()
 }
 
 /*!
-    Sets wether this clip node has a rectangular clip to \a rectHint.
+    Sets whether this clip node has a rectangular clip to \a rectHint.
  */
 void QSGClipNode::setIsRectangular(bool rectHint)
 {

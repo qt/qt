@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the Declarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,44 +38,29 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "lineextruder.h"
+#include <cmath>
 
-#ifndef QWAYLANDGLCONTEXT_H
-#define QWAYLANDGLCONTEXT_H
+LineExtruder::LineExtruder(QObject *parent) :
+    ParticleExtruder(parent), m_mirrored(false)
+{
+}
 
-#include "qwaylanddisplay.h"
-
-#include <QtGui/QPlatformGLContext>
-
-class QWaylandWindow;
-class QWaylandDrmWindowSurface;
-
-#include "qwaylandinclude.h"
-
-class QWaylandGLContext : public QPlatformGLContext {
-public:
-    QWaylandGLContext(QWaylandDisplay *wd, const QPlatformWindowFormat &format);
-    ~QWaylandGLContext();
-    void makeCurrent();
-    void doneCurrent();
-    void swapBuffers();
-    void* getProcAddress(const QString&);
-
-    QPlatformWindowFormat platformWindowFormat() const { return mFormat; }
-
-    void setEglSurface(EGLSurface surface);
-    EGLConfig eglConfig() const;
-private:
-    QWaylandDisplay *mDisplay;
-
-    EGLContext mContext;
-    EGLSurface mSurface;
-    EGLConfig mConfig;
-    QPlatformWindowFormat mFormat;
-
-    void createDefaultSharedContex(QWaylandDisplay *display);
-    QWaylandGLContext();
-
-};
-
-
-#endif // QWAYLANDGLCONTEXT_H
+QPointF LineExtruder::extrude(const QRectF &r)
+{
+    qreal x,y;
+    if(!r.height()){
+        x = r.width() * ((qreal)rand())/RAND_MAX;
+        y = 0;
+    }else{
+        y = r.height() * ((qreal)rand())/RAND_MAX;
+        if(!r.width()){
+            x = 0;
+        }else{
+            x = r.width()/r.height() * y;
+            if(m_mirrored)
+                x = r.width() - x;
+        }
+    }
+    return QPointF(x,y);
+}

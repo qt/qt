@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qsgmaterial.h"
+#include "qsgrenderer_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -110,6 +111,42 @@ void QSGMaterialShader::compile()
 
     m_compiled = true;
     initialize();
+}
+
+
+float QSGMaterialShader::RenderState::opacity() const
+{
+    Q_ASSERT(m_data);
+    return static_cast<const QSGRenderer *>(m_data)->renderOpacity();
+}
+
+QMatrix4x4 QSGMaterialShader::RenderState::combinedMatrix() const
+{
+    Q_ASSERT(m_data);
+    return static_cast<const QSGRenderer *>(m_data)->combinedMatrix();
+}
+
+QMatrix4x4 QSGMaterialShader::RenderState::modelViewMatrix() const
+{
+    Q_ASSERT(m_data);
+    return const_cast<QSGRenderer *>(static_cast<const QSGRenderer *>(m_data))->modelViewMatrix().top();
+}
+
+QRect QSGMaterialShader::RenderState::viewportRect() const
+{
+    Q_ASSERT(m_data);
+    return static_cast<const QSGRenderer *>(m_data)->viewportRect();
+}
+
+QRect QSGMaterialShader::RenderState::deviceRect() const
+{
+    Q_ASSERT(m_data);
+    return static_cast<const QSGRenderer *>(m_data)->deviceRect();
+}
+
+const QGLContext *QSGMaterialShader::RenderState::context() const
+{
+    return static_cast<const QSGRenderer *>(m_data)->glContext();
 }
 
 

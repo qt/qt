@@ -60,8 +60,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
     const quint32 mask = XCB_CW_EVENT_MASK;
     const quint32 values[] = {
         // XCB_CW_EVENT_MASK
-        XCB_EVENT_MASK_KEYMAP_STATE
-        | XCB_EVENT_MASK_ENTER_WINDOW
+        XCB_EVENT_MASK_ENTER_WINDOW
         | XCB_EVENT_MASK_LEAVE_WINDOW
         | XCB_EVENT_MASK_PROPERTY_CHANGE
     };

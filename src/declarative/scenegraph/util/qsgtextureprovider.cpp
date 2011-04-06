@@ -57,11 +57,6 @@ QT_BEGIN_NAMESPACE
 
 QSGTextureProvider::QSGTextureProvider(QObject *parent)
     : QObject(parent)
-    , m_opaque(false)
-    , m_hWrapMode(ClampToEdge)
-    , m_vWrapMode(ClampToEdge)
-    , m_filtering(Nearest)
-    , m_mipmap(None)
 {
 }
 
@@ -74,7 +69,7 @@ void QSGTextureProvider::bind(QSGTexture *oldTexture)
 {
     QSGTexture *t = texture().texture();
     t->setFiltering((QSGTexture::Filtering) filtering());
-    t->setMipmapFiltering((QSGTexture::Filtering) mipmap());
+    t->setMipmapFiltering((QSGTexture::Filtering) mipmapFiltering());
     t->setHorizontalWrapMode((QSGTexture::WrapMode) horizontalWrapMode());
     t->setVerticalWrapMode((QSGTexture::WrapMode) verticalWrapMode());
     if (t != oldTexture)
@@ -89,7 +84,7 @@ void QSGTextureProvider::bind(QSGTexture *oldTexture)
     This function will be called on the renderer thread when the textures should
     be updated.
 
-    The funciton might be called even though the textureChanged() signal has
+    The function might be called even though the textureChanged() signal has
     not been emitted, so implementations should consider doing some caching.
  */
 
@@ -107,18 +102,18 @@ bool QSGTextureProvider::isStaticTexture() const
 
 GLint QSGTextureProvider::glTextureWrapS() const
 {
-    return m_hWrapMode == Repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;
+    return horizontalWrapMode() == Repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;
 }
 
 GLint QSGTextureProvider::glTextureWrapT() const
 {
-    return m_vWrapMode == Repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;
+    return verticalWrapMode() == Repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;
 }
 
 GLint QSGTextureProvider::glMinFilter() const
 {
-    bool linear = m_filtering == Linear;
-    switch (m_mipmap) {
+    bool linear = filtering() == Linear;
+    switch (mipmapFiltering()) {
     case Nearest:
         return linear ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST;
     case Linear:
@@ -130,7 +125,7 @@ GLint QSGTextureProvider::glMinFilter() const
 
 GLint QSGTextureProvider::glMagFilter() const
 {
-    return m_filtering == Linear ? GL_LINEAR : GL_NEAREST;
+    return filtering() == Linear ? GL_LINEAR : GL_NEAREST;
 }
 
 

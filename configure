@@ -6191,8 +6191,8 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
         QMAKE_LIBDIR_WAYLAND=`$PKG_CONFIG --variable=libdir wayland-client 2>/dev/null`
 
         if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xkbcommon 2>/dev/null; then
-            QMAKE_CFLAGS_WAYLAND=$QMAKE_CFLAGS_WAYLAND `$PKG_CONFIG --cflags xkbcommon 2>/dev/null`
-            QMAKE_LIBS_WAYLAND=$QMAKE_LIBS_WAYLAND `$PKG_CONFIG --libs xkbcommon 2>/dev/null`
+            QMAKE_CFLAGS_WAYLAND="$QMAKE_CFLAGS_WAYLAND `$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
+            QMAKE_LIBS_WAYLAND="$QMAKE_LIBS_WAYLAND `$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
         else
             QMAKE_DEFINES_WAYLAND=QT_NO_WAYLAND_XKB
         fi
@@ -8328,6 +8328,11 @@ fi
 if [ -n "$QT_CFLAGS_FPU" ]; then
     echo "#Qt for symbian FPU settings" >> "$QTCONFIG.tmp"
     echo "MMP_RULES += \"ARMFPU $QT_CFLAGS_FPU\"" >> "$QTCONFIG.tmp"
+fi
+
+if [ -n "$QMAKE_INCDIR_OPENGL_ES2" ]; then
+    echo "\n#Qt opengl include path" >> "$QTCONFIG.tmp"
+    echo "QMAKE_INCDIR_OPENGL_ES2 = \"$QMAKE_INCDIR_OPENGL_ES2\"" >> "$QTCONFIG.tmp"
 fi
 
 # replace qconfig.pri if it differs from the newly created temp file

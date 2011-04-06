@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-import QtQuick 1.1
-import Qt.labs.particles 1.0
+import QtQuick 2.0
+import Qt.labs.particles 2.0
 
 Item {
     id: block
@@ -71,26 +71,28 @@ Item {
         Behavior on opacity { NumberAnimation { duration: 200 } }
         anchors.fill: parent
     }
-
-    Particles {
+    TrailEmitter {
         id: particles
-
-        width: 1; height: 1
-        anchors.centerIn: parent
-
-        emissionRate: 0
-        lifeSpan: 700; lifeSpanDeviation: 600
-        angle: 0; angleDeviation: 360;
-        velocity: 100; velocityDeviation: 30
-        source: {
+        system: particleSystem
+        particle: { 
             if(type == 0){
-                "pics/redStar.png";
+                "red";
             } else if (type == 1) {
-                "pics/blueStar.png";
+                "blue";
             } else {
-                "pics/greenStar.png";
+                "green";
             }
         }
+        anchors.fill: parent
+
+        speed: DirectedVector{targetX: block.width/2; targetY: block.height/2; magnitude: -60; magnitudeVariation: 60}
+        shape: Ellipse{fill:true}
+        emitting: false;
+        particleDuration: 700; particleDurationVariation: 100
+        particlesPerSecond: 1000
+        maxParticles: 100 //only fires 0.1s bursts (still 2x old number, ColoredParticle wants less than 16000 max though)
+        particleSize: 28
+        particleEndSize: 14
     }
 
     states: [
@@ -101,7 +103,7 @@ Item {
 
         State {
             name: "DeathState"; when: dying == true
-            StateChangeScript { script: particles.burst(50); }
+            StateChangeScript { script: particles.pulse(0.1); }
             PropertyChanges { target: img; opacity: 0 }
             StateChangeScript { script: block.destroy(1000); }
         }

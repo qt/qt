@@ -1,4 +1,4 @@
-// Commit: d446a0ec464556ede91225b14e75f2f8f5a748d5
+// Commit: ac704e9f682378a5ec56e3f5c195dcf2f2dfa1ac
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -585,6 +585,7 @@ void QSGPathView::setPreferredHighlightBegin(qreal start)
         return;
     d->highlightRangeStart = start;
     d->haveHighlightRange = d->highlightRangeMode != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
+    refill();
     emit preferredHighlightBeginChanged();
 }
 
@@ -601,6 +602,7 @@ void QSGPathView::setPreferredHighlightEnd(qreal end)
         return;
     d->highlightRangeEnd = end;
     d->haveHighlightRange = d->highlightRangeMode != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
+    refill();
     emit preferredHighlightEndChanged();
 }
 
@@ -1208,7 +1210,6 @@ void QSGPathView::itemsRemoved(int modelIndex, int count)
         d->offset = 0;
         changedOffset = true;
         d->tl.reset(d->moveOffset);
-        update();
     } else {
         d->regenerate();
         d->updateCurrent();

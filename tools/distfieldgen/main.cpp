@@ -42,7 +42,7 @@
 #include <QtCore>
 #include <QtGui>
 
-#include <private/distancefieldglyphcache_p.h>
+#include <private/qsgdistancefieldglyphcache_p.h>
 
 static void usage()
 {
@@ -77,7 +77,7 @@ void printProgress(int p)
 class DistFieldGenTask : public QRunnable
 {
 public:
-    DistFieldGenTask(DistanceFieldGlyphCache *atlas, int c, int nbGlyph, QMap<int, QImage> *outList)
+    DistFieldGenTask(QSGDistanceFieldGlyphCache *atlas, int c, int nbGlyph, QMap<int, QImage> *outList)
         : QRunnable()
         , m_atlas(atlas)
         , m_char(c)
@@ -94,7 +94,7 @@ public:
     }
 
     static QMutex m_mutex;
-    DistanceFieldGlyphCache *m_atlas;
+    QSGDistanceFieldGlyphCache *m_atlas;
     int m_char;
     int m_nbGlyph;
     QMap<int, QImage> *m_outList;
@@ -104,7 +104,7 @@ QMutex DistFieldGenTask::m_mutex;
 
 static void generateDistanceFieldForFont(const QFont &font, const QString &destinationDir, bool multithread)
 {
-    DistanceFieldGlyphCache *atlas = DistanceFieldGlyphCache::get(font);
+    QSGDistanceFieldGlyphCache *atlas = QSGDistanceFieldGlyphCache::get(QGLContext::currentContext(), font);
     QFontDatabase db;
     QString fontString = font.family() + QLatin1String(" ") + db.styleString(font);
     qWarning("> Generating distance-field for font '%s' (%d glyphs)", fontString.toLatin1().constData(), atlas->glyphCount());

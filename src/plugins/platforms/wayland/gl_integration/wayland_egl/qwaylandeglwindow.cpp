@@ -43,21 +43,20 @@
 
 #include "qwaylandscreen.h"
 #include "qwaylandglcontext.h"
-#include "qwaylandinclude.h"
 
 QWaylandEglWindow::QWaylandEglWindow(QWidget *window)
     : QWaylandWindow(window)
     , mGLContext(0)
     , mWaylandEglWindow(0)
 {
+    mEglIntegration = static_cast<QWaylandEglIntegration *>(mDisplay->eglIntegration());
     //super creates a new surface
     newSurfaceCreated();
 }
 
 QWaylandEglWindow::~QWaylandEglWindow()
 {
-    if (mGLContext)
-        delete mGLContext;
+    delete mGLContext;
 }
 
 QWaylandWindow::WindowType QWaylandEglWindow::windowType() const
@@ -84,10 +83,10 @@ QPlatformGLContext * QWaylandEglWindow::glContext() const
 {
     if (!mGLContext) {
         QWaylandEglWindow *that = const_cast<QWaylandEglWindow *>(this);
-        that->mGLContext = new QWaylandGLContext(that->mDisplay,widget()->platformWindowFormat());
+        that->mGLContext = new QWaylandGLContext(mEglIntegration->eglDisplay(),widget()->platformWindowFormat());
 
         EGLNativeWindowType window(reinterpret_cast<EGLNativeWindowType>(mWaylandEglWindow));
-        EGLSurface surface = eglCreateWindowSurface(mDisplay->eglDisplay(),mGLContext->eglConfig(),window,NULL);
+        EGLSurface surface = eglCreateWindowSurface(mEglIntegration->eglDisplay(),mGLContext->eglConfig(),window,NULL);
         that->mGLContext->setEglSurface(surface);
     }
 
@@ -104,10 +103,10 @@ void QWaylandEglWindow::newSurfaceCreated()
     if (!size.isValid())
         size = QSize(0,0);
 
-    mWaylandEglWindow = wl_egl_window_create(mDisplay->nativeDisplay(),mSurface,size.width(),size.height(),visual);
+    mWaylandEglWindow = wl_egl_window_create(mEglIntegration->nativeDisplay(),mSurface,size.width(),size.height(),visual);
     if (mGLContext) {
         EGLNativeWindowType window(reinterpret_cast<EGLNativeWindowType>(mWaylandEglWindow));
-        EGLSurface surface = eglCreateWindowSurface(mDisplay->eglDisplay(),mGLContext->eglConfig(),window,NULL);
+        EGLSurface surface = eglCreateWindowSurface(mEglIntegration->eglDisplay(),mGLContext->eglConfig(),window,NULL);
         mGLContext->setEglSurface(surface);
     }
 }

@@ -144,7 +144,7 @@ public:
 
     int iterations;
 protected:
-    Node* updatePaintNode(Node *, UpdatePaintNodeData *){
+    QSGNode* updatePaintNode(QSGNode *, UpdatePaintNodeData *){
         iterations++;
         update();
         return 0;
@@ -166,6 +166,8 @@ private slots:
     void touchEvent_basic();
     void touchEvent_propagation();
     void touchEvent_propagation_data();
+
+    void clearCanvas();
 };
 
 tst_qsgcanvas::tst_qsgcanvas()
@@ -411,6 +413,21 @@ void tst_qsgcanvas::touchEvent_propagation_data()
     QTest::newRow("disable events") << false << true << 1.0;
     QTest::newRow("disable item") << true << false << 1.0;
     QTest::newRow("opacity of 0") << true << true << 0.0;
+}
+
+void tst_qsgcanvas::clearCanvas()
+{
+    QSGCanvas *canvas = new QSGCanvas;
+    QSGItem *item = new QSGItem;
+    item->setParentItem(canvas->rootItem());
+
+    QVERIFY(item->canvas() == canvas);
+
+    delete canvas;
+
+    QVERIFY(item->canvas() == 0);
+
+    delete item;
 }
 
 

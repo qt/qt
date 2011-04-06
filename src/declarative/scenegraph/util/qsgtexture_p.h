@@ -65,7 +65,7 @@ public:
     uint filterMode : 2;
 };
 
-class QSGPlainTexture : public QSGTexture
+class Q_DECLARATIVE_EXPORT QSGPlainTexture : public QSGTexture
 {
 public:
     QSGPlainTexture();
@@ -100,6 +100,7 @@ private:
     uint m_has_alpha : 1;
     uint m_has_mipmaps : 1;
     uint m_dirty_texture : 1;
+    uint m_dirty_bind_options : 1;
     uint m_owns_texture : 1;
 };
 

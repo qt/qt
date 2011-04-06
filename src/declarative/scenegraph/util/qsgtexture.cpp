@@ -123,7 +123,7 @@ QRectF QSGTexture::textureSubRect() const
 
 
 /*!
-    Sets wether mipmapping should be used when sampling from this texture.
+    Sets whether mipmapping should be used when sampling from this texture.
  */
 void QSGTexture::setMipmapFiltering(Filtering filter)
 {
@@ -135,7 +135,7 @@ void QSGTexture::setMipmapFiltering(Filtering filter)
 }
 
 /*!
-    Returns wether mipmapping should be used when sampling from this texture.
+    Returns whether mipmapping should be used when sampling from this texture.
  */
 QSGTexture::Filtering QSGTexture::mipmapFiltering() const
 {
@@ -240,6 +240,7 @@ QSGPlainTexture::QSGPlainTexture()
     , m_texture_id(0)
     , m_has_alpha(false)
     , m_has_mipmaps(false)
+    , m_dirty_bind_options(false)
     , m_owns_texture(true)
 {
 }
@@ -274,12 +275,14 @@ void QSGPlainTexture::setImage(const QImage &image)
     m_texture_size = image.size();
     m_has_alpha = image.hasAlphaChannel();
     m_dirty_texture = true;
+    m_dirty_bind_options = true;
  }
 
 void QSGPlainTexture::setTextureId(int id)
 {
     m_texture_id = id;
     m_dirty_texture = false;
+    m_dirty_bind_options = true;
 }
 
 
@@ -287,7 +290,8 @@ void QSGPlainTexture::bind()
 {
     if (!m_dirty_texture) {
         glBindTexture(GL_TEXTURE_2D, m_texture_id);
-        updateBindOptions();
+        updateBindOptions(m_dirty_bind_options);
+        m_dirty_bind_options = false;
         return;
     }
 
@@ -325,7 +329,8 @@ void QSGPlainTexture::bind()
     m_texture_size = QSize(w, h);
     m_texture_rect = QRectF(0, 0, 1, 1);
 
-    updateBindOptions(true);
+    updateBindOptions(m_dirty_bind_options);
+    m_dirty_bind_options = false;
  }
 
 QT_END_NAMESPACE

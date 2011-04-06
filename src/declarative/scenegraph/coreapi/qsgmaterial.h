@@ -55,7 +55,7 @@ class QSGMaterial;
 class Q_DECLARATIVE_EXPORT QSGMaterialShader
 {
 public:
-    class RenderState {
+    class Q_DECLARATIVE_EXPORT RenderState {
     public:
         enum DirtyState
         {
@@ -72,6 +72,8 @@ public:
         float opacity() const;
         QMatrix4x4 combinedMatrix() const;
         QMatrix4x4 modelViewMatrix() const;
+        QRect viewportRect() const;
+        QRect deviceRect() const;
 
         const QGLContext *context() const;
 
