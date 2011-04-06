@@ -612,7 +612,7 @@
     Qt::WA_MacNormalSize, Qt::WA_MacSmallSize, Qt::WA_MacMiniSize, Qt::WA_MacVariableSize,
     Qt::WA_MacBrushedMetal, Qt::WA_MacAlwaysShowToolWindow, Qt::WA_MacFrameworkScaled,
     Qt::WA_MacNoShadow, Qt::Sheet, Qt::Drawer, Qt::MacWindowToolBarButtonHint, 
-    QMainWindow::unifiedTitleAndToolBarOnMac, WA_MacNoCocoaChildWindow 
+    QMainWindow::unifiedTitleAndToolBarOnMac
 
     \section2 Mixing Qt with native code
     Two classes are awailable for either adding native Cocoa views/controls
