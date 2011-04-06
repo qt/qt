@@ -939,6 +939,8 @@ QSGCanvas::~QSGCanvas()
 
     delete d->rootItem; d->rootItem = 0;
     d->cleanupNodes();
+
+    delete d->context;
 }
 
 QSGItem *QSGCanvas::rootItem() const

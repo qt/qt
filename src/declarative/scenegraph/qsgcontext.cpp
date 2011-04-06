@@ -98,6 +98,14 @@ QSGContext::QSGContext(QObject *parent) :
 }
 
 
+QSGContext::~QSGContext()
+{
+    Q_D(QSGContext);
+    delete d->renderer;
+    delete d->rootNode;
+    qDeleteAll(d->materials.values());
+}
+
 /*!
     Returns the renderer. The renderer instance is created through the adaptation layer.
  */

@@ -72,6 +72,7 @@ class Q_DECLARATIVE_EXPORT QSGContext : public QObject
 
 public:
     explicit QSGContext(QObject *parent = 0);
+    ~QSGContext();
 
     virtual void initialize(QGLContext *context);
 
