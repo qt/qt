@@ -74,8 +74,6 @@ public:
     DiagramItem *endItem() const
         { return myEndItem; }
 
-
-public slots:
     void updatePosition();
 
 protected:

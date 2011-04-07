@@ -47,9 +47,9 @@
 #define QMLCODEPARSER_H
 
 #include <QSet>
-#include "private/qdeclarativejsengine_p.h"
-#include "private/qdeclarativejslexer_p.h"
-#include "private/qdeclarativejsparser_p.h"
+#include "declarativeparser/qdeclarativejsengine_p.h"
+#include "declarativeparser/qdeclarativejslexer_p.h"
+#include "declarativeparser/qdeclarativejsparser_p.h"
 
 #include "codeparser.h"
 #include "location.h"

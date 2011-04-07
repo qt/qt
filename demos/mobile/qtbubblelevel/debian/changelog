@@ -1,0 +1,19 @@
+qtbubblelevel (1.2.0) stable; urgency=low
+
+  * Improved the usability of the calibration dialog.
+  
+ -- Forum Nokia <FN.Documentation@nokia.com>  Wed, 16 Feb 2011 12:59:30 +0100
+
+qtbubblelevel (1.1.0) stable; urgency=low
+
+  * QtMobility Rotation sensor support
+
+ -- Antonio Aloisio <antonio.aloisio@nokia.com>  Tue, 15 Jun 2010 9:03:02 +0100
+
+
+qtbubblelevel (1.0.0) unstable; urgency=low
+
+  * Initial release
+
+ -- Antonio Aloisio <antonio.aloisio@nokia.com>  Tue, 15 Jun 2010 9:03:02 +0100
+

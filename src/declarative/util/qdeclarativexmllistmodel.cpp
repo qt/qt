@@ -919,7 +919,7 @@ void QDeclarativeXmlListModel::reload()
     } else {
         d->notifyQueryStarted(true);
         QNetworkRequest req(d->src);
-        req.setRawHeader("Accept", "application/xml");
+        req.setRawHeader("Accept", "application/xml,*/*");
         d->reply = qmlContext(this)->engine()->networkAccessManager()->get(req);
         QObject::connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
         QObject::connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
