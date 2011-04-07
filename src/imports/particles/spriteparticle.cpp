@@ -272,6 +272,7 @@ QSGGeometryNode* SpriteParticle::buildParticleNode()
     if(image.isNull())
         return 0;
     m_material->texture = sg->createTexture(image);
+    m_material->texture->setFiltering(QSGTexture::Linear);
     m_material->framecount = m_spriteEngine->maxFrames();
     m_spriteEngine->setCount(m_count);
 

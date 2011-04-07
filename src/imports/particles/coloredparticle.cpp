@@ -399,6 +399,7 @@ QSGGeometryNode* ColoredParticle::buildParticleNode()
 
 
     m_material->texture = sg->createTexture(image);
+    m_material->texture->setFiltering(QSGTexture::Linear);
 
     m_node = new QSGGeometryNode();
     m_node->setGeometry(g);
