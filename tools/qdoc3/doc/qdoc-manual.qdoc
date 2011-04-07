@@ -7061,7 +7061,7 @@
     information see the \l {Compatibility Issues} {compatibility
     section}.
 
-    See also \l {macro-command} {macro}.
+    See also \l {macro-variable} {macro}.
 
     \target codeindent-variable
     \section1 codeindent 
@@ -7561,11 +7561,10 @@
     \section1 macro 
 
     The \c macro variable is used to create your own simple QDoc
-    commands or to redefine existing QDoc commands. The syntax is \tt
-    {macro.\e{command} = \e{definition}}, where the definition is
-    written using QDoc syntax. 
+    commands. The syntax is \tt {macro.\e{command} = \e{definition}},
+    where the definition is written using QDoc syntax.
 
-    A macro command can be restricted for use in one type of output
+    A macro variable can be restricted for use in one type of output
     generation. By appending \c {.HTML} to the macro name, for
     example, the macro is only used when generating HTML output. By
     appending \c {.DITAXML} to the macro name, the macro is only used
@@ -7580,6 +7579,8 @@
     using a bold font. The second macro defines the \\raisedaster
     command to render a superscript asterisk, but only when generating
     HTML.
+
+    See also \l {alias-variable} {alias}.
 
     \target naturallanguage-variable
     \section1 naturallanguage 
