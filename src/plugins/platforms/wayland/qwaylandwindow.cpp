@@ -142,18 +142,12 @@ void QWaylandWindow::frameCallback(void *data, uint32_t time)
 {
     Q_UNUSED(time);
     QWaylandWindow *self = static_cast<QWaylandWindow*>(data);
-    if (self->mWaitingForFrameSync) {
-        self->mWaitingForFrameSync = false;
-        self->mFrameSyncWait.wakeAll();
-    }
+    self->mWaitingForFrameSync = false;
 }
 
 void QWaylandWindow::waitForFrameSync()
 {
-    if (!mWaitingForFrameSync) {
-        return;
-    }
-    QMutex lock;
-    lock.lock();
-    mFrameSyncWait.wait(&lock);
+    mDisplay->flushRequests();
+    while (mWaitingForFrameSync)
+        mDisplay->readEvents();
 }

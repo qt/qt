@@ -66,6 +66,7 @@ public:
 
 private:
     QXcbShmImage *m_image;
+    bool m_syncingResize;
 };
 
 #endif

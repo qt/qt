@@ -62,7 +62,7 @@ contains(QT_CONFIG, opengl) {
     }
 }
 
-LIBS += -lxcb -lxcb-image -lxcb-keysyms -lxcb-icccm
+LIBS += -lxcb -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-sync
 
 include (../fontdatabases/genericunix/genericunix.pri)
 

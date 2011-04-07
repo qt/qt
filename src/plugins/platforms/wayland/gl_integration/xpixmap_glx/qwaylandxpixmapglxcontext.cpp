@@ -87,10 +87,6 @@ void QWaylandXPixmapGLXContext::makeCurrent()
 {
     QPlatformGLContext::makeCurrent();
 
-    while(mWindow->waitingForFrameSync()) {
-        mGlxIntegration->waylandDisplay()->iterate();
-    }
-
     glXMakeCurrent(mGlxIntegration->xDisplay(),mGlxPixmap,mContext);
 }
 
@@ -123,6 +119,7 @@ void QWaylandXPixmapGLXContext::swapBuffers()
 
 
     mWindow->damage(QRegion(QRect(QPoint(0,0),size)));
+    mWindow->waitForFrameSync();
 
 }
 
@@ -144,8 +141,7 @@ void QWaylandXPixmapGLXContext::geometryChanged()
         size = QSize(1,1);
     }
 
-    while (mWindow->waitingForFrameSync())
-        mGlxIntegration->waylandDisplay()->iterate();
+    mWindow->waitForFrameSync();
 
     delete mBuffer;
     //XFreePixmap deletes the glxPixmap as well
