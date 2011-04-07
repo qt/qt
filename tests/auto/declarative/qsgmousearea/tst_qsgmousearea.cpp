@@ -71,6 +71,7 @@ private slots:
     void clickThrough();
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
+    void hoverPosition();
 
 private:
     QSGView *createView();
@@ -677,6 +678,26 @@ void tst_QSGMouseArea::testQtQuick11Attributes_data()
     QTest::newRow("preventStealing") << "preventStealing: true"
         << "QDeclarativeComponent: Component is not ready"
         << ":1 \"MouseArea.preventStealing\" is not available in QtQuick 1.0.\n";
+}
+
+void tst_QSGMouseArea::hoverPosition()
+{
+    QSGView *canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/hoverPosition.qml"));
+
+    QSGItem *root = canvas->rootObject();
+    QVERIFY(root != 0);
+
+    QCOMPARE(root->property("mouseX").toReal(), qreal(0));
+    QCOMPARE(root->property("mouseY").toReal(), qreal(0));
+
+    QMouseEvent moveEvent(QEvent::MouseMove, QPoint(10, 32), Qt::NoButton, Qt::NoButton, 0);
+    QApplication::sendEvent(canvas, &moveEvent);
+
+    QCOMPARE(root->property("mouseX").toReal(), qreal(10));
+    QCOMPARE(root->property("mouseY").toReal(), qreal(32));
+
+    delete canvas;
 }
 
 QTEST_MAIN(tst_QSGMouseArea)

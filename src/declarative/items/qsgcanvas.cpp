@@ -1192,10 +1192,10 @@ void QSGCanvasPrivate::sendHoverEvent(QEvent::Type type, QSGItem *item,
     //create copy of event
     QGraphicsSceneHoverEvent hoverEvent(type);
     hoverEvent.setWidget(event->widget());
-    event->setPos(transform.map(event->scenePos()));
+    hoverEvent.setPos(transform.map(event->scenePos()));
     hoverEvent.setScenePos(event->scenePos());
     hoverEvent.setScreenPos(event->screenPos());
-    event->setLastPos(transform.map(event->lastScenePos()));
+    hoverEvent.setLastPos(transform.map(event->lastScenePos()));
     hoverEvent.setLastScenePos(event->lastScenePos());
     hoverEvent.setLastScreenPos(event->lastScreenPos());
     hoverEvent.setModifiers(event->modifiers());
