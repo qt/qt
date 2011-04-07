@@ -126,6 +126,8 @@ QXcbConnection::QXcbConnection(const char *displayName)
 
     QAbstractEventDispatcher *dispatcher = QAbstractEventDispatcher::instance(qApp->thread());
     connect(dispatcher, SIGNAL(aboutToBlock()), this, SLOT(processXcbEvents()));
+
+    sync();
 }
 
 QXcbConnection::~QXcbConnection()
