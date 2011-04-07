@@ -50,8 +50,10 @@ QScriptStringPrivate::QScriptStringPrivate()
 {}
 
 QScriptStringPrivate::QScriptStringPrivate(QScriptEnginePrivate *engine, v8::Handle<v8::String> str)
-    : m_engine(engine), m_string(v8::Persistent<v8::String>::New(str))
+    : m_engine(engine)
 {
+    const v8::String::Utf8Value utf8(str);
+    m_string = v8::Persistent<v8::String>::New(v8::String::NewSymbol(*utf8, utf8.length()));
     Q_ASSERT(!m_string.IsEmpty());
     m_engine->registerString(this);
 }
