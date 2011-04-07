@@ -48,15 +48,39 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_DEBUG
+static int qt_node_count = 0;
+
+static void qt_print_node_count()
+{
+    qDebug("Number of leaked nodes: %i", qt_node_count);
+    qt_node_count = -1;
+}
+#endif
+
 QSGNode::QSGNode()
     : m_parent(0)
     , m_nodeFlags(OwnedByParent)
     , m_flags(0)
 {
+#ifndef QT_NO_DEBUG
+    ++qt_node_count;
+    static bool atexit_registered = false;
+    if (!atexit_registered) {
+        atexit(qt_print_node_count);
+        atexit_registered = true;
+    }
+#endif
+
 }
 
 QSGNode::~QSGNode()
 {
+#ifndef QT_NO_DEBUG
+    --qt_node_count;
+    if (qt_node_count < 0)
+        qDebug("Material destroyed after qt_print_node_count() was called.");
+#endif
     destroy();
 }
 
