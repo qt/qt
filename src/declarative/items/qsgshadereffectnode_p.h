@@ -71,7 +71,7 @@ struct QSGShaderEffectProgram : public QSGShaderEffectMaterialKey
 {
     QSGShaderEffectProgram() : respectsOpacity(false), respectsMatrix(false) {}
 
-    QVector<const char *> attributeNames;
+    QVector<QByteArray> attributeNames;
     QSet<QByteArray> uniformNames;
 
     uint respectsOpacity : 1;
@@ -125,39 +125,20 @@ protected:
 };
 
 
-class QSGShaderEffectNode : public QObject,
-                         public QSGGeometryNode
+class QSGShaderEffectMesh;
 
+class QSGShaderEffectNode : public QObject, public QSGGeometryNode
 {
     Q_OBJECT
 public:
     QSGShaderEffectNode();
     virtual ~QSGShaderEffectNode();
 
-    void setRect(const QRectF &rect);
-    QRectF rect() const;
-
-    void setResolution(const QSize &res);
-    QSize resolution() const;
-
     virtual void preprocess();
-
-    void update();
 
 private Q_SLOTS:
     void markDirtyTexture();
 
-private:
-    friend class QSGCustomMaterialShader;
-
-    void updateGeometry();
-
-    QRectF m_rect;
-    QSize m_meshResolution;
-
-    QSGGeometry m_geometry;
-
-    bool m_dirty_geometry : 1;
 };
 
 QT_END_NAMESPACE

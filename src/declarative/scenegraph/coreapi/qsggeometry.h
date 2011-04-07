@@ -96,7 +96,7 @@ public:
                 int vertexCount,
                 int indexCount = 0,
                 int indexType = GL_UNSIGNED_SHORT);
-    ~QSGGeometry();
+    virtual ~QSGGeometry();
 
     void setDrawingMode(GLenum mode);
     inline GLenum drawingMode() const { return m_drawing_mode; }

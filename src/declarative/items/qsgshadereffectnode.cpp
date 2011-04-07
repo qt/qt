@@ -41,7 +41,7 @@
 
 #include <private/qsgshadereffectnode_p.h>
 
-#include <private/qsgshadereffectitem_p.h> // XXX todo
+#include "qsgshadereffectmesh_p.h"
 #include <private/qsgtextureprovider_p.h>
 #include <private/qsgrenderer_p.h>
 
@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 class QSGCustomMaterialShader : public QSGMaterialShader
 {
 public:
-    QSGCustomMaterialShader(const QSGShaderEffectMaterialKey &key, const QVector<const char *> &attributes);
+    QSGCustomMaterialShader(const QSGShaderEffectMaterialKey &key, const QVector<QByteArray> &attributes);
     virtual void deactivate();
     virtual void updateState(const RenderState &state, QSGMaterial *newEffect, QSGMaterial *oldEffect);
     virtual char const *const *attributeNames() const;
@@ -62,8 +62,9 @@ protected:
     virtual const char *vertexShader() const;
     virtual const char *fragmentShader() const;
 
-    QSGShaderEffectMaterialKey m_key;
-    QVector<const char *> m_attributes;
+    const QSGShaderEffectMaterialKey m_key;
+    QVector<const char *> m_attributeNames;
+    const QVector<QByteArray> m_attributes;
 
     QVector<int> m_uniformLocs;
     int m_opacityLoc;
@@ -71,11 +72,14 @@ protected:
     uint m_textureIndicesSet;
 };
 
-QSGCustomMaterialShader::QSGCustomMaterialShader(const QSGShaderEffectMaterialKey &key, const QVector<const char *> &attributes)
+QSGCustomMaterialShader::QSGCustomMaterialShader(const QSGShaderEffectMaterialKey &key, const QVector<QByteArray> &attributes)
     : m_key(key)
     , m_attributes(attributes)
     , m_textureIndicesSet(false)
 {
+    for (int i = 0; i < attributes.count(); ++i)
+        m_attributeNames.append(attributes.at(i).constData());
+    m_attributeNames.append(0);
 }
 
 void QSGCustomMaterialShader::deactivate()
@@ -120,7 +124,7 @@ void QSGCustomMaterialShader::updateState(const RenderState &state, QSGMaterial 
 
         switch (v.type()) {
         case QVariant::Color:
-            m_program.setUniformValue(m_uniformLocs.at(i), qvariant_cast<QColor>(v));
+            m_program.setUniformValue(m_uniformLocs.at(i), qt_premultiply_color(qvariant_cast<QColor>(v)));
             break;
         case QVariant::Double:
             m_program.setUniformValue(m_uniformLocs.at(i), (float) qvariant_cast<double>(v));
@@ -180,7 +184,7 @@ void QSGCustomMaterialShader::updateState(const RenderState &state, QSGMaterial 
 
 char const *const *QSGCustomMaterialShader::attributeNames() const
 {
-    return m_attributes.constData();
+    return m_attributeNames.constData();
 }
 
 void QSGCustomMaterialShader::initialize()
@@ -280,97 +284,17 @@ void QSGShaderEffectMaterial::updateTextures() const
 
 
 QSGShaderEffectNode::QSGShaderEffectNode()
-    : m_meshResolution(1, 1)
-    , m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4)
 {
     QSGNode::setFlag(UsePreprocess, true);
-    setGeometry(&m_geometry);
 }
 
 QSGShaderEffectNode::~QSGShaderEffectNode()
 {
 }
 
-void QSGShaderEffectNode::setRect(const QRectF &rect)
-{
-    m_rect = rect;
-    m_dirty_geometry = true;
-}
-
-QRectF QSGShaderEffectNode::rect() const
-{
-    return m_rect;
-}
-
-void QSGShaderEffectNode::setResolution(const QSize &res)
-{
-    m_dirty_geometry = true;
-    m_meshResolution = res;
-}
-
-QSize QSGShaderEffectNode::resolution() const
-{
-    return m_meshResolution;
-}
-
-void QSGShaderEffectNode::update()
-{
-    if (m_dirty_geometry) {
-        updateGeometry();
-        m_dirty_geometry = false;
-    }
-}
-
 void QSGShaderEffectNode::markDirtyTexture()
 {
     markDirty(DirtyMaterial);
-}
-
-void QSGShaderEffectNode::updateGeometry()
-{
-    int vmesh = m_meshResolution.height();
-    int hmesh = m_meshResolution.width();
-
-    QSGGeometry *g = geometry();
-    if (vmesh == 1 && hmesh == 1) {
-        if (g->vertexCount() != 4)
-            g->allocate(4);
-        QSGGeometry::updateTexturedRectGeometry(g, m_rect, QRectF(0, 0, 1, 1));
-        return;
-    }
-
-    g->allocate((vmesh + 1) * (hmesh + 1), vmesh * 2 * (hmesh + 2));
-
-    QSGGeometry::TexturedPoint2D *vdata = g->vertexDataAsTexturedPoint2D();
-
-    QRectF dstRect = m_rect;
-    QRectF srcRect(0, 0, 1, 1);
-    for (int iy = 0; iy <= vmesh; ++iy) {
-        float fy = iy / float(vmesh);
-        float y = float(dstRect.top()) + fy * float(dstRect.height());
-        float ty = float(srcRect.top()) + fy * float(srcRect.height());
-        for (int ix = 0; ix <= hmesh; ++ix) {
-            float fx = ix / float(hmesh);
-            vdata->x = float(dstRect.left()) + fx * float(dstRect.width());
-            vdata->y = y;
-            vdata->tx = float(srcRect.left()) + fx * float(srcRect.width());
-            vdata->ty = ty;
-            ++vdata;
-        }
-    }
-
-    quint16 *indices = (quint16 *)g->indexDataAsUShort();
-    int i = 0;
-    for (int iy = 0; iy < vmesh; ++iy) {
-        *(indices++) = i + hmesh + 1;
-        for (int ix = 0; ix <= hmesh; ++ix, ++i) {
-            *(indices++) = i + hmesh + 1;
-            *(indices++) = i;
-        }
-        *(indices++) = i - 1;
-    }
-
-    markDirty(QSGNode::DirtyGeometry);
 }
 
 void QSGShaderEffectNode::preprocess()

@@ -47,6 +47,7 @@
 #include "qsgmaterial.h"
 #include <private/qsgadaptationlayer_p.h>
 #include <private/qsgshadereffectnode_p.h>
+#include "qsgshadereffectmesh_p.h"
 
 #include <QtCore/qpointer.h>
 
@@ -55,6 +56,9 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
+const char *qtPositionAttributeName();
+const char *qtTexCoordAttributeName();
 
 class QSGContext;
 class QSignalMapper;
@@ -66,7 +70,7 @@ class QSGShaderEffectItem : public QSGItem
     Q_PROPERTY(QByteArray fragmentShader READ fragmentShader WRITE setFragmentShader NOTIFY fragmentShaderChanged)
     Q_PROPERTY(QByteArray vertexShader READ vertexShader WRITE setVertexShader NOTIFY vertexShaderChanged)
     Q_PROPERTY(bool blending READ blending WRITE setBlending NOTIFY blendingChanged)
-    Q_PROPERTY(QSize meshResolution READ meshResolution WRITE setMeshResolution NOTIFY meshResolutionChanged)
+    Q_PROPERTY(QSGShaderEffectMesh *mesh READ mesh WRITE setMesh NOTIFY meshChanged)
     Q_PROPERTY(CullMode culling READ cullMode WRITE setCullMode NOTIFY cullModeChanged)
     Q_ENUMS(CullMode)
 
@@ -92,8 +96,8 @@ public:
     bool blending() const { return m_blending; }
     void setBlending(bool enable);
 
-    QSize meshResolution() const { return m_mesh_resolution; }
-    void setMeshResolution(const QSize &size);
+    QSGShaderEffectMesh *mesh() const { return m_mesh; }
+    void setMesh(QSGShaderEffectMesh *mesh);
 
     CullMode cullMode() const { return m_cullMode; }
     void setCullMode(CullMode face);
@@ -103,15 +107,17 @@ Q_SIGNALS:
     void vertexShaderChanged();
     void blendingChanged();
     void marginsChanged();
-    void meshResolutionChanged();
+    void meshChanged();
     void cullModeChanged();
 
 protected:
+    virtual void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
     virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
 
 private Q_SLOTS:
     void changeSource(int index);
-    void markDirty();
+    void updateData();
+    void updateGeometry();
 
 private:
     friend class QSGCustomMaterialShader;
@@ -125,7 +131,8 @@ private:
     void lookThroughShaderCode(const QByteArray &code);
 
     QSGShaderEffectProgram m_source;
-    QSize m_mesh_resolution;
+    QSGShaderEffectMesh *m_mesh;
+    QSGGridMesh m_defaultMesh;
     CullMode m_cullMode;
 
     struct SourceData
@@ -142,6 +149,8 @@ private:
     uint m_dirtyData : 1;
 
     uint m_programDirty : 1;
+    uint m_dirtyMesh : 1;
+    uint m_dirtyGeometry : 1;
 };
 
 QT_END_NAMESPACE

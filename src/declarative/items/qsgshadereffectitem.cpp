@@ -65,24 +65,35 @@ static const char qt_default_vertex_code[] =
     "}";
 
 static const char qt_default_fragment_code[] =
-    "varying highp vec2 qt_TexCoord0;                       \n"
-    "uniform sampler2D source;                              \n"
-    "void main() {                                          \n"
-    "    gl_FragColor = texture2D(source, qt_TexCoord0);    \n"
+    "varying highp vec2 qt_TexCoord0;                                   \n"
+    "uniform sampler2D source;                                          \n"
+    "uniform lowp float qt_Opacity;                                     \n"
+    "void main() {                                                      \n"
+    "    gl_FragColor = texture2D(source, qt_TexCoord0) * qt_Opacity;   \n"
     "}";
 
-static const char qt_postion_attribute_name[] = "qt_Vertex";
+static const char qt_position_attribute_name[] = "qt_Vertex";
 static const char qt_texcoord_attribute_name[] = "qt_MultiTexCoord0";
-static const char qt_emptyAttributeName[] = "";
 
+const char *qtPositionAttributeName()
+{
+    return qt_position_attribute_name;
+}
+
+const char *qtTexCoordAttributeName()
+{
+    return qt_texcoord_attribute_name;
+}
 
 QSGShaderEffectItem::QSGShaderEffectItem(QSGItem *parent)
     : QSGItem(parent)
-    , m_mesh_resolution(1, 1)
+    , m_mesh(0)
     , m_cullMode(NoCulling)
     , m_blending(true)
     , m_dirtyData(true)
     , m_programDirty(true)
+    , m_dirtyMesh(true)
+    , m_dirtyGeometry(true)
 {
     setFlag(QSGItem::ItemHasContents);
 }
@@ -133,14 +144,18 @@ void QSGShaderEffectItem::setBlending(bool enable)
     emit blendingChanged();
 }
 
-void QSGShaderEffectItem::setMeshResolution(const QSize &size)
+void QSGShaderEffectItem::setMesh(QSGShaderEffectMesh *mesh)
 {
-    if (size == m_mesh_resolution)
+    if (mesh == m_mesh)
         return;
-
-    m_mesh_resolution = size;
+    if (m_mesh)
+        disconnect(m_mesh, SIGNAL(geometryChanged()), this, 0);
+    m_mesh = mesh;
+    if (m_mesh)
+        connect(m_mesh, SIGNAL(geometryChanged()), this, SLOT(updateGeometry()));
+    m_dirtyMesh = true;
     update();
-    emit meshResolutionChanged();
+    emit meshChanged();
 }
 
 void QSGShaderEffectItem::setCullMode(CullMode face)
@@ -159,9 +174,15 @@ void QSGShaderEffectItem::changeSource(int index)
     setSource(v, index);
 }
 
-void QSGShaderEffectItem::markDirty()
+void QSGShaderEffectItem::updateData()
 {
     m_dirtyData = true;
+    update();
+}
+
+void QSGShaderEffectItem::updateGeometry()
+{
+    m_dirtyGeometry = true;
     update();
 }
 
@@ -203,7 +224,7 @@ void QSGShaderEffectItem::setSource(const QVariant &var, int index)
 
 void QSGShaderEffectItem::disconnectPropertySignals()
 {
-    disconnect(this, 0, this, SLOT(markDirty()));
+    disconnect(this, 0, this, SLOT(updateData()));
     for (int i = 0; i < m_sources.size(); ++i) {
         SourceData &source = m_sources[i];
         disconnect(this, 0, source.mapper, 0);
@@ -222,7 +243,7 @@ void QSGShaderEffectItem::connectPropertySignals()
                 qWarning("QSGShaderEffectItem: property '%s' does not have notification method!", it->constData());
             QByteArray signalName("2");
             signalName.append(mp.notifySignal().signature());
-            connect(this, signalName, this, SLOT(markDirty()));
+            connect(this, signalName, this, SLOT(updateData()));
         } else {
             qWarning("QSGShaderEffectItem: '%s' does not have a matching property!", it->constData());
         }
@@ -262,6 +283,7 @@ void QSGShaderEffectItem::reset()
     m_sources.clear();
 
     m_programDirty = true;
+    m_dirtyMesh = true;
 }
 
 void QSGShaderEffectItem::updateProperties()
@@ -273,16 +295,17 @@ void QSGShaderEffectItem::updateProperties()
     if (fragmentCode.isEmpty())
         fragmentCode = qt_default_fragment_code;
 
-    m_source.attributeNames.fill(0, 3);
     lookThroughShaderCode(vertexCode);
     lookThroughShaderCode(fragmentCode);
 
-    if (!m_source.attributeNames.contains(qt_postion_attribute_name))
-        qWarning("QSGShaderEffectItem: Missing reference to \'%s\'.", qt_postion_attribute_name);
-    if (!m_source.attributeNames.contains(qt_texcoord_attribute_name))
+    if (!m_mesh && !m_source.attributeNames.contains(qt_position_attribute_name))
+        qWarning("QSGShaderEffectItem: Missing reference to \'%s\'.", qt_position_attribute_name);
+    if (!m_mesh && !m_source.attributeNames.contains(qt_texcoord_attribute_name))
         qWarning("QSGShaderEffectItem: Missing reference to \'%s\'.", qt_texcoord_attribute_name);
     if (!m_source.respectsMatrix)
         qWarning("QSGShaderEffectItem: Missing reference to \'qt_ModelViewProjectionMatrix\'.");
+    if (!m_source.respectsOpacity)
+        qWarning("QSGShaderEffectItem: Missing reference to \'qt_Opacity\'.");
 
     for (int i = 0; i < m_sources.size(); ++i) {
         QVariant v = property(m_sources.at(i).name);
@@ -309,16 +332,7 @@ void QSGShaderEffectItem::lookThroughShaderCode(const QByteArray &code)
         QByteArray name = re.cap(3).toLatin1(); // variable name
 
         if (decl == "attribute") {
-            if (name == qt_postion_attribute_name) {
-                m_source.attributeNames[0] = qt_postion_attribute_name;
-            } else if (name == "qt_MultiTexCoord0") {
-                m_source.attributeNames[1] = qt_texcoord_attribute_name;
-                if (m_source.attributeNames.at(0) == 0)
-                    m_source.attributeNames[0] = qt_emptyAttributeName;
-            } else {
-                // TODO: Support user defined attributes.
-                qWarning("QSGShaderEffectItem: Attribute \'%s\' not recognized.", name.constData());
-            }
+            m_source.attributeNames.append(name);
         } else {
             Q_ASSERT(decl == "uniform");
 
@@ -341,14 +355,46 @@ void QSGShaderEffectItem::lookThroughShaderCode(const QByteArray &code)
     }
 }
 
+void QSGShaderEffectItem::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
+{
+    m_dirtyGeometry = true;
+    QSGItem::geometryChanged(newGeometry, oldGeometry);
+}
+
 QSGNode *QSGShaderEffectItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
     QSGShaderEffectNode *node = static_cast<QSGShaderEffectNode *>(oldNode);
+
     if (!node) {
         node = new QSGShaderEffectNode;
         node->setMaterial(&m_material);
         m_programDirty = true;
         m_dirtyData = true;
+        m_dirtyGeometry = true;
+    }
+
+    if (m_dirtyMesh) {
+        node->setGeometry(0);
+        m_dirtyMesh = false;
+        m_dirtyGeometry = true;
+    }
+
+    if (m_dirtyGeometry) {
+        node->setFlag(QSGNode::OwnsGeometry, false);
+        QSGGeometry *geometry = node->geometry();
+        QRectF rect(0, 0, width(), height());
+        QSGShaderEffectMesh *mesh = m_mesh ? m_mesh : &m_defaultMesh;
+
+        geometry = mesh->updateGeometry(geometry, m_source.attributeNames, rect);
+        if (!geometry) {
+            delete node;
+            return 0;
+        }
+
+        node->setGeometry(geometry);
+        node->setFlag(QSGNode::OwnsGeometry, true);
+
+        m_dirtyGeometry = false;
     }
 
     if (m_programDirty) {
@@ -373,11 +419,6 @@ QSGNode *QSGShaderEffectItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeD
         m_material.setCullMode(QSGShaderEffectMaterial::CullMode(m_cullMode));
         node->markDirty(QSGNode::DirtyMaterial);
     }
-
-    if (node->resolution() != m_mesh_resolution)
-        node->setResolution(m_mesh_resolution);
-
-    node->setRect(QRectF(0, 0, width(), height()));
 
     if (m_dirtyData) {
         QVector<QPair<QByteArray, QVariant> > values;
@@ -404,8 +445,6 @@ QSGNode *QSGShaderEffectItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeD
         node->markDirty(QSGNode::DirtyMaterial);
         m_dirtyData = false;
     }
-
-    node->update();
 
     return node;
 }
