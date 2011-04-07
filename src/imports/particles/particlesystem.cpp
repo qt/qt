@@ -67,7 +67,7 @@ ParticleData::ParticleData()
 }
 
 ParticleSystem::ParticleSystem(QSGItem *parent) :
-    QSGItem(parent), m_running(true) , m_startTime(0), m_overwrite(true)
+    QSGItem(parent), m_particle_count(0), m_running(true) , m_startTime(0), m_overwrite(true)
 {
     m_groupIds = QHash<QString, int>();
 }
@@ -214,6 +214,7 @@ ParticleData* ParticleSystem::newDatum(int groupId)
     if( m_groupData[groupId]->nextIdx >= m_groupData[groupId]->size)
         m_groupData[groupId]->nextIdx = 0;
 
+    Q_ASSERT(nextIdx < m_data.size());
     ParticleData* ret;
     if(m_data[nextIdx]){//Recycle, it's faster.
         ret = m_data[nextIdx];

@@ -404,7 +404,6 @@ QSGGeometryNode* ColoredParticle::buildParticleNode()
     m_node = new QSGGeometryNode();
     m_node->setGeometry(g);
     m_node->setMaterial(m_material);
-    m_node->setFlag(QSGNode::OwnsGeometry);
 
     m_last_particle = 0;
 

@@ -58,6 +58,7 @@ class ParticleAffector : public QSGItem
     Q_PROPERTY(ParticleSystem* system READ system WRITE setSystem NOTIFY systemChanged)
     Q_PROPERTY(QStringList particles READ particles WRITE setParticles NOTIFY particlesChanged)
     Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
+    Q_PROPERTY(bool onceOff READ onceOff WRITE setOnceOff NOTIFY onceOffChanged)
 
 public:
     explicit ParticleAffector(QSGItem *parent = 0);
@@ -78,6 +79,11 @@ public:
         return m_active;
     }
 
+    bool onceOff() const
+    {
+        return m_onceOff;
+    }
+
 signals:
 
     void systemChanged(ParticleSystem* arg);
@@ -85,6 +91,8 @@ signals:
     void particlesChanged(QStringList arg);
 
     void activeChanged(bool arg);
+
+    void onceOffChanged(bool arg);
 
 public slots:
 void setSystem(ParticleSystem* arg)
@@ -113,6 +121,14 @@ void setActive(bool arg)
     }
 }
 
+void setOnceOff(bool arg)
+{
+    if (m_onceOff != arg) {
+        m_onceOff = arg;
+        emit onceOffChanged(arg);
+    }
+}
+
 protected:
     friend class ParticleSystem;
     virtual bool affectParticle(ParticleData *d, qreal dt);
@@ -123,7 +139,14 @@ protected:
     bool m_active;
 private:
     QSet<int> m_groups;
+    QSet<int> m_onceOffed;
     bool m_updateIntSet;
+    QPointF m_offset;
+
+    bool m_onceOff;
+
+private slots:
+    void updateOffsets();
 };
 
 QT_END_NAMESPACE

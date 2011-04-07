@@ -91,9 +91,10 @@ bool SpriteGoalAffector::affectParticle(ParticleData *d, qreal dt)
         updateStateIndex(engine);
     if(engine->spriteState(d->particleIndex) != m_goalIdx){
         engine->setGoal(m_goalIdx, d->particleIndex, m_jump);
-        emit affected(QPointF(d->curX(), d->curY()));//###Expensive if unconnected?
+        emit affected(QPointF(d->curX(), d->curY()));//###Expensive if unconnected? Move to Affector?
+        return true; //Doesn't affect particle data, but necessary for onceOff
     }
-    return false; //Doesn't affect particle data
+    return false;
 }
 
 QT_END_NAMESPACE

@@ -43,8 +43,14 @@
 #include <QDebug>
 QT_BEGIN_NAMESPACE
 ParticleAffector::ParticleAffector(QSGItem *parent) :
-    QSGItem(parent), m_needsReset(false), m_system(false), m_active(true), m_updateIntSet(false)
+    QSGItem(parent), m_needsReset(false), m_system(0), m_active(true), m_updateIntSet(false)
 {
+    connect(this, SIGNAL(systemChanged(ParticleSystem*)),
+            this, SLOT(updateOffsets()));
+    connect(this, SIGNAL(xChanged()),
+            this, SLOT(updateOffsets()));
+    connect(this, SIGNAL(yChanged()),
+            this, SLOT(updateOffsets()));//TODO: in componentComplete and all relevant signals
 }
 
 void ParticleAffector::affectSystem(qreal dt)
@@ -64,12 +70,17 @@ void ParticleAffector::affectSystem(qreal dt)
         m_updateIntSet = false;
     }
     foreach(ParticleData* d, m_system->m_data){
-        if(!d)
+        if(!d || (m_onceOff && m_onceOffed.contains(d->systemIndex)))
             return;
-        if(m_groups.isEmpty() || m_groups.contains(d->group))
-            if(width() == 0 || height() == 0 || QRectF(x(), y(), width(), height()).contains(d->curX(), d->curY()))//TODO: Offset
-                 if(affectParticle(d, dt))
+        if(m_groups.isEmpty() || m_groups.contains(d->group)){
+            if(width() == 0 || height() == 0 || QRectF(m_offset.x(), m_offset.y(), width(), height()).contains(d->curX(), d->curY())){
+                 if(affectParticle(d, dt)){
                      m_system->m_needsReset << d;
+                     if(m_onceOff)
+                         m_onceOffed << d->systemIndex;
+                 }
+            }
+        }
     }
 }
 
@@ -82,6 +93,14 @@ bool ParticleAffector::affectParticle(ParticleData *d, qreal dt)
 
 void ParticleAffector::reset(int idx)
 {
-    Q_UNUSED(idx);
+    if(m_onceOff)
+        m_onceOffed.remove(idx);
 }
+
+void ParticleAffector::updateOffsets()
+{
+    if(m_system)
+        m_offset = m_system->mapFromItem(this, QPointF(0, 0));
+}
+
 QT_END_NAMESPACE
