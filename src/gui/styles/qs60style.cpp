@@ -683,6 +683,13 @@ void QS60StylePrivate::setThemePalette(QWidget *widget)
         if (header->viewport())
             header->viewport()->setPalette(widgetPalette);
         QApplication::setPalette(widgetPalette, "QHeaderView");
+    } else if (qobject_cast<QLabel *>(widget)) {
+        if (widget->window() && widget->window()->windowType() == Qt::Dialog) {
+            QPalette widgetPalette = widget->palette();
+            widgetPalette.setColor(QPalette::WindowText,
+                s60Color(QS60StyleEnums::CL_QsnTextColors, 19, 0));
+            widget->setPalette(widgetPalette);
+        }
     }
 }
 
