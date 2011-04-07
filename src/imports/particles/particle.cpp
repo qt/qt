@@ -81,6 +81,8 @@ void ParticleType::setCount(int c)
     if(c == m_count)
         return;
     m_count = c;
+    m_particleStarts.clear();//###Is this the right place for 'reset' behaviour?
+    m_lastStart = 0;
     emit countChanged();
 }
 

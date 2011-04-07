@@ -83,6 +83,8 @@ void ParticleSystem::registerParticleEmitter(ParticleEmitter* e)
     m_emitters << QPointer<ParticleEmitter>(e);//###How to get them out?
     connect(e, SIGNAL(particleCountChanged()),
             this, SLOT(countChanged()));
+    connect(e, SIGNAL(particleChanged(QString)),
+            this, SLOT(countChanged()));
     reset();
 }
 
