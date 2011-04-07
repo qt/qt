@@ -96,6 +96,13 @@ const char *PaintCommands::fontWeightTable[] = {
     "Black"
 };
 
+const char *PaintCommands::fontHintingTable[] = {
+    "Default",
+    "None",
+    "Vertical",
+    "Full"
+};
+
 const char *PaintCommands::clipOperationTable[] = {
     "NoClip",
     "ReplaceClip",
@@ -287,9 +294,9 @@ void PaintCommands::staticInit()
                       "setCompositionMode <composition mode enum>",
                       "setCompositionMode SourceOver");
     DECL_PAINTCOMMAND("setFont", command_setFont,
-                      "^setFont\\s+\"([\\w\\s]*)\"\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)$",
-                      "setFont <fontFace> [size] [font weight|font weight enum] [italic]\n  - font weight is an integer between 0 and 99",
-                      "setFont \"times\" normal");
+                      "^setFont\\s+\"([\\w\\s]*)\"\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)$",
+                      "setFont <fontFace> [size] [font weight|font weight enum] [italic] [hinting enum]\n  - font weight is an integer between 0 and 99",
+                      "setFont \"times\" 12");
     DECL_PAINTCOMMAND("setPen", command_setPen,
                       "^setPen\\s+#?(\\w*)$",
                       "setPen <color>\nsetPen <pen style enum>\nsetPen brush",
@@ -641,6 +648,7 @@ void PaintCommands::staticInit()
     ADD_ENUMLIST("brush styles", brushStyleTable);
     ADD_ENUMLIST("pen styles", penStyleTable);
     ADD_ENUMLIST("font weights", fontWeightTable);
+    ADD_ENUMLIST("font hintings", fontHintingTable);
     ADD_ENUMLIST("clip operations", clipOperationTable);
     ADD_ENUMLIST("spread methods", spreadMethodTable);
     ADD_ENUMLIST("composition modes", compositionModeTable);
@@ -2061,11 +2069,22 @@ void PaintCommands::command_setFont(QRegExp re)
 
     bool italic = caps.at(4).toLower() == "true" || caps.at(4).toLower() == "italic";
 
-    if (m_verboseMode)
-        printf(" -(lance) setFont(family=%s, size=%d, weight=%d, italic=%d\n",
-               qPrintable(family), size, weight, italic);
+    QFont font(family, size, weight, italic);
 
-    m_painter->setFont(QFont(family, size, weight, italic));
+#if QT_VERSION >= 0x040800
+    int hinting = translateEnum(fontHintingTable, caps.at(5), 4);
+    if (hinting == -1)
+        hinting = 0;
+    else
+        font.setHintingPreference(QFont::HintingPreference(hinting));
+#else
+    int hinting = 1;
+#endif
+    if (m_verboseMode)
+        printf(" -(lance) setFont(family=%s, size=%d, weight=%d, italic=%d hinting=%s\n",
+               qPrintable(family), size, weight, italic, fontHintingTable[hinting]);
+
+    m_painter->setFont(font);
 }
 
 /***************************************************************************************************/
