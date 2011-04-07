@@ -72,7 +72,7 @@ public:
 
 /*!
     \qmlclass Behavior QDeclarativeBehavior
-  \ingroup qml-animation-transition
+    \ingroup qml-animation-transition
     \since 4.7
     \brief The Behavior element allows you to specify a default animation for a property change.
 
@@ -91,7 +91,8 @@ public:
 
     If a \l{QML States}{state change} has a \l Transition that matches the same property as a
     Behavior, the \l Transition animation overrides the Behavior for that
-    state change.
+    state change. For general advice on using Behaviors to animate state changes, see
+    \l{Using QML Behaviors with States}.
 
     \sa {QML Animation and Transitions}, {declarative/animation/behaviors}{Behavior example}, QtDeclarative
 */

@@ -155,7 +155,7 @@ class CodeMarker
                                       const Tree* tree,
 		                      const Node* relative,
                                       const Node* self = 0);
-    virtual QStringList macRefsForNode(const Node* node);
+    virtual QStringList macRefsForNode(Node* node);
 
     static void initialize(const Config& config);
     static void terminate();
