@@ -2870,6 +2870,40 @@ int qrand()
 */
 
 /*!
+    \macro Q_LIKELY(expr)
+    \relates <QtGlobal>
+    \since 4.8
+
+    \brief Hints the compiler that the enclosed condition is likely to evaluate
+    to \c true.
+
+    Use of this macro can help the compiler to optimize the code.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp qlikely
+
+    \sa Q_UNLIKELY()
+*/
+
+/*!
+    \macro Q_UNLIKELY(expr)
+    \relates <QtGlobal>
+    \since 4.8
+
+    \brief Hints the compiler that the enclosed condition is likely to evaluate
+    to \c false.
+
+    Use of this macro can help the compiler to optimize the code.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp qunlikely
+
+    \sa Q_LIKELY()
+*/
+
+/*!
     \macro QT_POINTER_SIZE
     \relates <QtGlobal>
 

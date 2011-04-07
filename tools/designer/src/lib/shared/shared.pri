@@ -2,7 +2,7 @@
 INCLUDEPATH += $$PWD
 contains(QT_CONFIG, script): QT += script
 
-include(../../../../shared/qtpropertybrowser/qtpropertybrowser.pri)
+include(../../../../shared/qtpropertybrowser/qtpropertybrowserutils.pri)
 include(../../../../shared/deviceskin/deviceskin.pri)
 include(../../../../../src/tools/rcc/rcc.pri)
 include(../../../../shared/findwidget/findwidget.pri)
