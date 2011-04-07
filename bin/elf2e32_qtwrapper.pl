@@ -108,10 +108,33 @@ sub printRecordedDefFiles {
     }
 }
 
+sub missingSymbolMismatch
+{
+    my $missingSymbolSum = $_[0];
+
+    printRecordedDefFiles;
+
+    print("Bug in the native elf2e32 tool: Number of missing symbols does not\n");
+    print("match number of removed symbols in the output DEF file.\n\n");
+
+    print("Original elf2e32 output:\n");
+    print("  $missingSymbolSum Frozen Export\(s\) missing from the ELF file\n\n");
+
+    print("However $defoutput[1] contains more missing entries than that.\n\n");
+
+    print("This needs to be fixed manually in the DEF file.\n");
+    exit(2);
+}
+
+if ($debugScript) {
+    print("PATH: $ENV{PATH}\n");
+    print("EPOCROOT: $ENV{EPOCROOT}\n");
+}
+
 while (1) {
     if (++$runCount > 2) {
+        printRecordedDefFiles if ($debugScript);
         print("Internal error in $0, link succeeded, but exports may be wrong.\n");
-        printRecordedDefFiles;
         last;
     }
 
@@ -124,6 +147,8 @@ while (1) {
 
     my %fixupSymbols;
     my $foundBrokenSymbols = 0;
+    my $missingSymbolSum = 0;
+    my $missingSymbolCount = 0;
     my $errors = 0;
     while (<$elf2e32Pipe>) {
         print;
@@ -132,14 +157,17 @@ while (1) {
         } elsif (/symbol ([a-z0-9_]+) absent in the DEF file, but present in the ELF file/io) {
             $fixupSymbols{$1} = 1;
             $foundBrokenSymbols = 1;
-        } elsif (/[0-9]+ Frozen Export\(s\) missing from the ELF file/io) {
+        } elsif (/([0-9]+) Frozen Export\(s\) missing from the ELF file/io) {
+            $missingSymbolSum = $1;
             $foundBrokenSymbols = 1;
         }
     }
     close($elf2e32Pipe);
 
-    recordDefFile("Run no $runCount, elf2e32 DEF file input", "$definput[1]");
-    recordDefFile("Run no $runCount, elf2e32 DEF file output", "$defoutput[1]");
+    if ($debugScript) {
+        recordDefFile("Run no $runCount, elf2e32 DEF file input", "$definput[1]");
+        recordDefFile("Run no $runCount, elf2e32 DEF file output", "$defoutput[1]");
+    }
 
     if ($errors) {
         $returnCode = 1;
@@ -240,6 +268,9 @@ while (1) {
             } elsif ($defLine =~ s/; MISSING://) {
                 # Auto-absent symbols.
                 $extraData .= " ABSENT";
+                if (++$missingSymbolCount > $missingSymbolSum) {
+                    missingSymbolMismatch($missingSymbolSum);
+                }
             }
             print($tmpDefFile "\t$sym \@ $ordinal $extraData\n") or die("Could not write to temporary DEF file: $!");
         }
