@@ -72,6 +72,7 @@
 #include "qcheckbox.h"
 #include "qdesktopwidget.h"
 #include "qprogressbar.h"
+#include "qlabel.h"
 
 #include "private/qtoolbarextension_p.h"
 #include "private/qcombobox_p.h"
