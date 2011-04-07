@@ -184,8 +184,9 @@ const char *PaintCommands::imageFormatTable[] = {
 
 int PaintCommands::translateEnum(const char *table[], const QString &pattern, int limit)
 {
+    QByteArray p = pattern.toLatin1().toLower();
     for (int i=0; i<limit; ++i)
-        if (pattern.toLower() == QString(QLatin1String(table[i])).toLower())
+        if (p == QByteArray::fromRawData(table[i], qstrlen(table[i])).toLower())
             return i;
     return -1;
 }
