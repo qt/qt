@@ -242,10 +242,11 @@ void ParticleSystem::emitParticle(ParticleData* pd)
     }
 
     foreach(ParticleAffector *a, m_affectors)
-        if(a->m_needsReset)
+        if(a && a->m_needsReset)
             a->reset(pd->systemIndex);
     foreach(ParticleType* p, m_groupData[pd->group]->types)
-        p->load(pd);
+        if(p)
+            p->load(pd);
 }
 
 
