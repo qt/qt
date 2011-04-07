@@ -377,6 +377,9 @@ qreal QDeclarativeImage::paintedHeight() const
     If the source is a non-scalable image (eg. JPEG), the loaded image will
     be no greater than this property specifies. For some formats (currently only JPEG),
     the whole image will never actually be loaded into memory.
+
+    Since QtQuick 1.1 the sourceSize can be cleared to the natural size of the image
+    by setting sourceSize to \c undefined.
  
     \note \e {Changing this property dynamically causes the image source to be reloaded,
     potentially even from the network, if it is not in the disk cache.}

@@ -241,7 +241,9 @@
     \section1 Build System
 
     Unlike previous Qt releases, Qt 4 is a collection of smaller
-    libraries:
+    libraries. A complete list of libraries in the current release
+    of Qt can be found on the \l{All Modules} page. The following
+    table describes the initial set of libraries released with Qt 4.
 
     \table
     \header \o Library          \o Description
@@ -276,11 +278,11 @@
     link your application against QtCore and QtGui. To remove the
     dependency upon QtGui, add the line
 
-    \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qt4-intro.pro 0
 
     to your .pro file. To enable the other libraries, add the line
 
-    \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qt4-intro.pro 1
 
     Another change to the build system is that moc now understands
     preprocessor directives. qmake automatically passes the defines set
@@ -290,21 +292,21 @@
     To compile code that uses UI files, you will also need this line in
     the .pro file:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_qt4-intro.pro 2
 
     \section1 Include Syntax
 
     The syntax for including Qt class definitions has become
 
-    \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_qt4-intro.cpp 3
 
     For example:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_qt4-intro.cpp 4
 
     This is guaranteed to work for any public Qt class. The old syntax,
 
-    \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_qt4-intro.cpp 5
 
     still works, but we encourage you to switch to the new syntax.
 
@@ -318,7 +320,7 @@
     To include the definitions for all the classes in a library, simply
     specify the name of that library. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 6
+    \snippet doc/src/snippets/code/doc_src_qt4-intro.cpp 6
 
     \section1 Namespaces
 
@@ -330,7 +332,7 @@
     to access a constant that is part of the Qt namespace, prefix it
     with \c{Qt::} (e.g., \c{Qt::yellow}), or add the directive
 
-    \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 7
+    \snippet doc/src/snippets/code/doc_src_qt4-intro.cpp 7
 
     at the top of your source files, after your \c #include
     directives. If you use the \c{using namespace} syntax you don't
@@ -360,7 +362,7 @@
     \list
     \o  Code that used it looked confusing, for example:
 
-        \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 8
+        \snippet doc/src/snippets/code/doc_src_qt4-intro.cpp 8
 
         \c label1 is a QLabel that displays the text "Hello"; \c
         label2 is a QLabel with no text, with the object name
@@ -370,7 +372,7 @@
         they blindly followed Qt's convention and provided a "const
         char *name" in their subclasses's constructors. For example:
 
-        \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 9
+        \snippet doc/src/snippets/code/doc_src_qt4-intro.cpp 9
 
     \o  The name parameter was in Qt since version 1, and it always
         was documented as: "It is not very useful in the current
@@ -405,12 +407,12 @@
 
     Here's the Qt 3 idiom to cast a type to a subtype:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 10
+    \snippet doc/src/snippets/code/doc_src_qt4-intro.cpp 10
 
     The Qt 4 idiom is both cleaner and safer, because typos will always
     result in compiler errors:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 11
+    \snippet doc/src/snippets/code/doc_src_qt4-intro.cpp 11
 
     \section1 QPointer<T>
 
@@ -421,7 +423,7 @@
 
     Example:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 12
+    \snippet doc/src/snippets/code/doc_src_qt4-intro.cpp 12
 
     QPointer<T> is more or less the same as the old QGuardedPtr<T> class,
     except that it is now implemented in a much more lightweight manner
@@ -461,7 +463,7 @@
 
     To enable the Qt 3 support classes and functions, add the line
 
-    \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 13
+    \snippet doc/src/snippets/code/doc_src_qt4-intro.pro 13
 
     to your \c .pro file.
 
@@ -469,18 +471,18 @@
     in a compiler warning (e.g., "'find' is deprecated"). If you want to turn
     off that warning, add the line
 
-    \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 14
+    \snippet doc/src/snippets/code/doc_src_qt4-intro.pro 14
 
     to your \c .pro file.
 
     If you want to use compatibility functions but don't want to link
     against the Qt3Support library, add the line
 
-    \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 15
+    \snippet doc/src/snippets/code/doc_src_qt4-intro.pro 15
 
     or
 
-    \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 16
+    \snippet doc/src/snippets/code/doc_src_qt4-intro.pro 16
 
     to your \c .pro file, depending on whether you want compatibility
     function calls to generate compiler warnings or not.

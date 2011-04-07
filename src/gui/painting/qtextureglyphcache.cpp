@@ -168,7 +168,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
             continue;
         if (listItemCoordinates.contains(GlyphAndSubPixelPosition(glyph, subPixelPosition)))
             continue;
-        glyph_metrics_t metrics = fontEngine->alphaMapBoundingBox(glyph, m_transform, format);
+        glyph_metrics_t metrics = fontEngine->alphaMapBoundingBox(glyph, subPixelPosition, m_transform, format);
 
 #ifdef CACHE_DEBUG
         printf("(%4x): w=%.2f, h=%.2f, xoff=%.2f, yoff=%.2f, x=%.2f, y=%.2f\n",

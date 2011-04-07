@@ -79,6 +79,11 @@ void QLocalSocketPrivate::setErrorString(const QString &function)
         errorString = QLocalSocket::tr("%1: Invalid name").arg(function);
         state = QLocalSocket::UnconnectedState;
         break;
+    case ERROR_ACCESS_DENIED:
+        error = QLocalSocket::SocketAccessError;
+        errorString = QLocalSocket::tr("%1: Access denied").arg(function);
+        state = QLocalSocket::UnconnectedState;
+        break;
     default:
         error = QLocalSocket::UnknownSocketError;
         errorString = QLocalSocket::tr("%1: Unknown error %2").arg(function).arg(windowsError);

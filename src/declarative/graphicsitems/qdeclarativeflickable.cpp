@@ -399,7 +399,7 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
 
     \section1 Example Usage
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage flickable.gif
     \enddiv
 
@@ -1318,7 +1318,9 @@ void QDeclarativeFlickable::resizeContent(qreal w, qreal h, QPointF center)
     Q_D(QDeclarativeFlickable);
     if (w != d->hData.viewSize) {
         qreal oldSize = d->hData.viewSize;
-        setContentWidth(w);
+        d->hData.viewSize = w;
+        d->contentItem->setWidth(w);
+        emit contentWidthChanged();
         if (center.x() != 0) {
             qreal pos = center.x() * w / oldSize;
             setContentX(contentX() + pos - center.x());
@@ -1326,12 +1328,15 @@ void QDeclarativeFlickable::resizeContent(qreal w, qreal h, QPointF center)
     }
     if (h != d->vData.viewSize) {
         qreal oldSize = d->vData.viewSize;
-        setContentHeight(h);
+        d->vData.viewSize = h;
+        d->contentItem->setHeight(h);
+        emit contentHeightChanged();
         if (center.y() != 0) {
             qreal pos = center.y() * h / oldSize;
             setContentY(contentY() + pos - center.y());
         }
     }
+    d->updateBeginningEnd();
 }
 
 /*!

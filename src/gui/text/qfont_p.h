@@ -281,6 +281,10 @@ public:
     int timer_id;
 };
 
+Q_GUI_EXPORT int qt_defaultDpiX();
+Q_GUI_EXPORT int qt_defaultDpiY();
+Q_GUI_EXPORT int qt_defaultDpi();
+
 QT_END_NAMESPACE
 
 #endif // QFONT_P_H

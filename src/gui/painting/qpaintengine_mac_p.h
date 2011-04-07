@@ -57,14 +57,11 @@
 #include "private/qt_mac_p.h"
 #include "private/qpaintengine_p.h"
 #include "private/qpolygonclipper_p.h"
+#include "private/qfont_p.h"
 #include "QtCore/qhash.h"
 
 typedef struct CGColorSpace *CGColorSpaceRef;
 QT_BEGIN_NAMESPACE
-
-extern int qt_defaultDpi();
-extern int qt_defaultDpiX();
-extern int qt_defaultDpiY();
 
 class QCoreGraphicsPaintEnginePrivate;
 class QCoreGraphicsPaintEngine : public QPaintEngine
