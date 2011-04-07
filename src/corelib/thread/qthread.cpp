@@ -149,9 +149,6 @@ QAdoptedThread::QAdoptedThread(QThreadData *data)
 
 QAdoptedThread::~QAdoptedThread()
 {
-#ifndef QT_NO_THREAD
-//    QThreadPrivate::finish(this);
-#endif
     // fprintf(stderr, "~QAdoptedThread = %p\n", this);
 }
 
