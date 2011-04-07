@@ -134,7 +134,7 @@ public:
 
     bool event(QEvent* ev);
 
-    static const QEvent::Type PostThreadChangeEvent = (QEvent::Type)(QEvent::User + 1);
+    Q_INVOKABLE void startNotifications();
 
 public Q_SLOTS:
     // TODO: Why do we do this? This is private Qt implementation stuff anyway, no need for it

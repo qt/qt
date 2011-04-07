@@ -106,6 +106,7 @@ Q_DECLARE_METATYPE(QList<QNetworkProxy>)
 //TESTED_FILES=
 
 QT_FORWARD_DECLARE_CLASS(QTcpSocket)
+QT_FORWARD_DECLARE_CLASS(SocketPair)
 
 class tst_QTcpSocket : public QObject
 {
@@ -138,6 +139,7 @@ public slots:
     void init();
     void cleanup();
 private slots:
+    void socketsConstructedBeforeEventLoop();
     void constructing();
     void setInvalidSocketDescriptor();
     void setSocketDescriptor();
@@ -221,6 +223,8 @@ protected slots:
     void abortiveClose_abortSlot();
     void remoteCloseErrorSlot();
     void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *auth);
+    void earlySocketBytesSent(qint64 bytes);
+    void earlySocketReadyRead();
 
 private:
     QByteArray expectedReplyIMAP();
@@ -243,6 +247,10 @@ private:
     bool gotClosedSignal;
     int numConnections;
     static int loopLevel;
+
+    SocketPair *earlyConstructedSockets;
+    int earlyBytesWrittenCount;
+    int earlyReadyReadCount;
 };
 
 enum ProxyTests {
@@ -296,8 +304,16 @@ public:
 
 tst_QTcpSocket::tst_QTcpSocket()
 {
-    Q_SET_DEFAULT_IAP
     tmpSocket = 0;
+
+    //This code relates to the socketsConstructedBeforeEventLoop test case
+    earlyConstructedSockets = new SocketPair;
+    QVERIFY(earlyConstructedSockets->create());
+    earlyBytesWrittenCount = 0;
+    earlyReadyReadCount = 0;
+    connect(earlyConstructedSockets->endPoints[0], SIGNAL(readyRead()), this, SLOT(earlySocketReadyRead()));
+    connect(earlyConstructedSockets->endPoints[1], SIGNAL(bytesWritten(qint64)), this, SLOT(earlySocketBytesSent(qint64)));
+    earlyConstructedSockets->endPoints[1]->write("hello work");
 }
 
 tst_QTcpSocket::~tst_QTcpSocket()
@@ -395,6 +411,33 @@ void tst_QTcpSocket::proxyAuthenticationRequired(const QNetworkProxy &, QAuthent
     ++proxyAuthCalled;
     auth->setUser("qsockstest");
     auth->setPassword("password");
+}
+
+//----------------------------------------------------------------------------------
+
+void tst_QTcpSocket::socketsConstructedBeforeEventLoop()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    QFETCH_GLOBAL(bool, ssl);
+    if (setProxy || ssl)
+        return;
+    //This test checks that sockets constructed before QCoreApplication::exec() still emit signals
+    //see construction code in the tst_QTcpSocket constructor
+    enterLoop(3);
+    QCOMPARE(earlyBytesWrittenCount, 1);
+    QCOMPARE(earlyReadyReadCount, 1);
+    earlyConstructedSockets->endPoints[0]->close();
+    earlyConstructedSockets->endPoints[1]->close();
+}
+
+void tst_QTcpSocket::earlySocketBytesSent(qint64 bytes)
+{
+    earlyBytesWrittenCount++;
+}
+
+void tst_QTcpSocket::earlySocketReadyRead()
+{
+    earlyReadyReadCount++;
 }
 
 //----------------------------------------------------------------------------------

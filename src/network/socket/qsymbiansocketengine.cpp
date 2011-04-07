@@ -1433,6 +1433,26 @@ void QSymbianSocketEnginePrivate::setError(TInt symbianError)
     hasSetSocketError = true;
 }
 
+void QSymbianSocketEngine::startNotifications()
+{
+    Q_D(QSymbianSocketEngine);
+#ifdef QNATIVESOCKETENGINE_DEBUG
+        qDebug() << "QSymbianSocketEngine::startNotifications" << d->readNotificationsEnabled << d->writeNotificationsEnabled << d->exceptNotificationsEnabled;
+#endif
+    if (!d->asyncSelect && (d->readNotificationsEnabled || d->writeNotificationsEnabled || d->exceptNotificationsEnabled)) {
+        if (d->threadData->eventDispatcher) {
+            d->asyncSelect = q_check_ptr(new QAsyncSelect(
+                static_cast<QEventDispatcherSymbian*> (d->threadData->eventDispatcher), d->nativeSocket,
+                this));
+        } else {
+            // call again when event dispatcher has been created
+            QMetaObject::invokeMethod(this, "startNotifications", Qt::QueuedConnection);
+        }
+    }
+    if (d->asyncSelect)
+        d->asyncSelect->IssueRequest();
+}
+
 bool QSymbianSocketEngine::isReadNotificationEnabled() const
 {
     Q_D(const QSymbianSocketEngine);
@@ -1448,13 +1468,7 @@ void QSymbianSocketEngine::setReadNotificationEnabled(bool enable)
     qDebug() << "QSymbianSocketEngine::setReadNotificationEnabled" << enable << "socket" << d->socketDescriptor;
 #endif
     d->readNotificationsEnabled = enable;
-    if (enable && d->threadData->eventDispatcher && !d->asyncSelect)
-        d->asyncSelect = q_check_ptr(
-            new QAsyncSelect(static_cast<QEventDispatcherSymbian*>(d->threadData->eventDispatcher),
-                d->nativeSocket, this));
-    // TODO: what do we do if event dispatcher doesn't exist yet?
-    if (d->asyncSelect)
-        d->asyncSelect->IssueRequest();
+    startNotifications();
 }
 
 bool QSymbianSocketEngine::isWriteNotificationEnabled() const
@@ -1472,13 +1486,7 @@ void QSymbianSocketEngine::setWriteNotificationEnabled(bool enable)
     qDebug() << "QSymbianSocketEngine::setWriteNotificationEnabled" << enable << "socket" << d->socketDescriptor;
 #endif
     d->writeNotificationsEnabled = enable;
-    if (enable && d->threadData->eventDispatcher && !d->asyncSelect)
-        d->asyncSelect = q_check_ptr(
-            new QAsyncSelect(static_cast<QEventDispatcherSymbian*>(d->threadData->eventDispatcher),
-                d->nativeSocket, this));
-    // TODO: what do we do if event dispatcher doesn't exist yet?
-    if (d->asyncSelect)
-        d->asyncSelect->IssueRequest();
+    startNotifications();
 }
 
 bool QSymbianSocketEngine::isExceptionNotificationEnabled() const
@@ -1489,7 +1497,6 @@ bool QSymbianSocketEngine::isExceptionNotificationEnabled() const
     return false;
 }
 
-// FIXME do we really need this for symbian?
 void QSymbianSocketEngine::setExceptionNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
@@ -1498,12 +1505,7 @@ void QSymbianSocketEngine::setExceptionNotificationEnabled(bool enable)
     qDebug() << "QSymbianSocketEngine::setExceptionNotificationEnabled" << enable << "socket" << d->socketDescriptor;
 #endif
     d->exceptNotificationsEnabled = enable;
-    if (enable && d->threadData->eventDispatcher && !d->asyncSelect)
-        d->asyncSelect = q_check_ptr(
-            new QAsyncSelect(static_cast<QEventDispatcherSymbian*>(d->threadData->eventDispatcher),
-                d->nativeSocket, this));
-    if (d->asyncSelect)
-        d->asyncSelect->IssueRequest();
+    startNotifications();
 }
 
 bool QSymbianSocketEngine::waitForRead(int msecs, bool *timedOut)
@@ -1588,37 +1590,20 @@ qint64 QSymbianSocketEngine::bytesToWrite() const
     return 0;
 }
 
-//TODO: is defining PostThreadChangeEvent as QEvent::User + 1 safe?
-//TODO: would QMetaObject::invokeMethod(obj, "postThreadChangeSlot", Qt::QueuedConnection) be better?
-//TODO: if QTBUG-16787 is implemented, use that instead
 bool QSymbianSocketEngine::event(QEvent* ev)
 {
     Q_D(QSymbianSocketEngine);
+    if (ev->type() == QEvent::ThreadChange) {
 #ifdef QNATIVESOCKETENGINE_DEBUG
-    qDebug() << "QSymbianSocketEngine::event";
-#endif
-    switch (ev->type()) {
-    case QEvent::ThreadChange:
-#ifdef QNATIVESOCKETENGINE_DEBUG
-        qDebug() << "ThreadChange" << d->readNotificationsEnabled << d->writeNotificationsEnabled << d->exceptNotificationsEnabled;
+        qDebug() << "QSymbianSocketEngine::event - ThreadChange" << d->readNotificationsEnabled << d->writeNotificationsEnabled << d->exceptNotificationsEnabled;
 #endif
         if (d->asyncSelect) {
             delete d->asyncSelect;
             d->asyncSelect = 0;
-            QEvent *postThreadChangeEvent = new QEvent(PostThreadChangeEvent);
-            QCoreApplication::postEvent(this, postThreadChangeEvent);
+            // recreate select in new thread (because it is queued, the method is called in the new thread context)
+            QMetaObject::invokeMethod(this, "startNotifications", Qt::QueuedConnection);
         }
         d->selectTimer.Close();
-        return true;
-    case PostThreadChangeEvent:
-#ifdef QNATIVESOCKETENGINE_DEBUG
-        qDebug() << "PostThreadChangeEvent" << d->readNotificationsEnabled << d->writeNotificationsEnabled << d->exceptNotificationsEnabled;
-#endif
-        // recreate select in new thread
-        d->asyncSelect = q_check_ptr(
-            new QAsyncSelect(static_cast<QEventDispatcherSymbian*>(d->threadData->eventDispatcher),
-                d->nativeSocket, this));
-        d->asyncSelect->IssueRequest();
         return true;
     }
     return QAbstractSocketEngine::event(ev);
