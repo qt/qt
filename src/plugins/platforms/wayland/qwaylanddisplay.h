@@ -55,8 +55,6 @@ class QWaylandBuffer;
 class QPlatformScreen;
 class QWaylandScreen;
 class QWaylandGLIntegration;
-class QWaylandEventThread;
-
 class QWaylandDisplay : public QObject {
     Q_OBJECT
 
@@ -85,16 +83,38 @@ public:
     struct wl_display *wl_display() const { return mDisplay; }
 public slots:
     void createNewScreen(struct wl_output *output, QRect geometry);
-    void displayHandleGlobal(uint32_t id, QByteArray interface, uint32_t version);
+    void readEvents();
+    void flushRequests();
 
 private:
+    void waitForScreens();
+    void displayHandleGlobal(uint32_t id,
+                             const QByteArray &interface,
+                             uint32_t version);
+
     struct wl_display *mDisplay;
-    QWaylandEventThread *mEventThread;
     struct wl_compositor *mCompositor;
     struct wl_shm *mShm;
     struct wl_shell *mShell;
     QList<QPlatformScreen *> mScreens;
     QList<QWaylandInputDevice *> mInputDevices;
+
+    QSocketNotifier *mReadNotifier;
+    int mFd;
+    bool mScreensInitialized;
+
+    uint32_t mSocketMask;
+
+    static const struct wl_output_listener outputListener;
+    static int sourceUpdate(uint32_t mask, void *data);
+    static void displayHandleGlobal(struct wl_display *display,
+                                    uint32_t id,
+                                    const char *interface,
+                                    uint32_t version, void *data);
+    static void outputHandleGeometry(void *data,
+                                     struct wl_output *output,
+                                     int32_t x, int32_t y,
+                                     int32_t width, int32_t height);
 
 #ifdef QT_WAYLAND_GL_SUPPORT
     QWaylandGLIntegration *mEglIntegration;

@@ -44,7 +44,6 @@
 
 #include <QtGui/QPlatformWindow>
 #include <QtCore/QWaitCondition>
-#include <QtCore/QMutex>
 
 #include "qwaylanddisplay.h"
 
