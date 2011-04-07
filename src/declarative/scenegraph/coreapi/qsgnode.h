@@ -96,12 +96,17 @@ public:
     Q_DECLARE_FLAGS(DirtyFlags, DirtyFlag)
 
     enum Flag {
+        // Lower 16 bites reserved for general node
         OwnedByParent               = 0x0001,
         UsePreprocess               = 0x0002,
         ChildrenDoNotOverloap       = 0x0004,
 
+        // Upper 16 bits reserved for node subclasses
+
         // QSGBasicGeometryNode
-        OwnsGeometry                = 0x00010000
+        OwnsGeometry                = 0x00010000,
+        OwnsMaterial                = 0x00020000,
+        OwnsOpaqueMaterial          = 0x00040000
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -129,6 +134,7 @@ public:
 
     Flags flags() const { return m_nodeFlags; }
     void setFlag(Flag, bool = true);
+    void setFlags(Flags, bool = true);
 
     virtual void preprocess() { }
 

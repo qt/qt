@@ -188,6 +188,13 @@ void QSGNode::removeChildNode(QSGNode *node)
 }
 
 
+/*!
+    Sets the flag \a f on this node if \a enabled is true;
+    otherwise clears the flag.
+
+    \sa flags()
+*/
+
 void QSGNode::setFlag(Flag f, bool enabled)
 {
     if (enabled)
@@ -195,6 +202,23 @@ void QSGNode::setFlag(Flag f, bool enabled)
     else
         m_nodeFlags &= ~f;
 }
+
+
+/*!
+    Sets the flags \a f on this node if \a enabled is true;
+    otherwise clears the flags.
+
+    \sa flags()
+*/
+
+void QSGNode::setFlags(Flags f, bool enabled)
+{
+    if (enabled)
+        m_nodeFlags |= f;
+    else
+        m_nodeFlags &= ~f;
+}
+
 
 void QSGNode::markDirty(DirtyFlags flags)
 {
@@ -208,7 +232,6 @@ void QSGNode::markDirty(DirtyFlags flags)
             static_cast<QSGRootNode *>(p)->notifyNodeChange(this, flags);
         p = p->m_parent;
     }
-
 }
 
 QSGBasicGeometryNode::QSGBasicGeometryNode()
@@ -245,6 +268,10 @@ QSGGeometryNode::QSGGeometryNode()
 QSGGeometryNode::~QSGGeometryNode()
 {
     destroy();
+    if (flags() & OwnsMaterial)
+        delete m_material;
+    if (flags() & OwnsOpaqueMaterial)
+        delete m_opaque_material;
 }
 
 /*!
@@ -275,7 +302,13 @@ void QSGGeometryNode::setRenderOrder(int order)
  */
 void QSGGeometryNode::setMaterial(QSGMaterial *material)
 {
+    if (flags() & OwnsMaterial)
+        delete m_material;
     m_material = material;
+#ifndef QT_NO_DEBUG
+    if (m_material != 0 && m_opaque_material == m_material)
+        qWarning("QSGGeometryNode: using same material for both opaque and translucent");
+#endif
     markDirty(DirtyMaterial);
 }
 
@@ -295,7 +328,14 @@ void QSGGeometryNode::setMaterial(QSGMaterial *material)
  */
 void QSGGeometryNode::setOpaqueMaterial(QSGMaterial *material)
 {
+    if (flags() & OwnsOpaqueMaterial)
+        delete m_opaque_material;
     m_opaque_material = material;
+#ifndef QT_NO_DEBUG
+    if (m_opaque_material != 0 && m_opaque_material == m_material)
+        qWarning("QSGGeometryNode: using same material for both opaque and translucent");
+#endif
+
     markDirty(DirtyMaterial);
 }
 
