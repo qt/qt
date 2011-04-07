@@ -1448,8 +1448,10 @@ void QSymbianControl::HandleResourceChange(int resourceType)
     {
         handleClientAreaChange();
         // Send resize event to trigger desktopwidget workAreaResized signal
-        QResizeEvent e(qt_desktopWidget->size(), qt_desktopWidget->size());
-        QApplication::sendEvent(qt_desktopWidget, &e);
+        if (qt_desktopWidget) {
+            QResizeEvent e(qt_desktopWidget->size(), qt_desktopWidget->size());
+            QApplication::sendEvent(qt_desktopWidget, &e);
+        }
         break;
     }
 #endif
