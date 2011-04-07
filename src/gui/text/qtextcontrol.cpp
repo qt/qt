@@ -1950,6 +1950,7 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
     if (isGettingInput)
         layout->setPreeditArea(cursor.position() - block.position(), e->preeditString());
     QList<QTextLayout::FormatRange> overrides;
+    const int oldPreeditCursor = preeditCursor;
     preeditCursor = e->preeditString().length();
     hideCursor = false;
     for (int i = 0; i < e->attributes().size(); ++i) {
@@ -1970,6 +1971,8 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
     }
     layout->setAdditionalFormats(overrides);
     cursor.endEditBlock();
+    if (oldPreeditCursor != preeditCursor)
+        emit q->microFocusChanged();
 }
 
 QVariant QTextControl::inputMethodQuery(Qt::InputMethodQuery property) const
