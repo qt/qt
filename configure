@@ -7120,7 +7120,6 @@ EOF
         canBuildQtConcurrent="no"
 	;;
     symbian-gcce)
-        canBuildWebKit="no"
         canBuildQtConcurrent="no"
         ;;
     symbian-armcc)
