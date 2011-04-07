@@ -59,7 +59,7 @@ Item{
             interval: 1000
             running: true
             repeat: false
-            onTriggered: burster.burst(0.1);
+            onTriggered: burster.pulse(0.1);
         }
         Timer{
             interval: 2000
@@ -73,7 +73,6 @@ Item{
         image: "../Trails/content/particle.png"
         color: "black"
         colorVariation: 0.0
-        additive: 0
     }
     GridView{ id: grid; cellWidth: 40; cellHeight: 40
         model: theModel.parts.grid
