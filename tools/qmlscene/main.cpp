@@ -63,6 +63,8 @@
 #include <qsgitem.h>
 #include <qsgview.h>
 
+#include <stdlib.h>
+
 #define QT_NO_SCENEGRAPHITEM
 
 #ifndef QT_NO_SCENEGRAPHITEM
