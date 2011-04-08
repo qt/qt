@@ -39,10 +39,11 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDXPIXMAPEGLINTEGRATION_H
-#define QWAYLANDXPIXMAPEGLINTEGRATION_H
+#ifndef QWAYLANDXCOMPOSITEEGLINTEGRATION_H
+#define QWAYLANDXCOMPOSITEEGLINTEGRATION_H
 
 #include "gl_integration/qwaylandglintegration.h"
+#include "wayland-client.h"
 
 #include <QtCore/QTextStream>
 #include <QtCore/QDataStream>
@@ -50,33 +51,48 @@
 #include <QtCore/QVariant>
 #include <QtGui/QWidget>
 
-#include <X11/Xlib.h>
+#include <QWaitCondition>
 
+#include <X11/Xlib.h>
 #include <EGL/egl.h>
 
-class QWaylandXPixmapEglIntegration : public QWaylandGLIntegration
+struct wl_xcomposite;
+
+class QWaylandXCompositeEGLIntegration : public QWaylandGLIntegration
 {
 public:
-    QWaylandXPixmapEglIntegration(QWaylandDisplay *display);
-    ~QWaylandXPixmapEglIntegration();
+    QWaylandXCompositeEGLIntegration(QWaylandDisplay * waylandDispaly);
+    ~QWaylandXCompositeEGLIntegration();
 
     void initialize();
+
     QWaylandWindow *createEglWindow(QWidget *widget);
 
     QWaylandDisplay *waylandDisplay() const;
-    Display *xDisplay() const;
-    Window rootWindow() const;
-    int depth() const;
+    struct wl_xcomposite *waylandXComposite() const;
 
-    EGLDisplay eglDisplay();
+    Display *xDisplay() const;
+    EGLDisplay eglDisplay() const;
+    int screen() const;
+    Window rootWindow() const;
 
 private:
     QWaylandDisplay *mWaylandDisplay;
+    struct wl_xcomposite *mWaylandComposite;
+
     Display *mDisplay;
+    EGLDisplay mEglDisplay;
     int mScreen;
     Window mRootWindow;
-    EGLDisplay mEglDisplay;
 
+    static void wlDisplayHandleGlobal(struct wl_display *display, uint32_t id,
+                             const char *interface, uint32_t version, void *data);
+
+    static const struct wl_xcomposite_listener xcomposite_listener;
+    static void rootInformation(void *data,
+                 struct wl_xcomposite *xcomposite,
+                 const char *display_name,
+                 uint32_t root_window);
 };
 
-#endif // QWAYLANDXPIXMAPEGLINTEGRATION_H
+#endif // QWAYLANDXCOMPOSITEEGLINTEGRATION_H

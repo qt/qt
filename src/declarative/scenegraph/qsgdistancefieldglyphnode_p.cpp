@@ -135,6 +135,10 @@ void QSGDistanceFieldTextMaterialShader::updateState(const RenderState &state, Q
     QSGDistanceFieldTextMaterial *material = static_cast<QSGDistanceFieldTextMaterial *>(newEffect);
     QSGDistanceFieldTextMaterial *oldMaterial = static_cast<QSGDistanceFieldTextMaterial *>(oldEffect);
 
+    bool updated = material->updateTexture();
+    if (updated && !material->glyphCache()->useWorkaroundBrokenFBOReadback())
+        activate();
+
     if (oldMaterial == 0
            || material->color() != oldMaterial->color()
            || state.isOpacityDirty()) {
@@ -158,7 +162,6 @@ void QSGDistanceFieldTextMaterialShader::updateState(const RenderState &state, Q
     if (updateRange)
         updateAlphaRange();
 
-    bool updated = material->updateTexture();
     Q_ASSERT(!material->texture().isNull());
 
     Q_ASSERT(oldMaterial == 0 || !oldMaterial->texture().isNull());
@@ -203,6 +206,7 @@ QSGMaterialShader *QSGDistanceFieldTextMaterial::createShader() const
 
 bool QSGDistanceFieldTextMaterial::updateTexture()
 {
+    m_glyph_cache->updateCache();
     QSize glyphCacheSize = m_glyph_cache->textureSize();
     if (glyphCacheSize != m_size) {
         QSGPlainTexture *t = new QSGPlainTexture;

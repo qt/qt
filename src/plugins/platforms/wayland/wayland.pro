@@ -38,8 +38,11 @@ contains(QT_CONFIG, opengl) {
     contains(QT_CONFIG, opengles2) {
         CONFIG += wayland_egl
         #CONFIG += xpixmap_egl
+        #CONFIG += xcomposite_egl
     } else {
-        CONFIG += xpixmap_glx    
+        CONFIG += xpixmap_glx
+        #CONFIG += xcomposite_gl
+
     }
 
     include ($$PWD/gl_integration/gl_integration.pri)

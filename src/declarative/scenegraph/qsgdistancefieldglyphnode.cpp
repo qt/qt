@@ -55,7 +55,6 @@ QSGDistanceFieldGlyphNode::QSGDistanceFieldGlyphNode()
 {
     m_geometry.setDrawingMode(GL_TRIANGLES);
     setGeometry(&m_geometry);
-    setFlag(QSGNode::UsePreprocess);
 
 #ifndef QT_OPENGL_ES
     setPreferredAntialiasingMode(QSGGlyphNode::SubPixelAntialiasing);
@@ -111,12 +110,6 @@ void QSGDistanceFieldGlyphNode::setStyle(QSGText::TextStyle style)
 void QSGDistanceFieldGlyphNode::setStyleColor(const QColor &color)
 {
     m_styleColor = color;
-}
-
-void QSGDistanceFieldGlyphNode::preprocess()
-{
-    Q_ASSERT(m_glyph_cache);
-    m_glyph_cache->updateCache();
 }
 
 void QSGDistanceFieldGlyphNode::updateGeometry()

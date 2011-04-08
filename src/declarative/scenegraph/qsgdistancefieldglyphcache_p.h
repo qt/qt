@@ -100,6 +100,8 @@ public:
 
     bool cacheIsFull() const { return m_textureData->currY >= maxTextureSize(); }
 
+    bool useWorkaroundBrokenFBOReadback() const;
+
     static bool distanceFieldEnabled();
 
 private Q_SLOTS:
