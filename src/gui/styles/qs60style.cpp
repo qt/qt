@@ -1550,8 +1550,10 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     skinElement==QS60StylePrivate::SE_TabBarTabWestActive) {
                 const int borderThickness =
                     QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
-                const int tabOverlap =
-                    QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap) - borderThickness;
+                int tabOverlap = pixelMetric(PM_TabBarTabOverlap);
+                if (tabOverlap > borderThickness)
+                    tabOverlap -= borderThickness;
+
                 const bool usesScrollButtons = 
                     (widget) ? (qobject_cast<const QTabBar*>(widget))->usesScrollButtons() : false;
                 const int roomForScrollButton = 
@@ -1590,9 +1592,11 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QStyleOptionTabV3 optionTab = *tab;
             QRect tr = optionTab.rect;
             const bool directionMirrored = (optionTab.direction == Qt::RightToLeft);
-            const int borderThickness = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
-            const int tabOverlap =
-                QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap) - borderThickness;
+            const int borderThickness =
+                QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
+            int tabOverlap = pixelMetric(PM_TabBarTabOverlap);
+            if (tabOverlap > borderThickness)
+                tabOverlap -= borderThickness;
             const bool usesScrollButtons = 
                 (widget) ? (qobject_cast<const QTabBar*>(widget))->usesScrollButtons() : false;
             const int roomForScrollButton = 
@@ -2541,6 +2545,11 @@ int QS60Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const
             //without having to define custom pixel metric
             metricValue *= 2;
 
+#if defined(Q_WS_S60)
+    if (metric == PM_TabBarTabOverlap && (QSysInfo::s60Version() > QSysInfo::SV_S60_5_2))
+        metricValue = 0;
+#endif
+
     return metricValue;
 }
 
@@ -3015,10 +3024,11 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                 ret = QCommonStyle::subElementRect(element, opt, widget);
 
                 if (const QStyleOptionTabWidgetFrame *twf = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(opt)) {
-                    const int tabOverlapNoBorder =
-                        QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap);
-                    const int tabOverlap =
-                        tabOverlapNoBorder - QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
+                    const int borderThickness =
+                        QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
+                    int tabOverlap = pixelMetric(PM_TabBarTabOverlap);
+                    if (tabOverlap > borderThickness)
+                        tabOverlap -= borderThickness;
                     const QTabWidget *tab = qobject_cast<const QTabWidget *>(widget);
                     int gain = (tab) ? tabOverlap * tab->count() : 0;
                     switch (twf->shape) {
@@ -3036,7 +3046,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                                     if ((ret.right() + gain) > widget->rect().right())
                                         gain = widget->rect().right() - ret.right();
                                     ret.adjust(0, 0, gain, 0);
-                                    }
+                                }
                             }
                             break;
                         }
