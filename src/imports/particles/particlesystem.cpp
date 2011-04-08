@@ -218,7 +218,7 @@ ParticleData* ParticleSystem::newDatum(int groupId)
     ParticleData* ret;
     if(m_data[nextIdx]){//Recycle, it's faster.
         ret = m_data[nextIdx];
-        if(!m_overwrite && ret->pv.t + ret->pv.lifeSpan > m_timeInt/1000.0){
+        if(!m_overwrite && ret->stillAlive()){
             return 0;//Artificial longevity (or too fast emission) means this guy hasn't died. To maintain count, don't emit a new one
         }//###Reset?
     }else{
@@ -379,6 +379,13 @@ void ParticleData::debugDump()
              << "Vel: " << pv.sx << "," << pv.sy
              << "Acc: " << pv.ax << "," << pv.ay
              << "Time: " << pv.t;// << "," << (system->m_timeInt / 1000.0);
+}
+
+bool ParticleData::stillAlive()
+{
+    if(!system)
+        return false;
+    return (pv.t + pv.lifeSpan) > (system->m_timeInt/1000.0);
 }
 
 QT_END_NAMESPACE

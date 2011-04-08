@@ -65,6 +65,7 @@ class FollowEmitter : public ParticleEmitter
 public:
     explicit FollowEmitter(QSGItem *parent = 0);
     virtual void emitWindow(int timeStamp);
+    virtual void reset();
 
     int particlesPerParticlePerSecond() const
     {

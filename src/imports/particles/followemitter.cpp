@@ -49,6 +49,7 @@ FollowEmitter::FollowEmitter(QSGItem *parent) :
   , m_lastTimeStamp(0)
   , m_emitterXVariation(0)
   , m_emitterYVariation(0)
+  , m_followCount(0)
 {
     connect(this, SIGNAL(followChanged(QString)),
             this, SLOT(recalcParticlesPerSecond()));
@@ -67,7 +68,13 @@ void FollowEmitter::recalcParticlesPerSecond(){
     }else{
         setParticlesPerSecond(m_particlesPerParticlePerSecond * m_followCount);
         m_lastEmission.resize(m_followCount);
+        m_lastEmission.fill(0);
     }
+}
+
+void FollowEmitter::reset()
+{
+    m_followCount = 0;
 }
 
 void FollowEmitter::emitWindow(int timeStamp)
@@ -77,8 +84,10 @@ void FollowEmitter::emitWindow(int timeStamp)
     if(!m_emitting && !m_burstLeft && !m_emitLeft)
         return;
     if(m_followCount != m_system->m_groupData[m_system->m_groupIds[m_follow]]->size){
+        qreal oldPPS = m_particlesPerSecond;
         recalcParticlesPerSecond();
-        return;//system may need to update
+        if(m_particlesPerSecond != oldPPS)
+            return;//system may need to update
     }
 
     if(m_burstLeft){
@@ -102,7 +111,7 @@ void FollowEmitter::emitWindow(int timeStamp)
     for(int i=0; i<m_system->m_groupData[gId]->size; i++){
         pt = m_lastEmission[i];
         ParticleData* d = m_system->m_data[i + m_system->m_groupData[gId]->start];
-        if(!d)
+        if(!d || !d->stillAlive())
             continue;
         if(pt < d->pv.t)
             pt = d->pv.t;

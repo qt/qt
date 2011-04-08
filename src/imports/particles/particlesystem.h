@@ -207,6 +207,7 @@ public:
     int systemIndex;
 
     void debugDump();
+    bool stillAlive();
 };
 
 QT_END_NAMESPACE

@@ -188,6 +188,8 @@ uint SpriteEngine::updateSprites(uint time)
     //Sprite State Update;
     while(!m_stateUpdates.isEmpty() && time >= m_stateUpdates.first().first){
         foreach(int idx, m_stateUpdates.first().second){
+            if(idx >= m_sprites.count())
+                continue;//TODO: Proper fix(because this does happen and I'm just ignoring it)
             int stateIdx = m_sprites[idx];
             int nextIdx = -1;
             int goalPath = goalSeek(stateIdx, idx);
