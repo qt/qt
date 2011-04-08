@@ -929,14 +929,6 @@
     the brushed metal style as supported by the windowing system. This
     attribute is only applicable to Mac OS X.
 
-    \value WA_MacNoCocoaChildWindow Indicates the widget should not be added
-    as a Cocoa child window of it's parent window. This will free the window
-    from being moved around together with the parent. However, this
-    will also allow it to stack/hide behind it's parent (if they are on
-    the same window level, e.g both windows are dialogs). This can cause problems if
-    both windows are modal, as the child can then block input to the parent
-    while hiding behind it. This attribute is only applicable to Mac OS X.
-
     \omitvalue WA_MacMetalStyle
 
     \value WA_Mapped Indicates that the widget is mapped on screen.
