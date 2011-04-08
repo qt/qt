@@ -821,6 +821,8 @@ void QSGDistanceFieldGlyphCache::resizeTexture(int width, int height)
         return;
     }
 
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+
     if (!m_textureData->fbo)
         ctx->functions()->glGenFramebuffers(1, &m_textureData->fbo);
     ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_textureData->fbo);
@@ -900,6 +902,8 @@ void QSGDistanceFieldGlyphCache::resizeTexture(int width, int height)
     glDeleteTextures(1, &oldTexture);
 
     ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
+
+    glPopAttrib();
 }
 
 void QSGDistanceFieldGlyphCache::updateCache()
@@ -929,6 +933,11 @@ void QSGDistanceFieldGlyphCache::updateCache()
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, glyph.width(), glyph.height(), GL_ALPHA, GL_UNSIGNED_BYTE, glyph.constBits());
     }
     m_textureData->pendingGlyphs.clear();
+}
+
+bool QSGDistanceFieldGlyphCache::useWorkaroundBrokenFBOReadback() const
+{
+    return ctx->d_ptr->workaround_brokenFBOReadBack;
 }
 
 bool QSGDistanceFieldGlyphCache::distanceFieldEnabled()
