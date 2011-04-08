@@ -50,6 +50,7 @@
 #include <private/qdrawhelper_p.h>
 #include <private/qimage_p.h>
 #include <private/qnativeimagehandleprovider_p.h>
+#include <private/qfont_p.h>
 
 #include <private/qpaintengineex_opengl2_p.h>
 
@@ -63,19 +64,6 @@
 QT_BEGIN_NAMESPACE
 
 Q_OPENGL_EXPORT extern QGLWidget* qt_gl_share_widget();
-
-/*!
-    \class QGLFramebufferObjectPool
-    \since 4.6
-
-    \brief The QGLFramebufferObject class provides a pool of framebuffer
-    objects for offscreen rendering purposes.
-
-    When requesting an FBO of a given size and format, an FBO of the same
-    format and a size at least as big as the requested size will be returned.
-
-    \internal
-*/
 
 static inline int areaDiff(const QSize &size, const QGLFramebufferObject *fbo)
 {
@@ -891,9 +879,6 @@ void QGLPixmapData::reclaimTexture()
     forceToImage();
     destroyTexture();
 }
-
-Q_GUI_EXPORT int qt_defaultDpiX();
-Q_GUI_EXPORT int qt_defaultDpiY();
 
 int QGLPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {

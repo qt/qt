@@ -65,10 +65,12 @@ void QDeclarativeDebugHelper::setAnimationSlowDownFactor(qreal factor)
 }
 
 void QDeclarativeDebugHelper::enableDebugging() {
+#ifndef QDECLARATIVE_NO_DEBUG_PROTOCOL
     if (!QDeclarativeEnginePrivate::qml_debugging_enabled) {
         qWarning("Qml debugging is enabled. Only use this in a safe environment!");
     }
     QDeclarativeEnginePrivate::qml_debugging_enabled = true;
+#endif
 }
 
 QT_END_NAMESPACE

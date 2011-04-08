@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 15.0.2, SVG Export Plug-In  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
+	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
+]>
+<svg version="1.1"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+	 x="0px" y="0px" width="128px" height="128px" viewBox="0 0 128 128" overflow="visible" enable-background="new 0 0 128 128"
+	 xml:space="preserve">
+<defs>
+</defs>
+<rect x="0" display="none" fill="#1A171B" width="128" height="128"/>
+<circle fill="#13235B" cx="64" cy="64" r="47"/>
+<g>
+	<g>
+		<path fill="#F29400" d="M14.352,113.699c0,0-13.927-13.928-3.122-24.732c7.203-7.205,11.706-2.701,15.308-6.305
+			c3.602-3.601,1.417-6.729,5.28-10.84c7.547-8.035,15.842,3.149,15.842,3.149l4.765,4.765l-7.204,7.204
+			c0,0,5.134,7.943,12.338,0.74c-3.827,10.578-9.411,9.39-13.014,12.99c-3.602,3.603,0.854,8.058-6.303,15.31
+			C27.508,126.855,14.352,113.699,14.352,113.699z"/>
+	</g>
+	<defs>
+		<filter id="Adobe_OpacityMaskFilter" filterUnits="userSpaceOnUse" x="7.122" y="68.918" width="50.437" height="51.368">
+			
+				<feColorMatrix  type="matrix" values="-1 0 0 0 1  0 -1 0 0 1  0 0 -1 0 1  0 0 0 1 0" color-interpolation-filters="sRGB" result="source"/>
+		</filter>
+	</defs>
+	<mask maskUnits="userSpaceOnUse" x="7.122" y="68.918" width="50.437" height="51.368" id="SVGID_1_">
+		<g filter="url(#Adobe_OpacityMaskFilter)">
+			
+				<image overflow="visible" width="55" height="57" xlink:href="data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEASABIAAD/7AARRHVja3kAAQAEAAAAHgAA/+4AIUFkb2JlAGTAAAAAAQMA
+EAMCAwYAAAG8AAACPgAAAr//2wCEABALCwsMCxAMDBAXDw0PFxsUEBAUGx8XFxcXFx8eFxoaGhoX
+Hh4jJSclIx4vLzMzLy9AQEBAQEBAQEBAQEBAQEABEQ8PERMRFRISFRQRFBEUGhQWFhQaJhoaHBoa
+JjAjHh4eHiMwKy4nJycuKzU1MDA1NUBAP0BAQEBAQEBAQEBAQP/CABEIADkANwMBIgACEQEDEQH/
+xAB9AAABBQEBAAAAAAAAAAAAAAAAAgQFBgcBAwEBAAAAAAAAAAAAAAAAAAAAABAAAgMAAgICAwAA
+AAAAAAAAAgMBBAUABhBAMBEhEiMRAAICAQMFAQAAAAAAAAAAAAECABEhEEESIDFRIgMwEgEAAAAA
+AAAAAAAAAAAAAABA/9oADAMBAAIRAxEAAADPwAc+F5Kkx0alEcAdmuaSVq5PFkFles5qQR0J/T8X
+0IuyGbQrdAm4IAAcNwsnjAgpIAAf/9oACAECAAEFAPQ//9oACAEDAAEFAPQ//9oACAEBAAEFAPNa
+k2xx+W5UTExPlYSw8bI/jezBFerWBTeCJGVDrjrEZPT1qZUzgSvZT+qtc2zc516mL25WcuABIBHN
+loQvbZXln3+eruEG5bRJfGnAB27WJKzYbC5TslWfh7YECtNZDoagQvst6LDfNW8+qVbtBCN3sRtF
+jDYfw//aAAgBAgIGPwAH/9oACAEDAgY/AAf/2gAIAQEBBj8A1tRichkSj36FRcljUW12hsQlcHQK
+osnsIC952EH0ZbPkwCo1DaOrigD66cmF5gxMDRrMY4Jl7Tie9wVoTGCnJwIWc2Tov0U43i+0u4aM
+4A3m+i0bHiU5IMKoSSYXc2T+X//Z" transform="matrix(1 0 0 1 5.0005 66)">
+			</image>
+		</g>
+	</mask>
+	<g mask="url(#SVGID_1_)">
+		<path fill="#B20000" d="M14.352,113.699c0,0-13.927-13.928-3.122-24.732c7.203-7.205,11.706-2.701,15.308-6.305
+			c3.602-3.601,1.417-6.729,5.28-10.84c7.547-8.035,15.842,3.149,15.842,3.149l4.765,4.765l-7.204,7.204
+			c0,0,5.134,7.943,12.338,0.74c-3.827,10.578-9.411,9.39-13.014,12.99c-3.602,3.603,0.854,8.058-6.303,15.31
+			C27.508,126.855,14.352,113.699,14.352,113.699z"/>
+	</g>
+</g>
+<g>
+	<path fill="#FFEDB8" d="M37.791,69.168c5.189,0,9.624,5.894,9.692,5.98l4.588,4.588l-7.027,7.027l-0.143,0.143l0.11,0.17
+		c0.102,0.158,2.55,3.875,6.503,3.875c1.808,0,3.63-0.791,5.427-2.352c-2.541,6.327-5.777,7.936-8.649,9.362
+		c-1.422,0.707-2.765,1.374-3.924,2.532c-1.562,1.562-1.672,3.261-1.8,5.227c-0.171,2.633-0.384,5.909-4.504,10.084
+		c-2.771,2.808-5.958,4.231-9.472,4.231c-7.46,0-14-6.448-14.064-6.514c-0.137-0.138-13.625-13.877-3.122-24.379
+		c4.152-4.153,7.301-4.348,10.078-4.519c1.97-0.122,3.67-0.227,5.229-1.786c1.829-1.829,2.218-3.585,2.595-5.284
+		c0.384-1.735,0.782-3.529,2.69-5.562C33.761,70.118,35.709,69.168,37.791,69.168 M37.791,68.918c-1.932,0-3.979,0.781-5.974,2.904
+		c-3.862,4.11-1.678,7.239-5.28,10.84c-3.602,3.604-8.104-0.9-15.308,6.305c-10.805,10.805,3.122,24.732,3.122,24.732
+		s6.586,6.587,14.241,6.587c3.164,0,6.51-1.126,9.649-4.306c7.157-7.252,2.701-11.707,6.303-15.31
+		c3.603-3.601,9.187-2.412,13.014-12.99c-2.248,2.247-4.293,3.021-6.044,3.021c-3.862,0-6.293-3.761-6.293-3.761l7.204-7.204
+		l-4.765-4.765C47.66,74.972,43.17,68.918,37.791,68.918L37.791,68.918z"/>
+</g>
+<rect x="35.983" y="67.296" transform="matrix(-0.7071 0.7071 -0.7071 -0.7071 146.0415 81.7395)" fill="#41281B" width="40.217" height="7.64"/>
+<rect x="35.697" y="84.509" transform="matrix(-0.7073 0.707 -0.707 -0.7073 128.185 124.851)" fill="#ECEDED" width="5.092" height="8.913"/>
+<rect x="27.593" y="92.612" transform="matrix(-0.7072 0.7071 -0.7071 -0.7072 120.0864 144.402)" fill="#ECEDED" width="5.092" height="8.914"/>
+<rect x="24.55" y="96.293" transform="matrix(-0.7071 0.7071 -0.7071 -0.7071 115.1376 156.3543)" fill="#F6F6F6" width="1.273" height="11.46"/>
+<rect x="26.351" y="94.491" transform="matrix(-0.7071 0.7071 -0.7071 -0.7071 116.9377 152.0052)" fill="#F6F6F6" width="1.273" height="11.461"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.15" stroke-miterlimit="10" x1="23.499" y1="99.433" x2="66.495" y2="56.438"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.15" stroke-miterlimit="10" x1="28" y1="103.934" x2="70.997" y2="60.941"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.15" stroke-miterlimit="10" x1="27.101" y1="103.034" x2="70.096" y2="60.04"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.15" stroke-miterlimit="10" x1="26.2" y1="102.134" x2="69.196" y2="59.139"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.15" stroke-miterlimit="10" x1="25.3" y1="101.233" x2="68.295" y2="58.239"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.15" stroke-miterlimit="10" x1="24.4" y1="100.333" x2="67.395" y2="57.339"/>
+<circle fill="#1A171B" cx="26.908" cy="113.596" r="1.761"/>
+<path fill="#1A171B" d="M33.138,107.366c0.688,0.687,0.688,1.804,0,2.493c-0.688,0.686-1.804,0.686-2.492,0
+	c-0.688-0.689-0.688-1.807,0-2.493C31.334,106.678,32.45,106.678,33.138,107.366z"/>
+<circle fill="#FFEDB8" cx="36.848" cy="75.131" r="1.762"/>
+<circle fill="#1A171B" cx="32.31" cy="115.397" r="1.762"/>
+<path fill="#1A171B" d="M38.54,109.167c0.689,0.687,0.689,1.804,0,2.493c-0.688,0.686-1.804,0.686-2.492,0
+	c-0.688-0.689-0.688-1.807,0-2.493C36.736,108.479,37.852,108.479,38.54,109.167z"/>
+<g>
+	<g>
+		<path fill="#ECEDED" d="M105.895,10.52l2.704,2.702L70.764,51.056c0,0-2.702,2.702,0,5.404c2.704,2.702,5.405,0,5.405,0
+			l37.833-37.833l2.704,2.702c0,0-35.132,35.131-37.835,37.833c-2.702,2.702-8.107,2.702-10.81,0s-2.702-8.106,0-10.809
+			C70.765,45.649,105.895,10.52,105.895,10.52z"/>
+	</g>
+	<defs>
+		<filter id="Adobe_OpacityMaskFilter_1_" filterUnits="userSpaceOnUse" x="66.036" y="10.52" width="50.671" height="50.669">
+			
+				<feColorMatrix  type="matrix" values="-1 0 0 0 1  0 -1 0 0 1  0 0 -1 0 1  0 0 0 1 0" color-interpolation-filters="sRGB" result="source"/>
+		</filter>
+	</defs>
+	<mask maskUnits="userSpaceOnUse" x="66.036" y="10.52" width="50.671" height="50.669" id="SVGID_2_">
+		<g filter="url(#Adobe_OpacityMaskFilter_1_)">
+			
+				<image overflow="visible" width="55" height="56" xlink:href="data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEASABIAAD/7AARRHVja3kAAQAEAAAAHgAA/+4AIUFkb2JlAGTAAAAAAQMA
+EAMCAwYAAAGyAAACNwAAA9T/2wCEABALCwsMCxAMDBAXDw0PFxsUEBAUGx8XFxcXFx8eFxoaGhoX
+Hh4jJSclIx4vLzMzLy9AQEBAQEBAQEBAQEBAQEABEQ8PERMRFRISFRQRFBEUGhQWFhQaJhoaHBoa
+JjAjHh4eHiMwKy4nJycuKzU1MDA1NUBAP0BAQEBAQEBAQEBAQP/CABEIADgANwMBIgACEQEDEQH/
+xACCAAEBAQADAAAAAAAAAAAAAAAABgQDBQcBAQAAAAAAAAAAAAAAAAAAAAAQAQEBAAIDAQEAAAAA
+AAAAAAUEBhADACBAAQIRAAIBAgQEBgIDAQAAAAAAAAECAxEEACFREjHBQgUQIGEyUhNBFZEiIwYS
+AQAAAAAAAAAAAAAAAAAAAED/2gAMAwEAAhEDEQAAAPPwDcOwp4w61WCTNwt0YL95scjGN1vxSIv3
+mwzgBUdyENnAAD//2gAIAQIAAQUA+D//2gAIAQMAAQUA+D//2gAIAQEAAQUA9Bx7GLNSHCL3+g49
+jFiKJuMNONS0CLmRkOQ4HHsYsRRNxhppqWgSqqJwxPatd3JeDj2MWIom4w001LQJVVE4Ym66pCrw
+cexixFE3GGmmpaBKqonDE3XVIVcZ+r9JwppqWgSqqJwxN11SFXOV1/8ABHR3bgAvouuqQq9P/9oA
+CAECAgY/AAf/2gAIAQMCBj8AB//aAAgBAQEGPwDyLaWi1Jzdz7UXU4ht7e4+2bb/ALJxofl6eVbS
+0WpObufai6nH6ztlJO4yCskhzNT1vyGPrjrJNId00zZhQepuQx22xhudz3kkcMgNNw3sF3j+fFbS
+0WpObufai6nH6ztlJO4yCskhzNT1vyGPrjrJNId00zZhQepuQwLe3AlvpRkOt3+TaAYXuksm+6SR
+ZVY8AUO5QBoPBbS0WpObufai6nH6ztlJO4yCskhzNT1vyGPrjrJNId00zZhQepuQwLe3AlvpRkOt
+3+TaAYe7u3Mk0hqSeAGg9PBbS0WpObufai6nH6ztlJO4yCskhzNT1vyGPrjrJNId00zZhQepuQwL
+e3AlvpRkOt3+TaAYe7u3Mk0hqSeAGg9PGfuVrFW6ZnBYCpru2Bm9Fx9cdZJpDummbMKD1NyGBb24
+Et9KMh1u/wAm0Aw93duZJpDUk8ANB6eRu33sJnspGJyoSm7j/X8j84ZP+fsgJJM2IT6lB9cqnD3d
+25kmkNSTwA0Hp5f/2Q==" transform="matrix(1 0 0 1 64.0005 8)">
+			</image>
+		</g>
+	</mask>
+	<g opacity="0.77" mask="url(#SVGID_2_)">
+		<path fill="#1C1B1B" d="M105.895,10.52l2.704,2.702L70.764,51.056c0,0-2.702,2.702,0,5.404c2.704,2.702,5.405,0,5.405,0
+			l37.833-37.833l2.704,2.702c0,0-35.132,35.131-37.835,37.833c-2.702,2.702-8.107,2.702-10.81,0s-2.702-8.106,0-10.809
+			C70.765,45.649,105.895,10.52,105.895,10.52z"/>
+	</g>
+</g>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="40.044" y1="81.762" x2="45.447" y2="87.166"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="40.966" y1="80.84" x2="46.37" y2="86.241"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="41.96" y1="79.846" x2="47.363" y2="85.248"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="43.168" y1="78.639" x2="48.57" y2="84.042"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="44.587" y1="77.219" x2="49.99" y2="82.623"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="46.006" y1="75.801" x2="51.41" y2="81.203"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="47.285" y1="74.522" x2="52.688" y2="79.925"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="48.847" y1="72.961" x2="54.249" y2="78.362"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="50.621" y1="71.185" x2="56.023" y2="76.589"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="52.489" y1="69.329" x2="57.891" y2="74.731"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="54.405" y1="67.4" x2="59.709" y2="72.704"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="56.517" y1="65.392" x2="61.821" y2="70.696"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="59.166" y1="62.744" x2="64.469" y2="68.047"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="61.883" y1="60.026" x2="67.187" y2="65.329"/>
+<line fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="64.902" y1="57.007" x2="70.206" y2="62.31"/>
+<g display="none">
+	<g display="inline">
+		<path fill="#F29400" d="M0,24.468C0,24.468,0,9,12,9c8,0,8,5,12,5s4.525-2.95,8.952-3.088C41.605,10.642,40,21.458,40,21.458
+			v5.291h-8c0,0-1.56,7.262,6.44,7.262C30.44,37.762,28,34,24,34c-4,0-4,4.948-12,5C0,39.078,0,24.468,0,24.468z"/>
+	</g>
+	<defs>
+		<filter id="Adobe_OpacityMaskFilter_2_" filterUnits="userSpaceOnUse" x="0" y="9" width="40.118" height="30">
+			
+				<feColorMatrix  type="matrix" values="-1 0 0 0 1  0 -1 0 0 1  0 0 -1 0 1  0 0 0 1 0" color-interpolation-filters="sRGB" result="source"/>
+		</filter>
+	</defs>
+	<mask maskUnits="userSpaceOnUse" x="0" y="9" width="40.118" height="30" id="SVGID_3_" display="inline">
+		<g filter="url(#Adobe_OpacityMaskFilter_2_)">
+			
+				<image overflow="visible" width="46" height="35" xlink:href="data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEASABIAAD/7AARRHVja3kAAQAEAAAAHgAA/+4AIUFkb2JlAGTAAAAAAQMA
+EAMCAwYAAAGrAAACBgAAAl3/2wCEABALCwsMCxAMDBAXDw0PFxsUEBAUGx8XFxcXFx8eFxoaGhoX
+Hh4jJSclIx4vLzMzLy9AQEBAQEBAQEBAQEBAQEABEQ8PERMRFRISFRQRFBEUGhQWFhQaJhoaHBoa
+JjAjHh4eHiMwKy4nJycuKzU1MDA1NUBAP0BAQEBAQEBAQEBAQP/CABEIACMALgMBIgACEQEDEQH/
+xAB+AAABBQEBAAAAAAAAAAAAAAAAAgMFBgcEAQEBAAAAAAAAAAAAAAAAAAAAABAAAgMAAgIDAQAA
+AAAAAAAAAgMBBAUREzAGECAxFBEAAgEEAQMFAAAAAAAAAAAAAAERIUECElEQMYEgIkIDExIBAAAA
+AAAAAAAAAAAAAAAAMP/aAAwDAQACEQMRAAAAoEknQjPuDXogztq4Vo7NJyW2mgQdegRyGUyCwPEg
+AB//2gAIAQIAAQUA8P8A/9oACAEDAAEFAPD/AP/aAAgBAQABBQARkpr4r3DYxLKR6W8zUfA8TzjV
+4dZzMwJB2Mshs4aQm9VWsZAf7vXigbGW4IBllcDp3VwOtrlL+0u2nYmu6jvgIXPZxALHsLnTYdDi
++A/D+n//2gAIAQICBj8AH//aAAgBAwIGPwAf/9oACAEBAQY/AFjipbJdzZLY10c8QbPEi5WsCoVx
+G9UNJGONmxzyI7jhmX1pU5P1uLNdri9w4yHRwbX6/LwX8+j/2Q==" transform="matrix(1 0 0 1 -2.9995 6)">
+			</image>
+		</g>
+	</mask>
+	<g display="inline" mask="url(#SVGID_3_)">
+		<path fill="#B20000" d="M0,24.468C0,24.468,0,9,12,9c8,0,8,5,12,5s4.525-2.95,8.952-3.088C41.605,10.642,40,21.458,40,21.458
+			v5.291h-8c0,0-1.56,7.262,6.44,7.262C30.44,37.762,28,34,24,34c-4,0-4,4.948-12,5C0,39.078,0,24.468,0,24.468z"/>
+	</g>
+</g>
+<g display="none">
+	<path display="inline" fill="#FFEDB8" d="M12,9.25c4.592,0,6.439,1.633,8.07,3.075c1.169,1.033,2.179,1.926,3.93,1.926
+		c2.047,0,3.246-0.764,4.405-1.502c1.171-0.746,2.382-1.518,4.555-1.585c0.104-0.003,0.207-0.005,0.308-0.005
+		c2.021,0,3.606,0.649,4.712,1.931c2.537,2.939,1.782,8.28,1.771,8.37V26.5H32h-0.202l-0.042,0.197
+		c-0.028,0.13-0.663,3.21,1.127,5.426c0.979,1.211,2.483,1.913,4.481,2.093c-1.956,0.813-3.706,1.21-5.323,1.21
+		c-1.76,0-3.121-0.458-4.438-0.9C26.416,34.126,25.295,33.75,24,33.75c-1.755,0-2.766,0.888-3.937,1.916
+		c-1.631,1.432-3.479,3.054-8.064,3.084l-0.095,0C0.388,38.75,0.25,24.61,0.25,24.468C0.25,24.315,0.391,9.25,12,9.25 M12,9
+		C0,9,0,24.468,0,24.468S-0.002,39,11.904,39c0.031,0,0.064,0,0.096,0c8-0.052,8-5,12-5c2.67,0,4.644,1.675,8.041,1.675
+		c1.692,0,3.739-0.416,6.4-1.664c-8,0-6.44-7.262-6.44-7.262h8v-5.291c0,0,1.566-10.551-6.733-10.551
+		c-0.104,0-0.209,0.001-0.316,0.005C28.525,11.05,28,14,24,14S20,9,12,9L12,9z"/>
+</g>
+<rect x="31.032" y="21" display="none" fill="#41281B" width="32.967" height="6"/>
+<rect x="25" y="20.5" display="none" fill="#ECEDED" width="3.999" height="7"/>
+<rect x="16.001" y="20.5" display="none" fill="#ECEDED" width="3.999" height="7"/>
+<rect x="12" y="19.5" display="none" fill="#F6F6F6" width="1" height="9"/>
+<rect x="14" y="19.5" display="none" fill="#F6F6F6" width="1" height="9"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.15" stroke-miterlimit="10" x1="13" y1="21.625" x2="60.75" y2="21.625"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.15" stroke-miterlimit="10" x1="13" y1="26.625" x2="60.75" y2="26.625"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.15" stroke-miterlimit="10" x1="13" y1="25.625" x2="60.75" y2="25.625"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.15" stroke-miterlimit="10" x1="13" y1="24.625" x2="60.75" y2="24.625"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.15" stroke-miterlimit="10" x1="13" y1="23.625" x2="60.75" y2="23.625"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.15" stroke-miterlimit="10" x1="13" y1="22.625" x2="60.75" y2="22.625"/>
+<circle display="none" fill="#1A171B" cx="7.029" cy="31.382" r="1.384"/>
+<circle display="none" fill="#1A171B" cx="12.564" cy="31.382" r="1.384"/>
+<circle display="none" fill="#FFEDB8" cx="33.908" cy="15.543" r="1.384"/>
+<circle display="none" fill="#1A171B" cx="9.029" cy="35.382" r="1.384"/>
+<circle display="none" fill="#1A171B" cx="14.564" cy="35.382" r="1.384"/>
+<g display="none">
+	<g display="inline">
+		<path fill="#ECEDED" d="M124,16v4H68c0,0-4,0-4,4s4,4,4,4h56v4c0,0-52,0-56,0s-8-4-8-8s4-8,8-8C72.001,16,124,16,124,16z"/>
+	</g>
+	<defs>
+		<filter id="Adobe_OpacityMaskFilter_3_" filterUnits="userSpaceOnUse" x="60" y="16" width="64" height="16">
+			
+				<feColorMatrix  type="matrix" values="-1 0 0 0 1  0 -1 0 0 1  0 0 -1 0 1  0 0 0 1 0" color-interpolation-filters="sRGB" result="source"/>
+		</filter>
+	</defs>
+	<mask maskUnits="userSpaceOnUse" x="60" y="16" width="64" height="16" id="SVGID_4_" display="inline">
+		<g filter="url(#Adobe_OpacityMaskFilter_3_)">
+			
+				<image overflow="visible" width="68" height="20" xlink:href="data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEASABIAAD/7AARRHVja3kAAQAEAAAAHgAA/+4AIUFkb2JlAGTAAAAAAQMA
+EAMCAwYAAAGtAAACAQAAAsf/2wCEABALCwsMCxAMDBAXDw0PFxsUEBAUGx8XFxcXFx8eFxoaGhoX
+Hh4jJSclIx4vLzMzLy9AQEBAQEBAQEBAQEBAQEABEQ8PERMRFRISFRQRFBEUGhQWFhQaJhoaHBoa
+JjAjHh4eHiMwKy4nJycuKzU1MDA1NUBAP0BAQEBAQEBAQEBAQP/CABEIABQARAMBIgACEQEDEQH/
+xACMAAEAAQUAAAAAAAAAAAAAAAAABQECAwQGAQEAAAAAAAAAAAAAAAAAAAAAEAABAgQGAwEAAAAA
+AAAAAAAABicCAwQWMBIUBRUlAREXBxEAAAQCBwcEAwAAAAAAAAAAAAERAhIDITGR0hOjREFxBBQ0
+BRVRYUIzIqKDEgEAAAAAAAAAAAAAAAAAAAAw/9oADAMBAAIRAxEAAACH3tvnSTQwmUMJm2IoarAM
+vTgoAC0OdB//2gAIAQIAAQUAwv/aAAgBAwABBQDC/9oACAEBAAEFAEmk4N2gnSvzWTMbUbUbUbUb
+Uj+c5eq5VKwU28pKpQ6lp5lnqUs9SlnqUs9SlnqUiSKjh8aKq1e08nrXL9OUOUOUOUOUR/R8va8r
+/9oACAECAgY/AC//2gAIAQMCBj8AL//aAAgBAQEGPwB3cO4Pwu3S1KtDeZV07CIHLN815trcw5jm
+nucVA1GaNRmjUZo1GaNRmg4Mddn2j5eNi94oUtrHEdjZOKXxZG80UyP8jiadCKXqIC4TGJFjlOI2
+/tCOgmWtvDoJlrbw6CZa28OgmWtvDoJlrbwV3ATCLe28OSwz5lYcOhVRQzxUfN0w4dabV2JvGoT+
+Q1GUNRlDUZQ1GUNRlA48dNv1D5eSi9ooksqH/9k=" transform="matrix(1 0 0 1 58.0005 14)">
+			</image>
+		</g>
+	</mask>
+	<g display="inline" opacity="0.75" mask="url(#SVGID_4_)">
+		<path fill="#1C1B1B" d="M124,16v4H68c0,0-4,0-4,4s4,4,4,4h56v4c0,0-52,0-56,0s-8-4-8-8s4-8,8-8C72.001,16,124,16,124,16z"/>
+	</g>
+</g>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="32" y1="21" x2="32" y2="27"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="33.025" y1="21" x2="33.025" y2="27"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="34.129" y1="21" x2="34.129" y2="27"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="35.469" y1="21" x2="35.469" y2="27"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="37.046" y1="21" x2="37.046" y2="27"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="38.623" y1="21" x2="38.623" y2="27"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="40.042" y1="21" x2="40.042" y2="27"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="41.776" y1="21" x2="41.776" y2="27"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="43.747" y1="21" x2="43.747" y2="27"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="46.033" y1="21" x2="46.033" y2="27"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="48.635" y1="21" x2="48.635" y2="27"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="51.315" y1="21" x2="51.315" y2="27"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="54.311" y1="21" x2="54.311" y2="27"/>
+<line display="none" fill="none" stroke="#FFFFFF" stroke-width="0.25" stroke-miterlimit="10" x1="57.385" y1="21" x2="57.385" y2="27"/>
+</svg>

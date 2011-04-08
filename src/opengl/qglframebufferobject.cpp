@@ -44,6 +44,7 @@
 
 #include <qdebug.h>
 #include <private/qgl_p.h>
+#include <private/qfont_p.h>
 #if !defined(QT_OPENGL_ES_1)
 #include <private/qpaintengineex_opengl2_p.h>
 #endif
@@ -1215,9 +1216,6 @@ void QGLFramebufferObject::drawTexture(const QPointF &point, QMacCompatGLuint te
     const_cast<QGLContext *>(QGLContext::currentContext())->drawTexture(point, textureId, textureTarget);
 }
 #endif
-
-Q_GUI_EXPORT int qt_defaultDpiX();
-Q_GUI_EXPORT int qt_defaultDpiY();
 
 /*! \reimp */
 int QGLFramebufferObject::metric(PaintDeviceMetric metric) const

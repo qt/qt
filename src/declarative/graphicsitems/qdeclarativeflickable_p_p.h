@@ -94,8 +94,18 @@ public:
     struct AxisData {
         AxisData(QDeclarativeFlickablePrivate *fp, void (QDeclarativeFlickablePrivate::*func)(qreal))
             : move(fp, func), viewSize(-1), smoothVelocity(fp), atEnd(false), atBeginning(true)
-            , fixingUp(false)
+            , fixingUp(false), inOvershoot(false)
         {}
+
+        void reset() {
+            velocityBuffer.clear();
+            dragStartOffset = 0;
+            fixingUp = false;
+            inOvershoot = false;
+        }
+
+        void addVelocitySample(qreal v, qreal maxVelocity);
+        void updateVelocity();
 
         QDeclarativeTimeLineValueProxy<QDeclarativeFlickablePrivate> move;
         qreal viewSize;
@@ -106,9 +116,11 @@ public:
         qreal velocity;
         qreal flickTarget;
         QDeclarativeFlickablePrivate::Velocity smoothVelocity;
+        QPODVector<qreal,10> velocityBuffer;
         bool atEnd : 1;
         bool atBeginning : 1;
         bool fixingUp : 1;
+        bool inOvershoot : 1;
     };
 
     void flickX(qreal velocity);
@@ -129,7 +141,7 @@ public:
     void setRoundedViewportX(qreal x);
     void setRoundedViewportY(qreal y);
 
-    qreal overShootDistance(qreal velocity, qreal size);
+    qreal overShootDistance(qreal size);
 
     void itemGeometryChanged(QDeclarativeItem *, const QRectF &, const QRectF &);
 
