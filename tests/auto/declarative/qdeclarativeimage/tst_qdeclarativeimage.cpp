@@ -248,14 +248,22 @@ void tst_qdeclarativeimage::preserveAspectRatio()
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/aspectratio.qml"));
     QDeclarativeImage *image = qobject_cast<QDeclarativeImage*>(canvas->rootObject());
     QVERIFY(image != 0);
+    QCOMPARE(image->property("widthChange").toInt(), 1);
+    QCOMPARE(image->property("heightChange").toInt(), 1);
     image->setWidth(80.0);
+    QCOMPARE(image->property("widthChange").toInt(), 2);
+    QCOMPARE(image->property("heightChange").toInt(), 2);
     QCOMPARE(image->width(), 80.);
     QCOMPARE(image->height(), 80.);
 
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/aspectratio.qml"));
     image = qobject_cast<QDeclarativeImage*>(canvas->rootObject());
-    image->setHeight(60.0);
     QVERIFY(image != 0);
+    QCOMPARE(image->property("widthChange").toInt(), 1);
+    QCOMPARE(image->property("heightChange").toInt(), 1);
+    image->setHeight(60.0);
+    QCOMPARE(image->property("widthChange").toInt(), 2);
+    QCOMPARE(image->property("heightChange").toInt(), 2);
     QCOMPARE(image->height(), 60.);
     QCOMPARE(image->width(), 60.);
     delete canvas;
