@@ -2152,6 +2152,7 @@ void QAbstractFormBuilder::saveButtonExtraInfo(const QAbstractButton *widget, Do
         DomPropertyList attributes = ui_widget->elementAttribute();
         DomString *domString = new DomString();
         domString->setText(buttonGroup->objectName());
+        domString->setAttributeNotr(QLatin1String("true"));
         DomProperty *domProperty = new DomProperty();
         domProperty->setAttributeName(QLatin1String(buttonGroupPropertyC));
         domProperty->setElementString(domString);
