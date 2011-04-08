@@ -964,7 +964,6 @@ void tst_QThread::adoptMultipleThreads()
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(int(recorder.activationCount), numThreads);
-    qDeleteAll(nativeThreads);
 }
 
 void tst_QThread::adoptMultipleThreadsOverlap()
