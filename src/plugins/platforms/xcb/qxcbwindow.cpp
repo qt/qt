@@ -213,6 +213,12 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
                                        1, &parentWindow));
 
     }
+
+    // set the PID to let the WM kill the application if unresponsive
+    long pid = getpid();
+    Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                                   atom(QXcbAtom::_NET_WM_PID), XCB_ATOM_CARDINAL, 32,
+                                   1, &pid));
 }
 
 QXcbWindow::~QXcbWindow()
@@ -297,6 +303,8 @@ enum {
 Qt::WindowFlags QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
+
+    setNetWmWindowTypes(flags);
 
     if (type == Qt::ToolTip)
         flags |= Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint;
@@ -399,6 +407,42 @@ Qt::WindowFlags QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
     }
 
     return QPlatformWindow::setWindowFlags(flags);
+}
+
+void QXcbWindow::setNetWmWindowTypes(Qt::WindowFlags flags)
+{
+    // in order of decreasing priority
+    QVector<uint> windowTypes;
+
+    Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
+
+    switch (type) {
+    case Qt::Dialog:
+    case Qt::Sheet:
+        windowTypes.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_DIALOG));
+        break;
+    case Qt::Tool:
+    case Qt::Drawer:
+        windowTypes.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_UTILITY));
+        break;
+    case Qt::ToolTip:
+        windowTypes.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_TOOLTIP));
+        break;
+    case Qt::SplashScreen:
+        windowTypes.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_SPLASH));
+        break;
+    default:
+        break;
+    }
+
+    if (flags & Qt::FramelessWindowHint)
+        windowTypes.append(atom(QXcbAtom::_KDE_NET_WM_WINDOW_TYPE_OVERRIDE));
+
+    windowTypes.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_NORMAL));
+
+    Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                                   atom(QXcbAtom::_NET_WM_WINDOW_TYPE), XCB_ATOM_ATOM, 32,
+                                   windowTypes.count(), windowTypes.constData()));
 }
 
 WId QXcbWindow::winId() const
@@ -628,7 +672,7 @@ void QXcbWindow::handleFocusOutEvent(const xcb_focus_out_event_t *)
 
 void QXcbWindow::updateSyncRequestCounter()
 {
-    if (m_screen->syncRequestSupported() && m_syncValue.lo != 0 || m_syncValue.hi != 0) {
+    if (m_screen->syncRequestSupported() && (m_syncValue.lo != 0 || m_syncValue.hi != 0)) {
         Q_XCB_CALL(xcb_sync_set_counter(xcb_connection(), m_syncCounter, m_syncValue));
         xcb_flush(xcb_connection());
         connection()->sync();

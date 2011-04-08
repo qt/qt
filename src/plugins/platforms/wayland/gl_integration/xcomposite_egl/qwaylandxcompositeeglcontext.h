@@ -39,35 +39,44 @@
 **
 ****************************************************************************/
 
-#include "qwaylandxpixmapglxwindow.h"
+#ifndef QWAYLANDXCOMPOSITEEGLCONTEXT_H
+#define QWAYLANDXCOMPOSITEEGLCONTEXT_H
 
-QWaylandXPixmapGLXWindow::QWaylandXPixmapGLXWindow(QWidget *window, QWaylandXPixmapGLXIntegration *glxIntegration)
-    : QWaylandShmWindow(window)
-    , mGlxIntegration(glxIntegration)
-    , mContext(0)
+#include <QtGui/QPlatformGLContext>
+
+#include <QtCore/QWaitCondition>
+
+#include "qwaylandbuffer.h"
+#include "qwaylandxcompositeeglintegration.h"
+
+class QWaylandXCompositeEGLWindow;
+
+class QWaylandXCompositeEGLContext : public QPlatformGLContext
 {
-}
+public:
+    QWaylandXCompositeEGLContext(QWaylandXCompositeEGLIntegration *glxIntegration, QWaylandXCompositeEGLWindow *window);
 
-QWaylandWindow::WindowType QWaylandXPixmapGLXWindow::windowType() const
-{
-    //yeah. this type needs a new name
-    return QWaylandWindow::Egl;
-}
+    void makeCurrent();
+    void doneCurrent();
+    void swapBuffers();
+    void* getProcAddress(const QString& procName);
 
-QPlatformGLContext * QWaylandXPixmapGLXWindow::glContext() const
-{
-    if (!mContext) {
-        QWaylandXPixmapGLXWindow *that = const_cast<QWaylandXPixmapGLXWindow *>(this);
-        that->mContext = new QWaylandXPixmapGLXContext(mGlxIntegration,that);
-    }
-    return mContext;
-}
+    QPlatformWindowFormat platformWindowFormat() const;
 
-void QWaylandXPixmapGLXWindow::setGeometry(const QRect &rect)
-{
-    QWaylandShmWindow::setGeometry(rect);
+    void geometryChanged();
 
-    if (mContext) {
-        mContext->geometryChanged();
-    }
-}
+private:
+    QWaylandXCompositeEGLIntegration *mEglIntegration;
+    QWaylandXCompositeEGLWindow *mWindow;
+    QWaylandBuffer *mBuffer;
+
+    Window mXWindow;
+    EGLConfig mConfig;
+    EGLContext mContext;
+    EGLSurface mEglWindowSurface;
+
+    static void sync_function(void *data);
+    bool mWaitingForSync;
+};
+
+#endif // QWAYLANDXCOMPOSITEEGLCONTEXT_H

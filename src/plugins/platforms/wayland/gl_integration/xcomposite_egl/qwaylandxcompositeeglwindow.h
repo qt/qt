@@ -39,35 +39,27 @@
 **
 ****************************************************************************/
 
-#include "qwaylandxpixmapglxwindow.h"
+#ifndef QWAYLANDXCOMPOSITEEGLWINDOW_H
+#define QWAYLANDXCOMPOSITEEGLWINDOW_H
 
-QWaylandXPixmapGLXWindow::QWaylandXPixmapGLXWindow(QWidget *window, QWaylandXPixmapGLXIntegration *glxIntegration)
-    : QWaylandShmWindow(window)
-    , mGlxIntegration(glxIntegration)
-    , mContext(0)
+#include "qwaylandwindow.h"
+#include "qwaylandxcompositeeglintegration.h"
+#include "qwaylandxcompositeeglcontext.h"
+
+class QWaylandXCompositeEGLWindow : public QWaylandWindow
 {
-}
+public:
+    QWaylandXCompositeEGLWindow(QWidget *window, QWaylandXCompositeEGLIntegration *glxIntegration);
+    WindowType windowType() const;
 
-QWaylandWindow::WindowType QWaylandXPixmapGLXWindow::windowType() const
-{
-    //yeah. this type needs a new name
-    return QWaylandWindow::Egl;
-}
+    QPlatformGLContext *glContext() const;
 
-QPlatformGLContext * QWaylandXPixmapGLXWindow::glContext() const
-{
-    if (!mContext) {
-        QWaylandXPixmapGLXWindow *that = const_cast<QWaylandXPixmapGLXWindow *>(this);
-        that->mContext = new QWaylandXPixmapGLXContext(mGlxIntegration,that);
-    }
-    return mContext;
-}
+    void setGeometry(const QRect &rect);
 
-void QWaylandXPixmapGLXWindow::setGeometry(const QRect &rect)
-{
-    QWaylandShmWindow::setGeometry(rect);
+private:
+    QWaylandXCompositeEGLIntegration *mGlxIntegration;
+    QWaylandXCompositeEGLContext *mContext;
 
-    if (mContext) {
-        mContext->geometryChanged();
-    }
-}
+};
+
+#endif // QWAYLANDXCOMPOSITEEGLWINDOW_H

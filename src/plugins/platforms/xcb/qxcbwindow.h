@@ -92,6 +92,7 @@ public:
     void updateSyncRequestCounter();
 
 private:
+    void setNetWmWindowTypes(Qt::WindowFlags flags);
 
     QXcbScreen *m_screen;
 
