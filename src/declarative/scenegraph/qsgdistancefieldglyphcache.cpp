@@ -80,6 +80,18 @@ void qt_disableFontHinting(QFont &font)
     (m_textureData->doubleGlyphResolution ? QT_DISTANCEFIELD_DEFAULT_RADIUS / 2 : \
                                            QT_DISTANCEFIELD_DEFAULT_RADIUS)
 
+static inline int qt_next_power_of_two(int v)
+{
+    v--;
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+    ++v;
+    return v;
+}
+
 struct DFPoint
 {
     float x, y;
@@ -914,7 +926,7 @@ void QSGDistanceFieldGlyphCache::updateCache()
     int requiredWidth = m_textureData->currY == 0 ? m_textureData->currX : maxTextureSize();
     int requiredHeight = qMin(maxTextureSize(), m_textureData->currY + QT_DISTANCEFIELD_TILESIZE);
 
-    resizeTexture(requiredWidth, requiredHeight);
+    resizeTexture(qt_next_power_of_two(requiredWidth), qt_next_power_of_two(requiredHeight));
     glBindTexture(GL_TEXTURE_2D, m_textureData->texture);
 
     QSet<glyph_t>::const_iterator i = m_textureData->pendingGlyphs.constBegin();
