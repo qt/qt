@@ -490,10 +490,12 @@ void QObjectPrivate::clearGuards(QObject *object)
 
 /*! \internal
  */
-QMetaCallEvent::QMetaCallEvent(int id, const QObject *sender, int signalId,
+QMetaCallEvent::QMetaCallEvent(ushort method_offset, ushort method_relative, QObjectPrivate::StaticMetaCallFunction callFunction,
+                               const QObject *sender, int signalId,
                                int nargs, int *types, void **args, QSemaphore *semaphore)
-    : QEvent(MetaCall), id_(id), sender_(sender), signalId_(signalId),
-      nargs_(nargs), types_(types), args_(args), semaphore_(semaphore)
+    : QEvent(MetaCall), sender_(sender), signalId_(signalId),
+      nargs_(nargs), types_(types), args_(args), semaphore_(semaphore),
+      callFunction_(callFunction), method_offset_(method_offset), method_relative_(method_relative)
 { }
 
 /*! \internal
@@ -516,9 +518,13 @@ QMetaCallEvent::~QMetaCallEvent()
 
 /*! \internal
  */
-int QMetaCallEvent::placeMetaCall(QObject *object)
+void QMetaCallEvent::placeMetaCall(QObject *object)
 {
-    return QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, id_, args_);
+    if (callFunction_) {
+        callFunction_(object, QMetaObject::InvokeMetaMethod, method_relative_, args_);
+    } else {
+        QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, method_offset_ + method_relative_, args_);
+    }
 }
 
 /*!
@@ -3445,12 +3451,11 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
     args[0] = 0; // return value
     for (int n = 1; n < nargs; ++n)
         args[n] = QMetaType::construct((types[n] = c->argumentTypes[n-1]), argv[n]);
-    QCoreApplication::postEvent(c->receiver, new QMetaCallEvent(c->method(),
-                                                               sender,
-                                                               signal,
-                                                               nargs,
-                                                               types,
-                                                               args));
+    QCoreApplication::postEvent(c->receiver, new QMetaCallEvent(c->method_offset,
+                                                                c->method_relative,
+                                                                c->callFunction,
+                                                                sender, signal, nargs,
+                                                                types, args));
 }
 
 
@@ -3530,7 +3535,6 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
                 continue;
 #ifndef QT_NO_THREAD
             } else if (c->connectionType == Qt::BlockingQueuedConnection) {
-                const int method = c->method();
                 locker.unlock();
                 if (receiverInSameThread) {
                     qWarning("Qt: Dead lock detected while activating a BlockingQueuedConnection: "
@@ -3539,7 +3543,8 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
                     receiver->metaObject()->className(), receiver);
                 }
                 QSemaphore semaphore;
-                QCoreApplication::postEvent(receiver, new QMetaCallEvent(method,
+                QCoreApplication::postEvent(receiver, new QMetaCallEvent(c->method_offset, c->method_relative,
+                                                                         c->callFunction,
                                                                          sender, signal_absolute_index,
                                                                          0, 0,
                                                                          argv ? argv : empty_argv,

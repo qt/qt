@@ -257,25 +257,27 @@ class QSemaphore;
 class Q_CORE_EXPORT QMetaCallEvent : public QEvent
 {
 public:
-    QMetaCallEvent(int id, const QObject *sender, int signalId,
+    QMetaCallEvent(ushort method_offset, ushort method_relative, QObjectPrivate::StaticMetaCallFunction callFunction , const QObject *sender, int signalId,
                    int nargs = 0, int *types = 0, void **args = 0, QSemaphore *semaphore = 0);
     ~QMetaCallEvent();
 
-    inline int id() const { return id_; }
+    inline int id() const { return method_offset_ + method_relative_; }
     inline const QObject *sender() const { return sender_; }
     inline int signalId() const { return signalId_; }
     inline void **args() const { return args_; }
 
-    virtual int placeMetaCall(QObject *object);
+    virtual void placeMetaCall(QObject *object);
 
 private:
-    int id_;
     const QObject *sender_;
     int signalId_;
     int nargs_;
     int *types_;
     void **args_;
     QSemaphore *semaphore_;
+    QObjectPrivate::StaticMetaCallFunction callFunction_;
+    ushort method_offset_;
+    ushort method_relative_;
 };
 
 class QBoolBlocker

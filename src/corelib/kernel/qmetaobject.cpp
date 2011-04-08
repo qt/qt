@@ -1625,9 +1625,19 @@ bool QMetaMethod::invoke(QObject *object,
         val9.data()
     };
     // recompute the methodIndex by reversing the arithmetic in QMetaObject::property()
-    int methodIndex = ((handle - priv(mobj->d.data)->methodData) / 5) + mobj->methodOffset();
+    int idx_relative = ((handle - priv(mobj->d.data)->methodData) / 5);
+    int idx_offset =  mobj->methodOffset();
+    QObjectPrivate::StaticMetaCallFunction callFunction =
+        (QMetaObjectPrivate::get(mobj)->revision >= 6 && mobj->d.extradata)
+        ? reinterpret_cast<const QMetaObjectExtraData *>(mobj->d.extradata)->static_metacall : 0;
+
     if (connectionType == Qt::DirectConnection) {
-        return QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, methodIndex, param) < 0;
+        if (callFunction) {
+            callFunction(object, QMetaObject::InvokeMetaMethod, idx_relative, param);
+            return true;
+        } else {
+            return QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, idx_relative + idx_offset, param) < 0;
+        }
     } else if (connectionType == Qt::QueuedConnection) {
         if (returnValue.data()) {
             qWarning("QMetaMethod::invoke: Unable to invoke methods with return values in "
@@ -1661,7 +1671,7 @@ bool QMetaMethod::invoke(QObject *object,
             }
         }
 
-        QCoreApplication::postEvent(object, new QMetaCallEvent(methodIndex,
+        QCoreApplication::postEvent(object, new QMetaCallEvent(idx_offset, idx_relative, callFunction,
                                                         0, -1, nargs, types, args));
     } else { // blocking queued connection
 #ifndef QT_NO_THREAD
@@ -1672,7 +1682,7 @@ bool QMetaMethod::invoke(QObject *object,
         }
 
         QSemaphore semaphore;
-        QCoreApplication::postEvent(object, new QMetaCallEvent(methodIndex,
+        QCoreApplication::postEvent(object, new QMetaCallEvent(idx_offset, idx_relative, callFunction,
                                                         0, -1, 0, 0, param, &semaphore));
         semaphore.acquire();
 #endif // QT_NO_THREAD
