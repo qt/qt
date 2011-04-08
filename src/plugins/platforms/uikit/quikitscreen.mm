@@ -41,6 +41,8 @@
 
 #include "quikitscreen.h"
 
+#include <QtGui/QApplication>
+
 #include <QtDebug>
 
 QT_BEGIN_NAMESPACE
@@ -65,7 +67,10 @@ QUIKitScreen::QUIKitScreen(int screenIndex)
     m_depth = 24;
 
     const qreal inch = 25.4;
-    m_physicalSize = QSize(qRound(bounds.size.width * inch / 160.), qRound(bounds.size.height * inch / 160.));
+    const qreal dpi = 160.;
+    m_physicalSize = QSize(qRound(bounds.size.width * inch / dpi), qRound(bounds.size.height * inch / dpi));
+    if (m_index == 0)
+        qApp->setStartDragDistance(12);
     [pool release];
 }
 
