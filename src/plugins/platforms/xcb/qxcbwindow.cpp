@@ -672,7 +672,7 @@ void QXcbWindow::handleFocusOutEvent(const xcb_focus_out_event_t *)
 
 void QXcbWindow::updateSyncRequestCounter()
 {
-    if (m_screen->syncRequestSupported() && m_syncValue.lo != 0 || m_syncValue.hi != 0) {
+    if (m_screen->syncRequestSupported() && (m_syncValue.lo != 0 || m_syncValue.hi != 0)) {
         Q_XCB_CALL(xcb_sync_set_counter(xcb_connection(), m_syncCounter, m_syncValue));
         xcb_flush(xcb_connection());
         connection()->sync();
