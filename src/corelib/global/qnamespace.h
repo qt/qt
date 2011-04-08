@@ -525,7 +525,6 @@ public:
 #endif
 
         WA_X11DoNotAcceptFocus = 132,
-        WA_MacNoCocoaChildWindow = 133,
 
         // Add new attributes before this line
         WA_AttributeCount
