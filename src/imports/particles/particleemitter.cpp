@@ -101,12 +101,16 @@ ParticleExtruder* ParticleEmitter::effectiveExtruder()
 
 void ParticleEmitter::pulse(qreal seconds)
 {
+    if(!particleCount())
+        qWarning() << "pulse called on an emitter with a particle count of zero";
     if(!m_emitting)
         m_burstLeft = seconds*1000.0;//TODO: Change name to match
 }
 
 void ParticleEmitter::burst(int num)
 {
+    if(!particleCount())
+        qWarning() << "burst called on an emitter with a particle count of zero";
     m_emitLeft += num;
 }
 
