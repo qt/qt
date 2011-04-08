@@ -62,15 +62,12 @@ public:
     void setColor(const QColor &color) { m_color = color; }
     const QColor &color() const { return m_color; }
 
-    const QSGTextureRef &texture() const { return m_texture; }
-
     void setGlyphCache(QSGDistanceFieldGlyphCache *a) { m_glyph_cache = a; }
     QSGDistanceFieldGlyphCache *glyphCache() const { return m_glyph_cache; }
 
     bool updateTexture();
 
 protected:
-    QSGTextureRef m_texture;
     QSize m_size;
     QColor m_color;
     QSGDistanceFieldGlyphCache *m_glyph_cache;
