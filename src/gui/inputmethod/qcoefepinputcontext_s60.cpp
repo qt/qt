@@ -410,12 +410,14 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
     windowToMove->setUpdatesEnabled(false);
 
     if (!alwaysResize) {
-        if (gv->scene() && gv->scene()->focusItem()) {
-            // Check if the widget contains cursorPositionChanged signal and disconnect from it.
-            QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
-            int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
-            if (index != -1)
-                disconnect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
+        if (gv->scene()) {
+            if (gv->scene()->focusItem()) {
+                // Check if the widget contains cursorPositionChanged signal and disconnect from it.
+                QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
+                int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
+                if (index != -1)
+                    disconnect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
+            }
 
             QGraphicsItem *rootItem = 0;
             foreach (QGraphicsItem *item, gv->scene()->items()) {
