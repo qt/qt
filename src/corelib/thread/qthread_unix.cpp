@@ -170,18 +170,28 @@ Q_DESTRUCTOR_FUNCTION(destroy_current_thread_data_key)
 // Utility functions for getting, setting and clearing thread specific data.
 static QThreadData *get_thread_data()
 {
+#ifdef HAVE_TLS
+    return currentThreadData;
+#else
     pthread_once(&current_thread_data_once, create_current_thread_data_key);
     return reinterpret_cast<QThreadData *>(pthread_getspecific(current_thread_data_key));
+#endif
 }
 
 static void set_thread_data(QThreadData *data)
 {
+#ifdef HAVE_TLS
+    currentThreadData = data;
+#endif
     pthread_once(&current_thread_data_once, create_current_thread_data_key);
     pthread_setspecific(current_thread_data_key, data);
 }
 
 static void clear_thread_data()
 {
+#ifdef HAVE_TLS
+    currentThreadData = 0;
+#endif
     pthread_setspecific(current_thread_data_key, 0);
 }
 
