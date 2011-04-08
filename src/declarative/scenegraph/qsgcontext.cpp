@@ -57,6 +57,26 @@
 #include <QGLContext>
 
 #include <private/qobject_p.h>
+#include <qmutex.h>
+
+/*!
+    Comments about this class from Gunnar:
+
+    The QSGContext class is right now two things.. The first is the
+    adaptation layer and central storage ground for all the things
+    in the scene graph, like textures and materials. This part really
+    belongs inside the scene graph coreapi.
+
+    The other part is the QML adaptation classes, like how to implement
+    rectangle nodes. This is not part of the scene graph core API, but
+    more part of the QML adaptation of scene graph.
+
+    If we ever move the scene graph core API into its own thing, this class
+    needs to be split in two. Right now its one because we're lazy when it comes
+    to defining plugin interfaces..
+
+ */
+
 
 QT_BEGIN_NAMESPACE
 
@@ -82,6 +102,9 @@ public:
     QGLContext *gl;
 
     QHash<QSGMaterialType *, QSGMaterialShader *> materials;
+
+    QMutex textureMutex;
+    QList<QSGTexture *> texturesToClean;
 };
 
 
@@ -103,7 +126,40 @@ QSGContext::~QSGContext()
     Q_D(QSGContext);
     delete d->renderer;
     delete d->rootNode;
+    cleanupTextures();
     qDeleteAll(d->materials.values());
+}
+
+
+
+/*!
+    Schedules the texture to be cleaned up on the rendering thread
+    at a later time.
+
+    The texture can be considered as deleted after this function has
+    been called.
+  */
+void QSGContext::schdelueTextureForCleanup(QSGTexture *texture)
+{
+    Q_D(QSGContext);
+    d->textureMutex.lock();
+    Q_ASSERT(!d->texturesToClean.contains(texture));
+    d->texturesToClean << texture;
+    d->textureMutex.unlock();
+}
+
+
+
+/*!
+    Deletes all textures that have been scheduled for cleanup
+ */
+void QSGContext::cleanupTextures()
+{
+    Q_D(QSGContext);
+    d->textureMutex.lock();
+    qDeleteAll(d->texturesToClean);
+    d->texturesToClean.clear();
+    d->textureMutex.unlock();
 }
 
 /*!
@@ -174,10 +230,8 @@ void QSGContext::renderNextFrame()
 {
     Q_D(QSGContext);
 
-//     printf("\nFRAME:\n");
-
+    cleanupTextures();
     emit aboutToRenderNextFrame();
-
     d->renderer->renderScene();
 }
 

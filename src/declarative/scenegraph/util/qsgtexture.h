@@ -97,11 +97,13 @@ public:
     void setVerticalWrapMode(WrapMode vwrap);
     QSGTexture::WrapMode verticalWrapMode() const;
 
+    virtual void cleanupAndDelete();
 
 protected:
     QSGTexture(QSGTexturePrivate &dd);
 
 private:
+
     friend class QSGTextureRef;
     mutable int m_ref_count;
 };

@@ -104,6 +104,9 @@ public:
 
     static QSGContext *createDefaultContext();
 
+    void schdelueTextureForCleanup(QSGTexture *texture);
+    void cleanupTextures();
+
 signals:
     void ready();
 

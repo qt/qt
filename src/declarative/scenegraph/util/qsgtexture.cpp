@@ -43,6 +43,8 @@
 
 #include <private/qsgtexture_p.h>
 #include <qglfunctions.h>
+#include <private/qsgcontext_p.h>
+#include <qthread.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -54,18 +56,40 @@ QSGTexturePrivate::QSGTexturePrivate()
     , mipmapMode(QSGTexture::None)
     , filterMode(QSGTexture::Nearest)
 {
+    context = QSGContext::current;
 }
 
 QSGTexture::QSGTexture()
     : QObject(*(new QSGTexturePrivate))
     , m_ref_count(0)
 {
-
 }
 
 QSGTexture::~QSGTexture()
 {
+}
 
+/*!
+    Cleans and deletes this texture object.
+
+    Because of their dependency on OpenGL, texture objects can only be cleaned
+    up from the rendering thread. This function will take care of the details
+    of cleaning up the OpenGL resource in the correct thread.
+
+    The texture object can be considered deleted after this function is called.
+
+    \warn Do not explicitely delete texture objects unless you know you are on the
+    rendering thread.
+ */
+void QSGTexture::cleanupAndDelete()
+{
+    Q_D(QSGTexture);
+
+    if (QThread::currentThread() == d->context->thread()) {
+        delete this;
+    } else {
+        d->context->schdelueTextureForCleanup(this);
+    }
 }
 
 
@@ -224,12 +248,13 @@ void QSGTexture::updateBindOptions(bool force)
     }
 }
 
+#include <qapplication.h>
 
 void QSGTextureRef::deref()
 {
     // ### For multithreaded renderer we need to handle this better... Post something to the renderer thread, for instance
     if (m_texture && !--m_texture->m_ref_count) {
-        delete m_texture;
+        m_texture->cleanupAndDelete();
     }
 }
 

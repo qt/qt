@@ -47,6 +47,7 @@
 #include <QtOpenGL/qgl.h>
 
 #include "qsgtexture.h"
+#include <private/qsgcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -63,6 +64,8 @@ public:
     uint verticalWrap : 1;
     uint mipmapMode : 2;
     uint filterMode : 2;
+
+    QSGContext *context;
 };
 
 class Q_DECLARATIVE_EXPORT QSGPlainTexture : public QSGTexture
