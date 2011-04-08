@@ -213,6 +213,12 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
                                        1, &parentWindow));
 
     }
+
+    // set the PID to let the WM kill the application if unresponsive
+    long pid = getpid();
+    Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                                   atom(QXcbAtom::_NET_WM_PID), XCB_ATOM_CARDINAL, 32,
+                                   1, &pid));
 }
 
 QXcbWindow::~QXcbWindow()
