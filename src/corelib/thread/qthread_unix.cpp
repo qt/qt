@@ -280,22 +280,6 @@ void *QThreadPrivate::start(void *arg)
         thr->setPriority(QThread::Priority(thr->d_func()->priority & ~ThreadPriorityResetFlag));
     }
 
-#ifdef Q_OS_SYMBIAN
-    // Because Symbian Open C does not provide a way to convert between
-    // RThread and pthread_t, we must delay initialization of the RThread
-    // handle when creating a thread, until we are running in the new thread.
-    // Here, we pick up the current thread and assign that to the handle.
-    init_symbian_thread_handle(data->symbian_thread_handle);
-
-    // On symbian, threads other than the main thread are non critical by default
-    // This means a worker thread can crash without crashing the application - to
-    // use this feature, we would need to use RThread::Logon in the main thread
-    // to catch abnormal thread exit and emit the finished signal.
-    // For the sake of cross platform consistency, we set the thread as process critical
-    // - advanced users who want the symbian behaviour can change the critical
-    // attribute of the thread again once the app gains control in run()
-    User::SetCritical(User::EProcessCritical);
-#endif
     data->threadId = (Qt::HANDLE)pthread_self();
     set_thread_data(data);
 
