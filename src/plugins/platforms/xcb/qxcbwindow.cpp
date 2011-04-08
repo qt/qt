@@ -41,6 +41,8 @@
 
 #include "qxcbwindow.h"
 
+#include <QtDebug>
+
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
 #ifdef XCB_USE_DRI2
@@ -171,6 +173,9 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
     properties[propertyCount++] = atom(QXcbAtom::WM_TAKE_FOCUS);
     properties[propertyCount++] = atom(QXcbAtom::_NET_WM_PING);
 
+    if (m_screen->syncRequestSupported())
+        properties[propertyCount++] = atom(QXcbAtom::_NET_WM_SYNC_REQUEST);
+
     if (tlw->windowFlags() & Qt::WindowContextHelpButtonHint)
         properties[propertyCount++] = atom(QXcbAtom::_NET_WM_CONTEXT_HELP);
 
@@ -178,10 +183,26 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
                                    XCB_PROP_MODE_REPLACE,
                                    m_window,
                                    atom(QXcbAtom::WM_PROTOCOLS),
-                                   4,
+                                   XCB_ATOM_ATOM,
                                    32,
                                    propertyCount,
                                    properties));
+    m_syncValue.hi = 0;
+    m_syncValue.lo = 0;
+
+    if (m_screen->syncRequestSupported()) {
+        m_syncCounter = xcb_generate_id(xcb_connection());
+        Q_XCB_CALL(xcb_sync_create_counter(xcb_connection(), m_syncCounter, m_syncValue));
+
+        Q_XCB_CALL(xcb_change_property(xcb_connection(),
+                                       XCB_PROP_MODE_REPLACE,
+                                       m_window,
+                                       atom(QXcbAtom::_NET_WM_SYNC_REQUEST_COUNTER),
+                                       XCB_ATOM_CARDINAL,
+                                       32,
+                                       1,
+                                       &m_syncCounter));
+    }
 
     if (isTransient(tlw) && tlw->parentWidget()) {
         // ICCCM 4.1.2.6
@@ -197,6 +218,8 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
 QXcbWindow::~QXcbWindow()
 {
     delete m_context;
+    if (m_screen->syncRequestSupported())
+        Q_XCB_CALL(xcb_sync_destroy_counter(xcb_connection(), m_syncCounter));
     Q_XCB_CALL(xcb_destroy_window(xcb_connection(), m_window));
 }
 
@@ -474,6 +497,13 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
 
             xcb_send_event(xcb_connection(), 0, m_screen->root(), XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&reply);
             xcb_flush(xcb_connection());
+        } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_SYNC_REQUEST)) {
+            if (!m_hasReceivedSyncRequest) {
+                m_hasReceivedSyncRequest = true;
+                printf("Window manager supports _NET_WM_SYNC_REQUEST, syncing resizes\n");
+            }
+            m_syncValue.lo = event->data.data32[2];
+            m_syncValue.hi = event->data.data32[3];
         }
     }
 }
@@ -489,8 +519,11 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     }
 
     QRect rect(xpos, ypos, event->width, event->height);
-    QPlatformWindow::setGeometry(rect);
 
+    if (rect == geometry())
+        return;
+
+    QPlatformWindow::setGeometry(rect);
     QWindowSystemInterface::handleGeometryChange(widget(), rect);
 
 #if XCB_USE_DRI2
@@ -593,3 +626,14 @@ void QXcbWindow::handleFocusOutEvent(const xcb_focus_out_event_t *)
     QWindowSystemInterface::handleWindowActivated(0);
 }
 
+void QXcbWindow::updateSyncRequestCounter()
+{
+    if (m_screen->syncRequestSupported() && m_syncValue.lo != 0 || m_syncValue.hi != 0) {
+        Q_XCB_CALL(xcb_sync_set_counter(xcb_connection(), m_syncCounter, m_syncValue));
+        xcb_flush(xcb_connection());
+        connection()->sync();
+
+        m_syncValue.lo = 0;
+        m_syncValue.hi = 0;
+    }
+}

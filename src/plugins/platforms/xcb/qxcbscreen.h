@@ -43,6 +43,7 @@
 #define QXCBSCREEN_H
 
 #include <QtGui/QPlatformScreen>
+#include <QtCore/QString>
 
 #include <xcb/xcb.h>
 
@@ -66,9 +67,14 @@ public:
     xcb_screen_t *screen() const { return m_screen; }
     xcb_window_t root() const { return m_screen->root; }
 
+    QString windowManagerName() const { return m_windowManagerName; }
+    bool syncRequestSupported() const { return m_syncRequestSupported; }
+
 private:
     xcb_screen_t *m_screen;
     int m_number;
+    QString m_windowManagerName;
+    bool m_syncRequestSupported;
 };
 
 #endif

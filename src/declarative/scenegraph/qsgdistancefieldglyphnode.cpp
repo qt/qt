@@ -56,6 +56,10 @@ QSGDistanceFieldGlyphNode::QSGDistanceFieldGlyphNode()
     m_geometry.setDrawingMode(GL_TRIANGLES);
     setGeometry(&m_geometry);
     setFlag(QSGNode::UsePreprocess);
+
+#ifndef QT_OPENGL_ES
+    setPreferredAntialiasingMode(QSGGlyphNode::SubPixelAntialiasing);
+#endif
 }
 
 QSGDistanceFieldGlyphNode::~QSGDistanceFieldGlyphNode()

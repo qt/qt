@@ -377,7 +377,8 @@ static void checkAndAdaptVersion(const QUrl &url)
 
     if (!envToWrite.isEmpty()) {
         qWarning("qmlscene: Autodetecting compatibility import \"%s\"...", qPrintable(compat));
-        setenv("QMLSCENE_IMPORT_NAME", envToWrite.toLatin1().constData(), 0);
+        if (qgetenv("QMLSCENE_IMPORT_NAME").isEmpty())
+            qputenv("QMLSCENE_IMPORT_NAME", envToWrite.toLatin1().constData());
     }
 }
 

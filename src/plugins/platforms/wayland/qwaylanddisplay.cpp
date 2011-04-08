@@ -45,12 +45,12 @@
 #include "qwaylandscreen.h"
 #include "qwaylandcursor.h"
 #include "qwaylandinputdevice.h"
-#include "qwaylandeventthread.h"
 
 #ifdef QT_WAYLAND_GL_SUPPORT
 #include "gl_integration/qwaylandglintegration.h"
 #endif
 
+#include <QtCore/QAbstractEventDispatcher>
 #include <QtGui/QApplication>
 
 #include <unistd.h>
@@ -113,24 +113,6 @@ const struct wl_shell_listener QWaylandDisplay::shellListener = {
     QWaylandDisplay::shellHandleConfigure,
 };
 
-void QWaylandDisplay::displayHandleGlobal(uint32_t id, QByteArray interface, uint32_t version)
-{
-    Q_UNUSED(version);
-
-    if (interface == "compositor") {
-        mCompositor = wl_compositor_create(mDisplay, id);
-    } else if (interface == "shm") {
-        mShm = wl_shm_create(mDisplay, id);
-    } else if (interface == "shell"){
-        mShell = wl_shell_create(mDisplay, id);
-        wl_shell_add_listener(mShell, &shellListener, this);
-    } else if (interface == "input_device") {
-        QWaylandInputDevice *inputDevice =
-            new QWaylandInputDevice(mDisplay, id);
-        mInputDevices.append(inputDevice);
-    }
-}
-
 QWaylandDisplay::QWaylandDisplay(void)
 {
     mDisplay = wl_display_connect(NULL);
@@ -142,24 +124,29 @@ QWaylandDisplay::QWaylandDisplay(void)
     mEglIntegration = QWaylandGLIntegration::createGLIntegration(this);
 #endif
 
-    mEventThread = new QWaylandEventThread(this);
-
-
-    mEventThread->waitForScreens();
+    qRegisterMetaType<uint32_t>("uint32_t");
 
 #ifdef QT_WAYLAND_GL_SUPPORT
     mEglIntegration->initialize();
 #endif
 
+    connect(QAbstractEventDispatcher::instance(), SIGNAL(aboutToBlock()), this, SLOT(flushRequests()));
 
+    wl_display_add_global_listener(mDisplay, QWaylandDisplay::displayHandleGlobal, this);
+    mFd = wl_display_get_fd(mDisplay, sourceUpdate, this);
+
+    mReadNotifier = new QSocketNotifier(mFd, QSocketNotifier::Read, this);
+    connect(mReadNotifier, SIGNAL(activated(int)), this, SLOT(readEvents()));
+
+    waitForScreens();
 }
 
 QWaylandDisplay::~QWaylandDisplay(void)
 {
+    close(mFd);
 #ifdef QT_WAYLAND_GL_SUPPORT
     delete mEglIntegration;
 #endif
-    delete mEventThread;
     wl_display_destroy(mDisplay);
 }
 
@@ -179,3 +166,79 @@ void QWaylandDisplay::frameCallback(wl_display_frame_func_t func, void *data)
     wl_display_frame_callback(mDisplay, func, data);
 }
 
+void QWaylandDisplay::flushRequests()
+{
+    if (mSocketMask & WL_DISPLAY_WRITABLE)
+        wl_display_iterate(mDisplay, WL_DISPLAY_WRITABLE);
+}
+
+void QWaylandDisplay::readEvents()
+{
+    wl_display_iterate(mDisplay, WL_DISPLAY_READABLE);
+}
+
+int QWaylandDisplay::sourceUpdate(uint32_t mask, void *data)
+{
+    QWaylandDisplay *waylandDisplay = static_cast<QWaylandDisplay *>(data);
+    waylandDisplay->mSocketMask = mask;
+
+    return 0;
+}
+
+void QWaylandDisplay::outputHandleGeometry(void *data,
+                                           struct wl_output *output,
+                                           int32_t x, int32_t y,
+                                           int32_t width, int32_t height)
+{
+    //call back function called from another thread;
+    //but its safe to call createScreen from another thread since
+    //QWaylandScreen does a moveToThread
+    QWaylandDisplay *waylandDisplay = static_cast<QWaylandDisplay *>(data);
+    QRect outputRect = QRect(x, y, width, height);
+    waylandDisplay->createNewScreen(output,outputRect);
+}
+
+const struct wl_output_listener QWaylandDisplay::outputListener = {
+    QWaylandDisplay::outputHandleGeometry
+};
+
+void QWaylandDisplay::waitForScreens()
+{
+    flushRequests();
+    while (mScreens.isEmpty())
+        readEvents();
+}
+
+void QWaylandDisplay::displayHandleGlobal(struct wl_display *display,
+                                          uint32_t id,
+                                          const char *interface,
+                                          uint32_t version,
+                                          void *data)
+{
+    Q_UNUSED(display);
+    QWaylandDisplay *that = static_cast<QWaylandDisplay *>(data);
+    that->displayHandleGlobal(id, QByteArray(interface), version);
+}
+
+void QWaylandDisplay::displayHandleGlobal(uint32_t id,
+                                          const QByteArray &interface,
+                                          uint32_t version)
+{
+    Q_UNUSED(version);
+
+    if (interface == "output") {
+        struct wl_output *output = wl_output_create(mDisplay, id);
+        wl_output_add_listener(output, &outputListener, this);
+    } else if (interface == "compositor") {
+        mCompositor = wl_compositor_create(mDisplay, id);
+    } else if (interface == "shm") {
+        mShm = wl_shm_create(mDisplay, id);
+    } else if (interface == "shell"){
+        mShell = wl_shell_create(mDisplay, id);
+        wl_shell_add_listener(mShell, &shellListener, this);
+    } else if (interface == "input_device") {
+        QWaylandInputDevice *inputDevice =
+            new QWaylandInputDevice(mDisplay, id);
+        mInputDevices.append(inputDevice);
+    }
+}
