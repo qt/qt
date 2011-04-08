@@ -891,6 +891,11 @@ QTextBlockUserData::~QTextBlockUserData()
     Returns true if this text block is valid; otherwise returns false.
 */
 
+bool QTextBlock::isValid() const
+{
+    return p != 0 && p->blockMap().isValid(n);
+}
+
 /*!
     \fn QTextBlock &QTextBlock::operator=(const QTextBlock &other)
 
