@@ -59,13 +59,7 @@ class QSGContext;
 class QSGDefaultRectangleNode : public QSGRectangleNode
 {
 public:
-    enum MaterialPreference
-    {
-        PreferTextureMaterial,
-        PreferVertexColorMaterial
-    };
-
-    QSGDefaultRectangleNode(MaterialPreference preference, QSGContext *context);
+    QSGDefaultRectangleNode(QSGContext *context);
     ~QSGDefaultRectangleNode();
 
     virtual void setRect(const QRectF &rect);
@@ -77,22 +71,18 @@ public:
     virtual void update();
 
 private:
-    QSGGeometryNode *border();
-
     enum {
         TypeFlat,
-        TypeVertexGradient,
-        TypeTextureGradient
+        TypeVertexGradient
     };
+    QSGGeometryNode *border();
 
     void updateGeometry();
     void updateGradientTexture();
 
-    MaterialPreference m_material_preference;
     QSGGeometryNode *m_border;
     QSGFlatColorMaterial m_border_material;
     QSGFlatColorMaterial m_fill_material;
-    QSGTextureRef m_gradient_texture;
 
     QRectF m_rect;
     QGradientStops m_gradient_stops;
@@ -101,7 +91,6 @@ private:
 
     uint m_gradient_is_opaque : 1;
     uint m_dirty_geometry : 1;
-    uint m_dirty_gradienttexture : 1;
 
     uint m_material_type : 2; // Only goes up to 3
 

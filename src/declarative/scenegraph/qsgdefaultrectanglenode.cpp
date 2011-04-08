@@ -53,15 +53,12 @@
 
 QT_BEGIN_NAMESPACE
 
-QSGDefaultRectangleNode::QSGDefaultRectangleNode(MaterialPreference preference, QSGContext *context)
-    : m_material_preference(preference)
-    , m_border(0)
-    , m_gradient_texture(0)
+QSGDefaultRectangleNode::QSGDefaultRectangleNode(QSGContext *context)
+    : m_border(0)
     , m_radius(0)
     , m_pen_width(0)
     , m_gradient_is_opaque(true)
     , m_dirty_geometry(false)
-    , m_dirty_gradienttexture(false)
     , m_default_geometry(QSGGeometry::defaultAttributes_Point2D(), 4)
     , m_context(context)
 {
@@ -81,9 +78,6 @@ QSGDefaultRectangleNode::~QSGDefaultRectangleNode()
     switch (m_material_type) {
     case TypeFlat:
         break;
-    case TypeTextureGradient:
-        delete opaqueMaterial();
-        // Fallthrough intended
     case TypeVertexGradient:
         delete material();
         break;
@@ -169,25 +163,7 @@ void QSGDefaultRectangleNode::setGradientStops(const QGradientStops &stops)
             setGeometry(&m_default_geometry);
             setFlag(OwnsGeometry, false);
         }
-    } else if (m_material_preference == PreferTextureMaterial) {
-        if (m_material_type == TypeFlat) {
-            QSGTextureMaterialWithOpacity *txo = new QSGTextureMaterialWithOpacity;
-            setMaterial(txo);
-            txo->setLinearFiltering(true);
-
-            QSGTextureMaterial *tx = new QSGTextureMaterial;
-            tx->setLinearFiltering(true);
-            setOpaqueMaterial(tx);
-
-            m_material_type = TypeTextureGradient;
-
-            QSGGeometry *g = new QSGGeometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 0);
-            setGeometry(g);
-            setFlag(OwnsGeometry);
-        }
-        m_dirty_gradienttexture = true;
     } else {
-        Q_ASSERT(m_material_preference == PreferVertexColorMaterial);
         if (m_material_type == TypeFlat) {
             QSGVertexColorMaterial *material = new QSGVertexColorMaterial;
             setMaterial(material);
@@ -212,11 +188,6 @@ void QSGDefaultRectangleNode::setRadius(qreal radius)
 
 void QSGDefaultRectangleNode::update()
 {
-    if (m_dirty_gradienttexture) {
-        updateGradientTexture();
-        m_dirty_gradienttexture = false;
-    }
-
     if (m_dirty_geometry) {
         updateGeometry();
         m_dirty_geometry = false;
@@ -252,13 +223,6 @@ struct ColorVertex
     Color4ub color;
 };
 
-struct TextureVertex
-{
-    QVector2D position;
-    QVector2D texCoord;
-};
-
-
 void QSGDefaultRectangleNode::updateGeometry()
 {
     // fast path for the simple case...
@@ -278,7 +242,6 @@ void QSGDefaultRectangleNode::updateGeometry()
     // Check that the vertex type matches the material.
     Q_ASSERT(m_material_type != TypeFlat || fill->stride() == sizeof(Vertex));
     Q_ASSERT(m_material_type != TypeVertexGradient || fill->stride() == sizeof(ColorVertex));
-    Q_ASSERT(m_material_type != TypeTextureGradient || fill->stride() == sizeof(TextureVertex));
 
     QSGGeometry *borderGeometry = 0;
     if (m_border) {
@@ -296,15 +259,6 @@ void QSGDefaultRectangleNode::updateGeometry()
 
     Color4ub fillColor = colorToColor4ub(m_fill_material.color());
     const QGradientStops &stops = m_gradient_stops;
-
-    // Calculate from where in the texture to sample gradient colours.
-    qreal gradientSourceX0 = 0, gradientSourceDX = 0, gradientSourceY = 0;
-    if (!m_gradient_texture.isNull()) {
-        QRectF src = m_gradient_texture->textureSubRect();
-        gradientSourceY = qreal(0.5) * (src.top() + src.bottom());
-        gradientSourceDX = src.width() / stops.size();
-        gradientSourceX0 = src.left() + qreal(0.5) * gradientSourceDX;
-    }
 
     if (m_radius > 0) {
         // Rounded corners.
@@ -394,31 +348,16 @@ void QSGDefaultRectangleNode::updateGeometry()
                         borderIndexData.append(borderVertexCount - 2);
                     }
 
-                    if (m_material_preference == PreferVertexColorMaterial) {
-                        Q_ASSERT(QSGVertexColorMaterial::is(material()));
-                        ColorVertex *vertices = (ColorVertex *)fillVertices;
+                    Q_ASSERT(QSGVertexColorMaterial::is(material()));
+                    ColorVertex *vertices = (ColorVertex *)fillVertices;
 
-                        fillColor = colorToColor4ub(stops.at(nextGradientStop).second);
-                        vertices[fillVertexCount].position = QVector2D(grx, gy);
-                        vertices[fillVertexCount].color = fillColor;
-                        ++fillVertexCount;
-                        vertices[fillVertexCount].position = QVector2D(glx, gy);
-                        vertices[fillVertexCount].color = fillColor;
-                        ++fillVertexCount;
-                    } else {
-                        Q_ASSERT(m_material_preference == PreferTextureMaterial);
-                        Q_ASSERT(QSGTextureMaterial::is(opaqueMaterial()) && QSGTextureMaterialWithOpacity::is(material()));
-
-                        TextureVertex *vertices = (TextureVertex *)fillVertices;
-                        QVector2D texCoord(gradientSourceX0 + gradientSourceDX * nextGradientStop, gradientSourceY);
-
-                        vertices[fillVertexCount].position = QVector2D(grx, gy);
-                        vertices[fillVertexCount].texCoord = texCoord;
-                        ++fillVertexCount;
-                        vertices[fillVertexCount].position = QVector2D(glx, gy);
-                        vertices[fillVertexCount].texCoord = texCoord;
-                        ++fillVertexCount;
-                    }
+                    fillColor = colorToColor4ub(stops.at(nextGradientStop).second);
+                    vertices[fillVertexCount].position = QVector2D(grx, gy);
+                    vertices[fillVertexCount].color = fillColor;
+                    ++fillVertexCount;
+                    vertices[fillVertexCount].position = QVector2D(glx, gy);
+                    vertices[fillVertexCount].color = fillColor;
+                    ++fillVertexCount;
 
                     ++nextGradientStop;
                 }
@@ -440,9 +379,7 @@ void QSGDefaultRectangleNode::updateGeometry()
                     Vertex *vertices = (Vertex *)fillVertices;
                     vertices[fillVertexCount++].position = QVector2D(rx, y);
                     vertices[fillVertexCount++].position = QVector2D(lx, y);
-                } else if (m_material_preference == PreferVertexColorMaterial) {
-                    Q_ASSERT(m_material_type == TypeVertexGradient);
-
+                } else {
                     if (nextGradientStop == 0) {
                         fillColor = colorToColor4ub(stops.at(0).second);
                     } else if (nextGradientStop == stops.size()) {
@@ -460,29 +397,6 @@ void QSGDefaultRectangleNode::updateGeometry()
                     ++fillVertexCount;
                     vertices[fillVertexCount].position = QVector2D(lx, y);
                     vertices[fillVertexCount].color = fillColor;
-                    ++fillVertexCount;
-                } else {
-                    Q_ASSERT(m_material_preference == PreferTextureMaterial);
-
-                    qreal x = gradientSourceX0;
-                    if (nextGradientStop == 0) {
-                        // x already has the correct value.
-                    } else if (nextGradientStop == stops.size()) {
-                        x += gradientSourceDX * (nextGradientStop - 1);
-                    } else {
-                        const QGradientStop &prev = stops.at(nextGradientStop - 1);
-                        const QGradientStop &next = stops.at(nextGradientStop);
-                        qreal t = (gradientPos - prev.first) / (next.first - prev.first);
-                        x += gradientSourceDX * (nextGradientStop - 1 + t);
-                    }
-
-                    TextureVertex *vertices = (TextureVertex *)fillVertices;
-                    QVector2D texCoord(x, gradientSourceY);
-                    vertices[fillVertexCount].position = QVector2D(rx, y);
-                    vertices[fillVertexCount].texCoord = texCoord;
-                    ++fillVertexCount;
-                    vertices[fillVertexCount].position = QVector2D(lx, y);
-                    vertices[fillVertexCount].texCoord = texCoord;
                     ++fillVertexCount;
                 }
 
@@ -546,31 +460,16 @@ void QSGDefaultRectangleNode::updateGeometry()
                 qreal gy = (innerRect.top() - halfPenWidth) + stops.at(nextGradientStop).first * m_rect.height();
                 Q_ASSERT(fillVertexCount >= 2);
 
-                if (m_material_preference == PreferVertexColorMaterial) {
-                    Q_ASSERT(QSGVertexColorMaterial::is(material()));
-                    ColorVertex *vertices = (ColorVertex *)fillVertices;
+                Q_ASSERT(QSGVertexColorMaterial::is(material()));
+                ColorVertex *vertices = (ColorVertex *)fillVertices;
 
-                    fillColor = colorToColor4ub(stops.at(nextGradientStop).second);
-                    vertices[fillVertexCount].position = QVector2D(innerRect.right(), gy);
-                    vertices[fillVertexCount].color = fillColor;
-                    ++fillVertexCount;
-                    vertices[fillVertexCount].position = QVector2D(innerRect.left(), gy);
-                    vertices[fillVertexCount].color = fillColor;
-                    ++fillVertexCount;
-                } else {
-                    Q_ASSERT(m_material_preference == PreferTextureMaterial);
-                    Q_ASSERT(QSGTextureMaterial::is(opaqueMaterial()) || QSGTextureMaterialWithOpacity::is(material()));
-
-                    TextureVertex *vertices = (TextureVertex *)fillVertices;
-                    QVector2D texCoord(gradientSourceX0 + gradientSourceDX * nextGradientStop, gradientSourceY);
-
-                    vertices[fillVertexCount].position = QVector2D(innerRect.right(), gy);
-                    vertices[fillVertexCount].texCoord = texCoord;
-                    ++fillVertexCount;
-                    vertices[fillVertexCount].position = QVector2D(innerRect.left(), gy);
-                    vertices[fillVertexCount].texCoord = texCoord;
-                    ++fillVertexCount;
-                }
+                fillColor = colorToColor4ub(stops.at(nextGradientStop).second);
+                vertices[fillVertexCount].position = QVector2D(innerRect.right(), gy);
+                vertices[fillVertexCount].color = fillColor;
+                ++fillVertexCount;
+                vertices[fillVertexCount].position = QVector2D(innerRect.left(), gy);
+                vertices[fillVertexCount].color = fillColor;
+                ++fillVertexCount;
 
                 if (m_pen_width) {
                     borderVertices[borderVertexCount++].position = QVector2D(innerRect.right(), gy);
@@ -585,9 +484,7 @@ void QSGDefaultRectangleNode::updateGeometry()
                 Vertex *vertices = (Vertex *)fillVertices;
                 vertices[fillVertexCount++].position = QVector2D(innerRect.right(), y);
                 vertices[fillVertexCount++].position = QVector2D(innerRect.left(), y);
-            } else if (m_material_preference == PreferVertexColorMaterial) {
-                Q_ASSERT(QSGVertexColorMaterial::is(material()));
-
+            } else {
                 if (nextGradientStop == 0) {
                     fillColor = colorToColor4ub(stops.at(0).second);
                 } else if (nextGradientStop == stops.size()) {
@@ -605,30 +502,6 @@ void QSGDefaultRectangleNode::updateGeometry()
                 ++fillVertexCount;
                 vertices[fillVertexCount].position = QVector2D(innerRect.left(), y);
                 vertices[fillVertexCount].color = fillColor;
-                ++fillVertexCount;
-            } else {
-                Q_ASSERT(m_material_preference == PreferTextureMaterial);
-                Q_ASSERT(QSGTextureMaterial::is(opaqueMaterial()) || QSGTextureMaterialWithOpacity::is(material()));
-
-                qreal x = gradientSourceX0;
-                if (nextGradientStop == 0) {
-                    // x already has the correct value.
-                } else if (nextGradientStop == stops.size()) {
-                    x += gradientSourceDX * (nextGradientStop - 1);
-                } else {
-                    const QGradientStop &prev = stops.at(nextGradientStop - 1);
-                    const QGradientStop &next = stops.at(nextGradientStop);
-                    qreal t = (gradientPos - prev.first) / (next.first - prev.first);
-                    x += gradientSourceDX * (nextGradientStop - 1 + t);
-                }
-
-                TextureVertex *vertices = (TextureVertex *)fillVertices;
-                QVector2D texCoord(x, gradientSourceY);
-                vertices[fillVertexCount].position = QVector2D(innerRect.right(), y);
-                vertices[fillVertexCount].texCoord = texCoord;
-                ++fillVertexCount;
-                vertices[fillVertexCount].position = QVector2D(innerRect.left(), y);
-                vertices[fillVertexCount].texCoord = texCoord;
                 ++fillVertexCount;
             }
 
@@ -673,26 +546,5 @@ void QSGDefaultRectangleNode::updateGeometry()
     markDirty(DirtyGeometry);
 }
 
-void QSGDefaultRectangleNode::updateGradientTexture()
-{
-    if (m_gradient_stops.isEmpty())
-        return;
-
-    QImage image(m_gradient_stops.size(), 1, QImage::Format_ARGB32_Premultiplied);
-    QRgb *line = (QRgb *)image.scanLine(0);
-
-    for (int i = 0; i < m_gradient_stops.size(); ++i) {
-        const QColor &c = m_gradient_stops.at(i).second;
-        line[i] = QColor::fromRgbF(c.redF() * c.alphaF(), c.greenF() * c.alphaF(), c.blueF() * c.alphaF(), c.alphaF()).rgba();
-    }
-
-    m_gradient_texture = m_context->createTexture(image);
-    m_gradient_texture->setFiltering(QSGTexture::Linear);
-
-    Q_ASSERT(QSGTextureMaterial::is(opaqueMaterial()) || QSGTextureMaterialWithOpacity::is(material()));
-
-    static_cast<QSGTextureMaterial *>(opaqueMaterial())->setTexture(m_gradient_texture, m_gradient_is_opaque);
-    static_cast<QSGTextureMaterialWithOpacity *>(material())->setTexture(m_gradient_texture, m_gradient_is_opaque);
-}
 
 QT_END_NAMESPACE

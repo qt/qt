@@ -186,7 +186,7 @@ void QSGContext::renderNextFrame()
  */
 QSGRectangleNode *QSGContext::createRectangleNode()
 {
-    return new QSGDefaultRectangleNode(QSGDefaultRectangleNode::PreferTextureMaterial, this);
+    return new QSGDefaultRectangleNode(this);
 }
 
 /*!
