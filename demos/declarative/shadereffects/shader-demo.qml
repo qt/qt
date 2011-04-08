@@ -244,7 +244,7 @@ Image {
         ShaderEffectItem {
             width: 180
             height: 180
-            meshResolution: Qt.size(10, 10)
+            mesh: GridMesh { resolution: Qt.size(10, 10) }
             property variant source: theSource
             property real bend: 0
             property real minimize: 0
