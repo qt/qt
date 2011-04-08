@@ -833,8 +833,6 @@ void QSGDistanceFieldGlyphCache::resizeTexture(int width, int height)
         return;
     }
 
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
-
     if (!m_textureData->fbo)
         ctx->functions()->glGenFramebuffers(1, &m_textureData->fbo);
     ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_textureData->fbo);
@@ -854,6 +852,18 @@ void QSGDistanceFieldGlyphCache::resizeTexture(int width, int height)
 
     ctx->functions()->glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, oldTexture);
+
+    // save current render states
+    GLboolean stencilTestEnabled;
+    GLboolean depthTestEnabled;
+    GLboolean scissorTestEnabled;
+    GLboolean blendEnabled;
+    GLint viewport[4];
+    glGetBooleanv(GL_STENCIL_TEST, &stencilTestEnabled);
+    glGetBooleanv(GL_DEPTH_TEST, &depthTestEnabled);
+    glGetBooleanv(GL_SCISSOR_TEST, &scissorTestEnabled);
+    glGetBooleanv(GL_BLEND, &blendEnabled);
+    glGetIntegerv(GL_VIEWPORT, &viewport[0]);
 
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_DEPTH_TEST);
@@ -915,7 +925,16 @@ void QSGDistanceFieldGlyphCache::resizeTexture(int width, int height)
 
     ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
 
-    glPopAttrib();
+    // restore render states
+    if (stencilTestEnabled)
+        glEnable(GL_STENCIL_TEST);
+    if (depthTestEnabled)
+        glEnable(GL_DEPTH_TEST);
+    if (scissorTestEnabled)
+        glEnable(GL_SCISSOR_TEST);
+    if (blendEnabled)
+        glEnable(GL_BLEND);
+    glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 }
 
 void QSGDistanceFieldGlyphCache::updateCache()
@@ -926,7 +945,7 @@ void QSGDistanceFieldGlyphCache::updateCache()
     int requiredWidth = m_textureData->currY == 0 ? m_textureData->currX : maxTextureSize();
     int requiredHeight = qMin(maxTextureSize(), m_textureData->currY + QT_DISTANCEFIELD_TILESIZE);
 
-    resizeTexture(qt_next_power_of_two(requiredWidth), qt_next_power_of_two(requiredHeight));
+    resizeTexture((requiredWidth), (requiredHeight));
     glBindTexture(GL_TEXTURE_2D, m_textureData->texture);
 
     QSet<glyph_t>::const_iterator i = m_textureData->pendingGlyphs.constBegin();
