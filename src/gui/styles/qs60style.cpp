@@ -77,13 +77,11 @@
 #include "private/qcombobox_p.h"
 #include "private/qwidget_p.h"
 #include "private/qapplication_p.h"
+#include "private/qfont_p.h"
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
 
 QT_BEGIN_NAMESPACE
-
-// from text/qfont.cpp
-extern Q_GUI_EXPORT int qt_defaultDpiY();
 
 const QS60StylePrivate::SkinElementFlags QS60StylePrivate::KDefaultSkinElementFlags =
     SkinElementFlags(SF_PointNorth | SF_StateEnabled);

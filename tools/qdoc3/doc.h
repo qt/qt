@@ -64,7 +64,6 @@ class FakeNode;
 
 typedef QMap<QString, QStringList> QCommandMap;
 typedef QMap<QString, QString> QStringMap;
-typedef QStringMap::const_iterator QStringMapEntry; 
 typedef QMultiMap<QString, QString> QStringMultiMap;
 
 class Doc
@@ -118,7 +117,7 @@ class Doc
     const QList<int> &tableOfContentsLevels() const;
     const QList<Atom *> &keywords() const;
     const QList<Atom *> &targets() const;
-    const QStringMap &metaTagMap() const;
+    const QStringMultiMap &metaTagMap() const;
 
     static void initialize( const Config &config );
     static void terminate();

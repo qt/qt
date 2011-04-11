@@ -15,6 +15,7 @@ win32:!win32-g++* {
 
 $$unixstyle {
     QDOC = cd $$QT_SOURCE_TREE/tools/qdoc3/test && QT_BUILD_TREE=$$QT_BUILD_TREE QT_SOURCE_TREE=$$QT_SOURCE_TREE $$QT_BUILD_TREE/bin/qdoc3 $$DOCS_GENERATION_DEFINES
+    COPYWEBKITGUIDE = $$QT_SOURCE_TREE/examples/webkit/webkit-guide
 } else {
     QDOC = cd $$QT_SOURCE_TREE/tools/qdoc3/test && set QT_BUILD_TREE=$$QT_BUILD_TREE&& set QT_SOURCE_TREE=$$QT_SOURCE_TREE&& $$QT_BUILD_TREE/bin/qdoc3.exe $$DOCS_GENERATION_DEFINES
     QDOC = $$replace(QDOC, "/", "\\")
@@ -23,6 +24,7 @@ ADP_DOCS_QDOCCONF_FILE = qt-build-docs-online.qdocconf
 QT_DOCUMENTATION = ($$QDOC qt-api-only.qdocconf assistant.qdocconf designer.qdocconf \
                     linguist.qdocconf qmake.qdocconf qdeclarative.qdocconf) && \
                (cd $$QT_BUILD_TREE && \
+                    $$QMAKE_COPY_DIR $$COPYWEBKITGUIDE $$QT_BUILD_TREE/doc-build/html-qt && \
                     $$GENERATOR doc-build/html-qt/qt.qhp -o doc/qch/qt.qch && \
                     $$GENERATOR doc-build/html-assistant/assistant.qhp -o doc/qch/assistant.qch && \
                     $$GENERATOR doc-build/html-designer/designer.qhp -o doc/qch/designer.qch && \
@@ -48,7 +50,7 @@ win32-g++*:isEmpty(QMAKE_SH) {
 }
 
 # Build rules:
-adp_docs.commands = ($$QDOC $$ADP_DOCS_QDOCCONF_FILE)
+adp_docs.commands = ($$QDOC $$ADP_DOCS_QDOCCONF_FILE && $$QMAKE_COPY_DIR $$COPYWEBKITGUIDE $$QT_BUILD_TREE/doc/html)
 adp_docs.depends += sub-qdoc3 # qdoc3
 qch_docs.commands = $$QT_DOCUMENTATION
 qch_docs.depends += sub-qdoc3

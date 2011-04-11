@@ -53,6 +53,7 @@
 
 use File::Copy;
 use File::Spec;
+use File::Path;
 
 sub Usage() {
     print("This script can be used to set capabilities of all binaries\n");
@@ -63,11 +64,13 @@ sub Usage() {
     print(" symbian-sbsv2 platform, 'target-platform' is REQUIRED. ***\n\n");
     print(" *** NOTE2: When patching gcce binaries built with symbian-sbsv2 toolchain,\n");
     print(" armv5 must be specified as platform.\n");
-    print("\nUsage: patch_capabilities.pl [-c] pkg_filename [target-platform [capability list]]\n");
+    print("\nUsage: patch_capabilities.pl [-c|-t tmp_path] pkg_filename [target-platform [capability list]]\n");
     print("\nE.g. patch_capabilities.pl myapp_template.pkg release-armv5 \"All -TCB\"\n");
     print("\nThe parameter -c can be used to just check if package is compatible with self-signing\n");
     print("without actually doing any patching.\n");
     print("Explicit capability list cannot be used with -c parameter.\n");
+    print("\nThe parameter -t can be used to specify a dir under which the temporary files are created.\n");
+    print("Defaults to 'patch_capabilities_tmp' under the path to pkg file.\n");
     exit();
 }
 
@@ -101,12 +104,25 @@ if (@ARGV)
     my $pkgFileName = shift(@ARGV);
     my $justCheck = "";
     my $msgPrefix = "Patching:";
+    my $tempPatchPath = "";
 
     if ($pkgFileName eq "-c") {
         $pkgFileName = shift(@ARGV);
         $justCheck = true;
         $msgPrefix = "Warning:";
     }
+
+    if ($pkgFileName eq "-t") {
+        $tempPatchPath = shift(@ARGV);
+        $pkgFileName = shift(@ARGV);
+    }
+
+    my ($pkgVolume, $pkgPath, $pkgPlainFileName) = File::Spec->splitpath($pkgFileName);
+    if ($tempPatchPath eq "") {
+        $tempPatchPath = File::Spec->catpath($pkgVolume, $pkgPath."patch_capabilities_tmp", "");
+    }
+
+    mkpath($tempPatchPath);
 
     # These variables will only be set for template .pkg files.
     my $target;
@@ -165,8 +181,9 @@ if (@ARGV)
 
         # Start with no binaries listed.
         my @binaries = ();
+        my $binariesDelimeter = "///";
 
-        my $tempPkgFileName = $pkgFileName."_@@TEMP@@";
+        my $tempPkgFileName = $tempPatchPath."/__TEMP__".$pkgPlainFileName;
 
         if (!$justCheck) {
             unlink($tempPkgFileName);
@@ -216,19 +233,23 @@ if (@ARGV)
                         $sourcePath =~ s/\$\(TARGET\)/$target/gm;
                     }
 
-                    if ($justCheck) {
-                        push (@binaries, $sourcePath);
-                    } else {
-                        # Change the source file name (but only if not already patched)
-                        my $patchedSourcePath = $sourcePath;
-                        if ($patchedSourcePath !~ m/_patched_caps/)
-                        {
-                            $newLine =~ s/(^.*)(\.dll|\.exe)(.*)(\.dll|\.exe)/$1_patched_caps$2$3$4/i;
-                            $patchedSourcePath =~ s/(^.*)(\.dll|\.exe)/$1_patched_caps$2/i;
+                    my ($dummy1, $dummy2, $binaryBaseName) = File::Spec->splitpath($sourcePath);
 
-                            copy($sourcePath, $patchedSourcePath) or die "$sourcePath cannot be copied for patching.";
-                        }
-                        push (@binaries, $patchedSourcePath);
+                    if ($justCheck) {
+                        push (@binaries, $binaryBaseName.$binariesDelimeter.$sourcePath);
+                    } else {
+                        # Copy original files over to patching dir
+                        # Patching dir will be flat to make it cleanable with QMAKE_CLEAN, so path
+                        # will be collapsed into the file name to avoid name collisions in the rare
+                        # case where custom pkg rules are used to install files with same names from
+                        # different directories (probably using platform checks to choose only one of them.)
+                        my $patchedSourcePath = $sourcePath;
+                        $patchedSourcePath =~ s/[\/\\:]/_/g;
+                        $patchedSourcePath = "$tempPatchPath/$patchedSourcePath";
+                        $newLine =~ s/^.*(\.dll|\.exe)(.*)(\.dll|\.exe)/\"$patchedSourcePath$2$3/i;
+
+                        copy($sourcePath, $patchedSourcePath) or die "$sourcePath cannot be copied for patching.";
+                        push (@binaries, $binaryBaseName.$binariesDelimeter.$patchedSourcePath);
                     }
                 }
             }
@@ -250,10 +271,13 @@ if (@ARGV)
         my $baseCommandToExecute = "${epocToolsDir}elftran -vid 0x0 -capability \"%s\" ";
 
         # Actually set the capabilities of the listed binaries.
-        foreach my $binaryPath(@binaries)
+        foreach my $binariesItem(@binaries)
         {
+            $binariesItem =~ m|^(.*)$binariesDelimeter(.*)$|;
+            my $binaryBaseName = $1;
+            my $binaryPath = $2;
+
             # Create the command line for setting the capabilities.
-            my ($binaryVolume, $binaryDirs, $binaryBaseName) = File::Spec->splitpath($binaryPath);
             my $commandToExecute = $baseCommandToExecute;
             my $executeNeeded = "";
             if (@capabilitiesSpecified)

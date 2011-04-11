@@ -1,5 +1,11 @@
 TEMPLATE = app
-SOURCES = lightmaps.cpp
+HEADERS   = lightmaps.h \
+            mapzoom.h \
+            slippymap.h
+SOURCES   = lightmaps.cpp \
+            main.cpp \
+            mapzoom.cpp \
+            slippymap.cpp
 QT += network
 
 symbian {

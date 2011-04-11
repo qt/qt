@@ -33,7 +33,7 @@
     \title Threading Basics
     \brief An introduction to threads
 
-    \section1 What Are Threads
+    \section1 What Are Threads?
 
     Threads are about doing things in parallel, just like processes. So how do
     threads differ from processes? While you are making calculations on a
