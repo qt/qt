@@ -39,17 +39,17 @@
 **
 ****************************************************************************/
 
-#include "qwaylandxpixmapeglintegration.h"
+#include "qwaylandreadbackeglintegration.h"
 
 #include <QDebug>
 
-#include "qwaylandxpixmapwindow.h"
+#include "qwaylandreadbackeglwindow.h"
 
-QWaylandXPixmapEglIntegration::QWaylandXPixmapEglIntegration(QWaylandDisplay *display)
+QWaylandReadbackEglIntegration::QWaylandReadbackEglIntegration(QWaylandDisplay *display)
     : QWaylandGLIntegration()
     , mWaylandDisplay(display)
 {
-    qDebug() << "Using Wayland XPixmap-EGL";
+    qDebug() << "Using Wayland Readback-EGL";
     char *display_name = getenv("DISPLAY");
     mDisplay = XOpenDisplay(display_name);
     mScreen = XDefaultScreen(mDisplay);
@@ -57,7 +57,7 @@ QWaylandXPixmapEglIntegration::QWaylandXPixmapEglIntegration(QWaylandDisplay *di
     XSync(mDisplay, False);
 }
 
-QWaylandXPixmapEglIntegration::~QWaylandXPixmapEglIntegration()
+QWaylandReadbackEglIntegration::~QWaylandReadbackEglIntegration()
 {
     XCloseDisplay(mDisplay);
 }
@@ -65,10 +65,10 @@ QWaylandXPixmapEglIntegration::~QWaylandXPixmapEglIntegration()
 
 QWaylandGLIntegration *QWaylandGLIntegration::createGLIntegration(QWaylandDisplay *waylandDisplay)
 {
-    return new QWaylandXPixmapEglIntegration(waylandDisplay);
+    return new QWaylandReadbackEglIntegration(waylandDisplay);
 }
 
-void QWaylandXPixmapEglIntegration::initialize()
+void QWaylandReadbackEglIntegration::initialize()
 {
     eglBindAPI(EGL_OPENGL_ES_API);
     mEglDisplay = eglGetDisplay(mDisplay);
@@ -81,32 +81,32 @@ void QWaylandXPixmapEglIntegration::initialize()
     }
 }
 
-QWaylandWindow * QWaylandXPixmapEglIntegration::createEglWindow(QWidget *widget)
+QWaylandWindow * QWaylandReadbackEglIntegration::createEglWindow(QWidget *widget)
 {
-    return new QWaylandXPixmapWindow(widget,this);
+    return new QWaylandReadbackEglWindow(widget,this);
 }
 
-EGLDisplay QWaylandXPixmapEglIntegration::eglDisplay()
+EGLDisplay QWaylandReadbackEglIntegration::eglDisplay()
 {
     return mEglDisplay;
 }
 
-Window QWaylandXPixmapEglIntegration::rootWindow() const
+Window QWaylandReadbackEglIntegration::rootWindow() const
 {
     return mRootWindow;
 }
 
-int QWaylandXPixmapEglIntegration::depth() const
+int QWaylandReadbackEglIntegration::depth() const
 {
     return XDefaultDepth(mDisplay,mScreen);
 }
 
-Display * QWaylandXPixmapEglIntegration::xDisplay() const
+Display * QWaylandReadbackEglIntegration::xDisplay() const
 {
     return mDisplay;
 }
 
-QWaylandDisplay * QWaylandXPixmapEglIntegration::waylandDisplay() const
+QWaylandDisplay * QWaylandReadbackEglIntegration::waylandDisplay() const
 {
     return mWaylandDisplay;
 }

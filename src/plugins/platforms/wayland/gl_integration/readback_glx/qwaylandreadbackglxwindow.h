@@ -39,59 +39,27 @@
 **
 ****************************************************************************/
 
-#include "qwaylandxpixmapglxintegration.h"
+#ifndef QWAYLANDREADBACKGLXWINDOW_H
+#define QWAYLANDREADBACKGLXWINDOW_H
 
-#include "qwaylandxpixmapglxwindow.h"
+#include "qwaylandshmwindow.h"
+#include "qwaylandreadbackglxintegration.h"
+#include "qwaylandreadbackglxcontext.h"
 
-#include <QtCore/QDebug>
-
-QWaylandXPixmapGLXIntegration::QWaylandXPixmapGLXIntegration(QWaylandDisplay * waylandDispaly)
-    : QWaylandGLIntegration()
-    , mWaylandDisplay(waylandDispaly)
+class QWaylandReadbackGlxWindow : public QWaylandShmWindow
 {
-    qDebug() << "Using Wayland XPixmap-GLX";
-    char *display_name = getenv("DISPLAY");
-    mDisplay = XOpenDisplay(display_name);
-    mScreen = XDefaultScreen(mDisplay);
-    mRootWindow = XDefaultRootWindow(mDisplay);
-    XSync(mDisplay, False);
-}
+public:
+    QWaylandReadbackGlxWindow(QWidget *window, QWaylandReadbackGlxIntegration *glxIntegration);
+    WindowType windowType() const;
 
-QWaylandXPixmapGLXIntegration::~QWaylandXPixmapGLXIntegration()
-{
-    XCloseDisplay(mDisplay);
-}
+    QPlatformGLContext *glContext() const;
 
-void QWaylandXPixmapGLXIntegration::initialize()
-{
-}
+    void setGeometry(const QRect &rect);
 
-QWaylandWindow * QWaylandXPixmapGLXIntegration::createEglWindow(QWidget *widget)
-{
-    return new QWaylandXPixmapGLXWindow(widget,this);
-}
+private:
+    QWaylandReadbackGlxIntegration *mGlxIntegration;
+    QWaylandReadbackGlxContext *mContext;
 
-QWaylandGLIntegration * QWaylandGLIntegration::createGLIntegration(QWaylandDisplay *waylandDisplay)
-{
-    return new QWaylandXPixmapGLXIntegration(waylandDisplay);
-}
+};
 
-Display * QWaylandXPixmapGLXIntegration::xDisplay() const
-{
-    return mDisplay;
-}
-
-int QWaylandXPixmapGLXIntegration::screen() const
-{
-    return mScreen;
-}
-
-Window QWaylandXPixmapGLXIntegration::rootWindow() const
-{
-    return mRootWindow;
-}
-
-QWaylandDisplay * QWaylandXPixmapGLXIntegration::waylandDisplay() const
-{
-    return mWaylandDisplay;
-}
+#endif // QWAYLANDREADBACKGLXWINDOW_H

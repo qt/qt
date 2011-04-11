@@ -39,28 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDXPIXMAPWINDOW_H
-#define QWAYLANDXPIXMAPWINDOW_H
+#include "qwaylandreadbackglxwindow.h"
 
-#include "qwaylandshmwindow.h"
-#include "qwaylandxpixmapeglintegration.h"
-
-class QXPixmapReadbackGLContext;
-
-class QWaylandXPixmapWindow : public QWaylandShmWindow
+QWaylandReadbackGlxWindow::QWaylandReadbackGlxWindow(QWidget *window, QWaylandReadbackGlxIntegration *glxIntegration)
+    : QWaylandShmWindow(window)
+    , mGlxIntegration(glxIntegration)
+    , mContext(0)
 {
-public:
-    QWaylandXPixmapWindow(QWidget *window, QWaylandXPixmapEglIntegration *eglIntegration);
+}
 
-    WindowType windowType() const;
+QWaylandWindow::WindowType QWaylandReadbackGlxWindow::windowType() const
+{
+    //yeah. this type needs a new name
+    return QWaylandWindow::Egl;
+}
 
-    QPlatformGLContext *glContext() const;
+QPlatformGLContext * QWaylandReadbackGlxWindow::glContext() const
+{
+    if (!mContext) {
+        QWaylandReadbackGlxWindow *that = const_cast<QWaylandReadbackGlxWindow *>(this);
+        that->mContext = new QWaylandReadbackGlxContext(mGlxIntegration,that);
+    }
+    return mContext;
+}
 
-    void setGeometry(const QRect &rect);
+void QWaylandReadbackGlxWindow::setGeometry(const QRect &rect)
+{
+    QWaylandShmWindow::setGeometry(rect);
 
-private:
-    QWaylandXPixmapEglIntegration *mEglIntegration;
-    QXPixmapReadbackGLContext *mContext;
-};
-
-#endif // QWAYLANDXPIXMAPWINDOW_H
+    if (mContext) {
+        mContext->geometryChanged();
+    }
+}
