@@ -70,6 +70,12 @@ public:
     {
     }
 
+    ~QSGContextPrivate() 
+    {
+        delete rootNode;
+        delete renderer;
+    }
+
     QSGRootNode *rootNode;
     QSGRenderer *renderer;
 

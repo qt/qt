@@ -471,6 +471,7 @@ QSGCanvasPrivate::QSGCanvasPrivate()
 
 QSGCanvasPrivate::~QSGCanvasPrivate()
 {
+    delete context; context = 0;
 }
 
 void QSGCanvasPrivate::init(QSGCanvas *c)
