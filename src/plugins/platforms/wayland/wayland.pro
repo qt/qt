@@ -37,10 +37,10 @@ contains(QT_CONFIG, opengl) {
 
     contains(QT_CONFIG, opengles2) {
         CONFIG += wayland_egl
-        #CONFIG += xpixmap_egl
+        #CONFIG += readback_egl
         #CONFIG += xcomposite_egl
     } else {
-        CONFIG += xpixmap_glx
+        CONFIG += readback_glx
         #CONFIG += xcomposite_gl
 
     }

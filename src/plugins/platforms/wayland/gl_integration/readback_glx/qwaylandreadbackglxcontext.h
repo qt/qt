@@ -39,22 +39,22 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDXPIXMAPGLXCONTEXT_H
-#define QWAYLANDXPIXMAPGLXCONTEXT_H
+#ifndef QWAYLANDREADBACKGLXCONTEXT_H
+#define QWAYLANDREADBACKGLXCONTEXT_H
 
 #include <QPlatformGLContext>
 
-#include "qwaylandxpixmapglxintegration.h"
+#include "qwaylandreadbackglxintegration.h"
 
 #include "qglxconvenience.h"
 
-class QWaylandXPixmapGLXWindow;
+class QWaylandReadbackGlxWindow;
 class QWaylandShmBuffer;
 
-class QWaylandXPixmapGLXContext : public QPlatformGLContext
+class QWaylandReadbackGlxContext : public QPlatformGLContext
 {
 public:
-    QWaylandXPixmapGLXContext(QWaylandXPixmapGLXIntegration *glxIntegration, QWaylandXPixmapGLXWindow *window);
+    QWaylandReadbackGlxContext(QWaylandReadbackGlxIntegration *glxIntegration, QWaylandReadbackGlxWindow *window);
 
     void makeCurrent();
     void doneCurrent();
@@ -66,8 +66,8 @@ public:
     void geometryChanged();
 
 private:
-    QWaylandXPixmapGLXIntegration *mGlxIntegration;
-    QWaylandXPixmapGLXWindow *mWindow;
+    QWaylandReadbackGlxIntegration *mGlxIntegration;
+    QWaylandReadbackGlxWindow *mWindow;
     QWaylandShmBuffer *mBuffer;
 
     Pixmap mPixmap;
@@ -76,4 +76,4 @@ private:
     GLXPixmap mGlxPixmap;
 };
 
-#endif // QWAYLANDXPIXMAPGLXCONTEXT_H
+#endif // QWAYLANDREADBACKGLXCONTEXT_H

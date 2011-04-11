@@ -39,37 +39,59 @@
 **
 ****************************************************************************/
 
-#include "qwaylandxpixmapwindow.h"
+#include "qwaylandreadbackglxintegration.h"
 
-#include "qwaylandxpixmapeglcontext.h"
-QWaylandXPixmapWindow::QWaylandXPixmapWindow(QWidget *window, QWaylandXPixmapEglIntegration *eglIntegration)
-    : QWaylandShmWindow(window)
-    , mEglIntegration(eglIntegration)
-    , mContext(0)
+#include "qwaylandreadbackglxwindow.h"
+
+#include <QtCore/QDebug>
+
+QWaylandReadbackGlxIntegration::QWaylandReadbackGlxIntegration(QWaylandDisplay * waylandDispaly)
+    : QWaylandGLIntegration()
+    , mWaylandDisplay(waylandDispaly)
+{
+    qDebug() << "Using Wayland Readback-GLX";
+    char *display_name = getenv("DISPLAY");
+    mDisplay = XOpenDisplay(display_name);
+    mScreen = XDefaultScreen(mDisplay);
+    mRootWindow = XDefaultRootWindow(mDisplay);
+    XSync(mDisplay, False);
+}
+
+QWaylandReadbackGlxIntegration::~QWaylandReadbackGlxIntegration()
+{
+    XCloseDisplay(mDisplay);
+}
+
+void QWaylandReadbackGlxIntegration::initialize()
 {
 }
 
-QWaylandWindow::WindowType QWaylandXPixmapWindow::windowType() const
+QWaylandWindow * QWaylandReadbackGlxIntegration::createEglWindow(QWidget *widget)
 {
-    //We'r lying, maybe we should add a type, but for now it will do
-    //since this is primarly used by the windowsurface.
-    return QWaylandWindow::Egl;
+    return new QWaylandReadbackGlxWindow(widget,this);
 }
 
-QPlatformGLContext *QWaylandXPixmapWindow::glContext() const
+QWaylandGLIntegration * QWaylandGLIntegration::createGLIntegration(QWaylandDisplay *waylandDisplay)
 {
-    if (!mContext) {
-        QWaylandXPixmapWindow *that = const_cast<QWaylandXPixmapWindow *>(this);
-        that->mContext = new QXPixmapReadbackGLContext(mEglIntegration,that);
-    }
-    return mContext;
+    return new QWaylandReadbackGlxIntegration(waylandDisplay);
 }
 
-void QWaylandXPixmapWindow::setGeometry(const QRect &rect)
+Display * QWaylandReadbackGlxIntegration::xDisplay() const
 {
-    QPlatformWindow::setGeometry(rect);
-
-    if (mContext)
-        mContext->geometryChanged();
+    return mDisplay;
 }
 
+int QWaylandReadbackGlxIntegration::screen() const
+{
+    return mScreen;
+}
+
+Window QWaylandReadbackGlxIntegration::rootWindow() const
+{
+    return mRootWindow;
+}
+
+QWaylandDisplay * QWaylandReadbackGlxIntegration::waylandDisplay() const
+{
+    return mWaylandDisplay;
+}
