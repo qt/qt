@@ -42,7 +42,7 @@
 
 #include "qsgpainteditem_p.h"
 #include "qsgpainteditem_p_p.h"
-#include "qsgimage_p_p.h"
+#include "private/qsgpainternode_p.h"
 
 #include <private/qsgcontext_p.h>
 #include <private/qsgadaptationlayer_p.h>
@@ -50,22 +50,23 @@
 QT_BEGIN_NAMESPACE
 
 QSGPaintedItemPrivate::QSGPaintedItemPrivate()
-: geometryDirty(false), contentsDirty(false), opaquePainting(false)
+    : QSGItemPrivate()
+    , geometryDirty(false)
+    , contentsDirty(false)
+    , opaquePainting(false)
 {
 }
 
 QSGPaintedItem::QSGPaintedItem(QSGItem *parent)
-: QSGItem(*(new QSGPaintedItemPrivate), parent)
+    : QSGItem(*(new QSGPaintedItemPrivate), parent)
 {
     setFlag(ItemHasContents);
-    d_func()->textureProvider = new QSGImageTextureProvider(this);
 }
 
 QSGPaintedItem::QSGPaintedItem(QSGPaintedItemPrivate &dd, QSGItem *parent)
-: QSGItem(dd, parent)
+    : QSGItem(dd, parent)
 {
     setFlag(ItemHasContents);
-    d_func()->textureProvider = new QSGImageTextureProvider(this);
 }
 
 QSGPaintedItem::~QSGPaintedItem()
@@ -92,9 +93,15 @@ bool QSGPaintedItem::opaquePainting() const
     return d->opaquePainting;
 }
 
-void QSGPaintedItem::setOpaquePainting(bool)
+void QSGPaintedItem::setOpaquePainting(bool o)
 {
-    // XXX todo
+    Q_D(QSGPaintedItem);
+
+    if (d->opaquePainting == o)
+        return;
+
+    d->opaquePainting = o;
+    QSGItem::update();
 }
 
 QSize QSGPaintedItem::contentsSize() const
@@ -166,7 +173,6 @@ void QSGPaintedItem::geometryChanged(const QRectF &newGeometry, const QRectF &ol
 
 QSGNode *QSGPaintedItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data)
 {
-    // XXX todo - highly inefficient.  Should use the FBO approach used in QxPainterNode.
     Q_UNUSED(data);
     Q_D(QSGPaintedItem);
 
@@ -175,28 +181,31 @@ QSGNode *QSGPaintedItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *
         return 0;
     }
 
-    QSGImageNode *node = static_cast<QSGImageNode *>(oldNode);
-    if (!node)
-        node = QSGContext::current->createImageNode();
+    QSGPainterNode *node = static_cast<QSGPainterNode *>(oldNode);
+    if (!node) {
+        node = new QSGPainterNode;
+        node->setSize(QSize(d->width, d->height));
+        node->setSmoothPainting(d->smooth);
+        node->setLinearFiltering(d->smooth);
+        node->setOpaquePainting(d->opaquePainting);
+    } else {
+        QSize s(d->width, d->height);
+        if (node->size() != s)
+            node->setSize(s);
+        if (node->smoothPainting() != d->smooth)
+            node->setSmoothPainting(d->smooth);
+        if (node->linearFiltering() != d->smooth)
+            node->setLinearFiltering(d->smooth);
+        if (node->opaquePainting() != d->opaquePainting)
+            node->setOpaquePainting(d->opaquePainting);
+    }
 
-    QImage image(width(), height(), d->opaquePainting ? QImage::Format_RGB32
-                                                      : QImage::Format_ARGB32_Premultiplied);
-    if (!d->opaquePainting)
-        image.fill(0);
+    bool fboChanged = node->update();
 
-    QPainter p(&image);
-
-    paint(&p);
-
-    node->setTargetRect(image.rect());
-    node->setSourceRect(QRectF(0, 0, 1, 1));
-    d->textureProvider->setHorizontalWrapMode(QSGTextureProvider::ClampToEdge);
-    d->textureProvider->setVerticalWrapMode(QSGTextureProvider::ClampToEdge);
-    d->textureProvider->setFiltering(d->smooth ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
-    d->textureProvider->setImage(image);
-    node->setTexture(0); // Force update.
-    node->setTexture(d->textureProvider);
-    node->update();
+    if (d->contentsDirty || fboChanged) {
+        node->paint(this);
+        d->contentsDirty = false;
+    }
 
     return node;
 }
