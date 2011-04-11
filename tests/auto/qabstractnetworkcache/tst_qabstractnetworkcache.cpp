@@ -124,25 +124,22 @@ static bool AlwaysFalse = false;
 
 Q_DECLARE_METATYPE(QNetworkRequest::CacheLoadControl)
 
-void tst_QAbstractNetworkCache::expires_data() // Server sending Expires header, but neither max-age nor Last-Modified
+void tst_QAbstractNetworkCache::expires_data()
 {
     QTest::addColumn<QNetworkRequest::CacheLoadControl>("cacheLoadControl");
     QTest::addColumn<QString>("url");
     QTest::addColumn<bool>("fetchFromCache");
 
-    // httpcachetest_expires304.cgi will send a 304 upon receiving a If-Modified-Since header
     QTest::newRow("304-0") << QNetworkRequest::AlwaysNetwork << "httpcachetest_expires304.cgi" << AlwaysFalse;
-    QTest::newRow("304-1") << QNetworkRequest::PreferNetwork << "httpcachetest_expires304.cgi" << false; // neither Last-Modified nor ETag given
+    QTest::newRow("304-1") << QNetworkRequest::PreferNetwork << "httpcachetest_expires304.cgi" << true;
     QTest::newRow("304-2") << QNetworkRequest::AlwaysCache << "httpcachetest_expires304.cgi" << AlwaysTrue;
-    QTest::newRow("304-3") << QNetworkRequest::PreferCache << "httpcachetest_expires304.cgi" << true; // we know the expiration date, so we can read from cache
+    QTest::newRow("304-3") << QNetworkRequest::PreferCache << "httpcachetest_expires304.cgi" << true;
 
-    // httpcachetest_expires500.cgi will send a 500 upon receiving a If-Modified-Since header
     QTest::newRow("500-0") << QNetworkRequest::AlwaysNetwork << "httpcachetest_expires500.cgi" << AlwaysFalse;
-    QTest::newRow("500-1") << QNetworkRequest::PreferNetwork << "httpcachetest_expires500.cgi" << false; // neither Last-Modified nor ETag given
+    QTest::newRow("500-1") << QNetworkRequest::PreferNetwork << "httpcachetest_expires500.cgi" << true;
     QTest::newRow("500-2") << QNetworkRequest::AlwaysCache << "httpcachetest_expires500.cgi" << AlwaysTrue;
-    QTest::newRow("500-3") << QNetworkRequest::PreferCache << "httpcachetest_expires500.cgi" << true; // we know the expiration date, so we can read from cache
+    QTest::newRow("500-3") << QNetworkRequest::PreferCache << "httpcachetest_expires500.cgi" << true;
 
-    // httpcachetest_expires200.cgi will always send a 200 header
     QTest::newRow("200-0") << QNetworkRequest::AlwaysNetwork << "httpcachetest_expires200.cgi" << AlwaysFalse;
     QTest::newRow("200-1") << QNetworkRequest::PreferNetwork << "httpcachetest_expires200.cgi" << false;
     QTest::newRow("200-2") << QNetworkRequest::AlwaysCache << "httpcachetest_expires200.cgi" << AlwaysTrue;
@@ -170,17 +167,15 @@ void tst_QAbstractNetworkCache::lastModified_data()
     QTest::addColumn<QString>("url");
     QTest::addColumn<bool>("fetchFromCache");
 
-    // httpcachetest_lastModified304.cgi will send a 304 upon receiving a If-Modified-Since header
     QTest::newRow("304-0") << QNetworkRequest::AlwaysNetwork << "httpcachetest_lastModified304.cgi" << AlwaysFalse;
-    QTest::newRow("304-1") << QNetworkRequest::PreferNetwork << "httpcachetest_lastModified304.cgi" << true; // we know the last modified date, so we can send If-Modified-Since and get 304, then we can read from cache
+    QTest::newRow("304-1") << QNetworkRequest::PreferNetwork << "httpcachetest_lastModified304.cgi" << true;
     QTest::newRow("304-2") << QNetworkRequest::AlwaysCache << "httpcachetest_lastModified304.cgi" << AlwaysTrue;
-    QTest::newRow("304-3") << QNetworkRequest::PreferCache << "httpcachetest_lastModified304.cgi" << true; // we know the last modified date, so we can send If-Modified-Since and get 304, then we can read from cache
+    QTest::newRow("304-3") << QNetworkRequest::PreferCache << "httpcachetest_lastModified304.cgi" << true;
 
-    // httpcachetest_lastModified200.cgi will always send a 200 header
     QTest::newRow("200-0") << QNetworkRequest::AlwaysNetwork << "httpcachetest_lastModified200.cgi" << AlwaysFalse;
-    QTest::newRow("200-1") << QNetworkRequest::PreferNetwork << "httpcachetest_lastModified200.cgi" << false; // we won't get a 304 (although sending If-Modified-Since), so we cannot read from cache
+    QTest::newRow("200-1") << QNetworkRequest::PreferNetwork << "httpcachetest_lastModified200.cgi" << false;
     QTest::newRow("200-2") << QNetworkRequest::AlwaysCache << "httpcachetest_lastModified200.cgi" << AlwaysTrue;
-    QTest::newRow("200-3") << QNetworkRequest::PreferCache << "httpcachetest_lastModified200.cgi" << false; // we won't get a 304 (although sending If-Modified-Since), so we cannot read from cache
+    QTest::newRow("200-3") << QNetworkRequest::PreferCache << "httpcachetest_lastModified200.cgi" << false;
 }
 
 void tst_QAbstractNetworkCache::lastModified()
@@ -205,14 +200,14 @@ void tst_QAbstractNetworkCache::etag_data()
     QTest::addColumn<bool>("fetchFromCache");
 
     QTest::newRow("304-0") << QNetworkRequest::AlwaysNetwork << "httpcachetest_etag304.cgi" << AlwaysFalse;
-    QTest::newRow("304-1") << QNetworkRequest::PreferNetwork << "httpcachetest_etag304.cgi" << true; // we will send If-None-Match and get 304
+    QTest::newRow("304-1") << QNetworkRequest::PreferNetwork << "httpcachetest_etag304.cgi" << true;
     QTest::newRow("304-2") << QNetworkRequest::AlwaysCache << "httpcachetest_etag304.cgi" << AlwaysTrue;
-    QTest::newRow("304-3") << QNetworkRequest::PreferCache << "httpcachetest_etag304.cgi" << true; // we don't have expiration information, but will get 304, as with PreferNetwork
+    QTest::newRow("304-3") << QNetworkRequest::PreferCache << "httpcachetest_etag304.cgi" << true;
 
     QTest::newRow("200-0") << QNetworkRequest::AlwaysNetwork << "httpcachetest_etag200.cgi" << AlwaysFalse;
-    QTest::newRow("200-1") << QNetworkRequest::PreferNetwork << "httpcachetest_etag200.cgi" << false; // we will send If-None-Match and get 200
+    QTest::newRow("200-1") << QNetworkRequest::PreferNetwork << "httpcachetest_etag200.cgi" << false;
     QTest::newRow("200-2") << QNetworkRequest::AlwaysCache << "httpcachetest_etag200.cgi" << AlwaysTrue;
-    QTest::newRow("200-3") << QNetworkRequest::PreferCache << "httpcachetest_etag200.cgi" << false; // we don't have expiration information, and will get 200, as with PreferNetwork
+    QTest::newRow("200-3") << QNetworkRequest::PreferCache << "httpcachetest_etag200.cgi" << false;
 }
 
 void tst_QAbstractNetworkCache::etag()
@@ -252,8 +247,8 @@ void tst_QAbstractNetworkCache::cacheControl_data()
 
     // see QTBUG-7060
     //QTest::newRow("nokia-boston") << QNetworkRequest::PreferNetwork << "http://waplabdc.nokia-boston.com/browser/users/venkat/cache/Cache_directives/private_1b.asp" << true;
-    QTest::newRow("304-2b") << QNetworkRequest::PreferNetwork << "httpcachetest_cachecontrol200.cgi?private, max-age=1000" << false; // script always returns 200, so we cannot load from cache
-    QTest::newRow("304-4b") << QNetworkRequest::PreferCache << "httpcachetest_cachecontrol200.cgi?private, max-age=1000" << true; // we got expiry information
+    QTest::newRow("304-2b") << QNetworkRequest::PreferNetwork << "httpcachetest_cachecontrol200.cgi?private, max-age=1000" << true;
+    QTest::newRow("304-4b") << QNetworkRequest::PreferCache << "httpcachetest_cachecontrol200.cgi?private, max-age=1000" << true;
 }
 
 void tst_QAbstractNetworkCache::cacheControl()
