@@ -1542,6 +1542,7 @@ bool QAbstractItemView::event(QEvent *event)
         break;
     case QEvent::LayoutDirectionChange:
     case QEvent::ApplicationLayoutDirectionChange:
+    case QEvent::Resize:
         updateGeometries();
         break;
     case QEvent::StyleChange:
@@ -2396,7 +2397,6 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
 void QAbstractItemView::resizeEvent(QResizeEvent *event)
 {
     QAbstractScrollArea::resizeEvent(event);
-    updateGeometries();
 }
 
 /*!
