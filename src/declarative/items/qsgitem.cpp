@@ -1595,9 +1595,9 @@ QSGNode *QSGItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     return 0;
 }
 
-TransformNode *QSGItemPrivate::createTransformNode()
+QSGTransformNode *QSGItemPrivate::createTransformNode()
 {
-    return new TransformNode;
+    return new QSGTransformNode;
 }
 
 void QSGItem::updatePolish()

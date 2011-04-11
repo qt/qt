@@ -127,11 +127,13 @@ static void drawRectangle(float *bits, int width, int height, const DFVertex *v1
         v1 = tmp;
     }
 
-    //   v1
-    //  /  \
-    // v4  v2
-    //  \  /
-    //   v3
+    /*
+       v1
+      /  \
+     v4  v2
+      \  /
+       v3
+    */
 
     int fromY = qMax(0, qCeil(v1->p.y));
     int midY1 = qMin(height, qCeil(qMin(v2->p.y, v4->p.y)));

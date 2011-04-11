@@ -80,7 +80,7 @@ bool QSGNodeUpdater::isNodeBlocked(QSGNode *node, QSGNode *root) const
     qreal opacity = 1;
     while (node != root) {
         if (node->type() == QSGNode::OpacityNodeType) {
-            opacity *= static_cast<OpacityNode *>(node)->opacity();
+            opacity *= static_cast<QSGOpacityNode *>(node)->opacity();
             if (opacity < 0.001)
                 return true;
         }
@@ -93,7 +93,7 @@ bool QSGNodeUpdater::isNodeBlocked(QSGNode *node, QSGNode *root) const
 }
 
 
-void QSGNodeUpdater::enterTransformNode(TransformNode *t)
+void QSGNodeUpdater::enterTransformNode(QSGTransformNode *t)
 {
     if (t->dirtyFlags() & QSGNode::DirtyMatrix)
         ++m_force_update;
@@ -113,7 +113,7 @@ void QSGNodeUpdater::enterTransformNode(TransformNode *t)
 }
 
 
-void QSGNodeUpdater::leaveTransformNode(TransformNode *t)
+void QSGNodeUpdater::leaveTransformNode(QSGTransformNode *t)
 {
 #ifdef QSG_UPDATER_DEBUG
     qDebug() << "leave transform:" << t;
@@ -171,7 +171,7 @@ void QSGNodeUpdater::enterGeometryNode(QSGGeometryNode *g)
     g->setInheritedOpacity(m_opacity_stack.top());
 }
 
-void QSGNodeUpdater::enterOpacityNode(OpacityNode *o)
+void QSGNodeUpdater::enterOpacityNode(QSGOpacityNode *o)
 {
     if (o->dirtyFlags() & QSGNode::DirtyOpacity)
         ++m_force_update;
@@ -185,7 +185,7 @@ void QSGNodeUpdater::enterOpacityNode(OpacityNode *o)
 #endif
 }
 
-void QSGNodeUpdater::leaveOpacityNode(OpacityNode *o)
+void QSGNodeUpdater::leaveOpacityNode(QSGOpacityNode *o)
 {
 #ifdef QSG_UPDATER_DEBUG
     qDebug() << "leave opacity" << o;

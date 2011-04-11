@@ -93,7 +93,7 @@ QSGNode::~QSGNode()
     Blocked subtrees will not get their dirty states updated and they
     will not be rendered.
 
-    The OpacityNode will return a blocked subtree when accumulated opacity
+    The QSGOpacityNode will return a blocked subtree when accumulated opacity
     is 0, for instance.
  */
 
@@ -435,16 +435,16 @@ void QSGClipNode::setClipRect(const QRectF &rect)
 }
 
 
-TransformNode::TransformNode()
+QSGTransformNode::QSGTransformNode()
 {
 }
 
-TransformNode::~TransformNode()
+QSGTransformNode::~QSGTransformNode()
 {
     destroy();
 }
 
-void TransformNode::setMatrix(const QMatrix4x4 &matrix)
+void QSGTransformNode::setMatrix(const QMatrix4x4 &matrix)
 {
     m_matrix = matrix;
     markDirty(DirtyMatrix);
@@ -460,7 +460,7 @@ void TransformNode::setMatrix(const QMatrix4x4 &matrix)
 
     \internal
   */
-void TransformNode::setCombinedMatrix(const QMatrix4x4 &matrix)
+void QSGTransformNode::setCombinedMatrix(const QMatrix4x4 &matrix)
 {
     m_combined_matrix = matrix;
 }
@@ -486,19 +486,19 @@ void QSGRootNode::notifyNodeChange(QSGNode *node, DirtyFlags flags)
     Constructs an opacity node with a default opacity of 1.
 
     Opacity accumulate downwards in the scene graph so a node with two
-    OpacityNode instances above it, both with opacity of 0.5, will have
+    QSGOpacityNode instances above it, both with opacity of 0.5, will have
     effective opacity of 0.25.
 
     The default opacity of nodes is 1.
   */
-OpacityNode::OpacityNode()
+QSGOpacityNode::QSGOpacityNode()
     : m_opacity(1)
     , m_combined_opacity(1)
 {
 }
 
 
-OpacityNode::~OpacityNode()
+QSGOpacityNode::~QSGOpacityNode()
 {
     destroy();
 }
@@ -512,7 +512,7 @@ OpacityNode::~OpacityNode()
 
     The value will be bounded to the range 0 to 1.
  */
-void OpacityNode::setOpacity(qreal opacity)
+void QSGOpacityNode::setOpacity(qreal opacity)
 {
     opacity = qBound<qreal>(0, opacity, 1);
     if (m_opacity == opacity)
@@ -531,13 +531,13 @@ void OpacityNode::setOpacity(qreal opacity)
 
     \internal
  */
-void OpacityNode::setCombinedOpacity(qreal opacity)
+void QSGOpacityNode::setCombinedOpacity(qreal opacity)
 {
     m_combined_opacity = opacity;
 }
 
 
-bool OpacityNode::isSubtreeBlocked() const
+bool QSGOpacityNode::isSubtreeBlocked() const
 {
     return m_combined_opacity < 0.001;
 }
@@ -553,7 +553,7 @@ void QSGNodeVisitor::visitNode(QSGNode *n)
 {
     switch (n->type()) {
     case QSGNode::TransformNodeType: {
-        TransformNode *t = static_cast<TransformNode *>(n);
+        QSGTransformNode *t = static_cast<QSGTransformNode *>(n);
         enterTransformNode(t);
         visitChildren(t);
         leaveTransformNode(t);
@@ -571,7 +571,7 @@ void QSGNodeVisitor::visitNode(QSGNode *n)
         leaveClipNode(c);
         break; }
     case QSGNode::OpacityNodeType: {
-        OpacityNode *o = static_cast<OpacityNode *>(n);
+        QSGOpacityNode *o = static_cast<QSGOpacityNode *>(n);
         enterOpacityNode(o);
         visitChildren(o);
         leaveOpacityNode(o);
@@ -667,14 +667,14 @@ QDebug operator<<(QDebug d, const QSGClipNode *n)
     return d;
 }
 
-QDebug operator<<(QDebug d, const TransformNode *n)
+QDebug operator<<(QDebug d, const QSGTransformNode *n)
 {
     if (!n) {
-        d << "TransformNode(null)";
+        d << "QSGTransformNode(null)";
         return d;
     }
     const QMatrix4x4 m = n->matrix();
-    d << "TransformNode(";
+    d << "QSGTransformNode(";
     d << hex << (void *) n << dec;
     if (m.isIdentity())
         d << "identity";
@@ -690,13 +690,13 @@ QDebug operator<<(QDebug d, const TransformNode *n)
     return d;
 }
 
-QDebug operator<<(QDebug d, const OpacityNode *n)
+QDebug operator<<(QDebug d, const QSGOpacityNode *n)
 {
     if (!n) {
-        d << "OpacityNode(null)";
+        d << "QSGOpacityNode(null)";
         return d;
     }
-    d << "OpacityNode(";
+    d << "QSGOpacityNode(";
     d << hex << (void *) n << dec;
     d << "opacity=" << n->opacity()
       << "combined=" << n->combinedOpacity()
@@ -738,7 +738,7 @@ QDebug operator<<(QDebug d, const QSGNode *n)
         d << static_cast<const QSGGeometryNode *>(n);
         break;
     case QSGNode::TransformNodeType:
-        d << static_cast<const TransformNode *>(n);
+        d << static_cast<const QSGTransformNode *>(n);
         break;
     case QSGNode::ClipNodeType:
         d << static_cast<const QSGClipNode *>(n);
@@ -747,7 +747,7 @@ QDebug operator<<(QDebug d, const QSGNode *n)
         d << static_cast<const QSGRootNode *>(n);
         break;
     case QSGNode::OpacityNodeType:
-        d << static_cast<const OpacityNode *>(n);
+        d << static_cast<const QSGOpacityNode *>(n);
         break;
     default:
         d << "QSGNode(" << hex << (void *) n << dec

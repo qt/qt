@@ -54,7 +54,7 @@ class QColor;
 class QTextDocument;
 class QSGContext;
 
-class QSGTextNode : public TransformNode
+class QSGTextNode : public QSGTransformNode
 {
 public:
     QSGTextNode(QSGContext *);

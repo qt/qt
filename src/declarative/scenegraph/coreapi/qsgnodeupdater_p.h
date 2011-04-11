@@ -57,12 +57,12 @@ public:
     virtual bool isNodeBlocked(QSGNode *n, QSGNode *root) const;
 
 protected:
-    void enterTransformNode(TransformNode *);
-    void leaveTransformNode(TransformNode *);
+    void enterTransformNode(QSGTransformNode *);
+    void leaveTransformNode(QSGTransformNode *);
     void enterClipNode(QSGClipNode *c);
     void leaveClipNode(QSGClipNode *c);
-    void enterOpacityNode(OpacityNode *);
-    void leaveOpacityNode(OpacityNode *);
+    void enterOpacityNode(QSGOpacityNode *o);
+    void leaveOpacityNode(QSGOpacityNode *o);
     void enterGeometryNode(QSGGeometryNode *);
 
     void visitNode(QSGNode *n);

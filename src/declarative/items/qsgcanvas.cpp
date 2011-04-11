@@ -1745,7 +1745,7 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
                       ? itemPriv->opacity : qreal(0);
 
         if (opacity != 1 && !itemPriv->opacityNode) {
-            itemPriv->opacityNode = new OpacityNode;
+            itemPriv->opacityNode = new QSGOpacityNode;
 
             QSGNode *parent = itemPriv->itemNode();
             QSGNode *child = itemPriv->clipNode;
