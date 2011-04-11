@@ -49,6 +49,7 @@
 #include "dateformats.h"
 #include "numberformats.h"
 #include "miscellaneous.h"
+#include "info.h"
 
 class Window : public QMainWindow
 {
@@ -65,6 +66,7 @@ public:
     DateFormatsWidget *dateFormats;
     NumberFormatsWidget *numberFormats;
     MiscWidget *miscellaneous;
+    InfoWidget *info;
 
 private:
     bool event(QEvent *);

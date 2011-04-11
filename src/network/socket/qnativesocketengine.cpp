@@ -646,6 +646,8 @@ int QNativeSocketEngine::accept()
     return d->nativeAccept();
 }
 
+#ifndef QT_NO_NETWORKINTERFACE
+
 /*!
     \since 4.8
 */
@@ -681,7 +683,6 @@ QNetworkInterface QNativeSocketEngine::multicastInterface() const
     return d->nativeMulticastInterface();
 }
 
-
 /*! \since 4.8 */
 bool QNativeSocketEngine::setMulticastInterface(const QNetworkInterface &iface)
 {
@@ -690,6 +691,8 @@ bool QNativeSocketEngine::setMulticastInterface(const QNetworkInterface &iface)
     Q_CHECK_TYPE(QNativeSocketEngine::setMulticastInterface(), QAbstractSocket::UdpSocket, false);
     return d->nativeSetMulticastInterface(iface);
 }
+
+#endif // QT_NO_NETWORKINTERFACE
 
 /*!
     Returns the number of bytes that are currently available for

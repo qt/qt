@@ -114,7 +114,9 @@ public:
         StringToAlternateQuotation, // QString in: QStringRef to quote
         ScriptId, // uint
         ListToSeparatedString, // QString
-        LocaleChanged // system locale changed
+        LocaleChanged, // system locale changed
+        NativeLanguageName, // QString
+        NativeCountryName // QString
     };
     virtual QVariant query(QueryType type, QVariant in) const;
     virtual QLocale fallbackLocale() const;
@@ -658,6 +660,8 @@ public:
     QString name() const;
 
     QString bcp47Name() const;
+    QString nativeLanguageName() const;
+    QString nativeCountryName() const;
 
     short toShort(const QString &s, bool *ok = 0, int base = 0) const;
     ushort toUShort(const QString &s, bool *ok = 0, int base = 0) const;
@@ -743,7 +747,7 @@ public:
     static QLocale c() { return QLocale(C); }
     static QLocale system();
 
-    static QStringList matchingLocales(QLocale::Language language, QLocale::Script script, QLocale::Country country);
+    static QList<QLocale> matchingLocales(QLocale::Language language, QLocale::Script script, QLocale::Country country);
     static QList<Country> countriesForLanguage(Language lang);
 
     void setNumberOptions(NumberOptions options);

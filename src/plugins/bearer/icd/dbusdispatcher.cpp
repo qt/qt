@@ -194,18 +194,21 @@ static bool appendVariantToDBusMessage(const QVariant& argument,
                                            &int32_data);
             break;
 
-        case QVariant::String:
-            str_data = argument.toString().toLatin1().data();
+        case QVariant::String: {
+            QByteArray data = argument.toString().toLatin1();
+            str_data = data.data();
             dbus_message_iter_append_basic(dbus_iter, DBUS_TYPE_STRING,
                                            &str_data);
             break;
+        }
 
         case QVariant::StringList:
             str_list = argument.toStringList();
             dbus_message_iter_open_container(dbus_iter, DBUS_TYPE_ARRAY,
                                              "s", &array_iter);
             for (idx = 0; idx < str_list.size(); idx++) {
-                str_data = str_list.at(idx).toLatin1().data();
+                QByteArray data = str_list.at(idx).toLatin1();
+                str_data = data.data();
                 dbus_message_iter_append_basic(&array_iter,
                                                DBUS_TYPE_STRING,
                                                &str_data);

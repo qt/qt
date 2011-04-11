@@ -1815,21 +1815,21 @@ QLocale QLocale::system()
 /*!
     \since 4.8
 
-    Returns the list of valid locale names that match the given \a language, \a
+    Returns a list of valid locale objects that match the given \a language, \a
     script and \a country.
 
     Getting a list of all locales:
-    QStringList allLocales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript, QLocale::AnyCountry);
+    QList<QLocale> allLocales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript, QLocale::AnyCountry);
 */
-QStringList QLocale::matchingLocales(QLocale::Language language,
-                                     QLocale::Script script,
-                                     QLocale::Country country)
+QList<QLocale> QLocale::matchingLocales(QLocale::Language language,
+                                        QLocale::Script script,
+                                        QLocale::Country country)
 {
     if (uint(language) > QLocale::LastLanguage || uint(script) > QLocale::LastScript ||
             uint(country) > QLocale::LastCountry)
-        return QStringList();
+        return QList<QLocale>();
 
-    QStringList result;
+    QList<QLocale> result;
     const QLocalePrivate *d = locale_data;
     if (language == QLocale::AnyLanguage && script == QLocale::AnyScript && country == QLocale::AnyCountry)
         result.reserve(locale_data_size);
@@ -1837,7 +1837,9 @@ QStringList QLocale::matchingLocales(QLocale::Language language,
         d += locale_index[language];
     while ( (d != locale_data + locale_data_size)
             && (language == QLocale::AnyLanguage || d->m_language_id == uint(language))) {
-        result.append(d->bcp47Name());
+        QLocale locale(QLocale::C);
+        locale.p.index = localePrivateIndex(d);
+        result.append(locale);
         ++d;
     }
     return result;
@@ -3128,7 +3130,7 @@ QString QLocale::toCurrencyString(qlonglong value, const QString &symbol) const
         value = -value;
     }
     QString str = d->longLongToString(value);
-    QString sym = symbol.isEmpty() ? currencySymbol() : symbol;
+    QString sym = symbol.isNull() ? currencySymbol() : symbol;
     if (sym.isEmpty())
         sym = currencySymbol(QLocale::CurrencyIsoCode);
     QString format = getLocaleData(currency_format_data + idx, size);
@@ -3153,7 +3155,7 @@ QString QLocale::toCurrencyString(qulonglong value, const QString &symbol) const
     quint8 idx = d->m_currency_format_idx;
     quint8 size = d->m_currency_format_size;
     QString str = d->unsLongLongToString(value);
-    QString sym = symbol.isEmpty() ? currencySymbol() : symbol;
+    QString sym = symbol.isNull() ? currencySymbol() : symbol;
     if (sym.isEmpty())
         sym = currencySymbol(QLocale::CurrencyIsoCode);
     QString format = getLocaleData(currency_format_data + idx, size);
@@ -3184,7 +3186,7 @@ QString QLocale::toCurrencyString(double value, const QString &symbol) const
     }
     QString str = d->doubleToString(value, d->m_currency_digits,
                                     QLocalePrivate::DFDecimal);
-    QString sym = symbol.isEmpty() ? currencySymbol() : symbol;
+    QString sym = symbol.isNull() ? currencySymbol() : symbol;
     if (sym.isEmpty())
         sym = currencySymbol(QLocale::CurrencyIsoCode);
     QString format = getLocaleData(currency_format_data + idx, size);
@@ -3220,6 +3222,46 @@ QStringList QLocale::uiLanguages() const
     }
 #endif
     return QStringList(bcp47Name());
+}
+
+/*!
+    \since 4.8
+
+    Returns a native name of the language for the locale. For example
+    "Schwiizertüütsch" for Swiss-German locale.
+
+    \sa nativeCountryName(), languageToString()
+*/
+QString QLocale::nativeLanguageName() const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::NativeLanguageName, QVariant());
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+    return getLocaleData(endonyms_data + d()->m_language_endonym_idx, d()->m_language_endonym_size);
+}
+
+/*!
+    \since 4.8
+
+    Returns a native name of the country for the locale. For example
+    "España" for Spanish/Spain locale.
+
+    \sa nativeLanguageName(), countryToString()
+*/
+QString QLocale::nativeCountryName() const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::NativeCountryName, QVariant());
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+    return getLocaleData(endonyms_data + d()->m_country_endonym_idx, d()->m_country_endonym_size);
 }
 
 QT_END_NAMESPACE

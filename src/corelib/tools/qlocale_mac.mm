@@ -368,23 +368,6 @@ static QVariant macQuoteString(QSystemLocale::QueryType type, const QStringRef &
 }
 #endif //QT_NO_SYSTEMLOCALE
 
-static void getMacPreferredLanguageAndCountry(QString *language, QString *country)
-{
-    QCFType<CFArrayRef> languages = (CFArrayRef)CFPreferencesCopyValue(
-             CFSTR("AppleLanguages"),
-             kCFPreferencesAnyApplication,
-             kCFPreferencesCurrentUser,
-             kCFPreferencesAnyHost);
-    if (languages && CFArrayGetCount(languages) > 0) {
-        QCFType<CFLocaleRef> locale = CFLocaleCreate(kCFAllocatorDefault,
-                                                     CFStringRef(CFArrayGetValueAtIndex(languages, 0)));
-        if (language)
-            *language = QCFString::toQString(CFStringRef(CFLocaleGetValue(locale, kCFLocaleLanguageCode)));
-        if (country)
-            *country = QCFString::toQString(CFStringRef(CFLocaleGetValue(locale, kCFLocaleCountryCode)));
-    }
-}
-
 #ifndef QT_NO_SYSTEMLOCALE
 
 QLocale QSystemLocale::fallbackLocale() const
@@ -432,20 +415,6 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     case PositiveSign:
     case ZeroDigit:
         break;
-    case LanguageId:
-    case CountryId: {
-        QString preferredLanguage;
-        QString preferredCountry;
-        getMacPreferredLanguageAndCountry(&preferredLanguage, &preferredCountry);
-        QLocale::Language languageCode = (preferredLanguage.isEmpty() ? QLocale::C : QLocalePrivate::codeToLanguage(preferredLanguage));
-        QLocale::Country countryCode = (preferredCountry.isEmpty() ? QLocale::AnyCountry : QLocalePrivate::codeToCountry(preferredCountry));
-        const QLocalePrivate *d = QLocalePrivate::findLocale(languageCode, QLocale::AnyScript, countryCode);
-        if (type == LanguageId)
-            return (QLocale::Language)d->languageId();
-        return (QLocale::Country)d->countryId();
-    }
-    case ScriptId:
-        return QVariant(QLocale::AnyScript);
 
     case MeasurementSystem:
         return QVariant(static_cast<int>(macMeasurementSystem()));

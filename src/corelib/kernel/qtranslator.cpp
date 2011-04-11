@@ -357,10 +357,15 @@ QTranslator::~QTranslator()
 }
 
 /*!
-    Loads \a filename + \a suffix (".qm" if the \a suffix is
-    not specified), which may be an absolute file name or relative
-    to \a directory. Returns true if the translation is successfully
-    loaded; otherwise returns false.
+
+    Loads \a filename + \a suffix (".qm" if the \a suffix is not
+    specified), which may be an absolute file name or relative to \a
+    directory. Returns true if the translation is successfully loaded;
+    otherwise returns false.
+
+    If \a directory is not specified, the directory of the
+    application's executable is used (i.e., as
+    \l{QCoreApplication::}{applicationDirPath()}). 
 
     The previous contents of this translator object are discarded.
 
@@ -595,10 +600,10 @@ static QString find_translation(const QLocale & locale,
 /*!
     \since 4.8
 
-    Loads \a filename + \a prefix + \a locale name + \a suffix (".qm" if the \a
-    suffix is not specified), which may be an absolute file name or relative to
-    \a directory. Returns true if the translation is successfully loaded;
-    otherwise returns false.
+    Loads \a filename + \a prefix + \a \l{QLocale::uiLanguages()}{ui language
+    name} + \a suffix (".qm" if the \a suffix is not specified), which may be
+    an absolute file name or relative to \a directory. Returns true if the
+    translation is successfully loaded; otherwise returns false.
 
     The previous contents of this translator object are discarded.
 
@@ -607,15 +612,16 @@ static QString find_translation(const QLocale & locale,
 
     \list 1
     \o File name without \a suffix appended.
-    \o File name with locale part after a "_" character stripped and \a suffix.
-    \o File name with locale part stripped without \a suffix appended.
-    \o File name with locale part stripped further, etc.
+    \o File name with ui language part after a "_" character stripped and \a suffix.
+    \o File name with ui language part stripped without \a suffix appended.
+    \o File name with ui language part stripped further, etc.
     \endlist
 
     For example, an application running in the locale with the following
     l{QLocale::uiLanguages()}{ui languages} - "es", "fr-CA", "de" might call
     load(QLocale::system(), "foo", ".", "/opt/foolib", ".qm"). load() would
-    then try to open the first existing readable file from this list:
+    replace '-' (dash) with '_' (underscore) in the ui language and then try to
+    open the first existing readable file from this list:
 
     \list 1
     \o \c /opt/foolib/foo.es.qm
@@ -836,7 +842,7 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
         numerus = numerusHelper(n, numerusRulesArray, numerusRulesLength);
 
     for (;;) {
-        quint32 h = elfHash(QByteArray(sourceText) + comment);
+        quint32 h = elfHash(QByteArray(QByteArray(sourceText) + comment).constData());
 
         const uchar *start = offsetArray;
         const uchar *end = start + ((numItems-1) << 3);

@@ -75,6 +75,7 @@ static QMouseEvent *copyMouseEvent(QEvent *e)
         QMouseEvent *me = static_cast<QMouseEvent *>(e);
         return new QMouseEvent(me->type(), QPoint(0, 0), me->globalPos(), me->button(), me->buttons(), me->modifiers());
     }
+#ifndef QT_NO_GRAPHICSVIEW
     case QEvent::GraphicsSceneMousePress:
     case QEvent::GraphicsSceneMouseRelease:
     case QEvent::GraphicsSceneMouseMove: {
@@ -103,6 +104,7 @@ static QMouseEvent *copyMouseEvent(QEvent *e)
         return copy;
 #endif
     }
+#endif // QT_NO_GRAPHICSVIEW
     default:
         return 0;
     }
@@ -265,6 +267,7 @@ protected:
         if (mouseTarget) {
             sendingEvent = true;
 
+#ifndef QT_NO_GRAPHICSVIEW
             QGraphicsItem *grabber = 0;
             if (mouseTarget->parentWidget()) {
                 if (QGraphicsView *gv = qobject_cast<QGraphicsView *>(mouseTarget->parentWidget())) {
@@ -281,12 +284,14 @@ protected:
                 qFGDebug() << "QFG: ungrabbing" << grabber;
                 grabber->ungrabMouse();
             }
+#endif // QT_NO_GRAPHICSVIEW
 
             if (me) {
                 QMouseEvent copy(me->type(), mouseTarget->mapFromGlobal(me->globalPos()), me->globalPos(), me->button(), me->buttons(), me->modifiers());
                 qt_sendSpontaneousEvent(mouseTarget, &copy);
             }
 
+#ifndef QT_NO_GRAPHICSVIEW
             if (grabber && (flags & RegrabMouseAfterwards)) {
                 // GraphicsView Mouse Handling Workaround #2:
                 // we need to re-grab the mouse after sending a faked mouse
@@ -296,6 +301,7 @@ protected:
                 qFGDebug() << "QFG: re-grabbing" << grabber;
                 grabber->grabMouse();
             }
+#endif
             sendingEvent = false;
         }
     }
@@ -357,10 +363,12 @@ QFlickGestureRecognizer::QFlickGestureRecognizer(Qt::MouseButton button)
  */
 QGesture *QFlickGestureRecognizer::create(QObject *target)
 {
+#ifndef QT_NO_GRAPHICSVIEW
     QGraphicsObject *go = qobject_cast<QGraphicsObject*>(target);
     if (go && button == Qt::NoButton) {
         go->setAcceptTouchEvents(true);
     }
+#endif
     return new QFlickGesture(target, button);
 }
 
@@ -389,7 +397,9 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
         return Ignore; // nothing to do without a scroller?
 
     QWidget *receiverWidget = qobject_cast<QWidget *>(d->receiver);
+#ifndef QT_NO_GRAPHICSVIEW
     QGraphicsObject *receiverGraphicsObject = qobject_cast<QGraphicsObject *>(d->receiver);
+#endif
 
     // this is only set for events that we inject into the event loop via sendEvent()
     if (PressDelayHandler::instance()->shouldEventBeIgnored(event)) {
@@ -398,7 +408,9 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
     }
 
     const QMouseEvent *me = 0;
+#ifndef QT_NO_GRAPHICSVIEW
     const QGraphicsSceneMouseEvent *gsme = 0;
+#endif
     const QTouchEvent *te = 0;
     QPoint globalPos;
 
@@ -415,6 +427,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
             globalPos = me->globalPos();
         }
         break;
+#ifndef QT_NO_GRAPHICSVIEW
     case QEvent::GraphicsSceneMousePress:
     case QEvent::GraphicsSceneMouseRelease:
     case QEvent::GraphicsSceneMouseMove:
@@ -425,6 +438,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
             globalPos = gsme->screenPos();
         }
         break;
+#endif
     case QEvent::TouchBegin:
     case QEvent::TouchEnd:
     case QEvent::TouchUpdate:
@@ -466,7 +480,11 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
         break;
     }
 
-    if (!me && !gsme && !te) // Neither mouse nor touch
+    if (!me
+#ifndef QT_NO_GRAPHICSVIEW
+        && !gsme
+#endif
+        && !te) // Neither mouse nor touch
         return Ignore;
 
     // get the current pointer position in local coordinates.
@@ -502,6 +520,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
         }
         break;
 
+#ifndef QT_NO_GRAPHICSVIEW
     case QEvent::GraphicsSceneMousePress:
         if (gsme && gsme->button() == button && gsme->buttons() == button) {
             point = gsme->scenePos();
@@ -529,6 +548,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
             inputType = QScroller::InputMove;
         }
         break;
+#endif
 
     case QEvent::TouchBegin:
         inputType = QScroller::InputPress;
@@ -568,12 +588,14 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
 
                 if (QWidget *w = qobject_cast<QWidget *>(as->target())) {
                     scrollerRegion = QRect(w->mapToGlobal(QPoint(0, 0)), w->size());
+#ifndef QT_NO_GRAPHICSVIEW
                 } else if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(as->target())) {
                     if (go->scene() && !go->scene()->views().isEmpty()) {
                         foreach (QGraphicsView *gv, go->scene()->views())
                             scrollerRegion |= gv->mapFromScene(go->mapToScene(go->boundingRect()))
                                               .translated(gv->mapToGlobal(QPoint(0, 0)));
                     }
+#endif
                 }
                 // active scrollers always have priority
                 if (scrollerRegion.contains(globalPos))
@@ -588,8 +610,10 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
     if (inputType) {
         if (QWidget *w = qobject_cast<QWidget *>(d->receiver))
             point = w->mapFromGlobal(point.toPoint());
+#ifndef QT_NO_GRAPHICSVIEW
         else if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(d->receiver))
             point = go->mapFromScene(point);
+#endif
 
         // inform the scroller about the new event
         scroller->handleInput(inputType, point, monotonicTimer.elapsed());
@@ -602,7 +626,11 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
 
     // Consume all mouse events while dragging or scrolling to avoid nasty
     // side effects with Qt's standard widgets.
-    if ((me || gsme) && scrollerIsActive)
+    if ((me
+#ifndef QT_NO_GRAPHICSVIEW
+         || gsme
+#endif
+         ) && scrollerIsActive)
         result |= ConsumeEventHint;
 
     // The only problem with this approach is that we consume the
@@ -610,7 +638,11 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
     // have to fake a MouseRelease "somewhere" to not mess with the internal
     // states of Qt's widgets (a QPushButton would stay in 'pressed' state
     // forever, if it doesn't receive a MouseRelease).
-    if (me || gsme) {
+    if (me
+#ifndef QT_NO_GRAPHICSVIEW
+        || gsme
+#endif
+        ) {
         if (!scrollerWasDragging && !scrollerWasScrolling && scrollerIsActive)
             PressDelayHandler::instance()->scrollerBecameActive();
         else if (scrollerWasScrolling && (scroller->state() == QScroller::Dragging || scroller->state() == QScroller::Inactive))
@@ -622,7 +654,9 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
     } else {
         switch (event->type()) {
         case QEvent::MouseButtonPress:
+#ifndef QT_NO_GRAPHICSVIEW
         case QEvent::GraphicsSceneMousePress:
+#endif
             if (scroller->state() == QScroller::Pressed) {
                 int pressDelay = int(1000 * scroller->scrollerProperties().scrollMetric(QScrollerProperties::MousePressEventDelay).toReal());
                 if (pressDelay > 0) {
@@ -639,7 +673,9 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
             break;
 
         case QEvent::MouseMove:
+#ifndef QT_NO_GRAPHICSVIEW
         case QEvent::GraphicsSceneMouseMove:
+#endif
             if (PressDelayHandler::instance()->isDelaying())
                 result |= ConsumeEventHint;
             // fall through
@@ -647,7 +683,9 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
             result |= scrollerIsActive ? TriggerGesture : Ignore;
             break;
 
+#ifndef QT_NO_GRAPHICSVIEW
         case QEvent::GraphicsSceneMouseRelease:
+#endif
         case QEvent::MouseButtonRelease:
             if (PressDelayHandler::instance()->released(event, scrollerWasDragging || scrollerWasScrolling, scrollerIsActive))
                 result |= ConsumeEventHint;

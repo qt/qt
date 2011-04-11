@@ -50,7 +50,7 @@
 
 #include "qdebug.h"
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
 #   include "qt_windows.h"
 #   include <time.h>
 #endif
@@ -75,6 +75,12 @@ static QString winIso3116CtryName(LCID id = LOCALE_USER_DEFAULT);
 #  define LOCALE_SSHORTESTDAYNAME5 0x0064
 #  define LOCALE_SSHORTESTDAYNAME6 0x0065
 #  define LOCALE_SSHORTESTDAYNAME7 0x0066
+#endif
+#ifndef LOCALE_SNATIVELANGUAGENAME
+#  define LOCALE_SNATIVELANGUAGENAME 0x00000004
+#endif
+#ifndef LOCALE_SNATIVECOUNTRYNAME
+#  define LOCALE_SNATIVECOUNTRYNAME 0x00000008
 #endif
 
 struct QSystemLocalePrivate
@@ -101,6 +107,8 @@ struct QSystemLocalePrivate
     QVariant currencySymbol(QLocale::CurrencySymbolFormat);
     QVariant toCurrencyString(const QSystemLocale::CurrencyToStringArgument &);
     QVariant uiLanguages();
+    QVariant nativeLanguageName();
+    QVariant nativeCountryName();
 
     void update();
 
@@ -559,6 +567,21 @@ QVariant QSystemLocalePrivate::uiLanguages()
     return QStringList(QString::fromLatin1(winLangCodeToIsoName(GetUserDefaultUILanguage())));
 }
 
+QVariant QSystemLocalePrivate::nativeLanguageName()
+{
+    if (QSysInfo::windowsVersion() < QSysInfo::WV_WINDOWS7)
+        return getLocaleInfo(LOCALE_SNATIVELANGNAME);
+    return getLocaleInfo(LOCALE_SNATIVELANGUAGENAME);
+}
+
+QVariant QSystemLocalePrivate::nativeCountryName()
+{
+    if (QSysInfo::windowsVersion() < QSysInfo::WV_WINDOWS7)
+        return getLocaleInfo(LOCALE_SNATIVECTRYNAME);
+    return getLocaleInfo(LOCALE_SNATIVECOUNTRYNAME);
+}
+
+
 void QSystemLocalePrivate::update()
 {
     lcid = GetUserDefaultLCID();
@@ -713,6 +736,10 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     case LocaleChanged:
         d->update();
         break;
+    case NativeLanguageName:
+        return d->nativeLanguageName();
+    case NativeCountryName:
+        return d->nativeCountryName();
     default:
         break;
     }

@@ -166,3 +166,6 @@ EXPORTS
 	?addSkip@QTestResult@@SAXPBDW4SkipMode@QTest@@0H@Z @ 165 NONAME ; void QTestResult::addSkip(char const *, enum QTest::SkipMode, char const *, int)
 	?skipCount@QTestResult@@SAHXZ @ 166 NONAME ; int QTestResult::skipCount(void)
 	?addXPass@QTestLog@@SAXPBD0H@Z @ 167 NONAME ; void QTestLog::addXPass(char const *, char const *, int)
+	?qt_static_metacall@QTestEventLoop@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 168 NONAME ; void QTestEventLoop::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QTestEventLoop@@0UQMetaObjectExtraData@@B @ 169 NONAME ; struct QMetaObjectExtraData const QTestEventLoop::staticMetaObjectExtraData
+

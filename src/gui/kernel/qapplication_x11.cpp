@@ -1587,6 +1587,9 @@ static void getXDefault(const char *group, const char *key, int *val)
         int v = strtol(str, &end, 0);
         if (str != end)
             *val = v;
+        // otherwise use fontconfig to convert the string to integer
+        else
+            FcNameConstant((FcChar8 *) str, val);
     }
 }
 
@@ -2237,6 +2240,7 @@ void qt_init(QApplicationPrivate *priv, int,
         }
         getXDefault("Xft", FC_ANTIALIAS, &X11->fc_antialias);
 #ifdef FC_HINT_STYLE
+        X11->fc_hint_style = -1;
         getXDefault("Xft", FC_HINT_STYLE, &X11->fc_hint_style);
 #endif
 #if 0
@@ -2277,6 +2281,13 @@ void qt_init(QApplicationPrivate *priv, int,
         // Attempt to determine the current running X11 Desktop Enviornment
         // Use dbus if/when we can, but fall back to using windowManagerName() for now
 
+#ifndef QT_NO_XFIXES
+        if (X11->ptrXFixesSelectSelectionInput)
+            X11->ptrXFixesSelectSelectionInput(X11->display, QX11Info::appRootWindow(), ATOM(_NET_WM_CM_S0),
+                                       XFixesSetSelectionOwnerNotifyMask
+                                       | XFixesSelectionWindowDestroyNotifyMask
+                                       | XFixesSelectionClientCloseNotifyMask);
+#endif // QT_NO_XFIXES
         X11->compositingManagerRunning = XGetSelectionOwner(X11->display,
                                                             ATOM(_NET_WM_CM_S0));
         X11->desktopEnvironment = DE_UNKNOWN;
@@ -3212,6 +3223,8 @@ int QApplication::x11ProcessEvent(XEvent* event)
         XFixesSelectionNotifyEvent *req =
             reinterpret_cast<XFixesSelectionNotifyEvent *>(event);
         X11->time = req->selection_timestamp;
+        if (req->selection == ATOM(_NET_WM_CM_S0))
+            X11->compositingManagerRunning = req->owner;
     }
 #endif
 

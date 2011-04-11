@@ -301,6 +301,10 @@ void tst_QFtp::init()
 
 void tst_QFtp::cleanup()
 {
+    if (ftp) {
+        delete ftp;
+        ftp = 0;
+    }
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
         QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
@@ -1597,6 +1601,8 @@ void tst_QFtp::binaryAscii()
     addCommand(QFtp::Close, ftp->close());
 
     QTestEventLoop::instance().enterLoop( 30 );
+    delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -1617,6 +1623,8 @@ void tst_QFtp::binaryAscii()
     addCommand(QFtp::Close, ftp->close());
 
     QTestEventLoop::instance().enterLoop( 30 );
+    delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -2070,8 +2078,11 @@ void tst_QFtp::doneSignal()
     ftp.close();
 
     done_success = 0;
-    while ( ftp.hasPendingCommands() )
-        QCoreApplication::instance()->processEvents();
+    connect(&ftp, SIGNAL(done(bool)), &(QTestEventLoop::instance()), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(61);
+    if (QTestEventLoop::instance().timeout())
+        QFAIL("Network operation timed out");
+
     QTest::qWait(200);
 
     QCOMPARE(spy.count(), 1);

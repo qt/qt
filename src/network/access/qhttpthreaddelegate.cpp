@@ -79,6 +79,11 @@ static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const 
         code = QNetworkReply::ProxyAuthenticationRequiredError;
         break;
 
+    case 418:               // I'm a teapot
+        code = QNetworkReply::ProtocolInvalidOperationError;
+        break;
+
+
     default:
         if (httpStatusCode > 500) {
             // some kind of server error

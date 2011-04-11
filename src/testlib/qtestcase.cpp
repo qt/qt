@@ -1865,6 +1865,8 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
              IOPMAssertionRelease(powerID);
          }
 #endif
+         currentTestObject = 0;
+
          // Rethrow exception to make debugging easier.
          throw;
          return 1;

@@ -52,6 +52,7 @@
 #include <qsplashscreen.h>
 
 #include <private/qpixmapdata_p.h>
+#include <private/qdrawhelper_p.h>
 
 #include <QSet>
 
@@ -656,9 +657,12 @@ void tst_QPixmap::mask()
 
     QVERIFY(!pm.isNull());
     QVERIFY(!bm.isNull());
-    // hw: todo: this will fail if the default pixmap format is
-    // argb32_premultiplied. The mask will be all 1's
-    QVERIFY(pm.mask().isNull());
+    if (!pm.hasAlphaChannel()) {
+        // This would fail if the default pixmap format is
+        // argb32_premultiplied. The mask will be all 1's.
+        // Therefore this is skipped when the alpha channel is present.
+        QVERIFY(pm.mask().isNull());
+    }
 
     QImage img = bm.toImage();
     QVERIFY(img.format() == QImage::Format_MonoLSB
@@ -1280,7 +1284,10 @@ void tst_QPixmap::fromSymbianCFbsBitmap()
         QCOMPARE(actualColor, color);
 
         QImage shouldBe(pixmap.width(), pixmap.height(), image.format());
-        shouldBe.fill(color.rgba());
+        if (image.format() == QImage::Format_RGB16)
+            shouldBe.fill(qrgb565(color.rgba()).rawValue());
+        else
+            shouldBe.fill(color.rgba());
         QCOMPARE(image, shouldBe);
     }
     __UHEAP_MARKEND;

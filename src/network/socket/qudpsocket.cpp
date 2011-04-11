@@ -338,6 +338,8 @@ bool QUdpSocket::bind(quint16 port, BindMode mode)
     return bind(QHostAddress::Any, port, mode);
 }
 
+#ifndef QT_NO_NETWORKINTERFACE
+
 /*!
     \since 4.8
 
@@ -443,6 +445,8 @@ void QUdpSocket::setMulticastInterface(const QNetworkInterface &iface)
     }
     d->socketEngine->setMulticastInterface(iface);
 }
+
+#endif // QT_NO_NETWORKINTERFACE
 
 /*!
     Returns true if at least one datagram is waiting to be read;

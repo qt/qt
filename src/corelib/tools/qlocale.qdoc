@@ -88,6 +88,9 @@
     This constructor converts the locale name to a language/country
     pair; it does not use the system locale database.
 
+    \note For the current keyboard input locale take a look at
+    QApplication::keyboardInputLocale().
+
     QLocale's data is based on Common Locale Data Repository v1.8.1.
 
     The double-to-string and string-to-double conversion functions are
@@ -110,7 +113,8 @@
     This product includes software developed by the University of
     California, Berkeley and its contributors.
 
-    \sa QString::arg(), QString::toInt(), QString::toDouble()
+    \sa QString::arg(), QString::toInt(), QString::toDouble(),
+    QApplication::keyboardInputLocale()
 */
 
 /*!

@@ -220,7 +220,7 @@ QNetworkAccessHttpBackend::~QNetworkAccessHttpBackend()
     2) If we have a cache entry for this url populate headers so the server can return 304
     3) Calculate if response_is_fresh and if so send the cache and set loadedFromCache to true
  */
-void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, bool &loadedFromCache)
+bool QNetworkAccessHttpBackend::loadFromCacheIfAllowed(QHttpNetworkRequest &httpRequest)
 {
     QNetworkRequest::CacheLoadControl CacheLoadControlAttribute =
         (QNetworkRequest::CacheLoadControl)request().attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt();
@@ -231,24 +231,24 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
             httpRequest.setHeaderField("Cache-Control", "no-cache");
             httpRequest.setHeaderField("Pragma", "no-cache");
         }
-        return;
+        return false;
     }
 
     // The disk cache API does not currently support partial content retrieval.
     // That is why we don't use the disk cache for any such requests.
     if (request().hasRawHeader("Range"))
-        return;
+        return false;
 
     QAbstractNetworkCache *nc = networkCache();
     if (!nc)
-        return;                 // no local cache
+        return false;                 // no local cache
 
     QNetworkCacheMetaData metaData = nc->metaData(url());
     if (!metaData.isValid())
-        return;                 // not in cache
+        return false;                 // not in cache
 
     if (!metaData.saveToDisk())
-        return;
+        return false;
 
     QNetworkHeadersPrivate cacheHeaders;
     QNetworkHeadersPrivate::RawHeadersList::ConstIterator it;
@@ -263,11 +263,16 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
         httpRequest.setHeaderField("If-Modified-Since", QNetworkHeadersPrivate::toHttpDate(lastModified));
 
     if (CacheLoadControlAttribute == QNetworkRequest::PreferNetwork) {
+        // PreferNetwork == send request with "If-None-Match" and "If-Modified-Since" header,
+        // which will return a 304 Not Modifed if resource has not been changed.
+        // We might read from cache later, if receiving a 304.
+        return false;
+    } else if (CacheLoadControlAttribute == QNetworkRequest::PreferCache) {
         it = cacheHeaders.findRawHeader("Cache-Control");
         if (it != cacheHeaders.rawHeaders.constEnd()) {
             QHash<QByteArray, QByteArray> cacheControl = parseHttpOptionHeader(it->second);
             if (cacheControl.contains("must-revalidate"))
-                return;
+                return false;
         }
     }
 
@@ -339,14 +344,12 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
 #endif
 
     if (!response_is_fresh)
-        return;
+        return false;
 
-    loadedFromCache = true;
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
     qDebug() << "response_is_fresh" << CacheLoadControlAttribute;
 #endif
-    if (!sendCacheContents(metaData))
-        loadedFromCache = false;
+    return sendCacheContents(metaData);
 }
 
 static QHttpNetworkRequest::Priority convert(const QNetworkRequest::Priority& prio)
@@ -443,12 +446,12 @@ void QNetworkAccessHttpBackend::postRequest()
     switch (operation()) {
     case QNetworkAccessManager::GetOperation:
         httpRequest.setOperation(QHttpNetworkRequest::Get);
-        validateCache(httpRequest, loadedFromCache);
+        loadedFromCache = loadFromCacheIfAllowed(httpRequest);
         break;
 
     case QNetworkAccessManager::HeadOperation:
         httpRequest.setOperation(QHttpNetworkRequest::Head);
-        validateCache(httpRequest, loadedFromCache);
+        loadedFromCache = loadFromCacheIfAllowed(httpRequest);
         break;
 
     case QNetworkAccessManager::PostOperation:
@@ -480,6 +483,13 @@ void QNetworkAccessHttpBackend::postRequest()
         break;                  // can't happen
     }
 
+    if (loadedFromCache) {
+        // commented this out since it will be called later anyway
+        // by copyFinished()
+        //QNetworkAccessBackend::finished();
+        return;    // no need to send the request! :)
+    }
+
     QList<QByteArray> headers = request().rawHeaderList();
     if (resumeOffset != 0) {
         if (headers.contains("Range")) {
@@ -506,13 +516,6 @@ void QNetworkAccessHttpBackend::postRequest()
 
     foreach (const QByteArray &header, headers)
         httpRequest.setHeaderField(header, request().rawHeader(header));
-
-    if (loadedFromCache) {
-        // commented this out since it will be called later anyway
-        // by copyFinished()
-        //QNetworkAccessBackend::finished();
-        return;    // no need to send the request! :)
-    }
 
     if (request().attribute(QNetworkRequest::HttpPipeliningAllowedAttribute).toBool() == true)
         httpRequest.setPipeliningAllowed(true);
@@ -1153,7 +1156,7 @@ QNetworkCacheMetaData QNetworkAccessHttpBackend::fetchCacheMetaData(const QNetwo
         attributes.insert(QNetworkRequest::HttpStatusCodeAttribute, statusCode);
         attributes.insert(QNetworkRequest::HttpReasonPhraseAttribute, reasonPhrase);
     } else {
-        // this is a redirection, keep the attributes intact
+        // this is the server telling us the resource has not changed, keep the attributes intact
         attributes = oldMetaData.attributes();
     }
     metaData.setAttributes(attributes);

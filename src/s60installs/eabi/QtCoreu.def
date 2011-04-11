@@ -183,7 +183,7 @@ EXPORTS
 	_ZN10QEventLoopD1Ev @ 182 NONAME
 	_ZN10QEventLoopD2Ev @ 183 NONAME
 	_ZN10QMutexPool17globalInstanceGetEPKv @ 184 NONAME
-	_ZN10QMutexPool3getEPKv @ 185 NONAME
+	_ZN10QMutexPool3getEPKv @ 185 NONAME ABSENT
 	_ZN10QMutexPool8instanceEv @ 186 NONAME
 	_ZN10QMutexPoolC1EN6QMutex13RecursionModeEi @ 187 NONAME
 	_ZN10QMutexPoolC2EN6QMutex13RecursionModeEi @ 188 NONAME
@@ -612,8 +612,8 @@ EXPORTS
 	_ZN14QLocalePrivate19updateSystemPrivateEv @ 611 NONAME
 	_ZN14QLocalePrivate22bytearrayToUnsLongLongEPKciPb @ 612 NONAME
 	_ZN14QMetaCallEvent13placeMetaCallEP7QObject @ 613 NONAME
-	_ZN14QMetaCallEventC1EiPK7QObjectiiPiPPvP10QSemaphore @ 614 NONAME
-	_ZN14QMetaCallEventC2EiPK7QObjectiiPiPPvP10QSemaphore @ 615 NONAME
+	_ZN14QMetaCallEventC1EiPK7QObjectiiPiPPvP10QSemaphore @ 614 NONAME ABSENT
+	_ZN14QMetaCallEventC2EiPK7QObjectiiPiPPvP10QSemaphore @ 615 NONAME ABSENT
 	_ZN14QMetaCallEventD0Ev @ 616 NONAME
 	_ZN14QMetaCallEventD1Ev @ 617 NONAME
 	_ZN14QMetaCallEventD2Ev @ 618 NONAME
@@ -3714,153 +3714,282 @@ EXPORTS
 	_Z26qt_symbian_SetupThreadHeapiR24SStdEpocThreadCreateInfo @ 3713 NONAME
 	_ZN24QAbstractDeclarativeData17objectNameChangedE @ 3714 NONAME DATA 4
 	_ZN23QEventDispatcherSymbian36queueDeferredActiveObjectsCompletionEv @ 3715 NONAME
-	_ZN11QThreadPool11waitForDoneEi @ 3716 NONAME
-	_ZN13QSharedMemory12setNativeKeyERK7QString @ 3717 NONAME
-	_ZN13QUnifiedTimer10timerEventEP11QTimerEvent @ 3718 NONAME
-	_ZN13QUnifiedTimer17ensureTimerUpdateEv @ 3719 NONAME
-	_ZN13QUnifiedTimer17registerAnimationEP18QAbstractAnimationb @ 3720 NONAME
-	_ZN13QUnifiedTimer17setTimingIntervalEi @ 3721 NONAME
-	_ZN13QUnifiedTimer19unregisterAnimationEP18QAbstractAnimation @ 3722 NONAME
-	_ZN13QUnifiedTimer20updateAnimationTimerEv @ 3723 NONAME
-	_ZN13QUnifiedTimer20updateAnimationsTimeEv @ 3724 NONAME
-	_ZN13QUnifiedTimer21restartAnimationTimerEv @ 3725 NONAME
-	_ZN13QUnifiedTimer22installAnimationDriverEP16QAnimationDriver @ 3726 NONAME
-	_ZN13QUnifiedTimer24registerRunningAnimationEP18QAbstractAnimation @ 3727 NONAME
-	_ZN13QUnifiedTimer26unregisterRunningAnimationEP18QAbstractAnimation @ 3728 NONAME
-	_ZN13QUnifiedTimer33closestPauseAnimationTimeToFinishEv @ 3729 NONAME
-	_ZN13QUnifiedTimer8instanceEb @ 3730 NONAME
-	_ZN13QUnifiedTimerC1Ev @ 3731 NONAME
-	_ZN13QUnifiedTimerC2Ev @ 3732 NONAME
-	_ZN16QAnimationDriver11qt_metacallEN11QMetaObject4CallEiPPv @ 3733 NONAME
-	_ZN16QAnimationDriver11qt_metacastEPKc @ 3734 NONAME
-	_ZN16QAnimationDriver16staticMetaObjectE @ 3735 NONAME DATA 16
-	_ZN16QAnimationDriver19getStaticMetaObjectEv @ 3736 NONAME
-	_ZN16QAnimationDriver4stopEv @ 3737 NONAME
-	_ZN16QAnimationDriver5startEv @ 3738 NONAME
-	_ZN16QAnimationDriver7advanceEv @ 3739 NONAME
-	_ZN16QAnimationDriver7installEv @ 3740 NONAME
-	_ZN16QAnimationDriverC2EP7QObject @ 3741 NONAME
-	_ZN16QAnimationDriverC2ER23QAnimationDriverPrivateP7QObject @ 3742 NONAME
-	_ZN16QCoreApplicationC1ERiPPci @ 3743 NONAME
-	_ZN16QCoreApplicationC2ERiPPci @ 3744 NONAME
-	_ZN23QCoreApplicationPrivate19app_compile_versionE @ 3745 NONAME DATA 4
-	_ZN23QCoreApplicationPrivateC1ERiPPcj @ 3746 NONAME
-	_ZN23QCoreApplicationPrivateC2ERiPPcj @ 3747 NONAME
-	_ZN6QMutex12lockInternalEv @ 3748 NONAME
-	_ZN6QMutex14unlockInternalEv @ 3749 NONAME
-	_ZN7QObject10disconnectEPKS_RK11QMetaMethodS1_S4_ @ 3750 NONAME
-	_ZN7QObject7connectEPKS_RK11QMetaMethodS1_S4_N2Qt14ConnectionTypeE @ 3751 NONAME
-	_ZNK10QStringRef10startsWithE13QLatin1StringN2Qt15CaseSensitivityE @ 3752 NONAME
-	_ZNK10QStringRef10startsWithE5QCharN2Qt15CaseSensitivityE @ 3753 NONAME
-	_ZNK10QStringRef10startsWithERK7QStringN2Qt15CaseSensitivityE @ 3754 NONAME
-	_ZNK10QStringRef10startsWithERKS_N2Qt15CaseSensitivityE @ 3755 NONAME
-	_ZNK10QStringRef11lastIndexOfE13QLatin1StringiN2Qt15CaseSensitivityE @ 3756 NONAME
-	_ZNK10QStringRef11lastIndexOfE5QChariN2Qt15CaseSensitivityE @ 3757 NONAME
-	_ZNK10QStringRef11lastIndexOfERK7QStringiN2Qt15CaseSensitivityE @ 3758 NONAME
-	_ZNK10QStringRef11lastIndexOfERKS_iN2Qt15CaseSensitivityE @ 3759 NONAME
-	_ZNK10QStringRef11toLocal8BitEv @ 3760 NONAME
-	_ZNK10QStringRef5countE5QCharN2Qt15CaseSensitivityE @ 3761 NONAME
-	_ZNK10QStringRef5countERK7QStringN2Qt15CaseSensitivityE @ 3762 NONAME
-	_ZNK10QStringRef5countERKS_N2Qt15CaseSensitivityE @ 3763 NONAME
-	_ZNK10QStringRef6toUcs4Ev @ 3764 NONAME
-	_ZNK10QStringRef6toUtf8Ev @ 3765 NONAME
-	_ZNK10QStringRef7indexOfE13QLatin1StringiN2Qt15CaseSensitivityE @ 3766 NONAME
-	_ZNK10QStringRef7indexOfE5QChariN2Qt15CaseSensitivityE @ 3767 NONAME
-	_ZNK10QStringRef7indexOfERK7QStringiN2Qt15CaseSensitivityE @ 3768 NONAME
-	_ZNK10QStringRef7indexOfERKS_iN2Qt15CaseSensitivityE @ 3769 NONAME
-	_ZNK10QStringRef7toAsciiEv @ 3770 NONAME
-	_ZNK10QStringRef8endsWithE13QLatin1StringN2Qt15CaseSensitivityE @ 3771 NONAME
-	_ZNK10QStringRef8endsWithE5QCharN2Qt15CaseSensitivityE @ 3772 NONAME
-	_ZNK10QStringRef8endsWithERK7QStringN2Qt15CaseSensitivityE @ 3773 NONAME
-	_ZNK10QStringRef8endsWithERKS_N2Qt15CaseSensitivityE @ 3774 NONAME
-	_ZNK10QStringRef8toLatin1Ev @ 3775 NONAME
-	_ZNK11QMetaObject4castEPK7QObject @ 3776 NONAME
-	_ZNK13QSharedMemory9nativeKeyEv @ 3777 NONAME
-	_ZNK16QAnimationDriver10metaObjectEv @ 3778 NONAME
-	_ZNK16QAnimationDriver9isRunningEv @ 3779 NONAME
-	_ZNK4QUrl11isLocalFileEv @ 3780 NONAME
-	_ZNK7QObject17senderSignalIndexEv @ 3781 NONAME
-	_ZNK7QString10startsWithERK10QStringRefN2Qt15CaseSensitivityE @ 3782 NONAME
-	_ZNK7QString11lastIndexOfERK10QStringRefiN2Qt15CaseSensitivityE @ 3783 NONAME
-	_ZNK7QString5countERK10QStringRefN2Qt15CaseSensitivityE @ 3784 NONAME
-	_ZNK7QString7indexOfERK10QStringRefiN2Qt15CaseSensitivityE @ 3785 NONAME
-	_ZNK7QString8endsWithERK10QStringRefN2Qt15CaseSensitivityE @ 3786 NONAME
-	_ZTI13QUnifiedTimer @ 3787 NONAME
-	_ZTI16QAnimationDriver @ 3788 NONAME
-	_ZTI23QAnimationDriverPrivate @ 3789 NONAME
-	_ZTV13QUnifiedTimer @ 3790 NONAME
-	_ZTV16QAnimationDriver @ 3791 NONAME
-	_ZTV23QAnimationDriverPrivate @ 3792 NONAME
-	_ZN12QSystemError8toStringEv @ 3793 NONAME
-	_ZN5QChar21currentUnicodeVersionEv @ 3794 NONAME
-	_ZN9QFileInfoC1EP16QFileInfoPrivate @ 3795 NONAME
-	_ZN9QFileInfoC2EP16QFileInfoPrivate @ 3796 NONAME
-	_ZN13QFSFileEngine4openE6QFlagsIN9QIODevice12OpenModeFlagEEP7__sFILES0_IN5QFile14FileHandleFlagEE @ 3797 NONAME
-	_ZN13QFSFileEngine4openE6QFlagsIN9QIODevice12OpenModeFlagEERK5RFileS0_IN5QFile14FileHandleFlagEE @ 3798 NONAME
-	_ZN13QFSFileEngine4openE6QFlagsIN9QIODevice12OpenModeFlagEEiS0_IN5QFile14FileHandleFlagEE @ 3799 NONAME
-	_ZN5QFile4openEP7__sFILE6QFlagsIN9QIODevice12OpenModeFlagEES2_INS_14FileHandleFlagEE @ 3800 NONAME
-	_ZN5QFile4openERK5RFile6QFlagsIN9QIODevice12OpenModeFlagEES3_INS_14FileHandleFlagEE @ 3801 NONAME
-	_ZN5QFile4openEi6QFlagsIN9QIODevice12OpenModeFlagEES0_INS_14FileHandleFlagEE @ 3802 NONAME
-	_ZN23QCoreApplicationPrivate18symbianCommandLineEv @ 3803 NONAME
-	_ZNK16QXmlStreamWriter8hasErrorEv @ 3804 NONAME
-	_ZNK13QElapsedTimer12nsecsElapsedEv @ 3805 NONAME
-	_ZNK11QMetaMethod8revisionEv @ 3806 NONAME
-	_ZNK13QMetaProperty8revisionEv @ 3807 NONAME
-	_Z25qt_symbianGetSocketServerv @ 3808 NONAME
-	_ZN13QActiveObject18maybeQueueForLaterEv @ 3809 NONAME
-	_ZN13QActiveObject21maybeDeferSocketEventEv @ 3810 NONAME
-	_ZN13QActiveObject21reactivateAndCompleteEv @ 3811 NONAME
-	_ZN13QActiveObject4waitE5QListIP7CActiveEi @ 3812 NONAME
-	_ZN13QActiveObject4waitEP7CActivei @ 3813 NONAME
-	_ZN13QActiveObjectC2EiP23QEventDispatcherSymbian @ 3814 NONAME
-	_ZN13QActiveObjectD0Ev @ 3815 NONAME
-	_ZN13QActiveObjectD1Ev @ 3816 NONAME
-	_ZN13QActiveObjectD2Ev @ 3817 NONAME
-	_ZN21QSymbianSocketManager12removeSocketERK7RSocket @ 3818 NONAME
-	_ZN21QSymbianSocketManager15getSocketServerEv @ 3819 NONAME
-	_ZN21QSymbianSocketManager20setDefaultConnectionEP11RConnection @ 3820 NONAME
-	_ZN21QSymbianSocketManager8instanceEv @ 3821 NONAME
-	_ZN21QSymbianSocketManager9addSocketERK7RSocket @ 3822 NONAME
-	_ZN21QSymbianSocketManagerC1Ev @ 3823 NONAME
-	_ZN21QSymbianSocketManagerC2Ev @ 3824 NONAME
-	_ZN21QSymbianSocketManagerD1Ev @ 3825 NONAME
-	_ZN21QSymbianSocketManagerD2Ev @ 3826 NONAME
-	_ZN31QNonContiguousByteDeviceFactory6createE14QSharedPointerI11QRingBufferE @ 3827 NONAME
-	_ZNK21QSymbianSocketManager12lookupSocketERK7RSocket @ 3828 NONAME
-	_ZNK21QSymbianSocketManager12lookupSocketEiR7RSocket @ 3829 NONAME
-	_ZNK21QSymbianSocketManager17defaultConnectionEv @ 3830 NONAME
-	_ZTI13QActiveObject @ 3831 NONAME
-	_ZTV13QActiveObject @ 3832 NONAME
-	gzungetc @ 3833 NONAME
-	_ZN16QAnimationDriverC1EP7QObject @ 3834 NONAME
-	_ZN16QAnimationDriverC1ER23QAnimationDriverPrivateP7QObject @ 3835 NONAME
-	_ZN11QTranslator4loadERK7QLocaleRK7QStringS5_S5_S5_ @ 3836 NONAME
-	_ZN14QLocalePrivate10findLocaleEN7QLocale8LanguageENS0_6ScriptENS0_7CountryE @ 3837 NONAME
-	_ZN14QLocalePrivate12codeToScriptERK7QString @ 3838 NONAME
-	_ZN14QLocalePrivate13codeToCountryERK7QString @ 3839 NONAME
-	_ZN14QLocalePrivate14codeToLanguageERK7QString @ 3840 NONAME
-	_ZN14QLocalePrivate14doubleToStringE5QCharS0_S0_S0_S0_S0_diNS_10DoubleFormEij @ 3841 NONAME
-	_ZN14QLocalePrivate16longLongToStringE5QCharS0_S0_S0_xiiij @ 3842 NONAME
-	_ZN14QLocalePrivate17getLangAndCountryERK7QStringRN7QLocale8LanguageERNS3_6ScriptERNS3_7CountryE @ 3843 NONAME
-	_ZN14QLocalePrivate19unsLongLongToStringE5QCharS0_S0_yiiij @ 3844 NONAME
-	_ZN7QLocale14scriptToStringENS_6ScriptE @ 3845 NONAME
-	_ZN7QLocale15matchingLocalesENS_8LanguageENS_6ScriptENS_7CountryE @ 3846 NONAME
-	_ZN7QLocaleC1ENS_8LanguageENS_6ScriptENS_7CountryE @ 3847 NONAME
-	_ZN7QLocaleC2ENS_8LanguageENS_6ScriptENS_7CountryE @ 3848 NONAME
-	_ZNK14QLocalePrivate10scriptCodeEv @ 3849 NONAME
-	_ZNK14QLocalePrivate11countryCodeEv @ 3850 NONAME
-	_ZNK14QLocalePrivate12languageCodeEv @ 3851 NONAME
-	_ZNK14QLocalePrivate9bcp47NameEv @ 3852 NONAME
-	_ZNK7QLocale11quoteStringERK10QStringRefNS_14QuotationStyleE @ 3853 NONAME
-	_ZNK7QLocale11quoteStringERK7QStringNS_14QuotationStyleE @ 3854 NONAME
-	_ZNK7QLocale11uiLanguagesEv @ 3855 NONAME
-	_ZNK7QLocale14currencySymbolENS_20CurrencySymbolFormatE @ 3856 NONAME
-	_ZNK7QLocale14firstDayOfWeekEv @ 3857 NONAME
-	_ZNK7QLocale16toCurrencyStringEdRK7QString @ 3858 NONAME
-	_ZNK7QLocale16toCurrencyStringExRK7QString @ 3859 NONAME
-	_ZNK7QLocale16toCurrencyStringEyRK7QString @ 3860 NONAME
-	_ZNK7QLocale19createSeparatedListERK11QStringList @ 3861 NONAME
-	_ZNK7QLocale6scriptEv @ 3862 NONAME
-	_ZNK7QLocale8weekdaysEv @ 3863 NONAME
-	_ZNK7QLocale9bcp47NameEv @ 3864 NONAME
+	_ZN23QCoreApplicationPrivate18symbianCommandLineEv @ 3716 NONAME
+	_ZNK11QMetaMethod8revisionEv @ 3717 NONAME
+	_ZNK13QMetaProperty8revisionEv @ 3718 NONAME
+	_ZN11QThreadPool11waitForDoneEi @ 3719 NONAME
+	_ZN12QSystemError8toStringEv @ 3720 NONAME
+	_ZN13QFSFileEngine4openE6QFlagsIN9QIODevice12OpenModeFlagEEP7__sFILES0_IN5QFile14FileHandleFlagEE @ 3721 NONAME
+	_ZN13QFSFileEngine4openE6QFlagsIN9QIODevice12OpenModeFlagEERK5RFileS0_IN5QFile14FileHandleFlagEE @ 3722 NONAME
+	_ZN13QFSFileEngine4openE6QFlagsIN9QIODevice12OpenModeFlagEEiS0_IN5QFile14FileHandleFlagEE @ 3723 NONAME
+	_ZN13QSharedMemory12setNativeKeyERK7QString @ 3724 NONAME
+	_ZN13QUnifiedTimer10timerEventEP11QTimerEvent @ 3725 NONAME
+	_ZN13QUnifiedTimer17ensureTimerUpdateEv @ 3726 NONAME
+	_ZN13QUnifiedTimer17registerAnimationEP18QAbstractAnimationb @ 3727 NONAME
+	_ZN13QUnifiedTimer17setTimingIntervalEi @ 3728 NONAME
+	_ZN13QUnifiedTimer19unregisterAnimationEP18QAbstractAnimation @ 3729 NONAME
+	_ZN13QUnifiedTimer20updateAnimationTimerEv @ 3730 NONAME
+	_ZN13QUnifiedTimer20updateAnimationsTimeEv @ 3731 NONAME
+	_ZN13QUnifiedTimer21restartAnimationTimerEv @ 3732 NONAME
+	_ZN13QUnifiedTimer22installAnimationDriverEP16QAnimationDriver @ 3733 NONAME
+	_ZN13QUnifiedTimer24registerRunningAnimationEP18QAbstractAnimation @ 3734 NONAME
+	_ZN13QUnifiedTimer26unregisterRunningAnimationEP18QAbstractAnimation @ 3735 NONAME
+	_ZN13QUnifiedTimer33closestPauseAnimationTimeToFinishEv @ 3736 NONAME
+	_ZN13QUnifiedTimer8instanceEb @ 3737 NONAME
+	_ZN13QUnifiedTimerC1Ev @ 3738 NONAME
+	_ZN13QUnifiedTimerC2Ev @ 3739 NONAME
+	_ZN16QAnimationDriver11qt_metacallEN11QMetaObject4CallEiPPv @ 3740 NONAME
+	_ZN16QAnimationDriver11qt_metacastEPKc @ 3741 NONAME
+	_ZN16QAnimationDriver16staticMetaObjectE @ 3742 NONAME DATA 16
+	_ZN16QAnimationDriver19getStaticMetaObjectEv @ 3743 NONAME
+	_ZN16QAnimationDriver4stopEv @ 3744 NONAME
+	_ZN16QAnimationDriver5startEv @ 3745 NONAME
+	_ZN16QAnimationDriver7advanceEv @ 3746 NONAME
+	_ZN16QAnimationDriver7installEv @ 3747 NONAME
+	_ZN16QAnimationDriverC1EP7QObject @ 3748 NONAME
+	_ZN16QAnimationDriverC1ER23QAnimationDriverPrivateP7QObject @ 3749 NONAME
+	_ZN16QAnimationDriverC2EP7QObject @ 3750 NONAME
+	_ZN16QAnimationDriverC2ER23QAnimationDriverPrivateP7QObject @ 3751 NONAME
+	_ZN16QCoreApplicationC1ERiPPci @ 3752 NONAME
+	_ZN16QCoreApplicationC2ERiPPci @ 3753 NONAME
+	_ZN23QCoreApplicationPrivate19app_compile_versionE @ 3754 NONAME DATA 4
+	_ZN23QCoreApplicationPrivateC1ERiPPcj @ 3755 NONAME
+	_ZN23QCoreApplicationPrivateC2ERiPPcj @ 3756 NONAME
+	_ZN31QNonContiguousByteDeviceFactory6createE14QSharedPointerI11QRingBufferE @ 3757 NONAME
+	_ZN5QChar21currentUnicodeVersionEv @ 3758 NONAME
+	_ZN5QFile4openEP7__sFILE6QFlagsIN9QIODevice12OpenModeFlagEES2_INS_14FileHandleFlagEE @ 3759 NONAME
+	_ZN5QFile4openERK5RFile6QFlagsIN9QIODevice12OpenModeFlagEES3_INS_14FileHandleFlagEE @ 3760 NONAME
+	_ZN5QFile4openEi6QFlagsIN9QIODevice12OpenModeFlagEES0_INS_14FileHandleFlagEE @ 3761 NONAME
+	_ZN6QMutex12lockInternalEv @ 3762 NONAME
+	_ZN6QMutex14unlockInternalEv @ 3763 NONAME
+	_ZN7QObject10disconnectEPKS_RK11QMetaMethodS1_S4_ @ 3764 NONAME
+	_ZN7QObject7connectEPKS_RK11QMetaMethodS1_S4_N2Qt14ConnectionTypeE @ 3765 NONAME
+	_ZN9QFileInfoC1EP16QFileInfoPrivate @ 3766 NONAME
+	_ZN9QFileInfoC2EP16QFileInfoPrivate @ 3767 NONAME
+	_ZNK10QStringRef10startsWithE13QLatin1StringN2Qt15CaseSensitivityE @ 3768 NONAME
+	_ZNK10QStringRef10startsWithE5QCharN2Qt15CaseSensitivityE @ 3769 NONAME
+	_ZNK10QStringRef10startsWithERK7QStringN2Qt15CaseSensitivityE @ 3770 NONAME
+	_ZNK10QStringRef10startsWithERKS_N2Qt15CaseSensitivityE @ 3771 NONAME
+	_ZNK10QStringRef11lastIndexOfE13QLatin1StringiN2Qt15CaseSensitivityE @ 3772 NONAME
+	_ZNK10QStringRef11lastIndexOfE5QChariN2Qt15CaseSensitivityE @ 3773 NONAME
+	_ZNK10QStringRef11lastIndexOfERK7QStringiN2Qt15CaseSensitivityE @ 3774 NONAME
+	_ZNK10QStringRef11lastIndexOfERKS_iN2Qt15CaseSensitivityE @ 3775 NONAME
+	_ZNK10QStringRef11toLocal8BitEv @ 3776 NONAME
+	_ZNK10QStringRef5countE5QCharN2Qt15CaseSensitivityE @ 3777 NONAME
+	_ZNK10QStringRef5countERK7QStringN2Qt15CaseSensitivityE @ 3778 NONAME
+	_ZNK10QStringRef5countERKS_N2Qt15CaseSensitivityE @ 3779 NONAME
+	_ZNK10QStringRef6toUcs4Ev @ 3780 NONAME
+	_ZNK10QStringRef6toUtf8Ev @ 3781 NONAME
+	_ZNK10QStringRef7indexOfE13QLatin1StringiN2Qt15CaseSensitivityE @ 3782 NONAME
+	_ZNK10QStringRef7indexOfE5QChariN2Qt15CaseSensitivityE @ 3783 NONAME
+	_ZNK10QStringRef7indexOfERK7QStringiN2Qt15CaseSensitivityE @ 3784 NONAME
+	_ZNK10QStringRef7indexOfERKS_iN2Qt15CaseSensitivityE @ 3785 NONAME
+	_ZNK10QStringRef7toAsciiEv @ 3786 NONAME
+	_ZNK10QStringRef8endsWithE13QLatin1StringN2Qt15CaseSensitivityE @ 3787 NONAME
+	_ZNK10QStringRef8endsWithE5QCharN2Qt15CaseSensitivityE @ 3788 NONAME
+	_ZNK10QStringRef8endsWithERK7QStringN2Qt15CaseSensitivityE @ 3789 NONAME
+	_ZNK10QStringRef8endsWithERKS_N2Qt15CaseSensitivityE @ 3790 NONAME
+	_ZNK10QStringRef8toLatin1Ev @ 3791 NONAME
+	_ZNK11QMetaObject4castEPK7QObject @ 3792 NONAME
+	_ZNK13QElapsedTimer12nsecsElapsedEv @ 3793 NONAME
+	_ZNK13QSharedMemory9nativeKeyEv @ 3794 NONAME
+	_ZNK16QAnimationDriver10metaObjectEv @ 3795 NONAME
+	_ZNK16QAnimationDriver9isRunningEv @ 3796 NONAME
+	_ZNK16QXmlStreamWriter8hasErrorEv @ 3797 NONAME
+	_ZNK4QUrl11isLocalFileEv @ 3798 NONAME
+	_ZNK7QObject17senderSignalIndexEv @ 3799 NONAME
+	_ZNK7QString10startsWithERK10QStringRefN2Qt15CaseSensitivityE @ 3800 NONAME
+	_ZNK7QString11lastIndexOfERK10QStringRefiN2Qt15CaseSensitivityE @ 3801 NONAME
+	_ZNK7QString5countERK10QStringRefN2Qt15CaseSensitivityE @ 3802 NONAME
+	_ZNK7QString7indexOfERK10QStringRefiN2Qt15CaseSensitivityE @ 3803 NONAME
+	_ZNK7QString8endsWithERK10QStringRefN2Qt15CaseSensitivityE @ 3804 NONAME
+	_ZTI13QUnifiedTimer @ 3805 NONAME
+	_ZTI16QAnimationDriver @ 3806 NONAME
+	_ZTI23QAnimationDriverPrivate @ 3807 NONAME
+	_ZTV13QUnifiedTimer @ 3808 NONAME
+	_ZTV16QAnimationDriver @ 3809 NONAME
+	_ZTV23QAnimationDriverPrivate @ 3810 NONAME
+	adler32_combine @ 3811 NONAME
+	adler32_combine64 @ 3812 NONAME
+	compressBound @ 3813 NONAME
+	crc32_combine @ 3814 NONAME
+	crc32_combine64 @ 3815 NONAME
+	deflateBound @ 3816 NONAME
+	deflatePrime @ 3817 NONAME
+	deflateSetHeader @ 3818 NONAME
+	deflateTune @ 3819 NONAME
+	gzbuffer @ 3820 NONAME
+	gzclearerr @ 3821 NONAME
+	gzclose_r @ 3822 NONAME
+	gzclose_w @ 3823 NONAME
+	gzdirect @ 3824 NONAME
+	gzoffset @ 3825 NONAME
+	gzoffset64 @ 3826 NONAME
+	gzopen64 @ 3827 NONAME
+	gzseek64 @ 3828 NONAME
+	gztell64 @ 3829 NONAME
+	gzungetc @ 3830 NONAME
+	inflateBack @ 3831 NONAME
+	inflateBackEnd @ 3832 NONAME
+	inflateBackInit_ @ 3833 NONAME
+	inflateCopy @ 3834 NONAME
+	inflateGetHeader @ 3835 NONAME
+	inflateMark @ 3836 NONAME
+	inflatePrime @ 3837 NONAME
+	inflateReset2 @ 3838 NONAME
+	inflateUndermine @ 3839 NONAME
+	zlibCompileFlags @ 3840 NONAME
+	_Z25qt_symbianGetSocketServerv @ 3841 NONAME
+	_ZN10QEventLoop18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3842 NONAME
+	_ZN10QEventLoop25staticMetaObjectExtraDataE @ 3843 NONAME DATA 8
+	_ZN10QMutexPool11createMutexEi @ 3844 NONAME
+	_ZN11QFinalState18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3845 NONAME
+	_ZN11QFinalState25staticMetaObjectExtraDataE @ 3846 NONAME DATA 8
+	_ZN11QThreadPool18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3847 NONAME
+	_ZN11QThreadPool25staticMetaObjectExtraDataE @ 3848 NONAME DATA 8
+	_ZN11QTranslator18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3849 NONAME
+	_ZN11QTranslator25staticMetaObjectExtraDataE @ 3850 NONAME DATA 8
+	_ZN11QTranslator4loadERK7QLocaleRK7QStringS5_S5_S5_ @ 3851 NONAME
+	_ZN13QActiveObject18maybeQueueForLaterEv @ 3852 NONAME
+	_ZN13QActiveObject21maybeDeferSocketEventEv @ 3853 NONAME
+	_ZN13QActiveObject21reactivateAndCompleteEv @ 3854 NONAME
+	_ZN13QActiveObject4waitE5QListIP7CActiveEi @ 3855 NONAME
+	_ZN13QActiveObject4waitEP7CActivei @ 3856 NONAME
+	_ZN13QActiveObjectC2EiP23QEventDispatcherSymbian @ 3857 NONAME
+	_ZN13QActiveObjectD0Ev @ 3858 NONAME
+	_ZN13QActiveObjectD1Ev @ 3859 NONAME
+	_ZN13QActiveObjectD2Ev @ 3860 NONAME
+	_ZN13QHistoryState18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3861 NONAME
+	_ZN13QHistoryState25staticMetaObjectExtraDataE @ 3862 NONAME DATA 8
+	_ZN13QPluginLoader18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3863 NONAME
+	_ZN13QPluginLoader25staticMetaObjectExtraDataE @ 3864 NONAME DATA 8
+	_ZN13QSharedMemory18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3865 NONAME
+	_ZN13QSharedMemory25staticMetaObjectExtraDataE @ 3866 NONAME DATA 8
+	_ZN13QSignalMapper18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3867 NONAME
+	_ZN13QSignalMapper25staticMetaObjectExtraDataE @ 3868 NONAME DATA 8
+	_ZN13QStateMachine18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3869 NONAME
+	_ZN13QStateMachine25staticMetaObjectExtraDataE @ 3870 NONAME DATA 8
+	_ZN14QAbstractState18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3871 NONAME
+	_ZN14QAbstractState25staticMetaObjectExtraDataE @ 3872 NONAME DATA 8
+	_ZN14QFactoryLoader18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3873 NONAME
+	_ZN14QFactoryLoader25staticMetaObjectExtraDataE @ 3874 NONAME DATA 8
+	_ZN14QLocalePrivate10findLocaleEN7QLocale8LanguageENS0_6ScriptENS0_7CountryE @ 3875 NONAME
+	_ZN14QLocalePrivate12codeToScriptERK7QString @ 3876 NONAME
+	_ZN14QLocalePrivate13codeToCountryERK7QString @ 3877 NONAME
+	_ZN14QLocalePrivate14codeToLanguageERK7QString @ 3878 NONAME
+	_ZN14QLocalePrivate14doubleToStringE5QCharS0_S0_S0_S0_S0_diNS_10DoubleFormEij @ 3879 NONAME
+	_ZN14QLocalePrivate16longLongToStringE5QCharS0_S0_S0_xiiij @ 3880 NONAME
+	_ZN14QLocalePrivate17getLangAndCountryERK7QStringRN7QLocale8LanguageERNS3_6ScriptERNS3_7CountryE @ 3881 NONAME
+	_ZN14QLocalePrivate19unsLongLongToStringE5QCharS0_S0_yiiij @ 3882 NONAME
+	_ZN14QMetaCallEventC1EttPFvP7QObjectN11QMetaObject4CallEiPPvEPKS0_iiPiS5_P10QSemaphore @ 3883 NONAME
+	_ZN14QMetaCallEventC2EttPFvP7QObjectN11QMetaObject4CallEiPPvEPKS0_iiPiS5_P10QSemaphore @ 3884 NONAME
+	_ZN14QTemporaryFile18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3885 NONAME
+	_ZN14QTemporaryFile25staticMetaObjectExtraDataE @ 3886 NONAME DATA 8
+	_ZN15QAnimationGroup18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3887 NONAME
+	_ZN15QAnimationGroup25staticMetaObjectExtraDataE @ 3888 NONAME DATA 8
+	_ZN15QPauseAnimation18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3889 NONAME
+	_ZN15QPauseAnimation25staticMetaObjectExtraDataE @ 3890 NONAME DATA 8
+	_ZN15QSocketNotifier18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3891 NONAME
+	_ZN15QSocketNotifier25staticMetaObjectExtraDataE @ 3892 NONAME DATA 8
+	_ZN16QAnimationDriver18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3893 NONAME
+	_ZN16QAnimationDriver25staticMetaObjectExtraDataE @ 3894 NONAME DATA 8
+	_ZN16QCoreApplication18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3895 NONAME
+	_ZN16QCoreApplication25staticMetaObjectExtraDataE @ 3896 NONAME DATA 8
+	_ZN16QEventTransition18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3897 NONAME
+	_ZN16QEventTransition25staticMetaObjectExtraDataE @ 3898 NONAME DATA 8
+	_ZN16QTextCodecPlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3899 NONAME
+	_ZN16QTextCodecPlugin25staticMetaObjectExtraDataE @ 3900 NONAME DATA 8
+	_ZN17QSignalTransition18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3901 NONAME
+	_ZN17QSignalTransition25staticMetaObjectExtraDataE @ 3902 NONAME DATA 8
+	_ZN17QVariantAnimation18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3903 NONAME
+	_ZN17QVariantAnimation25staticMetaObjectExtraDataE @ 3904 NONAME DATA 8
+	_ZN18QAbstractAnimation18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3905 NONAME
+	_ZN18QAbstractAnimation25staticMetaObjectExtraDataE @ 3906 NONAME DATA 8
+	_ZN18QAbstractItemModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3907 NONAME
+	_ZN18QAbstractItemModel25staticMetaObjectExtraDataE @ 3908 NONAME DATA 8
+	_ZN18QAbstractListModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3909 NONAME
+	_ZN18QAbstractListModel25staticMetaObjectExtraDataE @ 3910 NONAME DATA 8
+	_ZN18QFileSystemWatcher18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3911 NONAME
+	_ZN18QFileSystemWatcher25staticMetaObjectExtraDataE @ 3912 NONAME DATA 8
+	_ZN18QPropertyAnimation18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3913 NONAME
+	_ZN18QPropertyAnimation25staticMetaObjectExtraDataE @ 3914 NONAME DATA 8
+	_ZN19QAbstractTableModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3915 NONAME
+	_ZN19QAbstractTableModel25staticMetaObjectExtraDataE @ 3916 NONAME DATA 8
+	_ZN19QAbstractTransition18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3917 NONAME
+	_ZN19QAbstractTransition25staticMetaObjectExtraDataE @ 3918 NONAME DATA 8
+	_ZN19QProcessEnvironment6insertERKS_ @ 3919 NONAME
+	_ZN21QAbstractConcatenable14convertToAsciiEPK5QChariRPc @ 3920 NONAME
+	_ZN21QObjectCleanupHandler18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3921 NONAME
+	_ZN21QObjectCleanupHandler25staticMetaObjectExtraDataE @ 3922 NONAME DATA 8
+	_ZN21QSymbianSocketManager12removeSocketERK7RSocket @ 3923 NONAME
+	_ZN21QSymbianSocketManager15getSocketServerEv @ 3924 NONAME
+	_ZN21QSymbianSocketManager20setDefaultConnectionEP11RConnection @ 3925 NONAME
+	_ZN21QSymbianSocketManager8instanceEv @ 3926 NONAME
+	_ZN21QSymbianSocketManager9addSocketERK7RSocket @ 3927 NONAME
+	_ZN21QSymbianSocketManagerC1Ev @ 3928 NONAME
+	_ZN21QSymbianSocketManagerC2Ev @ 3929 NONAME
+	_ZN21QSymbianSocketManagerD1Ev @ 3930 NONAME
+	_ZN21QSymbianSocketManagerD2Ev @ 3931 NONAME
+	_ZN23QEventDispatcherSymbian18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3932 NONAME
+	_ZN23QEventDispatcherSymbian25staticMetaObjectExtraDataE @ 3933 NONAME DATA 8
+	_ZN23QParallelAnimationGroup18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3934 NONAME
+	_ZN23QParallelAnimationGroup25staticMetaObjectExtraDataE @ 3935 NONAME DATA 8
+	_ZN24QAbstractEventDispatcher18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3936 NONAME
+	_ZN24QAbstractEventDispatcher25staticMetaObjectExtraDataE @ 3937 NONAME DATA 8
+	_ZN24QNonContiguousByteDevice18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3938 NONAME
+	_ZN24QNonContiguousByteDevice25staticMetaObjectExtraDataE @ 3939 NONAME DATA 8
+	_ZN25QSequentialAnimationGroup18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3940 NONAME
+	_ZN25QSequentialAnimationGroup25staticMetaObjectExtraDataE @ 3941 NONAME DATA 8
+	_ZN5QFile18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3942 NONAME
+	_ZN5QFile25staticMetaObjectExtraDataE @ 3943 NONAME DATA 8
+	_ZN6QState18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3944 NONAME
+	_ZN6QState25staticMetaObjectExtraDataE @ 3945 NONAME DATA 8
+	_ZN6QTimer18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3946 NONAME
+	_ZN6QTimer25staticMetaObjectExtraDataE @ 3947 NONAME DATA 8
+	_ZN7QBuffer18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3948 NONAME
+	_ZN7QBuffer25staticMetaObjectExtraDataE @ 3949 NONAME DATA 8
+	_ZN7QLocale14scriptToStringENS_6ScriptE @ 3950 NONAME
+	_ZN7QLocale15matchingLocalesENS_8LanguageENS_6ScriptENS_7CountryE @ 3951 NONAME
+	_ZN7QLocaleC1ENS_8LanguageENS_6ScriptENS_7CountryE @ 3952 NONAME
+	_ZN7QLocaleC2ENS_8LanguageENS_6ScriptENS_7CountryE @ 3953 NONAME
+	_ZN7QObject18qt_static_metacallEPS_N11QMetaObject4CallEiPPv @ 3954 NONAME
+	_ZN7QObject25staticMetaObjectExtraDataE @ 3955 NONAME DATA 8
+	_ZN7QThread18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3956 NONAME
+	_ZN7QThread25staticMetaObjectExtraDataE @ 3957 NONAME DATA 8
+	_ZN8QLibrary18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3958 NONAME
+	_ZN8QLibrary25staticMetaObjectExtraDataE @ 3959 NONAME DATA 8
+	_ZN8QProcess18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3960 NONAME
+	_ZN8QProcess25staticMetaObjectExtraDataE @ 3961 NONAME DATA 8
+	_ZN9QIODevice18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3962 NONAME
+	_ZN9QIODevice25staticMetaObjectExtraDataE @ 3963 NONAME DATA 8
+	_ZN9QMimeData18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3964 NONAME
+	_ZN9QMimeData25staticMetaObjectExtraDataE @ 3965 NONAME DATA 8
+	_ZN9QSettings18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3966 NONAME
+	_ZN9QSettings25staticMetaObjectExtraDataE @ 3967 NONAME DATA 8
+	_ZN9QTimeLine18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3968 NONAME
+	_ZN9QTimeLine25staticMetaObjectExtraDataE @ 3969 NONAME DATA 8
+	_ZNK14QLocalePrivate10scriptCodeEv @ 3970 NONAME
+	_ZNK14QLocalePrivate11countryCodeEv @ 3971 NONAME
+	_ZNK14QLocalePrivate12languageCodeEv @ 3972 NONAME
+	_ZNK14QLocalePrivate9bcp47NameEv @ 3973 NONAME
+	_ZNK19QProcessEnvironment4keysEv @ 3974 NONAME
+	_ZNK21QSymbianSocketManager12lookupSocketERK7RSocket @ 3975 NONAME
+	_ZNK21QSymbianSocketManager12lookupSocketEiR7RSocket @ 3976 NONAME
+	_ZNK21QSymbianSocketManager17defaultConnectionEv @ 3977 NONAME
+	_ZNK7QLocale11quoteStringERK10QStringRefNS_14QuotationStyleE @ 3978 NONAME
+	_ZNK7QLocale11quoteStringERK7QStringNS_14QuotationStyleE @ 3979 NONAME
+	_ZNK7QLocale11uiLanguagesEv @ 3980 NONAME
+	_ZNK7QLocale14currencySymbolENS_20CurrencySymbolFormatE @ 3981 NONAME
+	_ZNK7QLocale14firstDayOfWeekEv @ 3982 NONAME
+	_ZNK7QLocale16toCurrencyStringEdRK7QString @ 3983 NONAME
+	_ZNK7QLocale16toCurrencyStringExRK7QString @ 3984 NONAME
+	_ZNK7QLocale16toCurrencyStringEyRK7QString @ 3985 NONAME
+	_ZNK7QLocale17nativeCountryNameEv @ 3986 NONAME
+	_ZNK7QLocale18nativeLanguageNameEv @ 3987 NONAME
+	_ZNK7QLocale19createSeparatedListERK11QStringList @ 3988 NONAME
+	_ZNK7QLocale6scriptEv @ 3989 NONAME
+	_ZNK7QLocale8weekdaysEv @ 3990 NONAME
+	_ZNK7QLocale9bcp47NameEv @ 3991 NONAME
+	_ZTI13QActiveObject @ 3992 NONAME
+	_ZTV13QActiveObject @ 3993 NONAME
 

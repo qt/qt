@@ -1241,6 +1241,15 @@ bool QSslSocketBackendPrivate::startHandshake()
 
     // Start translating errors.
     QList<QSslError> errors;
+
+    if (QSslCertificatePrivate::isBlacklisted(configuration.peerCertificate)) {
+        QSslError error(QSslError::CertificateBlacklisted, configuration.peerCertificate);
+        errors << error;
+        emit q->peerVerifyError(error);
+        if (q->state() != QAbstractSocket::ConnectedState)
+            return false;
+    }
+
     bool doVerifyPeer = configuration.peerVerifyMode == QSslSocket::VerifyPeer
                         || (configuration.peerVerifyMode == QSslSocket::AutoVerifyPeer
                             && mode == QSslSocket::SslClientMode);

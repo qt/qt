@@ -243,6 +243,7 @@ qint64 QHttpSocketEngine::write(const char *data, qint64 len)
 }
 
 #ifndef QT_NO_UDPSOCKET
+#ifndef QT_NO_NETWORKINTERFACE
 bool QHttpSocketEngine::joinMulticastGroup(const QHostAddress &,
                                            const QNetworkInterface &)
 {
@@ -270,6 +271,7 @@ bool QHttpSocketEngine::setMulticastInterface(const QNetworkInterface &)
              QLatin1String("Operation on socket is not supported"));
     return false;
 }
+#endif // QT_NO_NETWORKINTERFACE
 
 qint64 QHttpSocketEngine::readDatagram(char *, qint64, QHostAddress *,
                                        quint16 *)

@@ -46,9 +46,8 @@ Window::Window()
 
     localeCombo->addItem("System", QLocale::system());
 
-    QStringList locales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript, QLocale::AnyCountry);
-    foreach (const QString &name, locales) {
-        QLocale locale(name);
+    QList<QLocale> locales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript, QLocale::AnyCountry);
+    foreach (const QLocale &locale, locales) {
         QString label = QLocale::languageToString(locale.language());
         label += QLatin1Char('/');
         if (locale.script() != QLocale::AnyScript) {
@@ -63,6 +62,8 @@ Window::Window()
             this, SLOT(localeChanged(int)));
 
     tabWidget = new QTabWidget;
+    info = new InfoWidget;
+    connect(this, SIGNAL(localeChanged(QLocale)), info, SLOT(localeChanged(QLocale)));
     calendar = new CalendarWidget;
     connect(this, SIGNAL(localeChanged(QLocale)), calendar, SLOT(localeChanged(QLocale)));
     currency = new CurrencyWidget;
@@ -88,6 +89,7 @@ Window::Window()
     l->addWidget(w);
     l->addWidget(tabWidget);
 
+    tabWidget->addTab(info, "Info");
     tabWidget->addTab(calendar, "Calendar");
     tabWidget->addTab(currency, "Currency");
     tabWidget->addTab(languages, "Languages");

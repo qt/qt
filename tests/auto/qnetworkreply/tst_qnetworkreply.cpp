@@ -93,6 +93,7 @@ Q_DECLARE_METATYPE(QNetworkReply::NetworkError)
 Q_DECLARE_METATYPE(QBuffer*)
 Q_DECLARE_METATYPE(QHttpMultiPart *)
 Q_DECLARE_METATYPE(QList<QFile*>) // for multiparts
+Q_DECLARE_METATYPE(QSslConfiguration)
 
 class QNetworkReplyPtr: public QSharedPointer<QNetworkReply>
 {
@@ -330,6 +331,8 @@ private Q_SLOTS:
     void ignoreSslErrorsList();
     void ignoreSslErrorsListWithSlot_data();
     void ignoreSslErrorsListWithSlot();
+    void sslConfiguration_data();
+    void sslConfiguration();
 #endif
 
     void getAndThenDeleteObject_data();
@@ -4209,14 +4212,8 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     // some progress should have been made
     QVERIFY(!spy.isEmpty());
     QList<QVariant> args = spy.last();
-    qDebug() << "tst_QNetworkReply::ioPostToHttpsUploadProgress"
-            << args.at(0).toLongLong()
-            << sourceFile.size()
-            << spy.size();
     QVERIFY(args.at(0).toLongLong() > 0);
-    // FIXME this is where it messes up
 
-    QEXPECT_FAIL("", "Either the readBufferSize of QSslSocket is broken or we do upload too much. Hm.", Abort);
     QVERIFY(args.at(0).toLongLong() != sourceFile.size());
 
     incomingSocket->setReadBufferSize(32*1024);
@@ -5436,6 +5433,37 @@ void tst_QNetworkReply::ignoreSslErrorsListWithSlot()
 
     QFETCH(QNetworkReply::NetworkError, expectedNetworkError);
     QCOMPARE(reply->error(), expectedNetworkError);
+}
+
+void tst_QNetworkReply::sslConfiguration_data()
+{
+    QTest::addColumn<QSslConfiguration>("configuration");
+    QTest::addColumn<bool>("works");
+
+    QTest::newRow("empty") << QSslConfiguration() << false;
+    QSslConfiguration conf = QSslConfiguration::defaultConfiguration();
+    QTest::newRow("default") << conf << false; // does not contain test server cert
+    QList<QSslCertificate> testServerCert = QSslCertificate::fromPath(SRCDIR "/certs/qt-test-server-cacert.pem");
+    conf.setCaCertificates(testServerCert);
+    QTest::newRow("set-root-cert") << conf << true;
+    conf.setProtocol(QSsl::SecureProtocols);
+    QTest::newRow("secure") << conf << true;
+}
+
+void tst_QNetworkReply::sslConfiguration()
+{
+    QNetworkRequest request(QUrl("https://" + QtNetworkSettings::serverName() + "/index.html"));
+    QFETCH(QSslConfiguration, configuration);
+    request.setSslConfiguration(configuration);
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QFETCH(bool, works);
+    QNetworkReply::NetworkError expectedError = works ? QNetworkReply::NoError : QNetworkReply::SslHandshakeFailedError;
+    QCOMPARE(reply->error(), expectedError);
 }
 
 #endif // QT_NO_OPENSSL

@@ -47,20 +47,12 @@
 #ifndef QT_NO_QWS_MULTIPROCESS
 #  include <sys/ipc.h>
 #  include <sys/sem.h>
+
+#  include <private/qcore_unix_p.h>
 #endif
 #include <signal.h>
 
 QT_BEGIN_NAMESPACE
-
-#ifndef Q_OS_BSD4
-union semun {
-    int val;
-    struct semid_ds *buf;
-    unsigned short *array;
-    struct seminfo  *__buf;
-};
-#endif
-
 
 class QWSSignalHandlerPrivate : public QWSSignalHandler
 {
@@ -106,7 +98,7 @@ void QWSSignalHandler::removeSemaphore(int semno)
 {
     const int index = semaphores.lastIndexOf(semno);
     if (index != -1) {
-        semun semval;
+        qt_semun semval;
         semval.val = 0;
         semctl(semaphores.at(index), 0, IPC_RMID, semval);
         semaphores.remove(index);
@@ -121,7 +113,7 @@ void QWSSignalHandler::handleSignal(int signum)
     signal(signum, h->oldHandlers[signum]);
 
 #ifndef QT_NO_QWS_MULTIPROCESS
-    semun semval;
+    qt_semun semval;
     semval.val = 0;
     for (int i = 0; i < h->semaphores.size(); ++i)
         semctl(h->semaphores.at(i), 0, IPC_RMID, semval);

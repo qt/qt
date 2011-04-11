@@ -485,6 +485,9 @@ public:
     const_iterator constEnd() const;
 
     // STL compatibility
+    typedef const QChar & const_reference;
+    typedef QChar & reference;
+    typedef QChar value_type;
     inline void push_back(QChar c) { append(c); }
     inline void push_back(const QString &s) { append(s); }
     inline void push_front(QChar c) { prepend(c); }
