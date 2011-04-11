@@ -99,6 +99,8 @@ public:
 
     virtual void cleanupAndDelete();
 
+    inline QRectF convertToNormalizedSourceRect(const QRectF &rect) const;
+
 protected:
     QSGTexture(QSGTexturePrivate &dd);
 
@@ -107,6 +109,20 @@ private:
     friend class QSGTextureRef;
     mutable int m_ref_count;
 };
+
+QRectF QSGTexture::convertToNormalizedSourceRect(const QRectF &rect) const
+{
+    QSize s = textureSize();
+    QRectF r = textureSubRect();
+
+    qreal sx = r.width() / s.width();
+    qreal sy = r.height() / s.height();
+
+    return QRectF(r.x() + rect.x() * sx,
+                  r.y() + rect.y() * sy,
+                  rect.width() * sx,
+                  rect.height() * sy);
+}
 
 class Q_DECLARATIVE_EXPORT QSGTextureRef
 {
