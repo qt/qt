@@ -679,6 +679,9 @@ bool QImageWriter::supportsOption(QImageIOHandler::ImageOption option) const
     Reading and writing SVG files is supported through Qt's
     \l{QtSvg Module}{SVG Module}.
 
+    Note that the QApplication instance must be created before this function is
+    called.
+
     \sa setFormat(), QImageReader::supportedImageFormats(), QImageIOPlugin
 */
 QList<QByteArray> QImageWriter::supportedImageFormats()

@@ -66,6 +66,7 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QGraphicsLinearLayout>
+#include <float.h>
 
 #include "../../shared/util.h"
 
@@ -449,6 +450,8 @@ private slots:
     void scroll();
     void focusHandling_data();
     void focusHandling();
+    void touchEventPropagation_data();
+    void touchEventPropagation();
     void deviceCoordinateCache_simpleRotations();
 
     // task specific tests below me
@@ -10637,6 +10640,80 @@ void tst_QGraphicsItem::focusHandling()
     QCOMPARE(scene.focusItem(), focusableUnder);
 }
 
+void tst_QGraphicsItem::touchEventPropagation_data()
+{
+    QTest::addColumn<QGraphicsItem::GraphicsItemFlag>("flag");
+    QTest::addColumn<int>("expectedCount");
+
+    QTest::newRow("ItemIsPanel")
+        << QGraphicsItem::ItemIsPanel << 0;
+    QTest::newRow("ItemStopsClickFocusPropagation")
+        << QGraphicsItem::ItemStopsClickFocusPropagation << 1;
+    QTest::newRow("ItemStopsFocusHandling")
+        << QGraphicsItem::ItemStopsFocusHandling << 1;
+}
+
+void tst_QGraphicsItem::touchEventPropagation()
+{
+    QFETCH(QGraphicsItem::GraphicsItemFlag, flag);
+    QFETCH(int, expectedCount);
+
+    class Testee : public QGraphicsRectItem
+    {
+    public:
+        int touchBeginEventCount;
+
+        Testee()
+            : QGraphicsRectItem(0, 0, 100, 100)
+            , touchBeginEventCount(0)
+        {
+            setAcceptTouchEvents(true);
+            setFlag(QGraphicsItem::ItemIsFocusable, false);
+        }
+
+        bool sceneEvent(QEvent *ev)
+        {
+            if (ev->type() == QEvent::TouchBegin)
+                ++touchBeginEventCount;
+
+            return QGraphicsRectItem::sceneEvent(ev);
+        }
+    };
+
+    Testee *touchEventReceiver = new Testee;
+    QGraphicsItem *topMost = new QGraphicsRectItem(touchEventReceiver->boundingRect());
+
+    QGraphicsScene scene;
+    scene.addItem(topMost);
+    scene.addItem(touchEventReceiver);
+
+    topMost->setAcceptTouchEvents(true);
+    topMost->setZValue(FLT_MAX);
+    topMost->setFlag(QGraphicsItem::ItemIsFocusable, false);
+    topMost->setFlag(flag, true);
+
+    QGraphicsView view(&scene);
+    view.setSceneRect(touchEventReceiver->boundingRect());
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QCOMPARE(touchEventReceiver->touchBeginEventCount, 0);
+
+    QTouchEvent::TouchPoint tp(0);
+    tp.setState(Qt::TouchPointPressed);
+    tp.setScenePos(view.sceneRect().center());
+    tp.setLastScenePos(view.sceneRect().center());
+
+    QList<QTouchEvent::TouchPoint> touchPoints;
+    touchPoints << tp;
+
+    sendMousePress(&scene, tp.scenePos());
+    QTouchEvent touchBegin(QEvent::TouchBegin, QTouchEvent::TouchScreen, Qt::NoModifier, Qt::TouchPointPressed, touchPoints);
+
+    qApp->sendEvent(&scene, &touchBegin);
+    QCOMPARE(touchEventReceiver->touchBeginEventCount, expectedCount);
+}
+
 void tst_QGraphicsItem::deviceCoordinateCache_simpleRotations()
 {
     // Make sure we don't invalidate the cache when applying simple
@@ -11176,6 +11253,6 @@ void tst_QGraphicsItem::QTBUG_16374_crashInDestructor()
     view.show();
     QTest::qWaitForWindowShown(&view);
 }
-    
+
 QTEST_MAIN(tst_QGraphicsItem)
 #include "tst_qgraphicsitem.moc"

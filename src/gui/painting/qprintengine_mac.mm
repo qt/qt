@@ -49,7 +49,6 @@
 QT_BEGIN_NAMESPACE
 
 extern QSizeF qt_paperSizeToQSizeF(QPrinter::PaperSize size);
-extern int qt_defaultDpi();
 
 QMacPrintEngine::QMacPrintEngine(QPrinter::PrinterMode mode) : QPaintEngine(*(new QMacPrintEnginePrivate))
 {

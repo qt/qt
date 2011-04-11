@@ -327,10 +327,8 @@ void qt_blend_argb32_on_rgb16_neon(uchar *destPixels, int dbpl,
 
                 blend_8_pixels_argb32_on_rgb16_neon(dstBuffer, srcBuffer, const_alpha);
 
-                for (int j = 0; j < tail; ++j) {
+                for (int j = 0; j < tail; ++j)
                     dst[i + j] = dstBuffer[j];
-                    src[i + j] = srcBuffer[j];
-                }
             }
 
             dst = (quint16 *)(((uchar *) dst) + dbpl);
