@@ -120,6 +120,9 @@ QWaylandDisplay::QWaylandDisplay(void)
         qErrnoWarning(errno, "Failed to create display");
         qFatal("No wayland connection available.");
     }
+
+    wl_display_add_global_listener(mDisplay, QWaylandDisplay::displayHandleGlobal, this);
+
 #ifdef QT_WAYLAND_GL_SUPPORT
     mEglIntegration = QWaylandGLIntegration::createGLIntegration(this);
 #endif
@@ -132,7 +135,6 @@ QWaylandDisplay::QWaylandDisplay(void)
 
     connect(QAbstractEventDispatcher::instance(), SIGNAL(aboutToBlock()), this, SLOT(flushRequests()));
 
-    wl_display_add_global_listener(mDisplay, QWaylandDisplay::displayHandleGlobal, this);
     mFd = wl_display_get_fd(mDisplay, sourceUpdate, this);
 
     mReadNotifier = new QSocketNotifier(mFd, QSocketNotifier::Read, this);
