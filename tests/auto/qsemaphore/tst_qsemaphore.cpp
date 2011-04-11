@@ -244,6 +244,8 @@ void tst_QSemaphore::tryAcquireWithTimeout()
     QSemaphore semaphore;
     QTime time;
 
+#define QVERIFYGE(a,b) {int e = a; if (a<b) qDebug() << #a << "=" << e << " !>= " << #b << "=" << b; QVERIFY(e>=b);}
+#define QVERIFYLE(a,b) {int e = a; if (b<a) qDebug() << #a << "=" << e << " !<= " << #b << "=" << b; QVERIFY(e<=b);}
 
     QCOMPARE(semaphore.available(), 0);
 
@@ -251,69 +253,69 @@ void tst_QSemaphore::tryAcquireWithTimeout()
     QCOMPARE(semaphore.available(), 1);
     time.start();
     QVERIFY(!semaphore.tryAcquire(2, timeout));
-    QVERIFY(time.elapsed() >= timeout);
+    QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 1);
 
     semaphore.release();
     QCOMPARE(semaphore.available(), 2);
     time.start();
     QVERIFY(!semaphore.tryAcquire(3, timeout));
-    QVERIFY(time.elapsed() >= timeout);
+    QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 2);
 
     semaphore.release(10);
     QCOMPARE(semaphore.available(), 12);
     time.start();
     QVERIFY(!semaphore.tryAcquire(100, timeout));
-    QVERIFY(time.elapsed() >= timeout);
+    QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 12);
 
     semaphore.release(10);
     QCOMPARE(semaphore.available(), 22);
     time.start();
     QVERIFY(!semaphore.tryAcquire(100, timeout));
-    QVERIFY(time.elapsed() >= timeout);
+    QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 22);
 
     time.start();
     QVERIFY(semaphore.tryAcquire(1, timeout));
-    QVERIFY(time.elapsed() <= timeout);
+    QVERIFYLE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 21);
 
     time.start();
     QVERIFY(semaphore.tryAcquire(1, timeout));
-    QVERIFY(time.elapsed() <= timeout);
+    QVERIFYLE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 20);
 
     time.start();
     QVERIFY(semaphore.tryAcquire(10, timeout));
-    QVERIFY(time.elapsed() <= timeout);
+    QVERIFYLE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 10);
 
     time.start();
     QVERIFY(semaphore.tryAcquire(10, timeout));
-    QVERIFY(time.elapsed() <= timeout);
+    QVERIFYLE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 0);
 
     // should not be able to acquire more
     time.start();
     QVERIFY(!semaphore.tryAcquire(1, timeout));
-    QVERIFY(time.elapsed() >= timeout);
+    QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 0);
 
     time.start();
     QVERIFY(!semaphore.tryAcquire(1, timeout));
-    QVERIFY(time.elapsed() >= timeout);
+    QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 0);
 
     time.start();
     QVERIFY(!semaphore.tryAcquire(10, timeout));
-    QVERIFY(time.elapsed() >= timeout);
+    QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 0);
 
     time.start();
     QVERIFY(!semaphore.tryAcquire(10, timeout));
-    QVERIFY(time.elapsed() >= timeout);
+    QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 0);
 }
 

@@ -159,8 +159,8 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
     if (!commandLineTested) {
         commandLineTested = true;
 
-#ifndef QDECLARATIVE_NO_DEBUG_PROTOCOL
         QApplicationPrivate *appD = static_cast<QApplicationPrivate*>(QObjectPrivate::get(qApp));
+#ifndef QDECLARATIVE_NO_DEBUG_PROTOCOL
         // ### remove port definition when protocol is changed
         int port = 0;
         bool block = false;
@@ -203,6 +203,12 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
                                             "Format is -qmljsdebugger=port:<port>[,block]").arg(
                              appD->qmljsDebugArgumentsString()).toAscii().constData());
             }
+        }
+#else
+        if (!appD->qmljsDebugArgumentsString().isEmpty()) {
+            qWarning(QString::fromAscii("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
+                                        "QtDeclarative is not configured for debugging.").arg(
+                         appD->qmljsDebugArgumentsString()).toAscii().constData());
         }
 #endif
     }
