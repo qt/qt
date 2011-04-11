@@ -56,6 +56,7 @@ QWaylandXCompositeGLXContext::QWaylandXCompositeGLXContext(QWaylandXCompositeGLX
     , mBuffer(0)
     , mXWindow(0)
     , mConfig(qglx_findConfig(glxIntegration->xDisplay(),glxIntegration->screen(),window->widget()->platformWindowFormat()))
+    , mWaitingForSyncCallback(false)
 {
     XVisualInfo *visualInfo = glXGetVisualFromFBConfig(glxIntegration->xDisplay(),mConfig);
     mContext = glXCreateContext(glxIntegration->xDisplay(),visualInfo,0,TRUE);
@@ -97,7 +98,20 @@ QPlatformWindowFormat QWaylandXCompositeGLXContext::platformWindowFormat() const
 void QWaylandXCompositeGLXContext::sync_function(void *data)
 {
     QWaylandXCompositeGLXContext *that = static_cast<QWaylandXCompositeGLXContext *>(data);
-    that->mWaitCondition.wakeAll();
+    that->mWaitingForSyncCallback = false;
+}
+
+void QWaylandXCompositeGLXContext::waitForSync()
+{
+    wl_display_sync_callback(mGlxIntegration->waylandDisplay()->wl_display(),
+                             QWaylandXCompositeGLXContext::sync_function,
+                             this);
+    mWaitingForSyncCallback = true;
+    wl_display_sync(mGlxIntegration->waylandDisplay()->wl_display(),0);
+    mGlxIntegration->waylandDisplay()->flushRequests();
+    while (mWaitingForSyncCallback) {
+        mGlxIntegration->waylandDisplay()->readEvents();
+    }
 }
 
 void QWaylandXCompositeGLXContext::geometryChanged()
@@ -132,11 +146,5 @@ void QWaylandXCompositeGLXContext::geometryChanged()
                                            size,
                                            mGlxIntegration->waylandDisplay()->argbVisual());
     mWindow->attach(mBuffer);
-    wl_display_sync_callback(mGlxIntegration->waylandDisplay()->wl_display(),
-                             QWaylandXCompositeGLXContext::sync_function,
-                             this);
-    QMutex lock;
-    lock.lock();
-    wl_display_sync(mGlxIntegration->waylandDisplay()->wl_display(),0);
-    mWaitCondition.wait(&lock);
+    waitForSync();
 }
