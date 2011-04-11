@@ -56,7 +56,7 @@ QWaylandXCompositeGLXIntegration::QWaylandXCompositeGLXIntegration(QWaylandDispl
     : QWaylandGLIntegration()
     , mWaylandDisplay(waylandDispaly)
 {
-    qDebug() << "Wayland XComposite GLX Integration";
+    qDebug() << "Using XComposite-GLX";
     wl_display_add_global_listener(waylandDispaly->wl_display(), QWaylandXCompositeGLXIntegration::wlDisplayHandleGlobal,
                                    this);
 }

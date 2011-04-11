@@ -49,7 +49,7 @@ QWaylandReadbackGlxIntegration::QWaylandReadbackGlxIntegration(QWaylandDisplay *
     : QWaylandGLIntegration()
     , mWaylandDisplay(waylandDispaly)
 {
-    qDebug() << "Using Wayland Readback-GLX";
+    qDebug() << "Using Readback-GLX";
     char *display_name = getenv("DISPLAY");
     mDisplay = XOpenDisplay(display_name);
     mScreen = XDefaultScreen(mDisplay);
