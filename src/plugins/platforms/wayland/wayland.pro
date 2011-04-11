@@ -31,22 +31,7 @@ QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_WAYLAND
 
 INCLUDEPATH += $$PWD
 
-contains(QT_CONFIG, opengl) {
-    DEFINES += QT_WAYLAND_GL_SUPPORT
-    QT += opengl
-
-    contains(QT_CONFIG, opengles2) {
-        CONFIG += wayland_egl
-        #CONFIG += readback_egl
-        #CONFIG += xcomposite_egl
-    } else {
-        CONFIG += readback_glx
-        #CONFIG += xcomposite_gl
-
-    }
-
-    include ($$PWD/gl_integration/gl_integration.pri)
-}
+include ($$PWD/gl_integration/gl_integration.pri)
 
 include (../fontdatabases/genericunix/genericunix.pri)
 

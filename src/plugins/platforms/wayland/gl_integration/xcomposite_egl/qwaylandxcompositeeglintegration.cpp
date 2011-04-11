@@ -56,6 +56,7 @@ QWaylandXCompositeEGLIntegration::QWaylandXCompositeEGLIntegration(QWaylandDispl
     : QWaylandGLIntegration()
     , mWaylandDisplay(waylandDispaly)
 {
+    qDebug() << "Using XComposite-EGL";
     wl_display_add_global_listener(mWaylandDisplay->wl_display(), QWaylandXCompositeEGLIntegration::wlDisplayHandleGlobal,
                                    this);
 }

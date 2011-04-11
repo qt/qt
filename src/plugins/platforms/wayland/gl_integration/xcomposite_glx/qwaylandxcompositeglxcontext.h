@@ -78,7 +78,8 @@ private:
     GLXContext mContext;
 
     static void sync_function(void *data);
-    QWaitCondition mWaitCondition;
+    void waitForSync();
+    bool mWaitingForSyncCallback;
 };
 
 #endif // QWAYLANDXCOMPOSITEGLXCONTEXT_H

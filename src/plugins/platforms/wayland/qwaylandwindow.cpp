@@ -154,5 +154,5 @@ void QWaylandWindow::waitForFrameSync()
 {
     mDisplay->flushRequests();
     while (mWaitingForFrameSync)
-        mDisplay->readEvents();
+        mDisplay->blockingReadEvents();
 }

@@ -176,6 +176,30 @@ void QWaylandDisplay::flushRequests()
 
 void QWaylandDisplay::readEvents()
 {
+// verify that there is still data on the socket
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(mFd, &fds);
+    fd_set nds;
+    FD_ZERO(&nds);
+    fd_set rs = fds;
+    fd_set ws = nds;
+    fd_set es = nds;
+    timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+    int ret = ::select(mFd+1, &rs, &ws, &es, &timeout );
+
+    if (ret <= 0) {
+        //qDebug("QWaylandDisplay::readEvents() No data... blocking avoided");
+        return;
+    }
+
+    wl_display_iterate(mDisplay, WL_DISPLAY_READABLE);
+}
+
+void QWaylandDisplay::blockingReadEvents()
+{
     wl_display_iterate(mDisplay, WL_DISPLAY_READABLE);
 }
 
@@ -208,7 +232,7 @@ void QWaylandDisplay::waitForScreens()
 {
     flushRequests();
     while (mScreens.isEmpty())
-        readEvents();
+        blockingReadEvents();
 }
 
 void QWaylandDisplay::displayHandleGlobal(struct wl_display *display,
