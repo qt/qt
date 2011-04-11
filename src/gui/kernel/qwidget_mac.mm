@@ -2830,7 +2830,7 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
                 if ([pwin isVisible]
                     && (ptype == Qt::Window || ptype == Qt::Dialog)
                     && ![qwin parentWindow]
-                    && (!use_behaviour_qt473 && parent->windowModality() == Qt::ApplicationModal)) {
+                    && (use_behaviour_qt473 || parent->windowModality() == Qt::ApplicationModal)) {
                     NSInteger level = [qwin level];
                     [pwin addChildWindow:qwin ordered:NSWindowAbove];
                     if ([qwin level] < level)
