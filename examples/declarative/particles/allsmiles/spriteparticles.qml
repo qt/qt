@@ -42,39 +42,62 @@ import QtQuick 2.0
 import Qt.labs.particles 2.0
 
 Rectangle{
-    width: 360
-    height: 540
-    id: root
-    ParticleSystem{ id: particles }
+    color: "goldenrod"
+    width: 400
+    height: 400
+    ColoredParticle{
+        id: test
+        particles: ["Test"]
+        image: "content/particle.png"
+        system: sys
+        z: 2
+        anchors.fill: parent
+        color: "#336666CC"
+        colorVariation: 0.0
+    }
     SpriteParticle{
-        system: particles
-        sprites: Sprite{
-            name: "snow"
-            source: "flake-01.png"
-            frames: 51
-            duration: 40
+        id: single
+        particles: ["Face"]
+        system: sys
+        z: 2
+        anchors.fill: parent
+        Sprite{
+            source: "content/squarefacesprite.png"
+            frames: 6
+            duration: 120
         }
     }
-    Drift{
-        system: particles
-        anchors.fill: parent
-        xDrift: 200
-    } 
-    SpeedLimit{
-        system: particles
-        anchors.fill: parent
-        speedLimit: 100
+    Mask{
+        id: mask
+        source: "content/smileMask.png"
     }
     TrailEmitter{
-        system: particles
-        particlesPerSecond: 20
-        particleDuration: 7000
+        system: sys
+        particle: "Test"
+        anchors.fill: parent
+        id: particles2
+        particlesPerSecond: 6000
+        particleDuration: 720
         emitting: true
-        speed: PointVector{ y:80; yVariation: 40; }
-        acceleration: PointVector{ y: 4 }
-        particleSize: 20
-        particleSizeVariation: 10
-        width: parent.width
-        height: 40
+        particleSize: 10
+        shape: mask
     }
+    TrailEmitter{
+        system: sys
+        particle: "Face"
+        anchors.fill: parent
+        id: particles
+        particlesPerSecond: 60
+        particleDuration: 1440
+        emitting: true
+        speed: PointVector{xVariation: 10; yVariation: 10;}
+        particleSize: 30
+        particleSizeVariation: 10
+        shape: mask
+    }
+    ParticleSystem{
+        id: sys
+        anchors.fill: parent
+    }
+
 }

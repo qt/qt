@@ -84,7 +84,7 @@ Rectangle{
         anchors.fill: parent
         particle: "edge"
         system: particles
-        particlesPerSecond: 2000
+        particlesPerSecond: 4000
         particleDuration: 2000
         emitting: true
         particleSize: 20

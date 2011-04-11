@@ -40,6 +40,7 @@
 
 import QtQuick 2.0
 import Qt.labs.particles 2.0
+import "content"
 
 Item{
     id: root
@@ -70,7 +71,7 @@ Item{
     }
     ColoredParticle{
         system: sys
-        image: "../Trails/content/particle.png"
+        image: "../trails/content/particle.png"
         color: "black"
         colorVariation: 0.0
     }

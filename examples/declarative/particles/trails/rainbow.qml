@@ -38,37 +38,44 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
 import Qt.labs.particles 2.0
+import QtQuick 2.0
 
-Rectangle{
+Rectangle {
+    id: root
     width: 360
     height: 540
+    color: "black"
+
     ParticleSystem{ id: particles }
-    SpriteParticle{
+    ColoredParticle{
         system: particles
-        Sprite{
-            name: "snow"
-            source: "flake-01.png"
-            frames: 51
-            duration: 40
-        }
-    }
-    Drift{ 
-        system: particles
-        anchors.fill: parent
-        xDrift: 400;
+        colorVariation: 0.5
+        alpha: 0
+
+        image: "content/particle.png"
+        colortable: "content/colortable.png"
     }
     TrailEmitter{
         system: particles
-        particlesPerSecond: 20
-        particleDuration: 7000
-        emitting: true
-        speed: PointVector{ y:80; yVariation: 40; }
-        acceleration: PointVector{ y: 4 }
-        particleSize: 20
-        particleSizeVariation: 10
-        width: parent.width
-        height: 100
+        particlesPerSecond: 500
+        particleDuration: 2000
+
+        y: root.height / 2 + Math.sin(t * 2) * root.height * 0.3
+        x: root.width / 2 + Math.cos(t) * root.width * 0.3
+        property real t;
+
+        NumberAnimation on t {
+            from: 0; to: Math.PI * 2; duration: 10000; loops: Animation.Infinite
+        }
+
+        speedFromMovement: 20
+
+        speed: PointVector{ xVariation: 5; yVariation: 5;}
+        acceleration: PointVector{ xVariation: 5; yVariation: 5;}
+
+        particleSize: 2
+        particleEndSize: 8
+        particleSizeVariation: 8
     }
 }

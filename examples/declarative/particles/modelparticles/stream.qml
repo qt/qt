@@ -40,7 +40,8 @@
 
 import QtQuick 2.0
 import Qt.labs.particles 2.0
-import "script.js" as Script
+import "content/script.js" as Script
+import "content"
 
 Item{
     id: root

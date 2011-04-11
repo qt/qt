@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 import QtQuick 2.0
-import "../../modelviews/listview/content"
+import "../../../modelviews/listview/content"
 
 // This example illustrates expanding a list item to show a more detailed view.
 

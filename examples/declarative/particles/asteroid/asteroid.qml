@@ -53,7 +53,7 @@ Item {
 
     ParticleSystem { id: sys }
     Image {
-        source: "finalfrontier.png"
+        source: "content/finalfrontier.png"
         transformOrigin: Item.Center
         anchors.centerIn: parent
         smooth: true
@@ -68,7 +68,7 @@ Item {
     ColoredParticle {
         system: sys
         particles: ["starfield"]
-        image: "star.png"
+        image: "content/star.png"
         colorVariation: 0.3
         color: "white"
     }
@@ -106,21 +106,21 @@ Item {
         sprites:[Sprite{
                 id: spinState
                 name: "spinning"
-                source: "meteor.png"
+                source: "content/meteor.png"
                 frames: 35
                 duration: 40
                 speedModifiesDuration: -0.1
                 to: {"explode":0, "spinning":1}
             },Sprite{
                 name: "explode"
-                source: "_explo.png"
+                source: "content/_explo.png"
                 frames: 22
                 duration: 40
                 speedModifiesDuration: -0.1
                 to: {"nullFrame":1}
             },Sprite{//Not sure if this is needed, but seemed easiest
                 name: "nullFrame"
-                source: "nullRock.png"
+                source: "content/nullRock.png"
                 frames: 1
                 duration: 1000
             }
@@ -137,7 +137,7 @@ Item {
     }
     Image {
         id: rocketShip
-        source: "rocket.png"
+        source: "content/rocket.png"
         smooth: true
         anchors.centerIn: holder
         rotation: (circle.percent+0.25) * 360
@@ -172,7 +172,7 @@ Item {
         z:0 
         system: sys
         particles: ["exhaust"]
-        image: "particle4.png"
+        image: "content/particle4.png"
 
         color: "orange"
         SequentialAnimation on color {
