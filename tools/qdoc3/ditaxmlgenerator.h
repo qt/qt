@@ -316,6 +316,12 @@ class DitaXmlGenerator : public PageGenerator
     void writeRelatedLinks(const FakeNode* fake, CodeMarker* marker);
     void writeLink(const Node* node, const QString& tex, const QString& role);
     void writeProlog(const InnerNode* inner, CodeMarker* marker);
+    bool writeMetadataElement(const InnerNode* inner, 
+                              DitaXmlGenerator::DitaTag t, 
+                              bool force=true);
+    bool writeMetadataElements(const InnerNode* inner, DitaXmlGenerator::DitaTag t);
+    QString getMetadataElement(const InnerNode* inner, DitaXmlGenerator::DitaTag t);
+    QStringList getMetadataElements(const InnerNode* inner, DitaXmlGenerator::DitaTag t);
 
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
@@ -443,7 +449,7 @@ class DitaXmlGenerator : public PageGenerator
     int leaveSection();
     bool inSection() const { return (sectionNestingLevel > 0); }
     int currentSectionNestingLevel() const { return sectionNestingLevel; }
-    
+    QString metadataDefault(DitaTag t) const;
 
  private:
     /*
@@ -512,6 +518,7 @@ class DitaXmlGenerator : public PageGenerator
     static QString ditaTags[];
     QStack<QXmlStreamWriter*> xmlWriterStack;
     QStack<DitaTag> tagStack;
+    QStringMultiMap metadataDefaults;
 };
 
 #define DITAXMLGENERATOR_ADDRESS           "address"

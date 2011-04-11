@@ -178,6 +178,7 @@ public:
     static inline CEikButtonGroupContainer* buttonGroupContainer();
     static inline void setButtonGroupContainer(CEikButtonGroupContainer* newCba);
     static void setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, bool buttonGroupVisible);
+    static bool setRecursiveDecorationsVisibility(QWidget *window, Qt::WindowStates newState);
 #endif
     static void controlVisibilityChanged(CCoeControl *control, bool visible);
 

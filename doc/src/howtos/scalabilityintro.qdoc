@@ -198,11 +198,11 @@
     \list
     \o \l{Item::anchors.top}{anchors} within an Item
     \o \l{Row} / \l{Column} / \l{Grid}
-    \o simple javascript expressions such as width: Math.round(parent.width / 3.0).
+    \o simple JavaScript expressions such as width: Math.round(parent.width / 3.0).
     \endlist
 
     These basic building blocks, along with the powerful evaluation
-    capabilities of javascript expressions within every QML binding,
+    capabilities of JavaScript expressions within every QML binding,
     are designed to allow the majority of the layout structure
     definition to be defined in a Device Profile independent way.
 
@@ -214,14 +214,14 @@
     container.
 
     By combining the features of the layout managers with simple
-    javascript expressions, a richer variety of designs can be
+    JavaScript expressions, a richer variety of designs can be
     expressed, without having to resort to additional layout
     measurement parameters or measurement values.
 
     Here are some things not to do with layouts:
 
     \list
-    \o Don't define complex javascript functions that are regularly
+    \o Don't define complex JavaScript functions that are regularly
      evaluated. This will cause poor performance, particularly
      during animated transitions.
     \o Don't define all of your layouts using x, y, width and
@@ -275,7 +275,7 @@
     by the top level orientation change), in the case of anchor
     layouts, AnchorAnimation elements can be used to control the
     transitions. In some cases, you can also use a NumberAnimation on
-    e.g. the width of an item. Remember to avoid complex javascript
+    e.g. the width of an item. Remember to avoid complex JavaScript
     calculations during each frame of animation. Using simple anchor
     definitions and anchor animations can help with this in the
     majority of cases.

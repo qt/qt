@@ -52,7 +52,7 @@ public:
 //! [0]
 QStringList SliderPlugin::keys() const
 {
-    return QStringList() << "QSlider";
+    return QStringList() << QLatin1String("QSlider");
 }
 //! [0]
 
@@ -61,8 +61,8 @@ QAccessibleInterface *SliderPlugin::create(const QString &classname, QObject *ob
 {
     QAccessibleInterface *interface = 0;
 
-    if (classname == "QSlider" && object && object->isWidgetType())
-        interface = new AccessibleSlider(classname, static_cast<QWidget *>(object));
+    if (classname == QLatin1String("QSlider") && object && object->isWidgetType())
+        interface = new QAccessibleSlider(static_cast<QWidget *>(object));
 
     return interface;
 }
