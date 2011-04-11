@@ -86,6 +86,7 @@ public:
 public slots:
     void createNewScreen(struct wl_output *output, QRect geometry);
     void readEvents();
+    void blockingReadEvents();
     void flushRequests();
 
 private:
