@@ -776,16 +776,8 @@ QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
 {
     CCoeControl *control = targetWidget->effectiveWinId();
     TPoint pos(0,0);
-    if (control) {
-        // FIXME properly: S60 3.1 has a bug that CCoeControl::PositionRelativeToScreen sometimes
-        // freezes the device, possibly in cases where we run out of memory.
-        // We use CCoeControl::Position instead in S60 3.1, which returns same values
-        // in most cases.
-        if (QSysInfo::s60Version() == QSysInfo::SV_S60_3_1)
-            pos = control->Position();
-        else
-            pos = control->PositionRelativeToScreen();
-    }
+    if (control)
+        pos = control->PositionRelativeToScreen();
     return QPoint(pos.iX, pos.iY);
 }
 
