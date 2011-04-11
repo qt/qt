@@ -70,6 +70,7 @@ public:
 
 class Q_DECLARATIVE_EXPORT QSGPlainTexture : public QSGTexture
 {
+    Q_OBJECT
 public:
     QSGPlainTexture();
     ~QSGPlainTexture();

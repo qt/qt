@@ -53,51 +53,12 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class Q_DECLARATIVE_EXPORT QSGTextureProvider : public QObject
-{
-    Q_OBJECT
-public:
-    enum WrapMode {
-        Repeat,
-        ClampToEdge
-    };
-
-    enum Filtering {
-        None,
-        Nearest,
-        Linear
-    };
-
-    QSGTextureProvider(QObject *parent = 0);
-    virtual void updateTexture() { }
-    virtual QSGTextureRef texture() = 0;
-
-    virtual bool isStaticTexture() const;
-
-    void bind(QSGTexture *oldTexture = 0);
-
-    virtual WrapMode horizontalWrapMode() const = 0;
-    virtual WrapMode verticalWrapMode() const = 0;
-    virtual Filtering filtering() const = 0;
-    virtual Filtering mipmapFiltering() const = 0;
-
-    GLint glTextureWrapS() const;
-    GLint glTextureWrapT() const;
-    GLint glMinFilter() const;
-    GLint glMagFilter() const;
-
-Q_SIGNALS:
-    void textureChanged();
-};
-
-
-// TODO: Find good name.
-class QSGTextureProviderInterface
+class QSGTextureProvider
 {
 public:
-    virtual QSGTextureProvider *textureProvider() const = 0;
+    virtual QSGTexture *texture() const = 0;
 };
-Q_DECLARE_INTERFACE(QSGTextureProviderInterface, "QSGTextureProviderInterface")
+Q_DECLARE_INTERFACE(QSGTextureProvider, "QSGTextureProvider")
 
 QT_END_NAMESPACE
 

@@ -100,8 +100,8 @@ public:
 
     void setProgramSource(const QSGShaderEffectProgram &);
     void setUniforms(const QVector<QPair<QByteArray, QVariant> > &uniformValues);
-    void setTextures(const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &textures);
-    const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &textures() const;
+    void setTextures(const QVector<QPair<QByteArray, QPointer<QSGTexture> > > &textures);
+    const QVector<QPair<QByteArray, QPointer<QSGTexture> > > &textures() const;
     void updateTextures() const;
 
 protected:
@@ -118,7 +118,7 @@ protected:
 
     QSGShaderEffectProgram m_source;
     QVector<QPair<QByteArray, QVariant> > m_uniformValues;
-    QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > m_textures;
+    QVector<QPair<QByteArray, QPointer<QSGTexture> > > m_textures;
     CullMode m_cullMode;
 
     static QHash<QSGShaderEffectMaterialKey, QSharedPointer<QSGMaterialType> > materialMap;

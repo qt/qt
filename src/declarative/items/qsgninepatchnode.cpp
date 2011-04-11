@@ -89,19 +89,19 @@ void QSGNinePatchNode::setVerticalTileMode(QSGBorderImage::TileMode mode)
 }
 
 
-void QSGNinePatchNode::setLinearFiltering(bool linearFiltering)
+void QSGNinePatchNode::setFiltering(QSGTexture::Filtering filtering)
 {
-    if (m_material.linearFiltering() == linearFiltering)
+    if (m_material.filtering() == filtering)
         return;
 
-    m_material.setLinearFiltering(linearFiltering);
-    m_materialO.setLinearFiltering(linearFiltering);
+    m_material.setFiltering(filtering);
+    m_materialO.setFiltering(filtering);
     markDirty(DirtyMaterial);
 }
 
-bool QSGNinePatchNode::linearFiltering() const
+QSGTexture::Filtering QSGNinePatchNode::filtering() const
 {
-    return m_material.linearFiltering();
+    return m_material.filtering();
 }
 
 void QSGNinePatchNode::setTexture(const QSGTextureRef &texture)

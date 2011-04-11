@@ -48,6 +48,7 @@
 #include <private/qsgadaptationlayer_p.h>
 #include "qsgtextnode_p.h"
 #include "qsgimage_p_p.h"
+#include <private/qsgtexture_p.h>
 
 #include <QtDeclarative/qdeclarativeinfo.h>
 #include <QtGui/qgraphicssceneevent.h>
@@ -100,7 +101,9 @@ QSGTextPrivate::QSGTextPrivate()
   vAlign(QSGText::AlignTop), elideMode(QSGText::ElideNone),
   format(QSGText::AutoText), wrapMode(QSGText::NoWrap), lineHeight(1),
   lineHeightMode(QSGText::ProportionalHeight), lineCount(1), maximumLineCount(INT_MAX),
-  maximumLineCountValid(false), imageCacheDirty(true), updateOnComponentComplete(true),
+  maximumLineCountValid(false),
+  texture(0),
+  imageCacheDirty(true), updateOnComponentComplete(true),
   richText(false), singleline(false), cacheAllTextAsImage(true), internalWidthUpdate(false),
   requireImplicitWidth(false), truncated(false), hAlignImplicit(true), rightToLeftText(false),
   naturalWidth(0), doc(0), nodeType(NodeIsNull)
@@ -113,8 +116,6 @@ void QSGTextPrivate::init()
     Q_Q(QSGText);
     q->setAcceptedMouseButtons(Qt::LeftButton);
     q->setFlag(QSGItem::ItemHasContents);
-    textureProvider = new QSGImageTextureProvider(q);
-    QObject::connect(textureProvider, SIGNAL(textureChanged()), q, SLOT(update()));
 }
 
 QSGTextDocumentWithImageResources::QSGTextDocumentWithImageResources(QSGText *parent)
@@ -1072,22 +1073,25 @@ QSGNode *QSGText::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data)
         if (!oldNode || d->nodeType != QSGTextPrivate::NodeIsTexture) {
             delete oldNode;
             node = QSGContext::current->createImageNode();
-            node->setTexture(d->textureProvider);
+            d->texture = new QSGPlainTexture();
             wasDirty = true;
             d->nodeType = QSGTextPrivate::NodeIsTexture;
         } else {
             node = static_cast<QSGImageNode *>(oldNode);
+            Q_ASSERT(!d->texture.isNull());
         }
 
         if (wasDirty) {
-            d->textureProvider->setImage(d->imageCache.toImage());
+            qobject_cast<QSGPlainTexture *>(d->texture.texture())->setImage(d->imageCache.toImage());
+            node->setTexture(0);
+            node->setTexture(d->texture);
         }
 
         node->setTargetRect(QRectF(bounds.x(), bounds.y(), d->imageCache.width(), d->imageCache.height()));
         node->setSourceRect(QRectF(0, 0, 1, 1));
-        d->textureProvider->setHorizontalWrapMode(QSGTextureProvider::ClampToEdge);
-        d->textureProvider->setVerticalWrapMode(QSGTextureProvider::ClampToEdge);
-        d->textureProvider->setFiltering(d->smooth ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
+        node->setHorizontalWrapMode(QSGTexture::ClampToEdge);
+        node->setVerticalWrapMode(QSGTexture::ClampToEdge);
+        node->setFiltering(QSGTexture::Linear); // Nonsmooth text just ugly, so don't do that..
         node->update();
 
         return node;

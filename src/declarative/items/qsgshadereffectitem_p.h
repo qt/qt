@@ -138,7 +138,7 @@ private:
     struct SourceData
     {
         QSignalMapper *mapper;
-        QPointer<QSGTextureProvider> source;
+        QPointer<QSGTexture> source;
         QPointer<QSGItem> item;
         QByteArray name;
     };

@@ -44,6 +44,7 @@
 #define QSGPAINTEDITEM_P_P_H
 
 #include "qsgitem_p.h"
+#include <private/qsgtexture_p.h>
 
 QT_BEGIN_NAMESPACE
 

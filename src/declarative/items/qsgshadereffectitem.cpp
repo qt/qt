@@ -203,11 +203,11 @@ void QSGShaderEffectItem::setSource(const QVariant &var, int index)
 
     QObject *obj = qVariantValue<QObject *>(var);
 
-    QSGTextureProviderInterface *int3rface = static_cast<QSGTextureProviderInterface *>(obj->qt_metacast("QSGTextureProviderInterface"));
+    QSGTextureProvider *int3rface = static_cast<QSGTextureProvider *>(obj->qt_metacast("QSGTextureProvider"));
     if (int3rface) {
-        source.source = int3rface->textureProvider();
+        source.source = int3rface->texture();
     } else {
-        qWarning("Could not assign property '%s', did not implement QSGTextureProviderInterface.", source.name.constData());
+        qWarning("Could not assign property '%s', did not implement QSGTextureProvider.", source.name.constData());
     }
 
     source.item = qobject_cast<QSGItem *>(obj);
@@ -422,15 +422,15 @@ QSGNode *QSGShaderEffectItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeD
 
     if (m_dirtyData) {
         QVector<QPair<QByteArray, QVariant> > values;
-        QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > textures;
-        const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &oldTextures = m_material.textures();
+        QVector<QPair<QByteArray, QPointer<QSGTexture> > > textures;
+        const QVector<QPair<QByteArray, QPointer<QSGTexture> > > &oldTextures = m_material.textures();
 
         for (QSet<QByteArray>::const_iterator it = m_source.uniformNames.begin(); 
              it != m_source.uniformNames.end(); ++it) {
             values.append(qMakePair(*it, property(*it)));
         }
         for (int i = 0; i < oldTextures.size(); ++i) {
-            QPointer<QSGTextureProvider> oldSource = oldTextures.at(i).second;
+            QPointer<QSGTexture> oldSource = oldTextures.at(i).second;
             if (oldSource)
                 disconnect(oldSource, SIGNAL(textureChanged()), node, SLOT(markDirtyTexture()));
         }

@@ -130,10 +130,10 @@ void QSGPainterNode::updateTexture()
     texture->setOwnsTexture(false);
     m_texture = QSGTextureRef(texture);
 
-    m_material.setTexture(m_texture, m_opaquePainting);
-    m_material.setLinearFiltering(m_linear_filtering);
-    m_materialO.setTexture(m_texture, m_opaquePainting);
-    m_materialO.setLinearFiltering(m_linear_filtering);
+    m_material.setTexture(m_texture);
+    m_material.setFiltering(m_linear_filtering ? QSGTexture::Linear : QSGTexture::Nearest);
+    m_materialO.setTexture(m_texture);
+    m_materialO.setFiltering(m_linear_filtering ? QSGTexture::Linear : QSGTexture::Nearest);
 
     markDirty(DirtyMaterial);
 }
@@ -210,8 +210,8 @@ void QSGPainterNode::setLinearFiltering(bool linearFiltering)
 
     m_linear_filtering = linearFiltering;
 
-    m_material.setLinearFiltering(linearFiltering);
-    m_materialO.setLinearFiltering(linearFiltering);
+    m_material.setFiltering(linearFiltering ? QSGTexture::Linear : QSGTexture::Nearest);
+    m_materialO.setFiltering(linearFiltering ? QSGTexture::Linear : QSGTexture::Nearest);
     markDirty(DirtyMaterial);
 }
 

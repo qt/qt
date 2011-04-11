@@ -109,8 +109,8 @@ void QSGCustomMaterialShader::updateState(const RenderState &state, QSGMaterial 
 
     QGLFunctions *functions = state.context()->functions();
     for (int i = material->m_textures.size() - 1; i >= 0; --i) {
-        QPointer<QSGTextureProvider> source = material->m_textures.at(i).second;
-        if (!source || !source->texture().texture())
+        QPointer<QSGTexture> source = material->m_textures.at(i).second;
+        if (!source)
             continue;
         functions->glActiveTexture(GL_TEXTURE0 + i);
         source->bind();
@@ -263,12 +263,12 @@ void QSGShaderEffectMaterial::setUniforms(const QVector<QPair<QByteArray, QVaria
     m_uniformValues = uniformValues;
 }
 
-void QSGShaderEffectMaterial::setTextures(const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &textures)
+void QSGShaderEffectMaterial::setTextures(const QVector<QPair<QByteArray, QPointer<QSGTexture> > > &textures)
 {
     m_textures = textures;
 }
 
-const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &QSGShaderEffectMaterial::textures() const
+const QVector<QPair<QByteArray, QPointer<QSGTexture> > > &QSGShaderEffectMaterial::textures() const
 {
     return m_textures;
 }
@@ -276,9 +276,11 @@ const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &QSGShaderEffec
 void QSGShaderEffectMaterial::updateTextures() const
 {
     for (int i = 0; i < m_textures.size(); ++i) {
-        QSGTextureProvider *source = m_textures.at(i).second;
-        if (source)
-            source->updateTexture();
+        QSGTexture *source = m_textures.at(i).second;
+        if (source) {
+            if (QSGDynamicTexture *t = qobject_cast<QSGDynamicTexture *>(source))
+                t->updateTexture();
+        }
     }
 }
 

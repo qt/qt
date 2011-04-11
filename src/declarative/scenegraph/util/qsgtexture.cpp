@@ -147,7 +147,11 @@ QRectF QSGTexture::textureSubRect() const
 
 
 /*!
-    Sets whether mipmapping should be used when sampling from this texture.
+    Sets the mipmap sampling mode to be used for the upcoming bind() call to \a filter.
+
+    Setting the mipmap filtering has no effect it the texture does not have mipmaps.
+
+    \sa hasMipmaps()
  */
 void QSGTexture::setMipmapFiltering(Filtering filter)
 {
@@ -167,7 +171,9 @@ QSGTexture::Filtering QSGTexture::mipmapFiltering() const
 }
 
 
-
+/*!
+    Sets the sampling mode to be used for the upcoming bind() call to \a filter.
+ */
 void QSGTexture::setFiltering(QSGTexture::Filtering filter)
 {
     Q_D(QSGTexture);
@@ -183,6 +189,10 @@ QSGTexture::Filtering QSGTexture::filtering() const
 }
 
 
+
+/*!
+    Sets the horizontal wrap mode to be used for the upcoming bind() call to \a hwrap
+ */
 
 void QSGTexture::setHorizontalWrapMode(WrapMode hwrap)
 {
@@ -356,6 +366,29 @@ void QSGPlainTexture::bind()
 
     updateBindOptions(m_dirty_bind_options);
     m_dirty_bind_options = false;
- }
+}
+
+
+/*!
+    \class QSGDynamicTexture
+    \brief The QSGDynamicTexture class serves as a baseclass for dynamically changing textures,
+    such as content that is rendered to FBO's.
+
+    To update the content of the texture, call updateTexture() explicitely. Simply calling bind()
+    will not update the texture.
+ */
+
+
+/*!
+    \fn bool QSGDynamicTexture::updateTexture()
+
+    Call this function to explicitely update the dynamic texture. Calling bind() will bind
+    the content that was previously updated.
+
+    The function returns true if the texture was changed as a resul of the update; otherwise
+    returns false.
+ */
+
+
 
 QT_END_NAMESPACE

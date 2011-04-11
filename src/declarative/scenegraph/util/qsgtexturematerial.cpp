@@ -94,9 +94,10 @@ void QSGTextureMaterialShader::updateState(const RenderState &state, QSGMaterial
 
     QSGTexture *t = tx->texture().texture();
 
-    t->setFiltering(tx->linearFiltering() ? QSGTexture::Linear : QSGTexture::Nearest);
-    t->setHorizontalWrapMode(tx->clampToEdge() ? QSGTexture::ClampToEdge : QSGTexture::Repeat);
-    t->setVerticalWrapMode(tx->clampToEdge() ? QSGTexture::ClampToEdge : QSGTexture::Repeat);
+    t->setFiltering(tx->filtering());
+    t->setHorizontalWrapMode(tx->horizontalWrapMode());
+    t->setVerticalWrapMode(tx->verticalWrapMode());
+    t->setMipmapFiltering(tx->mipmapFiltering());
 
     if (oldTx == 0 || oldTx->texture()->textureId() != t->textureId())
         t->bind();
@@ -106,6 +107,17 @@ void QSGTextureMaterialShader::updateState(const RenderState &state, QSGMaterial
     if (state.isMatrixDirty())
         m_program.setUniformValue(m_matrix_id, state.combinedMatrix());
 }
+
+
+QSGTextureMaterial::QSGTextureMaterial()
+    : m_texture(0)
+    , m_filtering(QSGTexture::Nearest)
+    , m_mipmap_filtering(QSGTexture::Nearest)
+    , m_horizontal_wrap(QSGTexture::ClampToEdge)
+    , m_vertical_wrap(QSGTexture::ClampToEdge)
+{
+}
+
 
 
 QSGMaterialType *QSGTextureMaterial::type() const
@@ -119,11 +131,10 @@ QSGMaterialShader *QSGTextureMaterial::createShader() const
 }
 
 
-void QSGTextureMaterial::setTexture(const QSGTextureRef &texture, bool opaque)
+void QSGTextureMaterial::setTexture(const QSGTextureRef &texture)
 {
     m_texture = texture;
-    m_opaque = opaque;
-    setFlag(Blending, !opaque);
+    setFlag(Blending, !m_texture.isNull() ? m_texture->hasAlphaChannel() : false);
 }
 
 
@@ -133,12 +144,7 @@ int QSGTextureMaterial::compare(const QSGMaterial *o) const
     const QSGTextureMaterial *other = static_cast<const QSGTextureMaterial *>(o);
     if (int diff = m_texture->textureId() - other->texture()->textureId())
         return diff;
-    return int(m_linear_filtering) - int(other->m_linear_filtering);
-}
-
-bool QSGTextureMaterial::is(const QSGMaterial *effect)
-{
-    return effect->type() == &QSGTextureMaterialShader::type;
+    return int(m_filtering) - int(other->m_filtering);
 }
 
 // QSGTextureMaterialWithOpacity
@@ -165,11 +171,6 @@ protected:
     int m_opacity_id;
 };
 QSGMaterialType TextureMaterialWithOpacityShader::type;
-
-bool QSGTextureMaterialWithOpacity::is(const QSGMaterial *effect)
-{
-    return effect->type() == &TextureMaterialWithOpacityShader::type;
-}
 
 QSGMaterialType *QSGTextureMaterialWithOpacity::type() const
 {

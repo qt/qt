@@ -62,8 +62,8 @@ public:
     void setInnerRect(const QRectF &rect);
     QRectF innerRect() const { return m_innerRect; }
 
-    void setLinearFiltering(bool linear);
-    bool linearFiltering() const;
+    void setFiltering(QSGTexture::Filtering filtering);
+    QSGTexture::Filtering filtering() const;
 
     void setHorzontalTileMode(QSGBorderImage::TileMode mode);
     QSGBorderImage::TileMode horizontalTileMode() const {

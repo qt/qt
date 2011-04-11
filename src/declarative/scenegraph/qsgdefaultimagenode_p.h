@@ -53,64 +53,30 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QSGTextureProviderMaterial : public QSGMaterial
-{
-public:
-    QSGTextureProviderMaterial()
-        : m_texture(0)
-    {
-    }
-
-    virtual QSGMaterialType *type() const;
-    virtual QSGMaterialShader *createShader() const;
-    virtual int compare(const QSGMaterial *other) const;
-
-    void setTexture(QSGTextureProvider *texture);
-    QSGTextureProvider *texture() const { return m_texture; }
-
-    void setBlending(bool enable);
-    bool blending() const;
-
-    static bool is(const QSGMaterial *effect);
-
-protected:
-    QSGTextureProvider *m_texture;
-};
-
-
-class QSGTextureProviderMaterialWithOpacity : public QSGTextureProviderMaterial
-{
-public:
-    QSGTextureProviderMaterialWithOpacity() { }
-
-    virtual QSGMaterialType *type() const;
-    virtual QSGMaterialShader *createShader() const;
-    void setTexture(QSGTextureProvider *texture);
-
-    static bool is(const QSGMaterial *effect);
-};
-
-
 class QSGDefaultImageNode : public QSGImageNode
 {
 public:
     QSGDefaultImageNode();
     virtual void setTargetRect(const QRectF &rect);
     virtual void setSourceRect(const QRectF &rect);
-    virtual void setTexture(QSGTextureProvider *texture);
+    virtual void setTexture(const QSGTextureRef &texture);
     virtual void update();
+
+    virtual void setMipmapFiltering(QSGTexture::Filtering filtering);
+    virtual void setFiltering(QSGTexture::Filtering filtering);
+    virtual void setHorizontalWrapMode(QSGTexture::WrapMode wrapMode);
+    virtual void setVerticalWrapMode(QSGTexture::WrapMode wrapMode);
 
     virtual void preprocess();
 
 private:
     void updateGeometry();
 
-    QSGTextureProvider *m_texture;
     QRectF m_targetRect;
     QRectF m_sourceRect;
 
-    QSGTextureProviderMaterial m_material;
-    QSGTextureProviderMaterialWithOpacity m_materialO;
+    QSGTextureMaterial m_material;
+    QSGTextureMaterialWithOpacity m_materialO;
 
     uint m_dirtyGeometry : 1;
 

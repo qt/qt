@@ -173,6 +173,18 @@ private:
     QSGTexture *m_texture;
 };
 
+
+class QSGDynamicTexture : public QSGTexture
+{
+    Q_OBJECT
+public:
+    virtual bool updateTexture() = 0;
+
+Q_SIGNALS:
+    void textureChanged();
+};
+
+
 inline bool operator==(const QSGTextureRef &a, const QSGTextureRef &b) { return a.texture() == b.texture(); }
 
 QT_END_NAMESPACE
