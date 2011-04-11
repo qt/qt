@@ -420,9 +420,6 @@ QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
     return q->data.data();
 }
 
-Q_GUI_EXPORT extern int qt_defaultDpiX();
-Q_GUI_EXPORT extern int qt_defaultDpiY();
-
 namespace {
 
     class DrawTextItemRecorder: public QPaintEngine

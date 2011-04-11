@@ -771,30 +771,6 @@ void InnerNode::removeChild(Node *child)
     }
 }
 
-/*! \fn QString InnerNode::author() const
-  Returns the author.
- */
-
-/*! \fn void InnerNode::setAuthor(const QString& author)
-  Sets the \a author.
- */
-
-/*! \fn QString InnerNode::publisher() const
-  Returns the publisher.
- */
-
-/*! \fn void InnerNode::setPublisher(const QString& publisher)
-  Sets the \a publisher.
- */
-
-/*! \fn QString InnerNode::permissions() const
-  Returns the permissions.
- */
-
-/*! \fn void InnerNode::setPermissions(const QString& permissions)
-  Sets the \a permissions.
- */
-
 /*!
   Find the module (QtCore, QtGui, etc.) to which the class belongs.
   We do this by obtaining the full path to the header file's location
@@ -857,21 +833,6 @@ void InnerNode::removeRelated(Node *pseudoChild)
 {
     related.removeAll(pseudoChild);
 }
-
-/*! \fn bool InnerNode::hasOtherMetadata() const
-  Returns tru if the other metadata map is not empty.
- */
-
-/*!
-  Insert the pair \a name and \a content into the other metadata map.
- */
-void insertOtherMetadata(const QString& name, const QString& content)
-{
-}
-
-/*! \fn const QMap<QString, QString>& InnerNode::otherMetadata() cont
-  Returns the map containing pairs for output as \c {<othermetadata>}.
- */
 
 /*!
   \class LeafNode

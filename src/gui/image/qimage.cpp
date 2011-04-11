@@ -65,6 +65,7 @@
 #include <private/qpaintengine_raster_p.h>
 
 #include <private/qimage_p.h>
+#include <private/qfont_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -118,9 +119,6 @@ const QVector<QRgb> *qt_image_colortable(const QImage &image)
 {
     return &image.d->colortable;
 }
-
-Q_GUI_EXPORT extern int qt_defaultDpiX();
-Q_GUI_EXPORT extern int qt_defaultDpiY();
 
 QBasicAtomicInt qimage_serial_number = Q_BASIC_ATOMIC_INITIALIZER(1);
 

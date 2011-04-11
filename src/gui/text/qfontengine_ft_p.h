@@ -257,7 +257,9 @@ private:
     virtual QImage alphaMapForGlyph(glyph_t g) { return alphaMapForGlyph(g, 0); }
     virtual QImage alphaMapForGlyph(glyph_t, QFixed);
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
-    virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, const QTransform &matrix,
+    virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph,
+                                                QFixed subPixelPosition,
+                                                const QTransform &matrix,
                                                 QFontEngine::GlyphFormat format);
     virtual void removeGlyphFromCache(glyph_t glyph);
 
@@ -333,7 +335,6 @@ protected:
     bool embeddedbitmap;
 
 private:
-    QFontEngineFT::Glyph *loadGlyphMetrics(QGlyphSet *set, uint glyph, GlyphFormat format) const;
     int loadFlags(QGlyphSet *set, GlyphFormat format, int flags, bool &hsubpixel, int &vfactor) const;
 
     GlyphFormat defaultFormat;
