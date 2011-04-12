@@ -59,7 +59,6 @@ class ParticleType : public QSGItem
     Q_PROPERTY(ParticleSystem* system READ system WRITE setSystem NOTIFY systemChanged)
     Q_PROPERTY(QStringList particles READ particles WRITE setParticles NOTIFY particlesChanged)
 
-
 public:
     explicit ParticleType(QSGItem *parent = 0);
     virtual void load(ParticleData*);
@@ -78,6 +77,7 @@ public:
     }
 
     int particleTypeIndex(ParticleData*);
+    virtual void componentComplete();
 signals:
     void countChanged();
     void systemChanged(ParticleSystem* arg);

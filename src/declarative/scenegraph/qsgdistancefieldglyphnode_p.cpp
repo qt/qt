@@ -561,8 +561,18 @@ const char *QSGSubPixelDistanceFieldTextMaterialShader::fragmentShader() const {
         "    highp float c = texture2D(texture, sampleCoord).a;                 \n"
         "    n.z = texture2DProj(texture, sampleNearRight).a;                   \n"
         "    n.w = texture2DProj(texture, sampleFarRight).a;                    \n"
+#if 0
+        // Blurrier, faster.
         "    n = smoothstep(alphaMin, alphaMax, n);                             \n"
         "    c = smoothstep(alphaMin, alphaMax, c);                             \n"
+#else
+        // Sharper, slower.
+        "    highp vec2 d = min(abs(n.yw - n.xz) * 2., 0.67);                   \n"
+        "    highp vec2 lo = mix(vec2(alphaMin), vec2(0.5), d);                 \n"
+        "    highp vec2 hi = mix(vec2(alphaMax), vec2(0.5), d);                 \n"
+        "    n = smoothstep(lo.xxyy, hi.xxyy, n);                               \n"
+        "    c = smoothstep(lo.x + lo.y, hi.x + hi.y, 2. * c);                  \n"
+#endif
         "    gl_FragColor = vec4(0.333 * (n.xyz + n.yzw + c), c) * color.w;     \n"
         "}";
 }

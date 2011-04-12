@@ -38,43 +38,80 @@
 **
 ****************************************************************************/
 
-import Qt.labs.particles 2.0
 import QtQuick 2.0
+import Qt.labs.particles 2.0
 
-Rectangle {
-    id: root
-    width: 360
-    height: 540
-    color: "black"
-
-    ParticleSystem{ id: particles }
-    ColoredParticle{
-        system: particles
-        colorVariation: 0.5
-
-        image: "content/particle.png"
-        colortable: "content/colortable.png"
+Rectangle{
+    color: "goldenrod"
+    width: 800
+    height: 800
+    ParticleSystem{ id: sys }
+    SpriteParticle{
+        system: sys
+        anchors.fill: parent
+        sprites: [Sprite{
+            name: "initial"
+            source: "content/squarefacesprite.png"
+            frames: 6
+            duration: 0
+            to: {"happy":0.2, "silly":0.2, "sad":0.2, "cyclops":0.1, "evil":0.1, "love":0.1, "boggled":0.1}
+        }, Sprite{
+            name: "silly"
+            source: "content/squarefacesprite.png"
+            frames: 6
+            duration: 120
+        }, Sprite{
+            name: "happy"
+            source: "content/squarefacesprite2.png"
+            frames: 6
+            duration: 120
+        }, Sprite{
+            name: "sad"
+            source: "content/squarefacesprite3.png"
+            frames: 6
+            duration: 120
+        }, Sprite{
+            name: "cyclops"
+            source: "content/squarefacesprite4.png"
+            frames: 6
+            duration: 120
+        }, Sprite{
+            name: "evil"
+            source: "content/squarefacesprite5.png"
+            frames: 6
+            duration: 120
+        }, Sprite{
+            name: "love"
+            source: "content/squarefacesprite6.png"
+            frames: 6
+            duration: 120
+        }, Sprite{
+            name: "boggled"
+            source: "content/squarefacesprite7.png"
+            frames: 6
+            duration: 120
+        }]
     }
     TrailEmitter{
-        system: particles
-        particlesPerSecond: 500
-        particleDuration: 2000
-
-        y: root.height / 2 + Math.sin(t * 2) * root.height * 0.3
-        x: root.width / 2 + Math.cos(t) * root.width * 0.3
-        property real t;
-
-        NumberAnimation on t {
-            from: 0; to: Math.PI * 2; duration: 10000; loops: Animation.Infinite
-        }
-
-        speedFromMovement: 20
-
-        speed: PointVector{ xVariation: 5; yVariation: 5;}
-        acceleration: PointVector{ xVariation: 5; yVariation: 5;}
-
-        particleSize: 2
-        particleEndSize: 8
-        particleSizeVariation: 8
+        id: particleEmitter
+        system: sys
+        width: parent.width
+        particlesPerSecond: 16
+        particleDuration: 8000
+        emitting: true
+        speed: AngleVector{angle: 90; magnitude: 300; magnitudeVariation: 100; angleVariation: 5}
+        acceleration: PointVector{ y: 10 }
+        particleSize: 30
+        particleSizeVariation: 10
+    }
+    Binding{
+        target: particleEmitter
+        property: "y"
+        value: ma.mouseY
+        when: ma.mouseX !=0 || ma.mouseY!=0
+    }
+    MouseArea{
+        id: ma
+        anchors.fill: parent
     }
 }

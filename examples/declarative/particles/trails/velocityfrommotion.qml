@@ -79,6 +79,7 @@ Rectangle {
         system: sys1
         image: "content/particle.png"
         color: "cyan"
+        alpha: 0
         SequentialAnimation on color {
             loops: Animation.Infinite
             ColorAnimation {
@@ -126,6 +127,7 @@ Rectangle {
     ColoredParticle{
         color: "cyan"
         system: sys2
+        alpha: 0
         SequentialAnimation on color {
             loops: Animation.Infinite
             ColorAnimation {
@@ -165,6 +167,7 @@ Rectangle {
         image: "content/particle.png"
         system: sys3
         color: "orange"
+        alpha: 0
         SequentialAnimation on color {
             loops: Animation.Infinite
             ColorAnimation {
@@ -205,6 +208,7 @@ Rectangle {
         system: sys4
         image: "content/star.png"
         color: "green"
+        alpha: 0
         SequentialAnimation on color {
             loops: Animation.Infinite
             ColorAnimation {

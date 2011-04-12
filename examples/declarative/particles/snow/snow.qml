@@ -44,28 +44,32 @@ import Qt.labs.particles 2.0
 Rectangle{
     width: 360
     height: 540
-    color: "black"
-    MouseArea{
-        anchors.fill: parent
-        onClicked: particles.running = !particles.running
-    }
-    ParticleSystem{ 
-        id: particles 
-        running: false
-    }
-    ColoredParticle{
-        anchors.fill: parent
+    ParticleSystem { id: particles }
+    SpriteParticle {
         system: particles
-        image: "content/star.png"
-        colorVariation: 0.2
+        Sprite{
+            name: "snow"
+            source: "content/flake-01.png"
+            frames: 51
+            duration: 40
+        }
     }
-    TrailEmitter{
-        anchors.fill: parent
+    Wander { 
         system: particles
-        particlesPerSecond: 2000
-        particleDuration: 2000
+        anchors.fill: parent
+        xVariance: 40;
+        pace: 40;
+    }
+    TrailEmitter {
+        system: particles
+        particlesPerSecond: 20
+        particleDuration: 7000
         emitting: true
-        particleSize: 40
+        speed: PointVector{ y:80; yVariation: 40; }
+        acceleration: PointVector{ y: 4 }
+        particleSize: 20
         particleSizeVariation: 10
+        width: parent.width
+        height: 100
     }
 }

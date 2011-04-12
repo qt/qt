@@ -137,6 +137,7 @@ protected:
     QStringList m_particles;
     bool activeGroup(int g) {return m_groups.isEmpty() || m_groups.contains(g);}
     bool m_active;
+    virtual void componentComplete();
 private:
     QSet<int> m_groups;
     QSet<int> m_onceOffed;

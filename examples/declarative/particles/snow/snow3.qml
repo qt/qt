@@ -42,62 +42,39 @@ import QtQuick 2.0
 import Qt.labs.particles 2.0
 
 Rectangle{
-    color: "goldenrod"
-    width: 400
-    height: 400
-    ColoredParticle{
-        id: test
-        particles: ["Test"]
-        image: "particle.png"
-        system: sys
-        z: 2
-        anchors.fill: parent
-        color: "#336666CC"
-        colorVariation: 0.0
-    }
+    width: 360
+    height: 540
+    id: root
+    ParticleSystem{ id: particles }
     SpriteParticle{
-        id: single
-        particles: ["Face"]
-        system: sys
-        z: 2
-        anchors.fill: parent
-        Sprite{
-            source: "squarefacesprite.png"
-            frames: 6
-            duration: 120
+        system: particles
+        sprites: Sprite{
+            name: "snow"
+            source: "content/flake-01.png"
+            frames: 51
+            duration: 40
         }
     }
-    Mask{
-        id: mask
-        source: "smileMask.png"
+    Drift{
+        system: particles
+        anchors.fill: parent
+        xDrift: 200
+    } 
+    SpeedLimit{
+        system: particles
+        anchors.fill: parent
+        speedLimit: 100
     }
     TrailEmitter{
-        system: sys
-        particle: "Test"
-        anchors.fill: parent
-        id: particles2
-        particlesPerSecond: 6000
-        particleDuration: 720
+        system: particles
+        particlesPerSecond: 20
+        particleDuration: 7000
         emitting: true
-        particleSize: 10
-        shape: mask
-    }
-    TrailEmitter{
-        system: sys
-        particle: "Face"
-        anchors.fill: parent
-        id: particles
-        particlesPerSecond: 60
-        particleDuration: 1440
-        emitting: true
-        speed: PointVector{xVariation: 10; yVariation: 10;}
-        particleSize: 30
+        speed: PointVector{ y:80; yVariation: 40; }
+        acceleration: PointVector{ y: 4 }
+        particleSize: 20
         particleSizeVariation: 10
-        shape: mask
+        width: parent.width
+        height: 40
     }
-    ParticleSystem{
-        id: sys
-        anchors.fill: parent
-    }
-
 }

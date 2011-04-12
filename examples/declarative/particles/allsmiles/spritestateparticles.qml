@@ -49,55 +49,55 @@ Rectangle{
     SpriteImage{
         sprites: [Sprite{
             name: "happy"
-            source: "squarefacesprite2.png"
+            source: "content/squarefacesprite2.png"
             frames: 6
             duration: 120
             to: {"silly": 0.4, "sad": 0.2, "cyclops":0.1, "boggled":0.3, "dying":0.0}
         }, Sprite{
             name: "silly"
-            source: "squarefacesprite.png"
+            source: "content/squarefacesprite.png"
             frames: 6
             duration: 120
             to: {"love": 0.4, "happy": 0.1, "evil": 0.2, "cyclops":0.1, "boggled":0.2}
         }, Sprite{
             name: "sad"
-            source: "squarefacesprite3.png"
+            source: "content/squarefacesprite3.png"
             frames: 6
             duration: 120
             to: {"love" : 0.2, "evil": 0.2, "silly": 0.2, "cyclops":0.2, "boggled":0.2}
         }, Sprite{
             name: "cyclops"
-            source: "squarefacesprite4.png"
+            source: "content/squarefacesprite4.png"
             frames: 6
             duration: 120
             to: {"love": 0.1, "evil": 0.1, "silly":0.1, "boggled":0.1, "cyclops" : 1.0}
         }, Sprite{
             name: "evil"
-            source: "squarefacesprite5.png"
+            source: "content/squarefacesprite5.png"
             frames: 6
             duration: 120
             to: {"happy": 1.0}
         }, Sprite{
             name: "love"
-            source: "squarefacesprite6.png"
+            source: "content/squarefacesprite6.png"
             frames: 6
             duration: 120
             to: {"sad": 0.6, "evil":0.4, "boggled":0.2}
         }, Sprite{
             name: "boggled"
-            source: "squarefacesprite7.png"
+            source: "content/squarefacesprite7.png"
             frames: 6
             duration: 120
             to: {"love" : 0.2, "evil": 0.2, "silly": 0.2, "cyclops":0.1, "sad":0.2}
         }, Sprite{
             name: "dying"
-            source: "squarefacespriteX.png"
+            source: "content/squarefacespriteX.png"
             frames: 4
             duration: 120
             to: {"dead":1.0}
         }, Sprite{
             name: "dead"
-            source: "squarefacespriteXX.png"
+            source: "content/squarefacespriteXX.png"
             frames: 1
             duration: 10000
         }]
@@ -115,55 +115,55 @@ Rectangle{
         system: sys
         sprites: [Sprite{
             name: "happy"
-            source: "squarefacesprite2.png"
+            source: "content/squarefacesprite2.png"
             frames: 6
             duration: 120
             to: {"silly": 0.4, "sad": 0.2, "cyclops":0.1, "boggled":0.3, "dying":0.0}
         }, Sprite{
             name: "silly"
-            source: "squarefacesprite.png"
+            source: "content/squarefacesprite.png"
             frames: 6
             duration: 120
             to: {"love": 0.4, "happy": 0.1, "evil": 0.2, "cyclops":0.1, "boggled":0.2}
         }, Sprite{
             name: "sad"
-            source: "squarefacesprite3.png"
+            source: "content/squarefacesprite3.png"
             frames: 6
             duration: 120
             to: {"love" : 0.2, "evil": 0.2, "silly": 0.2, "cyclops":0.2, "boggled":0.2}
         }, Sprite{
             name: "cyclops"
-            source: "squarefacesprite4.png"
+            source: "content/squarefacesprite4.png"
             frames: 6
             duration: 120
             to: {"love": 0.1, "evil": 0.1, "silly":0.1, "boggled":0.1, "cyclops" : 1.0}
         }, Sprite{
             name: "evil"
-            source: "squarefacesprite5.png"
+            source: "content/squarefacesprite5.png"
             frames: 6
             duration: 120
             to: {"happy": 1.0}
         }, Sprite{
             name: "love"
-            source: "squarefacesprite6.png"
+            source: "content/squarefacesprite6.png"
             frames: 6
             duration: 120
             to: {"sad": 0.6, "evil":0.4, "boggled":0.2}
         }, Sprite{
             name: "boggled"
-            source: "squarefacesprite7.png"
+            source: "content/squarefacesprite7.png"
             frames: 6
             duration: 120
             to: {"love" : 0.2, "evil": 0.2, "silly": 0.2, "cyclops":0.1, "sad":0.2}
         }, Sprite{
             name: "dying"
-            source: "squarefacespriteX.png"
+            source: "content/squarefacespriteX.png"
             frames: 4
             duration: 120
             to: {"dead":1.0}
         }, Sprite{
             name: "dead"
-            source: "squarefacespriteXX.png"
+            source: "content/squarefacespriteXX.png"
             frames: 1
             duration: 10000
         }]

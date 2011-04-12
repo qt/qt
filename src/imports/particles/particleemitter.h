@@ -109,6 +109,7 @@ public:
         return m_particleDurationVariation;
     }
 
+    virtual void componentComplete();
 signals:
     void particlesPerSecondChanged(qreal);
     void particleDurationChanged(int);

@@ -40,7 +40,9 @@
 ****************************************************************************/
 
 #include "directedvector.h"
+#include "particleemitter.h"
 #include <cmath>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 DirectedVector::DirectedVector(QObject *parent) :
@@ -51,14 +53,34 @@ DirectedVector::DirectedVector(QObject *parent) :
   , m_proportionalMagnitude(false)
   , m_magnitude(0)
   , m_magnitudeVariation(0)
+  , m_targetItem(0)
 {
 }
 
 const QPointF &DirectedVector::sample(const QPointF &from)
 {
     //###This approach loses interpolating the last position of the target (like we could with the emitter) is it worthwhile?
-    qreal targetX = m_targetX - from.x() - m_targetVariation + rand()/(float)RAND_MAX * m_targetVariation*2;
-    qreal targetY = m_targetY - from.y() - m_targetVariation + rand()/(float)RAND_MAX * m_targetVariation*2;
+    qreal targetX;
+    qreal targetY;
+    if(m_targetItem){
+        ParticleEmitter* parentEmitter = qobject_cast<ParticleEmitter*>(parent());
+        targetX = m_targetItem->width()/2;
+        targetY = m_targetItem->height()/2;
+        if(!parentEmitter){
+            qWarning() << "Directed vector is not a child of the emitter. Mapping of target item coordinates may fail.";
+            targetX += m_targetItem->x();
+            targetY += m_targetItem->y();
+        }else{
+            m_ret = parentEmitter->mapFromItem(m_targetItem, QPointF(targetX, targetY));
+            targetX = m_ret.x();
+            targetY = m_ret.y();
+        }
+    }else{
+        targetX = m_targetX;
+        targetY = m_targetY;
+    }
+    targetX += 0 - from.x() - m_targetVariation + rand()/(float)RAND_MAX * m_targetVariation*2;
+    targetY += 0 - from.y() - m_targetVariation + rand()/(float)RAND_MAX * m_targetVariation*2;
     qreal theta = atan2(targetY, targetX);
     qreal mag = m_magnitude + rand()/(float)RAND_MAX * m_magnitudeVariation * 2 - m_magnitudeVariation;
     if(m_proportionalMagnitude)

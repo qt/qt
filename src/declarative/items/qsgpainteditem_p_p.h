@@ -48,11 +48,13 @@
 
 QT_BEGIN_NAMESPACE
 
+class QSGImageTextureProvider;
 class QSGPaintedItemPrivate : public QSGItemPrivate
 {
 public:
     QSGPaintedItemPrivate();
 
+    QSGImageTextureProvider *textureProvider;
     bool geometryDirty : 1;
     bool contentsDirty : 1;
     bool opaquePainting: 1;

@@ -40,6 +40,7 @@
 
 import QtQuick 2.0
 import Qt.labs.particles 2.0
+import "content"
 
 Rectangle {
     color: "white"

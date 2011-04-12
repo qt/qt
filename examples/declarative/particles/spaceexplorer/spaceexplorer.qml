@@ -49,7 +49,7 @@ Rectangle{
     color: "black"
     Image{
         anchors.centerIn: parent
-        source: "../Asteroid/finalfrontier.png"
+        source: "../asteroid/content/finalfrontier.png"
     }
     property bool spacePressed: false
     property int holeSize: 4
@@ -81,12 +81,9 @@ Rectangle{
         particlesPerSecond: 60
         particleDuration: 4000
         emitting: true
-        particleSize: 30
+        particleSize: 10
         particleSizeVariation: 10
-        emitterX: root.width/2
-        emitterY: root.height/2
-        emitterXVariation: root.width/2
-        emitterYVariation: root.height/2
+        anchors.fill: parent
     }
     ParticleSystem{ id: background }
     ColoredParticle{
@@ -127,7 +124,7 @@ Rectangle{
         text: "Score: " + score
     }
     Image{
-        source: "content/orangeStar.png"
+        source: "content/star.png"
         width: 40
         height: 40
         anchors.right: parent.right
@@ -386,8 +383,10 @@ Rectangle{
             particleSize: 10
             particleEndSize: 4
             particleSizeVariation: 4
-            xSpeed: -128 * Math.cos(rocket.rotation * (Math.PI / 180))
-            ySpeed: -128 * Math.sin(rocket.rotation * (Math.PI / 180))
+            speed: PointVector{
+                x: -128 * Math.cos(rocket.rotation * (Math.PI / 180))
+                y: -128 * Math.sin(rocket.rotation * (Math.PI / 180))
+            }
             anchors.verticalCenter: parent.verticalCenter
             height: 4
             width: 4
@@ -400,8 +399,10 @@ Rectangle{
             particleDuration: 1600
             emitting: !gameOver && shoot
             particleSize: 40
-            xSpeed: 256 * Math.cos(rocket.rotation * (Math.PI / 180))
-            ySpeed: 256 * Math.sin(rocket.rotation * (Math.PI / 180))
+            speed: PointVector{
+                x: 256 * Math.cos(rocket.rotation * (Math.PI / 180))
+                y: 256 * Math.sin(rocket.rotation * (Math.PI / 180))
+            }
             x: parent.width - 4
             y: parent.height/2
         }

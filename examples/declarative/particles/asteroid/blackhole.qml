@@ -49,7 +49,7 @@ Rectangle{
     property bool spacePressed: false
     focus: true
     Image{
-        source: "finalfrontier.png"
+        source: "content/finalfrontier.png"
         anchors.centerIn:parent
     }
     Keys.onPressed: {
@@ -95,7 +95,7 @@ Rectangle{
         id: stars
         particles: ["stars"]
         system: particles
-        image: "star.png"
+        image: "content/star.png"
         color: "white"
         colorVariation: 0.1
     }
@@ -106,7 +106,7 @@ Rectangle{
         sprites: Sprite{
             id: spinState
             name: "spinning"
-            source: "meteor.png"
+            source: "content/meteor.png"
             frames: 35
             duration: 60
             speedModifiesDuration: -0.1
@@ -116,7 +116,7 @@ Rectangle{
         id: shot
         particles: ["shot"]
         system: particles
-        image: "star.png"
+        image: "content/star.png"
 
         color: "#0FF06600"
         colorVariation: 0.3
@@ -125,7 +125,7 @@ Rectangle{
         id: engine
         particles: ["engine"]
         system: particles
-        image: "particle4.png"
+        image: "content/particle4.png"
 
         color: "orange"
         SequentialAnimation on color {
@@ -156,7 +156,7 @@ Rectangle{
         height: 16
     }
     Image{
-        source:"rocket2.png"
+        source:"content/rocket2.png"
         id: ship
         width: 45
         height: 22

@@ -40,8 +40,10 @@
 
 import QtQuick 2.0
 import Qt.labs.particles 2.0
-import "script.js" as Script
 import "../../modelviews/listview/content" as OtherDemo
+import "content/script.js" as Script
+import "content"
+//Needs OtherDemo to be updated to QtQuick 2.0
 
 Item{
     id: root
