@@ -191,7 +191,8 @@ public:
     int screenWidthInTwipsForScreen[qt_symbian_max_screens];
     int screenHeightInTwipsForScreen[qt_symbian_max_screens];
 
-    bool nativeOrientationIsPortrait;
+    int nativeScreenWidthInPixels;
+    int nativeScreenHeightInPixels;
 };
 
 Q_AUTOTEST_EXPORT QS60Data* qGlobalS60Data();
@@ -237,6 +238,8 @@ public:
     bool isControlActive();
 
     void ensureFixNativeOrientation();
+    QPoint translatePointForFixedNativeOrientation(const TPoint &pointerEventPos) const;
+    TRect translateRectForFixedNativeOrientation(const TRect &controlRect) const;
 
 #ifdef Q_WS_S60
     void FadeBehindPopup(bool fade){ popupFader.FadeBehindPopup( this, this, fade); }
@@ -255,6 +258,9 @@ protected:
     void SizeChanged();
     void PositionChanged();
     void FocusChanged(TDrawNow aDrawNow);
+
+protected:
+    void qwidgetResize_helper(const QSize &newSize);
 
 private:
     void HandlePointerEvent(const TPointerEvent& aPointerEvent);
@@ -363,18 +369,15 @@ inline void QS60Data::updateScreenSize()
 
     // Look for a screen mode with rotation 0
     // in order to decide what the native orientation is.
-    int nativeScreenWidthInPixels = 0;
-    int nativeScreenHeightInPixels = 0;
     for (mode = 0; mode < screenModeCount; ++mode) {
         TPixelsAndRotation sizeAndRotation;
         dev->GetScreenModeSizeAndRotation(mode, sizeAndRotation);
         if (sizeAndRotation.iRotation == CFbsBitGc::EGraphicsOrientationNormal) {
-            nativeScreenWidthInPixels = sizeAndRotation.iPixelSize.iWidth;
-            nativeScreenHeightInPixels = sizeAndRotation.iPixelSize.iHeight;
+            S60->nativeScreenWidthInPixels = sizeAndRotation.iPixelSize.iWidth;
+            S60->nativeScreenHeightInPixels = sizeAndRotation.iPixelSize.iHeight;
             break;
         }
     }
-    S60->nativeOrientationIsPortrait = nativeScreenWidthInPixels <= nativeScreenHeightInPixels;
 }
 
 inline RWsSession& QS60Data::wsSession()
