@@ -2119,9 +2119,11 @@ void QDeclarativeListView::setOrientation(QDeclarativeListView::Orientation orie
         if (d->orient == QDeclarativeListView::Vertical) {
             setContentWidth(-1);
             setFlickableDirection(VerticalFlick);
+            setContentX(0);
         } else {
             setContentHeight(-1);
             setFlickableDirection(HorizontalFlick);
+            setContentY(0);
         }
         d->regenerate();
         emit orientationChanged();
