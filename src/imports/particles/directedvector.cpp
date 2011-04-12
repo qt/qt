@@ -72,7 +72,6 @@ const QPointF &DirectedVector::sample(const QPointF &from)
             targetY += m_targetItem->y();
         }else{
             m_ret = parentEmitter->mapFromItem(m_targetItem, QPointF(targetX, targetY));
-            qDebug() << parentEmitter << m_targetItem << m_ret;
             targetX = m_ret.x();
             targetY = m_ret.y();
         }
