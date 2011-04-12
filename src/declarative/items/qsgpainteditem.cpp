@@ -182,13 +182,23 @@ QSGNode *QSGPaintedItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *
     }
 
     QSGPainterNode *node = static_cast<QSGPainterNode *>(oldNode);
-    if (!node)
+    if (!node) {
         node = new QSGPainterNode;
-
-    node->setSize(QSize(d->width, d->height));
-    node->setSmoothPainting(d->smooth);
-    node->setLinearFiltering(d->smooth);
-    node->setOpaquePainting(d->opaquePainting);
+        node->setSize(QSize(d->width, d->height));
+        node->setSmoothPainting(d->smooth);
+        node->setLinearFiltering(d->smooth);
+        node->setOpaquePainting(d->opaquePainting);
+    } else {
+        QSize s(d->width, d->height);
+        if (node->size() != s)
+            node->setSize(s);
+        if (node->smoothPainting() != d->smooth)
+            node->setSmoothPainting(d->smooth);
+        if (node->linearFiltering() != d->smooth)
+            node->setLinearFiltering(d->smooth);
+        if (node->opaquePainting() != d->opaquePainting)
+            node->setOpaquePainting(d->opaquePainting);
+    }
 
     bool fboChanged = node->update();
 

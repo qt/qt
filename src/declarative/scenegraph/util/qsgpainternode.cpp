@@ -89,11 +89,9 @@ void QSGPainterNode::paint(QSGPaintedItem *item)
 
     if (m_smoothPainting)
         fbo_painter.setRenderHints(QPainter::HighQualityAntialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
-    if (!m_opaquePainting) {
-        fbo_painter.setCompositionMode(QPainter::CompositionMode_Source);
-        fbo_painter.fillRect(QRectF(QPointF(0, 0), m_fbo->size()), Qt::transparent);
-        fbo_painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-    }
+    fbo_painter.setCompositionMode(QPainter::CompositionMode_Source);
+    fbo_painter.fillRect(QRectF(QPointF(0, 0), m_fbo->size()), Qt::transparent);
+    fbo_painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
     item->paint(&fbo_painter);
     fbo_painter.end();
 
@@ -125,9 +123,17 @@ bool QSGPainterNode::update()
 
 void QSGPainterNode::updateTexture()
 {
-    static_cast<QSGPlainTexture *>(m_texture.texture())->setHasAlphaChannel(!m_opaquePainting);
+    QSGPlainTexture *texture = new QSGPlainTexture;
+    texture->setTextureId(m_fbo->texture());
+    texture->setTextureSize(m_fbo->size());
+    texture->setHasAlphaChannel(!m_opaquePainting);
+    texture->setOwnsTexture(false);
+    m_texture = QSGTextureRef(texture);
+
     m_material.setTexture(m_texture, m_opaquePainting);
+    m_material.setLinearFiltering(m_linear_filtering);
     m_materialO.setTexture(m_texture, m_opaquePainting);
+    m_materialO.setLinearFiltering(m_linear_filtering);
 
     markDirty(DirtyMaterial);
 }
@@ -174,14 +180,6 @@ bool QSGPainterNode::updateFBO()
         format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
         m_fbo = new QGLFramebufferObject(m_size, format);
     }
-
-    QSGPlainTexture *texture = new QSGPlainTexture;
-    texture->setTextureId(m_fbo->texture());
-    texture->setTextureSize(m_fbo->size());
-    texture->setOwnsTexture(false);
-    m_texture = QSGTextureRef(texture);
-    m_material.setLinearFiltering(m_linear_filtering);
-    m_materialO.setLinearFiltering(m_linear_filtering);
 
     return true;
 }
