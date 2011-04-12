@@ -105,10 +105,18 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
         return;
     }
 
+    XSetWindowAttributes attr;
+    unsigned long mask;
+    attr.background_pixel = 0;
+    attr.border_pixel = 0;
+    attr.colormap = XCreateColormap(X11->display, DefaultRootWindow(X11->display), vi->visual, AllocNone);
+    attr.event_mask = StructureNotifyMask | ExposureMask;
+    mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
+
     d->window = XCreateWindow(X11->display, RootWindow(X11->display, screen),
                               0, 0, 1, 1, 0,
                               vi->depth, InputOutput, vi->visual,
-                              0, 0);
+                              mask, &attr);
 
     d->surface = eglCreateWindowSurface(d->display, config, (EGLNativeWindowType) d->window, NULL);
 
