@@ -57,6 +57,9 @@ class QSGTextureProvider
 {
 public:
     virtual QSGTexture *texture() const = 0;
+    virtual const char *textureChangedSignal() { return 0; }
+
+    static QSGTextureProvider *from(QObject *object);
 };
 Q_DECLARE_INTERFACE(QSGTextureProvider, "QSGTextureProvider")
 

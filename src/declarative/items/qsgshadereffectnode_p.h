@@ -45,6 +45,7 @@
 #include "qsgnode.h"
 #include "qsgmaterial.h"
 #include <private/qsgtextureprovider_p.h>
+#include <qsgitem.h>
 
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qpointer.h>
@@ -65,7 +66,6 @@ struct QSGShaderEffectMaterialKey {
 
 uint qHash(const QSGShaderEffectMaterialKey &key);
 
-// TODO: Implement async loading and loading over network.
 // TODO: Implement support for multisampling.
 struct QSGShaderEffectProgram : public QSGShaderEffectMaterialKey
 {
@@ -100,8 +100,8 @@ public:
 
     void setProgramSource(const QSGShaderEffectProgram &);
     void setUniforms(const QVector<QPair<QByteArray, QVariant> > &uniformValues);
-    void setTextures(const QVector<QPair<QByteArray, QPointer<QSGTexture> > > &textures);
-    const QVector<QPair<QByteArray, QPointer<QSGTexture> > > &textures() const;
+    void setTextureProviders(const QVector<QPair<QByteArray, QPointer<QSGItem> > > &textures);
+    const QVector<QPair<QByteArray, QPointer<QSGItem> > > &textureProviders() const;
     void updateTextures() const;
 
 protected:
@@ -118,7 +118,7 @@ protected:
 
     QSGShaderEffectProgram m_source;
     QVector<QPair<QByteArray, QVariant> > m_uniformValues;
-    QVector<QPair<QByteArray, QPointer<QSGTexture> > > m_textures;
+    QVector<QPair<QByteArray, QPointer<QSGItem> > > m_textures;
     CullMode m_cullMode;
 
     static QHash<QSGShaderEffectMaterialKey, QSharedPointer<QSGMaterialType> > materialMap;

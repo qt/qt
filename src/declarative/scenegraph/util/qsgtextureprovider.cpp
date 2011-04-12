@@ -53,4 +53,13 @@ QT_BEGIN_NAMESPACE
  */
 
 
+/*!
+    Convenience function for casting a QObject to a QSGTextureProvider
+ */
+QSGTextureProvider *QSGTextureProvider::from(QObject *object)
+{
+    return static_cast<QSGTextureProvider *>(object->qt_metacast("QSGTextureProvider"));
+}
+
+
 QT_END_NAMESPACE
