@@ -60,14 +60,16 @@ void QSGPainterTexture::bind()
     } else {
         glBindTexture(GL_TEXTURE_2D, m_texture_id);
 
+        QImage subImage = m_image.copy(m_dirty_rect);
+
 #ifdef QT_OPENGL_ES
         glTexSubImage2D(GL_TEXTURE_2D, 0,
                         m_dirty_rect.x(), m_dirty_rect.y(), m_dirty_rect.width(), m_dirty_rect.height(),
-                        GL_RGBA, GL_UNSIGNED_BYTE, m_image.constBits());
+                        GL_RGBA, GL_UNSIGNED_BYTE, subImage.constBits());
 #else
         glTexSubImage2D(GL_TEXTURE_2D, 0,
                         m_dirty_rect.x(), m_dirty_rect.y(), m_dirty_rect.width(), m_dirty_rect.height(),
-                        GL_BGRA, GL_UNSIGNED_BYTE, m_image.constBits());
+                        GL_BGRA, GL_UNSIGNED_BYTE, subImage.constBits());
 #endif
 
         m_dirty_texture = false;
@@ -109,10 +111,12 @@ void QSGPainterNode::setPreferredPaintSurface(PaintSurface surface)
     m_preferredPaintSurface = surface;
 }
 
-void QSGPainterNode::paint(QSGPaintedItem *item)
+void QSGPainterNode::paint(QSGPaintedItem *item, const QRect &clipRect)
 {
     if (!item)
         return;
+
+    QRect dirtyRect = clipRect.isNull() ? QRect(0, 0, m_size.width(), m_size.height()) : clipRect;
 
     QPainter painter;
     if (m_actualPaintSurface == Image)
@@ -128,19 +132,20 @@ void QSGPainterNode::paint(QSGPaintedItem *item)
     }
     if (!m_opaquePainting) {
         painter.setCompositionMode(QPainter::CompositionMode_Source);
-        painter.fillRect(QRectF(QPointF(0, 0), m_size), Qt::transparent);
+        painter.fillRect(dirtyRect, Qt::transparent);
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
     }
+    if (!clipRect.isNull())
+        painter.setClipRect(dirtyRect);
     item->paint(&painter);
     painter.end();
 
     if (m_actualPaintSurface == Image) {
         QSGPainterTexture *tex = static_cast<QSGPainterTexture *>(m_texture.texture());
         tex->setImage(m_image);
-        tex->setDirtyRect(QRect(0, 0, m_size.width(), m_size.height()));
+        tex->setDirtyRect(dirtyRect);
     } else if (m_multisampledFbo) {
-        QRect r(0, 0, m_size.width(), m_size.height());
-        QGLFramebufferObject::blitFramebuffer(m_fbo, r, m_multisampledFbo, r);
+        QGLFramebufferObject::blitFramebuffer(m_fbo, dirtyRect, m_multisampledFbo, dirtyRect);
     }
 
     markDirty(DirtyMaterial);

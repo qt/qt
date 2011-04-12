@@ -77,13 +77,16 @@ void QSGPaintedItem::update()
 {
     Q_D(QSGPaintedItem);
     d->contentsDirty = true;
+    if (!d->dirtyRect.isNull())
+        d->dirtyRect = boundingRect().toAlignedRect();
     QSGItem::update();
 }
 
-void QSGPaintedItem::update(const QRect &)
+void QSGPaintedItem::update(const QRect &rect)
 {
     Q_D(QSGPaintedItem);
     d->contentsDirty = true;
+    d->dirtyRect |= (boundingRect() & rect).toAlignedRect();
     QSGItem::update();
 }
 
@@ -192,9 +195,10 @@ QSGNode *QSGPaintedItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *
     node->update();
 
     if (d->contentsDirty || d->geometryDirty) {
-        node->paint(this);
+        node->paint(this, d->dirtyRect);
         d->contentsDirty = false;
         d->geometryDirty = false;
+        d->dirtyRect = QRect();
     }
 
     return node;

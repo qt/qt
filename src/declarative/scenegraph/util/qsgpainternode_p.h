@@ -94,7 +94,7 @@ public:
 
     void update();
 
-    void paint(QSGPaintedItem *item);
+    void paint(QSGPaintedItem *item, const QRect &clipRect = QRect());
 
 private:
     void updateTexture();
