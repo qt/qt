@@ -1030,14 +1030,11 @@ QNetworkCacheMetaData QNetworkAccessHttpBackend::fetchCacheMetaData(const QNetwo
         if (hop_by_hop)
             continue;
 
-        // for 4.6.0, we were planning to not store the date header in the
-        // cached resource; through that we planned to reduce the number
-        // of writes to disk when using a QNetworkDiskCache (i.e. don't
-        // write to disk when only the date changes).
-        // However, without the date we cannot calculate the age of the page
-        // anymore.
-        //if (header == "date")
-            //continue;
+        // we are currently not using the date header to determine the expiration time of a page,
+        // but only the "Expires", "max-age" and "s-maxage" headers, see
+        // QNetworkAccessHttpBackend::validateCache() and below ("metaData.setExpirationDate()").
+        if (header == "date")
+            continue;
 
         // Don't store Warning 1xx headers
         if (header == "warning") {

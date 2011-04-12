@@ -192,6 +192,7 @@ bool usage(const char *a0)
             "  -norecursive   Don't do a recursive search\n"
             "  -recursive     Do a recursive search\n"
             "  -set <prop> <value> Set persistent property\n"
+            "  -unset <prop>  Unset persistent property\n"
             "  -query <prop>  Query persistent property. Show all if <prop> is empty.\n"
             "  -cache file    Use file as cache           [makefile mode only]\n"
             "  -spec spec     Use spec as QMAKESPEC       [makefile mode only]\n"
@@ -226,6 +227,8 @@ Option::parseCommandLine(int argc, char **argv, int skip)
                     Option::qmake_mode = Option::QMAKE_GENERATE_PRL;
                 } else if(opt == "set") {
                     Option::qmake_mode = Option::QMAKE_SET_PROPERTY;
+                } else if(opt == "unset") {
+                    Option::qmake_mode = Option::QMAKE_UNSET_PROPERTY;
                 } else if(opt == "query") {
                     Option::qmake_mode = Option::QMAKE_QUERY_PROPERTY;
                 } else if(opt == "makefile") {
@@ -336,7 +339,8 @@ Option::parseCommandLine(int argc, char **argv, int skip)
             } else {
                 bool handled = true;
                 if(Option::qmake_mode == Option::QMAKE_QUERY_PROPERTY ||
-                    Option::qmake_mode == Option::QMAKE_SET_PROPERTY) {
+                    Option::qmake_mode == Option::QMAKE_SET_PROPERTY ||
+                    Option::qmake_mode == Option::QMAKE_UNSET_PROPERTY) {
                     Option::prop::properties.append(arg);
                 } else {
                     QFileInfo fi(arg);

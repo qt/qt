@@ -3839,4 +3839,6 @@ EXPORTS
 	inflateReset2 @ 3838 NONAME
 	inflateUndermine @ 3839 NONAME
 	zlibCompileFlags @ 3840 NONAME
+	_ZN19QProcessEnvironment6insertERKS_ @ 3841 NONAME
+	_ZNK19QProcessEnvironment4keysEv @ 3842 NONAME
 

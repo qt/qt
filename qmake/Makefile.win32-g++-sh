@@ -28,7 +28,7 @@ CFLAGS	    =	-c -o$@ -O \
 		-DQT_BOOTSTRAPPED -DQLIBRARYINFO_EPOCROOT
 CXXFLAGS    =   $(CFLAGS)
 LFLAGS	    = -static-libgcc -static-libstdc++ -s
-LIBS	    = -lole32 -luuid
+LIBS	    = -lole32 -luuid -ladvapi32 -lkernel32
 LINKQMAKE   =	g++ $(LFLAGS) -o qmake.exe $(OBJS) $(QTOBJS) $(LIBS)
 ADDCLEAN    =
 

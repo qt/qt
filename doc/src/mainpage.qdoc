@@ -30,14 +30,14 @@
 \title Develop with Qt
 \ingroup gettingstarted
 
-\div {class="indexboxcont indexboxbar"}
+\div {class = "indexboxcont indexboxbar"}
 Developing a Qt application involves many different steps and stages. From
 configuring Creator to distributing binaries to different platforms, Qt provides
 many options along the way.
 \image quick_screens.png
 \enddiv
 
-\div {class="indexboxcont indexboxbar normallist"}
+\div {class = "indexboxcont indexboxbar normallist"}
 \keyword qt-creator-configure-target
 \section1 Configuring Qt and Creator Targets
 Qt and Creator are configurable to compile applications on many platform targets
@@ -48,15 +48,15 @@ Creator is the integrated development environment for developing Qt applications
 Creator encompasses every step of application development from interface design
 to application testing and deployment.
 \list
-\o \l{http://doc.qt.nokia.com/qtcreator-snapshot/creator-project-managing.html}{Creating Qt Projects}
-\o \l{http://doc.qt.nokia.com/qtcreator-snapshot/creator-building-running.html}{Building and Running Applications}
+\o \l{external: Creating Qt Projects in Creator}{Creating Qt Projects}
+\o \l{external: Building and Running Applications in Creator}{Building and Running Applications}
     \list
-    \o \l{http://doc.qt.nokia.com/qtcreator-snapshot/creator-running-targets.html}{Targets} - edit and set compiler targets
-    \o \l{http://doc.qt.nokia.com/qtcreator-snapshot/creator-build-settings.html}{Build Settings} - edit and set build configurations
-    \o \l{http://doc.qt.nokia.com/qtcreator-snapshot/creator-run-settings.html}{Run Settings} - edit and set application run settings
+    \o \l{external: Set Compiler Targets in Creator}{Targets} - edit and set compiler targets
+    \o \l{external: Build Settings in Creator}{Build Settings} - edit and set build configurations
+    \o \l{external: Run Settings in Creator}{Run Settings} - edit and set application run settings
     \endlist
-\o \l{http://doc.qt.nokia.com/nokia-qtsdk-1.0/creator-developing-symbian.html}{Setting Up Development Environment for Symbian}
-\o \l{http://doc.qt.nokia.com/nokia-qtsdk-1.0/creator-developing-maemo.html}{Setting Up Development Environment for Maemo}
+\o \l{external: Setting Up Development Environment for Symbian}{Setting Up Development Environment for Symbian}
+\o \l{external: Setting Up Development Environment for Maemo}{Setting Up Development Environment for Maemo}
 \endlist
 
 \keyword qt-platform-support
@@ -77,7 +77,7 @@ and their installation pages, view the \l {Supported Platforms} and the
 \l {Cross-Platform and Platform-Specific Development} pages.
 \enddiv
 
-\div {class="indexboxcont indexboxbar normallist"}
+\div {class = "indexboxcont indexboxbar normallist"}
 \keyword qt-technologies
 \section1 Qt Technologies
 
@@ -109,11 +109,11 @@ applications using layouts and Qt Quick interfaces with QML.
 \list
 \o \l{Qt Quick} - create UIs using QML
     \list
-    \o \l{http://doc.qt.nokia.com/qtcreator-snapshot/creator-visual-editor.html}{Creator's QML Design Mode} - design Qt Quick interfaces using Creator's design mode
+    \o \l{external: Developing Qt Quick Applications}{Creator's QML Design Mode} - design Qt Quick interfaces using Creator's design mode
     \endlist
 \o \l{Widgets and Layouts} - primary elements for C++ based interfaces
     \list
-    \o \l{http://doc.qt.nokia.com/qtcreator-snapshot/creator-using-qt-designer.html}{Creator's Designer} - design interfaces using Qt Designer.
+    \o \l{external: Designer in Creator}{Creator's Designer} - design interfaces using Qt Designer
     \endlist
 \o \l{UI Design with Qt} - covers many Qt features for UI creation
 \endlist
@@ -141,13 +141,13 @@ Qt has various support for different rendering and painting methods.
     \o \l{QtOpenGL Module} - module for rendering with the OpenGL API
     \o \l{OpenVG Rendering in Qt}{QtOpenVG Module} - provides support for OpenVG painting
     \endlist
-\o \l{Printing with Qt} - A guide to producing printed output with Qt's paint system and widgets.
+\o \l{Printing with Qt} - A guide to producing printed output with Qt's paint system and widgets
 \endlist
 
 \keyword qt-webkit
 \section2 QtWebKit Module
 Web applications are increasing in importance and abundance and Qt has
-\l{http://www.webkit.org/}{WebKit} support.
+\l{WebKit Open Source Project}{WebKit} support.
 \list
 \o \l{WebKit in Qt} - WebKit Module
 \endlist
@@ -159,25 +159,26 @@ Qt supports many utilities that work on multiple platforms.
 \o \l{Container Classes}{Containers} - Qt's implementation of various data structures such as linked lists and hash maps
 \o \l{Rich Text Processing} - for manipulating structured rich text documents
 \o \l{XML Processing} - high level manipulation of XML data using different interfaces
-\o \l{Making Applications Scriptable} - provides Qt applications with ECMAScript processor.
-\o \l{Qt Linguist Manual}{Qt Linguist} - for translating applications into local languages.
+\o \l{Making Applications Scriptable} - provides Qt applications with ECMAScript processor
+\o \l{Qt Linguist Manual}{Qt Linguist} - for translating applications into local languages
 \endlist
-For more information, visit the \l{Qt's Tools}{Qt Tools} page.
+For more information, visit the \l{Qt's Tools}{Qt Tools} page.
 \enddiv
-\div {class="indexboxcont indexboxbar normallist"}
+\div {class = "indexboxcont indexboxbar normallist"}
 \keyword qt-testing
 \section1 Testing Qt Applications
 Testing and debugging are part of the development process and Qt offers the
 developer multiple methods of testing their code.
 \list
-\o \l{http://doc.qt.nokia.com/qtcreator-snapshot/creator-debugging.html} {Debugging Applications in Creator} - various debugging options in Creator
-\o \l {http://doc.qt.nokia.com/qtsimulator/index.html}{Simulator} - testing mobile applications by simulating a mobile environment
-\o \l {QML Viewer} - an executable that is able to run QML files
+\o \l{external: Debugging Applications in Creator}{Debugging Applications in Creator} - various debugging options in Creator
+\o \l{Debugging Techniques} - essential techniques for debugging Qt code
+\o \l{external: Qt Simulator Manual}{Simulator} - testing mobile applications by simulating a mobile environment
+\o \l{QML Viewer} - an executable that is able to run QML files
 \o \l{QTestLib Manual}{QTestLib} - a unit testing framework built into Qt
 \endlist
 \enddiv
 
-\div {class="indexboxcont indexboxbar normallist"}
+\div {class = "indexboxcont indexboxbar normallist"}
 \keyword qt-deployment
 \section1 Deployment
 Symbian phones, Maemo devices, desktop environments, embedded Linux devices -- Qt applications are deployable to many environments.
@@ -194,20 +195,20 @@ considerations that each platform introduce.
     \o \l{Deploying Qt for Embedded Linux Applications}{Embedded Linux} - deploying Qt applications on embedded Linux
     \o \l{Deploying an Application on the Symbian Platform}{Symbian} - deploying Qt applications on the Symbian platform
     \endlist
-\o \l{http://doc.qt.nokia.com/qtcreator-snapshot/creator-deployment-symbian.html}{Symbian Deployment in Creator} - Symbian application deployment built into Creator
-\o \l{http://doc.qt.nokia.com/qtcreator-snapshot/creator-deployment-maemo.html}{ Deploying Qt Applications on Maemo Devices}
+\o \l{external: Symbian Deployment in Creator}{Symbian Deployment in Creator} - Symbian application deployment built into Creator
+\o \l{external: Maemo Deployment in Creator}{Deploying Qt Applications on Maemo Devices}
 \endlist
 
 \section1 Ovi Store Publishing
 Creator can publish applications to Ovi Store directly.
 \list
-\o \l{http://doc.qt.nokia.com/qtcreator-snapshot/creator-publish-ovi.html}{Publishing Qt Applications to Ovi Store}
+\o \l{external: Publishing Applications to Ovi Store}{Publishing Qt Applications to Ovi Store}
 \endlist
 For additional information, visit the \l{Cross-Platform and Platform-Specific Development}
 and the \l {Supported Platforms} page.
 
 \enddiv
-\div {class="indexboxcont indexboxbar normallist"}
+\div {class = "indexboxcont indexboxbar normallist"}
 \section1 Where to Go from Here
 
 Qt Demos and Examples

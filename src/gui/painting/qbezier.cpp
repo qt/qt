@@ -65,13 +65,6 @@ QT_BEGIN_NAMESPACE
 #define M_SQRT2	1.41421356237309504880
 #endif
 
-#define log2(x) (qLn(x)/qLn(2.))
-
-static inline qreal log4(qreal x)
-{
-    return qreal(0.5) * log2(x);
-}
-
 /*!
   \internal
 */
@@ -184,7 +177,7 @@ static inline bool findInflections(qreal a, qreal b, qreal c,
             *t2 = r1;
         }
         if (!qFuzzyIsNull(a))
-            *tCups = 0.5 * (-b / a);
+            *tCups = qreal(0.5) * (-b / a);
         else
             *tCups = 2;
 
@@ -274,8 +267,8 @@ static ShiftResult good_offset(const QBezier *b1, const QBezier *b2, qreal offse
     const qreal o2 = offset*offset;
     const qreal max_dist_line = threshold*offset*offset;
     const qreal max_dist_normal = threshold*offset;
-    const qreal spacing = 0.25;
-    for (qreal i = spacing; i < 0.99; i += spacing) {
+    const qreal spacing = qreal(0.25);
+    for (qreal i = spacing; i < qreal(0.99); i += spacing) {
         QPointF p1 = b1->pointAt(i);
         QPointF p2 = b2->pointAt(i);
         qreal d = (p1.x() - p2.x())*(p1.x() - p2.x()) + (p1.y() - p2.y())*(p1.y() - p2.y());
@@ -284,7 +277,7 @@ static ShiftResult good_offset(const QBezier *b1, const QBezier *b2, qreal offse
 
         QPointF normalPoint = b1->normalVector(i);
         qreal l = qAbs(normalPoint.x()) + qAbs(normalPoint.y());
-        if (l != 0.) {
+        if (l != qreal(0.0)) {
             d = qAbs( normalPoint.x()*(p1.y() - p2.y()) - normalPoint.y()*(p1.x() - p2.x()) ) / l;
             if (d > max_dist_normal)
                 return Split;
@@ -350,7 +343,7 @@ static ShiftResult shift(const QBezier *orig, QBezier *shifted, qreal offset, qr
 
         QPointF normal_sum = prev_normal + next_normal;
 
-        qreal r = 1.0 + prev_normal.x() * next_normal.x()
+        qreal r = qreal(1.0) + prev_normal.x() * next_normal.x()
                   + prev_normal.y() * next_normal.y();
 
         if (qFuzzyIsNull(r)) {
@@ -374,7 +367,7 @@ static ShiftResult shift(const QBezier *orig, QBezier *shifted, qreal offset, qr
 // This value is used to determine the length of control point vectors
 // when approximating arc segments as curves. The factor is multiplied
 // with the radius of the circle.
-#define KAPPA 0.5522847498
+#define KAPPA qreal(0.5522847498)
 
 
 static bool addCircle(const QBezier *b, qreal offset, QBezier *o)
@@ -417,11 +410,11 @@ static bool addCircle(const QBezier *b, qreal offset, QBezier *o)
 
     QPointF circle[3];
     circle[0] = QPointF(b->x1, b->y1) + normals[0]*offset;
-    circle[1] = QPointF(0.5*(b->x1 + b->x4), 0.5*(b->y1 + b->y4)) + normals[1]*offset;
+    circle[1] = QPointF(qreal(0.5)*(b->x1 + b->x4), qreal(0.5)*(b->y1 + b->y4)) + normals[1]*offset;
     circle[2] = QPointF(b->x4, b->y4) + normals[2]*offset;
 
     for (int i = 0; i < 2; ++i) {
-        qreal kappa = 2.*KAPPA * sign * offset * angles[i];
+        qreal kappa = qreal(2.0) * KAPPA * sign * offset * angles[i];
 
         o->x1 = circle[i].x();
         o->y1 = circle[i].y();
@@ -456,8 +449,8 @@ redo:
     while (b >= beziers) {
         int stack_segments = b - beziers + 1;
         if ((stack_segments == 10) || (o - curveSegments == maxSegments - stack_segments)) {
-            threshold *= 1.5;
-            if (threshold > 2.)
+            threshold *= qreal(1.5);
+            if (threshold > qreal(2.0))
                 goto give_up;
             goto redo;
         }
@@ -535,7 +528,7 @@ static inline void splitBezierAt(const QBezier &bez, qreal t,
 
 qreal QBezier::length(qreal error) const
 {
-    qreal length = 0.0;
+    qreal length = qreal(0.0);
 
     addIfClose(&length, error);
 
@@ -546,8 +539,8 @@ void QBezier::addIfClose(qreal *length, qreal error) const
 {
     QBezier left, right;     /* bez poly splits */
 
-    qreal len = 0.0;        /* arc length */
-    qreal chord;            /* chord length */
+    qreal len = qreal(0.0);  /* arc length */
+    qreal chord;             /* chord length */
 
     len = len + QLineF(QPointF(x1, y1),QPointF(x2, y2)).length();
     len = len + QLineF(QPointF(x2, y2),QPointF(x3, y3)).length();
@@ -589,7 +582,7 @@ qreal QBezier::tForY(qreal t0, qreal t1, qreal y) const
     qreal lt = t0;
     qreal dt;
     do {
-        qreal t = 0.5 * (t0 + t1);
+        qreal t = qreal(0.5) * (t0 + t1);
 
         qreal a, b, c, d;
         QBezier::coefficients(t, a, b, c, d);
@@ -604,7 +597,7 @@ qreal QBezier::tForY(qreal t0, qreal t1, qreal y) const
         }
         dt = lt - t;
         lt = t;
-    } while (qAbs(dt) > 1e-7);
+    } while (qAbs(dt) > qreal(1e-7));
 
     return t0;
 }
@@ -661,15 +654,15 @@ int QBezier::stationaryYPoints(qreal &t0, qreal &t1) const
 qreal QBezier::tAtLength(qreal l) const
 {
     qreal len = length();
-    qreal t   = 1.0;
-    const qreal error = (qreal)0.01;
+    qreal t   = qreal(1.0);
+    const qreal error = qreal(0.01);
     if (l > len || qFuzzyCompare(l, len))
         return t;
 
-    t *= 0.5;
+    t *= qreal(0.5);
     //int iters = 0;
     //qDebug()<<"LEN is "<<l<<len;
-    qreal lastBigger = 1.;
+    qreal lastBigger = qreal(1.0);
     while (1) {
         //qDebug()<<"\tt is "<<t;
         QBezier right = *this;
@@ -680,10 +673,10 @@ qreal QBezier::tAtLength(qreal l) const
             break;
 
         if (lLen < l) {
-            t += (lastBigger - t)*.5;
+            t += (lastBigger - t) * qreal(0.5);
         } else {
             lastBigger = t;
-            t -= t*.5;
+            t -= t * qreal(0.5);
         }
         //++iters;
     }

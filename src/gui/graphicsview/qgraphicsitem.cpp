@@ -421,7 +421,7 @@
     \omitvalue ItemStopsFocusHandling \omit Same as
     ItemStopsClickFocusPropagation, but also suppresses focus-out. This flag
     allows you to completely take over focus handling.
-    This flag was introduced in Qt 4.7.
+    This flag was introduced in Qt 4.7. \endomit
 */
 
 /*!
