@@ -234,8 +234,7 @@ void QWidgetBackingStoreTracker::registerWidget(QWidget *w)
  */
 void QWidgetBackingStoreTracker::unregisterWidget(QWidget *w)
 {
-    m_widgets.remove(w);
-    if (m_widgets.isEmpty()) {
+    if (m_widgets.remove(w) && m_widgets.isEmpty()) {
         delete m_ptr;
         m_ptr = 0;
     }
