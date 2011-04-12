@@ -173,6 +173,10 @@ QRectF QSGImage::boundingRect() const
 QSGTexture *QSGImage::texture() const
 {
     Q_D(const QSGImage);
+    d->pix.texture()->setFiltering(QSGItemPrivate::get(this)->smooth ? QSGTexture::Linear : QSGTexture::Nearest);
+    d->pix.texture()->setMipmapFiltering(QSGTexture::None);
+    d->pix.texture()->setHorizontalWrapMode(QSGTexture::ClampToEdge);
+    d->pix.texture()->setVerticalWrapMode(QSGTexture::ClampToEdge);
     return d->pix.texture().texture();
 }
 

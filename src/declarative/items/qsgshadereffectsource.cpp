@@ -441,6 +441,37 @@ void QSGShaderEffectSource::grab()
     qobject_cast<QSGShaderEffectTexture *>(m_texture.texture())->grab();
 }
 
+static void get_wrap_mode(QSGShaderEffectSource::WrapMode mode, QSGTexture::WrapMode *hWrap, QSGTexture::WrapMode *vWrap)
+{
+    switch (mode) {
+    case QSGShaderEffectSource::RepeatHorizontally:
+        *hWrap = QSGTexture::Repeat;
+        *vWrap = QSGTexture::ClampToEdge;
+        break;
+    case QSGShaderEffectSource::RepeatVertically:
+        *vWrap = QSGTexture::Repeat;
+        *hWrap = QSGTexture::ClampToEdge;
+        break;
+    case QSGShaderEffectSource::Repeat:
+        *hWrap = *vWrap = QSGTexture::Repeat;
+        break;
+    default:
+        break;
+    }
+}
+
+
+QSGTexture *QSGShaderEffectSource::texture() const
+{
+    m_texture->setMipmapFiltering(m_mipmap ? QSGTexture::Linear : QSGTexture::None);
+    m_texture->setFiltering(QSGItemPrivate::get(this)->smooth ? QSGTexture::Linear : QSGTexture::Nearest);
+    QSGTexture::WrapMode h, v;
+    get_wrap_mode(m_wrapMode, &h, &v);
+    m_texture->setHorizontalWrapMode(h);
+    m_texture->setVerticalWrapMode(v);
+    return m_texture.texture();
+}
+
 QSGNode *QSGShaderEffectSource::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
     if (!m_sourceItem) {
@@ -477,21 +508,8 @@ QSGNode *QSGShaderEffectSource::updatePaintNode(QSGNode *oldNode, UpdatePaintNod
     node->setMipmapFiltering(mmFiltering);
     node->setFiltering(filtering);
 
-    QSGTexture::WrapMode hWrap = QSGTexture::ClampToEdge;
-    QSGTexture::WrapMode vWrap = QSGTexture::ClampToEdge;
-    switch (m_wrapMode) {
-    case RepeatHorizontally:
-        hWrap = QSGTexture::Repeat;
-        break;
-    case RepeatVertically:
-        vWrap = QSGTexture::Repeat;
-        break;
-    case Repeat:
-        hWrap = vWrap = QSGTexture::Repeat;
-        break;
-    default:
-        break;
-    }
+    QSGTexture::WrapMode hWrap, vWrap;
+    get_wrap_mode(m_wrapMode, &hWrap, &vWrap);
 
     node->setHorizontalWrapMode(hWrap);
     node->setVerticalWrapMode(vWrap);

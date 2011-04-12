@@ -180,7 +180,7 @@ public:
     bool mipmap() const;
     void setMipmap(bool enabled);
 
-    QSGTexture *texture() const { return m_texture.texture(); }
+    QSGTexture *texture() const;
 
     Q_INVOKABLE void grab();
 
