@@ -158,7 +158,10 @@ static QGLFormat getFormat()
 class MyQSGView : public QSGView
 {
 public:
-    MyQSGView() : QSGView(getFormat()) {}
+    MyQSGView() : QSGView(getFormat())
+    {
+        setResizeMode(QSGView::SizeRootObjectToView);
+    }
 
 protected:
     void paintEvent(QPaintEvent *e) {
@@ -511,7 +514,7 @@ int main(int argc, char ** argv)
                 loadDummyDataFiles(*engine, fi.path());
             }
             item->setSource(options.file);
-        } else 
+        } else
 #endif
         if (!options.originalQml && !options.originalQmlRaster) {
             if (options.versionDetection)
