@@ -97,17 +97,10 @@ public:
     void setVerticalWrapMode(WrapMode vwrap);
     QSGTexture::WrapMode verticalWrapMode() const;
 
-    virtual void cleanupAndDelete();
-
     inline QRectF convertToNormalizedSourceRect(const QRectF &rect) const;
 
 protected:
     QSGTexture(QSGTexturePrivate &dd);
-
-private:
-
-    friend class QSGTextureRef;
-    mutable int m_ref_count;
 };
 
 QRectF QSGTexture::convertToNormalizedSourceRect(const QRectF &rect) const
@@ -124,55 +117,6 @@ QRectF QSGTexture::convertToNormalizedSourceRect(const QRectF &rect) const
                   rect.height() * sy);
 }
 
-class Q_DECLARATIVE_EXPORT QSGTextureRef
-{
-public:
-    QSGTextureRef()
-        : m_texture(0)
-    {
-    }
-
-    QSGTextureRef(QSGTexture *texture)
-        : m_texture(texture)
-    {
-        if (texture)
-            ++texture->m_ref_count;
-    }
-
-    QSGTextureRef(const QSGTextureRef &other)
-    {
-        m_texture = other.m_texture;
-        if (m_texture)
-            ++m_texture->m_ref_count;
-    }
-
-    ~QSGTextureRef()
-    {
-        deref();
-    }
-
-    QSGTexture *texture() const { return m_texture; }
-    QSGTexture *operator->() const { return m_texture; }
-
-    QSGTextureRef &operator=(const QSGTextureRef &other)
-    {
-        if (other.m_texture)
-            ++other.m_texture->m_ref_count;
-        deref();
-        m_texture = other.m_texture;
-
-        return *this;
-    }
-
-
-    bool isNull() const { return m_texture == 0; }
-
-private:
-    void deref();
-
-    QSGTexture *m_texture;
-};
-
 
 class QSGDynamicTexture : public QSGTexture
 {
@@ -183,9 +127,6 @@ public:
 Q_SIGNALS:
     void textureChanged();
 };
-
-
-inline bool operator==(const QSGTextureRef &a, const QSGTextureRef &b) { return a.texture() == b.texture(); }
 
 QT_END_NAMESPACE
 

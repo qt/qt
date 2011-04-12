@@ -119,7 +119,7 @@ void QSGDefaultImageNode::setHorizontalWrapMode(QSGTexture::WrapMode wrapMode)
 }
 
 
-void QSGDefaultImageNode::setTexture(const QSGTextureRef &texture)
+void QSGDefaultImageNode::setTexture(QSGTexture *texture)
 {
     if (texture == m_material.texture())
         return;
@@ -144,7 +144,7 @@ void QSGDefaultImageNode::update()
 void QSGDefaultImageNode::preprocess()
 {
     bool doDirty = false;
-    QSGDynamicTexture *t = qobject_cast<QSGDynamicTexture *>(m_material.texture().texture());
+    QSGDynamicTexture *t = qobject_cast<QSGDynamicTexture *>(m_material.texture());
     if (t) {
         doDirty = t->updateTexture();
         updateGeometry();
@@ -162,8 +162,8 @@ void QSGDefaultImageNode::preprocess()
 
 void QSGDefaultImageNode::updateGeometry()
 {
-    const QSGTextureRef t = m_material.texture();
-    if (t.isNull()) {
+    const QSGTexture *t = m_material.texture();
+    if (!t) {
         QSGGeometry::updateTexturedRectGeometry(&m_geometry, QRectF(), QRectF());
     } else {
         QRectF textureRect = t->textureSubRect();

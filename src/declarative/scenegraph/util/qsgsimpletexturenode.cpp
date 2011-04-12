@@ -43,11 +43,11 @@
 #include "qsgsimpletexturenode.h"
 
 static void qsgsimpletexturenode_update(QSGGeometry *g,
-                                        const QSGTextureRef &texture,
+                                        QSGTexture *texture,
                                         const QRectF &rect,
                                         const QRectF &sourceRect)
 {
-    if (texture.isNull())
+    if (!texture)
         return;
     QSGGeometry::updateTexturedRectGeometry(g, rect, texture->convertToNormalizedSourceRect(sourceRect));
 }
@@ -124,9 +124,9 @@ QRectF QSGSimpleTextureNode::rect() const
     \warning A texture node must have a texture before being added
     to the scenegraph to be rendered.
  */
-void QSGSimpleTextureNode::setTexture(const QSGTextureRef &texture)
+void QSGSimpleTextureNode::setTexture(QSGTexture *texture)
 {
-    if (m_material.texture().texture() == texture.texture())
+    if (m_material.texture() == texture)
         return;
     m_material.setTexture(texture);
     m_opaque_material.setTexture(texture);
@@ -138,7 +138,7 @@ void QSGSimpleTextureNode::setTexture(const QSGTextureRef &texture)
 /*!
     Returns the texture for this texture node
  */
-QSGTextureRef QSGSimpleTextureNode::texture() const
+QSGTexture *QSGSimpleTextureNode::texture() const
 {
     return m_material.texture();
 }

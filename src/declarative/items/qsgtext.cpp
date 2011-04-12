@@ -1078,11 +1078,11 @@ QSGNode *QSGText::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data)
             d->nodeType = QSGTextPrivate::NodeIsTexture;
         } else {
             node = static_cast<QSGImageNode *>(oldNode);
-            Q_ASSERT(!d->texture.isNull());
+            Q_ASSERT(d->texture);
         }
 
         if (wasDirty) {
-            qobject_cast<QSGPlainTexture *>(d->texture.texture())->setImage(d->imageCache.toImage());
+            qobject_cast<QSGPlainTexture *>(d->texture)->setImage(d->imageCache.toImage());
             node->setTexture(0);
             node->setTexture(d->texture);
         }

@@ -59,7 +59,7 @@ public:
     QSGDefaultImageNode();
     virtual void setTargetRect(const QRectF &rect);
     virtual void setSourceRect(const QRectF &rect);
-    virtual void setTexture(const QSGTextureRef &texture);
+    virtual void setTexture(QSGTexture *t);
     virtual void update();
 
     virtual void setMipmapFiltering(QSGTexture::Filtering filtering);

@@ -320,7 +320,7 @@ QSGNode *QSGBorderImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *
 {
     Q_D(QSGBorderImage);
 
-    if (d->pix.texture().isNull() || width() <= 0 || height() <= 0) {
+    if (!d->pix.texture() || width() <= 0 || height() <= 0) {
         delete oldNode;
         return 0;
     }

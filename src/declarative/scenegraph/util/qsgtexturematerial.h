@@ -61,8 +61,8 @@ public:
     virtual QSGMaterialShader *createShader() const;
     virtual int compare(const QSGMaterial *other) const;
 
-    void setTexture(const QSGTextureRef &texture);
-    const QSGTextureRef &texture() const { return m_texture; }
+    void setTexture(QSGTexture *texture);
+    QSGTexture *texture() const { return m_texture; }
 
     void setMipmapFiltering(QSGTexture::Filtering filtering) { m_mipmap_filtering = filtering; }
     QSGTexture::Filtering mipmapFiltering() const { return (QSGTexture::Filtering) m_mipmap_filtering; }
@@ -77,8 +77,7 @@ public:
     QSGTexture::WrapMode verticalWrapMode() const { return (QSGTexture::WrapMode) m_vertical_wrap; }
 
 protected:
-    QSGTextureRef m_texture;
-
+    QSGTexture *m_texture;
 
     uint m_filtering: 2;
     uint m_mipmap_filtering: 2;

@@ -107,7 +107,7 @@ public:
     void invalidateImageCache();
     void checkImageCache();
     QPixmap imageCache;
-    QSGTextureRef texture;
+    QSGTexture *texture;
 
     bool imageCacheDirty:1;
     bool updateOnComponentComplete:1;

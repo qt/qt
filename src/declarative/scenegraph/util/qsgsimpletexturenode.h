@@ -63,8 +63,8 @@ public:
     void setRect(const QRectF &rect);
     QRectF rect() const;
 
-    void setTexture(const QSGTextureRef &texture);
-    QSGTextureRef texture() const;
+    void setTexture(QSGTexture *texture);
+    QSGTexture *texture() const;
 
 private:
     QSGGeometry m_geometry;

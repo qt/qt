@@ -53,8 +53,8 @@ class QSGNinePatchNode : public QSGGeometryNode
 public:
     QSGNinePatchNode();
 
-    void setTexture(const QSGTextureRef &texture);
-    QSGTextureRef texture() const;
+    void setTexture(QSGTexture *texture);
+    QSGTexture *texture() const;
 
     void setRect(const QRectF &rect);
     QRectF rect() const { return m_targetRect; }

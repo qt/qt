@@ -294,6 +294,7 @@ QSGShaderEffectSource::QSGShaderEffectSource(QSGItem *parent)
 
 QSGShaderEffectSource::~QSGShaderEffectSource()
 {
+    delete m_texture;
     if (m_sourceItem)
         QSGItemPrivate::get(m_sourceItem)->derefFromEffectItem(m_hideSource);
 }
@@ -438,7 +439,7 @@ void QSGShaderEffectSource::grab()
     QSGCanvasPrivate::get(canvas)->updateDirtyNodes();
     QGLContext *glctx = const_cast<QGLContext *>(canvas->context());
     glctx->makeCurrent();
-    qobject_cast<QSGShaderEffectTexture *>(m_texture.texture())->grab();
+    qobject_cast<QSGShaderEffectTexture *>(m_texture)->grab();
 }
 
 static void get_wrap_mode(QSGShaderEffectSource::WrapMode mode, QSGTexture::WrapMode *hWrap, QSGTexture::WrapMode *vWrap)
@@ -469,7 +470,7 @@ QSGTexture *QSGShaderEffectSource::texture() const
     get_wrap_mode(m_wrapMode, &h, &v);
     m_texture->setHorizontalWrapMode(h);
     m_texture->setVerticalWrapMode(v);
-    return m_texture.texture();
+    return m_texture;
 }
 
 QSGNode *QSGShaderEffectSource::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
@@ -486,7 +487,7 @@ QSGNode *QSGShaderEffectSource::updatePaintNode(QSGNode *oldNode, UpdatePaintNod
         node->setTexture(m_texture);
     }
 
-    QSGShaderEffectTexture *tex = qobject_cast<QSGShaderEffectTexture *>(m_texture.texture());
+    QSGShaderEffectTexture *tex = qobject_cast<QSGShaderEffectTexture *>(m_texture);
 
     tex->setItem(QSGItemPrivate::get(m_sourceItem)->itemNode());
     QRectF sourceRect = m_sourceRect.isEmpty()

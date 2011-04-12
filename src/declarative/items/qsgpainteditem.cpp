@@ -189,7 +189,7 @@ QSGNode *QSGPaintedItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *
     paint(&p);
     p.end();
 
-    static_cast<QSGPlainTexture *>(d->texture.texture())->setImage(image);
+    static_cast<QSGPlainTexture *>(d->texture)->setImage(image);
 
     node->setTexture(0);
     node->setTexture(d->texture);

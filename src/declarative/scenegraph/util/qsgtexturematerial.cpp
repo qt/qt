@@ -92,7 +92,7 @@ void QSGTextureMaterialShader::updateState(const RenderState &state, QSGMaterial
     QSGTextureMaterial *tx = static_cast<QSGTextureMaterial *>(newEffect);
     QSGTextureMaterial *oldTx = static_cast<QSGTextureMaterial *>(oldEffect);
 
-    QSGTexture *t = tx->texture().texture();
+    QSGTexture *t = tx->texture();
 
     t->setFiltering(tx->filtering());
     t->setHorizontalWrapMode(tx->horizontalWrapMode());
@@ -131,10 +131,10 @@ QSGMaterialShader *QSGTextureMaterial::createShader() const
 }
 
 
-void QSGTextureMaterial::setTexture(const QSGTextureRef &texture)
+void QSGTextureMaterial::setTexture(QSGTexture *texture)
 {
     m_texture = texture;
-    setFlag(Blending, !m_texture.isNull() ? m_texture->hasAlphaChannel() : false);
+    setFlag(Blending, m_texture ? m_texture->hasAlphaChannel() : false);
 }
 
 

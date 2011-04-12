@@ -73,7 +73,6 @@ static void qt_print_texture_count()
 
 QSGTexture::QSGTexture()
     : QObject(*(new QSGTexturePrivate))
-    , m_ref_count(0)
 {
 #ifndef QT_NO_DEBUG
     ++qt_texture_count;
@@ -92,29 +91,6 @@ QSGTexture::~QSGTexture()
     if (qt_texture_count < 0)
         qDebug("Material destroyed after qt_print_texture_count() was called.");
 #endif
-}
-
-/*!
-    Cleans and deletes this texture object.
-
-    Because of their dependency on OpenGL, texture objects can only be cleaned
-    up from the rendering thread. This function will take care of the details
-    of cleaning up the OpenGL resource in the correct thread.
-
-    The texture object can be considered deleted after this function is called.
-
-    \warn Do not explicitely delete texture objects unless you know you are on the
-    rendering thread.
- */
-void QSGTexture::cleanupAndDelete()
-{
-    Q_D(QSGTexture);
-
-    if (!d->context || QThread::currentThread() == d->context->thread()) {
-        delete this;
-    } else {
-        d->context->schdelueTextureForCleanup(this);
-    }
 }
 
 
@@ -282,18 +258,6 @@ void QSGTexture::updateBindOptions(bool force)
         d->wrapChanged = false;
     }
 }
-
-#include <qapplication.h>
-
-void QSGTextureRef::deref()
-{
-    // ### For multithreaded renderer we need to handle this better... Post something to the renderer thread, for instance
-    if (m_texture && !--m_texture->m_ref_count) {
-        m_texture->cleanupAndDelete();
-    }
-}
-
-
 
 QSGPlainTexture::QSGPlainTexture()
     : QSGTexture()

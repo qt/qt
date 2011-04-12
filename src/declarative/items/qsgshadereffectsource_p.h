@@ -198,7 +198,7 @@ protected:
     virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
 
 private:
-    QSGTextureRef m_texture;
+    QSGTexture *m_texture;
     WrapMode m_wrapMode;
     QPointer<QSGItem> m_sourceItem;
     QRectF m_sourceRect;

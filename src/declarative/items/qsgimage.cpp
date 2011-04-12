@@ -173,11 +173,12 @@ QRectF QSGImage::boundingRect() const
 QSGTexture *QSGImage::texture() const
 {
     Q_D(const QSGImage);
-    d->pix.texture()->setFiltering(QSGItemPrivate::get(this)->smooth ? QSGTexture::Linear : QSGTexture::Nearest);
-    d->pix.texture()->setMipmapFiltering(QSGTexture::None);
-    d->pix.texture()->setHorizontalWrapMode(QSGTexture::ClampToEdge);
-    d->pix.texture()->setVerticalWrapMode(QSGTexture::ClampToEdge);
-    return d->pix.texture().texture();
+    QSGTexture *t = d->pix.texture();
+    t->setFiltering(QSGItemPrivate::get(this)->smooth ? QSGTexture::Linear : QSGTexture::Nearest);
+    t->setMipmapFiltering(QSGTexture::None);
+    t->setHorizontalWrapMode(QSGTexture::ClampToEdge);
+    t->setVerticalWrapMode(QSGTexture::ClampToEdge);
+    return t;
 }
 
 QSGNode *QSGImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
@@ -185,7 +186,7 @@ QSGNode *QSGImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     Q_D(QSGImage);
     //XXX Support mirror property
 
-    if (d->pix.texture().isNull() || width() <= 0 || height() <= 0) {
+    if (!d->pix.texture() || width() <= 0 || height() <= 0) {
         delete oldNode;
         return 0;
     }
@@ -200,7 +201,7 @@ QSGNode *QSGImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     if (d->pixmapChanged) {
         // force update the texture in the node to trigger reconstruction of
         // geometry and the likes when a atlas segment has changed.
-        QSGTextureRef t = d->pix.texture();
+        QSGTexture *t = d->pix.texture();
         node->setTexture(0);
         node->setTexture(t);
         d->pixmapChanged = false;
