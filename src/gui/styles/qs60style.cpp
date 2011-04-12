@@ -3132,7 +3132,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
             }
             break;
         case SE_ItemViewItemCheckIndicator:
-            if (const QStyleOptionViewItemV2 *vopt = qstyleoption_cast<const QStyleOptionViewItemV2 *>(opt)) {
+            if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
                 const QAbstractItemView *listItem = qobject_cast<const QAbstractItemView *>(widget);
 
                 const bool singleSelection = listItem &&
@@ -3140,7 +3140,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                      listItem->selectionMode() == QAbstractItemView::NoSelection);
                 const bool checkBoxOnly = (vopt->features & QStyleOptionViewItemV2::HasCheckIndicator) &&
                     listItem &&
-                    singleSelection;
+                    singleSelection && vopt->text.isEmpty() && vopt->icon.isNull();
 
                 // Selection check mark rect.
                 const int indicatorWidth = QS60StylePrivate::pixelMetric(PM_IndicatorWidth);
