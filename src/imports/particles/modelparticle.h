@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 class QSGVisualDataModel;
+class ModelParticleAttached;
 
 class ModelParticle : public ParticleType
 {
@@ -58,6 +59,7 @@ class ModelParticle : public ParticleType
     Q_PROPERTY(QVariant model READ model WRITE setModel NOTIFY modelChanged)
     Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate NOTIFY delegateChanged)
     Q_PROPERTY(int modelCount READ modelCount NOTIFY modelCountChanged)
+    Q_PROPERTY(bool fade READ fade WRITE setFade NOTIFY fadeChanged)
     Q_CLASSINFO("DefaultProperty", "delegate")
 public:
     explicit ModelParticle(QSGItem *parent = 0);
@@ -69,20 +71,28 @@ public:
 
     int modelCount() const;
 
+    bool fade() const { return m_fade; }
+
     virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
     virtual void load(ParticleData*);
     virtual void reload(ParticleData*);
     virtual void setCount(int c);
     virtual int count();
+
+    static ModelParticleAttached *qmlAttachedProperties(QObject *object);
 signals:
     void modelChanged();
     void delegateChanged();
     void modelCountChanged();
+    void fadeChanged();
 
 public slots:
-    void take(int idx);//TODO: Rename pause and unpause? freeze and unfreeze? take and restore?
-    void recover(int idx);
+    void freeze(QSGItem* item);
+    void unfreeze(QSGItem* item);
+    void take(QSGItem* item);//take by modelparticle
+    void give(QSGItem* item);//give from modelparticle
 
+    void setFade(bool arg){if(arg == m_fade) return; m_fade = arg; emit fadeChanged();}
 protected:
     virtual void reset();
     void prepareNextFrame();
@@ -93,15 +103,32 @@ private:
     QVariant m_dataSource;
     QList<QPointer<QSGItem> > m_deletables;
     int m_particleCount;
+    bool m_fade;
 
+    QList<QSGItem*> m_pendingItems;
     QVector<QSGItem*> m_items;
     QVector<ParticleData*> m_data;
     QVector<int> m_idx;
     QList<int> m_available;
     QSet<QSGItem*> m_stasis;
     qreal m_lastT;
+    int m_activeCount;
 };
 
+class ModelParticleAttached : public QObject
+{
+    Q_OBJECT
+public:
+    ModelParticleAttached(QObject* parent){;}
+    void detach(){emit detached();}
+    void attach(){emit attached();}
+private:
+Q_SIGNALS:
+    void detached();
+    void attached();
+};
+
+QML_DECLARE_TYPEINFO(ModelParticle, QML_HAS_ATTACHED_PROPERTIES)
 QT_END_NAMESPACE
 
 QT_END_HEADER

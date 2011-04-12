@@ -189,9 +189,9 @@ import "../../../modelviews/listview/content"
                 reversible: true
                 ScriptAction{script:{
                     if(state == "Details")
-                        mp.take(index);
+                        mp.freeze(index);
                     else
-                        mp.recover(index);
+                        mp.unfreeze(index);
                     }
                 }
                 // Make the state changes smooth

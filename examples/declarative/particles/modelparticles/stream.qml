@@ -47,15 +47,9 @@ Item{
     id: root
     width: 640
     height: 480
-    Timer{
-        id: startTimer
-        running: true
-        repeat: false
-        interval: 6000
-        onTriggered: {sys.running = true; loading.opacity = 0.0}
-    }
     Item{
         id: loading
+        Behavior on opacity{NumberAnimation{}}
         anchors.fill: parent
         Text{
             anchors.centerIn: parent
@@ -64,84 +58,101 @@ Item{
     }
     ParticleSystem{ 
         id: sys;
-        running: false
+        running: true
+        overwrite: false
     }
     TrailEmitter{
         system: sys
-        particle: "A"
+        height: parent.height - 132/2
+        x: -132/2
+        y: 132/2
+        speed: PointVector{ x: 64; xVariation: 32 }
+        particlesPerSecond: 2
+        particleDuration: 32000 //TODO: A -1 or something which does 'infinite'? (but need disable fade first)
+    }
+    Kill{
+        system: sys
+        x: parent.width + 132/2
         height: parent.height
-        speed: PointVector{ x: 64; xVariation: 16 }
-        particlesPerSecond: 0.5
-        particleDuration: 8000 //TODO: A -1 or something which does 'infinite'? (but need disable fade first)
+        width: 1000
     }
     ModelParticle{
         id: mp
         z: 0
         system: sys
-        particles: ["A"]
-        model: RssModel{tags:"particle,particles"}
-        delegate: Rectangle{
-            id: container
-            border.width: 2
-            property real myRand: Math.random();
-            z: Math.floor(myRand * 100)
-            rotation: -10 + (myRand * 20)
-            width: 132
-            height: 132
-            function manage()
-            {
-                if(state == "selected"){
-                    console.log("Taking " + index);
-                    mp.take(index);
-                }else{
-                    console.log("Returning " +index);
-                    mp.recover(index);
+        fade: false
+    }
+    Item{ x: -1000; y: -1000 //offscreen
+        Repeater{//Load them here, add to system on completed
+            model: RssModel{tags:"particle,particles"}
+            delegate: Rectangle{
+                id: container
+                border.width: 2
+                property real myRand: Math.random();
+                z: Math.floor(myRand * 100)
+                rotation: -10 + (myRand * 20)
+                width: 132
+                height: 132
+                ModelParticle.onDetached: mp.take(container);//respawns
+                function manage()
+                {
+                    if(state == "selected"){
+                 //       console.log("Taking " + index);
+                        mp.freeze(container);
+                    }else{
+                   //     console.log("Returning " +index);
+                        mp.unfreeze(container);
+                    }
                 }
-            }
-            Image{
-                id: img
-                anchors.centerIn: parent
-                smooth: true; source: "http://" + Script.getImagePath(content); cache: true
-                fillMode: Image.PreserveAspectFit; 
-                width: parent.width-4; height: parent.height-4
-            }
-            Text{
-                anchors.bottom: parent.bottom
-                width: parent.width
-                horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideRight
-                text: title
-                color: "black"
-            }
-            MouseArea{
-                anchors.fill: parent
-                onClicked: container.state == "selected" ? container.state = "" : container.state = "selected"
-            }
-            states: State{
-                name: "selected"
-                ParentChange{
-                    target: container
-                    parent: root
-                    x: 0
-                    y: 0
+                Image{
+                    id: img
+                    anchors.centerIn: parent
+                    smooth: true; source: "http://" + Script.getImagePath(content); cache: true
+                    fillMode: Image.PreserveAspectFit; 
+                    width: parent.width-4; height: parent.height-4
+                    onStatusChanged: if(img.status == Image.Ready){
+                        loading.opacity = 0;
+                        mp.take(container);
+                    }
                 }
-                PropertyChanges{
-                    target: container
-                    width: root.width
-                    height: root.height
-                    z: 101
-                    opacity: 1
-                    rotation: 0
+                Text{
+                    anchors.bottom: parent.bottom
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    elide: Text.ElideRight
+                    text: title
+                    color: "black"
                 }
-            }
-            transitions: Transition{
-                to: "selected"
-                reversible: true
-                SequentialAnimation{
-                    ScriptAction{script: container.manage();}
-                    ParallelAnimation{
-                        ParentAnimation{NumberAnimation{ properties: "x,y" }}//Doesn't work, particles takes control of x,y instantly
-                        NumberAnimation{ properties: "width, height, z, rotation" }
+                MouseArea{
+                    anchors.fill: parent
+                    onClicked: container.state == "selected" ? container.state = "" : container.state = "selected"
+                }
+                states: State{
+                    name: "selected"
+                    ParentChange{
+                        target: container
+                        parent: root
+                        x: 0
+                        y: 0
+                    }
+                    PropertyChanges{
+                        target: container
+                        width: root.width
+                        height: root.height
+                        z: 101
+                        opacity: 1
+                        rotation: 0
+                    }
+                }
+                transitions: Transition{
+                    to: "selected"
+                    reversible: true
+                    SequentialAnimation{
+                        ScriptAction{script: container.manage();}
+                        ParallelAnimation{
+                            ParentAnimation{NumberAnimation{ properties: "x,y" }}//Doesn't work, particles takes control of x,y instantly
+                            NumberAnimation{ properties: "width, height, z, rotation" }
+                        }
                     }
                 }
             }
