@@ -66,7 +66,7 @@ public:
         return this - static_cast<const SpriteMaterial *>(other);
     }
 
-    QSGTextureRef texture;
+    QSGTexture *texture;
 
     qreal timestamp;
     qreal timelength;
@@ -89,6 +89,7 @@ SpriteMaterial::SpriteMaterial()
 
 SpriteMaterial::~SpriteMaterial()
 {
+    delete texture;
 }
 
 class SpriteMaterialData : public QSGMaterialShader

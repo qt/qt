@@ -60,6 +60,11 @@ public:
         setFlag(Blending, true);
     }
 
+    ~ParticleTrailsMaterial()
+    {
+        delete texture;
+    }
+
     virtual QSGMaterialType *type() const { static QSGMaterialType type; return &type; }
     virtual QSGMaterialShader *createShader() const;
     virtual int compare(const QSGMaterial *other) const
@@ -67,7 +72,7 @@ public:
         return this - static_cast<const ParticleTrailsMaterial *>(other);
     }
 
-    QSGTextureRef texture;
+    QSGTexture *texture;
 
     qreal timestamp;
 };
@@ -159,10 +164,15 @@ public:
     {
     }
 
+    ~ParticleTrailsMaterialCT()
+    {
+        delete colortable;
+    }
+
     virtual QSGMaterialType *type() const { static QSGMaterialType type; return &type; }
     virtual QSGMaterialShader *createShader() const;
 
-    QSGTextureRef colortable;
+    QSGTexture *colortable;
 };
 
 

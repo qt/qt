@@ -67,7 +67,7 @@ public:
         return this - static_cast<const SpriteParticlesMaterial *>(other);
     }
 
-    QSGTextureRef texture;
+    QSGTexture *texture;
 
     qreal timestamp;
     int framecount;
@@ -84,7 +84,7 @@ SpriteParticlesMaterial::SpriteParticlesMaterial()
 
 SpriteParticlesMaterial::~SpriteParticlesMaterial()
 {
-
+    delete texture;
 }
 
 class SpriteParticlesMaterialData : public QSGMaterialShader
