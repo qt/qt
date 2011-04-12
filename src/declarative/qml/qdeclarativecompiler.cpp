@@ -1444,8 +1444,6 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
         unit->imports().resolveType(prop->name, &type, 0, 0, 0, &typeNamespace);
 
         if (typeNamespace) {
-            // ### We might need to indicate that this property is a namespace 
-            // for the DOM API
             COMPILE_CHECK(buildPropertyInNamespace(typeNamespace, prop, obj, 
                                                    ctxt));
             return true;

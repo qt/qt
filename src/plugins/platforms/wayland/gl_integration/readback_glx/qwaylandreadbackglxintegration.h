@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDXPIXMAPGLXINTEGRATION_H
-#define QWAYLANDXPIXMAPGLXINTEGRATION_H
+#ifndef QWAYLANDREADBACKGLXINTEGRATION_H
+#define QWAYLANDREADBACKGLXINTEGRATION_H
 
 #include "gl_integration/qwaylandglintegration.h"
 
@@ -52,11 +52,11 @@
 
 #include <X11/Xlib.h>
 
-class QWaylandXPixmapGLXIntegration : public QWaylandGLIntegration
+class QWaylandReadbackGlxIntegration : public QWaylandGLIntegration
 {
 public:
-    QWaylandXPixmapGLXIntegration(QWaylandDisplay * waylandDispaly);
-    ~QWaylandXPixmapGLXIntegration();
+    QWaylandReadbackGlxIntegration(QWaylandDisplay * waylandDispaly);
+    ~QWaylandReadbackGlxIntegration();
 
     void initialize();
 
@@ -77,4 +77,4 @@ private:
 
 };
 
-#endif // QWAYLANDXPIXMAPGLXINTEGRATION_H
+#endif // QWAYLANDREADBACKGLXINTEGRATION_H

@@ -635,6 +635,9 @@ QSGDistanceFieldGlyphCache::~QSGDistanceFieldGlyphCache()
 
 void QSGDistanceFieldGlyphCache::onContextDestroyed(const QGLContext *context)
 {
+    if (context != ctx)
+        return;
+
     QString key = QString::number(long(context), 16) + fontKey(m_font);
     m_caches.remove(key);
     deleteLater();

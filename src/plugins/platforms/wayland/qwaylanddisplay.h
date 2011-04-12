@@ -76,14 +76,17 @@ public:
 #endif
     void setCursor(QWaylandBuffer *buffer, int32_t x, int32_t y);
 
-
     void syncCallback(wl_display_sync_func_t func, void *data);
     void frameCallback(wl_display_frame_func_t func, void *data);
 
     struct wl_display *wl_display() const { return mDisplay; }
+
+    QList<QWaylandInputDevice *> inputDevices() const { return mInputDevices; }
+
 public slots:
     void createNewScreen(struct wl_output *output, QRect geometry);
     void readEvents();
+    void blockingReadEvents();
     void flushRequests();
 
 private:

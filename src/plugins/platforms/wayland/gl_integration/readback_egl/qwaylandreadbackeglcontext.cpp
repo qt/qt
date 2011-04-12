@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qwaylandxpixmapeglcontext.h"
+#include "qwaylandreadbackeglcontext.h"
 
 #include "../../../eglconvenience/qeglconvenience.h"
 
@@ -72,7 +72,7 @@ static inline void qgl_byteSwapImage(QImage &img, GLenum pixel_type)
     }
 }
 
-QXPixmapReadbackGLContext::QXPixmapReadbackGLContext(QWaylandXPixmapEglIntegration *eglIntegration, QWaylandXPixmapWindow *window)
+QWaylandReadbackEglContext::QWaylandReadbackEglContext(QWaylandReadbackEglIntegration *eglIntegration, QWaylandReadbackEglWindow *window)
     : mEglIntegration(eglIntegration)
     , mWindow(window)
     , mBuffer(0)
@@ -90,29 +90,27 @@ QXPixmapReadbackGLContext::QXPixmapReadbackGLContext(QWaylandXPixmapEglIntegrati
     geometryChanged();
 }
 
-QXPixmapReadbackGLContext::~QXPixmapReadbackGLContext()
+QWaylandReadbackEglContext::~QWaylandReadbackEglContext()
 {
     eglDestroyContext(mEglIntegration->eglDisplay(),mContext);
 }
 
-void QXPixmapReadbackGLContext::makeCurrent()
+void QWaylandReadbackEglContext::makeCurrent()
 {
     QPlatformGLContext::makeCurrent();
 
-    while(mWindow->waitingForFrameSync()) {
-        mEglIntegration->waylandDisplay()->iterate();
-    }
+    mWindow->waitForFrameSync();
 
     eglMakeCurrent(mEglIntegration->eglDisplay(),mPixmapSurface,mPixmapSurface,mContext);
 }
 
-void QXPixmapReadbackGLContext::doneCurrent()
+void QWaylandReadbackEglContext::doneCurrent()
 {
     QPlatformGLContext::doneCurrent();
     eglMakeCurrent(mEglIntegration->eglDisplay(),EGL_NO_SURFACE,EGL_NO_SURFACE,EGL_NO_CONTEXT);
 }
 
-void QXPixmapReadbackGLContext::swapBuffers()
+void QWaylandReadbackEglContext::swapBuffers()
 {
     eglSwapBuffers(mEglIntegration->eglDisplay(),mPixmapSurface);
 
@@ -140,17 +138,17 @@ void QXPixmapReadbackGLContext::swapBuffers()
     mWindow->damage(QRegion(QRect(QPoint(0,0),size)));
 }
 
-void * QXPixmapReadbackGLContext::getProcAddress(const QString &procName)
+void * QWaylandReadbackEglContext::getProcAddress(const QString &procName)
 {
     return (void *) eglGetProcAddress(procName.toLatin1().data());
 }
 
-QPlatformWindowFormat QXPixmapReadbackGLContext::platformWindowFormat() const
+QPlatformWindowFormat QWaylandReadbackEglContext::platformWindowFormat() const
 {
     return qt_qPlatformWindowFormatFromConfig(mEglIntegration->eglDisplay(),mConfig);
 }
 
-void QXPixmapReadbackGLContext::geometryChanged()
+void QWaylandReadbackEglContext::geometryChanged()
 {
     QSize size(mWindow->geometry().size());
     if (size.isEmpty()) {
@@ -158,8 +156,7 @@ void QXPixmapReadbackGLContext::geometryChanged()
         size = QSize(1,1);
     }
 
-    while (mWindow->waitingForFrameSync())
-        mEglIntegration->waylandDisplay()->iterate();
+    mWindow->waitForFrameSync();
 
     delete mBuffer;
     if (mPixmap)

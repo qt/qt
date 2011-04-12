@@ -39,27 +39,41 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDXPIXMAPGLXWINDOW_H
-#define QWAYLANDXPIXMAPGLXWINDOW_H
+#ifndef QWAYLANDREADBACKGLXCONTEXT_H
+#define QWAYLANDREADBACKGLXCONTEXT_H
 
-#include "qwaylandshmwindow.h"
-#include "qwaylandxpixmapglxintegration.h"
-#include "qwaylandxpixmapglxcontext.h"
+#include <QPlatformGLContext>
 
-class QWaylandXPixmapGLXWindow : public QWaylandShmWindow
+#include "qwaylandreadbackglxintegration.h"
+
+#include "qglxconvenience.h"
+
+class QWaylandReadbackGlxWindow;
+class QWaylandShmBuffer;
+
+class QWaylandReadbackGlxContext : public QPlatformGLContext
 {
 public:
-    QWaylandXPixmapGLXWindow(QWidget *window, QWaylandXPixmapGLXIntegration *glxIntegration);
-    WindowType windowType() const;
+    QWaylandReadbackGlxContext(QWaylandReadbackGlxIntegration *glxIntegration, QWaylandReadbackGlxWindow *window);
 
-    QPlatformGLContext *glContext() const;
+    void makeCurrent();
+    void doneCurrent();
+    void swapBuffers();
+    void* getProcAddress(const QString& procName);
 
-    void setGeometry(const QRect &rect);
+    QPlatformWindowFormat platformWindowFormat() const;
+
+    void geometryChanged();
 
 private:
-    QWaylandXPixmapGLXIntegration *mGlxIntegration;
-    QWaylandXPixmapGLXContext *mContext;
+    QWaylandReadbackGlxIntegration *mGlxIntegration;
+    QWaylandReadbackGlxWindow *mWindow;
+    QWaylandShmBuffer *mBuffer;
 
+    Pixmap mPixmap;
+    GLXFBConfig mConfig;
+    GLXContext mContext;
+    GLXPixmap mGlxPixmap;
 };
 
-#endif // QWAYLANDXPIXMAPGLXWINDOW_H
+#endif // QWAYLANDREADBACKGLXCONTEXT_H

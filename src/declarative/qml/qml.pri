@@ -18,7 +18,6 @@ SOURCES += \
     $$PWD/qdeclarativecompiler.cpp \
     $$PWD/qdeclarativecompileddata.cpp \
     $$PWD/qdeclarativeboundsignal.cpp \
-    $$PWD/qdeclarativedom.cpp \
     $$PWD/qdeclarativerefcount.cpp \
     $$PWD/qdeclarativemetatype.cpp \
     $$PWD/qdeclarativestringconverters.cpp \
@@ -82,8 +81,6 @@ HEADERS += \
     $$PWD/qdeclarativeengine_p.h \
     $$PWD/qdeclarativeexpression_p.h \
     $$PWD/qdeclarativeprivate.h \
-    $$PWD/qdeclarativedom_p.h \
-    $$PWD/qdeclarativedom_p_p.h \
     $$PWD/qdeclarativerefcount_p.h \
     $$PWD/qdeclarativemetatype_p.h \
     $$PWD/qdeclarativeengine.h \

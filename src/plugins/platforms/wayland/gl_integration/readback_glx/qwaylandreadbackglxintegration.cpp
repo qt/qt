@@ -39,41 +39,59 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDXPIXMAPGLXCONTEXT_H
-#define QWAYLANDXPIXMAPGLXCONTEXT_H
+#include "qwaylandreadbackglxintegration.h"
 
-#include <QPlatformGLContext>
+#include "qwaylandreadbackglxwindow.h"
 
-#include "qwaylandxpixmapglxintegration.h"
+#include <QtCore/QDebug>
 
-#include "qglxconvenience.h"
-
-class QWaylandXPixmapGLXWindow;
-class QWaylandShmBuffer;
-
-class QWaylandXPixmapGLXContext : public QPlatformGLContext
+QWaylandReadbackGlxIntegration::QWaylandReadbackGlxIntegration(QWaylandDisplay * waylandDispaly)
+    : QWaylandGLIntegration()
+    , mWaylandDisplay(waylandDispaly)
 {
-public:
-    QWaylandXPixmapGLXContext(QWaylandXPixmapGLXIntegration *glxIntegration, QWaylandXPixmapGLXWindow *window);
+    qDebug() << "Using Readback-GLX";
+    char *display_name = getenv("DISPLAY");
+    mDisplay = XOpenDisplay(display_name);
+    mScreen = XDefaultScreen(mDisplay);
+    mRootWindow = XDefaultRootWindow(mDisplay);
+    XSync(mDisplay, False);
+}
 
-    void makeCurrent();
-    void doneCurrent();
-    void swapBuffers();
-    void* getProcAddress(const QString& procName);
+QWaylandReadbackGlxIntegration::~QWaylandReadbackGlxIntegration()
+{
+    XCloseDisplay(mDisplay);
+}
 
-    QPlatformWindowFormat platformWindowFormat() const;
+void QWaylandReadbackGlxIntegration::initialize()
+{
+}
 
-    void geometryChanged();
+QWaylandWindow * QWaylandReadbackGlxIntegration::createEglWindow(QWidget *widget)
+{
+    return new QWaylandReadbackGlxWindow(widget,this);
+}
 
-private:
-    QWaylandXPixmapGLXIntegration *mGlxIntegration;
-    QWaylandXPixmapGLXWindow *mWindow;
-    QWaylandShmBuffer *mBuffer;
+QWaylandGLIntegration * QWaylandGLIntegration::createGLIntegration(QWaylandDisplay *waylandDisplay)
+{
+    return new QWaylandReadbackGlxIntegration(waylandDisplay);
+}
 
-    Pixmap mPixmap;
-    GLXFBConfig mConfig;
-    GLXContext mContext;
-    GLXPixmap mGlxPixmap;
-};
+Display * QWaylandReadbackGlxIntegration::xDisplay() const
+{
+    return mDisplay;
+}
 
-#endif // QWAYLANDXPIXMAPGLXCONTEXT_H
+int QWaylandReadbackGlxIntegration::screen() const
+{
+    return mScreen;
+}
+
+Window QWaylandReadbackGlxIntegration::rootWindow() const
+{
+    return mRootWindow;
+}
+
+QWaylandDisplay * QWaylandReadbackGlxIntegration::waylandDisplay() const
+{
+    return mWaylandDisplay;
+}

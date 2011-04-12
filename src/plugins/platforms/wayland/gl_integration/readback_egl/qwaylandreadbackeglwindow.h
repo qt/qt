@@ -39,44 +39,28 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDXPIXMAPEGLINTEGRATION_H
-#define QWAYLANDXPIXMAPEGLINTEGRATION_H
+#ifndef QWAYLANDREADBACKEGLWINDOW_H
+#define QWAYLANDREADBACKEGLWINDOW_H
 
-#include "gl_integration/qwaylandglintegration.h"
+#include "qwaylandshmwindow.h"
+#include "qwaylandreadbackeglintegration.h"
 
-#include <QtCore/QTextStream>
-#include <QtCore/QDataStream>
-#include <QtCore/QMetaType>
-#include <QtCore/QVariant>
-#include <QtGui/QWidget>
+class QWaylandReadbackEglContext;
 
-#include <X11/Xlib.h>
-
-#include <EGL/egl.h>
-
-class QWaylandXPixmapEglIntegration : public QWaylandGLIntegration
+class QWaylandReadbackEglWindow : public QWaylandShmWindow
 {
 public:
-    QWaylandXPixmapEglIntegration(QWaylandDisplay *display);
-    ~QWaylandXPixmapEglIntegration();
+    QWaylandReadbackEglWindow(QWidget *window, QWaylandReadbackEglIntegration *eglIntegration);
 
-    void initialize();
-    QWaylandWindow *createEglWindow(QWidget *widget);
+    WindowType windowType() const;
 
-    QWaylandDisplay *waylandDisplay() const;
-    Display *xDisplay() const;
-    Window rootWindow() const;
-    int depth() const;
+    QPlatformGLContext *glContext() const;
 
-    EGLDisplay eglDisplay();
+    void setGeometry(const QRect &rect);
 
 private:
-    QWaylandDisplay *mWaylandDisplay;
-    Display *mDisplay;
-    int mScreen;
-    Window mRootWindow;
-    EGLDisplay mEglDisplay;
-
+    QWaylandReadbackEglIntegration *mEglIntegration;
+    QWaylandReadbackEglContext *mContext;
 };
 
-#endif // QWAYLANDXPIXMAPEGLINTEGRATION_H
+#endif // QWAYLANDREADBACKEGLWINDOW_H

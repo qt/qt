@@ -41,9 +41,10 @@
 
 #include "qwaylandwindow.h"
 
-#include "qwaylanddisplay.h"
-#include "qwaylandscreen.h"
 #include "qwaylandbuffer.h"
+#include "qwaylanddisplay.h"
+#include "qwaylandinputdevice.h"
+#include "qwaylandscreen.h"
 
 #include <QtGui/QWidget>
 #include <QtGui/QWindowSystemInterface>
@@ -66,6 +67,10 @@ QWaylandWindow::~QWaylandWindow()
 {
     if (mSurface)
         wl_surface_destroy(mSurface);
+
+    QList<QWaylandInputDevice *> inputDevices = mDisplay->inputDevices();
+    for (int i = 0; i < inputDevices.size(); ++i)
+        inputDevices.at(i)->handleWindowDestroyed(this);
 }
 
 WId QWaylandWindow::winId() const
@@ -149,5 +154,5 @@ void QWaylandWindow::waitForFrameSync()
 {
     mDisplay->flushRequests();
     while (mWaitingForFrameSync)
-        mDisplay->readEvents();
+        mDisplay->blockingReadEvents();
 }

@@ -39,48 +39,35 @@
 **
 ****************************************************************************/
 
-#include "quikitscreen.h"
+#include "qwaylandreadbackglxwindow.h"
 
-#include <QtGui/QApplication>
-
-#include <QtDebug>
-
-QT_BEGIN_NAMESPACE
-
-QUIKitScreen::QUIKitScreen(int screenIndex)
-    : QPlatformScreen(),
-      m_index(screenIndex)
-{
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    UIScreen *screen = [[UIScreen screens] objectAtIndex:screenIndex];
-    UIScreenMode *mode = [screen currentMode];
-    CGSize size = [mode size];
-    m_geometry = QRect(0, 0, size.width, size.height);
-    CGRect bounds = [screen bounds]; // in 'points', 1p == 1/160in
-
-//    qreal xDpi = size.width * 160. / bounds.size.width;
-//    qreal yDpi = size.height * 160. / bounds.size.height;
-//    qDebug() << xDpi << yDpi;
-
-    m_format = QImage::Format_ARGB32;
-
-    m_depth = 24;
-
-    const qreal inch = 25.4;
-    const qreal dpi = 160.;
-    m_physicalSize = QSize(qRound(bounds.size.width * inch / dpi), qRound(bounds.size.height * inch / dpi));
-    if (m_index == 0)
-        qApp->setStartDragDistance(12);
-    [pool release];
-}
-
-QUIKitScreen::~QUIKitScreen()
+QWaylandReadbackGlxWindow::QWaylandReadbackGlxWindow(QWidget *window, QWaylandReadbackGlxIntegration *glxIntegration)
+    : QWaylandShmWindow(window)
+    , mGlxIntegration(glxIntegration)
+    , mContext(0)
 {
 }
 
-UIScreen *QUIKitScreen::uiScreen() const
+QWaylandWindow::WindowType QWaylandReadbackGlxWindow::windowType() const
 {
-    return [[UIScreen screens] objectAtIndex:m_index];
+    //yeah. this type needs a new name
+    return QWaylandWindow::Egl;
 }
 
-QT_END_NAMESPACE
+QPlatformGLContext * QWaylandReadbackGlxWindow::glContext() const
+{
+    if (!mContext) {
+        QWaylandReadbackGlxWindow *that = const_cast<QWaylandReadbackGlxWindow *>(this);
+        that->mContext = new QWaylandReadbackGlxContext(mGlxIntegration,that);
+    }
+    return mContext;
+}
+
+void QWaylandReadbackGlxWindow::setGeometry(const QRect &rect)
+{
+    QWaylandShmWindow::setGeometry(rect);
+
+    if (mContext) {
+        mContext->geometryChanged();
+    }
+}

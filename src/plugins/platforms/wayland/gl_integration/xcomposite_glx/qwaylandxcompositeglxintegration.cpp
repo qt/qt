@@ -56,6 +56,7 @@ QWaylandXCompositeGLXIntegration::QWaylandXCompositeGLXIntegration(QWaylandDispl
     : QWaylandGLIntegration()
     , mWaylandDisplay(waylandDispaly)
 {
+    qDebug() << "Using XComposite-GLX";
     wl_display_add_global_listener(waylandDispaly->wl_display(), QWaylandXCompositeGLXIntegration::wlDisplayHandleGlobal,
                                    this);
 }
@@ -118,7 +119,6 @@ void QWaylandXCompositeGLXIntegration::rootInformation(void *data, wl_xcomposite
     Q_UNUSED(xcomposite);
     QWaylandXCompositeGLXIntegration *integration = static_cast<QWaylandXCompositeGLXIntegration *>(data);
 
-    qDebug() << "ROOT INFORMATION" << integration->mDisplay << integration->mRootWindow << integration->mScreen;
     integration->mDisplay = XOpenDisplay(display_name);
     integration->mRootWindow = (Window) root_window;
     integration->mScreen = XDefaultScreen(integration->mDisplay);

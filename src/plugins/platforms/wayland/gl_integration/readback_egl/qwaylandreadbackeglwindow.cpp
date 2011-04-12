@@ -39,35 +39,38 @@
 **
 ****************************************************************************/
 
-#include "qwaylandxpixmapglxwindow.h"
+#include "qwaylandreadbackeglwindow.h"
 
-QWaylandXPixmapGLXWindow::QWaylandXPixmapGLXWindow(QWidget *window, QWaylandXPixmapGLXIntegration *glxIntegration)
+#include "qwaylandreadbackeglcontext.h"
+
+QWaylandReadbackEglWindow::QWaylandReadbackEglWindow(QWidget *window, QWaylandReadbackEglIntegration *eglIntegration)
     : QWaylandShmWindow(window)
-    , mGlxIntegration(glxIntegration)
+    , mEglIntegration(eglIntegration)
     , mContext(0)
 {
 }
 
-QWaylandWindow::WindowType QWaylandXPixmapGLXWindow::windowType() const
+QWaylandWindow::WindowType QWaylandReadbackEglWindow::windowType() const
 {
-    //yeah. this type needs a new name
+    //We'r lying, maybe we should add a type, but for now it will do
+    //since this is primarly used by the windowsurface.
     return QWaylandWindow::Egl;
 }
 
-QPlatformGLContext * QWaylandXPixmapGLXWindow::glContext() const
+QPlatformGLContext *QWaylandReadbackEglWindow::glContext() const
 {
     if (!mContext) {
-        QWaylandXPixmapGLXWindow *that = const_cast<QWaylandXPixmapGLXWindow *>(this);
-        that->mContext = new QWaylandXPixmapGLXContext(mGlxIntegration,that);
+        QWaylandReadbackEglWindow *that = const_cast<QWaylandReadbackEglWindow *>(this);
+        that->mContext = new QWaylandReadbackEglContext(mEglIntegration,that);
     }
     return mContext;
 }
 
-void QWaylandXPixmapGLXWindow::setGeometry(const QRect &rect)
+void QWaylandReadbackEglWindow::setGeometry(const QRect &rect)
 {
-    QWaylandShmWindow::setGeometry(rect);
+    QPlatformWindow::setGeometry(rect);
 
-    if (mContext) {
+    if (mContext)
         mContext->geometryChanged();
-    }
 }
+

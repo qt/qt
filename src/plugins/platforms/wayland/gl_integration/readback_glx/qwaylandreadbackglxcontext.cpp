@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qwaylandxpixmapglxcontext.h"
+#include "qwaylandreadbackglxcontext.h"
 
 #include "qwaylandshmsurface.h"
-#include "qwaylandxpixmapglxwindow.h"
+#include "qwaylandreadbackglxwindow.h"
 
 #include <QtCore/QDebug>
 
@@ -68,7 +68,7 @@ static inline void qgl_byteSwapImage(QImage &img, GLenum pixel_type)
     }
 }
 
-QWaylandXPixmapGLXContext::QWaylandXPixmapGLXContext(QWaylandXPixmapGLXIntegration *glxIntegration, QWaylandXPixmapGLXWindow *window)
+QWaylandReadbackGlxContext::QWaylandReadbackGlxContext(QWaylandReadbackGlxIntegration *glxIntegration, QWaylandReadbackGlxWindow *window)
     : QPlatformGLContext()
     , mGlxIntegration(glxIntegration)
     , mWindow(window)
@@ -83,19 +83,19 @@ QWaylandXPixmapGLXContext::QWaylandXPixmapGLXContext(QWaylandXPixmapGLXIntegrati
     geometryChanged();
 }
 
-void QWaylandXPixmapGLXContext::makeCurrent()
+void QWaylandReadbackGlxContext::makeCurrent()
 {
     QPlatformGLContext::makeCurrent();
 
     glXMakeCurrent(mGlxIntegration->xDisplay(),mGlxPixmap,mContext);
 }
 
-void QWaylandXPixmapGLXContext::doneCurrent()
+void QWaylandReadbackGlxContext::doneCurrent()
 {
     QPlatformGLContext::doneCurrent();
 }
 
-void QWaylandXPixmapGLXContext::swapBuffers()
+void QWaylandReadbackGlxContext::swapBuffers()
 {
     if (QPlatformGLContext::currentContext() != this) {
         makeCurrent();
@@ -123,17 +123,17 @@ void QWaylandXPixmapGLXContext::swapBuffers()
 
 }
 
-void * QWaylandXPixmapGLXContext::getProcAddress(const QString &procName)
+void * QWaylandReadbackGlxContext::getProcAddress(const QString &procName)
 {
     return (void *) glXGetProcAddress(reinterpret_cast<GLubyte *>(procName.toLatin1().data()));
 }
 
-QPlatformWindowFormat QWaylandXPixmapGLXContext::platformWindowFormat() const
+QPlatformWindowFormat QWaylandReadbackGlxContext::platformWindowFormat() const
 {
     return qglx_platformWindowFromGLXFBConfig(mGlxIntegration->xDisplay(),mConfig,mContext);
 }
 
-void QWaylandXPixmapGLXContext::geometryChanged()
+void QWaylandReadbackGlxContext::geometryChanged()
 {
     QSize size(mWindow->geometry().size());
     if (size.isEmpty()) {

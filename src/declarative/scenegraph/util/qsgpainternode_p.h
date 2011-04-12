@@ -1,7 +1,6 @@
-// Commit: ac5c099cc3c5b8c7eec7a49fdeb8a21037230350
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,23 +39,69 @@
 **
 ****************************************************************************/
 
-#ifndef QSGPAINTEDITEM_P_P_H
-#define QSGPAINTEDITEM_P_P_H
+#ifndef QSGPAINTERNODE_P_H
+#define QSGPAINTERNODE_P_H
 
-#include "qsgitem_p.h"
+#include "qsgnode.h"
+#include "qsgtexturematerial.h"
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QSGPaintedItemPrivate : public QSGItemPrivate
+QT_MODULE(Declarative)
+
+class QSGPaintedItem;
+class QGLFramebufferObject;
+
+class Q_DECLARATIVE_EXPORT QSGPainterNode : public QSGGeometryNode
 {
 public:
-    QSGPaintedItemPrivate();
+    QSGPainterNode();
+    virtual ~QSGPainterNode();
 
-    bool geometryDirty : 1;
-    bool contentsDirty : 1;
-    bool opaquePainting: 1;
+    void setSize(const QSize &size);
+    QSize size() const { return m_size; }
+
+    void setOpaquePainting(bool opaque);
+    bool opaquePainting() const { return m_opaquePainting; }
+
+    void setLinearFiltering(bool linearFiltering);
+    bool linearFiltering() const { return m_linear_filtering; }
+
+    void setSmoothPainting(bool s);
+    bool smoothPainting() const { return m_smoothPainting; }
+
+    bool update();
+
+    void paint(QSGPaintedItem *item);
+
+private:
+    void updateTexture();
+    void updateGeometry();
+    bool updateFBO();
+
+    QGLFramebufferObject *m_fbo;
+    QGLFramebufferObject *m_multisampledFbo;
+    QSGTextureMaterial m_material;
+    QSGTextureMaterialWithOpacity m_materialO;
+    QSGGeometry m_geometry;
+    QSGTextureRef m_texture;
+
+    QSize m_size;
+    bool m_opaquePainting;
+    bool m_linear_filtering;
+    bool m_smoothPainting;
+    bool m_extensionsChecked;
+    bool m_multisamplingSupported;
+
+    bool m_dirtyGeometry;
+    bool m_dirtyFBO;
+    bool m_dirtyTexture;
 };
+
+QT_END_HEADER
 
 QT_END_NAMESPACE
 
-#endif // QSGPAINTEDITEM_P_P_H
+#endif // QSGPAINTERNODE_P_H

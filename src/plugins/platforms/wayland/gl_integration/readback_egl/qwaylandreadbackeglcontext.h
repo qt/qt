@@ -39,28 +39,42 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDXPIXMAPWINDOW_H
-#define QWAYLANDXPIXMAPWINDOW_H
+#ifndef QWAYLANDREADBACKEGLGLCONTEXT_H
+#define QWAYLANDREADBACKEGLGLCONTEXT_H
 
-#include "qwaylandshmwindow.h"
-#include "qwaylandxpixmapeglintegration.h"
+#include <QPlatformGLContext>
+#include <QtGui/QWidget>
 
-class QXPixmapReadbackGLContext;
+#include "qwaylandreadbackeglintegration.h"
+#include "qwaylandreadbackeglwindow.h"
 
-class QWaylandXPixmapWindow : public QWaylandShmWindow
+class QWaylandShmBuffer;
+
+class QWaylandReadbackEglContext : public QPlatformGLContext
 {
 public:
-    QWaylandXPixmapWindow(QWidget *window, QWaylandXPixmapEglIntegration *eglIntegration);
+    QWaylandReadbackEglContext(QWaylandReadbackEglIntegration *eglIntegration, QWaylandReadbackEglWindow *window);
+    ~QWaylandReadbackEglContext();
 
-    WindowType windowType() const;
+    void makeCurrent();
+    void doneCurrent();
+    void swapBuffers();
+    void* getProcAddress(const QString& procName);
 
-    QPlatformGLContext *glContext() const;
+    virtual QPlatformWindowFormat platformWindowFormat() const;
 
-    void setGeometry(const QRect &rect);
+    void geometryChanged();
 
 private:
-    QWaylandXPixmapEglIntegration *mEglIntegration;
-    QXPixmapReadbackGLContext *mContext;
+    QWaylandReadbackEglIntegration *mEglIntegration;
+    QWaylandReadbackEglWindow *mWindow;
+    QWaylandShmBuffer *mBuffer;
+
+    Pixmap mPixmap;
+
+    EGLConfig mConfig;
+    EGLContext mContext;
+    EGLSurface mPixmapSurface;
 };
 
-#endif // QWAYLANDXPIXMAPWINDOW_H
+#endif // QWAYLANDREADBACKEGLGLCONTEXT_H

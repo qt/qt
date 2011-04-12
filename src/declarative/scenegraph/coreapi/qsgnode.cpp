@@ -50,8 +50,8 @@ QT_BEGIN_NAMESPACE
 
 QSGNode::QSGNode()
     : m_parent(0)
-    , m_nodeFlags(0)
-    , m_flags(OwnedByParent)
+    , m_nodeFlags(OwnedByParent)
+    , m_flags(0)
 {
 }
 
