@@ -832,6 +832,7 @@ CFG_PULSEAUDIO=auto
 CFG_COREWLAN=auto
 CFG_ICD=auto
 CFG_NOPROCESS=no
+CFG_ICU=auto
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -1040,7 +1041,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles)
+    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles|-icu)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -2376,6 +2377,13 @@ while [ "$#" -gt 0 ]; do
           QT_CFLAGS_FPU=$VAL
        fi
        ;;
+    icu)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_ICU="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     *)
         UNKNOWN_OPT=yes
         ;;
@@ -5679,6 +5687,25 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "ye
         CFG_ICD=no
     fi
 
+    # auto-detect libicu support
+    if [ "$CFG_ICU" != "no" ]; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/icu "ICU" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            [ "$CFG_ICU" = "auto" ] && CFG_ICU=yes
+        else
+            if [ "$CFG_ICU" = "auto" ]; then
+                CFG_ICU=no
+            elif [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+                # CFG_ICU is "yes"
+
+                echo "The ICU library support cannot be enabled."
+                echo " Turn on verbose messaging (-v) to $0 to see the final report."
+                echo " If you believe this message is in error you may use the continue"
+                echo " switch (-continue) to $0 to continue."
+                exit 101
+            fi
+        fi
+    fi
+
     # Auto-detect PulseAudio support
     if [ "$CFG_PULSEAUDIO" != "no" ]; then
         if [ -n "$PKG_CONFIG" ]; then
@@ -7337,6 +7364,10 @@ if [ "$CFG_ICD" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG icd"
 fi
 
+if [ "$CFG_ICU" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG icu"
+fi
+
 #
 # Some Qt modules are too advanced in C++ for some old compilers
 # Detect here the platforms where they are known to work.
@@ -8727,6 +8758,7 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
     echo "CoreWlan support ....... $CFG_COREWLAN"
 fi
 echo "ICD support ............ $CFG_ICD"
+echo "libICU support ......... $CFG_ICU"
 echo
 
 [ "$CFG_PTMALLOC" != "no" ] && echo "Use ptmalloc ........... $CFG_PTMALLOC"
