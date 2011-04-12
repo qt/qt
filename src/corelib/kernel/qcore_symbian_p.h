@@ -55,10 +55,12 @@
 
 #include <e32std.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qmutex.h>
 #include <qstring.h>
 #include <qrect.h>
 #include <qhash.h>
 #include <f32file.h>
+#include <es_sock.h>
 
 #define QT_LSTRING2(x) L##x
 #define QT_LSTRING(x) QT_LSTRING2(x)
@@ -154,6 +156,7 @@ enum S60PluginFuncOrdinals
 Q_CORE_EXPORT TLibraryFunction qt_resolveS60PluginFunc(int ordinal);
 
 Q_CORE_EXPORT RFs& qt_s60GetRFs();
+Q_CORE_EXPORT RSocketServ& qt_symbianGetSocketServer();
 
 // Defined in qlocale_symbian.cpp.
 Q_CORE_EXPORT QByteArray qt_symbianLocaleName(int code);
@@ -172,6 +175,104 @@ struct QScopedPointerRCloser
         if (rPointer)
             rPointer->Close();
     }
+};
+
+//Wrapper for RSocket so it can be used as a key in QHash or QMap
+class QHashableSocket : public RSocket
+{
+public:
+    bool operator==(const QHashableSocket &other) const
+    {
+        return SubSessionHandle() == other.SubSessionHandle()
+            && Session().Handle() == other.Session().Handle();
+    }
+    bool operator<(const QHashableSocket &other) const
+    {
+        if (Session().Handle() == other.Session().Handle())
+            return SubSessionHandle() < other.SubSessionHandle();
+        return Session().Handle() < other.Session().Handle();
+    }
+};
+
+uint qHash(const RSubSessionBase& key);
+
+/*!
+  \internal
+  This class exists in QtCore for the benefit of QSocketNotifier, which uses integer
+  file descriptors in its public API.
+  So we need a way to map between int and RSocket.
+  Additionally, it is used to host the global RSocketServ session
+*/
+class Q_CORE_EXPORT QSymbianSocketManager
+{
+public:
+    QSymbianSocketManager();
+    ~QSymbianSocketManager();
+
+    /*!
+      \internal
+      \return handle to the socket server
+    */
+    RSocketServ& getSocketServer();
+    /*!
+      \internal
+      Adds a symbian socket to the global map
+      \param an open socket
+      \return pseudo file descriptor, -1 if out of resources
+    */
+    int addSocket(const RSocket &sock);
+    /*!
+      \internal
+      Removes a symbian socket from the global map
+      \param an open socket
+      \return true if the socket was in the map
+    */
+    bool removeSocket(const RSocket &sock);
+    /*!
+      \internal
+      Get pseudo file descriptor for a socket
+      \param an open socket
+      \return integer handle, or -1 if not in map
+    */
+    int lookupSocket(const RSocket &sock) const;
+    /*!
+      \internal
+      Get socket for a pseudo file descriptor
+      \param an open socket fd
+      \param sock (out) socket handle
+      \return true on success or false if not in map
+    */
+    bool lookupSocket(int fd, RSocket& sock) const;
+
+    /*!
+      \internal
+      Set the default connection to use for new sockets
+      \param an open connection
+    */
+    void setDefaultConnection(RConnection* con);
+    /*!
+      \internal
+      Get the default connection to use for new sockets
+      \return the connection, or null pointer if there is none set
+    */
+    RConnection *defaultConnection() const;
+
+    /*!
+      \internal
+      Gets a reference to the singleton socket manager
+    */
+    static QSymbianSocketManager& instance();
+private:
+    int allocateSocket();
+
+    const static int max_sockets = 0x20000; //covers all TCP and UDP ports, probably run out of memory first
+    const static int socket_offset = 0x40000000; //hacky way of separating sockets from file descriptors
+    int iNextSocket;
+    QHash<QHashableSocket, int> socketMap;
+    QHash<int, RSocket> reverseSocketMap;
+    mutable QMutex iMutex;
+    RSocketServ iSocketServ;
+    RConnection *iDefaultConnection;
 };
 
 QT_END_NAMESPACE

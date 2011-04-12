@@ -602,8 +602,10 @@ public slots:
         QTcpSocket *serverSocket = server->nextPendingConnection();
         serverSocket->write(data, size);
         serverSocket->flush();
+        QTest::qSleep(200); //allow the TCP/IP stack time to loopback the data, so our socket is ready to read
         QCoreApplication::processEvents(QEventLoop::ExcludeSocketNotifiers);
         testResult = dataArrived;
+        QCoreApplication::processEvents(); //check the deferred event is processed
         serverSocket->close();
         QThread::currentThread()->exit(0);
     }
@@ -620,9 +622,11 @@ public:
         if (tester->init())
             exec();
         testResult = tester->testResult;
+        dataArrived = tester->dataArrived;
         delete tester;
     }
      bool testResult;
+     bool dataArrived;
 };
 
 void tst_QEventLoop::processEventsExcludeSocket()
@@ -631,6 +635,7 @@ void tst_QEventLoop::processEventsExcludeSocket()
     thread.start();
     QVERIFY(thread.wait());
     QVERIFY(!thread.testResult);
+    QVERIFY(thread.dataArrived);
 }
 
 class TimerReceiver : public QObject

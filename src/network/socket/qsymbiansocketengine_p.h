@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QNATIVESOCKETENGINE_P_H
-#define QNATIVESOCKETENGINE_P_H
+#ifndef QSYMBIANSOCKETENGINE_P_H
+#define QSYMBIANSOCKETENGINE_P_H
 
 //
 //  W A R N I N G
@@ -54,58 +54,26 @@
 //
 #include "QtNetwork/qhostaddress.h"
 #include "private/qabstractsocketengine_p.h"
-#ifndef Q_OS_WIN
-#  include "qplatformdefs.h"
-#else
-#  include <winsock2.h>
-#endif
+#include "qplatformdefs.h"
+
+#include <private/qeventdispatcher_symbian_p.h>
+#include <unistd.h>
+#include <es_sock.h>
+#include <in_sock.h>
 
 QT_BEGIN_NAMESPACE
 
-// Use our own defines and structs which we know are correct
-#  define QT_SS_MAXSIZE 128
-#  define QT_SS_ALIGNSIZE (sizeof(qint64))
-#  define QT_SS_PAD1SIZE (QT_SS_ALIGNSIZE - sizeof (short))
-#  define QT_SS_PAD2SIZE (QT_SS_MAXSIZE - (sizeof (short) + QT_SS_PAD1SIZE + QT_SS_ALIGNSIZE))
-struct qt_sockaddr_storage {
-      short ss_family;
-      char __ss_pad1[QT_SS_PAD1SIZE];
-      qint64 __ss_align;
-      char __ss_pad2[QT_SS_PAD2SIZE];
-};
 
-// sockaddr_in6 size changed between old and new SDK
-// Only the new version is the correct one, so always
-// use this structure.
-struct qt_in6_addr {
-    quint8 qt_s6_addr[16];
-};
-struct qt_sockaddr_in6 {
-    short   sin6_family;            /* AF_INET6 */
-    quint16 sin6_port;              /* Transport level port number */
-    quint32 sin6_flowinfo;          /* IPv6 flow information */
-    struct  qt_in6_addr sin6_addr;  /* IPv6 address */
-    quint32 sin6_scope_id;          /* set of interfaces for a scope */
-};
-
-union qt_sockaddr {
-    sockaddr a;
-    sockaddr_in a4;
-    qt_sockaddr_in6 a6;
-    qt_sockaddr_storage storage;
-};
-
-class QNativeSocketEnginePrivate;
-#ifndef QT_NO_NETWORKINTERFACE
+class QSymbianSocketEnginePrivate;
 class QNetworkInterface;
-#endif
 
-class Q_AUTOTEST_EXPORT QNativeSocketEngine : public QAbstractSocketEngine
+class Q_AUTOTEST_EXPORT QSymbianSocketEngine : public QAbstractSocketEngine
 {
     Q_OBJECT
+    friend class QAsyncSelect;
 public:
-    QNativeSocketEngine(QObject *parent = 0);
-    ~QNativeSocketEngine();
+    QSymbianSocketEngine(QObject *parent = 0);
+    ~QSymbianSocketEngine();
 
     bool initialize(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol protocol = QAbstractSocket::IPv4Protocol);
     bool initialize(int socketDescriptor, QAbstractSocket::SocketState socketState = QAbstractSocket::ConnectedState);
@@ -121,14 +89,12 @@ public:
     int accept();
     void close();
 
-#ifndef QT_NO_NETWORKINTERFACE
     bool joinMulticastGroup(const QHostAddress &groupAddress,
                             const QNetworkInterface &iface);
     bool leaveMulticastGroup(const QHostAddress &groupAddress,
                              const QNetworkInterface &iface);
     QNetworkInterface multicastInterface() const;
     bool setMulticastInterface(const QNetworkInterface &iface);
-#endif
 
     qint64 bytesAvailable() const;
 
@@ -156,8 +122,8 @@ public:
     bool waitForRead(int msecs = 30000, bool *timedOut = 0);
     bool waitForWrite(int msecs = 30000, bool *timedOut = 0);
     bool waitForReadOrWrite(bool *readyToRead, bool *readyToWrite,
-			    bool checkRead, bool checkWrite,
-			    int msecs = 30000, bool *timedOut = 0);
+                bool checkRead, bool checkWrite,
+                int msecs = 30000, bool *timedOut = 0);
 
     bool isReadNotificationEnabled() const;
     void setReadNotificationEnabled(bool enable);
@@ -166,42 +132,71 @@ public:
     bool isExceptionNotificationEnabled() const;
     void setExceptionNotificationEnabled(bool enable);
 
+    bool event(QEvent* ev);
+
+    Q_INVOKABLE void startNotifications();
+
 public Q_SLOTS:
+    // TODO: Why do we do this? This is private Qt implementation stuff anyway, no need for it
     // non-virtual override;
     void connectionNotification();
 
 private:
-    Q_DECLARE_PRIVATE(QNativeSocketEngine)
-    Q_DISABLE_COPY(QNativeSocketEngine)
+    Q_DECLARE_PRIVATE(QSymbianSocketEngine)
+    Q_DISABLE_COPY(QSymbianSocketEngine)
 };
-
-#ifdef Q_OS_WIN
-class QWindowsSockInit
-{
-public:
-    QWindowsSockInit();
-    ~QWindowsSockInit();
-    int version;
-};
-#endif
 
 class QSocketNotifier;
 
-class QNativeSocketEnginePrivate : public QAbstractSocketEnginePrivate
+class QReadNotifier;
+class QWriteNotifier;
+class QExceptionNotifier;
+class QAsyncSelect : public QActiveObject
 {
-    Q_DECLARE_PUBLIC(QNativeSocketEngine)
 public:
-    QNativeSocketEnginePrivate();
-    ~QNativeSocketEnginePrivate();
+    QAsyncSelect(QEventDispatcherSymbian *dispatcher, RSocket& sock, QSymbianSocketEngine *parent);
+    ~QAsyncSelect();
+
+    void deleteLater();
+    void IssueRequest();
+
+    void refresh();
+
+protected:
+    void DoCancel();
+    void RunL();
+    void run();
+    TInt RunError(TInt aError);
+
+private:
+    bool m_inSocketEvent;
+    bool m_deleteLater;
+    RSocket &m_socket;
+
+    TUint m_selectFlags;
+    TPckgBuf<TUint> m_selectBuf; //in & out IPC buffer
+    QSymbianSocketEngine *engine;
+};
+
+class QSymbianSocketEnginePrivate : public QAbstractSocketEnginePrivate
+{
+    Q_DECLARE_PUBLIC(QSymbianSocketEngine)
+public:
+    QSymbianSocketEnginePrivate();
+    ~QSymbianSocketEnginePrivate();
 
     int socketDescriptor;
+    mutable RSocket nativeSocket;
+    // From QtCore:
+    RSocketServ& socketServer;
+    mutable RTimer selectTimer;
 
-    QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
+    bool readNotificationsEnabled;
+    bool writeNotificationsEnabled;
+    bool exceptNotificationsEnabled;
+    QAsyncSelect* asyncSelect;
 
-#ifdef Q_OS_WIN
-    QWindowsSockInit winSock;
-#endif
-
+    // FIXME this is duplicated from qnativesocketengine_p.h
     enum ErrorString {
         NonBlockingInitFailedErrorString,
         BroadcastingInitFailedErrorString,
@@ -228,50 +223,34 @@ public:
         PortInuseErrorString,
         NotSocketErrorString,
         InvalidProxyTypeString,
+        //symbian specific
+        InvalidAddressErrorString,
+        SessionNotOpenErrorString,
 
         UnknownSocketErrorString = -1
     };
-
     void setError(QAbstractSocket::SocketError error, ErrorString errorString) const;
 
-    // native functions
-    int option(QNativeSocketEngine::SocketOption option) const;
-    bool setOption(QNativeSocketEngine::SocketOption option, int value);
+    void getPortAndAddress(const TInetAddr& a, quint16 *port, QHostAddress *addr);
+    void setPortAndAddress(TInetAddr& nativeAddr, quint16 port, const QHostAddress &addr);
+    void setError(TInt symbianError);
 
-    bool createNewSocket(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol protocol);
-
-    bool nativeConnect(const QHostAddress &address, quint16 port);
-    bool nativeBind(const QHostAddress &address, quint16 port);
-    bool nativeListen(int backlog);
-    int nativeAccept();
-#ifndef QT_NO_NETWORKINTERFACE
-    bool nativeJoinMulticastGroup(const QHostAddress &groupAddress,
-                                  const QNetworkInterface &iface);
-    bool nativeLeaveMulticastGroup(const QHostAddress &groupAddress,
-                                   const QNetworkInterface &iface);
-    QNetworkInterface nativeMulticastInterface() const;
-    bool nativeSetMulticastInterface(const QNetworkInterface &iface);
-#endif
-    qint64 nativeBytesAvailable() const;
-
-    bool nativeHasPendingDatagrams() const;
-    qint64 nativePendingDatagramSize() const;
-    qint64 nativeReceiveDatagram(char *data, qint64 maxLength,
-                                     QHostAddress *address, quint16 *port);
-    qint64 nativeSendDatagram(const char *data, qint64 length,
-                                  const QHostAddress &host, quint16 port);
-    qint64 nativeRead(char *data, qint64 maxLength);
-    qint64 nativeWrite(const char *data, qint64 length);
     int nativeSelect(int timeout, bool selectForRead) const;
     int nativeSelect(int timeout, bool checkRead, bool checkWrite,
-		     bool *selectForRead, bool *selectForWrite) const;
+                           bool *selectForRead, bool *selectForWrite) const;
 
-    void nativeClose();
+    bool createNewSocket(QAbstractSocket::SocketType socketType,
+                                             QAbstractSocket::NetworkLayerProtocol socketProtocol);
 
     bool checkProxy(const QHostAddress &address);
     bool fetchConnectionParameters();
+
+    bool multicastGroupMembershipHelper(const QHostAddress &groupAddress,
+                              const QNetworkInterface &iface,
+                              TUint operation);
+    static bool translateSocketOption(QAbstractSocketEngine::SocketOption opt, TUint &n, TUint &level);
 };
 
 QT_END_NAMESPACE
 
-#endif // QNATIVESOCKETENGINE_P_H
+#endif // QSYMBIANSOCKETENGINE_P_H

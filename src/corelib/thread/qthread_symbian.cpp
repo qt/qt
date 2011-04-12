@@ -113,6 +113,7 @@ QThreadData *QThreadData::current()
             }
             data->deref();
         }
+        data->threadId = QThread::currentThreadId();
         if (!QCoreApplicationPrivate::theMainThread)
             QCoreApplicationPrivate::theMainThread = data->thread;
     }
@@ -312,6 +313,7 @@ void *QThreadPrivate::start(void *arg)
     // attribute of the thread again once the app gains control in run()
     User::SetCritical(User::EProcessCritical);
 
+    data->threadId = QThread::currentThreadId();
     set_thread_data(data);
 
     {

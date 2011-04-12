@@ -110,6 +110,9 @@ public:
     qint64 incomingContentLength;
     QNetworkReply::NetworkError incomingErrorCode;
     QString incomingErrorDetail;
+#ifndef QT_NO_BEARERMANAGEMENT
+    QSharedPointer<QNetworkSession> networkSession;
+#endif
 
 protected:
     // The zerocopy download buffer, if used:

@@ -135,7 +135,7 @@ private:
  * The QCompleteDeferredAOs class is a special object that runs after all others, which will
  * reactivate the objects that were previously not run.
  */
-inline QActiveObject::QActiveObject(TInt priority, QEventDispatcherSymbian *dispatcher)
+QActiveObject::QActiveObject(TInt priority, QEventDispatcherSymbian *dispatcher)
     : CActive(priority),
       m_dispatcher(dispatcher),
       m_hasAlreadyRun(false),
@@ -167,12 +167,25 @@ bool QActiveObject::maybeQueueForLater()
     }
 }
 
+bool QActiveObject::maybeDeferSocketEvent()
+{
+    Q_ASSERT(!m_hasRunAgain);
+    Q_ASSERT(m_dispatcher);
+    if (!m_dispatcher->areSocketEventsBlocked()) {
+        return false;
+    }
+    m_hasRunAgain = true;
+    m_dispatcher->addDeferredSocketActiveObject(this);
+    return true;
+}
+
 void QActiveObject::reactivateAndComplete()
 {
+    TInt error = iStatus.Int();
     iStatus = KRequestPending;
     SetActive();
     TRequestStatus *status = &iStatus;
-    QEventDispatcherSymbian::RequestComplete(status, KErrNone);
+    QEventDispatcherSymbian::RequestComplete(status, error);
 
     m_hasRunAgain = false;
     m_hasAlreadyRun = false;
@@ -635,10 +648,28 @@ void QSocketActiveObject::DoCancel()
 
 void QSocketActiveObject::RunL()
 {
+    if (maybeDeferSocketEvent())
+        return;
     if (maybeQueueForLater())
         return;
 
-    QT_TRYCATCH_LEAVING(m_dispatcher->socketFired(this));
+    QT_TRYCATCH_LEAVING(run());
+}
+
+void QSocketActiveObject::run()
+{
+    QEvent e(QEvent::SockAct);
+    m_inSocketEvent = true;
+    QCoreApplication::sendEvent(m_notifier, &e);
+    m_inSocketEvent = false;
+
+    if (m_deleteLater) {
+        delete this;
+    } else {
+        iStatus = KRequestPending;
+        SetActive();
+        m_dispatcher->reactivateSocketNotifier(m_notifier);
+    }
 }
 
 void QSocketActiveObject::deleteLater()
@@ -849,6 +880,14 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
                 CActiveScheduler::Current()->WaitForAnyRequest();
             } else {
                 if (thread.RequestCount() == 0) {
+#ifdef QT_SYMBIAN_PRIORITY_DROP
+                    if (idleDetectorThread()->hasRun()) {
+                        m_lastIdleRequestTimer.start();
+                        idleDetectorThread()->kick();
+                    } else if (m_lastIdleRequestTimer.elapsed() > maxBusyTime) {
+                        User::AfterHighRes(m_delay);
+                    }
+#endif
                     break;
                 }
                 // This one should return without delay.
@@ -934,27 +973,6 @@ void QEventDispatcherSymbian::timerFired(int timerId)
     return;
 }
 
-void QEventDispatcherSymbian::socketFired(QSocketActiveObject *socketAO)
-{
-    if (m_noSocketEvents) {
-        m_deferredSocketEvents.append(socketAO);
-        return;
-    }
-
-    QEvent e(QEvent::SockAct);
-    socketAO->m_inSocketEvent = true;
-    QCoreApplication::sendEvent(socketAO->m_notifier, &e);
-    socketAO->m_inSocketEvent = false;
-
-    if (socketAO->m_deleteLater) {
-        delete socketAO;
-    } else {
-        socketAO->iStatus = KRequestPending;
-        socketAO->SetActive();
-        reactivateSocketNotifier(socketAO->m_notifier);
-    }
-}
-
 void QEventDispatcherSymbian::wakeUpWasCalled()
 {
     // The reactivation should happen in RunL, right before the call to this function.
@@ -1015,6 +1033,12 @@ inline void QEventDispatcherSymbian::addDeferredActiveObject(QActiveObject *obje
 inline void QEventDispatcherSymbian::removeDeferredActiveObject(QActiveObject *object)
 {
     m_deferredActiveObjects.removeAll(object);
+    m_deferredSocketEvents.removeAll(object);
+}
+
+inline void QEventDispatcherSymbian::addDeferredSocketActiveObject(QActiveObject *object)
+{
+    m_deferredSocketEvents.append(object);
 }
 
 void QEventDispatcherSymbian::queueDeferredActiveObjectsCompletion()
@@ -1040,7 +1064,8 @@ bool QEventDispatcherSymbian::sendDeferredSocketEvents()
     bool sentAnyEvents = false;
     while (!m_deferredSocketEvents.isEmpty()) {
         sentAnyEvents = true;
-        socketFired(m_deferredSocketEvents.takeFirst());
+        QActiveObject *object = m_deferredSocketEvents.takeFirst();
+        object->reactivateAndComplete();
     }
 
     return sentAnyEvents;
@@ -1059,6 +1084,8 @@ bool QEventDispatcherSymbian::hasPendingEvents()
 
 void QEventDispatcherSymbian::registerSocketNotifier ( QSocketNotifier * notifier )
 {
+    //note - this is only for "open C" file descriptors
+    //for native sockets, an active object in the symbian socket engine handles this
     QSocketActiveObject *socketAO = new QSocketActiveObject(this, notifier);
     Q_CHECK_PTR(socketAO);
     m_notifiers.insert(notifier, socketAO);
@@ -1067,6 +1094,8 @@ void QEventDispatcherSymbian::registerSocketNotifier ( QSocketNotifier * notifie
 
 void QEventDispatcherSymbian::unregisterSocketNotifier ( QSocketNotifier * notifier )
 {
+    //note - this is only for "open C" file descriptors
+    //for native sockets, an active object in the symbian socket engine handles this
     if (m_selectThread)
         m_selectThread->cancelSocketEvents(notifier);
     if (m_notifiers.contains(notifier)) {
@@ -1167,6 +1196,86 @@ void CQtActiveScheduler::Error(TInt aError) const
         qWarning("Error from active scheduler %d", aError);
     }
     QT_CATCH (const std::bad_alloc&) {}    // ignore alloc fails, nothing more can be done
+}
+
+bool QActiveObject::wait(CActive* ao, int ms)
+{
+    if (!ao->IsActive())
+        return true; //request already complete
+    bool timedout = false;
+    if (ms > 0) {
+        TRequestStatus tstat;
+        RTimer t;
+        if (KErrNone != t.CreateLocal())
+            return false;
+        t.HighRes(tstat, ms*1000);
+        User::WaitForRequest(tstat, ao->iStatus);
+        if (tstat != KRequestPending) {
+            timedout = true;
+        } else {
+            t.Cancel();
+            //balance thread semaphore
+            User::WaitForRequest(tstat);
+        }
+        t.Close();
+    } else {
+        User::WaitForRequest(ao->iStatus);
+    }
+    if (timedout)
+        return false;
+
+    //evil cast to allow calling of protected virtual
+    ((QActiveObject*)ao)->RunL();
+
+    //clear active & pending flags
+    ao->iStatus = TRequestStatus();
+
+    return true;
+}
+
+bool QActiveObject::wait(QList<CActive*> aos, int ms)
+{
+    QVector<TRequestStatus*> stati;
+    stati.reserve(aos.count() + 1);
+    foreach (CActive* ao, aos) {
+        if (!ao->IsActive())
+            return true; //request already complete
+        stati.append(&(ao->iStatus));
+    }
+    bool timedout = false;
+    TRequestStatus tstat;
+    RTimer t;
+    if (ms > 0) {
+        if (KErrNone != t.CreateLocal())
+            return false;
+        t.HighRes(tstat, ms*1000);
+        stati.append(&tstat);
+    }
+    User::WaitForNRequest(stati.data(), stati.count());
+    if (ms > 0) {
+        if (tstat != KRequestPending) {
+            timedout = true;
+        } else {
+            t.Cancel();
+            //balance thread semaphore
+            User::WaitForRequest(tstat);
+        }
+        t.Close();
+    }
+    if (timedout)
+        return false;
+
+    foreach (CActive* ao, aos) {
+        if (ao->iStatus != KRequestPending) {
+            //evil cast to allow calling of protected virtual
+            ((QActiveObject*)ao)->RunL();
+
+            //clear active & pending flags
+            ao->iStatus = TRequestStatus();
+            break; //only call one
+        }
+    }
+    return true;
 }
 
 QT_END_NAMESPACE
