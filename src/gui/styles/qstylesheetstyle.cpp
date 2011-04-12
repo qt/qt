@@ -3340,9 +3340,11 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
         break;
 
     case CE_FocusFrame:
-        if (rule.hasBorder())
+        if (!rule.hasNativeBorder()) {
             rule.drawBorder(p, opt->rect);
-        return;
+            return;
+        }
+        break;
 
     case CE_PushButton:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
