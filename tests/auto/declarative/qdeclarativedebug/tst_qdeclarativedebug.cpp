@@ -81,7 +81,7 @@ private:
     void recursiveCompareObjects(const QDeclarativeDebugObjectReference &a, const QDeclarativeDebugObjectReference &b) const;
     void recursiveCompareContexts(const QDeclarativeDebugContextReference &a, const QDeclarativeDebugContextReference &b) const;
     void compareProperties(const QDeclarativeDebugPropertyReference &a, const QDeclarativeDebugPropertyReference &b) const;
-    
+
     QDeclarativeDebugConnection *m_conn;
     QDeclarativeEngineDebug *m_dbg;
     QDeclarativeEngine *m_engine;
@@ -123,7 +123,7 @@ QDeclarativeDebugObjectReference tst_QDeclarativeDebug::findRootObject(int conte
 {
     QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);
-    
+
     if (q_engines->engines().count() == 0)
         return QDeclarativeDebugObjectReference();
     QDeclarativeDebugRootContextQuery *q_context = m_dbg->queryRootContexts(q_engines->engines()[0].debugId(), this);
@@ -353,7 +353,7 @@ void tst_QDeclarativeDebug::initTestCase()
     for (int i=0; i<qml.count(); i++) {
         QDeclarativeComponent component(m_engine);
         component.setData(qml[i], QUrl::fromLocalFile(""));
-        Q_ASSERT(component.isReady());  // fails if bad syntax
+        QVERIFY(component.isReady());  // fails if bad syntax
         m_components << qobject_cast<QDeclarativeItem*>(component.create());
     }
     m_rootItem = qobject_cast<QDeclarativeItem*>(m_components.first());
@@ -367,7 +367,7 @@ void tst_QDeclarativeDebug::initTestCase()
 
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Connection established");
     bool ok = m_conn->waitForConnected();
-    Q_ASSERT(ok);
+    QVERIFY(ok);
     QTRY_VERIFY(QDeclarativeDebugService::hasDebuggingClient());
     m_dbg = new QDeclarativeEngineDebug(m_conn, this);
     QTRY_VERIFY(m_dbg->status() == QDeclarativeEngineDebug::Enabled);
@@ -424,7 +424,7 @@ void tst_QDeclarativeDebug::watch_property()
     QDeclarativeDebugPropertyReference prop = findProperty(obj.properties(), "width");
 
     QDeclarativeDebugPropertyWatch *watch;
-    
+
     QDeclarativeEngineDebug *unconnected = new QDeclarativeEngineDebug(0);
     watch = unconnected->addWatch(prop, this);
     QCOMPARE(watch->state(), QDeclarativeDebugWatch::Dead);
@@ -435,7 +435,7 @@ void tst_QDeclarativeDebug::watch_property()
     QVERIFY(QDeclarativeDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QDeclarativeDebugWatch::State))));
     QCOMPARE(watch->state(), QDeclarativeDebugWatch::Inactive);
     delete watch;
-    
+
     watch = m_dbg->addWatch(prop, this);
     QCOMPARE(watch->state(), QDeclarativeDebugWatch::Waiting);
     QCOMPARE(watch->objectDebugId(), obj.debugId());
@@ -467,12 +467,12 @@ void tst_QDeclarativeDebug::watch_object()
 {
     QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);
-    
-    Q_ASSERT(q_engines->engines().count() > 0);
+
+    QVERIFY(q_engines->engines().count() > 0);
     QDeclarativeDebugRootContextQuery *q_context = m_dbg->queryRootContexts(q_engines->engines()[0].debugId(), this);
     waitForQuery(q_context);
 
-    Q_ASSERT(q_context->rootContext().objects().count() > 0);
+    QVERIFY(q_context->rootContext().objects().count() > 0);
     QDeclarativeDebugObjectQuery *q_obj = m_dbg->queryObject(q_context->rootContext().objects()[0], this);
     waitForQuery(q_obj);
 
@@ -489,7 +489,7 @@ void tst_QDeclarativeDebug::watch_object()
     QCOMPARE(watch->state(), QDeclarativeDebugWatch::Dead);
     delete watch;
     delete unconnected;
-    
+
     watch = m_dbg->addWatch(QDeclarativeDebugObjectReference(), this);
     QVERIFY(QDeclarativeDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QDeclarativeDebugWatch::State))));
     QCOMPARE(watch->state(), QDeclarativeDebugWatch::Inactive);
@@ -543,7 +543,7 @@ void tst_QDeclarativeDebug::watch_expression()
     QFETCH(int, incrementCount);
 
     int origWidth = m_rootItem->property("width").toInt();
-    
+
     QDeclarativeDebugObjectReference obj = findRootObject();
 
     QDeclarativeDebugObjectExpressionWatch *watch;
@@ -553,12 +553,12 @@ void tst_QDeclarativeDebug::watch_expression()
     QCOMPARE(watch->state(), QDeclarativeDebugWatch::Dead);
     delete watch;
     delete unconnected;
-    
+
     watch = m_dbg->addWatch(QDeclarativeDebugObjectReference(), expr, this);
     QVERIFY(QDeclarativeDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QDeclarativeDebugWatch::State))));
     QCOMPARE(watch->state(), QDeclarativeDebugWatch::Inactive);
     delete watch;
-    
+
     watch = m_dbg->addWatch(obj, expr, this);
     QCOMPARE(watch->state(), QDeclarativeDebugWatch::Waiting);
     QCOMPARE(watch->objectDebugId(), obj.debugId());
@@ -588,7 +588,7 @@ void tst_QDeclarativeDebug::watch_expression()
     delete watch;
 
     // restore original value and verify spy doesn't get a signal since watch has been removed
-    m_rootItem->setProperty("width", origWidth); 
+    m_rootItem->setProperty("width", origWidth);
     QTest::qWait(100);
     QCOMPARE(spy.count(), expectedSpyCount);
 
@@ -659,7 +659,7 @@ void tst_QDeclarativeDebug::queryRootContexts()
     int engineId = q_engines->engines()[0].debugId();
 
     QDeclarativeDebugRootContextQuery *q_context;
-    
+
     QDeclarativeEngineDebug *unconnected = new QDeclarativeEngineDebug(0);
     q_context = unconnected->queryRootContexts(engineId, this);
     QCOMPARE(q_context->state(), QDeclarativeDebugQuery::Error);
@@ -698,7 +698,7 @@ void tst_QDeclarativeDebug::queryObject()
 
     QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);
-    
+
     QDeclarativeDebugRootContextQuery *q_context = m_dbg->queryRootContexts(q_engines->engines()[0].debugId(), this);
     waitForQuery(q_context);
     QDeclarativeDebugObjectReference rootObject = q_context->rootContext().objects()[0];
@@ -772,7 +772,7 @@ void tst_QDeclarativeDebug::queryExpressionResult()
 
     QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);    // check immediate deletion is ok
-    
+
     QDeclarativeDebugRootContextQuery *q_context = m_dbg->queryRootContexts(q_engines->engines()[0].debugId(), this);
     waitForQuery(q_context);
     int objectId = q_context->rootContext().objects()[0].debugId();
@@ -784,7 +784,7 @@ void tst_QDeclarativeDebug::queryExpressionResult()
     QCOMPARE(q_expr->state(), QDeclarativeDebugQuery::Error);
     delete q_expr;
     delete unconnected;
-    
+
     q_expr = m_dbg->queryExpressionResult(objectId, expr, this);
     delete q_expr;
 
@@ -923,7 +923,7 @@ void tst_QDeclarativeDebug::tst_QDeclarativeDebugPropertyReference()
     QDeclarativeDebugObjectQuery *query = m_dbg->queryObject(rootObject, this);
     waitForQuery(query);
     QDeclarativeDebugObjectReference obj = query->object();
-    delete query;   
+    delete query;
 
     QDeclarativeDebugPropertyReference ref = findProperty(obj.properties(), "scale");
     QVERIFY(ref.objectDebugId() > 0);
@@ -932,7 +932,7 @@ void tst_QDeclarativeDebug::tst_QDeclarativeDebugPropertyReference()
     QVERIFY(!ref.valueTypeName().isEmpty());
     QVERIFY(!ref.binding().isEmpty());
     QVERIFY(ref.hasNotifySignal());
-  
+
     QDeclarativeDebugPropertyReference copy(ref);
     QDeclarativeDebugPropertyReference copyAssign;
     copyAssign = ref;
