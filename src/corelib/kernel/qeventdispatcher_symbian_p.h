@@ -110,6 +110,9 @@ public:
 protected:
     void DoCancel();
     void RunL();
+
+private:
+    TThreadId m_hostThreadId;
 };
 
 struct SymbianTimerInfo : public QSharedData

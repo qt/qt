@@ -113,6 +113,7 @@ QThreadData *QThreadData::current()
             }
             data->deref();
         }
+        data->isAdopted = true;
         data->threadId = QThread::currentThreadId();
         if (!QCoreApplicationPrivate::theMainThread)
             QCoreApplicationPrivate::theMainThread = data->thread;
@@ -257,6 +258,13 @@ QCAddAdoptedThread* QCAddAdoptedThread::adoptedThreadAdder = 0;
 
 void QCAdoptedThreadMonitor::RunL()
 {
+    if (data->isAdopted) {
+        QThread *thread = data->thread;
+        Q_ASSERT(thread);
+        QThreadPrivate *thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
+        Q_ASSERT(!thread_p->finished);
+        thread_p->finish(thread);
+    }
     data->deref();
     QCAddAdoptedThread::threadDied();
     delete this;

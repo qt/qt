@@ -194,6 +194,7 @@ void QActiveObject::reactivateAndComplete()
 QWakeUpActiveObject::QWakeUpActiveObject(QEventDispatcherSymbian *dispatcher)
     : QActiveObject(WAKE_UP_PRIORITY, dispatcher)
 {
+    m_hostThreadId = RThread().Id();
     CActiveScheduler::Add(this);
     iStatus = KRequestPending;
     SetActive();
@@ -209,6 +210,15 @@ void QWakeUpActiveObject::DoCancel()
     if (iStatus.Int() == KRequestPending) {
         TRequestStatus *status = &iStatus;
         QEventDispatcherSymbian::RequestComplete(status, KErrNone);
+    } else if (IsActive() && m_hostThreadId != RThread().Id()) {
+        // This is being cancelled in the adopted monitor thread, which can happen if an adopted thread with
+        // an event loop has exited. The event loop creates an event dispatcher with this active object, which may be complete but not run on exit.
+        // We force a cancellation in this thread, because a) the object cannot be deleted while active and b) without a cancellation
+        // the thread semaphore will be one count down.
+        // It is possible for this problem to affect other active objects. They symptom would be that finished signals
+        // from adopted threads are not sent, or they arrive much later than they should.
+        TRequestStatus *status = &iStatus;
+        User::RequestComplete(status, KErrNone);
     }
 }
 
