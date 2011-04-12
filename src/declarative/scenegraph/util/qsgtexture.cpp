@@ -59,14 +59,39 @@ QSGTexturePrivate::QSGTexturePrivate()
     context = QSGContext::current;
 }
 
+#ifndef QT_NO_DEBUG
+static int qt_texture_count = 0;
+
+static void qt_print_texture_count()
+{
+    qDebug("Number of leaked textures: %i", qt_texture_count);
+    qt_texture_count = -1;
+}
+#endif
+
+
+
 QSGTexture::QSGTexture()
     : QObject(*(new QSGTexturePrivate))
     , m_ref_count(0)
 {
+#ifndef QT_NO_DEBUG
+    ++qt_texture_count;
+    static bool atexit_registered = false;
+    if (!atexit_registered) {
+        atexit(qt_print_texture_count);
+        atexit_registered = true;
+    }
+#endif
 }
 
 QSGTexture::~QSGTexture()
 {
+#ifndef QT_NO_DEBUG
+    --qt_texture_count;
+    if (qt_texture_count < 0)
+        qDebug("Material destroyed after qt_print_texture_count() was called.");
+#endif
 }
 
 /*!
@@ -85,7 +110,7 @@ void QSGTexture::cleanupAndDelete()
 {
     Q_D(QSGTexture);
 
-    if (QThread::currentThread() == d->context->thread()) {
+    if (!d->context || QThread::currentThread() == d->context->thread()) {
         delete this;
     } else {
         d->context->schdelueTextureForCleanup(this);
