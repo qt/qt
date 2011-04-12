@@ -1262,9 +1262,8 @@ QScriptValue QDeclarativeEnginePrivate::qmlScriptObject(QObject* object,
 */
 QDeclarativeContextData *QDeclarativeEnginePrivate::getContext(QScriptContext *ctxt)
 {
-    QScriptValue scopeNode = QScriptDeclarativeClass::scopeChainValue(ctxt, -3);
+    QScriptValue scopeNode = getEvaluationContextScopeNode(ctxt);
     Q_ASSERT(scopeNode.isValid());
-    Q_ASSERT(QScriptDeclarativeClass::scriptClass(scopeNode) == contextClass);
     return contextClass->contextFromValue(scopeNode);
 }
 
@@ -1274,10 +1273,22 @@ QDeclarativeContextData *QDeclarativeEnginePrivate::getContext(QScriptContext *c
 */
 QUrl QDeclarativeEnginePrivate::getUrl(QScriptContext *ctxt)
 {
-    QScriptValue scopeNode = QScriptDeclarativeClass::scopeChainValue(ctxt, -3);
+    QScriptValue scopeNode = getEvaluationContextScopeNode(ctxt);
     Q_ASSERT(scopeNode.isValid());
-    Q_ASSERT(QScriptDeclarativeClass::scriptClass(scopeNode) == contextClass);
     return contextClass->urlFromValue(scopeNode);
+}
+
+/*!
+    When valid, the returned QScriptValue contains the object that represents the
+    outer QDeclarativeContext of the current execution.
+*/
+QScriptValue QDeclarativeEnginePrivate::getEvaluationContextScopeNode(QScriptContext *context)
+{
+    Q_ASSERT(context);
+    QScriptValue scopeNode = QScriptDeclarativeClass::scopeChainValue(context, -4);
+    if (scopeNode.isValid())
+        Q_ASSERT(QScriptDeclarativeClass::scriptClass(scopeNode) == contextClass);
+    return scopeNode;
 }
 
 QString QDeclarativeEnginePrivate::urlToLocalFileOrQrc(const QUrl& url)

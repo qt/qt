@@ -340,6 +340,7 @@ public:
     static QDeclarativeEngine *get(QDeclarativeEnginePrivate *p) { return p->q_func(); }
     QDeclarativeContextData *getContext(QScriptContext *);
     QUrl getUrl(QScriptContext *);
+    QScriptValue getEvaluationContextScopeNode(QScriptContext *);
 
     static QString urlToLocalFileOrQrc(const QUrl& url);
 

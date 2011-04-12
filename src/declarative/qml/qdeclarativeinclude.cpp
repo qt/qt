@@ -57,10 +57,11 @@ QDeclarativeInclude::QDeclarativeInclude(const QUrl &url,
 : QObject(engine), m_engine(engine), m_network(0), m_reply(0), m_url(url), m_redirectCount(0)
 {
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
-    m_context = ep->contextClass->contextFromValue(QScriptDeclarativeClass::scopeChainValue(ctxt, -3));
+    m_context = ep->contextClass->contextFromValue(ep->getEvaluationContextScopeNode(ctxt));
+    // ### Can/Should we assume m_context != 0? If so, why not use ep->getContext?
 
-    m_scope[0] = QScriptDeclarativeClass::scopeChainValue(ctxt, -4);
-    m_scope[1] = QScriptDeclarativeClass::scopeChainValue(ctxt, -5);
+    m_scope[0] = QScriptDeclarativeClass::scopeChainValue(ctxt, -5);
+    m_scope[1] = QScriptDeclarativeClass::scopeChainValue(ctxt, -6);
 
     m_scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
     m_network = QDeclarativeScriptEngine::get(m_scriptEngine)->networkAccessManager();
@@ -181,8 +182,7 @@ QScriptValue QDeclarativeInclude::include(QScriptContext *ctxt, QScriptEngine *e
         return engine->undefinedValue();
 
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
-
-    QUrl contextUrl = ep->contextClass->urlFromValue(QScriptDeclarativeClass::scopeChainValue(ctxt, -3));
+    QUrl contextUrl = ep->contextClass->urlFromValue(ep->getEvaluationContextScopeNode(ctxt));
     if (contextUrl.isEmpty()) 
         return ctxt->throwError(QLatin1String("Qt.include(): Can only be called from JavaScript files"));
 
@@ -216,12 +216,13 @@ QScriptValue QDeclarativeInclude::include(QScriptContext *ctxt, QScriptEngine *e
             QString code = QString::fromUtf8(data);
 
             QDeclarativeContextData *context = 
-                ep->contextClass->contextFromValue(QScriptDeclarativeClass::scopeChainValue(ctxt, -3));
+                ep->contextClass->contextFromValue(ep->getEvaluationContextScopeNode(ctxt));
+            // ### Can/Should we assume context != 0, if so we can use ep->getContext()
 
             QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(engine);
             scriptContext->pushScope(ep->contextClass->newUrlContext(context, 0, urlString));
             scriptContext->pushScope(ep->globalClass->staticGlobalObject());
-            QScriptValue scope = QScriptDeclarativeClass::scopeChainValue(ctxt, -5);
+            QScriptValue scope = QScriptDeclarativeClass::scopeChainValue(ctxt, -6);
             scriptContext->pushScope(scope);
             scriptContext->setActivationObject(scope);
             QDeclarativeScriptParser::extractPragmas(code);
@@ -255,7 +256,7 @@ QScriptValue QDeclarativeInclude::worker_include(QScriptContext *ctxt, QScriptEn
     QString urlString = ctxt->argument(0).toString();
     QUrl url(ctxt->argument(0).toString());
     if (url.isRelative()) {
-        QString contextUrl = QScriptDeclarativeClass::scopeChainValue(ctxt, -3).data().toString();
+        QString contextUrl = QScriptDeclarativeClass::scopeChainValue(ctxt, -4).data().toString();
         Q_ASSERT(!contextUrl.isEmpty());
 
         url = QUrl(contextUrl).resolved(url);
@@ -281,7 +282,7 @@ QScriptValue QDeclarativeInclude::worker_include(QScriptContext *ctxt, QScriptEn
             urlContext.setData(QScriptValue(engine, urlString));
             scriptContext->pushScope(urlContext);
 
-            QScriptValue scope = QScriptDeclarativeClass::scopeChainValue(ctxt, -4);
+            QScriptValue scope = QScriptDeclarativeClass::scopeChainValue(ctxt, -5);
             scriptContext->pushScope(scope);
             scriptContext->setActivationObject(scope);
             QDeclarativeScriptParser::extractPragmas(code);

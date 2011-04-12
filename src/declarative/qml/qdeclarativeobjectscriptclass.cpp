@@ -177,13 +177,9 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
 
     if (!(hints & SkipAttachedProperties)) {
         if (!evalContext && context()) {
-            // Global object, QScriptContext activation object, QDeclarativeContext object
-            QScriptValue scopeNode = scopeChainValue(context(), -3);
-            if (scopeNode.isValid()) {
-                Q_ASSERT(scriptClass(scopeNode) == enginePrivate->contextClass);
-
+            QScriptValue scopeNode = enginePrivate->getEvaluationContextScopeNode(context());
+            if (scopeNode.isValid())
                 evalContext = enginePrivate->contextClass->contextFromValue(scopeNode);
-            }
         }
 
         if (evalContext && evalContext->imports) {
@@ -351,13 +347,9 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
     QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
 
     if (!evalContext) {
-        // Global object, QScriptContext activation object, QDeclarativeContext object
-        QScriptValue scopeNode = scopeChainValue(context, -3);
-        if (scopeNode.isValid()) {
-            Q_ASSERT(scriptClass(scopeNode) == enginePriv->contextClass);
-
+        QScriptValue scopeNode = enginePriv->getEvaluationContextScopeNode(context);
+        if (scopeNode.isValid())
             evalContext = enginePriv->contextClass->contextFromValue(scopeNode);
-        }
     }
 
     QDeclarativeBinding *newBinding = 0;
