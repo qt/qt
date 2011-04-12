@@ -2770,7 +2770,7 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
         return;
 
     if (d->model && d->model->count() && d->interactive) {
-        if ((!d->isRightToLeft() && event->key() == Qt::Key_Left)
+        if ((d->orient == QDeclarativeListView::Horizontal && !d->isRightToLeft() && event->key() == Qt::Key_Left)
                     || (d->orient == QDeclarativeListView::Horizontal && d->isRightToLeft() && event->key() == Qt::Key_Right)
                     || (d->orient == QDeclarativeListView::Vertical && event->key() == Qt::Key_Up)) {
             if (currentIndex() > 0 || (d->wrap && !event->isAutoRepeat())) {
@@ -2781,7 +2781,7 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
                 event->accept();
                 return;
             }
-        } else if ((!d->isRightToLeft() && event->key() == Qt::Key_Right)
+        } else if ((d->orient == QDeclarativeListView::Horizontal && !d->isRightToLeft() && event->key() == Qt::Key_Right)
                     || (d->orient == QDeclarativeListView::Horizontal && d->isRightToLeft() && event->key() == Qt::Key_Left)
                     || (d->orient == QDeclarativeListView::Vertical && event->key() == Qt::Key_Down)) {
             if (currentIndex() < d->model->count() - 1 || (d->wrap && !event->isAutoRepeat())) {
