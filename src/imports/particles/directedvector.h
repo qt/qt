@@ -48,11 +48,14 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+class QSGItem;
 class DirectedVector : public VaryingVector
 {
     Q_OBJECT
     Q_PROPERTY(qreal targetX READ targetX WRITE setTargetX NOTIFY targetXChanged)
     Q_PROPERTY(qreal targetY READ targetY WRITE setTargetY NOTIFY targetYChanged)
+    //If targetItem is set, X/Y are ignored. Aims at middle of item, use variation for variation
+    Q_PROPERTY(QSGItem* targetItem READ targetItem WRITE setTargetItem NOTIFY targetItemChanged)
 
     Q_PROPERTY(qreal targetVariation READ targetVariation WRITE setTargetVariation NOTIFY targetVariationChanged)
 
@@ -94,6 +97,11 @@ public:
         return m_magnitudeVariation;
     }
 
+    QSGItem* targetItem() const
+    {
+        return m_targetItem;
+    }
+
 signals:
 
     void targetXChanged(qreal arg);
@@ -107,6 +115,8 @@ signals:
     void proprotionalMagnitudeChanged(bool arg);
 
     void magnitudeVariationChanged(qreal arg);
+
+    void targetItemChanged(QSGItem* arg);
 
 public slots:
     void setTargetX(qreal arg)
@@ -157,6 +167,14 @@ public slots:
         }
     }
 
+    void setTargetItem(QSGItem* arg)
+    {
+        if (m_targetItem != arg) {
+            m_targetItem = arg;
+            emit targetItemChanged(arg);
+        }
+    }
+
 private:
     qreal m_targetX;
     qreal m_targetY;
@@ -164,6 +182,7 @@ private:
     bool m_proportionalMagnitude;
     qreal m_magnitude;
     qreal m_magnitudeVariation;
+    QSGItem *m_targetItem;
 };
 
 QT_END_NAMESPACE

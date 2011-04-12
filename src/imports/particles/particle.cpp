@@ -52,6 +52,14 @@ ParticleType::ParticleType(QSGItem *parent) :
             this, SLOT(calcSystemOffset()));
 }
 
+void ParticleType::componentComplete()
+{
+    if(!m_system)
+        qWarning() << "Particle created without a particle system specified";//TODO: useful QML warnings, like line number?
+    QSGItem::componentComplete();
+}
+
+
 void ParticleType::setSystem(ParticleSystem *arg)
 {
     if (m_system != arg) {

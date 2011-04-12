@@ -75,6 +75,12 @@ ParticleEmitter::~ParticleEmitter()
         delete m_defaultExtruder;
 }
 
+void ParticleEmitter::componentComplete()
+{
+    if(!m_system)
+        qWarning() << "Emitter created without a particle system specified";//TODO: useful QML warnings, like line number?
+    QSGItem::componentComplete();
+}
 void ParticleEmitter::emitWindow(int timeStamp)
 {
     Q_UNUSED(timeStamp);

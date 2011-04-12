@@ -53,6 +53,13 @@ ParticleAffector::ParticleAffector(QSGItem *parent) :
             this, SLOT(updateOffsets()));//TODO: in componentComplete and all relevant signals
 }
 
+void ParticleAffector::componentComplete()
+{
+    if(!m_system)
+        qWarning() << "Affector created without a particle system specified";//TODO: useful QML warnings, like line number?
+    QSGItem::componentComplete();
+}
+
 void ParticleAffector::affectSystem(qreal dt)
 {
     if(!m_active)
