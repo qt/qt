@@ -215,6 +215,12 @@ void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
                     widget->repaint();
                 }
             } else {
+                // In certain special scenarios we may get an ENotVisible event
+                // without a previous EPartiallyVisible. The backingstore must
+                // still be destroyed, hence the registerWidget() call below.
+                if (backingStore.data() && widget->internalWinId()
+                    && qt_widget_private(widget)->maybeBackingStore() == backingStore.data())
+                    backingStore.registerWidget(widget);
                 backingStore.unregisterWidget(widget);
                 // In order to ensure that any resources used by the window surface
                 // are immediately freed, we flush the WSERV command buffer.
