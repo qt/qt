@@ -145,7 +145,7 @@ void QSGTextInput::setSelectionColor(const QColor &color)
     QPalette p = d->control->palette();
     p.setColor(QPalette::Highlight, d->selectionColor);
     d->control->setPalette(p);
-    if (d->control->hasSelectedText())
+    if (d->control->hasSelectedText()) 
         update();
     emit selectionColorChanged(color);
 }
@@ -166,7 +166,7 @@ void QSGTextInput::setSelectedTextColor(const QColor &color)
     QPalette p = d->control->palette();
     p.setColor(QPalette::HighlightedText, d->selectedTextColor);
     d->control->setPalette(p);
-    if (d->control->hasSelectedText())
+    if (d->control->hasSelectedText()) 
         update();
     emit selectedTextColorChanged(color);
 }

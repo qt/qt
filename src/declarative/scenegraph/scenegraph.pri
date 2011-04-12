@@ -34,8 +34,7 @@ HEADERS += \
     $$PWD/util/qsgvertexcolormaterial_p.h \
     $$PWD/util/qsgtexture.h \
     $$PWD/util/qsgtexture_p.h \
-    $$PWD/util/qsgtextureprovider_p.h \
-    $$PWD/util/qsgpainternode_p.h
+    $$PWD/util/qsgtextureprovider_p.h
 SOURCES += \
     $$PWD/util/qsgareaallocator.cpp \
     $$PWD/util/qsgflatcolormaterial.cpp \
@@ -43,8 +42,7 @@ SOURCES += \
     $$PWD/util/qsgtexturematerial.cpp \
     $$PWD/util/qsgvertexcolormaterial.cpp \
     $$PWD/util/qsgtexture.cpp \
-    $$PWD/util/qsgtextureprovider.cpp \
-    $$PWD/util/qsgpainternode.cpp
+    $$PWD/util/qsgtextureprovider.cpp
 
 
 # QML / Adaptations API
