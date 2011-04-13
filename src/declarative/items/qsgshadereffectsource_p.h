@@ -45,6 +45,7 @@
 #include "qsgitem.h"
 #include <private/qsgtextureprovider_p.h>
 #include <private/qsgadaptationlayer_p.h>
+#include <private/qsgcontext_p.h>
 
 #include "qpointer.h"
 #include "qsize.h"
@@ -66,7 +67,7 @@ class QSGShaderEffectTexture : public QSGDynamicTexture
 {
     Q_OBJECT
 public:
-    QSGShaderEffectTexture();
+    QSGShaderEffectTexture(QSGContext *context);
     ~QSGShaderEffectTexture();
 
     virtual bool updateTexture();
@@ -107,6 +108,7 @@ private:
     QSize m_size;
     GLenum m_format;
 
+    QSGContext *m_context;
     QSGRenderer *m_renderer;
     QGLFramebufferObject *m_fbo;
     QGLFramebufferObject *m_multisampledFbo;

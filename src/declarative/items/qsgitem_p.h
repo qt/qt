@@ -60,6 +60,8 @@
 #include "qsganchors_p_p.h"
 #include "qsgitemchangelistener_p.h"
 
+#include "qsgcanvas_p.h"
+
 #include "qsgnode.h"
 #include "qsgclipnode_p.h"
 
@@ -255,6 +257,8 @@ public:
     quint32 dummy:2;
 
     QSGCanvas *canvas;
+    QSGContext *sceneGraphContext() const { return static_cast<QSGCanvasPrivate *>(QObjectPrivate::get(canvas))->context; }
+
     QSGItem *parentItem;
     QList<QSGItem *> childItems;
     QList<QSGItem *> paintOrderChildItems() const;

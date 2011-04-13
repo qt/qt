@@ -48,6 +48,7 @@
 #include "coloredparticle.h"
 #include "particleemitter.h"
 #include <QGLFunctions>
+#include <qsgengine.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -324,8 +325,6 @@ static QSGGeometry::AttributeSet ColoredParticle_AttributeSet =
 
 QSGGeometryNode* ColoredParticle::buildParticleNode()
 {
-    QSGContext *sg = QSGContext::current;
-
     if (m_count * 4 > 0xffff) {
         printf("ColoredParticle: Too many particles... \n");
         return 0;
@@ -400,7 +399,7 @@ QSGGeometryNode* ColoredParticle::buildParticleNode()
         QImage table(m_colortable_name.toLocalFile());
         if (!table.isNull()) {
             m_material = new ParticleTrailsMaterialCT();
-            static_cast<ParticleTrailsMaterialCT *>(m_material)->colortable = sg->createTexture(table);
+            static_cast<ParticleTrailsMaterialCT *>(m_material)->colortable = sceneGraphEngine()->createTextureFromImage(table);
         }
     }
 
@@ -408,7 +407,7 @@ QSGGeometryNode* ColoredParticle::buildParticleNode()
         m_material = new ParticleTrailsMaterial();
 
 
-    m_material->texture = sg->createTexture(image);
+    m_material->texture = sceneGraphEngine()->createTextureFromImage(image);
     m_material->texture->setFiltering(QSGTexture::Linear);
 
     m_node = new QSGGeometryNode();

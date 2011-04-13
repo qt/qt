@@ -1072,7 +1072,7 @@ QSGNode *QSGText::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data)
         QSGImageNode *node = 0;
         if (!oldNode || d->nodeType != QSGTextPrivate::NodeIsTexture) {
             delete oldNode;
-            node = QSGContext::current->createImageNode();
+            node = QSGItemPrivate::get(this)->sceneGraphContext()->createImageNode();
             d->texture = new QSGPlainTexture();
             wasDirty = true;
             d->nodeType = QSGTextPrivate::NodeIsTexture;
@@ -1100,7 +1100,7 @@ QSGNode *QSGText::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data)
         QSGTextNode *node = 0;
         if (!oldNode || d->nodeType != QSGTextPrivate::NodeIsText) {
             delete oldNode;
-            node = new QSGTextNode(QSGContext::current);
+            node = new QSGTextNode(QSGItemPrivate::get(this)->sceneGraphContext());
             d->nodeType = QSGTextPrivate::NodeIsText;
         } else {
             node = static_cast<QSGTextNode *>(oldNode);

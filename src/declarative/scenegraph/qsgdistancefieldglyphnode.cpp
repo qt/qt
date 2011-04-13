@@ -187,7 +187,7 @@ void QSGDistanceFieldGlyphNode::updateGeometry()
 
 void QSGDistanceFieldGlyphNode::updateFont()
 {
-    m_glyph_cache = QSGDistanceFieldGlyphCache::get(QSGContext::current->glContext(), m_glyphs.font());
+    m_glyph_cache = QSGDistanceFieldGlyphCache::get(QGLContext::currentContext(), m_glyphs.font());
 }
 
 void QSGDistanceFieldGlyphNode::updateMaterial()

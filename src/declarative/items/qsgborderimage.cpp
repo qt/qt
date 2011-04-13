@@ -316,7 +316,7 @@ void QSGBorderImage::doUpdate()
     update();
 }
 
-QSGNode *QSGBorderImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data)
+QSGNode *QSGBorderImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
     Q_D(QSGBorderImage);
 

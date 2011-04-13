@@ -1844,5 +1844,19 @@ void QSGCanvas::maybeUpdate()
     }
 }
 
+/*!
+    Returns the QSGEngine used for this scene.
+
+    The engine will only be available once the scene graph has been
+    initialized, typically during the very first showEvent.
+ */
+
+QSGEngine *QSGCanvas::sceneGraphEngine() const
+{
+    Q_D(const QSGCanvas);
+    if (d->context->isReady())
+        return d->context->engine();
+    return 0;
+}
 
 QT_END_NAMESPACE

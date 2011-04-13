@@ -76,7 +76,7 @@ void Bindable::reactivate() const
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
 
-BindableFbo::BindableFbo(QGLContext *ctx, QGLFramebufferObject *fbo) : m_ctx(ctx), m_fbo(fbo)
+BindableFbo::BindableFbo(QGLFramebufferObject *fbo) : m_fbo(fbo)
 {
 }
 

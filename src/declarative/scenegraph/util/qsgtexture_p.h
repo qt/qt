@@ -64,8 +64,6 @@ public:
     uint verticalWrap : 1;
     uint mipmapMode : 2;
     uint filterMode : 2;
-
-    QSGContext *context;
 };
 
 class Q_DECLARATIVE_EXPORT QSGPlainTexture : public QSGTexture

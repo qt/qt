@@ -194,7 +194,7 @@ QSGNode *QSGImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     QSGImageNode *node = static_cast<QSGImageNode *>(oldNode);
     if (!node) { 
         d->pixmapChanged = true;
-        node = QSGContext::current->createImageNode();
+        node = d->sceneGraphContext()->createImageNode();
         node->setTexture(d->pix.texture());
     }
 

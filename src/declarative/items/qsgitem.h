@@ -89,6 +89,7 @@ class QSGKeyEvent;
 class QSGAnchors;
 class QSGItemPrivate;
 class QSGCanvas;
+class QSGEngine;
 class QTouchEvent;
 class QSGNode;
 class QSGTransformNode;
@@ -186,6 +187,8 @@ public:
 
     QSGItem(QSGItem *parent = 0);
     virtual ~QSGItem();
+
+    QSGEngine *sceneGraphEngine() const;
 
     QSGCanvas *canvas() const;
     QSGItem *parentItem() const;

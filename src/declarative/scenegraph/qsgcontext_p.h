@@ -62,6 +62,7 @@ class QSGRenderer;
 class QSGTexture;
 class QSGMaterial;
 class QSGMaterialShader;
+class QSGEngine;
 
 class QGLContext;
 
@@ -81,9 +82,8 @@ public:
     void setRootNode(QSGRootNode *node);
     QSGRootNode *rootNode() const;
 
+    QSGEngine *engine() const;
     QGLContext *glContext() const;
-
-    static QSGContext *current; // Evil nasty hack!! Get rid of this!
 
     bool isReady() const;
 

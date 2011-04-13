@@ -249,7 +249,7 @@ QSGNode *QSGRectangle::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *da
     }
 
     QSGRectangleNode *rectangle = static_cast<QSGRectangleNode *>(oldNode);
-    if (!rectangle) rectangle = QSGContext::current->createRectangleNode();
+    if (!rectangle) rectangle = d->sceneGraphContext()->createRectangleNode();
 
     rectangle->setRect(QRectF(0, 0, width(), height()));
     rectangle->setColor(d->color);

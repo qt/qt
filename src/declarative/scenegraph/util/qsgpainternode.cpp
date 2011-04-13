@@ -206,7 +206,7 @@ void QSGPainterNode::updateGeometry()
 void QSGPainterNode::updateSurface()
 {
     if (m_actualPaintSurface == FramebufferObject) {
-        const QGLContext *ctx = QSGContext::current->glContext();
+        const QGLContext *ctx = QGLContext::currentContext();
         if (m_fbo && !m_dirtyGeometry && (!ctx->format().sampleBuffers() || !m_multisamplingSupported))
             return;
 

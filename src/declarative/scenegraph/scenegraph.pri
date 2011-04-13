@@ -27,6 +27,7 @@ SOURCES += \
 # Util API
 HEADERS += \
     $$PWD/util/qsgareaallocator_p.h \
+    $$PWD/util/qsgengine.h \
     $$PWD/util/qsgflatcolormaterial.h \
     $$PWD/util/qsgsimplerectnode.h \
     $$PWD/util/qsgsimpletexturenode.h \
@@ -40,6 +41,7 @@ HEADERS += \
 
 SOURCES += \
     $$PWD/util/qsgareaallocator.cpp \
+    $$PWD/util/qsgengine.cpp \
     $$PWD/util/qsgflatcolormaterial.cpp \
     $$PWD/util/qsgsimplerectnode.cpp \
     $$PWD/util/qsgsimpletexturenode.cpp \

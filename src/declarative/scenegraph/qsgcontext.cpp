@@ -52,6 +52,7 @@
 #include <private/qsgdistancefieldglyphcache_p.h>
 
 #include <private/qsgtexture_p.h>
+#include <qsgengine.h>
 
 #include <QApplication>
 #include <QGLContext>
@@ -99,6 +100,8 @@ public:
 
     QGLContext *gl;
 
+    QSGEngine engine;
+
     QHash<QSGMaterialType *, QSGMaterialShader *> materials;
 
     QMutex textureMutex;
@@ -116,6 +119,8 @@ public:
 QSGContext::QSGContext(QObject *parent) :
     QObject(*(new QSGContextPrivate), parent)
 {
+    Q_D(QSGContext);
+    d->engine.setContext(this);
 }
 
 
@@ -128,7 +133,17 @@ QSGContext::~QSGContext()
     qDeleteAll(d->materials.values());
 }
 
+/*!
+    Returns the scene graph engine for this context.
 
+    The main purpose of the QSGEngine is to serve as a public API
+    to the QSGContext.
+
+ */
+QSGEngine *QSGContext::engine() const
+{
+    return const_cast<QSGEngine *>(&d_func()->engine);
+}
 
 /*!
     Schedules the texture to be cleaned up on the rendering thread
@@ -187,8 +202,6 @@ QGLContext *QSGContext::glContext() const
     return d->gl;
 }
 
-QSGContext *QSGContext::current;
-
 /*!
     Initializes the scene graph context with the GL context \a context. This also
     emits the ready() signal so that the QML graph can start building scene graph nodes.
@@ -206,8 +219,6 @@ void QSGContext::initialize(QGLContext *context)
 
     d->rootNode = new QSGRootNode();
     d->renderer->setRootNode(d->rootNode);
-
-    current = this;
 
     emit ready();
 }

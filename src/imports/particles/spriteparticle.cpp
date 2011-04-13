@@ -47,6 +47,7 @@
 #include <private/qsgadaptationlayer_p.h>
 #include <qsgnode.h>
 #include <qsgtexturematerial.h>
+#include <qsgengine.h>
 #include <qsgtexture.h>
 #include <QFile>
 #include <cmath>
@@ -244,8 +245,6 @@ static QSGGeometry::AttributeSet SpriteParticle_AttributeSet =
 
 QSGGeometryNode* SpriteParticle::buildParticleNode()
 {
-    QSGContext *sg = QSGContext::current;
-
     if (m_count * 4 > 0xffff) {
         qWarning() << "SpriteParticle: too many particles...";
         return 0;
@@ -271,7 +270,7 @@ QSGGeometryNode* SpriteParticle::buildParticleNode()
     QImage image = m_spriteEngine->assembledImage();
     if(image.isNull())
         return 0;
-    m_material->texture = sg->createTexture(image);
+    m_material->texture = sceneGraphEngine()->createTextureFromImage(image);
     m_material->texture->setFiltering(QSGTexture::Linear);
     m_material->framecount = m_spriteEngine->maxFrames();
     m_spriteEngine->setCount(m_count);

@@ -54,10 +54,11 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(qmlFboOverlay, QML_FBO_OVERLAY)
 
-QSGShaderEffectTexture::QSGShaderEffectTexture()
+QSGShaderEffectTexture::QSGShaderEffectTexture(QSGContext *context)
     : QSGDynamicTexture()
     , m_item(0)
     , m_format(GL_RGBA)
+    , m_context(context)
     , m_renderer(0)
     , m_fbo(0)
     , m_multisampledFbo(0)
@@ -188,7 +189,7 @@ void QSGShaderEffectTexture::grab()
     }
 
     if (!m_renderer) {
-        m_renderer = QSGContext::current->createRenderer();
+        m_renderer = m_context->createRenderer();
         connect(m_renderer, SIGNAL(sceneGraphChanged()), this, SLOT(markDirtyTexture()));
     }
     m_renderer->setRootNode(static_cast<QSGRootNode *>(root));
@@ -236,7 +237,7 @@ void QSGShaderEffectTexture::grab()
 #ifdef QSG_DEBUG_FBO_OVERLAY
     if (qmlFboOverlay()) {
         if (!m_debugOverlay)
-            m_debugOverlay = QSGContext::current->createRectangleNode();
+            m_debugOverlay = m_context->createRectangleNode();
         m_debugOverlay->setRect(QRectF(0, 0, m_size.width(), m_size.height()));
         m_debugOverlay->setColor(QColor(0xff, 0x00, 0x80, 0x40));
         m_debugOverlay->setPenColor(QColor());
@@ -249,7 +250,7 @@ void QSGShaderEffectTexture::grab()
 
     m_dirtyTexture = false;
 
-    const QGLContext *ctx = QSGContext::current->glContext();
+    const QGLContext *ctx = QGLContext::currentContext();
     m_renderer->setDeviceRect(m_size);
     m_renderer->setViewportRect(m_size);
     QRectF mirrored(m_rect.left(), m_rect.bottom(), m_rect.width(), -m_rect.height());
@@ -257,11 +258,11 @@ void QSGShaderEffectTexture::grab()
     m_renderer->setClearColor(Qt::transparent);
 
     if (m_multisampling) {
-        m_renderer->renderScene(BindableFbo(const_cast<QGLContext *>(ctx), m_multisampledFbo));
+        m_renderer->renderScene(BindableFbo(m_multisampledFbo));
         QRect r(0, 0, m_fbo->width(), m_fbo->height());
         QGLFramebufferObject::blitFramebuffer(m_fbo, r, m_multisampledFbo, r);
     } else {
-        m_renderer->renderScene(BindableFbo(const_cast<QGLContext *>(ctx), m_fbo));
+        m_renderer->renderScene(BindableFbo(m_fbo));
     }
 
     if (mipmap) {
@@ -289,7 +290,7 @@ QSGShaderEffectSource::QSGShaderEffectSource(QSGItem *parent)
     , m_mipmap(false)
 {
     setFlag(ItemHasContents);
-    m_texture = new QSGShaderEffectTexture();
+    m_texture = new QSGShaderEffectTexture(QSGItemPrivate::get(this)->sceneGraphContext());
 }
 
 QSGShaderEffectSource::~QSGShaderEffectSource()
@@ -482,7 +483,7 @@ QSGNode *QSGShaderEffectSource::updatePaintNode(QSGNode *oldNode, UpdatePaintNod
 
     QSGImageNode *node = static_cast<QSGImageNode *>(oldNode);
     if (!node) {
-        node = QSGContext::current->createImageNode();
+        node = QSGItemPrivate::get(this)->sceneGraphContext()->createImageNode();
         node->setFlag(QSGNode::UsePreprocess, true);
         node->setTexture(m_texture);
     }

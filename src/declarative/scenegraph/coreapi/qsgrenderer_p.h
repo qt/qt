@@ -79,10 +79,9 @@ public:
 class BindableFbo : public Bindable
 {
 public:
-    BindableFbo(QGLContext *ctx, QGLFramebufferObject *fbo);
+    BindableFbo(QGLFramebufferObject *fbo);
     virtual void bind() const;
 private:
-    QGLContext *m_ctx;
     QGLFramebufferObject *m_fbo;
 };
 

@@ -56,7 +56,6 @@ QSGTexturePrivate::QSGTexturePrivate()
     , mipmapMode(QSGTexture::None)
     , filterMode(QSGTexture::Nearest)
 {
-    context = QSGContext::current;
 }
 
 #ifndef QT_NO_DEBUG

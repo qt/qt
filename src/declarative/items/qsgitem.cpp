@@ -1075,6 +1075,11 @@ QSGItem *QSGItem::parentItem() const
     return d->parentItem;
 }
 
+QSGEngine *QSGItem::sceneGraphEngine() const
+{
+    return canvas()->sceneGraphEngine();
+}
+
 QSGCanvas *QSGItem::canvas() const 
 { 
     Q_D(const QSGItem);
