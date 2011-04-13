@@ -230,7 +230,7 @@ void TextureProviderMaterialWithOpacityShader::initialize()
 
 QSGDefaultImageNode::QSGDefaultImageNode()
     : m_texture(0)
-    , m_sourceRect(0, 0, 1, 1)
+    , m_sourceRect(0, 1, 1, -1)
     , m_dirtyGeometry(false)
     , m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4)
 {

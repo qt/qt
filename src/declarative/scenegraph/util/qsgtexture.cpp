@@ -316,9 +316,13 @@ void QSGPlainTexture::bind()
     int h = m_image.height();
 
 #ifdef QT_OPENGL_ES
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image.constBits());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    for (int i = 0; i < m_image.height(); ++i)
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, i, w, 1, GL_RGBA, GL_UNSIGNED_BYTE, m_image.constScanLine(h - 1 - i));
 #else
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, m_image.constBits());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+    for (int i = 0; i < m_image.height(); ++i)
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, i, w, 1, GL_BGRA, GL_UNSIGNED_BYTE, m_image.constScanLine(h - 1 - i));
 #endif
 
     if (m_has_mipmaps) {
@@ -327,7 +331,6 @@ void QSGPlainTexture::bind()
     }
 
     m_texture_size = QSize(w, h);
-    m_texture_rect = QRectF(0, 0, 1, 1);
 
     updateBindOptions(m_dirty_bind_options);
     m_dirty_bind_options = false;
