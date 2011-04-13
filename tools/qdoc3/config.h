@@ -63,6 +63,7 @@ class Config
     ~Config();
 
     void load(const QString& fileName);
+    void unload(const QString& fileName);
     void setStringList(const QString& var, const QStringList& values);
 
     const QString& programName() const { return prog; }
