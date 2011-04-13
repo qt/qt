@@ -44,6 +44,7 @@
 #include "qsgpainteditem.h"
 #include <private/qsgcontext_p.h>
 #include <qglframebufferobject.h>
+#include <qglfunctions.h>
 
 QT_BEGIN_NAMESPACE
 
