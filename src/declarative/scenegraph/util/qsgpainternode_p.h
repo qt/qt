@@ -94,6 +94,9 @@ public:
     void setSmoothPainting(bool s);
     bool smoothPainting() const { return m_smoothPainting; }
 
+    void setFillColor(const QColor &c);
+    QColor fillColor() const { return m_fillColor; }
+
     void update();
 
     void preprocess();
@@ -126,6 +129,7 @@ private:
     bool m_smoothPainting;
     bool m_extensionsChecked;
     bool m_multisamplingSupported;
+    QColor m_fillColor;
 
     bool m_dirtyGeometry;
     bool m_dirtySurface;

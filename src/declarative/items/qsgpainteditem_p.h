@@ -52,6 +52,8 @@ class QSGPaintedItemPrivate : public QSGItemPrivate
 public:
     QSGPaintedItemPrivate();
 
+    QColor fillColor;
+
     QRect dirtyRect;
 
     bool geometryDirty : 1;

@@ -114,6 +114,7 @@ QSGPainterNode::QSGPainterNode(QSGPaintedItem *item)
     , m_smoothPainting(false)
     , m_extensionsChecked(false)
     , m_multisamplingSupported(false)
+    , m_fillColor(Qt::transparent)
     , m_dirtyGeometry(false)
     , m_dirtySurface(false)
     , m_dirtyTexture(false)
@@ -154,11 +155,11 @@ void QSGPainterNode::preprocess()
         painter.setRenderHints(QPainter::Antialiasing | QPainter::HighQualityAntialiasing
                                | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
     }
-    if (!m_opaquePainting) {
-        painter.setCompositionMode(QPainter::CompositionMode_Source);
-        painter.fillRect(dirtyRect, Qt::transparent);
-        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-    }
+
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+    painter.fillRect(dirtyRect, m_fillColor);
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
     if (!m_dirtyRect.isNull())
         painter.setClipRect(dirtyRect);
     m_item->paint(&painter);
@@ -333,6 +334,15 @@ void QSGPainterNode::setSmoothPainting(bool s)
 
     m_smoothPainting = s;
     m_dirtySurface = true;
+}
+
+void QSGPainterNode::setFillColor(const QColor &c)
+{
+    if (c == m_fillColor)
+        return;
+
+    m_fillColor = c;
+    markDirty(DirtyMaterial);
 }
 
 
