@@ -71,7 +71,6 @@ public:
     ~QDBusUnixFileDescriptor();
 
     bool isValid() const;
-    bool isShared() const;
 
     int fileDescriptor() const;
     void setFileDescriptor(int fileDescriptor);

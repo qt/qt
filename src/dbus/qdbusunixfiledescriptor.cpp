@@ -186,14 +186,6 @@ bool QDBusUnixFileDescriptor::isValid() const
 }
 
 /*!
-    \internal
-*/
-bool QDBusUnixFileDescriptor::isShared() const
-{
-    return d && d->ref == 1;
-}
-
-/*!
     Returns the Unix file descriptor contained by this
     QDBusUnixFileDescriptor object. An invalid file descriptor is represented
     by the value -1.
