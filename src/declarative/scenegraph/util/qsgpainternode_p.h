@@ -118,6 +118,7 @@ private:
     QSGTextureRef m_texture;
 
     QSize m_size;
+    QSize m_fboSize;
     bool m_dirty;
     QRect m_dirtyRect;
     bool m_opaquePainting;

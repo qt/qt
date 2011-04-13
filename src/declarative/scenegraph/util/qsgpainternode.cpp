@@ -47,6 +47,20 @@
 
 QT_BEGIN_NAMESPACE
 
+#define QT_MINIMUM_FBO_SIZE 64
+
+static inline int qt_next_power_of_two(int v)
+{
+    v--;
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+    ++v;
+    return v;
+}
+
 QSGPainterTexture::QSGPainterTexture()
     : QSGPlainTexture()
 {
@@ -201,7 +215,7 @@ void QSGPainterNode::updateGeometry()
     if (m_actualPaintSurface == Image)
         source = QRectF(0, 0, 1, 1);
     else
-        source = QRectF(0, 1, 1, -1);
+        source = QRectF(0, 1, qreal(m_size.width()) / m_fboSize.width(), qreal(-m_size.height()) / m_fboSize.height());
     QSGGeometry::updateTexturedRectGeometry(&m_geometry,
                                             QRectF(0, 0, m_size.width(), m_size.height()),
                                             source);
@@ -215,6 +229,9 @@ void QSGPainterNode::updateSurface()
         if (m_fbo && !m_dirtyGeometry && (!ctx->format().sampleBuffers() || !m_multisamplingSupported))
             return;
 
+        if (m_fbo && m_fbo->size() == m_fboSize)
+            return;
+
         delete m_fbo;
         delete m_multisampledFbo;
         m_fbo = m_multisampledFbo = 0;
@@ -224,17 +241,17 @@ void QSGPainterNode::updateSurface()
                 QGLFramebufferObjectFormat format;
                 format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
                 format.setSamples(ctx->format().samples());
-                m_multisampledFbo = new QGLFramebufferObject(m_size, format);
+                m_multisampledFbo = new QGLFramebufferObject(m_fboSize, format);
             }
             {
                 QGLFramebufferObjectFormat format;
                 format.setAttachment(QGLFramebufferObject::NoAttachment);
-                m_fbo = new QGLFramebufferObject(m_size, format);
+                m_fbo = new QGLFramebufferObject(m_fboSize, format);
             }
         } else {
             QGLFramebufferObjectFormat format;
             format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
-            m_fbo = new QGLFramebufferObject(m_size, format);
+            m_fbo = new QGLFramebufferObject(m_fboSize, format);
         }
     } else {
         if (!m_image.isNull() && !m_dirtyGeometry)
@@ -247,11 +264,12 @@ void QSGPainterNode::updateSurface()
     QSGPainterTexture *texture = new QSGPainterTexture;
     if (m_actualPaintSurface == Image) {
         texture->setOwnsTexture(true);
+        texture->setTextureSize(m_size);
     } else {
         texture->setTextureId(m_fbo->texture());
         texture->setOwnsTexture(false);
+        texture->setTextureSize(m_fboSize);
     }
-    texture->setTextureSize(m_size);
     m_texture = QSGTextureRef(texture);
     m_material.setLinearFiltering(m_linear_filtering);
     m_materialO.setLinearFiltering(m_linear_filtering);
@@ -263,6 +281,11 @@ void QSGPainterNode::setSize(const QSize &size)
         return;
 
     m_size = size;
+    if (m_preferredPaintSurface == FramebufferObject) {
+        int fboWidth = qMax(QT_MINIMUM_FBO_SIZE, qt_next_power_of_two(size.width()));
+        int fboHeight = qMax(QT_MINIMUM_FBO_SIZE, qt_next_power_of_two(size.height()));
+        m_fboSize = QSize(fboWidth, fboHeight);
+    }
     m_dirtyGeometry = true;
     m_dirtySurface = true;
 }
