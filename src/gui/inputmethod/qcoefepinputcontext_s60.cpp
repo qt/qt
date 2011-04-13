@@ -231,7 +231,7 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         // It ignores the mouse event, so we need to commit and send a selection event (which will get triggered
         // after the commit)
         if (!m_preeditString.isEmpty()) {
-            commitCurrentString(false);
+            commitCurrentString(true);
 
             int pos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
 

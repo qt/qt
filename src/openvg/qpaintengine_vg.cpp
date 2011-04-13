@@ -1024,9 +1024,11 @@ static VGImage toVGImage
     switch (img.format()) {
     case QImage::Format_Mono:
         img = image.convertToFormat(QImage::Format_MonoLSB, flags);
+        img.invertPixels();
         format = VG_BW_1;
         break;
     case QImage::Format_MonoLSB:
+        img.invertPixels();
         format = VG_BW_1;
         break;
     case QImage::Format_RGB32:
@@ -3189,6 +3191,19 @@ void qt_vg_drawVGImageStencil
 bool QVGPaintEngine::canVgWritePixels(const QImage &image) const
 {
     Q_D(const QVGPaintEngine);
+
+    // qt_vg_image_to_vg_format returns VG_sARGB_8888 as
+    // fallback case if no matching VG format is found.
+    // If given image format is not Format_ARGB32 and returned
+    // format is VG_sARGB_8888, it means that no match was
+    // found. In that case vgWritePixels cannot be used.
+    // Also 1-bit formats cannot be used directly either.
+    if ((image.format() != QImage::Format_ARGB32
+           && qt_vg_image_to_vg_format(image.format()) == VG_sARGB_8888)
+           || image.depth() == 1) {
+        return false;
+    }
+
     // vgWritePixels ignores masking, blending and xforms so we can only use it if
     // ALL of the following conditions are true:
     // - It is a simple translate, or a scale of -1 on the y-axis (inverted)
