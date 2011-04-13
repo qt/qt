@@ -9,7 +9,7 @@ SOURCES   = csvfactory.cpp \
             main.cpp \
             mainwindow.cpp
 
-RESOURCES = csvplugin.qrc
+RESOURCES = webplugin.qrc
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/webkit/webplugin
