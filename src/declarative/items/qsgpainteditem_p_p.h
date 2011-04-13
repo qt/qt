@@ -53,7 +53,8 @@ class QSGPaintedItemPrivate : public QSGItemPrivate
 public:
     QSGPaintedItemPrivate();
 
-    QSGTexture *texture;
+    QRect dirtyRect;
+
     bool geometryDirty : 1;
     bool contentsDirty : 1;
     bool opaquePainting: 1;

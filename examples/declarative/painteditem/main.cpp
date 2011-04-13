@@ -66,7 +66,9 @@ int main(int argc, char ** argv)
 
     qmlRegisterType<MyPaintItem>("MyModule", 1, 0, "MyPaintItem");
 
-    QSGView view;
+    QGLFormat f = QGLFormat::defaultFormat();
+    f.setSampleBuffers(true);
+    QSGView view(f);
     view.setSource(QUrl::fromLocalFile("myfile.qml"));
     view.show();
     view.raise();

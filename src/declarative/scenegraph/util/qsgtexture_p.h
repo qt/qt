@@ -73,7 +73,7 @@ class Q_DECLARATIVE_EXPORT QSGPlainTexture : public QSGTexture
     Q_OBJECT
 public:
     QSGPlainTexture();
-    ~QSGPlainTexture();
+    virtual ~QSGPlainTexture();
 
     void setOwnsTexture(bool owns) { m_owns_texture = owns; }
     bool ownsTexture() const { return m_owns_texture; }
@@ -92,9 +92,9 @@ public:
 
     void setImage(const QImage &image);
 
-    void bind();
+    virtual void bind();
 
-private:
+protected:
     QImage m_image;
 
     GLuint m_texture_id;

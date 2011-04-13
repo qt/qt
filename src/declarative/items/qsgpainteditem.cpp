@@ -42,7 +42,7 @@
 
 #include "qsgpainteditem_p.h"
 #include "qsgpainteditem_p_p.h"
-#include "qsgimage_p_p.h"
+#include "private/qsgpainternode_p.h"
 
 #include <private/qsgcontext_p.h>
 #include <private/qsgadaptationlayer_p.h>
@@ -50,18 +50,21 @@
 QT_BEGIN_NAMESPACE
 
 QSGPaintedItemPrivate::QSGPaintedItemPrivate()
-: geometryDirty(false), contentsDirty(false), opaquePainting(false)
+    : QSGItemPrivate()
+    , geometryDirty(false)
+    , contentsDirty(false)
+    , opaquePainting(false)
 {
 }
 
 QSGPaintedItem::QSGPaintedItem(QSGItem *parent)
-: QSGItem(*(new QSGPaintedItemPrivate), parent)
+    : QSGItem(*(new QSGPaintedItemPrivate), parent)
 {
     setFlag(ItemHasContents);
 }
 
 QSGPaintedItem::QSGPaintedItem(QSGPaintedItemPrivate &dd, QSGItem *parent)
-: QSGItem(dd, parent)
+    : QSGItem(dd, parent)
 {
     setFlag(ItemHasContents);
 }
@@ -74,13 +77,16 @@ void QSGPaintedItem::update()
 {
     Q_D(QSGPaintedItem);
     d->contentsDirty = true;
+    if (!d->dirtyRect.isNull())
+        d->dirtyRect = boundingRect().toAlignedRect();
     QSGItem::update();
 }
 
-void QSGPaintedItem::update(const QRect &)
+void QSGPaintedItem::update(const QRect &rect)
 {
     Q_D(QSGPaintedItem);
     d->contentsDirty = true;
+    d->dirtyRect |= (boundingRect() & rect).toAlignedRect();
     QSGItem::update();
 }
 
@@ -90,9 +96,15 @@ bool QSGPaintedItem::opaquePainting() const
     return d->opaquePainting;
 }
 
-void QSGPaintedItem::setOpaquePainting(bool)
+void QSGPaintedItem::setOpaquePainting(bool o)
 {
-    // XXX todo
+    Q_D(QSGPaintedItem);
+
+    if (d->opaquePainting == o)
+        return;
+
+    d->opaquePainting = o;
+    QSGItem::update();
 }
 
 QSize QSGPaintedItem::contentsSize() const
@@ -164,7 +176,6 @@ void QSGPaintedItem::geometryChanged(const QRectF &newGeometry, const QRectF &ol
 
 QSGNode *QSGPaintedItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data)
 {
-    // XXX todo - highly inefficient.  Should use the FBO approach used in QxPainterNode.
     Q_UNUSED(data);
     Q_D(QSGPaintedItem);
 
@@ -173,33 +184,22 @@ QSGNode *QSGPaintedItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *
         return 0;
     }
 
-    QSGImageNode *node = static_cast<QSGImageNode *>(oldNode);
-    if (!node) {
-        node = QSGContext::current->createImageNode();
-        d->texture = new QSGPlainTexture();
-        node->setTexture(d->texture);
-    }
+    QSGPainterNode *node = static_cast<QSGPainterNode *>(oldNode);
+    if (!node)
+        node = new QSGPainterNode;
 
-    QImage image(width(), height(), d->opaquePainting ? QImage::Format_RGB32
-                                                      : QImage::Format_ARGB32_Premultiplied);
-    if (!d->opaquePainting)
-        image.fill(0);
-
-    QPainter p(&image);
-    paint(&p);
-    p.end();
-
-    static_cast<QSGPlainTexture *>(d->texture)->setImage(image);
-
-    node->setTexture(0);
-    node->setTexture(d->texture);
-    node->setTargetRect(image.rect());
-    node->setSourceRect(QRectF(0, 0, 1, 1));
-    node->setFiltering(d->smooth ? QSGTexture::Linear : QSGTexture::Nearest);
-    node->setHorizontalWrapMode(QSGTexture::ClampToEdge);
-    node->setVerticalWrapMode(QSGTexture::ClampToEdge);
-
+    node->setSize(QSize(d->width, d->height));
+    node->setSmoothPainting(d->smooth);
+    node->setLinearFiltering(d->smooth);
+    node->setOpaquePainting(d->opaquePainting);
     node->update();
+
+    if (d->contentsDirty || d->geometryDirty) {
+        node->paint(this, d->dirtyRect);
+        d->contentsDirty = false;
+        d->geometryDirty = false;
+        d->dirtyRect = QRect();
+    }
 
     return node;
 }
