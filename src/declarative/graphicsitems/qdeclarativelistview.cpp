@@ -744,6 +744,28 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         if (visibleItems.at(i)->index != -1)
             modelIndex = visibleItems.at(i)->index + 1;
     }
+
+    if (visibleItems.count() && (fillFrom > itemEnd+averageSize+spacing
+        || fillTo < visiblePos - averageSize - spacing)) {
+        // We've jumped more than a page.  Estimate which items are now
+        // visible and fill from there.
+        int count = (fillFrom - itemEnd) / (averageSize + spacing);
+        for (int i = 0; i < visibleItems.count(); ++i)
+            releaseItem(visibleItems.at(i));
+        visibleItems.clear();
+        modelIndex += count;
+        if (modelIndex >= model->count()) {
+            count -= modelIndex - model->count() + 1;
+            modelIndex = model->count() - 1;
+        } else if (modelIndex < 0) {
+            count -= modelIndex;
+            modelIndex = 0;
+        }
+        visibleIndex = modelIndex;
+        visiblePos = itemEnd + count * (averageSize + spacing) + 1;
+        itemEnd = visiblePos-1;
+    }
+
     bool changed = false;
     FxListItem *item = 0;
     qreal pos = itemEnd + 1;
