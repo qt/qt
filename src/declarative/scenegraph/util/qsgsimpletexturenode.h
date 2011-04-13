@@ -66,6 +66,9 @@ public:
     void setTexture(QSGTexture *texture);
     QSGTexture *texture() const;
 
+    void setFiltering(QSGTexture::Filtering filtering);
+    QSGTexture::Filtering filtering() const;
+
 private:
     QSGGeometry m_geometry;
     QSGTextureMaterial m_opaque_material;

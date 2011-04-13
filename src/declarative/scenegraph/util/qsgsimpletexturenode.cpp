@@ -86,6 +86,7 @@ void QSGSimpleTextureNode::setSourceRect(const QRectF &r)
         return;
     m_source_rect = r;
     qsgsimpletexturenode_update(&m_geometry, texture(), m_rect, m_source_rect);
+    markDirty(DirtyGeometry);
 }
 
 
@@ -99,6 +100,32 @@ QRectF QSGSimpleTextureNode::sourceRect() const
 
 
 /*!
+    Sets the filtering to be used for this texture node to \a filtering.
+
+    For smooth scaling, use QSGTexture::Linear; for normal scaling, use
+    QSGTexture::Nearest.
+ */
+void QSGSimpleTextureNode::setFiltering(QSGTexture::Filtering filtering)
+{
+    if (m_material.filtering() == filtering)
+        return;
+
+    m_material.setFiltering(filtering);
+    m_opaque_material.setFiltering(filtering);
+    markDirty(DirtyMaterial);
+}
+
+
+/*!
+    Returns the filtering currently set on this texture node
+ */
+QSGTexture::Filtering QSGSimpleTextureNode::filtering() const
+{
+    return m_material.filtering();
+}
+
+
+/*!
     Sets the target rect of this texture node to \a r
  */
 void QSGSimpleTextureNode::setRect(const QRectF &r)
@@ -107,6 +134,7 @@ void QSGSimpleTextureNode::setRect(const QRectF &r)
         return;
     m_rect = r;
     qsgsimpletexturenode_update(&m_geometry, texture(), m_rect, m_source_rect);
+    markDirty(DirtyGeometry);
 }
 
 
@@ -131,6 +159,7 @@ void QSGSimpleTextureNode::setTexture(QSGTexture *texture)
     m_material.setTexture(texture);
     m_opaque_material.setTexture(texture);
     qsgsimpletexturenode_update(&m_geometry, texture, m_rect, m_source_rect);
+    markDirty(DirtyMaterial);
 }
 
 
