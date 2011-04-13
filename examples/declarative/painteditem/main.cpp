@@ -69,6 +69,7 @@ int main(int argc, char ** argv)
     QGLFormat f = QGLFormat::defaultFormat();
     f.setSampleBuffers(true);
     QSGView view(f);
+    view.setResizeMode(QSGView::SizeRootObjectToView);
     view.setSource(QUrl::fromLocalFile("myfile.qml"));
     view.show();
     view.raise();

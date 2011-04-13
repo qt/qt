@@ -186,20 +186,18 @@ QSGNode *QSGPaintedItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *
 
     QSGPainterNode *node = static_cast<QSGPainterNode *>(oldNode);
     if (!node)
-        node = new QSGPainterNode;
+        node = new QSGPainterNode(this);
 
     node->setSize(QSize(d->width, d->height));
     node->setSmoothPainting(d->smooth);
     node->setLinearFiltering(d->smooth);
     node->setOpaquePainting(d->opaquePainting);
+    node->setDirty(d->contentsDirty || d->geometryDirty, d->dirtyRect);
     node->update();
 
-    if (d->contentsDirty || d->geometryDirty) {
-        node->paint(this, d->dirtyRect);
-        d->contentsDirty = false;
-        d->geometryDirty = false;
-        d->dirtyRect = QRect();
-    }
+    d->contentsDirty = false;
+    d->geometryDirty = false;
+    d->dirtyRect = QRect();
 
     return node;
 }

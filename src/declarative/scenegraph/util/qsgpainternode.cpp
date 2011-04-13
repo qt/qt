@@ -78,14 +78,16 @@ void QSGPainterTexture::bind()
     m_dirty_rect = QRect();
 }
 
-QSGPainterNode::QSGPainterNode()
+QSGPainterNode::QSGPainterNode(QSGPaintedItem *item)
     : QSGGeometryNode()
     , m_preferredPaintSurface(Image)
     , m_actualPaintSurface(Image)
+    , m_item(item)
     , m_fbo(0)
     , m_multisampledFbo(0)
     , m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4)
     , m_size(1, 1)
+    , m_dirty(false)
     , m_opaquePainting(false)
     , m_linear_filtering(false)
     , m_smoothPainting(false)
@@ -98,6 +100,7 @@ QSGPainterNode::QSGPainterNode()
     setMaterial(&m_materialO);
     setOpaqueMaterial(&m_material);
     setGeometry(&m_geometry);
+    setFlag(UsePreprocess);
 }
 
 QSGPainterNode::~QSGPainterNode()
@@ -111,12 +114,12 @@ void QSGPainterNode::setPreferredPaintSurface(PaintSurface surface)
     m_preferredPaintSurface = surface;
 }
 
-void QSGPainterNode::paint(QSGPaintedItem *item, const QRect &clipRect)
+void QSGPainterNode::preprocess()
 {
-    if (!item)
+    if (!m_dirty)
         return;
 
-    QRect dirtyRect = clipRect.isNull() ? QRect(0, 0, m_size.width(), m_size.height()) : clipRect;
+    QRect dirtyRect = m_dirtyRect.isNull() ? QRect(0, 0, m_size.width(), m_size.height()) : m_dirtyRect;
 
     QPainter painter;
     if (m_actualPaintSurface == Image)
@@ -135,9 +138,9 @@ void QSGPainterNode::paint(QSGPaintedItem *item, const QRect &clipRect)
         painter.fillRect(dirtyRect, Qt::transparent);
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
     }
-    if (!clipRect.isNull())
+    if (!m_dirtyRect.isNull())
         painter.setClipRect(dirtyRect);
-    item->paint(&painter);
+    m_item->paint(&painter);
     painter.end();
 
     if (m_actualPaintSurface == Image) {
@@ -148,7 +151,8 @@ void QSGPainterNode::paint(QSGPaintedItem *item, const QRect &clipRect)
         QGLFramebufferObject::blitFramebuffer(m_fbo, dirtyRect, m_multisampledFbo, dirtyRect);
     }
 
-    markDirty(DirtyMaterial);
+    m_dirty = false;
+    m_dirtyRect = QRect();
 }
 
 void QSGPainterNode::update()
@@ -170,8 +174,10 @@ void QSGPainterNode::update()
 
     if (m_dirtyGeometry)
         updateGeometry();
-    if (m_dirtySurface || m_dirtyGeometry)
+    if (m_dirtySurface || m_dirtyGeometry) {
         updateSurface();
+        m_dirty = true;
+    }
     if (m_dirtySurface || m_dirtyTexture)
         updateTexture();
 
@@ -231,7 +237,11 @@ void QSGPainterNode::updateSurface()
             m_fbo = new QGLFramebufferObject(m_size, format);
         }
     } else {
+        if (!m_image.isNull() && !m_dirtyGeometry)
+            return;
+
         m_image = QImage(m_size, QImage::Format_ARGB32_Premultiplied);
+        m_image.fill(Qt::transparent);
     }
 
     QSGPainterTexture *texture = new QSGPainterTexture;
@@ -255,6 +265,14 @@ void QSGPainterNode::setSize(const QSize &size)
     m_size = size;
     m_dirtyGeometry = true;
     m_dirtySurface = true;
+}
+
+void QSGPainterNode::setDirty(bool d, const QRect &dirtyRect)
+{
+    m_dirty = d;
+    m_dirtyRect = dirtyRect;
+
+    markDirty(DirtyMaterial);
 }
 
 void QSGPainterNode::setOpaquePainting(bool opaque)

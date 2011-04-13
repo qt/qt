@@ -71,7 +71,7 @@ private:
 class Q_DECLARATIVE_EXPORT QSGPainterNode : public QSGGeometryNode
 {
 public:
-    QSGPainterNode();
+    QSGPainterNode(QSGPaintedItem *item);
     virtual ~QSGPainterNode();
 
     enum PaintSurface {
@@ -82,6 +82,8 @@ public:
 
     void setSize(const QSize &size);
     QSize size() const { return m_size; }
+
+    void setDirty(bool d, const QRect &dirtyRect = QRect());
 
     void setOpaquePainting(bool opaque);
     bool opaquePainting() const { return m_opaquePainting; }
@@ -94,7 +96,7 @@ public:
 
     void update();
 
-    void paint(QSGPaintedItem *item, const QRect &clipRect = QRect());
+    void preprocess();
 
 private:
     void updateTexture();
@@ -103,6 +105,8 @@ private:
 
     PaintSurface m_preferredPaintSurface;
     PaintSurface m_actualPaintSurface;
+
+    QSGPaintedItem *m_item;
 
     QGLFramebufferObject *m_fbo;
     QGLFramebufferObject *m_multisampledFbo;
@@ -114,6 +118,8 @@ private:
     QSGTextureRef m_texture;
 
     QSize m_size;
+    bool m_dirty;
+    QRect m_dirtyRect;
     bool m_opaquePainting;
     bool m_linear_filtering;
     bool m_smoothPainting;
