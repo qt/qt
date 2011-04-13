@@ -13,8 +13,8 @@ HEADERS += \
     $$PWD/qsgcanvas_p.h \
     $$PWD/qsgfocusscope_p.h \
     $$PWD/qsgitemsmodule_p.h \
+    $$PWD/qsgpainteditem.h \
     $$PWD/qsgpainteditem_p.h \
-    $$PWD/qsgpainteditem_p_p.h \
     $$PWD/qsgtext_p.h \
     $$PWD/qsgtext_p_p.h \
     $$PWD/qsgtextnode_p.h \

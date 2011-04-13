@@ -43,7 +43,7 @@
 #ifndef QSGIMPLICITSIZEITEM_H
 #define QSGIMPLICITSIZEITEM_H
 
-#include "qsgpainteditem_p.h"
+#include "qsgpainteditem.h"
 
 QT_BEGIN_HEADER
 

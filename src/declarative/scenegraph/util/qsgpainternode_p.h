@@ -44,7 +44,7 @@
 
 #include "qsgnode.h"
 #include "qsgtexturematerial.h"
-#include "private/qsgtexture_p.h"
+#include "qsgtexture_p.h"
 
 QT_BEGIN_HEADER
 

@@ -41,7 +41,7 @@
 #include <QtGui/qapplication.h>
 #include <QtDeclarative/qdeclarative.h>
 #include <QtDeclarative/qsgview.h>
-#include <private/qsgpainteditem_p.h>
+#include <QtDeclarative/qsgpainteditem.h>
 
 class MyPaintItem : public QSGPaintedItem
 {

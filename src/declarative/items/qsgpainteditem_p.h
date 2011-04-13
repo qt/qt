@@ -40,66 +40,25 @@
 **
 ****************************************************************************/
 
-#ifndef QSGPAINTEDITEM_P_H
-#define QSGPAINTEDITEM_P_H
+#ifndef QSGPAINTEDITEM_P_P_H
+#define QSGPAINTEDITEM_P_P_H
 
-#include "qsgitem.h"
+#include "qsgitem_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QSGPaintedItemPrivate;
-class Q_DECLARATIVE_EXPORT QSGPaintedItem : public QSGItem
+class QSGPaintedItemPrivate : public QSGItemPrivate
 {
-    Q_OBJECT
-
-    Q_PROPERTY(QSize contentsSize READ contentsSize WRITE setContentsSize NOTIFY contentsSizeChanged)
-    Q_PROPERTY(QColor fillColor READ fillColor WRITE setFillColor NOTIFY fillColorChanged)
-    Q_PROPERTY(int pixelCacheSize READ pixelCacheSize WRITE setPixelCacheSize)
-    Q_PROPERTY(bool smoothCache READ smoothCache WRITE setSmoothCache)
-    Q_PROPERTY(qreal contentsScale READ contentsScale WRITE setContentsScale NOTIFY contentsScaleChanged)
 public:
-    QSGPaintedItem(QSGItem *parent = 0);
-    virtual ~QSGPaintedItem();
+    QSGPaintedItemPrivate();
 
-    void update();
-    void update(const QRect &);
+    QRect dirtyRect;
 
-    bool opaquePainting() const;
-    void setOpaquePainting(bool opaque);
-
-    QSize contentsSize() const;
-    void setContentsSize(const QSize &);
-    void resetContentsSize();
-
-    qreal contentsScale() const;
-    void setContentsScale(qreal);
-
-    int pixelCacheSize() const;
-    void setPixelCacheSize(int pixels);
-
-    bool smoothCache() const;
-    void setSmoothCache(bool on);
-
-    QColor fillColor() const;
-    void setFillColor(const QColor&);
-
-    virtual void paint(QPainter *) = 0;
-
-Q_SIGNALS:
-    void fillColorChanged();
-    void contentsSizeChanged();
-    void contentsScaleChanged();
-
-protected:
-    QSGPaintedItem(QSGPaintedItemPrivate &dd, QSGItem *parent = 0);
-    virtual void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
-    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
-
-private:
-    Q_DISABLE_COPY(QSGPaintedItem);
-    Q_DECLARE_PRIVATE(QSGPaintedItem);
+    bool geometryDirty : 1;
+    bool contentsDirty : 1;
+    bool opaquePainting: 1;
 };
 
 QT_END_NAMESPACE
 
-#endif // QSGPAINTEDITEM_P_H
+#endif // QSGPAINTEDITEM_P_P_H

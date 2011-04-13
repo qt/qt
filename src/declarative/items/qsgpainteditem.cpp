@@ -40,9 +40,9 @@
 **
 ****************************************************************************/
 
-#include "qsgpainteditem_p.h"
-#include "qsgpainteditem_p_p.h"
-#include "private/qsgpainternode_p.h"
+#include "qsgpainteditem.h"
+#include <private/qsgpainteditem_p.h>
+#include <private/qsgpainternode_p.h>
 
 #include <private/qsgcontext_p.h>
 #include <private/qsgadaptationlayer_p.h>
