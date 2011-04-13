@@ -1539,6 +1539,19 @@ void tst_qdeclarativetextedit::cursorDelegate()
     textEditObject->setCursorPosition(0);
     QCOMPARE(textEditObject->cursorRectangle().x(), qRound(delegateObject->x()));
     QCOMPARE(textEditObject->cursorRectangle().y(), qRound(delegateObject->y()));
+    QVERIFY(textEditObject->cursorRectangle().y() >= 0);
+    QVERIFY(textEditObject->cursorRectangle().y() < textEditObject->cursorRectangle().height());
+    textEditObject->setVAlign(QDeclarativeTextEdit::AlignVCenter);
+    QCOMPARE(textEditObject->cursorRectangle().x(), qRound(delegateObject->x()));
+    QCOMPARE(textEditObject->cursorRectangle().y(), qRound(delegateObject->y()));
+    QVERIFY(textEditObject->cursorRectangle().y() > (textEditObject->height() / 2) - textEditObject->cursorRectangle().height());
+    QVERIFY(textEditObject->cursorRectangle().y() < (textEditObject->height() / 2) + textEditObject->cursorRectangle().height());
+    textEditObject->setVAlign(QDeclarativeTextEdit::AlignBottom);
+    QCOMPARE(textEditObject->cursorRectangle().x(), qRound(delegateObject->x()));
+    QCOMPARE(textEditObject->cursorRectangle().y(), qRound(delegateObject->y()));
+    QVERIFY(textEditObject->cursorRectangle().y() > textEditObject->height() - (textEditObject->cursorRectangle().height() * 2));
+    QVERIFY(textEditObject->cursorRectangle().y() < textEditObject->height());
+
     //Test Delegate gets deleted
     textEditObject->setCursorDelegate(0);
     QVERIFY(!textEditObject->findChild<QDeclarativeItem*>("cursorInstance"));
@@ -2227,6 +2240,8 @@ void tst_qdeclarativetextedit::preeditMicroFocus()
     QTest::qWaitForWindowShown(&view);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
+    QSignalSpy cursorRectangleSpy(&edit, SIGNAL(cursorRectangleChanged()));
+
     QRect currentRect;
     QRect previousRect = edit.inputMethodQuery(Qt::ImMicroFocus).toRect();
 
@@ -2237,8 +2252,9 @@ void tst_qdeclarativetextedit::preeditMicroFocus()
     currentRect = edit.inputMethodQuery(Qt::ImMicroFocus).toRect();
     QCOMPARE(currentRect, previousRect);
 #if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
-    QCOMPARE(ic.updateReceived, true);
+    QCOMPARE(ic.updateReceived, false); // The cursor position hasn't changed.
 #endif
+    QCOMPARE(cursorRectangleSpy.count(), 0);
 
     // Verify that the micro focus rect moves to the left as the cursor position
     // is incremented.
@@ -2250,6 +2266,8 @@ void tst_qdeclarativetextedit::preeditMicroFocus()
 #if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
         QCOMPARE(ic.updateReceived, true);
 #endif
+        QVERIFY(cursorRectangleSpy.count() > 0);
+        cursorRectangleSpy.clear();
         previousRect = currentRect;
     }
 
@@ -2263,6 +2281,7 @@ void tst_qdeclarativetextedit::preeditMicroFocus()
 #if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     QCOMPARE(ic.updateReceived, true);
 #endif
+    QVERIFY(cursorRectangleSpy.count() > 0);
 }
 
 void tst_qdeclarativetextedit::inputContextMouseHandler()
