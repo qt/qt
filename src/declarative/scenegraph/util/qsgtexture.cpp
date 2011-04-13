@@ -304,9 +304,13 @@ void QSGPlainTexture::setImage(const QImage &image)
 
 void QSGPlainTexture::setTextureId(int id)
 {
+    if (m_texture_id && m_owns_texture)
+        glDeleteTextures(1, &m_texture_id);
+
     m_texture_id = id;
     m_dirty_texture = false;
     m_dirty_bind_options = true;
+    m_image = QImage();
 }
 
 
@@ -321,7 +325,7 @@ void QSGPlainTexture::bind()
 
     m_dirty_texture = false;
 
-    if (m_texture_id)
+    if (m_texture_id && m_owns_texture)
         glDeleteTextures(1, &m_texture_id);
 
     if (m_image.isNull()) {
