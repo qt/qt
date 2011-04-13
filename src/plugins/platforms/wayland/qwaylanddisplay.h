@@ -77,7 +77,7 @@ public:
     void setCursor(QWaylandBuffer *buffer, int32_t x, int32_t y);
 
     void syncCallback(wl_display_sync_func_t func, void *data);
-    void frameCallback(wl_display_frame_func_t func, void *data);
+    void frameCallback(wl_display_frame_func_t func, struct wl_surface *surface, void *data);
 
     struct wl_display *wl_display() const { return mDisplay; }
 

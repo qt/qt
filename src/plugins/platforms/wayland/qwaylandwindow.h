@@ -84,7 +84,7 @@ protected:
     QWaitCondition mFrameSyncWait;
 
 private:
-    static void frameCallback(void *data, uint32_t time);
+    static void frameCallback(struct wl_surface *surface, void *data, uint32_t time);
 
 
 };
