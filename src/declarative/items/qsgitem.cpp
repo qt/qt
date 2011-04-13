@@ -1306,7 +1306,7 @@ void QSGItemPrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObjec
     const QMetaObject *mo = o->metaObject();
     while (mo && mo != &QSGItem::staticMetaObject) {
         if (mo == &QDeclarativeItem::staticMetaObject) 
-            qWarning("Cannot add a QtQuick 1.0 item into a QtQuick 2.0 scene!");
+            qWarning("Cannot add a QtQuick 1.0 item (%s) into a QtQuick 2.0 scene!", o->metaObject()->className());
         mo = mo->d.superdata;
     }
 
