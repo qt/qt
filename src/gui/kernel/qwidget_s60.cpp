@@ -838,6 +838,8 @@ void QWidgetPrivate::s60UpdateIsOpaque()
                 // recreate backing store to get translucent surface (raster surface).
                 extra->topextra->backingStore.create(q);
                 extra->topextra->backingStore.registerWidget(q);
+                // FixNativeOrientation() will not work without an EGL surface.
+                q->setAttribute(Qt::WA_SymbianNoSystemRotation, false);
             }
         }
     } else if (extra->topextra->nativeWindowTransparencyEnabled) {

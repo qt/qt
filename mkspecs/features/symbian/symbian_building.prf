@@ -1,6 +1,7 @@
 symbian-armcc {
     QMAKE_CFLAGS += $$QMAKE_CFLAGS.ARMCC
     QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS.ARMCC
+    QMAKE_LFLAGS += $$QMAKE_LFLAGS.ARMCC
     # This is to prevent inclusion of the shipped RVCT headers, which are often in the
     # environment variable RVCTxxINC by default. -J prevents the searching of that location,
     # but needs a path, so just specify somewhere guaranteed not to contain header files.
@@ -9,6 +10,7 @@ symbian-armcc {
 } else:symbian-gcce {
     QMAKE_CFLAGS += $$QMAKE_CFLAGS.GCCE
     QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS.GCCE
+    QMAKE_LFLAGS += $$QMAKE_LFLAGS.GCCE
 }
 
 # We need a target name without the INFIX'ed part, since flags are not infixed.
