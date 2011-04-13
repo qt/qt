@@ -1301,9 +1301,6 @@ int NestedListModel::count() const
 
 void NestedListModel::clear()
 {
-    _rolesOk = false;
-    roleStrings.clear();
-
     if (_root)
         _root->clear();
 }
