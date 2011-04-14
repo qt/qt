@@ -294,6 +294,7 @@ void ColoredParticle::setCount(int c)
 
 void ColoredParticle::reset()
 {
+    ParticleType::reset();
      m_pleaseReset = true;
 }
 
@@ -469,7 +470,6 @@ void ColoredParticle::reload(ParticleData *d)
     ColoredParticleVertices *particles = (ColoredParticleVertices *) m_node->geometry()->vertexData();
 
     int pos = particleTypeIndex(d);
-
 
     ColoredParticleVertices &p = particles[pos];
 

@@ -444,6 +444,7 @@ void SpriteParticle::prepareNextFrame()
 
 void SpriteParticle::reset()
 {
+    ParticleType::reset();
     m_pleaseReset = true;
 }
 

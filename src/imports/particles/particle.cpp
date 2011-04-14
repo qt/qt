@@ -84,13 +84,18 @@ void ParticleType::reload(ParticleData*)
 {
 }
 
+void ParticleType::reset()
+{
+    //Have to every time because what it's emitting may have changed and that affects particleTypeIndex
+    m_particleStarts.clear();
+    m_lastStart = 0;
+}
+
 void ParticleType::setCount(int c)
 {
     if(c == m_count)
         return;
     m_count = c;
-    m_particleStarts.clear();//###Is this the right place for 'reset' behaviour?
-    m_lastStart = 0;
     emit countChanged();
 }
 
@@ -106,7 +111,9 @@ int ParticleType::particleTypeIndex(ParticleData* d)
         m_particleStarts.insert(d->group, m_lastStart);
         m_lastStart += m_system->m_groupData[d->group]->size;
     }
-    return m_particleStarts[d->group] + d->particleIndex;
+    int ret = m_particleStarts[d->group] + d->particleIndex;
+    Q_ASSERT(ret >=0 && ret < m_count);//XXX: Possibly shouldn't assert, but bugs here were hard to find in the past
+    return ret;
 }
 
 

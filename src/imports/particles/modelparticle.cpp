@@ -180,6 +180,7 @@ void ModelParticle::reload(ParticleData* d)
 
 void ModelParticle::setCount(int c)
 {
+    ParticleType::setCount(c);//###Do we need our own?
     m_particleCount = c;
     reset();
 }
@@ -191,6 +192,7 @@ int ModelParticle::count()
 
 void ModelParticle::reset()
 {
+    ParticleType::reset();
     //TODO: Cleanup items?
     m_items.resize(m_particleCount);
     m_data.resize(m_particleCount);
@@ -199,7 +201,7 @@ void ModelParticle::reset()
     m_data.fill(0);
     m_idx.fill(-1);
     m_available.clear();
-    m_pendingItems.clear();//TODO: Emit signal?
+    //m_pendingItems.clear();//TODO: Should this be done? If so, Emit signal?
     if(m_model)
         for(int i=0; i<m_model->count(); i++)
             m_available << i;//TODO: Track changes, then have this in the right place
