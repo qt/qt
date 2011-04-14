@@ -112,7 +112,7 @@ int ParticleType::particleTypeIndex(ParticleData* d)
         m_lastStart += m_system->m_groupData[d->group]->size;
     }
     int ret = m_particleStarts[d->group] + d->particleIndex;
-    Q_ASSERT(ret >=0 && ret < m_count);//XXX: Shouldn't assert, but bugs here were hard to find in the past
+    Q_ASSERT(ret >=0 && ret < m_count);//XXX: Possibly shouldn't assert, but bugs here were hard to find in the past
     return ret;
 }
 
