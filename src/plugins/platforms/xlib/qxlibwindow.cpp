@@ -81,7 +81,7 @@ QXlibWindow::QXlibWindow(QWidget *window)
     int h = window->height();
 
     if(window->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
-            && QApplicationPrivate::platformIntegration()->hasOpenGL() ) {
+            && QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL) ) {
 #if !defined(QT_NO_OPENGL)
 #if !defined(QT_OPENGL_ES_2)
         XVisualInfo *visualInfo = qglx_findVisualInfo(mScreen->display()->nativeDisplay(),mScreen->xScreenNumber(),window->platformWindowFormat());
@@ -656,7 +656,7 @@ void QXlibWindow::setCursor(const Cursor &cursor)
 
 QPlatformGLContext *QXlibWindow::glContext() const
 {
-    if (!QApplicationPrivate::platformIntegration()->hasOpenGL())
+    if (!QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
         return 0;
     if (!mGLContext) {
         QXlibWindow *that = const_cast<QXlibWindow *>(this);

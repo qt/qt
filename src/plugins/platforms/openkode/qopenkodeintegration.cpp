@@ -192,6 +192,7 @@ bool QOpenKODEIntegration::hasCapability(QPlatformIntegration::Capability cap) c
 {
     switch (cap) {
     case ThreadedPixmaps: return true;
+    case OpenGL: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
@@ -226,11 +227,6 @@ QWindowSurface *QOpenKODEIntegration::createWindowSurface(QWidget *widget, WId) 
     }
 
     return returnSurface;
-}
-
-bool QOpenKODEIntegration::hasOpenGL() const
-{
-    return true;
 }
 
 QPlatformEventLoopIntegration *QOpenKODEIntegration::createEventLoopIntegration() const
