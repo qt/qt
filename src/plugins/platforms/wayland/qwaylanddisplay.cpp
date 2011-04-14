@@ -163,9 +163,9 @@ void QWaylandDisplay::syncCallback(wl_display_sync_func_t func, void *data)
     wl_display_sync_callback(mDisplay, func, data);
 }
 
-void QWaylandDisplay::frameCallback(wl_display_frame_func_t func, void *data)
+void QWaylandDisplay::frameCallback(wl_display_frame_func_t func, struct wl_surface *surface, void *data)
 {
-    wl_display_frame_callback(mDisplay, func, data);
+    wl_display_frame_callback(mDisplay, surface, func, data);
 }
 
 void QWaylandDisplay::flushRequests()

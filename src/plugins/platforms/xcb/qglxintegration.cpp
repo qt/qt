@@ -57,8 +57,6 @@
 #include <dlfcn.h>
 #endif
 
-QMutex QGLXContext::m_defaultSharedContextMutex(QMutex::Recursive);
-
 QGLXContext::QGLXContext(Window window, QXcbScreen *screen, const QPlatformWindowFormat &format)
     : QPlatformGLContext()
     , m_screen(screen)
@@ -67,20 +65,7 @@ QGLXContext::QGLXContext(Window window, QXcbScreen *screen, const QPlatformWindo
 {
     Q_XCB_NOOP(m_screen->connection());
     const QPlatformGLContext *sharePlatformContext;
-    if (format.useDefaultSharedContext()) {
-        if (!QPlatformGLContext::defaultSharedContext()) {
-            if (m_defaultSharedContextMutex.tryLock()){
-                createDefaultSharedContext(screen);
-                m_defaultSharedContextMutex.unlock();
-            } else {
-                m_defaultSharedContextMutex.lock(); //wait to the the shared context is created
-                m_defaultSharedContextMutex.unlock();
-            }
-        }
-        sharePlatformContext = QPlatformGLContext::defaultSharedContext();
-    } else {
-        sharePlatformContext = format.sharedGLContext();
-    }
+    sharePlatformContext = format.sharedGLContext();
     GLXContext shareGlxContext = 0;
     if (sharePlatformContext)
         shareGlxContext = static_cast<const QGLXContext*>(sharePlatformContext)->glxContext();
@@ -103,35 +88,6 @@ QGLXContext::~QGLXContext()
     if (m_context)
         glXDestroyContext(DISPLAY_FROM_XCB(m_screen), m_context);
     Q_XCB_NOOP(m_screen->connection());
-}
-
-void QGLXContext::createDefaultSharedContext(QXcbScreen *screen)
-{
-    Q_XCB_NOOP(screen->connection());
-    int x = 0;
-    int y = 0;
-    int w = 3;
-    int h = 3;
-
-    QPlatformWindowFormat format = QPlatformWindowFormat::defaultFormat();
-    GLXContext context;
-    GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(screen),screen->screenNumber(),format);
-    if (config) {
-        XVisualInfo *visualInfo = glXGetVisualFromFBConfig(DISPLAY_FROM_XCB(screen), config);
-        Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(screen), screen->root(), visualInfo->visual, AllocNone);
-        XSetWindowAttributes a;
-        a.colormap = cmap;
-        Window sharedWindow = XCreateWindow(DISPLAY_FROM_XCB(screen), screen->root(), x, y, w, h,
-                                  0, visualInfo->depth, InputOutput, visualInfo->visual,
-                                  CWColormap, &a);
-
-        context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, 0, TRUE);
-        QPlatformGLContext *sharedContext = new QGLXContext(screen, sharedWindow, context);
-        QPlatformGLContext::setDefaultSharedContext(sharedContext);
-    } else {
-        qWarning("Warning no shared context created");
-    }
-    Q_XCB_NOOP(screen->connection());
 }
 
 void QGLXContext::makeCurrent()

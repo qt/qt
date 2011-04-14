@@ -125,7 +125,7 @@ void QWaylandWindow::damage(const QRegion &region)
 {
     //We have to do sync stuff before calling damage, or we might
     //get a frame callback before we get the timestamp
-    mDisplay->frameCallback(QWaylandWindow::frameCallback, this);
+    mDisplay->frameCallback(QWaylandWindow::frameCallback, mSurface, this);
     mWaitingForFrameSync = true;
 
     QVector<QRect> rects = region.rects();
@@ -143,7 +143,7 @@ void QWaylandWindow::newSurfaceCreated()
     }
 }
 
-void QWaylandWindow::frameCallback(void *data, uint32_t time)
+void QWaylandWindow::frameCallback(struct wl_surface *surface, void *data, uint32_t time)
 {
     Q_UNUSED(time);
     QWaylandWindow *self = static_cast<QWaylandWindow*>(data);

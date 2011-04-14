@@ -17,6 +17,8 @@ OBJECTIVE_HEADERS = quikitintegration.h \
     quikiteventloop.h \
     quikitwindowsurface.h
 
+HEADERS = quikitsoftwareinputhandler.h
+
 #add libz for freetype.
 LIBS += -lz
 

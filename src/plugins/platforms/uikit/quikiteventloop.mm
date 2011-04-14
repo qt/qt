@@ -124,6 +124,7 @@ QT_BEGIN_NAMESPACE
 QUIKitEventLoop::QUIKitEventLoop()
 {
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+    mInputHandler = new QUIKitSoftwareInputHandler;
     mHelper = [[EventLoopHelper alloc] initWithEventLoopIntegration:this];
     mTimer = [[NSTimer timerWithTimeInterval:0.030 target:mHelper selector:@selector(processEventsAndSchedule) userInfo:nil repeats:YES] retain];
     [pool release];
@@ -133,10 +134,12 @@ QUIKitEventLoop::~QUIKitEventLoop()
 {
     [mTimer release];
     [mHelper release];
+    delete mInputHandler;
 }
 
 void QUIKitEventLoop::startEventLoop()
 {
+    qApp->installEventFilter(mInputHandler);
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
     [[NSRunLoop currentRunLoop] addTimer:[mTimer autorelease] forMode:NSDefaultRunLoopMode];
     UIApplicationMain(qApp->argc(), qApp->argv(), nil, @"QUIKitAppDelegate");
@@ -151,6 +154,26 @@ void QUIKitEventLoop::quitEventLoop()
 void QUIKitEventLoop::qtNeedsToProcessEvents()
 {
     [mHelper performSelectorOnMainThread:@selector(processEvents) withObject:nil waitUntilDone:NO];
+}
+
+bool QUIKitSoftwareInputHandler::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::RequestSoftwareInputPanel) {
+        QWidget *widget = qobject_cast<QWidget *>(obj);
+        if (widget) {
+            QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->platformWindow());
+            [platformWindow->nativeView() becomeFirstResponder];
+            return true;
+        }
+    } else if (event->type() == QEvent::CloseSoftwareInputPanel) {
+        QWidget *widget = qobject_cast<QWidget *>(obj);
+        if (widget) {
+            QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->platformWindow());
+            [platformWindow->nativeView() resignFirstResponder];
+            return true;
+        }
+    }
+    return false;
 }
 
 QT_END_NAMESPACE
