@@ -97,10 +97,10 @@
 
     \row
     \o
-    \snippet doc/src/snippets/code/doc_src_coordsys.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_coordsys.cpp 0
 
     \o
-    \snippet doc/src/snippets/code/doc_src_coordsys.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_coordsys.cpp 1
     \endtable
 
     When rendering with a pen with an even number of pixels, the
@@ -163,10 +163,10 @@
     \row
     \o
 
-    \snippet doc/src/snippets/code/doc_src_coordsys.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_coordsys.cpp 2
 
     \o
-    \snippet doc/src/snippets/code/doc_src_coordsys.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_coordsys.cpp 3
     \endtable
 
     \section1 Transformations
@@ -319,7 +319,7 @@
     -50) to (50, 50) with (0, 0) in the center by calling the
     QPainter::setWindow() function:
 
-    \snippet doc/src/snippets/code/doc_src_coordsys.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_coordsys.cpp 4
 
     Now, the logical coordinates (-50,-50) correspond to the paint
     device's physical coordinates (0, 0). Independent of the paint
@@ -333,7 +333,7 @@
     viewport and "window" maintain the same aspect ratio to prevent
     deformation:
 
-    \snippet doc/src/snippets/code/doc_src_coordsys.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_coordsys.cpp 5
 
     If we make the logical coordinate system a square, we should also
     make the viewport a square using the QPainter::setViewport()

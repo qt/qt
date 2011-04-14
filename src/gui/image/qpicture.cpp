@@ -46,6 +46,7 @@
 
 #include <private/qfactoryloader_p.h>
 #include <private/qpaintengine_pic_p.h>
+#include <private/qfont_p.h>
 
 #include "qdatastream.h"
 #include "qfile.h"
@@ -108,8 +109,6 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
 const char  *qt_mfhdr_tag = "QPIC"; // header tag
 static const quint16 mfhdr_maj = 11; // major version #
 static const quint16 mfhdr_min = 0; // minor version #
-Q_GUI_EXPORT extern int qt_defaultDpiX();
-Q_GUI_EXPORT extern int qt_defaultDpiY();
 
 /*!
     Constructs an empty picture.

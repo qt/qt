@@ -416,7 +416,8 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
             int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
             if (index != -1)
                 disconnect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
-            QGraphicsItem *rootItem;
+
+            QGraphicsItem *rootItem = 0;
             foreach (QGraphicsItem *item, gv->scene()->items()) {
                 if (!item->parentItem()) {
                     rootItem = item;
@@ -725,6 +726,8 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_EMAIL_ADDR_SPECIAL_CHARACTER_TABLE_DIALOG);
     } else if (needsCharMap) {
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
+    } else if ((hints & ImhFormattedNumbersOnly) || (hints & ImhDialableCharactersOnly)) {
+        m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
     } else {
         m_fepState->SetSpecialCharacterTableResourceId(0);
     }
@@ -828,7 +831,7 @@ void QCoeFepInputContext::translateInputWidget()
         return;
 
     // Fetch root item (i.e. graphicsitem with no parent)
-    QGraphicsItem *rootItem;
+    QGraphicsItem *rootItem = 0;
     foreach (QGraphicsItem *item, gv->scene()->items()) {
         if (!item->parentItem()) {
             rootItem = item;

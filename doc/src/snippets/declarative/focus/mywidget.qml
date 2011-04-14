@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the FOO module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,10 +37,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+//! [document]
 import QtQuick 1.0
 
 //! [mywidget]
-//MyWidget code
 Rectangle {
     id: widget
     color: "lightsteelblue"; width: 175; height: 25; radius: 10; smooth: true

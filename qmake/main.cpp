@@ -126,7 +126,9 @@ int runQMake(int argc, char **argv)
     }
 
     QMakeProperty prop;
-    if(Option::qmake_mode == Option::QMAKE_QUERY_PROPERTY || Option::qmake_mode == Option::QMAKE_SET_PROPERTY)
+    if(Option::qmake_mode == Option::QMAKE_QUERY_PROPERTY ||
+       Option::qmake_mode == Option::QMAKE_SET_PROPERTY ||
+       Option::qmake_mode == Option::QMAKE_UNSET_PROPERTY)
         return prop.exec() ? 0 : 101;
 
     QMakeProject project(&prop);

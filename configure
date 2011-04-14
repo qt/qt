@@ -1316,6 +1316,9 @@ while [ "$#" -gt 0 ]; do
     qconfig)
         CFG_QCONFIG="$VAL"
         ;;
+    sysroot)
+        CFG_SYSROOT="$VAL"
+        ;;
     bindir)
         QT_INSTALL_BINS="$VAL"
         ;;
@@ -3310,6 +3313,18 @@ if [ "$CFG_EMBEDDED" = "nacl" ]; then
     TEST_COMPILER="nacl-gcc"
 fi
 
+SYSROOT_FLAG=
+if [ -n "$CFG_SYSROOT" ]; then
+    if compilerSupportsFlag --sysroot="$CFG_SYSROOT"; then
+	[ "$OPT_VERBOSE" = "yes" ] && echo "Setting sysroot to: $CFG_SYSROOT"
+	SYSROOT_FLAG="--sysroot=$CFG_SYSROOT"
+    else
+	echo >&2 "The compiler doesn't support the --sysroot flag, I can't set the sysroot"
+	exit 1
+    fi
+fi
+export SYSROOT_FLAG    # used by config.tests/unix/compile.test
+
 # auto-detect precompiled header support
 if [ "$CFG_PRECOMPILE" = "auto" ]; then
     if [ `echo "$CFG_MAC_ARCHS" | wc -w` -gt 1 ]; then
@@ -3401,7 +3416,7 @@ if [ "$PLATFORM_QWS" = "yes" ] && [ "$CFG_OPENGL" = "auto" ]; then
 fi
 
 # mac
-if [ "$PLATFORM_MAC" = "yes" ]; then
+if [ "$PLATFORM_MAC" = "yes" ] && [ "$XPLATFORM_SYMBIAN" = "no" ]; then
     if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
         CFG_OPENGL=desktop
     fi
@@ -4765,12 +4780,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 
     #mkspecs/default is used as a (gasp!) default mkspec so QMAKESPEC needn't be set once configured
     rm -rf mkspecs/default
-    if [ "$XPLATFORM_SYMBIAN_SBSV2" = "yes" ]; then
-#Link is not supported for Symbian build system
-        cp -a mkspecs/`echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"` mkspecs/default
-    else
-        ln -s `echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"` mkspecs/default
-    fi
+    ln -s `echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"` mkspecs/default
     # fix makefiles
     for mkfile in GNUmakefile Makefile; do
         EXTRA_LFLAGS=
@@ -5715,8 +5725,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
     fi
 fi
 
-# X11/MINGW OpenGL
-if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
+# X11/MINGW/SYMBIAN OpenGL
+if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" -o "$XPLATFORM_SYMBIAN" = "yes" ]; then
     # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es2 = OpenGL ES 2.x)
     if [ "$CFG_GUI" = "no" ]; then
         if [ "$CFG_OPENGL" = "auto" ]; then
@@ -8241,12 +8251,7 @@ else
     mv "$outpath/src/corelib/global/qconfig.h.new" "$outpath/src/corelib/global/qconfig.h"
     chmod -w "$outpath/src/corelib/global/qconfig.h"
     for conf in "$outpath/include/QtCore/qconfig.h" "$outpath/include/Qt/qconfig.h"; do
-        if [ "$XPLATFORM_SYMBIAN_SBSV2" = "yes" ]; then
-            [ -e "$conf" ] && rm -rf "$conf"
-            cp -a "$outpath/src/corelib/global/qconfig.h" "$conf"
-        elif [ '!' -f "$conf" ]; then
-            ln -s "$outpath/src/corelib/global/qconfig.h" "$conf"
-        fi
+        ln -s "$outpath/src/corelib/global/qconfig.h" "$conf"
     done
 fi
 #-------------------------------------------------------------------------------
@@ -8316,6 +8321,16 @@ QT_NAMESPACE = $QT_NAMESPACE
 QT_NAMESPACE_MAC_CRC = $QT_NAMESPACE_MAC_CRC
 
 EOF
+if [ -n "$CFG_SYSROOT" ]; then
+    echo "# sysroot" >>"$QTCONFIG.tmp"
+    echo `basename "$XQMAKESPEC"` \{ >>"$QTCONFIG.tmp"
+    echo "  QT_SYSROOT      += \$\$quote($CFG_SYSROOT)" >>"$QTCONFIG.tmp"
+    echo "  QMAKE_CFLAGS    += --sysroot=\$\$QT_SYSROOT" >>"$QTCONFIG.tmp"
+    echo "  QMAKE_CXXFLAGS  += --sysroot=\$\$QT_SYSROOT" >>"$QTCONFIG.tmp"
+    echo "  QMAKE_LFLAGS    += --sysroot=\$\$QT_SYSROOT" >>"$QTCONFIG.tmp"
+    echo "}" >> "$QTCONFIG.tmp"
+    echo >> "$QTCONFIG.tmp"
+fi
 if [ "$CFG_RPATH" = "yes" ]; then
     echo "QMAKE_RPATHDIR += \"$QT_INSTALL_LIBS\"" >> "$QTCONFIG.tmp"
 fi

@@ -42,6 +42,7 @@
 #include <qdebug.h>
 #include <qcoreapplication.h>
 #include <qstringlist.h>
+#include <qthread.h>
 
 #include "qdbusconnection.h"
 #include "qdbusconnectioninterface.h"
@@ -244,6 +245,17 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
 
     Note, however, if this object was registered with the ExportChildObjects option, UnregisterNode
     will unregister the child objects too.
+*/
+
+/*!
+    \since 4.8
+    \enum QDBusConnection::ConnectionCapabilities
+    The available capabilities for a D-Bus connection.
+
+    \value UnixFileDescriptorPassing        passing of Unix file descriptors to other processes
+                                            (see QDBusUnixFileDescriptor)
+
+    \sa connectionCapabilities()
 */
 
 /*!
@@ -873,6 +885,21 @@ QDBusConnectionInterface *QDBusConnection::interface() const
 }
 
 /*!
+    \internal
+    \since 4.8
+
+    Returns the internal, implementation-defined pointer for this
+    connection. Currently, this returns a DBusConnection* pointer,
+    without changing the reference count. It is the responsibility of
+    the caller to call dbus_connection_ref if it wants to store the
+    pointer.
+*/
+void *QDBusConnection::internalPointer() const
+{
+    return d ? d->connection : 0;
+}
+
+/*!
     Returns true if this QDBusConnection object is connected.
 */
 bool QDBusConnection::isConnected() const
@@ -932,6 +959,18 @@ QString QDBusConnection::name() const
 }
 
 /*!
+    \since 4.8
+
+    Returns the capabilities of this connection as negotiated with the bus
+    server or peer. If this QDBusConnection is not connected, this function
+    returns no capabilities.
+*/
+QDBusConnection::ConnectionCapabilities QDBusConnection::connectionCapabilities() const
+{
+    return d ? d->capabilities : ConnectionCapabilities(0);
+}
+
+/*!
     Attempts to register the \a serviceName on the D-Bus server and
     returns true if the registration succeeded. The registration will
     fail if the name is already registered by another application.
@@ -972,7 +1011,16 @@ class QDBusDefaultConnection: public QDBusConnection
 public:
     inline QDBusDefaultConnection(BusType type, const char *name)
         : QDBusConnection(connectToBus(type, QString::fromLatin1(name))), ownName(name)
-    { }
+    {
+        // make sure this connection is running on the main thread
+        QCoreApplication *instance = QCoreApplication::instance();
+        if (!instance) {
+            qWarning("QDBusConnection: %s D-Bus connection created before QCoreApplication. Application may misbehave.",
+                     type == SessionBus ? "session" : type == SystemBus ? "system" : "generic");
+        } else {
+            QDBusConnectionPrivate::d(*this)->moveToThread(instance->thread());
+        }
+    }
 
     inline ~QDBusDefaultConnection()
     { disconnectFromBus(QString::fromLatin1(ownName)); }

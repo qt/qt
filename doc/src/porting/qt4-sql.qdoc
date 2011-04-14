@@ -104,12 +104,12 @@
     The simplest way to present data from a database is to simply
     combine a QSqlQueryModel with a QTableView:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-sql.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qt4-sql.cpp 0
 
     To present the contents of a single table, we can use
     QSqlTableModel instead:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-sql.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qt4-sql.cpp 1
 
     In practice, it's common that we need to customize the rendering
     of a field in the database. In that case, we can create our own

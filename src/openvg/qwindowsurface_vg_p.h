@@ -78,7 +78,7 @@ public:
 
     QPaintEngine *paintEngine() const;
 
-    bool hasStaticContentsSupport() const;
+    WindowSurfaceFeatures features() const;
 
 protected:
     int metric(PaintDeviceMetric metric) const;

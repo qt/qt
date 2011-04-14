@@ -119,9 +119,12 @@ QPaintEngine *QVGWindowSurface::paintEngine() const
     return d_ptr->paintEngine();
 }
 
-bool QVGWindowSurface::hasStaticContentsSupport() const
+QWindowSurface::WindowSurfaceFeatures QVGWindowSurface::features() const
 {
-    d_ptr->supportsStaticContents();
+    WindowSurfaceFeatures features = PartialUpdates | PreservedContents;
+    if (d_ptr->supportsStaticContents())
+        features |= StaticContents;
+    return features;
 }
 
 int QVGWindowSurface::metric(PaintDeviceMetric met) const

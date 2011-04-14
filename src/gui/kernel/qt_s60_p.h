@@ -178,6 +178,7 @@ public:
     static inline CEikButtonGroupContainer* buttonGroupContainer();
     static inline void setButtonGroupContainer(CEikButtonGroupContainer* newCba);
     static void setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, bool buttonGroupVisible);
+    static bool setRecursiveDecorationsVisibility(QWidget *window, Qt::WindowStates newState);
 #endif
     static void controlVisibilityChanged(CCoeControl *control, bool visible);
 
@@ -189,6 +190,8 @@ public:
     int screenHeightInPixelsForScreen[qt_symbian_max_screens];
     int screenWidthInTwipsForScreen[qt_symbian_max_screens];
     int screenHeightInTwipsForScreen[qt_symbian_max_screens];
+
+    bool nativeOrientationIsPortrait;
 };
 
 Q_AUTOTEST_EXPORT QS60Data* qGlobalS60Data();
@@ -232,6 +235,8 @@ public:
     void setFocusSafely(bool focus);
 
     bool isControlActive();
+
+    void ensureFixNativeOrientation();
 
 #ifdef Q_WS_S60
     void FadeBehindPopup(bool fade){ popupFader.FadeBehindPopup( this, this, fade); }
@@ -327,9 +332,11 @@ inline QS60Data::QS60Data()
 
 inline void QS60Data::updateScreenSize()
 {
+    CWsScreenDevice *dev = S60->screenDevice();
+    int screenModeCount = dev->NumScreenModes();
+    int mode = dev->CurrentScreenMode();
     TPixelsTwipsAndRotation params;
-    int mode = S60->screenDevice()->CurrentScreenMode();
-    S60->screenDevice()->GetScreenModeSizeAndRotation(mode, params);
+    dev->GetScreenModeSizeAndRotation(mode, params);
     S60->screenWidthInPixels = params.iPixelSize.iWidth;
     S60->screenHeightInPixels = params.iPixelSize.iHeight;
     S60->screenWidthInTwips = params.iTwipsSize.iWidth;
@@ -352,6 +359,21 @@ inline void QS60Data::updateScreenSize()
         S60->screenWidthInTwipsForScreen[i] = params.iTwipsSize.iWidth;
         S60->screenHeightInTwipsForScreen[i] = params.iTwipsSize.iHeight;
     }
+
+    // Look for a screen mode with rotation 0
+    // in order to decide what the native orientation is.
+    int nativeScreenWidthInPixels = 0;
+    int nativeScreenHeightInPixels = 0;
+    for (mode = 0; mode < screenModeCount; ++mode) {
+        TPixelsAndRotation sizeAndRotation;
+        dev->GetScreenModeSizeAndRotation(mode, sizeAndRotation);
+        if (sizeAndRotation.iRotation == CFbsBitGc::EGraphicsOrientationNormal) {
+            nativeScreenWidthInPixels = sizeAndRotation.iPixelSize.iWidth;
+            nativeScreenHeightInPixels = sizeAndRotation.iPixelSize.iHeight;
+            break;
+        }
+    }
+    S60->nativeOrientationIsPortrait = nativeScreenWidthInPixels <= nativeScreenHeightInPixels;
 }
 
 inline RWsSession& QS60Data::wsSession()

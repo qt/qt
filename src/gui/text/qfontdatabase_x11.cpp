@@ -746,6 +746,7 @@ QFontDef qt_FcPatternToQFontDef(FcPattern *pattern, const QFontDef &request)
     QFontDef fontDef;
     fontDef.styleStrategy = request.styleStrategy;
 
+    fontDef.hintingPreference = request.hintingPreference;
     FcChar8 *value = 0;
     if (FcPatternGetString(pattern, FC_FAMILY, 0, &value) == FcResultMatch) {
         fontDef.family = QString::fromUtf8(reinterpret_cast<const char *>(value));
