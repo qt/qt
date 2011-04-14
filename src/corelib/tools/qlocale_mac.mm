@@ -318,7 +318,7 @@ static QString macFormatCurrency(const QSystemLocale::CurrencyToStringArgument &
         break;
     }
     case QVariant::Double: {
-        double v = arg.value.toInt();
+        double v = arg.value.toDouble();
         value = CFNumberCreate(NULL, kCFNumberDoubleType, &v);
         break;
     }

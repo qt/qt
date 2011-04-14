@@ -1130,10 +1130,10 @@ void tst_QLocale::macDefaultLocale()
 	const QString timeString = locale.toString(QTime(1,2,3), QLocale::LongFormat);
     QVERIFY(timeString.contains(QString("1:02:03")));
 
-    QCOMPARE(locale.toCurrencyString(qulonglong(1234)), QString("$1,234"));
-    QCOMPARE(locale.toCurrencyString(qlonglong(-1234)), QString("$-1,234"));
+    QCOMPARE(locale.toCurrencyString(qulonglong(1234)), QString("$1,234.00"));
+    QCOMPARE(locale.toCurrencyString(qlonglong(-1234)), QString("($1,234.00)"));
     QCOMPARE(locale.toCurrencyString(double(1234.56)), QString("$1,234.56"));
-    QCOMPARE(locale.toCurrencyString(double(-1234.56)), QString("$-1,234.56"));
+    QCOMPARE(locale.toCurrencyString(double(-1234.56)), QString("($1,234.56)"));
 
     // Depending on the configured time zone, the time string might not
     // contain a GMT specifier. (Sometimes it just names the zone, like "CEST")
