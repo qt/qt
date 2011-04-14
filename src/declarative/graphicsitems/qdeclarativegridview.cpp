@@ -2250,7 +2250,7 @@ qreal QDeclarativeGridView::maxXExtent() const
     qreal extent;
     qreal highlightStart;
     qreal highlightEnd;
-    qreal lastItemPosition;
+    qreal lastItemPosition = 0;
     if (d->isRightToLeftTopToBottom()){
         highlightStart = d->highlightRangeStartValid ? d->highlightRangeEnd : d->size();
         highlightEnd = d->highlightRangeEndValid ? d->highlightRangeStart : d->size();
