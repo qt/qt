@@ -466,6 +466,8 @@ class QmlPropertyNode : public LeafNode
     bool isAttached() const { return att; }
     virtual bool isQmlNode() const { return true; }
 
+    const PropertyNode *correspondingProperty(const Tree *tree) const;
+
     const QString& element() const { return static_cast<QmlPropGroupNode*>(parent())->element(); }
 
  private:
@@ -689,6 +691,7 @@ class PropertyNode : public LeafNode
     void setRuntimeScrFunc(const QString& scrf) { runtimeScrFunc = scrf; }
     void setConstant() { cst = true; }
     void setFinal() { fnl = true; }
+    void setRevision(int revision) { rev = revision; }
 
     const QString &dataType() const { return dt; }
     QString qualifiedDataType() const;
@@ -732,6 +735,7 @@ class PropertyNode : public LeafNode
     Trool usr;
     bool cst;
     bool fnl;
+    int rev;
     const PropertyNode* overrides;
 };
 

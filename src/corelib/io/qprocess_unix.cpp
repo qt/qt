@@ -120,7 +120,7 @@ static inline char *strdup(const char *data)
 #endif
 
 static int qt_qprocess_deadChild_pipe[2];
-static void (*qt_sa_old_sigchld_handler)(int) = 0;
+static struct sigaction qt_sa_old_sigchld_handler;
 static void qt_sa_sigchld_handler(int signum)
 {
     qt_safe_write(qt_qprocess_deadChild_pipe[1], "", 1);
@@ -128,8 +128,10 @@ static void qt_sa_sigchld_handler(int signum)
     fprintf(stderr, "*** SIGCHLD\n");
 #endif
 
-    if (qt_sa_old_sigchld_handler && qt_sa_old_sigchld_handler != SIG_IGN)
-        qt_sa_old_sigchld_handler(signum);
+    // load it as volatile
+    void (*oldAction)(int) = ((volatile struct sigaction *)&qt_sa_old_sigchld_handler)->sa_handler;
+    if (oldAction && oldAction != SIG_IGN)
+        oldAction(signum);
 }
 
 static inline void add_fd(int &nfds, int fd, fd_set *fdset)
@@ -200,14 +202,11 @@ QProcessManager::QProcessManager()
 
     // set up the SIGCHLD handler, which writes a single byte to the dead
     // child pipe every time a child dies.
-    struct sigaction oldAction;
     struct sigaction action;
     memset(&action, 0, sizeof(action));
     action.sa_handler = qt_sa_sigchld_handler;
     action.sa_flags = SA_NOCLDSTOP;
-    ::sigaction(SIGCHLD, &action, &oldAction);
-    if (oldAction.sa_handler != qt_sa_sigchld_handler)
-	qt_sa_old_sigchld_handler = oldAction.sa_handler;
+    ::sigaction(SIGCHLD, &action, &qt_sa_old_sigchld_handler);
 
     processManagerInstance = this;
 }
@@ -229,14 +228,10 @@ QProcessManager::~QProcessManager()
     qDeleteAll(children.values());
     children.clear();
 
-    struct sigaction oldAction;
-    struct sigaction action;
-    memset(&action, 0, sizeof(action));
-    action.sa_handler = qt_sa_old_sigchld_handler;
-    action.sa_flags = SA_NOCLDSTOP;
-    ::sigaction(SIGCHLD, &action, &oldAction);
-    if (oldAction.sa_handler != qt_sa_sigchld_handler) {
-        ::sigaction(SIGCHLD, &oldAction, 0);
+    struct sigaction currentAction;
+    ::sigaction(SIGCHLD, 0, &currentAction);
+    if (currentAction.sa_handler == qt_sa_sigchld_handler) {
+        ::sigaction(SIGCHLD, &qt_sa_old_sigchld_handler, 0);
     }
 
     processManagerInstance = 0;

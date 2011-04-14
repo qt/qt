@@ -27,23 +27,26 @@
 
 /*!
     \page qdeclarativebasictypes.html
+    \ingroup qml-features
+    \contentspage QML Features
+    \previouspage {QML Basic Elements}
+    \nextpage Property Binding
     \title QML Basic Types
 
     QML has a set of primitive types, as listed below, that are used throughout
     the \l {QML Elements}.
 
-    Some of these types can also be used for defining 
-    \c property values in QML. See \l{Writing QML Components: Properties, Methods and Signals} for the
-    list of types that can be used for \c property values.
-
     \annotatedlist qmlbasictypes
+
+    To create additional types, such as data types created in C++, read the
+    \l{Extending QML Functionalities using C++} article.
 */
 
 /*!
     \qmlbasictype int
     \ingroup qmlbasictypes
 
-    \brief An integer is a whole number, e.g. 0, 10, or -20. 
+    \brief An integer is a whole number, e.g. 0, 10, or -20.
 
     An integer is a whole number, e.g. 0, 10, or -20. The possible \c
     int values range from around -2000000000 to around 2000000000,
@@ -137,7 +140,7 @@
     \qmlbasictype url
     \ingroup qmlbasictypes
 
-    \brief A URL is a resource locator, like a file name. 
+    \brief A URL is a resource locator, like a file name.
 
     A URL is a resource locator, like a file name. It can be either
     absolute, e.g. "http://qt.nokia.com", or relative, e.g.
@@ -149,9 +152,6 @@
     \qml
     Image { source: "pics/logo.png" }
     \endqml
-
-    \raw HTML
-    \endraw
 
     \sa {QML Basic Types}
 */
@@ -215,7 +215,7 @@
 /*!
     \qmlbasictype size
     \ingroup qmlbasictypes
-    
+
     \brief A size type has width and height attributes
 
     A \c size type has \c width and \c height attributes.
@@ -254,7 +254,7 @@
 
     For example, to read the \l {Item::childrenRect.x}{Item::childrenRect} \c rect property:
     \qml
-    Rectangle { 
+    Rectangle {
         width: childrenRect.width
         height: childrenRect.height
 
@@ -290,7 +290,7 @@
     MyDatePicker { minDate: "2000-01-01"; maxDate: "2020-12-31" }
     \endqml
 
-    To read a date value returned from a C++ extension class, use 
+    To read a date value returned from a C++ extension class, use
     \l{QML:Qt::formatDate()}{Qt.formatDate()} and \l{QML:Qt::formatDateTime()}{Qt.formatDateTime()}.
 
     \sa {QML Basic Types}
@@ -309,7 +309,7 @@
     MyTimePicker { time: "14:22:15" }
     \endqml
 
-    To read a time value returned from a C++ extension class, use 
+    To read a time value returned from a C++ extension class, use
     \l{QML:Qt::formatTime()}{Qt.formatTime()} and \l{QML:Qt::formatDateTime()}{Qt.formatDateTime()}.
 
     \sa {QML Basic Types}
@@ -399,8 +399,9 @@
     \c child1, \c child2 and \c child3 will be added to the children list
     in the order in which they appear.
 
-    List \l {Adding Properties}{properties} can be declared as \c list<Type>
-    type, where \c Type is the type of the object in the list:
+    List \l {Property Binding}{properties} can be created as a
+    \c variant type, or as a \c list<Type> type, where \c Type is the
+    type of the object in the list:
 
     \qml
     Item {
@@ -503,7 +504,7 @@
 
     \qml
     Item {
-        property variant attributes: { ''color': 'red', 'width': 100 }
+        property variant attributes: { 'color': 'red', 'width': 100 }
 
         Component.onCompleted: {
             // Change the value of attributes.color to 'blue':
@@ -570,7 +571,7 @@
     \qml
     Text { horizontalAlignment: "AlignRight" }
     \endqml
-    
+
     or as \c {<Element>.<value>}:
     \qml
     Text { horizontalAlignment: Text.AlignRight }

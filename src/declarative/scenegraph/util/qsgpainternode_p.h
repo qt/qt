@@ -45,6 +45,7 @@
 #include "qsgnode.h"
 #include "qsgtexturematerial.h"
 #include "qsgtexture_p.h"
+#include "qsgpainteditem.h"
 
 QT_BEGIN_HEADER
 
@@ -52,7 +53,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QSGPaintedItem;
 class QGLFramebufferObject;
 
 class Q_DECLARATIVE_EXPORT QSGPainterTexture : public QSGPlainTexture
@@ -74,11 +74,7 @@ public:
     QSGPainterNode(QSGPaintedItem *item);
     virtual ~QSGPainterNode();
 
-    enum PaintSurface {
-        Image,
-        FramebufferObject
-    };
-    void setPreferredPaintSurface(PaintSurface surface);
+    void setPreferredRenderTarget(QSGPaintedItem::RenderTarget target);
 
     void setSize(const QSize &size);
     QSize size() const { return m_size; }
@@ -104,10 +100,11 @@ public:
 private:
     void updateTexture();
     void updateGeometry();
-    void updateSurface();
+    void updateRenderTarget();
+    void updateFBOSize();
 
-    PaintSurface m_preferredPaintSurface;
-    PaintSurface m_actualPaintSurface;
+    QSGPaintedItem::RenderTarget m_preferredRenderTarget;
+    QSGPaintedItem::RenderTarget m_actualRenderTarget;
 
     QSGPaintedItem *m_item;
 
@@ -122,7 +119,7 @@ private:
 
     QSize m_size;
     QSize m_fboSize;
-    bool m_dirty;
+    bool m_dirtyContents;
     QRect m_dirtyRect;
     bool m_opaquePainting;
     bool m_linear_filtering;
@@ -132,7 +129,7 @@ private:
     QColor m_fillColor;
 
     bool m_dirtyGeometry;
-    bool m_dirtySurface;
+    bool m_dirtyRenderTarget;
     bool m_dirtyTexture;
 };
 

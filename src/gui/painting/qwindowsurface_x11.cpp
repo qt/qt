@@ -250,13 +250,16 @@ QPixmap QX11WindowSurface::grabWidget(const QWidget *widget,
     return px;
 }
 
-bool QX11WindowSurface::hasStaticContentsSupport() const
+QWindowSurface::WindowSurfaceFeatures QX11WindowSurface::features() const
 {
+    WindowSurfaceFeatures features = QWindowSurface::PartialUpdates | QWindowSurface::PreservedContents;
 #ifndef QT_NO_XRENDER
-    return !d_ptr->translucentBackground;
+    if (!d_ptr->translucentBackground)
+        features |= QWindowSurface::StaticContents;
 #else
-    return true;
+    features |= QWindowSurface::StaticContents;
 #endif
+    return features;
 }
 
 QT_END_NAMESPACE

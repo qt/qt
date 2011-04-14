@@ -76,8 +76,6 @@ private:
     QPlatformWindowFormat m_windowFormat;
 
     QGLXContext (QXlibScreen *screen, Drawable drawable, GLXContext context);
-    static QMutex m_defaultSharedContextMutex;
-    static void createDefaultSharedContext(QXlibScreen *xd);
 };
 
 QT_END_NAMESPACE

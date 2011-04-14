@@ -2795,7 +2795,7 @@ QDeclarativeListProperty<QDeclarativeState> QDeclarativeItemPrivate::states()
   }
   \endqml
 
-  \sa {qdeclarativeanimation.html#transitions}{QML Transitions}
+  \sa {QML Animation and Transitions}{Transitions}
 */
 
 
@@ -3503,7 +3503,7 @@ qreal QDeclarativeItem::implicitHeight() const
     Setting the implicit size is useful for defining components that have a preferred size
     based on their content, for example:
 
-    \code
+    \qml
     // Label.qml
     import QtQuick 1.1
 
@@ -3520,7 +3520,7 @@ qreal QDeclarativeItem::implicitHeight() const
             anchors.verticalCenter: parent.verticalCenter
         }
     }
-    \endcode
+    \endqml
 
     \bold Note: using implicitWidth of Text or TextEdit and setting the width explicitly
     incurs a performance penalty as the text must be laid out twice.

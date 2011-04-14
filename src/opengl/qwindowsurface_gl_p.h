@@ -66,12 +66,8 @@ class QRegion;
 class QWidget;
 struct QGLWindowSurfacePrivate;
 
-#ifdef Q_WS_QPA
-Q_OPENGL_EXPORT const QGLContext* qt_gl_share_context();
-#else
 Q_OPENGL_EXPORT QGLWidget* qt_gl_share_widget();
 Q_OPENGL_EXPORT void qt_destroy_gl_share_widget();
-#endif
 
 class QGLWindowSurfaceGLPaintDevice : public QGLPaintDevice
 {
@@ -108,7 +104,7 @@ public:
 
     QImage *buffer(const QWidget *widget);
 
-    bool hasPartialUpdateSupport() const;
+    WindowSurfaceFeatures features() const;
 
     QGLContext *context() const;
 

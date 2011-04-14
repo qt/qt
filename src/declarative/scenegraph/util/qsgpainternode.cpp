@@ -102,15 +102,15 @@ void QSGPainterTexture::bind()
 
 QSGPainterNode::QSGPainterNode(QSGPaintedItem *item)
     : QSGGeometryNode()
-    , m_preferredPaintSurface(Image)
-    , m_actualPaintSurface(Image)
+    , m_preferredRenderTarget(QSGPaintedItem::Image)
+    , m_actualRenderTarget(QSGPaintedItem::Image)
     , m_item(item)
     , m_fbo(0)
     , m_multisampledFbo(0)
     , m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4)
     , m_texture(0)
     , m_size(1, 1)
-    , m_dirty(false)
+    , m_dirtyContents(false)
     , m_opaquePainting(false)
     , m_linear_filtering(false)
     , m_smoothPainting(false)
@@ -118,7 +118,7 @@ QSGPainterNode::QSGPainterNode(QSGPaintedItem *item)
     , m_multisamplingSupported(false)
     , m_fillColor(Qt::transparent)
     , m_dirtyGeometry(false)
-    , m_dirtySurface(false)
+    , m_dirtyRenderTarget(false)
     , m_dirtyTexture(false)
 {
     setMaterial(&m_materialO);
@@ -134,20 +134,15 @@ QSGPainterNode::~QSGPainterNode()
     delete m_multisampledFbo;
 }
 
-void QSGPainterNode::setPreferredPaintSurface(PaintSurface surface)
-{
-    m_preferredPaintSurface = surface;
-}
-
 void QSGPainterNode::preprocess()
 {
-    if (!m_dirty)
+    if (!m_dirtyContents)
         return;
 
     QRect dirtyRect = m_dirtyRect.isNull() ? QRect(0, 0, m_size.width(), m_size.height()) : m_dirtyRect;
 
     QPainter painter;
-    if (m_actualPaintSurface == Image)
+    if (m_actualRenderTarget == QSGPaintedItem::Image)
         painter.begin(&m_image);
     else if (m_multisampledFbo)
         painter.begin(m_multisampledFbo);
@@ -168,46 +163,28 @@ void QSGPainterNode::preprocess()
     m_item->paint(&painter);
     painter.end();
 
-    if (m_actualPaintSurface == Image) {
-        QSGPainterTexture *tex = m_texture;
-        tex->setImage(m_image);
-        tex->setDirtyRect(dirtyRect);
+    if (m_actualRenderTarget == QSGPaintedItem::Image) {
+        m_texture->setImage(m_image);
+        m_texture->setDirtyRect(dirtyRect);
     } else if (m_multisampledFbo) {
         QGLFramebufferObject::blitFramebuffer(m_fbo, dirtyRect, m_multisampledFbo, dirtyRect);
     }
 
-    m_dirty = false;
+    m_dirtyContents = false;
     m_dirtyRect = QRect();
 }
 
 void QSGPainterNode::update()
 {
-    if (!m_extensionsChecked) {
-        QList<QByteArray> extensions = QByteArray((const char *)glGetString(GL_EXTENSIONS)).split(' ');
-        m_multisamplingSupported = extensions.contains("GL_EXT_framebuffer_multisample")
-                && extensions.contains("GL_EXT_framebuffer_blit");
-        m_extensionsChecked = true;
-    }
-    if (m_preferredPaintSurface == Image) {
-        m_actualPaintSurface = Image;
-    } else {
-        if (!m_multisamplingSupported && m_smoothPainting)
-            m_actualPaintSurface = Image;
-        else
-            m_actualPaintSurface = FramebufferObject;
-    }
-
+    if (m_dirtyRenderTarget)
+        updateRenderTarget();
     if (m_dirtyGeometry)
         updateGeometry();
-    if (m_dirtySurface || m_dirtyGeometry) {
-        updateSurface();
-        m_dirty = true;
-    }
-    if (m_dirtySurface || m_dirtyTexture)
+    if (m_dirtyTexture)
         updateTexture();
 
     m_dirtyGeometry = false;
-    m_dirtySurface = false;
+    m_dirtyRenderTarget = false;
     m_dirtyTexture = false;
 }
 
@@ -223,7 +200,7 @@ void QSGPainterNode::updateTexture()
 void QSGPainterNode::updateGeometry()
 {
     QRectF source;
-    if (m_actualPaintSurface == Image)
+    if (m_actualRenderTarget == QSGPaintedItem::Image)
         source = QRectF(0, 1, 1, -1);
     else
         source = QRectF(0, 1, qreal(m_size.width()) / m_fboSize.width(), qreal(-m_size.height()) / m_fboSize.height());
@@ -233,22 +210,47 @@ void QSGPainterNode::updateGeometry()
     markDirty(DirtyGeometry);
 }
 
-void QSGPainterNode::updateSurface()
+void QSGPainterNode::updateRenderTarget()
 {
-    if (m_actualPaintSurface == FramebufferObject) {
+    if (!m_extensionsChecked) {
+        QList<QByteArray> extensions = QByteArray((const char *)glGetString(GL_EXTENSIONS)).split(' ');
+        m_multisamplingSupported = extensions.contains("GL_EXT_framebuffer_multisample")
+                && extensions.contains("GL_EXT_framebuffer_blit");
+        m_extensionsChecked = true;
+    }
+
+    m_dirtyContents = true;
+
+    QSGPaintedItem::RenderTarget oldTarget = m_actualRenderTarget;
+    if (m_preferredRenderTarget == QSGPaintedItem::Image) {
+        m_actualRenderTarget = QSGPaintedItem::Image;
+    } else {
+        if (!m_multisamplingSupported && m_smoothPainting)
+            m_actualRenderTarget = QSGPaintedItem::Image;
+        else
+            m_actualRenderTarget = QSGPaintedItem::FramebufferObject;
+    }
+    if (oldTarget != m_actualRenderTarget) {
+        m_image = QImage();
+        delete m_fbo;
+        delete m_multisampledFbo;
+        m_fbo = m_multisampledFbo = 0;
+    }
+
+    if (m_actualRenderTarget == QSGPaintedItem::FramebufferObject) {
         const QGLContext *ctx = QGLContext::currentContext();
         if (m_fbo && !m_dirtyGeometry && (!ctx->format().sampleBuffers() || !m_multisamplingSupported))
             return;
 
-        if (m_fbo && m_fbo->size() == m_fboSize)
-            return;
+        if (m_fboSize.isEmpty())
+            updateFBOSize();
 
         delete m_fbo;
         delete m_multisampledFbo;
         m_fbo = m_multisampledFbo = 0;
 
         if (m_smoothPainting && ctx->format().sampleBuffers() && m_multisamplingSupported) {
-            if (!m_multisampledFbo) {
+            {
                 QGLFramebufferObjectFormat format;
                 format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
                 format.setSamples(ctx->format().samples());
@@ -273,7 +275,7 @@ void QSGPainterNode::updateSurface()
     }
 
     QSGPainterTexture *texture = new QSGPainterTexture;
-    if (m_actualPaintSurface == Image) {
+    if (m_actualRenderTarget == QSGPaintedItem::Image) {
         texture->setOwnsTexture(true);
         texture->setTextureSize(m_size);
     } else {
@@ -291,24 +293,44 @@ void QSGPainterNode::updateSurface()
     m_materialO.setFiltering(m_linear_filtering ? QSGTexture::Linear : QSGTexture::Nearest);
 }
 
+void QSGPainterNode::updateFBOSize()
+{
+    int fboWidth = qMax(QT_MINIMUM_FBO_SIZE, qt_next_power_of_two(m_size.width()));
+    int fboHeight = qMax(QT_MINIMUM_FBO_SIZE, qt_next_power_of_two(m_size.height()));
+    m_fboSize = QSize(fboWidth, fboHeight);
+}
+
+void QSGPainterNode::setPreferredRenderTarget(QSGPaintedItem::RenderTarget target)
+{
+    if (m_preferredRenderTarget == target)
+        return;
+
+    m_preferredRenderTarget = target;
+
+    m_dirtyRenderTarget = true;
+    m_dirtyGeometry = true;
+    m_dirtyTexture = true;
+}
+
 void QSGPainterNode::setSize(const QSize &size)
 {
     if (size == m_size)
         return;
 
     m_size = size;
-    if (m_preferredPaintSurface == FramebufferObject) {
-        int fboWidth = qMax(QT_MINIMUM_FBO_SIZE, qt_next_power_of_two(size.width()));
-        int fboHeight = qMax(QT_MINIMUM_FBO_SIZE, qt_next_power_of_two(size.height()));
-        m_fboSize = QSize(fboWidth, fboHeight);
-    }
+    updateFBOSize();
+
+    if (m_fbo)
+        m_dirtyRenderTarget = m_fbo->size() != m_fboSize || m_dirtyRenderTarget;
+    else
+        m_dirtyRenderTarget = true;
     m_dirtyGeometry = true;
-    m_dirtySurface = true;
+    m_dirtyTexture = true;
 }
 
 void QSGPainterNode::setDirty(bool d, const QRect &dirtyRect)
 {
-    m_dirty = d;
+    m_dirtyContents = d;
     m_dirtyRect = dirtyRect;
 
     markDirty(DirtyMaterial);
@@ -341,7 +363,7 @@ void QSGPainterNode::setSmoothPainting(bool s)
         return;
 
     m_smoothPainting = s;
-    m_dirtySurface = true;
+    m_dirtyRenderTarget = true;
 }
 
 void QSGPainterNode::setFillColor(const QColor &c)

@@ -146,11 +146,6 @@ void* QEGLPlatformContext::getProcAddress(const QString& procName)
     return (void *)eglGetProcAddress(qPrintable(procName));
 }
 
-void QEGLPlatformContext::makeDefaultSharedContext()
-{
-    setDefaultSharedContext(this);
-}
-
 QPlatformWindowFormat QEGLPlatformContext::platformWindowFormat() const
 {
     return m_windowFormat;

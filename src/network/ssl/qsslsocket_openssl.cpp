@@ -1237,6 +1237,13 @@ bool QSslSocketBackendPrivate::startHandshake()
     X509 *x509 = q_SSL_get_peer_certificate(ssl);
     configuration.peerCertificate = QSslCertificatePrivate::QSslCertificate_from_X509(x509);
     q_X509_free(x509);
+    if (QSslCertificatePrivate::isBlacklisted(configuration.peerCertificate)) {
+        q->setErrorString(QSslSocket::tr("The peer certificate is blacklisted"));
+        q->setSocketError(QAbstractSocket::SslHandshakeFailedError);
+        emit q->error(QAbstractSocket::SslHandshakeFailedError);
+        plainSocket->disconnectFromHost();
+        return false;
+    }
 
     // Start translating errors.
     QList<QSslError> errors;

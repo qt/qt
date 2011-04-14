@@ -154,6 +154,15 @@ void tst_QDeclarativePositioners::test_horizontal_rtl()
     QCOMPARE(row->width(), 110.0);
     QCOMPARE(row->height(), 50.0);
 
+    // Change the width of the row and check that items stay to the right
+    row->setWidth(200);
+    QCOMPARE(one->x(), 150.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 130.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 90.0);
+    QCOMPARE(three->y(), 0.0);
+
     delete canvas;
 }
 
@@ -526,6 +535,19 @@ void tst_QDeclarativePositioners::test_grid_rightToLeft()
     QCOMPARE(grid->layoutDirection(), Qt::RightToLeft);
     QCOMPARE(grid->width(), 100.0);
     QCOMPARE(grid->height(), 100.0);
+
+    // Change the width of the grid and check that items stay to the right
+    grid->setWidth(200);
+    QCOMPARE(one->x(), 150.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 130.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 100.0);
+    QCOMPARE(three->y(), 0.0);
+    QCOMPARE(four->x(), 150.0);
+    QCOMPARE(four->y(), 50.0);
+    QCOMPARE(five->x(), 140.0);
+    QCOMPARE(five->y(), 50.0);
 
     delete canvas;
 }
