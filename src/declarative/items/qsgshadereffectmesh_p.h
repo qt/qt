@@ -89,41 +89,6 @@ private:
     QSize m_resolution;
 };
 
-class QSGCustomMesh : public QSGShaderEffectMesh, public QDeclarativeParserStatus
-{
-    Q_OBJECT
-    Q_PROPERTY(PrimitiveType primitiveType READ primitiveType WRITE setPrimitiveType NOTIFY primitiveTypeChanged)
-    Q_PROPERTY(QVariantList indices READ indices WRITE setIndices NOTIFY indicesChanged);
-    Q_ENUMS(PrimitiveType)
-
-public:
-    enum PrimitiveType
-    {
-        Triangles = GL_TRIANGLES,
-        TriangleStrip = GL_TRIANGLE_STRIP,
-        TriangleFan = GL_TRIANGLE_FAN
-    };
-
-    QSGCustomMesh(QObject *parent = 0);
-    virtual void classBegin() { }
-    virtual void componentComplete();
-    virtual QSGGeometry *updateGeometry(QSGGeometry *geometry, const QVector<QByteArray> &attributes, const QRectF &rect) const;
-
-    void setPrimitiveType(PrimitiveType type);
-    PrimitiveType primitiveType() const;
-
-    void setIndices(const QVariantList &list);
-    QVariantList indices() const;
-
-Q_SIGNALS:
-    void primitiveTypeChanged();
-    void indicesChanged();
-
-private:
-    PrimitiveType m_primitiveType;
-    QVariantList m_indices;
-};
-
 inline QColor qt_premultiply_color(const QColor &c)
 {
     return QColor::fromRgbF(c.redF() * c.alphaF(), c.greenF() * c.alphaF(), c.blueF() * c.alphaF(), c.alphaF());

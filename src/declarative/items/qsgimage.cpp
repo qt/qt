@@ -321,9 +321,9 @@ QSGNode *QSGImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     };
 
     QRectF nsrect(sourceRect.x() / d->pix.width(),
-                  sourceRect.y() / d->pix.height(),
+                  1 - sourceRect.y() / d->pix.height(),
                   sourceRect.width() / d->pix.width(),
-                  sourceRect.height() / d->pix.height());
+                  -sourceRect.height() / d->pix.height());
 
     d->textureProvider->setHorizontalWrapMode(hWrap);
     d->textureProvider->setVerticalWrapMode(vWrap);

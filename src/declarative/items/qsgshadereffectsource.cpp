@@ -281,8 +281,7 @@ void QSGShaderEffectTextureProvider::grab()
     const QGLContext *ctx = QSGContext::current->glContext();
     m_renderer->setDeviceRect(m_size);
     m_renderer->setViewportRect(m_size);
-    QRectF mirrored(m_rect.left(), m_rect.bottom(), m_rect.width(), -m_rect.height());
-    m_renderer->setProjectMatrixToRect(mirrored);
+    m_renderer->setProjectMatrixToRect(m_rect);
     m_renderer->setClearColor(Qt::transparent);
 
     if (m_multisampling) {
@@ -528,7 +527,7 @@ QSGNode *QSGShaderEffectSource::updatePaintNode(QSGNode *oldNode, UpdatePaintNod
                                     ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
 
     node->setTargetRect(QRectF(0, 0, width(), height()));
-    node->setSourceRect(QRectF(0, 0, 1, 1));
+    node->setSourceRect(QRectF(0, 1, 1, -1));
     node->update();
 
     return node;

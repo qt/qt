@@ -170,7 +170,6 @@ static void qt_sgitems_defineModule(const char *uri, int major, int minor)
     qmlRegisterType<QSGShaderEffectSource>("QtQuick", 2, 0, "ShaderEffectSource");
     qmlRegisterUncreatableType<QSGShaderEffectMesh>("QtQuick", 2, 0, "ShaderEffectMesh", QSGShaderEffectMesh::tr("Cannot create instance of abstract class ShaderEffectMesh."));
     qmlRegisterType<QSGGridMesh>("QtQuick", 2, 0, "GridMesh");
-    qmlRegisterType<QSGCustomMesh>("QtQuick", 2, 0, "CustomMesh");
 
     qmlRegisterType<QSGParentChange>(uri, major, minor,"ParentChange");
     qmlRegisterType<QSGAnchorChanges>(uri, major, minor,"AnchorChanges");

@@ -40,9 +40,9 @@
 **
 ****************************************************************************/
 
-#include "qsgpainteditem_p.h"
-#include "qsgpainteditem_p_p.h"
-#include "private/qsgpainternode_p.h"
+#include "qsgpainteditem.h"
+#include <private/qsgpainteditem_p.h>
+#include <private/qsgpainternode_p.h>
 
 #include <private/qsgcontext_p.h>
 #include <private/qsgadaptationlayer_p.h>
@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 
 QSGPaintedItemPrivate::QSGPaintedItemPrivate()
     : QSGItemPrivate()
+    , fillColor(Qt::transparent)
     , geometryDirty(false)
     , contentsDirty(false)
     , opaquePainting(false)
@@ -158,13 +159,19 @@ void QSGPaintedItem::setSmoothCache(bool)
 
 QColor QSGPaintedItem::fillColor() const
 {
-    // XXX todo
-    return QColor();
+    Q_D(const QSGPaintedItem);
+    return d->fillColor;
 }
 
-void QSGPaintedItem::setFillColor(const QColor&)
+void QSGPaintedItem::setFillColor(const QColor &c)
 {
-    // XXX todo
+    Q_D(QSGPaintedItem);
+
+    if (d->fillColor == c)
+        return;
+
+    d->fillColor = c;
+    update();
 }
 
 void QSGPaintedItem::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
@@ -186,20 +193,19 @@ QSGNode *QSGPaintedItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *
 
     QSGPainterNode *node = static_cast<QSGPainterNode *>(oldNode);
     if (!node)
-        node = new QSGPainterNode;
+        node = new QSGPainterNode(this);
 
     node->setSize(QSize(d->width, d->height));
     node->setSmoothPainting(d->smooth);
     node->setLinearFiltering(d->smooth);
     node->setOpaquePainting(d->opaquePainting);
+    node->setFillColor(d->fillColor);
+    node->setDirty(d->contentsDirty || d->geometryDirty, d->dirtyRect);
     node->update();
 
-    if (d->contentsDirty || d->geometryDirty) {
-        node->paint(this, d->dirtyRect);
-        d->contentsDirty = false;
-        d->geometryDirty = false;
-        d->dirtyRect = QRect();
-    }
+    d->contentsDirty = false;
+    d->geometryDirty = false;
+    d->dirtyRect = QRect();
 
     return node;
 }
