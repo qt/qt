@@ -114,7 +114,6 @@ class Q_AUTOTEST_EXPORT QDeclarativeListView : public QDeclarativeFlickable
     Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing NOTIFY spacingChanged)
     Q_PROPERTY(Orientation orientation READ orientation WRITE setOrientation NOTIFY orientationChanged)
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged REVISION 1)
-    Q_PROPERTY(Qt::LayoutDirection effectiveLayoutDirection READ effectiveLayoutDirection NOTIFY effectiveLayoutDirectionChanged REVISION 1)
     Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled NOTIFY keyNavigationWrapsChanged)
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer NOTIFY cacheBufferChanged)
     Q_PROPERTY(QDeclarativeViewSection *section READ sectionCriteria CONSTANT)
@@ -229,7 +228,6 @@ Q_SIGNALS:
     void spacingChanged();
     void orientationChanged();
     Q_REVISION(1) void layoutDirectionChanged();
-    Q_REVISION(1) void effectiveLayoutDirectionChanged();
     void currentIndexChanged();
     void currentSectionChanged();
     void highlightMoveSpeedChanged();

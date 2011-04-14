@@ -73,7 +73,6 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextEdit : public QDeclarativeImplicitSizePa
     Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor NOTIFY selectedTextColorChanged)
     Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontChanged)
     Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign RESET resetHAlign NOTIFY horizontalAlignmentChanged)
-    Q_PROPERTY(HAlignment effectiveHorizontalAlignment READ effectiveHAlign NOTIFY effectiveHorizontalAlignmentChanged REVISION 1)
     Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign NOTIFY verticalAlignmentChanged)
     Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
     Q_PROPERTY(int lineCount READ lineCount NOTIFY lineCountChanged REVISION 1)
@@ -249,7 +248,6 @@ Q_SIGNALS:
     Q_REVISION(1) void linkActivated(const QString &link);
     Q_REVISION(1) void canPasteChanged();
     Q_REVISION(1) void inputMethodComposingChanged();
-    Q_REVISION(1) void effectiveHorizontalAlignmentChanged();
 
 public Q_SLOTS:
     void selectAll();
