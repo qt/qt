@@ -289,18 +289,19 @@ void tst_qdeclarativepixmapcache::parallel()
 
 void tst_qdeclarativepixmapcache::massive()
 {
+    QDeclarativeEngine engine;
     QUrl url = thisfile.resolved(QUrl("data/massive.png"));
 
     // Confirm that massive images remain in the cache while they are
     // in use by the application.
     {
     qint64 cachekey = 0;
-    QDeclarativePixmap p(0, url);
+    QDeclarativePixmap p(&engine, url);
     QVERIFY(p.isReady());
     QVERIFY(p.pixmap().size() == QSize(10000, 1000));
     cachekey = p.pixmap().cacheKey();
 
-    QDeclarativePixmap p2(0, url);
+    QDeclarativePixmap p2(&engine, url);
     QVERIFY(p2.isReady());
     QVERIFY(p2.pixmap().size() == QSize(10000, 1000));
 
@@ -312,13 +313,13 @@ void tst_qdeclarativepixmapcache::massive()
     {
     qint64 cachekey = 0;
     {
-        QDeclarativePixmap p(0, url);
+        QDeclarativePixmap p(&engine, url);
         QVERIFY(p.isReady());
         QVERIFY(p.pixmap().size() == QSize(10000, 1000));
         cachekey = p.pixmap().cacheKey();
     }
 
-    QDeclarativePixmap p2(0, url);
+    QDeclarativePixmap p2(&engine, url);
     QVERIFY(p2.isReady());
     QVERIFY(p2.pixmap().size() == QSize(10000, 1000));
 
