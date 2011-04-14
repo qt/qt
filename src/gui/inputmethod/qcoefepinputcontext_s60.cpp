@@ -77,6 +77,15 @@ QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT void qt_s60_setPartialScreenInputMode(bool enable)
 {
     S60->partial_keyboard = enable;
+
+    QInputContext *ic = 0;
+    if (QApplication::focusWidget()) {
+        ic = QApplication::focusWidget()->inputContext();
+    } else if (qApp && qApp->inputContext()) {
+        ic = qApp->inputContext();
+    }
+    if (ic)
+        ic->update();
 }
 
 QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
@@ -580,6 +589,19 @@ void QCoeFepInputContext::updateHints(bool mustUpdateInputCapabilities)
     QWidget *w = focusWidget();
     if (w) {
         Qt::InputMethodHints hints = w->inputMethodHints();
+
+        // Since splitview support works like an input method hint, yet it is private flag, 
+        // we need to update its state separately.
+        if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0) {
+            TInt currentFlags = m_fepState->Flags();
+            if (S60->partial_keyboard)
+                currentFlags |= QT_EAknEditorFlagEnablePartialScreen;
+            else
+                currentFlags &= ~QT_EAknEditorFlagEnablePartialScreen;
+            if (currentFlags != m_fepState->Flags())
+                m_fepState->SetFlags(currentFlags);
+        }
+
         if (hints != m_lastImHints) {
             m_lastImHints = hints;
             applyHints(hints);
