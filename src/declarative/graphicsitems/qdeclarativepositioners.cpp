@@ -609,6 +609,11 @@ void QDeclarativeRow::setLayoutDirection(Qt::LayoutDirection layoutDirection)
     QDeclarativeBasePositionerPrivate *d = static_cast<QDeclarativeBasePositionerPrivate* >(QDeclarativeBasePositionerPrivate::get(this));
     if (d->layoutDirection != layoutDirection) {
         d->layoutDirection = layoutDirection;
+        // For RTL layout the positioning changes when the width changes.
+        if (d->layoutDirection == Qt::RightToLeft)
+            d->addItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
+        else
+            d->removeItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
         prePositioning();
         emit layoutDirectionChanged();
         emit effectiveLayoutDirectionChanged();
@@ -907,6 +912,11 @@ void QDeclarativeGrid::setLayoutDirection(Qt::LayoutDirection layoutDirection)
     QDeclarativeBasePositionerPrivate *d = static_cast<QDeclarativeBasePositionerPrivate*>(QDeclarativeBasePositionerPrivate::get(this));
     if (d->layoutDirection != layoutDirection) {
         d->layoutDirection = layoutDirection;
+        // For RTL layout the positioning changes when the width changes.
+        if (d->layoutDirection == Qt::RightToLeft)
+            d->addItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
+        else
+            d->removeItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
         prePositioning();
         emit layoutDirectionChanged();
         emit effectiveLayoutDirectionChanged();

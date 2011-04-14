@@ -16,6 +16,7 @@ contains(S60_VERSION, 3.1) {
         LIBS += -lDirectoryLocalizer
     }
     LIBS += -lefsrv
+    LIBS += -lnumberconversion
     INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
 }
 

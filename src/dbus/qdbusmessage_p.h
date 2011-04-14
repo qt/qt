@@ -56,6 +56,7 @@
 #include <qatomic.h>
 #include <qstring.h>
 #include <qdbusmessage.h>
+#include <qdbusconnection.h>
 
 struct DBusMessage;
 
@@ -92,8 +93,9 @@ public:
     static void setParametersValidated(QDBusMessage &msg, bool enable)
     { msg.d_ptr->parametersValidated = enable; }
 
-    static DBusMessage *toDBusMessage(const QDBusMessage &message, QDBusError *error);
-    static QDBusMessage fromDBusMessage(DBusMessage *dmsg);
+    static DBusMessage *toDBusMessage(const QDBusMessage &message, QDBusConnection::ConnectionCapabilities capabilities,
+                                      QDBusError *error);
+    static QDBusMessage fromDBusMessage(DBusMessage *dmsg, QDBusConnection::ConnectionCapabilities capabilities);
 
     static bool isLocal(const QDBusMessage &msg);
     static QDBusMessage makeLocal(const QDBusConnectionPrivate &conn,

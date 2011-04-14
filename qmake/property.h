@@ -62,6 +62,7 @@ public:
     bool hasValue(QString);
     QString value(QString v) { return value(v, false); }
     void setValue(QString, const QString &);
+    void remove(const QString &);
 
     bool exec();
 };

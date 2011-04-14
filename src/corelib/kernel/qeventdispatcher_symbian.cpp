@@ -43,6 +43,7 @@
 #include <private/qthread_p.h>
 #include <qcoreapplication.h>
 #include <private/qcoreapplication_p.h>
+#include <qsemaphore.h>
 
 #include <unistd.h>
 #include <errno.h>
@@ -654,34 +655,54 @@ class QIdleDetectorThread
 {
 public:
     QIdleDetectorThread()
-    : m_state(STATE_RUN), m_stop(false)
+    : m_state(STATE_RUN), m_stop(false), m_running(false)
     {
-        qt_symbian_throwIfError(m_lock.CreateLocal(0));
-        TInt err = m_idleDetectorThread.Create(KNullDesC(), &idleDetectorThreadFunc, 1024, &User::Allocator(), this);
-        if (err != KErrNone)
-            m_lock.Close();
-        qt_symbian_throwIfError(err);
-        m_idleDetectorThread.SetPriority(EPriorityAbsoluteBackgroundNormal);
-        m_idleDetectorThread.Resume();
+        start();
     }
 
     ~QIdleDetectorThread()
     {
+        stop();
+    }
+
+    void start()
+    {
+        QMutexLocker lock(&m_mutex);
+        if (m_running)
+            return;
+        m_stop = false;
+        m_state = STATE_RUN;
+        TInt err = m_idleDetectorThread.Create(KNullDesC(), &idleDetectorThreadFunc, 1024, &User::Allocator(), this);
+        if (err != KErrNone)
+            return;     // Fail silently on error. Next kick will try again. Exception might stop the event being processed
+        m_idleDetectorThread.SetPriority(EPriorityAbsoluteBackgroundNormal);
+        m_idleDetectorThread.Resume();
+        m_running = true;
+        // get a callback from QCoreApplication destruction to stop this thread
+        qAddPostRoutine(StopIdleDetectorThread);
+    }
+
+    void stop()
+    {
+        QMutexLocker lock(&m_mutex);
+        if (!m_running)
+            return;
         // close down the idle thread because if corelib is loaded temporarily, this would leak threads into the host process
         m_stop = true;
-        m_lock.Signal();
+        m_kick.release();
         m_idleDetectorThread.SetPriority(EPriorityNormal);
         TRequestStatus s;
         m_idleDetectorThread.Logon(s);
         User::WaitForRequest(s);
         m_idleDetectorThread.Close();
-        m_lock.Close();
+        m_running = false;
     }
 
     void kick()
     {
+        start();
         m_state = STATE_KICKED;
-        m_lock.Signal();
+        m_kick.release();
     }
 
     bool hasRun()
@@ -700,19 +721,28 @@ private:
     void IdleLoop()
     {
         while (!m_stop) {
-            m_lock.Wait();
+            m_kick.acquire();
             m_state = STATE_RUN;
         }
     }
 
+    static void StopIdleDetectorThread();
+
 private:
     enum IdleStates {STATE_KICKED, STATE_RUN} m_state;
     bool m_stop;
+    bool m_running;
     RThread m_idleDetectorThread;
-    RSemaphore m_lock;
+    QSemaphore m_kick;
+    QMutex m_mutex;
 };
 
 Q_GLOBAL_STATIC(QIdleDetectorThread, idleDetectorThread);
+
+void QIdleDetectorThread::StopIdleDetectorThread()
+{
+    idleDetectorThread()->stop();
+}
 
 const int maxBusyTime = 2000; // maximum time we allow idle detector to be blocked before worrying, in milliseconds
 const int baseDelay = 1000; // minimum delay time used when backing off to allow idling, in microseconds

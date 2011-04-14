@@ -43,7 +43,7 @@ void wrapInFunction()
 {
 
 //! [0]
-class MyClass
+class MyClass : public QObject
 {
     Q_OBJECT
     Q_CLASSINFO("author", "Sabrina Schweinsteiger")

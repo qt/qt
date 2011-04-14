@@ -50,6 +50,10 @@
 #include "private/qsoftkeymanager_s60_p.h"
 #endif
 
+#ifdef SYMBIAN_VERSION_SYMBIAN3
+#include "private/qt_s60_p.h"
+#endif
+
 #ifndef QT_NO_SOFTKEYMANAGER
 QT_BEGIN_NAMESPACE
 
@@ -101,6 +105,30 @@ QSoftKeyManager::QSoftKeyManager() :
 QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *actionWidget)
 {
     QAction *action = new QAction(standardSoftKeyText(standardKey), actionWidget);
+#ifdef SYMBIAN_VERSION_SYMBIAN3
+    int key = 0;
+    switch (standardKey) {
+    case OkSoftKey:
+        key = EAknSoftkeyOk;
+        break;
+    case SelectSoftKey:
+        key = EAknSoftkeySelect;
+        break;
+    case DoneSoftKey:
+        key = EAknSoftkeyDone;
+        break;
+    case MenuSoftKey:
+        key = EAknSoftkeyOptions;
+        break;
+    case CancelSoftKey:
+        key = EAknSoftkeyCancel;
+        break;
+    default:
+        break;
+    };
+    if (key != 0)
+        QSoftKeyManager::instance()->d_func()->softKeyCommandActions.insert(action, key);
+#endif
     QAction::SoftKeyRole softKeyRole = QAction::NoSoftKey;
     switch (standardKey) {
     case MenuSoftKey: // FALL-THROUGH
@@ -143,6 +171,9 @@ void QSoftKeyManager::cleanupHash(QObject *obj)
     Q_D(QSoftKeyManager);
     QAction *action = qobject_cast<QAction*>(obj);
     d->keyedActions.remove(action);
+#ifdef SYMBIAN_VERSION_SYMBIAN3
+    d->softKeyCommandActions.remove(action);
+#endif
 }
 
 void QSoftKeyManager::sendKeyEvent()

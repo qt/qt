@@ -2849,6 +2849,11 @@ void QWidgetPrivate::transferChildren()
 #ifdef QT_MAC_USE_COCOA
 void QWidgetPrivate::setSubWindowStacking(bool set)
 {
+    // After hitting too many unforeseen bugs trying to put Qt on top of the cocoa child
+    // window API, we have decided to revert this behaviour as much as we can. We
+    // therefore now only allow child windows to exist for children of modal dialogs.
+    static bool use_behaviour_qt473 = !qgetenv("QT_MAC_USE_CHILDWINDOWS").isEmpty();
+
     // This will set/remove a visual relationship between parent and child on screen.
     // The reason for doing this is to ensure that a child always stacks infront of
     // its parent. Unfortunatly is turns out that [NSWindow addChildWindow] has
@@ -2877,7 +2882,10 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
         if (NSWindow *pwin = [qt_mac_nativeview_for(parent) window]) {
             if (set) {
                 Qt::WindowType ptype = parent->window()->windowType();
-                if ([pwin isVisible] && (ptype == Qt::Window || ptype == Qt::Dialog) && ![qwin parentWindow]) {
+                if ([pwin isVisible]
+                    && (ptype == Qt::Window || ptype == Qt::Dialog)
+                    && ![qwin parentWindow]
+                    && (use_behaviour_qt473 || parent->windowModality() == Qt::ApplicationModal)) {
                     NSInteger level = [qwin level];
                     [pwin addChildWindow:qwin ordered:NSWindowAbove];
                     if ([qwin level] < level)
@@ -2888,6 +2896,10 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
             }
         }
     }
+
+    // Only set-up child windows for q if q is modal:
+    if (set && !use_behaviour_qt473 && q->windowModality() != Qt::ApplicationModal)
+        return;
 
     QObjectList widgets = q->children();
     for (int i=0; i<widgets.size(); ++i) {

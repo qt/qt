@@ -305,8 +305,8 @@ void tst_qdeclarativeecmascript::signalAssignment()
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->string(), QString());
-        emit object->argumentSignal(19, "Hello world!", 10.25);
-        QCOMPARE(object->string(), QString("pass 19 Hello world! 10.25"));
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
+        QCOMPARE(object->string(), QString("pass 19 Hello world! 10.25 3 2"));
     }
 }
 
@@ -871,7 +871,7 @@ void tst_qdeclarativeecmascript::scope()
         QCOMPARE(object->property("test").toInt(), 0);
         QCOMPARE(object->property("test2").toString(), QString());
 
-        emit object->argumentSignal(13, "Argument Scope", 9);
+        emit object->argumentSignal(13, "Argument Scope", 9, MyQmlObject::EnumValue4, Qt::RightButton);
 
         QCOMPARE(object->property("test").toInt(), 13);
         QCOMPARE(object->property("test2").toString(), QString("Argument Scope"));
@@ -896,6 +896,8 @@ void tst_qdeclarativeecmascript::signalParameterTypes()
     QCOMPARE(object->property("realProperty").toReal(), 19.2);
     QVERIFY(object->property("colorProperty").value<QColor>() == QColor(255, 255, 0, 255));
     QVERIFY(object->property("variantProperty") == QVariant::fromValue(QColor(255, 0, 255, 255)));
+    QVERIFY(object->property("enumProperty") == MyQmlObject::EnumValue3);
+    QVERIFY(object->property("qtEnumProperty") == Qt::LeftButton);
 }
 
 /*
@@ -1140,7 +1142,7 @@ void tst_qdeclarativeecmascript::signalTriggeredBindings()
     QCOMPARE(object->property("test1").toReal(), 200.);
     QCOMPARE(object->property("test2").toReal(), 200.);
 
-    object->argumentSignal(10, QString(), 10);
+    object->argumentSignal(10, QString(), 10, MyQmlObject::EnumValue4, Qt::RightButton);
 
     QCOMPARE(object->property("base").toReal(), 400.);
     QCOMPARE(object->property("test1").toReal(), 400.);
@@ -1941,7 +1943,7 @@ void tst_qdeclarativeecmascript::scriptConnect()
         QVERIFY(object != 0);
 
         QCOMPARE(object->property("test").toBool(), false);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->property("test").toBool(), true);
 
         delete object;
@@ -1954,7 +1956,7 @@ void tst_qdeclarativeecmascript::scriptConnect()
         QVERIFY(object != 0);
 
         QCOMPARE(object->property("test").toBool(), false);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->property("test").toBool(), true);
 
         delete object;
@@ -1967,7 +1969,7 @@ void tst_qdeclarativeecmascript::scriptConnect()
         QVERIFY(object != 0);
 
         QCOMPARE(object->property("test").toBool(), false);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->property("test").toBool(), true);
 
         delete object;
@@ -1980,7 +1982,7 @@ void tst_qdeclarativeecmascript::scriptConnect()
         QVERIFY(object != 0);
 
         QCOMPARE(object->methodCalled(), false);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->methodCalled(), true);
 
         delete object;
@@ -1993,7 +1995,7 @@ void tst_qdeclarativeecmascript::scriptConnect()
         QVERIFY(object != 0);
 
         QCOMPARE(object->methodCalled(), false);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->methodCalled(), true);
 
         delete object;
@@ -2006,7 +2008,7 @@ void tst_qdeclarativeecmascript::scriptConnect()
         QVERIFY(object != 0);
 
         QCOMPARE(object->property("test").toInt(), 0);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->property("test").toInt(), 2);
 
         delete object;
@@ -2022,13 +2024,13 @@ void tst_qdeclarativeecmascript::scriptDisconnect()
         QVERIFY(object != 0);
 
         QCOMPARE(object->property("test").toInt(), 0);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->property("test").toInt(), 1);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->property("test").toInt(), 2);
         emit object->basicSignal();
         QCOMPARE(object->property("test").toInt(), 2);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->property("test").toInt(), 2);
 
         delete object;
@@ -2041,13 +2043,13 @@ void tst_qdeclarativeecmascript::scriptDisconnect()
         QVERIFY(object != 0);
 
         QCOMPARE(object->property("test").toInt(), 0);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->property("test").toInt(), 1);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->property("test").toInt(), 2);
         emit object->basicSignal();
         QCOMPARE(object->property("test").toInt(), 2);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->property("test").toInt(), 2);
 
         delete object;
@@ -2060,13 +2062,13 @@ void tst_qdeclarativeecmascript::scriptDisconnect()
         QVERIFY(object != 0);
 
         QCOMPARE(object->property("test").toInt(), 0);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->property("test").toInt(), 1);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->property("test").toInt(), 2);
         emit object->basicSignal();
         QCOMPARE(object->property("test").toInt(), 2);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->property("test").toInt(), 3);
 
         delete object;
@@ -2078,13 +2080,13 @@ void tst_qdeclarativeecmascript::scriptDisconnect()
         QVERIFY(object != 0);
 
         QCOMPARE(object->property("test").toInt(), 0);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->property("test").toInt(), 1);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->property("test").toInt(), 2);
         emit object->basicSignal();
         QCOMPARE(object->property("test").toInt(), 2);
-        emit object->argumentSignal(19, "Hello world!", 10.25);
+        emit object->argumentSignal(19, "Hello world!", 10.25, MyQmlObject::EnumValue4, Qt::RightButton);
         QCOMPARE(object->property("test").toInt(), 3);
 
         delete object;

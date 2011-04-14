@@ -61,230 +61,6 @@ QT_BEGIN_NAMESPACE
 
 #define COMMAND_VERSION                         Doc::alias("version")
 int DitaXmlGenerator::id = 0;
-bool DitaXmlGenerator::inApiDesc = false;
-bool DitaXmlGenerator::inSection = false;
-bool DitaXmlGenerator::inDetailedDescription = false;
-bool DitaXmlGenerator::inLegaleseText = false;
-
-#define cxxapi_d_xref                      	Doc::alias("cxxapi-d-xref")
-#define cxxclass                           	Doc::alias("cxxclass")
-#define cxxdefine                          	Doc::alias("cxxdefine")
-#define cxxenumeration                     	Doc::alias("cxxenumeration")
-#define cxxfile                            	Doc::alias("cxxfile")
-#define cxxfunction                        	Doc::alias("cxxfunction")
-#define cxxstruct                          	Doc::alias("cxxstruct")
-#define cxxtypedef                         	Doc::alias("cxxtypedef")
-#define cxxunion                           	Doc::alias("cxxunion")
-#define cxxvariable                        	Doc::alias("cxxvariable")
-
-#define CXXAPIMAP                          	Doc::alias("cxxAPIMap")
-#define CXXCLASSREF                        	Doc::alias("cxxClassRef")
-#define CXXDEFINEREF                       	Doc::alias("cxxDefineRef")
-#define CXXENUMERATIONREF                  	Doc::alias("cxxEnumerationRef")
-#define CXXFILEREF                         	Doc::alias("cxxFileRef")
-#define CXXFUNCTIONREF                     	Doc::alias("cxxFunctionRef")
-#define CXXSTRUCTREF                       	Doc::alias("cxxStructRef")
-#define CXXTYPDEFREF                       	Doc::alias("cxxTypedefRef")
-#define CXXUNIONREF                        	Doc::alias("cxxUnionRef")
-#define CXXVARIABLEREF                     	Doc::alias("cxxVariableRef")
-
-#define CXXCLASS                           	Doc::alias("cxxClass")
-#define CXXCLASSABSTRACT                   	Doc::alias("cxxClassAbstract")
-#define CXXCLASSACCESSSPECIFIER            	Doc::alias("cxxClassAccessSpecifier")
-#define CXXCLASSAPIITEMLOCATION            	Doc::alias("cxxClassAPIItemLocation")
-#define CXXCLASSBASECLASS                  	Doc::alias("cxxClassBaseClass")
-#define CXXCLASSBASECLASSSTRUCT            	Doc::alias("cxxClassBaseStruct")
-#define CXXCLASSBASEUNION                  	Doc::alias("cxxClassBaseUnion")
-#define CXXCLASSDECLARATIONFILE            	Doc::alias("cxxClassDeclarationFile")
-#define CXXCLASSDECLARATIONFILELINE        	Doc::alias("cxxClassDeclarationFileLine")
-#define CXXCLASSDEFINITION                 	Doc::alias("cxxClassDefinition")
-#define CXXCLASSDEFINITIONFILE             	Doc::alias("cxxClassDefinitionFile")
-#define CXXCLASSDEFINITIONFILEEND          	Doc::alias("cxxClassDefinitionFileLineEnd")
-#define CXXCLASSDEFINITIONFILESTART        	Doc::alias("cxxClassDefinitionFileLineStart")
-#define CXXCLASSDERIVATION                 	Doc::alias("cxxClassDerivation")
-#define CXXCLASSDERIVATIONACCESSSPECIFIER  	Doc::alias("cxxClassDerivationAccessSpecifier")
-#define CXXCLASSDERIVATIONS                	Doc::alias("cxxClassDerivations")
-#define CXXCLASSDERIVATIONVIRTUAL          	Doc::alias("cxxClassDerivationVirtual")
-#define CXXCLASSDETAIL                     	Doc::alias("cxxClassDetail")
-#define CXXCLASSENUMERATIONINHERITED       	Doc::alias("cxxClassEnumerationInherited")
-#define CXXCLASSENUMERATORINHERITED        	Doc::alias("cxxClassEnumeratorInherited")
-#define CXXCLASSFUNCTIONINHERITED          	Doc::alias("cxxClassFunctionInherited")
-#define CXXCLASSINHERITS                   	Doc::alias("cxxClassInherits")
-#define CXXCLASSINHERITSDETAIL             	Doc::alias("cxxClassInheritsDetail")
-#define CXXCLASSNESTED                     	Doc::alias("cxxClassNested")
-#define CXXCLASSNESTEDCLASS                	Doc::alias("cxxClassNestedClass")
-#define CXXCLASSNESTEDDETAIL               	Doc::alias("cxxClassNestedDetail")
-#define CXXCLASSNESTEDSTRUCT               	Doc::alias("cxxClassNestedStruct")
-#define CXXCLASSNESTEDUNION                	Doc::alias("cxxClassNestedUnion")
-#define CXXCLASSTEMPLATEPARAMETER          	Doc::alias("cxxClassTemplateParameter")
-#define CXXCLASSTEMPLATEPARAMETERS         	Doc::alias("cxxClassTemplateParameters")
-#define CXXCLASSTEMPLATEPARAMETERTYPE      	Doc::alias("cxxClassTemplateParameterType")
-#define CXXCLASSVARIABLEINHERITED          	Doc::alias("cxxClassVariableInherited")
-
-#define CXXDEFINE                          	Doc::alias("cxxDefine")
-#define CXXDEFINEACCESSSPECIFIER           	Doc::alias("cxxDefineAccessSpecifier")
-#define CXXDEFINEAPIITEMLOCATION           	Doc::alias("cxxDefineAPIItemLocation")
-#define CXXDEFINEDECLARATIONFILE           	Doc::alias("cxxDefineDeclarationFile")
-#define CXXDEFINEDECLARATIONFILELINE       	Doc::alias("cxxDefineDeclarationFileLine")
-#define CXXDEFINEDEFINITION                	Doc::alias("cxxDefineDefinition")
-#define CXXDEFINEDETAIL                    	Doc::alias("cxxDefineDetail")
-#define CXXDEFINENAMELOOKUP                	Doc::alias("cxxDefineNameLookup")
-#define CXXDEFINEPARAMETER                 	Doc::alias("cxxDefineParameter")
-#define CXXDEFINEPARAMETERDECLARATIONNAME  	Doc::alias("cxxDefineParameterDeclarationName")
-#define CXXDEFINEPARAMETERS                	Doc::alias("cxxDefineParameters")
-#define CXXDEFINEPROTOTYPE                 	Doc::alias("cxxDefinePrototype")
-#define CXXDEFINEREIMPLEMENTED             	Doc::alias("cxxDefineReimplemented")
-
-#define CXXENUMERATION                     	Doc::alias("cxxEnumeration")
-#define CXXENUMERATIONACCESSSPECIFIER      	Doc::alias("cxxEnumerationAccessSpecifier")
-#define CXXENUMERATIONAPIITEMLOCATION      	Doc::alias("cxxEnumerationAPIItemLocation")
-#define CXXENUMERATIONDECLARATIONFILE      	Doc::alias("cxxEnumerationDeclarationFile")
-#define CXXENUMERATIONDECLARATIONFILELINE  	Doc::alias("cxxEnumerationDeclarationFileLine")
-#define CXXENUMERATIONDEFINITION                Doc::alias("cxxEnumerationDefinition")
-#define CXXENUMERATIONDEFINITIONFILE            Doc::alias("cxxEnumerationDefinitionFile")
-#define CXXENUMERATIONDEFINITIONFILELINEEND     Doc::alias("cxxEnumerationDefinitionFileLineEnd")
-#define CXXENUMERATIONDEFINITIONFILELINESTART   Doc::alias("cxxEnumerationDefinitionFileLineStart")
-#define CXXENUMERATIONDETAIL                    Doc::alias("cxxEnumerationDetail")
-#define CXXENUMERATIONNAMELOOKUP                Doc::alias("cxxEnumerationNameLookup")
-#define CXXENUMERATIONPROTOTYPE                 Doc::alias("cxxEnumerationPrototype")
-#define CXXENUMERATIONREIMPLEMENTED             Doc::alias("cxxEnumerationReimplemented")
-#define CXXENUMERATIONSCOPEDNAME                Doc::alias("cxxEnumerationScopedName")
-#define CXXENUMERATOR                           Doc::alias("cxxEnumerator")
-#define CXXENUMERATORAPIITEMLOCATION            Doc::alias("cxxEnumeratorAPIItemLocation")
-#define CXXENUMERATORDECLARATIONFILE            Doc::alias("cxxEnumeratorDeclarationFile")
-#define CXXENUMERATORDECLARATIONFILELINE        Doc::alias("cxxEnumeratorDeclarationFileLine")
-#define CXXENUMERATORINITIALISER                Doc::alias("cxxEnumeratorInitialiser")
-#define CXXENUMERATORNAMELOOKUP                 Doc::alias("cxxEnumeratorNameLookup")
-#define CXXENUMERATORPROTOTYPE                  Doc::alias("cxxEnumeratorPrototype")
-#define CXXENUMERATORS                          Doc::alias("cxxEnumerators")
-#define CXXENUMERATORSCOPEDNAME                 Doc::alias("cxxEnumeratorScopedName")
-
-#define CXXFILE_INFO_TYPES                      Doc::alias("cxxFile-info-types")
-#define CXXFILE_TYPES_DEFAULT                   Doc::alias("cxxFile-types-default")
-#define CXXFILE                                 Doc::alias("cxxFile")
-#define CXXFILEAPIITMELOCATION                  Doc::alias("cxxFileAPIItemLocation")
-#define CXXFILEDECLARATIONFILE                  Doc::alias("cxxFileDeclarationFile")
-
-#define CXXFUNCTION                             Doc::alias("cxxFunction")
-#define CXXFUNCTIONACCESSSPECIFIER              Doc::alias("cxxFunctionAccessSpecifier")
-#define CXXFUNCTIONAPIITEMLOCATION              Doc::alias("cxxFunctionAPIItemLocation")
-#define CXXFUNCTIONCONST                        Doc::alias("cxxFunctionConst")
-#define CXXFUNCTIONCONSTRUCTOR                  Doc::alias("cxxFunctionConstructor")
-#define CXXFUNCTIONDECLARATIONFILE              Doc::alias("cxxFunctionDeclarationFile")
-#define CXXFUNCTIONDECLARATIONFILELINE          Doc::alias("cxxFunctionDeclarationFileLine")
-#define CXXFUNCTIONDECLAREDTYPE                 Doc::alias("cxxFunctionDeclaredType")
-#define CXXFUNCTIONDEFINITION                   Doc::alias("cxxFunctionDefinition")
-#define CXXFUNCTIONDEFINITIONFILE               Doc::alias("cxxFunctionDefinitionFile")
-#define CXXFUNCTIONDEFINITIONFILELINEEND        Doc::alias("cxxFunctionDefinitionFileLineEnd")
-#define CXXFUNCTIONDEFINITIONFILELINESTART      Doc::alias("cxxFunctionDefinitionFileLineStart")
-#define CXXFUNCTIONDESTRUCTOR                   Doc::alias("cxxFunctionDestructor")
-#define CXXFUNCTIONDETAIL                       Doc::alias("cxxFunctionDetail")
-#define CXXFUNCTIONEXPLICIT                     Doc::alias("cxxFunctionExplicit")
-#define CXXFUNCTIONINLINE                       Doc::alias("cxxFunctionInline")
-#define CXXFUNCTIONNAMELOOKUP                   Doc::alias("cxxFunctionNameLookup")
-#define CXXFUNCTIONPARAMETER                    Doc::alias("cxxFunctionParameter")
-#define CXXFUNCTIONPARAMETERDECLARATIONNAME     Doc::alias("cxxFunctionParameterDeclarationName")
-#define CXXFUNCTIONPARAMETERDECLAREDTYPE        Doc::alias("cxxFunctionParameterDeclaredType")
-#define CXXFUNCTIONPARAMETERDEFAULTVALUE        Doc::alias("cxxFunctionParameterDefaultValue")
-#define CXXFUNCTIONPARAMETERDEFINITIONNAME      Doc::alias("cxxFunctionParameterDefinitionName")
-#define CXXFUNCTIONPARAMETERS                   Doc::alias("cxxFunctionParameters")
-#define CXXFUNCTIONPROTOTYPE                    Doc::alias("cxxFunctionPrototype")
-#define CXXFUNCTIONPUREVIRTUAL                  Doc::alias("cxxFunctionPureVirtual")
-#define CXXFUNCTIONREIMPLEMENTED                Doc::alias("cxxFunctionReimplemented")
-#define CXXFUNCTIONRETURNTYPE                   Doc::alias("cxxFunctionReturnType")
-#define CXXFUNCTIONSCOPEDNAME                   Doc::alias("cxxFunctionScopedName")
-#define CXXFUNCTIONSTORAGECLASSSPECIFIEREXTERN  Doc::alias("cxxFunctionStorageClassSpecifierExtern")
-#define CXXFUNCTIONSTORAGECLASSSPECIFIERMUTABLE Doc::alias("cxxFunctionStorageClassSpecifierMutable")
-#define CXXFUNCTIONSTORAGECLASSSPECIFIERSTATIC  Doc::alias("cxxFunctionStorageClassSpecifierStatic")
-#define CXXFUNCTIONTEMPLATEPARAMETER            Doc::alias("cxxFunctionTemplateParameter")
-#define CXXFUNCTIONTEMPLATEPARAMETERS           Doc::alias("cxxFunctionTemplateParameters")
-#define CXXFUNCTIONTEMPLATEPARAMETERTYPE        Doc::alias("cxxFunctionTemplateParameterType")
-#define CXXFUNCTIONVIRTUAL                      Doc::alias("cxxFunctionVirtual")
-#define CXXFUNCTIONVOLATILE                     Doc::alias("cxxFunctionVolatile")
-
-#define CXXSTRUCT                               Doc::alias("cxxStruct")
-#define CXXSTRUCTABSTRACT                       Doc::alias("cxxStructAbstract")
-#define CXXSTRUCTACCESSSPECIFIER                Doc::alias("cxxStructAccessSpecifier")
-#define CXXSTRUCTAPIITEMLOCATION                Doc::alias("cxxStructAPIItemLocation")
-#define CXXSTRUCTBASECLASS                      Doc::alias("cxxStructBaseClass")
-#define CXXSTRUCTBASESTRUCT                     Doc::alias("cxxStructBaseStruct")
-#define CXXSTRUCTBASEUNION                      Doc::alias("cxxStructBaseUnion")
-#define CXXSTRUCTDECLARATIONFILE                Doc::alias("cxxStructDeclarationFile")
-#define CXXSTRUCTDECLARATIONFILELINE            Doc::alias("cxxStructDeclarationFileLine")
-#define CXXSTRUCTDEFINITION                     Doc::alias("cxxStructDefinition")
-#define CXXSTRUCTDEFINITIONFILE                 Doc::alias("cxxStructDefinitionFile")
-#define CXXSTRUCTDEFINITIONFILELINEEND          Doc::alias("cxxStructDefinitionFileLineEnd")
-#define CXXSTRUCTDEFINITIONFILELINESTART        Doc::alias("cxxStructDefinitionFileLineStart")
-#define CXXSTRUCTDERIVATION                     Doc::alias("cxxStructDerivation")
-#define CXXSTRUCTDERIVATIONACCESSSPECIFIER      Doc::alias("cxxStructDerivationAccessSpecifier")
-#define CXXSTRUCTDERIVATIONS                    Doc::alias("cxxStructDerivations")
-#define CXXSTRUCTDERIVATIONVIRTUAL              Doc::alias("cxxStructDerivationVirtual")
-#define CXXSTRUCTDETAIL                         Doc::alias("cxxStructDetail")
-#define CXXSTRUCTENUMERATIONINHERITED           Doc::alias("cxxStructEnumerationInherited")
-#define CXXSTRUCTENUMERATORINHERITED            Doc::alias("cxxStructEnumeratorInherited")
-#define CXXSTRUCTFUNCTIONINHERITED              Doc::alias("cxxStructFunctionInherited")
-#define CXXSTRUCTINHERITS                       Doc::alias("cxxStructInherits")
-#define CXXSTRUCTINHERITSDETAIL                 Doc::alias("cxxStructInheritsDetail")
-#define CXXSTRUCTNESTED                         Doc::alias("cxxStructNested")
-#define CXXSTRUCTNESTEDCLASS                    Doc::alias("cxxStructNestedClass")
-#define CXXSTRUCTNESTEDDETAIL                   Doc::alias("cxxStructNestedDetail")
-#define CXXSTRUCTNESTEDSTRUCT                   Doc::alias("cxxStructNestedStruct")
-#define CXXSTRUCTNESTEDUNION                    Doc::alias("cxxStructNestedUnion")
-#define CXXSTRUCTTEMPLATEPARAMETER              Doc::alias("cxxStructTemplateParameter")
-#define CXXSTRUCTTEMPLATEPARAMETERS             Doc::alias("cxxStructTemplateParameters")
-#define CXXSTRUCTTEMPLATEPARAMETERTYPE          Doc::alias("cxxStructTemplateParameterType")
-#define CXXSTRUCTVARIABLEINHERITED              Doc::alias("cxxStructVariableInherited")
-
-#define CXXTYPEDEF                              Doc::alias("cxxTypedef")
-#define CXXTYPEDEFACCESSSPECIFIER               Doc::alias("cxxTypedefAccessSpecifier")
-#define CXXTYPEDEFAPIITEMLOCATION               Doc::alias("cxxTypedefAPIItemLocation")
-#define CXXTYPEDEFDECLARATIONFILE               Doc::alias("cxxTypedefDeclarationFile")
-#define CXXTYPEDEFDECLARATIONFILELINE           Doc::alias("cxxTypedefDeclarationFileLine")
-#define CXXTYPEDEFDECLAREDTYPE                  Doc::alias("cxxTypedefDeclaredType")
-#define CXXTYPEDEFDEFINITION                    Doc::alias("cxxTypedefDefinition")
-#define CXXTYPEDEFDETAIL                        Doc::alias("cxxTypedefDetail")
-#define CXXTYPEDEFNAMELOOKUP                    Doc::alias("cxxTypedefNameLookup")
-#define CXXTYPEDEFPROTOTYPE                     Doc::alias("cxxTypedefPrototype")
-#define CXXTYPEDEFREIMPLEMENTED                 Doc::alias("cxxTypedefReimplemented")
-#define CXXTYPEDEFSCOPEDNAME                    Doc::alias("cxxTypedefScopedName")
-
-#define CXXUNION                                Doc::alias("cxxUnion")
-#define CXXUNIONABSTRACT                        Doc::alias("cxxUnionAbstract")
-#define CXXUNIONACCESSSPECIFIER                 Doc::alias("cxxUnionAccessSpecifier")
-#define CXXUNIONAPIITEMLOCATION                 Doc::alias("cxxUnionAPIItemLocation")
-#define CXXUNIONDECLARATIONFILE                 Doc::alias("cxxUnionDeclarationFile")
-#define CXXUNIONDECLARATIONFILELINE             Doc::alias("cxxUnionDeclarationFileLine")
-#define CXXUNIONDEFINITION                      Doc::alias("cxxUnionDefinition")
-#define CXXUNIONDEFINITIONFILE                  Doc::alias("cxxUnionDefinitionFile")
-#define CXXUNIONDEFINITIONFILELINEEND           Doc::alias("cxxUnionDefinitionFileLineEnd")
-#define CXXUNIONDEFINITIONFILELINESTART         Doc::alias("cxxUnionDefinitionFileLineStart")
-#define CXXUNIONDETAIL                          Doc::alias("cxxUnionDetail")
-#define CXXUNIONNESTED                          Doc::alias("cxxUnionNested")
-#define CXXUNIONNESTEDCLASS                     Doc::alias("cxxUnionNestedClass")
-#define CXXUNIONNESTEDDETAIL                    Doc::alias("cxxUnionNestedDetail")
-#define CXXUNIONNESTEDSTRUCT                    Doc::alias("cxxUnionNestedStruct")
-#define CXXUNIONNESTEDUNION                     Doc::alias("cxxUnionNestedUnion")
-#define CXXUNIONTEMPLATEPARAMETER               Doc::alias("cxxUnionTemplateParameter")
-#define CXXUNIONTEMPLATEPARAMETERS              Doc::alias("cxxUnionTemplateParameters")
-#define CXXUNIONTEMPLATEPARAMETERTYPE           Doc::alias("cxxUnionTemplateParameterType")
-
-#define CXXVARIABLE                             Doc::alias("cxxVariable")
-#define CXXVARIABLEACCESSSPECIFIER              Doc::alias("cxxVariableAccessSpecifier")
-#define CXXVARIABLEAPIITEMLOCATION              Doc::alias("cxxVariableAPIItemLocation")
-#define CXXVARIABLECONST                        Doc::alias("cxxVariableConst")
-#define CXXVARIABLEDECLARATIONFILE              Doc::alias("cxxVariableDeclarationFile")
-#define CXXVARIABLEDECLARATIONFILELINE          Doc::alias("cxxVariableDeclarationFileLine")
-#define CXXVARIABLEDECLAREDTYPE                 Doc::alias("cxxVariableDeclaredType")
-#define CXXVARIABLEDEFINITION                   Doc::alias("cxxVariableDefinition")
-#define CXXVARIABLEDETAIL                       Doc::alias("cxxVariableDetail")
-#define CXXVARIABLENAMELOOKUP                   Doc::alias("cxxVariableNameLookup")
-#define CXXVARIABLEPROTOTYPE                    Doc::alias("cxxVariablePrototype")
-#define CXXVARIABLEREIMPLEMENTED                Doc::alias("cxxVariableReimplemented")
-#define CXXVARIABLESCOPEDNAME                   Doc::alias("cxxVariableScopedName")
-#define CXXVARIABLESTORAGECLASSSPECIFIEREXTERN  Doc::alias("cxxVariableStorageClassSpecifierExtern")
-#define CXXVARIABLESTORAGECLASSSPECIFIERMUTABLE Doc::alias("cxxVariableStorageClassSpecifierMutable")
-#define CXXVARIABLESTORAGECLASSSPECIFIERSTATIC  Doc::alias("cxxVariableStorageClassSpecifierStatic")
-#define CXXVARIABLEVOLATILE                     Doc::alias("cxxVariableVolatile")
 
 QString DitaXmlGenerator::sinceTitles[] =
     {
@@ -302,6 +78,187 @@ QString DitaXmlGenerator::sinceTitles[] =
         "    New Qml Properties",
         "    New Qml Signals",
         "    New Qml Methods",
+        ""
+    };
+
+/*
+  The strings in this array must appear in the same order as
+  the values in enum DitaXmlGenerator::DitaTag.
+ */
+QString DitaXmlGenerator::ditaTags[] =
+    {
+        "",
+        "alt",
+        "apiDesc",
+        "APIMap",
+        "apiName",
+        "audience",
+        "author",
+        "b",
+        "body",
+        "bodydiv",
+        "brand",
+        "category",
+        "codeblock",
+        "comment",
+        "component",
+        "copyrholder",
+        "copyright",
+        "copyryear",
+        "created",
+        "critdates",
+        "cxxAPIMap",
+        "cxxClass",
+        "cxxClassAbstract",
+        "cxxClassAccessSpecifier",
+        "cxxClassAPIItemLocation",
+        "cxxClassBaseClass",
+        "cxxClassDeclarationFile",
+        "cxxClassDeclarationFileLine",
+        "cxxClassDefinition",
+        "cxxClassDerivation",
+        "cxxClassDerivationAccessSpecifier",
+        "cxxClassDerivations",
+        "cxxClassDetail",
+        "cxxClassNested",
+        "cxxClassNestedClass",
+        "cxxClassNestedDetail",
+        "cxxDefine",
+        "cxxDefineAccessSpecifier",
+        "cxxDefineAPIItemLocation",
+        "cxxDefineDeclarationFile",
+        "cxxDefineDeclarationFileLine",
+        "cxxDefineDefinition",
+        "cxxDefineDetail",
+        "cxxDefineNameLookup",
+        "cxxDefineParameter",
+        "cxxDefineParameterDeclarationName",
+        "cxxDefineParameters",
+        "cxxDefinePrototype",
+        "cxxDefineReimplemented",
+        "cxxEnumeration",
+        "cxxEnumerationAccessSpecifier",
+        "cxxEnumerationAPIItemLocation",
+        "cxxEnumerationDeclarationFile",
+        "cxxEnumerationDeclarationFileLine",
+        "cxxEnumerationDefinition",
+        "cxxEnumerationDefinitionFile",
+        "cxxEnumerationDefinitionFileLineStart",
+        "cxxEnumerationDefinitionFileLineEnd",
+        "cxxEnumerationDetail",
+        "cxxEnumerationNameLookup",
+        "cxxEnumerationPrototype",
+        "cxxEnumerationScopedName",
+        "cxxEnumerator",
+        "cxxEnumeratorInitialiser",
+        "cxxEnumeratorNameLookup",
+        "cxxEnumeratorPrototype",
+        "cxxEnumerators",
+        "cxxEnumeratorScopedName",
+        "cxxFunction",
+        "cxxFunctionAccessSpecifier",
+        "cxxFunctionAPIItemLocation",
+        "cxxFunctionConst",
+        "cxxFunctionConstructor",
+        "cxxFunctionDeclarationFile",
+        "cxxFunctionDeclarationFileLine",
+        "cxxFunctionDeclaredType",
+        "cxxFunctionDefinition",
+        "cxxFunctionDestructor",
+        "cxxFunctionDetail",
+        "cxxFunctionNameLookup",
+        "cxxFunctionParameter",
+        "cxxFunctionParameterDeclarationName",
+        "cxxFunctionParameterDeclaredType",
+        "cxxFunctionParameterDefaultValue",
+        "cxxFunctionParameters",
+        "cxxFunctionPrototype",
+        "cxxFunctionPureVirtual",
+        "cxxFunctionReimplemented",
+        "cxxFunctionScopedName",
+        "cxxFunctionStorageClassSpecifierStatic",
+        "cxxFunctionVirtual",
+        "cxxTypedef",
+        "cxxTypedefAccessSpecifier",
+        "cxxTypedefAPIItemLocation",
+        "cxxTypedefDeclarationFile",
+        "cxxTypedefDeclarationFileLine",
+        "cxxTypedefDefinition",
+        "cxxTypedefDetail",
+        "cxxTypedefNameLookup",
+        "cxxTypedefScopedName",
+        "cxxVariable",
+        "cxxVariableAccessSpecifier",
+        "cxxVariableAPIItemLocation",
+        "cxxVariableDeclarationFile",
+        "cxxVariableDeclarationFileLine",
+        "cxxVariableDeclaredType",
+        "cxxVariableDefinition",
+        "cxxVariableDetail",
+        "cxxVariableNameLookup",
+        "cxxVariablePrototype",
+        "cxxVariableReimplemented",
+        "cxxVariableScopedName",
+        "cxxVariableStorageClassSpecifierStatic",
+        "data",
+        "data-about",
+        "dd",
+        "dl",
+        "dlentry",
+        "dt",
+        "entry",
+        "fig",
+        "i",
+        "image",
+        "keyword",
+        "keywords",
+        "li",
+        "link",
+        "linktext",
+        "lq",
+        "metadata",
+        "ol",
+        "othermeta",
+        "p",
+        "parameter",
+        "permissions",
+        "ph",
+        "platform",
+        "pre",
+        "prodinfo",
+        "prodname",
+        "prolog",
+        "publisher",
+        "related-links",
+        "resourceid",
+        "revised",
+        "row",
+        "section",
+        "sectiondiv",
+        "shortdesc",
+        "simpletable",
+        "source",
+        "stentry",
+        "sthead",
+        "strow",
+        "sub",
+        "sup",
+        "table",
+        "tbody",
+        "tgroup",
+        "thead",
+        "title",
+        "tm",
+        "topic",
+        "topicmeta",
+        "topicref",
+        "tt",
+        "u",
+        "ul",
+        "unknown",
+        "vrm",
+        "vrmlist",
+        "xref",
         ""
     };
 
@@ -330,10 +287,11 @@ void DitaXmlGenerator::addLink(const QString& href,
                                const QStringRef& text)
 {
     if (!href.isEmpty()) {
-        xmlWriter().writeStartElement("xref");
+        writeStartTag(DT_xref);
+        // formathtml
         xmlWriter().writeAttribute("href", href);
         writeCharacters(text.toString());
-        xmlWriter().writeEndElement(); // </xref>
+        writeEndTag(); // </xref>
     }
     else {
         writeCharacters(text.toString());
@@ -341,22 +299,129 @@ void DitaXmlGenerator::addLink(const QString& href,
 }
 
 /*!
+  Push \a t onto the dita tag stack and write the appropriate
+  start tag to the DITA XML file.
+ */
+void DitaXmlGenerator::writeStartTag(DitaTag t)
+{
+    xmlWriter().writeStartElement(ditaTags[t]);
+    tagStack.push(t);
+}
+
+/*!
+  Pop the current DITA tag off the stack, and write the
+  appropriate end tag to the DITA XML file. 
+ */
+void DitaXmlGenerator::writeEndTag(DitaTag t)
+{
+    DitaTag top = tagStack.pop();
+    if (t > DT_NONE && top != t)
+        qDebug() << "Expected:" << t << "ACTUAL:" << top;
+    xmlWriter().writeEndElement();
+}
+
+/*!
+  Return the current DITA element tag, the one
+  on top of the stack.
+ */
+DitaXmlGenerator::DitaTag DitaXmlGenerator::currentTag()
+{
+    return tagStack.top();
+}
+
+/*!
+  Write the start tag \c{<apiDesc>}. if \a title is not
+  empty, generate a GUID from it and write the GUID as the
+  value of the \e{id} attribute. Then write \a title as
+  the value of the \e {spectitle} attribute.
+
+  Then if \a outputclass is not empty, write it as the value
+  of the \a outputclass attribute.
+
+  Fiunally, set the section nesting level to 1 and return 1.
+ */
+int DitaXmlGenerator::enterApiDesc(const QString& outputclass, const QString& title)
+{
+    writeStartTag(DT_apiDesc);
+    if (!title.isEmpty()) {
+        writeGuidAttribute(title);
+        xmlWriter().writeAttribute("spectitle",title);
+     }
+    if (!outputclass.isEmpty())
+        xmlWriter().writeAttribute("outputclass",outputclass);
+    sectionNestingLevel = 1;
+    return sectionNestingLevel;
+}
+
+/*!
+  If the section nesting level is 0, output a \c{<section>}
+  element with an \e id attribute generated from \a title and
+  an \e outputclass attribute set to \a outputclass.
+  If \a title is null, no \e id attribute is output.
+  If \a outputclass is empty, no \e outputclass attribute
+  is output.
+
+  Finally, increment the section nesting level and return
+  the new value.
+ */
+int DitaXmlGenerator::enterSection(const QString& outputclass, const QString& title)
+{
+    if (sectionNestingLevel == 0) {
+        writeStartTag(DT_section);
+        if (!title.isEmpty())
+            writeGuidAttribute(title);
+        if (!outputclass.isEmpty())
+            xmlWriter().writeAttribute("outputclass",outputclass);
+    }
+    else if (!title.isEmpty()) {
+        writeStartTag(DT_p);
+        writeGuidAttribute(title);
+        if (!outputclass.isEmpty())
+            xmlWriter().writeAttribute("outputclass",outputclass);
+        writeCharacters(title);
+        writeEndTag(); // </p>
+    }
+    return ++sectionNestingLevel;
+}
+
+/*!
+  If the section nesting level is greater than 0, decrement
+  it. If it becomes 0, output a \c {</section>}. Return the
+  decremented section nesting level.
+ */
+int DitaXmlGenerator::leaveSection()
+{
+    if (sectionNestingLevel > 0) {
+        --sectionNestingLevel;
+        if (sectionNestingLevel == 0)
+            writeEndTag(); // </section> or </apiDesc>
+    }
+    return sectionNestingLevel;
+}
+
+/*!
   The default constructor.
  */
 DitaXmlGenerator::DitaXmlGenerator()
-    : inLink(false),
-      inContents(false),
+    : inContents(false),
+      inDetailedDescription(false),
+      inLegaleseText(false),
+      inLink(false),
+      inObsoleteLink(false),
       inSectionHeading(false),
       inTableHeader(false),
       inTableBody(false),
-      numTableRows(0),
-      threeColumnEnumValueTable(true),
-      offlineDocs(true),
-      funcLeftParen("\\S(\\()"),
-      myTree(0),
-      obsoleteLinks(false),
       noLinks(false),
-      tableColumnCount(0)
+      obsoleteLinks(false),
+      offlineDocs(true),
+      threeColumnEnumValueTable(true),
+      codeIndent(0),
+      numTableRows(0),
+      divNestingLevel(0),
+      sectionNestingLevel(0),
+      tableColumnCount(0),
+      funcLeftParen("\\S(\\()"),
+      myTree(0)
 {
     // nothing yet.
 }
@@ -378,29 +443,9 @@ DitaXmlGenerator::~DitaXmlGenerator()
  */
 void DitaXmlGenerator::initializeGenerator(const Config &config)
 {
-    static const struct {
-        const char *key;
-        const char *tag;
-    } defaults[] = {
-        { ATOM_FORMATTING_BOLD, "b" },
-        { ATOM_FORMATTING_INDEX, "<!--" },
-        { ATOM_FORMATTING_ITALIC, "i" },
-        { ATOM_FORMATTING_PARAMETER, "i" },
-        { ATOM_FORMATTING_SUBSCRIPT, "sub" },
-        { ATOM_FORMATTING_SUPERSCRIPT, "sup" },
-        { ATOM_FORMATTING_TELETYPE, "tt", },
-        { ATOM_FORMATTING_UNDERLINE, "u", },
-        { 0, 0 }
-    };
-
     Generator::initializeGenerator(config);
     obsoleteLinks = config.getBool(QLatin1String(CONFIG_OBSOLETELINKS));
     setImageFileExtensions(QStringList() << "png" << "jpg" << "jpeg" << "gif");
-    int i = 0;
-    while (defaults[i].key) {
-        formattingLeftMap().insert(defaults[i].key, defaults[i].tag);
-        i++;
-    }
 
     style = config.getString(DitaXmlGenerator::format() +
                              Config::dot +
@@ -437,6 +482,7 @@ void DitaXmlGenerator::initializeGenerator(const Config &config)
     if (naturalLanguage.isEmpty())
         naturalLanguage = QLatin1String("en");
 
+    config.subVarsAndValues("dita.metadata.default",metadataDefaults);
     QSet<QString> editionNames = config.subVars(CONFIG_EDITION);
     QSet<QString>::ConstIterator edition = editionNames.begin();
     while (edition != editionNames.end()) {
@@ -467,7 +513,8 @@ void DitaXmlGenerator::initializeGenerator(const Config &config)
                                               Config::dot +
                                               DITAXMLGENERATOR_CUSTOMHEADELEMENTS);
     codeIndent = config.getInt(CONFIG_CODEINDENT);
-
+    version = config.getString(CONFIG_VERSION);
+    vrm = version.split(".");
 }
 
 /*!
@@ -639,7 +686,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     int skipAhead = 0;
     QString hx, str;
     static bool in_para = false;
-    QString guid, hc;
+    QString guid, hc, attr;
 
     switch (atom->type()) {
     case Atom::AbstractLeft:
@@ -670,13 +717,13 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         //skipAhead = skipAtoms(atom, Atom::BriefRight);
         //break;
         //}
-        if (inApiDesc || inSection) {
-            xmlWriter().writeStartElement("p");
+        if (inSection()) {
+            writeStartTag(DT_p);
             xmlWriter().writeAttribute("outputclass","brief");
         }
         else {
             noLinks = true;
-            xmlWriter().writeStartElement("shortdesc");
+            writeStartTag(DT_shortdesc);
         }
         if (relative->type() == Node::Property ||
             relative->type() == Node::Variable) {
@@ -704,62 +751,98 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::BriefRight:
         //        if (relative->type() != Node::Fake) 
-        xmlWriter().writeEndElement(); // </shortdesc> or </p>
+        writeEndTag(); // </shortdesc> or </p>
         noLinks = false;
         break;
     case Atom::C:
-        xmlWriter().writeStartElement(formattingLeftMap()[ATOM_FORMATTING_TELETYPE]);
+        writeStartTag(DT_tt);
         if (inLink) {
             writeCharacters(protectEnc(plainCode(atom->string())));
         }
         else {
             writeText(atom->string(), marker, relative);
         }
-        xmlWriter().writeEndElement(); // sse writeStartElement() above
+        writeEndTag(); // see writeStartElement() above
         break;
     case Atom::Code:
         {
-            xmlWriter().writeStartElement("codeblock");
+            writeStartTag(DT_codeblock);
             QString chars = trimmedTrailing(atom->string()); 
             writeText(chars, marker, relative);
-            xmlWriter().writeEndElement(); // </codeblock>
+            writeEndTag(); // </codeblock>
         }
 	break;
     case Atom::Qml:
-        xmlWriter().writeStartElement("codeblock");
+        writeStartTag(DT_codeblock);
         writeText(trimmedTrailing(atom->string()), marker, relative);
-        xmlWriter().writeEndElement(); // </codeblock>
+        writeEndTag(); // </codeblock>
 	break;
     case Atom::CodeNew:
-        xmlWriter().writeStartElement("p");
+        writeStartTag(DT_p);
         xmlWriter().writeCharacters("you can rewrite it as");
-        xmlWriter().writeEndElement(); // </p>
-        xmlWriter().writeStartElement("codeblock");
+        writeEndTag(); // </p>
+        writeStartTag(DT_codeblock);
         writeText(trimmedTrailing(atom->string()), marker, relative);
-        xmlWriter().writeEndElement(); // </codeblock>
+        writeEndTag(); // </codeblock>
         break;
     case Atom::CodeOld:
-        xmlWriter().writeStartElement("p");
+        writeStartTag(DT_p);
         xmlWriter().writeCharacters("For example, if you have code like");
-        xmlWriter().writeEndElement(); // </p>
+        writeEndTag(); // </p>
         // fallthrough
     case Atom::CodeBad:
-        xmlWriter().writeStartElement("codeblock");
+        writeStartTag(DT_codeblock);
         writeCharacters(trimmedTrailing(plainCode(atom->string())));
-        xmlWriter().writeEndElement(); // </codeblock>
+        writeEndTag(); // </codeblock>
 	break;
-    case Atom::Div:
-        xmlWriter().writeStartElement("bodydiv");
-        if (!atom->string().isEmpty())
-            xmlWriter().writeAttribute("outputclass", atom->string());
+    case Atom::DivLeft:
+        {
+            attr = atom->string();
+            DitaTag t = currentTag();
+            if ((t == DT_section) || (t == DT_sectiondiv)) {
+                writeStartTag(DT_sectiondiv);
+                divNestingLevel++;
+            }
+            else if ((t == DT_body) || (t == DT_bodydiv)) {
+                writeStartTag(DT_bodydiv);
+                divNestingLevel++;
+            }
+            if (!attr.isEmpty()) {
+                if (attr.contains('=')) {
+                    int index = 0;
+                    int from = 0;
+                    QString values;
+                    while (index >= 0) {
+                        index = attr.indexOf('"',from);
+                        if (index >= 0) {
+                            ++index;
+                            from = index;
+                            index = attr.indexOf('"',from);
+                            if (index > from) {
+                                if (!values.isEmpty())
+                                    values.append(' ');
+                                values += attr.mid(from,index-from);
+                                from = index+1;
+                            }
+                        }
+                    }
+                    attr = values;
+                }
+            }
+            xmlWriter().writeAttribute("outputclass", attr);
+        }
         break;
-    case Atom::EndDiv:
-        xmlWriter().writeEndElement(); // </bodydiv>
+    case Atom::DivRight:
+        if ((currentTag() == DT_sectiondiv) || (currentTag() == DT_bodydiv)) {
+            writeEndTag(); // </sectiondiv>, </bodydiv>, or </p>
+            if (divNestingLevel > 0)
+                --divNestingLevel;
+        }
         break;
     case Atom::FootnoteLeft:
         // ### For now
         if (in_para) {
-            xmlWriter().writeEndElement(); // </p>
+            writeEndTag(); // </p>
             in_para = false;
         }
         xmlWriter().writeCharacters("<!-- ");
@@ -773,17 +856,67 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::FormatIf:
         break;
     case Atom::FormattingLeft:
-        xmlWriter().writeStartElement(formattingLeftMap()[atom->string()]);
-        if (atom->string() == ATOM_FORMATTING_PARAMETER) {
-            if (atom->next() != 0 && atom->next()->type() == Atom::String) {
-                QRegExp subscriptRegExp("([a-z]+)_([0-9n])");
-                if (subscriptRegExp.exactMatch(atom->next()->string())) {
-                    xmlWriter().writeCharacters(subscriptRegExp.cap(1));
-                    xmlWriter().writeStartElement("sub");
-                    xmlWriter().writeCharacters(subscriptRegExp.cap(2));
-                    xmlWriter().writeEndElement(); // </sub>
-                    skipAhead = 1;
+        {
+            DitaTag t = DT_LAST;
+            if (atom->string() == ATOM_FORMATTING_BOLD)
+                t = DT_b;
+            else if (atom->string() == ATOM_FORMATTING_PARAMETER)
+                t = DT_i;
+            else if (atom->string() == ATOM_FORMATTING_ITALIC)
+                t = DT_i;
+            else if (atom->string() == ATOM_FORMATTING_TELETYPE)
+                t = DT_tt;
+            else if (atom->string().startsWith("span ")) {
+                t = DT_keyword;
+            }
+            else if (atom->string() == ATOM_FORMATTING_UNDERLINE)
+                t = DT_u;
+            else if (atom->string() == ATOM_FORMATTING_INDEX)
+                t = DT_comment;
+            else if (atom->string() == ATOM_FORMATTING_SUBSCRIPT)
+                t = DT_sub;
+            else if (atom->string() == ATOM_FORMATTING_SUPERSCRIPT)
+                t = DT_sup;
+            else
+                qDebug() << "DT_LAST";
+            writeStartTag(t);
+            if (atom->string() == ATOM_FORMATTING_PARAMETER) {
+                if (atom->next() != 0 && atom->next()->type() == Atom::String) {
+                    QRegExp subscriptRegExp("([a-z]+)_([0-9n])");
+                    if (subscriptRegExp.exactMatch(atom->next()->string())) {
+                        xmlWriter().writeCharacters(subscriptRegExp.cap(1));
+                        writeStartTag(DT_sub);
+                        xmlWriter().writeCharacters(subscriptRegExp.cap(2));
+                        writeEndTag(); // </sub>
+                        skipAhead = 1;
+                    }
                 }
+            }
+            else if (t == DT_keyword) {
+                QString attr = atom->string().mid(5);
+                if (!attr.isEmpty()) {
+                    if (attr.contains('=')) {
+                        int index = 0;
+                        int from = 0;
+                        QString values;
+                        while (index >= 0) {
+                            index = attr.indexOf('"',from);
+                            if (index >= 0) {
+                                ++index;
+                                from = index;
+                                index = attr.indexOf('"',from);
+                                if (index > from) {
+                                    if (!values.isEmpty())
+                                        values.append(' ');
+                                    values += attr.mid(from,index-from);
+                                    from = index+1;
+                                }
+                            }
+                        }
+                        attr = values;
+                    }
+                }
+                xmlWriter().writeAttribute("outputclass", attr);
             }
         }
         break;
@@ -792,7 +925,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             endLink();
         }
         else {
-            xmlWriter().writeEndElement(); // ?
+            writeEndTag(); // ?
         }
         break;
     case Atom::AnnotatedList:
@@ -981,7 +1114,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 /*
                   First generate the table of contents.
                  */
-                xmlWriter().writeStartElement("ul");
+                writeStartTag(DT_ul);
                 s = sections.constBegin();
                 while (s != sections.constEnd()) {
                     if (!(*s).members.isEmpty()) {
@@ -990,17 +1123,17 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                     }
                     ++s;
                 }
-                xmlWriter().writeEndElement(); // </ul>
+                writeEndTag(); // </ul>
 
                 int idx = 0;
                 s = sections.constBegin();
                 while (s != sections.constEnd()) {
                     if (!(*s).members.isEmpty()) {
-                        xmlWriter().writeStartElement("p");
+                        writeStartTag(DT_p);
                         writeGuidAttribute(Doc::canonicalTitle((*s).name));
                         xmlWriter().writeAttribute("outputclass","h3");
                         writeCharacters(protectEnc((*s).name));
-                        xmlWriter().writeEndElement(); // </p>
+                        writeEndTag(); // </p>
                         if (idx == Class)
                             generateCompactList(0, marker, ncmap.value(), false, QString("Q"));
                         else if (idx == QmlClass)
@@ -1020,15 +1153,16 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                             pmap = parentmaps.begin();
                             while (pmap != parentmaps.end()) {
                                 NodeList nlist = pmap->values();
-                                xmlWriter().writeStartElement("p");
+                                writeStartTag(DT_p);
                                 xmlWriter().writeCharacters("Class ");
-                                xmlWriter().writeStartElement("xref");
+                                writeStartTag(DT_xref);
+                                // formathtml
                                 xmlWriter().writeAttribute("href",linkForNode(pmap.key(), 0));
                                 QStringList pieces = fullName(pmap.key(), 0, marker).split("::");
                                 writeCharacters(protectEnc(pieces.last()));
-                                xmlWriter().writeEndElement(); // </xref>
+                                writeEndTag(); // </xref>
                                 xmlWriter().writeCharacters(":");
-                                xmlWriter().writeEndElement(); // </p>
+                                writeEndTag(); // </p>
 
                                 generateSection(nlist, 0, marker, CodeMarker::Summary);
                                 ++pmap;
@@ -1060,8 +1194,9 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 fileName = QLatin1String("images/") + protectEnc(atom->string());
             }
 
-            xmlWriter().writeStartElement("fig");
-            xmlWriter().writeStartElement("image");
+            if (currentTag() != DT_xref)
+                writeStartTag(DT_fig);
+            writeStartTag(DT_image);
             xmlWriter().writeAttribute("href",protectEnc(fileName));
             if (atom->type() == Atom::InlineImage)
                 xmlWriter().writeAttribute("placement","inline");
@@ -1070,12 +1205,13 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 xmlWriter().writeAttribute("align","center");
             }
             if (!text.isEmpty()) {
-                xmlWriter().writeStartElement("alt");
+                writeStartTag(DT_alt);
                 writeCharacters(protectEnc(text));
-                xmlWriter().writeEndElement(); // </alt>
+                writeEndTag(); // </alt>
             }
-            xmlWriter().writeEndElement(); // </image>
-            xmlWriter().writeEndElement(); // </fig>
+            writeEndTag(); // </image>
+            if (currentTag() != DT_xref)
+                writeEndTag(); // </fig>
         }
         break;
     case Atom::ImageText:
@@ -1129,47 +1265,47 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::ListLeft:
         if (in_para) {
-            xmlWriter().writeEndElement(); // </p>
+            writeEndTag(); // </p>
             in_para = false;
         }
         if (atom->string() == ATOM_LIST_BULLET) {
-            xmlWriter().writeStartElement("ul");
+            writeStartTag(DT_ul);
         }
         else if (atom->string() == ATOM_LIST_TAG) {
-            xmlWriter().writeStartElement("dl");
+            writeStartTag(DT_dl);
         }
         else if (atom->string() == ATOM_LIST_VALUE) {
             threeColumnEnumValueTable = isThreeColumnEnumValueTable(atom);
             if (threeColumnEnumValueTable) {
-                xmlWriter().writeStartElement("simpletable");
+                writeStartTag(DT_simpletable);
                 xmlWriter().writeAttribute("outputclass","valuelist");
-                xmlWriter().writeStartElement("sthead");
-                xmlWriter().writeStartElement("stentry");
+                writeStartTag(DT_sthead);
+                writeStartTag(DT_stentry);
                 xmlWriter().writeCharacters("Constant");
-                xmlWriter().writeEndElement(); // </stentry>
-                xmlWriter().writeStartElement("stentry");
+                writeEndTag(); // </stentry>
+                writeStartTag(DT_stentry);
                 xmlWriter().writeCharacters("Value");
-                xmlWriter().writeEndElement(); // </stentry>
-                xmlWriter().writeStartElement("stentry");
+                writeEndTag(); // </stentry>
+                writeStartTag(DT_stentry);
                 xmlWriter().writeCharacters("Description");
-                xmlWriter().writeEndElement(); // </stentry>
-                xmlWriter().writeEndElement(); // </sthead>
+                writeEndTag(); // </stentry>
+                writeEndTag(); // </sthead>
             }
             else {
-                xmlWriter().writeStartElement("simpletable");
+                writeStartTag(DT_simpletable);
                 xmlWriter().writeAttribute("outputclass","valuelist");
-                xmlWriter().writeStartElement("sthead");
-                xmlWriter().writeStartElement("stentry");
+                writeStartTag(DT_sthead);
+                writeStartTag(DT_stentry);
                 xmlWriter().writeCharacters("Constant");
-                xmlWriter().writeEndElement(); // </stentry>
-                xmlWriter().writeStartElement("stentry");
+                writeEndTag(); // </stentry>
+                writeStartTag(DT_stentry);
                 xmlWriter().writeCharacters("Value");
-                xmlWriter().writeEndElement(); // </stentry>
-                xmlWriter().writeEndElement(); // </sthead>
+                writeEndTag(); // </stentry>
+                writeEndTag(); // </sthead>
             }
         }
         else {
-            xmlWriter().writeStartElement("ol");
+            writeStartTag(DT_ol);
             if (atom->string() == ATOM_LIST_UPPERALPHA)
                 xmlWriter().writeAttribute("outputclass","upperalpha");
             else if (atom->string() == ATOM_LIST_LOWERALPHA)
@@ -1191,17 +1327,17 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::ListTagLeft:
         if (atom->string() == ATOM_LIST_TAG) {
-            xmlWriter().writeStartElement("dt");
+            writeStartTag(DT_dt);
         }
         else { // (atom->string() == ATOM_LIST_VALUE)
-            xmlWriter().writeStartElement("strow");
-            xmlWriter().writeStartElement("stentry");
-            xmlWriter().writeStartElement("tt");
+            writeStartTag(DT_strow);
+            writeStartTag(DT_stentry);
+            writeStartTag(DT_tt);
             writeCharacters(protectEnc(plainCode(marker->markedUpEnumValue(atom->next()->string(),
                                                                            relative))));
-            xmlWriter().writeEndElement(); // </tt>
-            xmlWriter().writeEndElement(); // </stentry>
-            xmlWriter().writeStartElement("stentry");
+            writeEndTag(); // </tt>
+            writeEndTag(); // </stentry>
+            writeStartTag(DT_stentry);
 
             QString itemValue;
             if (relative->type() == Node::Enum) {
@@ -1212,64 +1348,64 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             if (itemValue.isEmpty())
                 xmlWriter().writeCharacters("?");
             else {
-                xmlWriter().writeStartElement("tt");
+                writeStartTag(DT_tt);
                 writeCharacters(protectEnc(itemValue));
-                xmlWriter().writeEndElement(); // </tt>
+                writeEndTag(); // </tt>
             }
             skipAhead = 1;
         }
         break;
     case Atom::ListTagRight:
         if (atom->string() == ATOM_LIST_TAG)
-            xmlWriter().writeEndElement(); // </dt>
+            writeEndTag(); // </dt>
         break;
     case Atom::ListItemLeft:
         if (atom->string() == ATOM_LIST_TAG) {
-            xmlWriter().writeStartElement("dd");
+            writeStartTag(DT_dd);
         }
         else if (atom->string() == ATOM_LIST_VALUE) {
             if (threeColumnEnumValueTable) {
-                xmlWriter().writeEndElement(); // </stentry>
-                xmlWriter().writeStartElement("stentry");
+                writeEndTag(); // </stentry>
+                writeStartTag(DT_stentry);
             }
         }
         else {
-            xmlWriter().writeStartElement("li");
+            writeStartTag(DT_li);
         }
         if (matchAhead(atom, Atom::ParaLeft))
             skipAhead = 1;
         break;
     case Atom::ListItemRight:
         if (atom->string() == ATOM_LIST_TAG) {
-            xmlWriter().writeEndElement(); // </dd>
+            writeEndTag(); // </dd>
         }
         else if (atom->string() == ATOM_LIST_VALUE) {
-            xmlWriter().writeEndElement(); // </stentry>
-            xmlWriter().writeEndElement(); // </strow>
+            writeEndTag(); // </stentry>
+            writeEndTag(); // </strow>
         }
         else {
-            xmlWriter().writeEndElement(); // </li>
+            writeEndTag(); // </li>
         }
         break;
     case Atom::ListRight:
         if (atom->string() == ATOM_LIST_BULLET) {
-            xmlWriter().writeEndElement(); // </ul>
+            writeEndTag(); // </ul>
         }
         else if (atom->string() == ATOM_LIST_TAG) {
-            xmlWriter().writeEndElement(); // </dl>
+            writeEndTag(); // </dl>
         }
         else if (atom->string() == ATOM_LIST_VALUE) {
-            xmlWriter().writeEndElement(); // </simpletable>
+            writeEndTag(); // </simpletable>
         }
         else {
-            xmlWriter().writeEndElement(); // </ol>
+            writeEndTag(); // </ol>
         }
         break;
     case Atom::Nop:
         // nothing
         break;
     case Atom::ParaLeft:
-        xmlWriter().writeStartElement("p");
+        writeStartTag(DT_p);
         if (inLegaleseText)
             xmlWriter().writeAttribute("outputclass","legalese");
         in_para = true;
@@ -1277,15 +1413,15 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::ParaRight:
         endLink();
         if (in_para) {
-            xmlWriter().writeEndElement(); // </p>
+            writeEndTag(); // </p>
             in_para = false;
         }
         break;
     case Atom::QuotationLeft:
-        xmlWriter().writeStartElement("lq");
+        writeStartTag(DT_lq);
         break;
     case Atom::QuotationRight:
-        xmlWriter().writeEndElement(); // </lq>
+        writeEndTag(); // </lq>
         break;
     case Atom::RawString:
         if (atom->string() == " ")
@@ -1293,41 +1429,44 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         if (atom->string().startsWith("&"))
             writeCharacters(atom->string());
         else if (atom->string() == "<sup>*</sup>") {
-            xmlWriter().writeStartElement("sup");
+            writeStartTag(DT_sup);
             writeCharacters("*");
-            xmlWriter().writeEndElement(); // </sup>
+            writeEndTag(); // </sup>
+        }
+        else if (atom->string() == "<sup>&reg;</sup>") {
+            writeStartTag(DT_tm);
+            xmlWriter().writeAttribute("tmtype","reg");
+            writeEndTag(); // </tm>
         }
         else {
-            xmlWriter().writeStartElement("pre");
+            writeStartTag(DT_pre);
             xmlWriter().writeAttribute("outputclass","raw-html");
             writeCharacters(atom->string());
-            xmlWriter().writeEndElement(); // </pre>
+            writeEndTag(); // </pre>
         }
         break;
     case Atom::SectionLeft:
-        if (inSection || inApiDesc) {
+#if 0        
+        if (inApiDesc) {
+            writeEndTag(); // </apiDesc>
             inApiDesc = false;
-            xmlWriter().writeEndElement(); // </section> or </apiDesc>
         }
-        inSection = true;
-        xmlWriter().writeStartElement("section");
-        writeGuidAttribute(Doc::canonicalTitle(Text::sectionHeading(atom).toString()));
-        xmlWriter().writeAttribute("outputclass","details");
+#endif        
+        enterSection("details",QString());
+        //writeGuidAttribute(Doc::canonicalTitle(Text::sectionHeading(atom).toString()));
         break;
     case Atom::SectionRight:
-        if (inSection) {
-            inSection = false;
-            xmlWriter().writeEndElement(); // </section>
-        }
+        leaveSection();
         break;
     case Atom::SectionHeadingLeft:
-        xmlWriter().writeStartElement("title");
+        writeStartTag(DT_p);
+        writeGuidAttribute(Doc::canonicalTitle(Text::sectionHeading(atom).toString()));
         hx = "h" + QString::number(atom->string().toInt() + hOffset(relative));
         xmlWriter().writeAttribute("outputclass",hx);
         inSectionHeading = true;
         break;
     case Atom::SectionHeadingRight:
-        xmlWriter().writeEndElement(); // </title> (see case Atom::SectionHeadingLeft)
+        writeEndTag(); // </title> (see case Atom::SectionHeadingLeft)
         inSectionHeading = false;
         break;
     case Atom::SidebarLeft:
@@ -1347,97 +1486,144 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::TableLeft:
         {
             if (in_para) {
-                xmlWriter().writeEndElement(); // </p>
+                writeEndTag(); // </p>
                 in_para = false;
             }
-            xmlWriter().writeStartElement("table");
+            writeStartTag(DT_table);
             numTableRows = 0;
             if (tableColumnCount != 0) {
                 qDebug() << "ERROR: Nested tables!";
                 tableColumnCount = 0;
             }
             tableColumnCount = countTableColumns(atom->next());
-            xmlWriter().writeStartElement("tgroup");
+            writeStartTag(DT_tgroup);
             xmlWriter().writeAttribute("cols",QString::number(tableColumnCount));
             inTableHeader = false;
             inTableBody = false;
         }
         break;
     case Atom::TableRight:
-        xmlWriter().writeEndElement(); // </tbody>
-        xmlWriter().writeEndElement(); // </tgroup>
-        xmlWriter().writeEndElement(); // </table>
+        writeEndTag(); // </tbody>
+        writeEndTag(); // </tgroup>
+        writeEndTag(); // </table>
         inTableHeader = false;
         inTableBody = false;
         tableColumnCount = 0;
         break;
     case Atom::TableHeaderLeft:
         if (inTableBody) {
-            xmlWriter().writeEndElement(); // </tbody>
-            xmlWriter().writeEndElement(); // </tgroup>
-            xmlWriter().writeEndElement(); // </table>
+            writeEndTag(); // </tbody>
+            writeEndTag(); // </tgroup>
+            writeEndTag(); // </table>
             inTableHeader = false;
             inTableBody = false;
             tableColumnCount = 0;
-            xmlWriter().writeStartElement("table");
+            writeStartTag(DT_table);
             numTableRows = 0;
             tableColumnCount = countTableColumns(atom);
-            xmlWriter().writeStartElement("tgroup");
+            writeStartTag(DT_tgroup);
             xmlWriter().writeAttribute("cols",QString::number(tableColumnCount));
         }
-        xmlWriter().writeStartElement("thead");
+        writeStartTag(DT_thead);
         xmlWriter().writeAttribute("valign","top");
-        xmlWriter().writeStartElement("row");
+        writeStartTag(DT_row);
         xmlWriter().writeAttribute("valign","top");
         inTableHeader = true;
         inTableBody = false;
         break;
     case Atom::TableHeaderRight:
-        xmlWriter().writeEndElement(); // </row>
+        writeEndTag(); // </row>
         if (matchAhead(atom, Atom::TableHeaderLeft)) {
             skipAhead = 1;
-            xmlWriter().writeStartElement("row");
+            writeStartTag(DT_row);
             xmlWriter().writeAttribute("valign","top");
         }
         else { 
-            xmlWriter().writeEndElement(); // </thead>
+            writeEndTag(); // </thead>
             inTableHeader = false;
             inTableBody = true;
-            xmlWriter().writeStartElement("tbody");
+            writeStartTag(DT_tbody);
         }
         break;
     case Atom::TableRowLeft:
         if (!inTableHeader && !inTableBody) {
             inTableBody = true;
-            xmlWriter().writeStartElement("tbody");
+            writeStartTag(DT_tbody);
         }
-        xmlWriter().writeStartElement("row");
+        writeStartTag(DT_row);
+        attr = atom->string();
+        if (!attr.isEmpty()) {
+            if (attr.contains('=')) {
+                int index = 0;
+                int from = 0;
+                QString values;
+                while (index >= 0) {
+                    index = attr.indexOf('"',from);
+                    if (index >= 0) {
+                        ++index;
+                        from = index;
+                        index = attr.indexOf('"',from);
+                        if (index > from) {
+                            if (!values.isEmpty())
+                                values.append(' ');
+                            values += attr.mid(from,index-from);
+                            from = index+1;
+                        }
+                    }
+                }
+                attr = values;
+            }
+            xmlWriter().writeAttribute("outputclass", attr);
+        }
         xmlWriter().writeAttribute("valign","top");
         break;
     case Atom::TableRowRight:
-        xmlWriter().writeEndElement(); // </row>
+        writeEndTag(); // </row>
         break;
     case Atom::TableItemLeft:
         {
-            xmlWriter().writeStartElement("entry");
-            QStringList spans = atom->string().split(",");
-            if (spans.size() == 2) {
-                if (inTableHeader ||
-                    (spans[0].toInt() != 1) ||
-                    (spans[1].toInt() != 1)) {
-                    QString s = "span(" + spans[0] + "," + spans[1] + ")";
-                    xmlWriter().writeAttribute("outputclass",s);
+            QString values = "";
+            writeStartTag(DT_entry);
+            for (int i=0; i<atom->count(); ++i) {
+                attr = atom->string(i);
+                if (attr.contains('=')) {
+                    int index = 0;
+                    int from = 0;
+                    while (index >= 0) {
+                        index = attr.indexOf('"',from);
+                        if (index >= 0) {
+                            ++index;
+                            from = index;
+                            index = attr.indexOf('"',from);
+                            if (index > from) {
+                                if (!values.isEmpty())
+                                    values.append(' ');
+                                values += attr.mid(from,index-from);
+                                from = index+1;
+                            }
+                        }
+                    }
+                }
+                else {
+                    QStringList spans = attr.split(",");
+                    if (spans.size() == 2) {
+                        if ((spans[0].toInt()>1) || (spans[1].toInt()>1)) {
+                            values += "span(" + spans[0] + "," + spans[1] + ")";
+                        }
+                    }
                 }
             }
+            if (!values.isEmpty())
+                xmlWriter().writeAttribute("outputclass",values);
             if (matchAhead(atom, Atom::ParaLeft))
                 skipAhead = 1;
         }
         break;
     case Atom::TableItemRight:
         if (inTableHeader)
-            xmlWriter().writeEndElement(); // </entry>
+            writeEndTag(); // </entry>
         else {
-            xmlWriter().writeEndElement(); // </entry>
+            writeEndTag(); // </entry>
         }
         if (matchAhead(atom, Atom::ParaLeft))
             skipAhead = 1;
@@ -1473,26 +1659,26 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::Target:
         if (in_para) {
-            xmlWriter().writeEndElement(); // </p>
+            writeEndTag(); // </p>
             in_para = false;
         }
-        xmlWriter().writeStartElement("p");
+        writeStartTag(DT_p);
         writeGuidAttribute(Doc::canonicalTitle(atom->string()));
         xmlWriter().writeAttribute("outputclass","target");
         //xmlWriter().writeCharacters(protectEnc(atom->string()));
-        xmlWriter().writeEndElement(); // </p>
+        writeEndTag(); // </p>
         break;
     case Atom::UnhandledFormat:
-        xmlWriter().writeStartElement("b");
+        writeStartTag(DT_b);
         xmlWriter().writeAttribute("outputclass","error");
         xmlWriter().writeCharacters("<Missing DITAXML>");
-        xmlWriter().writeEndElement(); // </b>
+        writeEndTag(); // </b>
         break;
     case Atom::UnknownCommand:
-        xmlWriter().writeStartElement("b");
+        writeStartTag(DT_b);
         xmlWriter().writeAttribute("outputclass","error unknown-command");
         writeCharacters(protectEnc(atom->string()));
-        xmlWriter().writeEndElement(); // </b>
+        writeEndTag(); // </b>
         break;
     case Atom::QmlText:
     case Atom::EndQmlText:
@@ -1532,85 +1718,81 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
          */
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
-
-        // not included: <prolog>
-    
-        xmlWriter().writeStartElement(CXXCLASSDETAIL);
-        xmlWriter().writeStartElement(CXXCLASSDEFINITION);
+        writeProlog(inner,marker);
+            
+        writeStartTag(DT_cxxClassDetail);
+        writeStartTag(DT_cxxClassDefinition);
         writeLocation(nsn);
-        xmlWriter().writeEndElement(); // <cxxClassDefinition>
+        writeEndTag(); // <cxxClassDefinition>
 
-        xmlWriter().writeStartElement("apiDesc");
-        xmlWriter().writeAttribute("spectitle",title);
+        enterApiDesc(QString(),title);
         Text brief = nsn->doc().briefText(); // zzz
         if (!brief.isEmpty()) {
-            xmlWriter().writeStartElement("p");
+            writeStartTag(DT_p);
             generateText(brief, nsn, marker);
-            xmlWriter().writeEndElement(); // </p>
+            writeEndTag(); // </p>
         }
         generateIncludes(nsn, marker);
         generateStatus(nsn, marker);
         generateThreadSafeness(nsn, marker);
         generateSince(nsn, marker);
-        xmlWriter().writeEndElement(); // </apiDesc>
+
+        enterSection("h2","Detailed Description");
+        generateBody(nsn, marker);
+        leaveSection();
+        leaveSection(); // </apiDesc>
 
         bool needOtherSection = false;
         QList<Section> summarySections;
         summarySections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
-        s = summarySections.begin();
-        while (s != summarySections.end()) {
-            if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
-                if (!s->inherited.isEmpty())
-                    needOtherSection = true;
-            }
-            else {
-                QString attr;
-                if (!s->members.isEmpty()) {
-                    xmlWriter().writeStartElement("section");
-                    attr = cleanRef((*s).name).toLower() + " redundant";
-                    xmlWriter().writeAttribute("outputclass",attr);
-                    xmlWriter().writeStartElement("title");
-                    xmlWriter().writeAttribute("outputclass","h2");
-                    writeCharacters(protectEnc((*s).name));
-                    xmlWriter().writeEndElement(); // </title>
-                    generateSection(s->members, inner, marker, CodeMarker::Summary);
-                    generateSectionInheritedList(*s, inner, marker);
-                    xmlWriter().writeEndElement(); // </section>
-                }
-                if (!s->reimpMembers.isEmpty()) {
-                    QString name = QString("Reimplemented ") + (*s).name;
-                    attr = cleanRef(name).toLower() + " redundant";
-                    xmlWriter().writeStartElement("section");
-                    xmlWriter().writeAttribute("outputclass",attr);
-                    xmlWriter().writeStartElement("title");
-                    xmlWriter().writeAttribute("outputclass","h2");
-                    writeCharacters(protectEnc(name));
-                    xmlWriter().writeEndElement(); // </title>
-                    generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
-                    generateSectionInheritedList(*s, inner, marker);
-                    xmlWriter().writeEndElement(); // </section>
-                }
-            }
-            ++s;
-        }
-        if (needOtherSection) {
-            xmlWriter().writeStartElement("section");
-            xmlWriter().writeAttribute("outputclass","additional-inherited-members redundant");
-            xmlWriter().writeStartElement("title");
-            xmlWriter().writeAttribute("outputclass","h3");
-            xmlWriter().writeCharacters("Additional Inherited Members");
-            xmlWriter().writeEndElement(); // </title>
+        if (!summarySections.isEmpty()) {
+            enterSection("redundant",QString());
             s = summarySections.begin();
             while (s != summarySections.end()) {
-                if (s->members.isEmpty())
-                    generateSectionInheritedList(*s, inner, marker);
+                if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
+                    if (!s->inherited.isEmpty())
+                        needOtherSection = true;
+                }
+                else {
+                    QString attr;
+                    if (!s->members.isEmpty()) {
+                        writeStartTag(DT_p);
+                        attr  = cleanRef((*s).name).toLower() + " h2"; 
+                        xmlWriter().writeAttribute("outputclass",attr);
+                        writeCharacters(protectEnc((*s).name));
+                        writeEndTag(); // </title>
+                        generateSection(s->members, inner, marker, CodeMarker::Summary);
+                        generateSectionInheritedList(*s, inner, marker);
+                    }
+                    if (!s->reimpMembers.isEmpty()) {
+                        QString name = QString("Reimplemented ") + (*s).name;
+                        attr = cleanRef(name).toLower() + " h2";
+                        writeStartTag(DT_p);
+                        xmlWriter().writeAttribute("outputclass",attr);
+                        writeCharacters(protectEnc(name));
+                        writeEndTag(); // </title>
+                        generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
+                        generateSectionInheritedList(*s, inner, marker);
+                    }
+                }
                 ++s;
             }
-            xmlWriter().writeEndElement(); // </section>
+            if (needOtherSection) {
+                writeStartTag(DT_p);
+                xmlWriter().writeAttribute("outputclass","h3");
+                xmlWriter().writeCharacters("Additional Inherited Members");
+                writeEndTag(); // </title>
+                s = summarySections.begin();
+                while (s != summarySections.end()) {
+                    if (s->members.isEmpty())
+                        generateSectionInheritedList(*s, inner, marker);
+                    ++s;
+                }
+            }
+            leaveSection();
         }
-        
-        writeDetailedDescription(nsn, marker, false, QString("Detailed Description"));
-        xmlWriter().writeEndElement(); // </cxxClassDetail>
+
+        writeEndTag(); // </cxxClassDetail>
 
         // not included: <related-links>
         // not included: <cxxClassNested>
@@ -1646,7 +1828,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         generateLowStatusMembers(inner,marker,CodeMarker::Obsolete);
         generateLowStatusMembers(inner,marker,CodeMarker::Compat);
-        xmlWriter().writeEndElement(); // </cxxClass>
+        writeEndTag(); // </cxxClass>
     }
     else if (inner->type() == Node::Class) {
         const ClassNode* cn = const_cast<ClassNode*>(static_cast<const ClassNode*>(inner));
@@ -1656,34 +1838,32 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
-
-        // not included: <prolog>
+        writeProlog(inner,marker);
     
-        xmlWriter().writeStartElement(CXXCLASSDETAIL);
-        xmlWriter().writeStartElement(CXXCLASSDEFINITION);
-        xmlWriter().writeStartElement(CXXCLASSACCESSSPECIFIER);
+        writeStartTag(DT_cxxClassDetail);
+        writeStartTag(DT_cxxClassDefinition);
+        writeStartTag(DT_cxxClassAccessSpecifier);
         xmlWriter().writeAttribute("value",inner->accessString());
-        xmlWriter().writeEndElement(); // <cxxClassAccessSpecifier>
+        writeEndTag(); // <cxxClassAccessSpecifier>
         if (cn->isAbstract()) {
-            xmlWriter().writeStartElement(CXXCLASSABSTRACT);
+            writeStartTag(DT_cxxClassAbstract);
             xmlWriter().writeAttribute("name","abstract");
             xmlWriter().writeAttribute("value","abstract");
-            xmlWriter().writeEndElement(); // </cxxClassAbstract>
+            writeEndTag(); // </cxxClassAbstract>
         }
         writeDerivations(cn, marker); // <cxxClassDerivations>
 
         // not included: <cxxClassTemplateParameters>
 
         writeLocation(cn);
-        xmlWriter().writeEndElement(); // <cxxClassDefinition>
+        writeEndTag(); // <cxxClassDefinition>
 
-        xmlWriter().writeStartElement("apiDesc");
-        xmlWriter().writeAttribute("spectitle",title);
+        enterApiDesc(QString(),title);
         Text brief = cn->doc().briefText(); // zzz
         if (!brief.isEmpty()) {
-            xmlWriter().writeStartElement("p");
+            writeStartTag(DT_p);
             generateText(brief, cn, marker);
-            xmlWriter().writeEndElement(); // </p>
+            writeEndTag(); // </p>
         }
         generateIncludes(cn, marker);
         generateStatus(cn, marker);
@@ -1691,68 +1871,64 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateInheritedBy(cn, marker);
         generateThreadSafeness(cn, marker);
         generateSince(cn, marker);
-        xmlWriter().writeEndElement(); // </apiDesc>
+        enterSection("h2","Detailed Description");
+        generateBody(cn, marker);
+        leaveSection();
+        leaveSection(); // </apiDesc>
 
         bool needOtherSection = false;
         QList<Section> summarySections;
         summarySections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
-        s = summarySections.begin();
-        while (s != summarySections.end()) {
-            if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
-                if (!s->inherited.isEmpty())
-                    needOtherSection = true;
-            }
-            else {
-                QString attr;
-                if (!s->members.isEmpty()) {
-                    xmlWriter().writeStartElement("section");
-                    attr = cleanRef((*s).name).toLower() + " redundant";
-                    xmlWriter().writeAttribute("outputclass",attr);
-                    xmlWriter().writeStartElement("title");
-                    xmlWriter().writeAttribute("outputclass","h2");
-                    writeCharacters(protectEnc((*s).name));
-                    xmlWriter().writeEndElement(); // </title>
-                    generateSection(s->members, inner, marker, CodeMarker::Summary);
-                    generateSectionInheritedList(*s, inner, marker);
-                    xmlWriter().writeEndElement(); // </section>
-                }
-                if (!s->reimpMembers.isEmpty()) {
-                    QString name = QString("Reimplemented ") + (*s).name;
-                    attr = cleanRef(name).toLower() + " redundant";
-                    xmlWriter().writeStartElement("section");
-                    xmlWriter().writeAttribute("outputclass",attr);
-                    xmlWriter().writeStartElement("title");
-                    xmlWriter().writeAttribute("outputclass","h2");
-                    writeCharacters(protectEnc(name));
-                    xmlWriter().writeEndElement(); // </title>
-                    generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
-                    generateSectionInheritedList(*s, inner, marker);
-                    xmlWriter().writeEndElement(); // </section>
-                }
-            }
-            ++s;
-        }
-        if (needOtherSection) {
-            xmlWriter().writeStartElement("section");
-            xmlWriter().writeAttribute("outputclass","additional-inherited-members redundant");
-            xmlWriter().writeStartElement("title");
-            xmlWriter().writeAttribute("outputclass","h3");
-            xmlWriter().writeCharacters("Additional Inherited Members");
-            xmlWriter().writeEndElement(); // </title>
+        if (!summarySections.isEmpty()) {
+            enterSection("redundant",QString());
             s = summarySections.begin();
             while (s != summarySections.end()) {
-                if (s->members.isEmpty())
-                    generateSectionInheritedList(*s, inner, marker);
+                if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
+                    if (!s->inherited.isEmpty())
+                        needOtherSection = true;
+                }
+                else {
+                    QString attr;
+                    if (!s->members.isEmpty()) {
+                        writeStartTag(DT_p);
+                        attr = cleanRef((*s).name).toLower() + " h2";
+                        xmlWriter().writeAttribute("outputclass",attr);
+                        writeCharacters(protectEnc((*s).name));
+                        writeEndTag(); // </p>
+                        generateSection(s->members, inner, marker, CodeMarker::Summary);
+                        generateSectionInheritedList(*s, inner, marker);
+                    }
+                    if (!s->reimpMembers.isEmpty()) {
+                        QString name = QString("Reimplemented ") + (*s).name;
+                        attr = cleanRef(name).toLower() + " h2";
+                        writeStartTag(DT_p);
+                        xmlWriter().writeAttribute("outputclass",attr);
+                        writeCharacters(protectEnc(name));
+                        writeEndTag(); // </p>
+                        generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
+                        generateSectionInheritedList(*s, inner, marker);
+                    }
+                }
                 ++s;
             }
-            xmlWriter().writeEndElement(); // </section>
+            if (needOtherSection) {
+                writeStartTag(DT_p);
+                xmlWriter().writeAttribute("outputclass","h3");
+                xmlWriter().writeCharacters("Additional Inherited Members");
+                writeEndTag(); // </p>
+                s = summarySections.begin();
+                while (s != summarySections.end()) {
+                    if (s->members.isEmpty())
+                        generateSectionInheritedList(*s, inner, marker);
+                    ++s;
+                }
+            }
+            leaveSection();
         }
-        
-        writeDetailedDescription(cn, marker, false, QString("Detailed Description"));
 
         // not included: <example> or <apiImpl>
 
-        xmlWriter().writeEndElement(); // </cxxClassDetail>
+        writeEndTag(); // </cxxClassDetail>
 
         // not included: <related-links>
         // not included: <cxxClassNested>
@@ -1782,7 +1958,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         generateLowStatusMembers(inner,marker,CodeMarker::Obsolete);
         generateLowStatusMembers(inner,marker,CodeMarker::Compat);
-        xmlWriter().writeEndElement(); // </cxxClass>
+        writeEndTag(); // </cxxClass>
     }
     else if ((inner->type() == Node::Fake) && (inner->subType() == Node::HeaderFile)) {
         const FakeNode* fn = const_cast<FakeNode*>(static_cast<const FakeNode*>(inner));
@@ -1798,78 +1974,78 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
          */
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
-        xmlWriter().writeStartElement(CXXCLASSDETAIL);
-        xmlWriter().writeStartElement("apiDesc");
-        xmlWriter().writeAttribute("spectitle",title);
+        writeProlog(inner,marker);
+
+        writeStartTag(DT_cxxClassDetail);
+        enterApiDesc(QString(),title);
         Text brief = fn->doc().briefText(); // zzz
         if (!brief.isEmpty()) {
-            xmlWriter().writeStartElement("p");
+            writeStartTag(DT_p);
             generateText(brief, fn, marker);
-            xmlWriter().writeEndElement(); // </p>
+            writeEndTag(); // </p>
         }
         generateIncludes(fn, marker);
         generateStatus(fn, marker);
         generateThreadSafeness(fn, marker);
         generateSince(fn, marker);
-        xmlWriter().writeEndElement(); // </apiDesc>
+        generateSince(fn, marker);
+        enterSection("h2","Detailed Description");
+        generateBody(fn, marker);
+        leaveSection();
+        leaveSection(); // </apiDesc>
 
         bool needOtherSection = false;
         QList<Section> summarySections;
         summarySections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
-        s = summarySections.begin();
-        while (s != summarySections.end()) {
-            if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
-                if (!s->inherited.isEmpty())
-                    needOtherSection = true;
-            }
-            else {
-                QString attr;
-                if (!s->members.isEmpty()) {
-                    xmlWriter().writeStartElement("section");
-                    attr = cleanRef((*s).name).toLower() + " redundant";
-                    xmlWriter().writeAttribute("outputclass",attr);
-                    xmlWriter().writeStartElement("title");
-                    xmlWriter().writeAttribute("outputclass","h2");
-                    writeCharacters(protectEnc((*s).name));
-                    xmlWriter().writeEndElement(); // </title>
-                    generateSection(s->members, inner, marker, CodeMarker::Summary);
-                    generateSectionInheritedList(*s, inner, marker);
-                    xmlWriter().writeEndElement(); // </section>
-                }
-                if (!s->reimpMembers.isEmpty()) {
-                    QString name = QString("Reimplemented ") + (*s).name;
-                    attr = cleanRef(name).toLower() + " redundant";
-                    xmlWriter().writeStartElement("section");
-                    xmlWriter().writeAttribute("outputclass",attr);
-                    xmlWriter().writeStartElement("title");
-                    xmlWriter().writeAttribute("outputclass","h2");
-                    writeCharacters(protectEnc(name));
-                    xmlWriter().writeEndElement(); // </title>
-                    generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
-                    generateSectionInheritedList(*s, inner, marker);
-                    xmlWriter().writeEndElement(); // </section>
-                }
-            }
-            ++s;
-        }
-        if (needOtherSection) {
-            xmlWriter().writeStartElement("section");
-            xmlWriter().writeAttribute("outputclass","additional-inherited-members redundant");
-            xmlWriter().writeStartElement("title");
-            xmlWriter().writeAttribute("outputclass","h3");
-            xmlWriter().writeCharacters("Additional Inherited Members");
-            xmlWriter().writeEndElement(); // </title>
+        if (!summarySections.isEmpty()) {
+            enterSection("redundant",QString());
             s = summarySections.begin();
             while (s != summarySections.end()) {
-                if (s->members.isEmpty())
-                    generateSectionInheritedList(*s, inner, marker);
+                if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
+                    if (!s->inherited.isEmpty())
+                        needOtherSection = true;
+                }
+                else {
+                    QString attr;
+                    if (!s->members.isEmpty()) {
+                        writeStartTag(DT_p);
+                        attr = cleanRef((*s).name).toLower() + " h2";
+                        xmlWriter().writeAttribute("outputclass",attr);
+                        writeCharacters(protectEnc((*s).name));
+                        writeEndTag(); // </p>
+                        generateSection(s->members, inner, marker, CodeMarker::Summary);
+                        generateSectionInheritedList(*s, inner, marker);
+                    }
+                    if (!s->reimpMembers.isEmpty()) {
+                        QString name = QString("Reimplemented ") + (*s).name;
+                        attr = cleanRef(name).toLower() + " h2";
+                        writeStartTag(DT_p);
+                        xmlWriter().writeAttribute("outputclass",attr);
+                        writeCharacters(protectEnc(name));
+                        writeEndTag(); // </p>
+                        generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
+                        generateSectionInheritedList(*s, inner, marker);
+                    }
+                }
                 ++s;
             }
-            xmlWriter().writeEndElement(); // </section>
+            if (needOtherSection) {
+                enterSection("additional-inherited-members redundant",QString());
+                writeStartTag(DT_p);
+                xmlWriter().writeAttribute("outputclass","h3");
+                xmlWriter().writeCharacters("Additional Inherited Members");
+                writeEndTag(); // </p>
+                s = summarySections.begin();
+                while (s != summarySections.end()) {
+                    if (s->members.isEmpty())
+                        generateSectionInheritedList(*s, inner, marker);
+                    ++s;
+                }
+            }
+            leaveSection();
         }
-        
-        writeDetailedDescription(fn, marker, false, QString("Detailed Description"));
-        xmlWriter().writeEndElement(); // </cxxClassDetail>
+
+        writeEndTag(); // </cxxClassDetail>
 
         // not included: <related-links>
         // not included: <cxxClassNested>
@@ -1904,7 +2080,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         }
         generateLowStatusMembers(inner,marker,CodeMarker::Obsolete);
         generateLowStatusMembers(inner,marker,CodeMarker::Compat);
-        xmlWriter().writeEndElement(); // </cxxClass>
+        writeEndTag(); // </cxxClass>
     }
     else if ((inner->type() == Node::Fake) && (inner->subType() == Node::QmlClass)) {
         const QmlClassNode* qcn = const_cast<QmlClassNode*>(static_cast<const QmlClassNode*>(inner));
@@ -1917,76 +2093,74 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
+        writeProlog(inner,marker);
 
-        // not included: <prolog>
-    
-        xmlWriter().writeStartElement(CXXCLASSDETAIL);
-        xmlWriter().writeStartElement("apiDesc");
-        xmlWriter().writeAttribute("spectitle",title);
+        writeStartTag(DT_cxxClassDetail);
+        enterApiDesc(QString(),title);
         Text brief = qcn->doc().briefText(); // zzz
         if (!brief.isEmpty()) {
-            xmlWriter().writeStartElement("p");
+            writeStartTag(DT_p);
             generateText(brief, qcn, marker);
-            xmlWriter().writeEndElement(); // </p>
+            writeEndTag(); // </p>
         }
         generateQmlInstantiates(qcn, marker);
         generateQmlInherits(qcn, marker);
         generateQmlInheritedBy(qcn, marker);
         generateSince(qcn, marker);
-        xmlWriter().writeEndElement(); // </apiDesc>
+        enterSection("h2","Detailed Description");
+        generateBody(qcn, marker);
+        if (cn)
+            generateQmlText(cn->doc().body(), cn, marker, qcn->name());
+        leaveSection();
+        leaveSection(); // </apiDesc>
 
         QList<Section> summarySections;
         summarySections = marker->qmlSections(qcn,CodeMarker::Summary,0);
-        s = summarySections.begin();
-        while (s != summarySections.end()) {
-            QString attr;
-            if (!s->members.isEmpty()) {
-                xmlWriter().writeStartElement("section");
-                attr = cleanRef((*s).name).toLower() + " redundant";
-                xmlWriter().writeAttribute("outputclass",attr);
-                xmlWriter().writeStartElement("title");
-                xmlWriter().writeAttribute("outputclass","h2");
-                writeCharacters(protectEnc((*s).name));
-                xmlWriter().writeEndElement(); // </title>
-                generateQmlSummary(*s,qcn,marker);
-                //generateSection(s->members, inner, marker, CodeMarker::Summary);
-                //generateSectionInheritedList(*s, inner, marker);
-                xmlWriter().writeEndElement(); // </section>
+        if (!summarySections.isEmpty()) {
+            enterSection("redundant",QString());
+            s = summarySections.begin();
+            while (s != summarySections.end()) {
+                QString attr;
+                if (!s->members.isEmpty()) {
+                    writeStartTag(DT_p);
+                    attr = cleanRef((*s).name).toLower() + " h2";
+                    xmlWriter().writeAttribute("outputclass",attr);
+                    writeCharacters(protectEnc((*s).name));
+                    writeEndTag(); // </p>
+                    generateQmlSummary(*s,qcn,marker);
+                    //generateSection(s->members, inner, marker, CodeMarker::Summary);
+                    //generateSectionInheritedList(*s, inner, marker);
+                }
+                ++s;
             }
-            ++s;
+            leaveSection();
         }
-        
-        writeDetailedDescription(qcn, marker, false, QString("Detailed Description"));
-        if (cn)
-            generateQmlText(cn->doc().body(), cn, marker, qcn->name());
 
         QList<Section> detailSections;
         detailSections = marker->qmlSections(qcn,CodeMarker::Detailed,0);
-        s = detailSections.begin();
-        while (s != detailSections.end()) {
-            if (!s->members.isEmpty()) {
-                QString attr;
-                inSection = true;
-                xmlWriter().writeStartElement("section");
-                attr = cleanRef((*s).name).toLower();
-                xmlWriter().writeAttribute("outputclass",attr);
-                xmlWriter().writeStartElement("title");
-                xmlWriter().writeAttribute("outputclass","h2");
-                writeCharacters(protectEnc((*s).name));
-                xmlWriter().writeEndElement(); // </title>
-                NodeList::ConstIterator m = (*s).members.begin();
-                while (m != (*s).members.end()) {
-                    generateDetailedQmlMember(*m, qcn, marker);
-                    ++m;
+        if (!detailSections.isEmpty()) {
+            enterSection("details",QString());
+            s = detailSections.begin();
+            while (s != detailSections.end()) {
+                if (!s->members.isEmpty()) {
+                    QString attr;
+                    writeStartTag(DT_p);
+                    attr = cleanRef((*s).name).toLower() + " h2";
+                    xmlWriter().writeAttribute("outputclass",attr);
+                    writeCharacters(protectEnc((*s).name));
+                    writeEndTag(); // </p>
+                    NodeList::ConstIterator m = (*s).members.begin();
+                    while (m != (*s).members.end()) {
+                        generateDetailedQmlMember(*m, qcn, marker);
+                        ++m;
+                    }
                 }
-                xmlWriter().writeEndElement(); // </section>
-                inSection = false;
+                ++s;
             }
-            ++s;
+            leaveSection();
         }
-
-        xmlWriter().writeEndElement(); // </cxxClassDetail>        
-        xmlWriter().writeEndElement(); // </cxxClass>
+        writeEndTag(); // </cxxClassDetail>        
+        writeEndTag(); // </cxxClass>
     }
 }
 
@@ -1996,12 +2170,13 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
  */
 void DitaXmlGenerator::writeXrefListItem(const QString& link, const QString& text)
 {
-    xmlWriter().writeStartElement("li");
-    xmlWriter().writeStartElement("xref");
+    writeStartTag(DT_li);
+    writeStartTag(DT_xref);
+    // formathtml
     xmlWriter().writeAttribute("href",link);
     writeCharacters(text);
-    xmlWriter().writeEndElement(); // </xref>
-    xmlWriter().writeEndElement(); // </li>
+    writeEndTag(); // </xref>
+    writeEndTag(); // </li>
 }
 
 /*!
@@ -2010,45 +2185,31 @@ void DitaXmlGenerator::writeXrefListItem(const QString& link, const QString& tex
  */
 void DitaXmlGenerator::generateFakeNode(const FakeNode* fake, CodeMarker* marker)
 {
-    SubTitleSize subTitleSize = LargeSubTitle;
     QList<Section> sections;
     QList<Section>::const_iterator s;
     QString fullTitle = fake->fullTitle();
-    QString htmlTitle = fullTitle;
 
-    if (fake->subType() == Node::File && !fake->subTitle().isEmpty()) {
-        subTitleSize = SmallSubTitle;
-        htmlTitle += " (" + fake->subTitle() + ")";
-    }
-    else if (fake->subType() == Node::QmlBasicType) {
+    if (fake->subType() == Node::QmlBasicType) {
         fullTitle = "QML Basic Type: " + fullTitle;
-        htmlTitle = fullTitle;
     }
 
     generateHeader(fake, fullTitle);
     generateBrief(fake, marker); // <shortdesc>
-    xmlWriter().writeStartElement("body");
+    writeProlog(fake, marker);
+
+    writeStartTag(DT_body);
+    enterSection(QString(),QString());
     if (fake->subType() == Node::Module) {
         generateStatus(fake, marker);
         if (moduleNamespaceMap.contains(fake->name())) {
-            xmlWriter().writeStartElement("section");
-            xmlWriter().writeAttribute("outputclass","namespaces");
-            xmlWriter().writeStartElement("title");
-            xmlWriter().writeAttribute("outputclass","h2");
-            xmlWriter().writeCharacters("Namespaces");
-            xmlWriter().writeEndElement(); // </title>
+            enterSection("h2","Namespaces");
             generateAnnotatedList(fake, marker, moduleNamespaceMap[fake->name()]);
-            xmlWriter().writeEndElement(); // </section>
+            leaveSection();
         }
         if (moduleClassMap.contains(fake->name())) {
-            xmlWriter().writeStartElement("section");
-            xmlWriter().writeAttribute("outputclass","classes");
-            xmlWriter().writeStartElement("title");
-            xmlWriter().writeAttribute("outputclass","h2");
-            xmlWriter().writeCharacters("Classes");
-            xmlWriter().writeEndElement(); // </title>
+            enterSection("h2","Classes");
             generateAnnotatedList(fake, marker, moduleClassMap[fake->name()]);
-            xmlWriter().writeEndElement(); // </section>
+            leaveSection();
         }
     }
 
@@ -2056,11 +2217,11 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode* fake, CodeMarker* marker
         if (fake->subType() == Node::File) {
             Text text;
             Quoter quoter;
-            xmlWriter().writeStartElement("p");
+            writeStartTag(DT_p);
             xmlWriter().writeAttribute("outputclass", "small-subtitle");
             text << fake->subTitle();
             generateText(text, fake, marker);
-            xmlWriter().writeEndElement(); // </p>
+            writeEndTag(); // </p>
             Doc::quoteFromFile(fake->doc().location(), quoter, fake->name());
             QString code = quoter.quoteTo(fake->location(), "", "");
             text.clear();
@@ -2070,10 +2231,12 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode* fake, CodeMarker* marker
     }
     else {
         if (fake->subType() == Node::Module) {
-            writeDetailedDescription(fake, marker, false, QString("Detailed Description"));
+         enterSection("h2","Detailed Description");
+         generateBody(fake, marker);
+         leaveSection();
         }
         else
-            writeDetailedDescription(fake, marker, false, QString());
+            generateBody(fake, marker);
         generateAlsoList(fake, marker);
 
         if (!fake->groupMembers().isEmpty()) {
@@ -2085,9 +2248,10 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode* fake, CodeMarker* marker
             generateAnnotatedList(fake, marker, groupMembersMap);
         }
     }
-    xmlWriter().writeEndElement(); // </body>
+    leaveSection(); // </section>
+    writeEndTag(); // </body>
     writeRelatedLinks(fake, marker);
-    xmlWriter().writeEndElement(); // </topic>
+    writeEndTag(); // </topic>
 }
 
 /*!
@@ -2102,13 +2266,13 @@ void DitaXmlGenerator::writeLink(const Node* node,
 {
     if (node) {
         QString link = fileName(node) + "#" + node->guid();
-        xmlWriter().writeStartElement("link");
+        writeStartTag(DT_link);
         xmlWriter().writeAttribute("href", link);
         xmlWriter().writeAttribute("role", role);
-        xmlWriter().writeStartElement("linktext");
+        writeStartTag(DT_linktext);
         writeCharacters(text);
-        xmlWriter().writeEndElement(); // </linktext>
-        xmlWriter().writeEndElement(); // </link>
+        writeEndTag(); // </linktext>
+        writeEndTag(); // </link>
     }
 }
 
@@ -2124,7 +2288,7 @@ void DitaXmlGenerator::writeRelatedLinks(const FakeNode* node, CodeMarker* marke
     const Node* linkNode = 0;
     QPair<QString,QString> linkPair;
     if (node && !node->links().empty()) {
-        xmlWriter().writeStartElement("related-links");
+        writeStartTag(DT_relatedLinks);
         if (node->links().contains(Node::PreviousLink)) {
             linkPair = node->links()[Node::PreviousLink];
             linkNode = findNodeForTarget(linkPair.first, node, marker);
@@ -2140,7 +2304,7 @@ void DitaXmlGenerator::writeRelatedLinks(const FakeNode* node, CodeMarker* marke
             linkNode = findNodeForTarget(linkPair.first, node, marker);
             writeLink(linkNode, linkPair.second, "parent");
         }
-        xmlWriter().writeEndElement(); // </related-links>
+        writeEndTag(); // </related-links>
     }
 }
 
@@ -2166,59 +2330,59 @@ void DitaXmlGenerator::generateHeader(const Node* node,
     if (!node)
         return;
 
+    DitaTag mainTag = DT_cxxClass;
+    DitaTag nameTag = DT_apiName;
     QString doctype;
-    QString mainElement;
-    QString nameElement;
     QString dtd;
     QString base;
     QString version;
     QString outputclass;
 
     if (node->type() == Node::Class) {
-        mainElement = "cxxClass";
-        nameElement = "apiName";
+        mainTag = DT_cxxClass;
+        nameTag = DT_apiName;
         dtd = "dtd/cxxClass.dtd";
         version = "0.6.0";
-        doctype = "<!DOCTYPE " + mainElement +
+        doctype = "<!DOCTYPE " + ditaTags[mainTag] +
             " PUBLIC \"-//NOKIA//DTD DITA C++ API Class Reference Type v" +
             version + "//EN\" \"" + dtd + "\">";
     }
     else if (node->type() == Node::Namespace) {
-        mainElement = "cxxClass";
-        nameElement = "apiName";
+        mainTag = DT_cxxClass;
+        nameTag = DT_apiName;
         dtd = "dtd/cxxClass.dtd";
         version = "0.6.0";
-        doctype = "<!DOCTYPE " + mainElement +
+        doctype = "<!DOCTYPE " + ditaTags[mainTag] +
             " PUBLIC \"-//NOKIA//DTD DITA C++ API Class Reference Type v" +
             version + "//EN\" \"" + dtd + "\">";
         outputclass = "namespace";
     }
     else if (node->type() == Node::Fake || subpage) {
         if (node->subType() == Node::HeaderFile) {
-            mainElement = "cxxClass";
-            nameElement = "apiName";
+            mainTag = DT_cxxClass;
+            nameTag = DT_apiName;
             dtd = "dtd/cxxClass.dtd";
             version = "0.6.0";
-            doctype = "<!DOCTYPE " + mainElement +
+            doctype = "<!DOCTYPE " + ditaTags[mainTag] +
                 " PUBLIC \"-//NOKIA//DTD DITA C++ API Class Reference Type v" +
                 version + "//EN\" \"" + dtd + "\">";
             outputclass = "headerfile";
         }
         else if (node->subType() == Node::QmlClass) {
-            mainElement = "cxxClass";
-            nameElement = "apiName";
+            mainTag = DT_cxxClass;
+            nameTag = DT_apiName;
             dtd = "dtd/cxxClass.dtd";
             version = "0.6.0";
-            doctype = "<!DOCTYPE " + mainElement +
+            doctype = "<!DOCTYPE " + ditaTags[mainTag] +
                 " PUBLIC \"-//NOKIA//DTD DITA C++ API Class Reference Type v" +
                 version + "//EN\" \"" + dtd + "\">";
             outputclass = "QML-class";
         }
         else {
-            mainElement = "topic";
-            nameElement = "title";
+            mainTag = DT_topic;
+            nameTag = DT_title;
             dtd = "dtd/topic.dtd";
-            doctype = "<!DOCTYPE " + mainElement +
+            doctype = "<!DOCTYPE " + ditaTags[mainTag] +
                 " PUBLIC \"-//OASIS//DTD DITA Topic//EN\" \"" + dtd + "\">";
             switch (node->subType()) {
             case Node::Page:
@@ -2250,13 +2414,13 @@ void DitaXmlGenerator::generateHeader(const Node* node,
 
     xmlWriter().writeDTD(doctype);
     xmlWriter().writeComment(node->doc().location().fileName());
-    xmlWriter().writeStartElement(mainElement);
+    writeStartTag(mainTag);
     xmlWriter().writeAttribute("id",node->guid());
     if (!outputclass.isEmpty())
         xmlWriter().writeAttribute("outputclass",outputclass);
-    xmlWriter().writeStartElement(nameElement); // <title> or <apiName>
+    writeStartTag(nameTag); // <title> or <apiName>
     writeCharacters(name);
-    xmlWriter().writeEndElement(); // </title> or </apiName> 
+    writeEndTag(); // </title> or </apiName> 
 }
 
 /*!
@@ -2277,9 +2441,9 @@ void DitaXmlGenerator::generateBrief(const Node* node, CodeMarker* marker)
 void DitaXmlGenerator::generateIncludes(const InnerNode* inner, CodeMarker* marker)
 {
     if (!inner->includes().isEmpty()) {
-        xmlWriter().writeStartElement("codeblock");
+        writeStartTag(DT_codeblock);
         writeText(marker->markedUpIncludes(inner->includes()), marker, inner);
-        xmlWriter().writeEndElement(); // </codeblock>
+        writeEndTag(); // </codeblock>
     }
 }
 
@@ -2551,20 +2715,20 @@ void DitaXmlGenerator::generateClassHierarchy(const Node* relative,
     QStack<NodeMap > stack;
     stack.push(topLevel);
 
-    xmlWriter().writeStartElement("ul");
+    writeStartTag(DT_ul);
     while (!stack.isEmpty()) {
         if (stack.top().isEmpty()) {
             stack.pop();
-            xmlWriter().writeEndElement(); // </ul>
+            writeEndTag(); // </ul>
             if (!stack.isEmpty())
-                xmlWriter().writeEndElement(); // </li>
+                writeEndTag(); // </li>
         }
         else {
             const ClassNode *child =
                 static_cast<const ClassNode *>(*stack.top().begin());
-            xmlWriter().writeStartElement("li");
+            writeStartTag(DT_li);
             generateFullName(child, relative, marker);
-            xmlWriter().writeEndElement(); // </li>
+            writeEndTag(); // </li>
             stack.top().erase(stack.top().begin());
 
             NodeMap newTop;
@@ -2574,8 +2738,8 @@ void DitaXmlGenerator::generateClassHierarchy(const Node* relative,
             }
             if (!newTop.isEmpty()) {
                 stack.push(newTop);
-                xmlWriter().writeStartElement("li");
-                xmlWriter().writeStartElement("ul");
+                writeStartTag(DT_li);
+                writeStartTag(DT_ul);
             }
         }
     }
@@ -2591,11 +2755,11 @@ void DitaXmlGenerator::generateAnnotatedList(const Node* relative,
 {
     if (nodeMap.isEmpty())
         return;
-    xmlWriter().writeStartElement("table");
+    writeStartTag(DT_table);
     xmlWriter().writeAttribute("outputclass","annotated");
-    xmlWriter().writeStartElement("tgroup");
+    writeStartTag(DT_tgroup);
     xmlWriter().writeAttribute("cols","2");
-    xmlWriter().writeStartElement("tbody");
+    writeStartTag(DT_tbody);
 
     foreach (const QString& name, nodeMap.keys()) {
         const Node* node = nodeMap[name];
@@ -2603,35 +2767,35 @@ void DitaXmlGenerator::generateAnnotatedList(const Node* relative,
         if (node->status() == Node::Obsolete)
             continue;
 
-        xmlWriter().writeStartElement("row");
-        xmlWriter().writeStartElement("entry");
-        xmlWriter().writeStartElement("p");
+        writeStartTag(DT_row);
+        writeStartTag(DT_entry);
+        writeStartTag(DT_p);
         generateFullName(node, relative, marker);
-        xmlWriter().writeEndElement(); // </p>
-        xmlWriter().writeEndElement(); // <entry>
+        writeEndTag(); // </p>
+        writeEndTag(); // <entry>
 
         if (!(node->type() == Node::Fake)) {
             Text brief = node->doc().trimmedBriefText(name);
             if (!brief.isEmpty()) {
-                xmlWriter().writeStartElement("entry");
-                xmlWriter().writeStartElement("p");
+                writeStartTag(DT_entry);
+                writeStartTag(DT_p);
                 generateText(brief, node, marker);
-                xmlWriter().writeEndElement(); // </p>
-                xmlWriter().writeEndElement(); // <entry>
+                writeEndTag(); // </p>
+                writeEndTag(); // <entry>
             }
         }
         else {
-            xmlWriter().writeStartElement("entry");
-            xmlWriter().writeStartElement("p");
+            writeStartTag(DT_entry);
+            writeStartTag(DT_p);
             writeCharacters(protectEnc(node->doc().briefText().toString())); // zzz
-            xmlWriter().writeEndElement(); // </p>
-            xmlWriter().writeEndElement(); // <entry>
+            writeEndTag(); // </p>
+            writeEndTag(); // <entry>
         }
-        xmlWriter().writeEndElement(); // </row>
+        writeEndTag(); // </row>
     }
-    xmlWriter().writeEndElement(); // </tbody>
-    xmlWriter().writeEndElement(); // </tgroup>
-    xmlWriter().writeEndElement(); // </table>
+    writeEndTag(); // </tbody>
+    writeEndTag(); // </tgroup>
+    writeEndTag(); // </table>
 }
 
 /*!
@@ -2768,26 +2932,27 @@ void DitaXmlGenerator::generateCompactList(const Node* relative,
       Output the alphabet as a row of links.
      */
     if (includeAlphabet) {
-        xmlWriter().writeStartElement("p");
+        writeStartTag(DT_p);
         xmlWriter().writeAttribute("outputclass","alphabet");
         for (int i = 0; i < 26; i++) {
             QChar ch('a' + i);
             if (usedParagraphNames.contains(char('a' + i))) {
-                xmlWriter().writeStartElement("xref");
+                writeStartTag(DT_xref);
+                // formathtml
                 QString guid = lookupGuid(outFileName(),QString(ch));
                 QString attr = outFileName() + QString("#%1").arg(guid);
                 xmlWriter().writeAttribute("href", attr);
                 xmlWriter().writeCharacters(QString(ch.toUpper()));
-                xmlWriter().writeEndElement(); // </xref>
+                writeEndTag(); // </xref>
             }
         }
-        xmlWriter().writeEndElement(); // </p>
+        writeEndTag(); // </p>
     }
 
     /*
       Output a <p> element to contain all the <dl> elements.
      */
-    xmlWriter().writeStartElement("p");
+    writeStartTag(DT_p);
     xmlWriter().writeAttribute("outputclass","compactlist");
 
     for (int i=0; i<classMap.count()-1; i++) {
@@ -2802,25 +2967,25 @@ void DitaXmlGenerator::generateCompactList(const Node* relative,
         */
         if (curParOffset == 0) {
             if (i > 0) {
-                xmlWriter().writeEndElement(); // </dlentry>
-                xmlWriter().writeEndElement(); // </dl>
+                writeEndTag(); // </dlentry>
+                writeEndTag(); // </dl>
             }
-            xmlWriter().writeStartElement("dl");
-            xmlWriter().writeStartElement("dlentry");
-            xmlWriter().writeStartElement("dt");
+            writeStartTag(DT_dl);
+            writeStartTag(DT_dlentry);
+            writeStartTag(DT_dt);
             if (includeAlphabet) {
                 QChar c = paragraphName[curParNr][0].toLower();
                 writeGuidAttribute(QString(c));
             }
             xmlWriter().writeAttribute("outputclass","sublist-header");
             xmlWriter().writeCharacters(paragraphName[curParNr]);
-            xmlWriter().writeEndElement(); // </dt>
+            writeEndTag(); // </dt>
         }
 
         /*
           Output a <dd> for the current offset in the current paragraph.
          */
-        xmlWriter().writeStartElement("dd");
+        writeStartTag(DT_dd);
         if ((curParNr < NumParagraphs) &&
             !paragraphName[curParNr].isEmpty()) {
             NodeMap::Iterator it;
@@ -2832,7 +2997,8 @@ void DitaXmlGenerator::generateCompactList(const Node* relative,
               Previously, we used generateFullName() for this, but we
               require some special formatting.
             */
-            xmlWriter().writeStartElement("xref");
+            writeStartTag(DT_xref);
+            // formathtml
             xmlWriter().writeAttribute("href",linkForNode(it.value(), relative));
             
             QStringList pieces;
@@ -2841,19 +3007,19 @@ void DitaXmlGenerator::generateCompactList(const Node* relative,
             else
                 pieces = fullName(it.value(), relative, marker).split("::");
             xmlWriter().writeCharacters(protectEnc(pieces.last()));
-            xmlWriter().writeEndElement(); // </xref>
+            writeEndTag(); // </xref>
             if (pieces.size() > 1) {
                 xmlWriter().writeCharacters(" (");
                 generateFullName(it.value()->parent(),relative,marker);
                 xmlWriter().writeCharacters(")");
             }
         }
-        xmlWriter().writeEndElement(); // </dd>
+        writeEndTag(); // </dd>
         curParOffset++;
     }
-    xmlWriter().writeEndElement(); // </dlentry>
-    xmlWriter().writeEndElement(); // </dl>
-    xmlWriter().writeEndElement(); // </p>
+    writeEndTag(); // </dlentry>
+    writeEndTag(); // </dl>
+    writeEndTag(); // </p>
 }
 
 /*!
@@ -2862,34 +3028,35 @@ void DitaXmlGenerator::generateCompactList(const Node* relative,
 void DitaXmlGenerator::generateFunctionIndex(const Node* relative,
                                              CodeMarker* marker)
 {
-    xmlWriter().writeStartElement("p");
+    writeStartTag(DT_p);
     xmlWriter().writeAttribute("outputclass","alphabet");
     for (int i = 0; i < 26; i++) {
         QChar ch('a' + i);
-        xmlWriter().writeStartElement("xref");
+        writeStartTag(DT_xref);
+        // formathtml
         QString guid = lookupGuid(outFileName(),QString(ch));
         QString attr = outFileName() + QString("#%1").arg(guid);
         xmlWriter().writeAttribute("href", attr);
         xmlWriter().writeCharacters(QString(ch.toUpper()));
-        xmlWriter().writeEndElement(); // </xref>
+        writeEndTag(); // </xref>
         
     }
-    xmlWriter().writeEndElement(); // </p>
+    writeEndTag(); // </p>
 
     char nextLetter = 'a';
     char currentLetter;
 
-    xmlWriter().writeStartElement("ul");
+    writeStartTag(DT_ul);
     QMap<QString, NodeMap >::ConstIterator f = funcIndex.begin();
     while (f != funcIndex.end()) {
-        xmlWriter().writeStartElement("li");
+        writeStartTag(DT_li);
         currentLetter = f.key()[0].unicode();
         while (islower(currentLetter) && currentLetter >= nextLetter) {
-            xmlWriter().writeStartElement("p");
+            writeStartTag(DT_p);
             writeGuidAttribute(QString(nextLetter));
             xmlWriter().writeAttribute("outputclass","target");
             xmlWriter().writeCharacters(QString(nextLetter));
-            xmlWriter().writeEndElement(); // </p>
+            writeEndTag(); // </p>
             nextLetter++;
         }
         xmlWriter().writeCharacters(protectEnc(f.key()));
@@ -2900,10 +3067,10 @@ void DitaXmlGenerator::generateFunctionIndex(const Node* relative,
             generateFullName((*s)->parent(), relative, marker, *s);
             ++s;
         }
-        xmlWriter().writeEndElement(); // </li>
+        writeEndTag(); // </li>
         ++f;
     }
-    xmlWriter().writeEndElement(); // </ul>
+    writeEndTag(); // </ul>
 }
 
 /*!
@@ -2916,14 +3083,14 @@ void DitaXmlGenerator::generateLegaleseList(const Node* relative,
     while (it != legaleseTexts.end()) {
         Text text = it.key();
         generateText(text, relative, marker);
-        xmlWriter().writeStartElement("ul");
+        writeStartTag(DT_ul);
         do {
-            xmlWriter().writeStartElement("li");
+            writeStartTag(DT_li);
             generateFullName(it.value(), relative, marker);
-            xmlWriter().writeEndElement(); // </li>
+            writeEndTag(); // </li>
             ++it;
         } while (it != legaleseTexts.end() && it.key() == text);
-        xmlWriter().writeEndElement(); //</ul>
+        writeEndTag(); //</ul>
     }
 }
 
@@ -3044,50 +3211,53 @@ void DitaXmlGenerator::generateOverviewList(const Node* relative, CodeMarker* /*
     if (!fakeNodeMap.isEmpty()) {
         foreach (const QString& groupTitle, groupTitlesMap.keys()) {
             const FakeNode* groupNode = groupTitlesMap[groupTitle];
-            xmlWriter().writeStartElement("p");
+            writeStartTag(DT_p);
             xmlWriter().writeAttribute("outputclass","h3");
-            xmlWriter().writeStartElement("xref");
+            writeStartTag(DT_xref);
+            // formathtml
             xmlWriter().writeAttribute("href",linkForNode(groupNode, relative));
             writeCharacters(protectEnc(groupNode->fullTitle()));
-            xmlWriter().writeEndElement(); // </xref>
-            xmlWriter().writeEndElement(); // </p>
+            writeEndTag(); // </xref>
+            writeEndTag(); // </p>
             if (fakeNodeMap[groupNode].count() == 0)
                 continue;
 
-            xmlWriter().writeStartElement("ul");
+            writeStartTag(DT_ul);
             foreach (const FakeNode* fakeNode, fakeNodeMap[groupNode]) {
                 QString title = fakeNode->fullTitle();
                 if (title.startsWith("The "))
                     title.remove(0, 4);
-                xmlWriter().writeStartElement("li");
-                xmlWriter().writeStartElement("xref");
+                writeStartTag(DT_li);
+                writeStartTag(DT_xref);
+                // formathtml
                 xmlWriter().writeAttribute("href",linkForNode(fakeNode, relative));
                 writeCharacters(protectEnc(title));
-                xmlWriter().writeEndElement(); // </xref>
-                xmlWriter().writeEndElement(); // </li>
+                writeEndTag(); // </xref>
+                writeEndTag(); // </li>
             }
-            xmlWriter().writeEndElement(); // </ul>
+            writeEndTag(); // </ul>
         }
     }
 
     if (!uncategorizedNodeMap.isEmpty()) {
-        xmlWriter().writeStartElement("p");
+        writeStartTag(DT_p);
         xmlWriter().writeAttribute("outputclass","h3");
         xmlWriter().writeCharacters("Miscellaneous");
-        xmlWriter().writeEndElement(); // </p>
-        xmlWriter().writeStartElement("ul");
+        writeEndTag(); // </p>
+        writeStartTag(DT_ul);
         foreach (const FakeNode *fakeNode, uncategorizedNodeMap) {
             QString title = fakeNode->fullTitle();
             if (title.startsWith("The "))
                 title.remove(0, 4);
-            xmlWriter().writeStartElement("li");
-            xmlWriter().writeStartElement("xref");
+            writeStartTag(DT_li);
+            writeStartTag(DT_xref);
+            // formathtml
             xmlWriter().writeAttribute("href",linkForNode(fakeNode, relative));
             writeCharacters(protectEnc(title));
-            xmlWriter().writeEndElement(); // </xref>
-            xmlWriter().writeEndElement(); // </li>
+            writeEndTag(); // </xref>
+            writeEndTag(); // </li>
         }
-        xmlWriter().writeEndElement(); // </ul>
+        writeEndTag(); // </ul>
     }
 }
 
@@ -3102,18 +3272,18 @@ void DitaXmlGenerator::generateSection(const NodeList& nl,
                                        CodeMarker::SynopsisStyle style)
 {
     if (!nl.isEmpty()) {
-        xmlWriter().writeStartElement("ul");
+        writeStartTag(DT_ul);
         NodeList::ConstIterator m = nl.begin();
         while (m != nl.end()) {
             if ((*m)->access() != Node::Private) {
-                xmlWriter().writeStartElement("li");
+                writeStartTag(DT_li);
                 QString marked = getMarkedUpSynopsis(*m, relative, marker, style);
                 writeText(marked, marker, relative);
-                xmlWriter().writeEndElement(); // </li>
+                writeEndTag(); // </li>
             }
             ++m;
         }
-        xmlWriter().writeEndElement(); // </ul>
+        writeEndTag(); // </ul>
     }
 }
 
@@ -3126,10 +3296,10 @@ void DitaXmlGenerator::generateSectionInheritedList(const Section& section,
 {
     if (section.inherited.isEmpty())
         return;
-    xmlWriter().writeStartElement("ul");
+    writeStartTag(DT_ul);
     QList<QPair<ClassNode*,int> >::ConstIterator p = section.inherited.begin();
     while (p != section.inherited.end()) {
-        xmlWriter().writeStartElement("li");
+        writeStartTag(DT_li);
         QString text;
         text.setNum((*p).second);
         text += " ";
@@ -3139,18 +3309,19 @@ void DitaXmlGenerator::generateSectionInheritedList(const Section& section,
             text += section.pluralMember;
         text += " inherited from ";
         writeCharacters(text);
-        xmlWriter().writeStartElement("xref");
+        writeStartTag(DT_xref);
+        // formathtml
         // zzz
         text = fileName((*p).first) + "#";
         text += DitaXmlGenerator::cleanRef(section.name.toLower());
         xmlWriter().writeAttribute("href",text);
         text = protectEnc(marker->plainFullName((*p).first, relative));
         writeCharacters(text);
-        xmlWriter().writeEndElement(); // </xref>
-        xmlWriter().writeEndElement(); // </li>
+        writeEndTag(); // </xref>
+        writeEndTag(); // </li>
         ++p;
     }
-    xmlWriter().writeEndElement(); // </ul>
+    writeEndTag(); // </ul>
 }
 
 /*!
@@ -3299,18 +3470,18 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
                             writeCharacters(html);
                             html.clear();
                         }
-                        xmlWriter().writeStartElement("i");
+                        writeStartTag(DT_i);
                         writeCharacters(arg.toString());
-                        xmlWriter().writeEndElement(); // </i>
+                        writeEndTag(); // </i>
                     }
                     else if (k == 5) { // <@extra>
                         if (!html.isEmpty()) {
                             writeCharacters(html);
                             html.clear();
                         }
-                        xmlWriter().writeStartElement("tt");
+                        writeStartTag(DT_tt);
                         writeCharacters(arg.toString());
-                        xmlWriter().writeEndElement(); // </tt>
+                        writeEndTag(); // </tt>
                     }
                     else {
                         if (!html.isEmpty()) {
@@ -3362,10 +3533,10 @@ void DitaXmlGenerator::generateLink(const Atom* atom,
         writeCharacters(protectEnc(atom->string().left(k)));
         if (link.isEmpty()) {
             if (showBrokenLinks)
-                xmlWriter().writeEndElement(); // </i>
+                writeEndTag(); // </i>
         }
         else
-            xmlWriter().writeEndElement(); // </xref>
+            writeEndTag(); // </xref>
         inLink = false;
         writeCharacters(protectEnc(atom->string().mid(k)));
     }
@@ -3374,12 +3545,12 @@ void DitaXmlGenerator::generateLink(const Atom* atom,
         bool func = atom->string().endsWith("()");
         bool tt = (func || atom->string().contains(camelCase));
         if (tt)
-            xmlWriter().writeStartElement("tt");
+            writeStartTag(DT_tt);
         if (func)
             writeCharacters(protectEnc(atom->string().left(atom->string().length() - 2)));
         else
             writeCharacters(protectEnc(atom->string()));
-        xmlWriter().writeEndElement(); // </tt>
+        writeEndTag(); // </tt>
     }
     else
         writeCharacters(protectEnc(atom->string()));
@@ -3714,11 +3885,12 @@ void DitaXmlGenerator::generateFullName(const Node* apparentNode,
 {
     if (actualNode == 0)
         actualNode = apparentNode;
-    xmlWriter().writeStartElement("xref");
+    writeStartTag(DT_xref);
+    // formathtml
     QString href = linkForNode(actualNode, relative);
     xmlWriter().writeAttribute("href",href);
     writeCharacters(protectEnc(fullName(apparentNode, relative, marker)));
-    xmlWriter().writeEndElement(); // </xref>
+    writeEndTag(); // </xref>
 }
 
 void DitaXmlGenerator::findAllClasses(const InnerNode* node)
@@ -3902,6 +4074,11 @@ void DitaXmlGenerator::findAllNamespaces(const InnerNode* node)
     }
 }
 
+/*!
+  We're writing an attribute that indicates that the text
+  data is a heading, hence, h1, h2, h3... etc, and we must
+  decide which number to use.
+ */
 int DitaXmlGenerator::hOffset(const Node* node)
 {
     switch (node->type()) {
@@ -4142,7 +4319,8 @@ void DitaXmlGenerator::beginLink(const QString& link)
     this->link = link;
     if (link.isEmpty())
         return;
-    xmlWriter().writeStartElement("xref");
+    writeStartTag(DT_xref);
+    // formathtml
     xmlWriter().writeAttribute("href",link);
     inLink = true;
 }
@@ -4152,15 +4330,15 @@ void DitaXmlGenerator::endLink()
     if (inLink) {
         if (link.isEmpty()) {
             if (showBrokenLinks)
-                xmlWriter().writeEndElement(); // </i>
+                writeEndTag(); // </i>
         }
         else {
             if (inObsoleteLink) {
-                xmlWriter().writeStartElement("sup");
+                writeStartTag(DT_sup);
                 xmlWriter().writeCharacters("(obsolete)");
-                xmlWriter().writeEndElement(); // </sup>
+                writeEndTag(); // </sup>
             }
-            xmlWriter().writeEndElement(); // </xref>
+            writeEndTag(); // </xref>
         }
     }
     inLink = false;
@@ -4178,16 +4356,16 @@ void DitaXmlGenerator::generateQmlSummary(const Section& section,
                                           CodeMarker* marker)
 {
     if (!section.members.isEmpty()) {
-        xmlWriter().writeStartElement("ul");
+        writeStartTag(DT_ul);
         NodeList::ConstIterator m;
         m = section.members.begin();
         while (m != section.members.end()) {
-            xmlWriter().writeStartElement("li");
+            writeStartTag(DT_li);
             generateQmlItem(*m,relative,marker,true);
-            xmlWriter().writeEndElement(); // </li>
+            writeEndTag(); // </li>
             ++m;
         }
-        xmlWriter().writeEndElement(); // </ul>
+        writeEndTag(); // </ul>
     }
 }
 
@@ -4205,11 +4383,11 @@ void DitaXmlGenerator::generateDetailedQmlMember(const Node* node,
     if (node->subType() == Node::QmlPropertyGroup) {
         const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
         NodeList::ConstIterator p = qpgn->childNodes().begin();
-        xmlWriter().writeStartElement("ul");
+        writeStartTag(DT_ul);
         while (p != qpgn->childNodes().end()) {
             if ((*p)->type() == Node::QmlProperty) {
                 qpn = static_cast<const QmlPropertyNode*>(*p);
-                xmlWriter().writeStartElement("li");
+                writeStartTag(DT_li);
                 writeGuidAttribute((Node*)qpn);
                 QString attr;
                 if (!qpn->isWritable(myTree))
@@ -4222,31 +4400,31 @@ void DitaXmlGenerator::generateDetailedQmlMember(const Node* node,
                 if (!attr.isEmpty())
                     xmlWriter().writeAttribute("outputclass",attr);
                 generateQmlItem(qpn, relative, marker, false);
-                xmlWriter().writeEndElement(); // </li>
+                writeEndTag(); // </li>
             }
             ++p;
         }
-        xmlWriter().writeEndElement(); // </ul>
+        writeEndTag(); // </ul>
     }
     else if (node->type() == Node::QmlSignal) {
         Node* n = const_cast<Node*>(node);
-        xmlWriter().writeStartElement("ul");
-        xmlWriter().writeStartElement("li");
+        writeStartTag(DT_ul);
+        writeStartTag(DT_li);
         writeGuidAttribute(n);
         marked = getMarkedUpSynopsis(n, relative, marker, CodeMarker::Detailed);
         writeText(marked, marker, relative);
-        xmlWriter().writeEndElement(); // </li>
-        xmlWriter().writeEndElement(); // </ul>
+        writeEndTag(); // </li>
+        writeEndTag(); // </ul>
     }
     else if (node->type() == Node::QmlMethod) {
         Node* n = const_cast<Node*>(node);
-        xmlWriter().writeStartElement("ul");
-        xmlWriter().writeStartElement("li");
+        writeStartTag(DT_ul);
+        writeStartTag(DT_li);
         writeGuidAttribute(n);
         marked = getMarkedUpSynopsis(n, relative, marker, CodeMarker::Detailed);
         writeText(marked, marker, relative);
-        xmlWriter().writeEndElement(); // </li>
-        xmlWriter().writeEndElement(); // </ul>
+        writeEndTag(); // </li>
+        writeEndTag(); // </ul>
     }
     generateStatus(node, marker);
     generateBody(node, marker);
@@ -4270,7 +4448,7 @@ void DitaXmlGenerator::generateQmlInherits(const QmlClassNode* cn,
             const Node* n = myTree->findNode(strList,Node::Fake);
             if (n && n->subType() == Node::QmlClass) {
                 const QmlClassNode* qcn = static_cast<const QmlClassNode*>(n);
-                xmlWriter().writeStartElement("p");
+                writeStartTag(DT_p);
                 xmlWriter().writeAttribute("outputclass","inherits");
                 Text text;
                 text << "[Inherits ";
@@ -4280,7 +4458,7 @@ void DitaXmlGenerator::generateQmlInherits(const QmlClassNode* cn,
                 text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
                 text << "]";
                 generateText(text, cn, marker);
-                xmlWriter().writeEndElement(); // </p>
+                writeEndTag(); // </p>
             }
         }
     }
@@ -4318,7 +4496,7 @@ void DitaXmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
 {
     const ClassNode* cn = qcn->classNode();
     if (cn && (cn->status() != Node::Internal)) {
-        xmlWriter().writeStartElement("p");
+        writeStartTag(DT_p);
             xmlWriter().writeAttribute("outputclass","instantiates");
         Text text;
         text << "[";
@@ -4333,7 +4511,7 @@ void DitaXmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
         text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
         text << "]";
         generateText(text, qcn, marker);
-        xmlWriter().writeEndElement(); // </p>
+        writeEndTag(); // </p>
     }
 }
 
@@ -4350,7 +4528,7 @@ void DitaXmlGenerator::generateInstantiatedBy(const ClassNode* cn,
     if (cn &&  cn->status() != Node::Internal && !cn->qmlElement().isEmpty()) {
         const Node* n = myTree->root()->findNode(cn->qmlElement(),Node::Fake);
         if (n && n->subType() == Node::QmlClass) {
-            xmlWriter().writeStartElement("p");
+            writeStartTag(DT_p);
             xmlWriter().writeAttribute("outputclass","instantiated-by");
             Text text;
             text << "[";
@@ -4365,7 +4543,7 @@ void DitaXmlGenerator::generateInstantiatedBy(const ClassNode* cn,
             text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
             text << "]";
             generateText(text, cn, marker);
-            xmlWriter().writeEndElement(); // </p>
+            writeEndTag(); // </p>
         }
     }
 }
@@ -4421,32 +4599,32 @@ void DitaXmlGenerator::writeDerivations(const ClassNode* cn, CodeMarker* marker)
     int index;
 
     if (!cn->baseClasses().isEmpty()) {
-        xmlWriter().writeStartElement(CXXCLASSDERIVATIONS);
+        writeStartTag(DT_cxxClassDerivations);
         r = cn->baseClasses().begin();
         index = 0;
         while (r != cn->baseClasses().end()) {
-            xmlWriter().writeStartElement(CXXCLASSDERIVATION);
-            xmlWriter().writeStartElement(CXXCLASSDERIVATIONACCESSSPECIFIER);
+            writeStartTag(DT_cxxClassDerivation);
+            writeStartTag(DT_cxxClassDerivationAccessSpecifier);
             xmlWriter().writeAttribute("value",(*r).accessString());
-            xmlWriter().writeEndElement(); // </cxxClassDerivationAccessSpecifier>
+            writeEndTag(); // </cxxClassDerivationAccessSpecifier>
 
             // not included: <cxxClassDerivationVirtual>
 
-            xmlWriter().writeStartElement(CXXCLASSBASECLASS);
+            writeStartTag(DT_cxxClassBaseClass);
             QString attr = fileName((*r).node) + "#" + (*r).node->guid();
             xmlWriter().writeAttribute("href",attr);
             writeCharacters(marker->plainFullName((*r).node));
-            xmlWriter().writeEndElement(); // </cxxClassBaseClass>
+            writeEndTag(); // </cxxClassBaseClass>
 
             // not included: <ClassBaseStruct> or <cxxClassBaseUnion>
 
-            xmlWriter().writeEndElement(); // </cxxClassDerivation>
+            writeEndTag(); // </cxxClassDerivation>
 
             // not included: <cxxStructDerivation>
 
              ++r;
         }
-        xmlWriter().writeEndElement(); // </cxxClassDerivations>
+        writeEndTag(); // </cxxClassDerivations>
      }
 }
 
@@ -4457,73 +4635,77 @@ void DitaXmlGenerator::writeDerivations(const ClassNode* cn, CodeMarker* marker)
  */
 void DitaXmlGenerator::writeLocation(const Node* n)
 {
-    QString s1, s2, s3, s4, s5, s6;
+    DitaTag s1, s2, s3, s4, s5, s6;
+    s1 = DT_cxxClassAPIItemLocation;
+    s2 = DT_cxxClassDeclarationFile;
+    s3 = DT_cxxClassDeclarationFileLine;
+    s4 = DT_LAST;
     if (n->type() == Node::Class || n->type() == Node::Namespace) {
-        s1 = CXXCLASSAPIITEMLOCATION;
-        s2 = CXXCLASSDECLARATIONFILE;
-        s3 = CXXCLASSDECLARATIONFILELINE;
+        s1 = DT_cxxClassAPIItemLocation;
+        s2 = DT_cxxClassDeclarationFile;
+        s3 = DT_cxxClassDeclarationFileLine;
     }
     else if (n->type() == Node::Function) {
         FunctionNode* fn = const_cast<FunctionNode*>(static_cast<const FunctionNode*>(n));
         if (fn->isMacro()) {
-            s1 = CXXDEFINEAPIITEMLOCATION;
-            s2 = CXXDEFINEDECLARATIONFILE;
-            s3 = CXXDEFINEDECLARATIONFILELINE;
+            s1 = DT_cxxDefineAPIItemLocation;
+            s2 = DT_cxxDefineDeclarationFile;
+            s3 = DT_cxxDefineDeclarationFileLine;
         }
         else {
-            s1 = CXXFUNCTIONAPIITEMLOCATION;
-            s2 = CXXFUNCTIONDECLARATIONFILE;
-            s3 = CXXFUNCTIONDECLARATIONFILELINE;
+            s1 = DT_cxxFunctionAPIItemLocation;
+            s2 = DT_cxxFunctionDeclarationFile;
+            s3 = DT_cxxFunctionDeclarationFileLine;
         }
     }
     else if (n->type() == Node::Enum) {
-        s1 = CXXENUMERATIONAPIITEMLOCATION;
-        s2 = CXXENUMERATIONDECLARATIONFILE;
-        s3 = CXXENUMERATIONDECLARATIONFILELINE;
-        s4 = CXXENUMERATIONDEFINITIONFILE;
-        s5 = CXXENUMERATIONDEFINITIONFILELINESTART;
-        s6 = CXXENUMERATIONDEFINITIONFILELINEEND;
+        s1 = DT_cxxEnumerationAPIItemLocation;
+        s2 = DT_cxxEnumerationDeclarationFile;
+        s3 = DT_cxxEnumerationDeclarationFileLine;
+        s4 = DT_cxxEnumerationDefinitionFile;
+        s5 = DT_cxxEnumerationDefinitionFileLineStart;
+        s6 = DT_cxxEnumerationDefinitionFileLineEnd;
     }
     else if (n->type() == Node::Typedef) {
-        s1 = CXXTYPEDEFAPIITEMLOCATION;
-        s2 = CXXTYPEDEFDECLARATIONFILE;
-        s3 = CXXTYPEDEFDECLARATIONFILELINE;
+        s1 = DT_cxxTypedefAPIItemLocation;
+        s2 = DT_cxxTypedefDeclarationFile;
+        s3 = DT_cxxTypedefDeclarationFileLine;
     }
     else if ((n->type() == Node::Property) ||
              (n->type() == Node::Variable)) {
-        s1 = CXXVARIABLEAPIITEMLOCATION;
-        s2 = CXXVARIABLEDECLARATIONFILE;
-        s3 = CXXVARIABLEDECLARATIONFILELINE;
+        s1 = DT_cxxVariableAPIItemLocation;
+        s2 = DT_cxxVariableDeclarationFile;
+        s3 = DT_cxxVariableDeclarationFileLine;
     }
-    xmlWriter().writeStartElement(s1);
-    xmlWriter().writeStartElement(s2);
+    writeStartTag(s1);
+    writeStartTag(s2);
     xmlWriter().writeAttribute("name","filePath");
     xmlWriter().writeAttribute("value",n->location().filePath());
-    xmlWriter().writeEndElement(); // </cxx<s2>DeclarationFile>
-    xmlWriter().writeStartElement(s3);
+    writeEndTag(); // </cxx<s2>DeclarationFile>
+    writeStartTag(s3);
     xmlWriter().writeAttribute("name","lineNumber");
     QString lineNr;
     xmlWriter().writeAttribute("value",lineNr.setNum(n->location().lineNo()));
-    xmlWriter().writeEndElement(); // </cxx<s3>DeclarationFileLine>
-    if (!s4.isEmpty()) { // zzz This stuff is temporary, I think.
-        xmlWriter().writeStartElement(s4);
+    writeEndTag(); // </cxx<s3>DeclarationFileLine>
+    if (s4 != DT_LAST) { // zzz This stuff is temporary, I think.
+        writeStartTag(s4);
         xmlWriter().writeAttribute("name","filePath");
         xmlWriter().writeAttribute("value",n->location().filePath());
-        xmlWriter().writeEndElement(); // </cxx<s4>DefinitionFile>
-        xmlWriter().writeStartElement(s5);
+        writeEndTag(); // </cxx<s4>DefinitionFile>
+        writeStartTag(s5);
         xmlWriter().writeAttribute("name","lineNumber");
         xmlWriter().writeAttribute("value",lineNr.setNum(n->location().lineNo()));
-        xmlWriter().writeEndElement(); // </cxx<s5>DefinitionFileLineStart>
-        xmlWriter().writeStartElement(s6);
+        writeEndTag(); // </cxx<s5>DefinitionFileLineStart>
+        writeStartTag(s6);
         xmlWriter().writeAttribute("name","lineNumber");
         xmlWriter().writeAttribute("value",lineNr.setNum(n->location().lineNo()));
-        xmlWriter().writeEndElement(); // </cxx<s6>DefinitionFileLineEnd>
+        writeEndTag(); // </cxx<s6>DefinitionFileLineEnd>
     }
 
     // not included: <cxxXXXDefinitionFile>, <cxxXXXDefinitionFileLineStart>,
     //               and <cxxXXXDefinitionFileLineEnd>
 
-    xmlWriter().writeEndElement(); // </cxx<s1>ApiItemLocation>
+    writeEndTag(); // </cxx<s1>ApiItemLocation>
 }
 
 /*!
@@ -4538,90 +4720,90 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
     while (m != s.members.end()) {
         if ((*m)->type() == Node::Function) {
             FunctionNode* fn = const_cast<FunctionNode*>(static_cast<const FunctionNode*>(*m));
-            xmlWriter().writeStartElement(CXXFUNCTION);
+            writeStartTag(DT_cxxFunction);
             xmlWriter().writeAttribute("id",fn->guid());
             if (!attribute.isEmpty())
                 xmlWriter().writeAttribute("outputclass",attribute);
-            xmlWriter().writeStartElement("apiName");
+            writeStartTag(DT_apiName);
             if (fn->metaness() == FunctionNode::Signal)
                 xmlWriter().writeAttribute("class","signal");
             else if (fn->metaness() == FunctionNode::Slot)
                 xmlWriter().writeAttribute("class","slot");
             writeCharacters(fn->name());
-            xmlWriter().writeEndElement(); // </apiName>
+            writeEndTag(); // </apiName>
             generateBrief(fn,marker);
 
             // not included: <prolog>
 
-            xmlWriter().writeStartElement(CXXFUNCTIONDETAIL);
-            xmlWriter().writeStartElement(CXXFUNCTIONDEFINITION);
-            xmlWriter().writeStartElement(CXXFUNCTIONACCESSSPECIFIER);
+            writeStartTag(DT_cxxFunctionDetail);
+            writeStartTag(DT_cxxFunctionDefinition);
+            writeStartTag(DT_cxxFunctionAccessSpecifier);
             xmlWriter().writeAttribute("value",fn->accessString());
-            xmlWriter().writeEndElement(); // <cxxFunctionAccessSpecifier>
+            writeEndTag(); // <cxxFunctionAccessSpecifier>
 
             // not included: <cxxFunctionStorageClassSpecifierExtern>
 
             if (fn->isStatic()) {
-                xmlWriter().writeStartElement(CXXFUNCTIONSTORAGECLASSSPECIFIERSTATIC);
+                writeStartTag(DT_cxxFunctionStorageClassSpecifierStatic);
                 xmlWriter().writeAttribute("name","static");
                 xmlWriter().writeAttribute("value","static");
-                xmlWriter().writeEndElement(); // <cxxFunctionStorageClassSpecifierStatic>
+                writeEndTag(); // <cxxFunctionStorageClassSpecifierStatic>
             }
 
             // not included: <cxxFunctionStorageClassSpecifierMutable>,
 
             if (fn->isConst()) {
-                xmlWriter().writeStartElement(CXXFUNCTIONCONST);
+                writeStartTag(DT_cxxFunctionConst);
                 xmlWriter().writeAttribute("name","const");
                 xmlWriter().writeAttribute("value","const");
-                xmlWriter().writeEndElement(); // <cxxFunctionConst>
+                writeEndTag(); // <cxxFunctionConst>
             }
             
             // not included: <cxxFunctionExplicit>
             //               <cxxFunctionInline
 
             if (fn->virtualness() != FunctionNode::NonVirtual) {
-                xmlWriter().writeStartElement(CXXFUNCTIONVIRTUAL);
+                writeStartTag(DT_cxxFunctionVirtual);
                 xmlWriter().writeAttribute("name","virtual");
                 xmlWriter().writeAttribute("value","virtual");
-                xmlWriter().writeEndElement(); // <cxxFunctionVirtual>
+                writeEndTag(); // <cxxFunctionVirtual>
                 if (fn->virtualness() == FunctionNode::PureVirtual) {
-                    xmlWriter().writeStartElement(CXXFUNCTIONPUREVIRTUAL);
+                    writeStartTag(DT_cxxFunctionPureVirtual);
                     xmlWriter().writeAttribute("name","pure virtual");
                     xmlWriter().writeAttribute("value","pure virtual");
-                    xmlWriter().writeEndElement(); // <cxxFunctionPureVirtual>
+                    writeEndTag(); // <cxxFunctionPureVirtual>
                 }
             }
             
             if (fn->name() == n->name()) {
-                xmlWriter().writeStartElement(CXXFUNCTIONCONSTRUCTOR);
+                writeStartTag(DT_cxxFunctionConstructor);
                 xmlWriter().writeAttribute("name","constructor");
                 xmlWriter().writeAttribute("value","constructor");
-                xmlWriter().writeEndElement(); // <cxxFunctionConstructor>
+                writeEndTag(); // <cxxFunctionConstructor>
             }
             else if (fn->name()[0] == QChar('~')) {
-                xmlWriter().writeStartElement(CXXFUNCTIONDESTRUCTOR);
+                writeStartTag(DT_cxxFunctionDestructor);
                 xmlWriter().writeAttribute("name","destructor");
                 xmlWriter().writeAttribute("value","destructor");
-                xmlWriter().writeEndElement(); // <cxxFunctionDestructor>
+                writeEndTag(); // <cxxFunctionDestructor>
             }
             else {
-                xmlWriter().writeStartElement(CXXFUNCTIONDECLAREDTYPE);
+                writeStartTag(DT_cxxFunctionDeclaredType);
                 writeCharacters(fn->returnType());
-                xmlWriter().writeEndElement(); // <cxxFunctionDeclaredType>
+                writeEndTag(); // <cxxFunctionDeclaredType>
             }
 
             // not included: <cxxFunctionReturnType>
 
             QString fq = fullQualification(fn);
             if (!fq.isEmpty()) {
-                xmlWriter().writeStartElement(CXXFUNCTIONSCOPEDNAME);
+                writeStartTag(DT_cxxFunctionScopedName);
                 writeCharacters(fq);
-                xmlWriter().writeEndElement(); // <cxxFunctionScopedName>
+                writeEndTag(); // <cxxFunctionScopedName>
             }
-            xmlWriter().writeStartElement(CXXFUNCTIONPROTOTYPE);
+            writeStartTag(DT_cxxFunctionPrototype);
             writeCharacters(fn->signature(true));
-            xmlWriter().writeEndElement(); // <cxxFunctionPrototype>
+            writeEndTag(); // <cxxFunctionPrototype>
 
             QString fnl = fn->signature(false);
             int idx = fnl.indexOf(' ');
@@ -4630,30 +4812,30 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
             else
                 ++idx;
             fnl = fn->parent()->name() + "::" + fnl.mid(idx);
-            xmlWriter().writeStartElement(CXXFUNCTIONNAMELOOKUP);
+            writeStartTag(DT_cxxFunctionNameLookup);
             writeCharacters(fnl);
-            xmlWriter().writeEndElement(); // <cxxFunctionNameLookup>
+            writeEndTag(); // <cxxFunctionNameLookup>
 
             if (!fn->isInternal() && fn->isReimp() && fn->reimplementedFrom() != 0) {
                 FunctionNode* rfn = (FunctionNode*)fn->reimplementedFrom();
                 if (rfn && !rfn->isInternal()) {
-                    xmlWriter().writeStartElement(CXXFUNCTIONREIMPLEMENTED);
+                    writeStartTag(DT_cxxFunctionReimplemented);
                     xmlWriter().writeAttribute("href",rfn->ditaXmlHref());
                     writeCharacters(marker->plainFullName(rfn));
-                    xmlWriter().writeEndElement(); // </cxxFunctionReimplemented>
+                    writeEndTag(); // </cxxFunctionReimplemented>
                 }
             }
             writeParameters(fn);
             writeLocation(fn);
-            xmlWriter().writeEndElement(); // <cxxFunctionDefinition>
+            writeEndTag(); // <cxxFunctionDefinition>
 
-            writeDetailedDescription(fn, marker, true, QString());
+            writeApiDesc(fn, marker, QString());
             // generateAlsoList(inner, marker);
 
             // not included: <example> or <apiImpl>
 
-            xmlWriter().writeEndElement(); // </cxxFunctionDetail>
-            xmlWriter().writeEndElement(); // </cxxFunction>
+            writeEndTag(); // </cxxFunctionDetail>
+            writeEndTag(); // </cxxFunction>
 
             if (fn->metaness() == FunctionNode::Ctor ||
                 fn->metaness() == FunctionNode::Dtor ||
@@ -4671,33 +4853,33 @@ void DitaXmlGenerator::writeParameters(const FunctionNode* fn)
 {
     const QList<Parameter>& parameters = fn->parameters();
     if (!parameters.isEmpty()) {
-        xmlWriter().writeStartElement(CXXFUNCTIONPARAMETERS);
+        writeStartTag(DT_cxxFunctionParameters);
         QList<Parameter>::ConstIterator p = parameters.begin();
         while (p != parameters.end()) {
-            xmlWriter().writeStartElement(CXXFUNCTIONPARAMETER);
-            xmlWriter().writeStartElement(CXXFUNCTIONPARAMETERDECLAREDTYPE);
+            writeStartTag(DT_cxxFunctionParameter);
+            writeStartTag(DT_cxxFunctionParameterDeclaredType);
             writeCharacters((*p).leftType());
             if (!(*p).rightType().isEmpty())
                 writeCharacters((*p).rightType());
-            xmlWriter().writeEndElement(); // <cxxFunctionParameterDeclaredType>
-            xmlWriter().writeStartElement(CXXFUNCTIONPARAMETERDECLARATIONNAME);
+            writeEndTag(); // <cxxFunctionParameterDeclaredType>
+            writeStartTag(DT_cxxFunctionParameterDeclarationName);
             writeCharacters((*p).name());
-            xmlWriter().writeEndElement(); // <cxxFunctionParameterDeclarationName>
+            writeEndTag(); // <cxxFunctionParameterDeclarationName>
 
             // not included: <cxxFunctionParameterDefinitionName>
 
             if (!(*p).defaultValue().isEmpty()) {
-                xmlWriter().writeStartElement(CXXFUNCTIONPARAMETERDEFAULTVALUE);
+                writeStartTag(DT_cxxFunctionParameterDefaultValue);
                 writeCharacters((*p).defaultValue());
-                xmlWriter().writeEndElement(); // <cxxFunctionParameterDefaultValue>
+                writeEndTag(); // <cxxFunctionParameterDefaultValue>
             }
 
             // not included: <apiDefNote>
 
-            xmlWriter().writeEndElement(); // <cxxFunctionParameter>
+            writeEndTag(); // <cxxFunctionParameter>
             ++p;
         }
-        xmlWriter().writeEndElement(); // <cxxFunctionParameters>
+        writeEndTag(); // <cxxFunctionParameters>
     }
 }
 
@@ -4712,32 +4894,32 @@ void DitaXmlGenerator::writeEnumerations(const Section& s,
     while (m != s.members.end()) {
         if ((*m)->type() == Node::Enum) {
             const EnumNode* en = static_cast<const EnumNode*>(*m);
-            xmlWriter().writeStartElement(CXXENUMERATION);
+            writeStartTag(DT_cxxEnumeration);
             xmlWriter().writeAttribute("id",en->guid());
             if (!attribute.isEmpty())
                 xmlWriter().writeAttribute("outputclass",attribute);
-            xmlWriter().writeStartElement("apiName");
+            writeStartTag(DT_apiName);
             writeCharacters(en->name());
-            xmlWriter().writeEndElement(); // </apiName>
+            writeEndTag(); // </apiName>
             generateBrief(en,marker);
 
             // not included <prolog>
 
-            xmlWriter().writeStartElement(CXXENUMERATIONDETAIL);
-            xmlWriter().writeStartElement(CXXENUMERATIONDEFINITION);
-            xmlWriter().writeStartElement(CXXENUMERATIONACCESSSPECIFIER);
+            writeStartTag(DT_cxxEnumerationDetail);
+            writeStartTag(DT_cxxEnumerationDefinition);
+            writeStartTag(DT_cxxEnumerationAccessSpecifier);
             xmlWriter().writeAttribute("value",en->accessString());
-            xmlWriter().writeEndElement(); // <cxxEnumerationAccessSpecifier>
+            writeEndTag(); // <cxxEnumerationAccessSpecifier>
 
             QString fq = fullQualification(en);
             if (!fq.isEmpty()) {
-                xmlWriter().writeStartElement(CXXENUMERATIONSCOPEDNAME);
+                writeStartTag(DT_cxxEnumerationScopedName);
                 writeCharacters(fq);
-                xmlWriter().writeEndElement(); // <cxxEnumerationScopedName>
+                writeEndTag(); // <cxxEnumerationScopedName>
             }
             const QList<EnumItem>& items = en->items();
             if (!items.isEmpty()) {
-                xmlWriter().writeStartElement(CXXENUMERATIONPROTOTYPE);
+                writeStartTag(DT_cxxEnumerationPrototype);
                 writeCharacters(en->name());
                 xmlWriter().writeCharacters(" = { ");
                 QList<EnumItem>::ConstIterator i = items.begin();
@@ -4752,68 +4934,68 @@ void DitaXmlGenerator::writeEnumerations(const Section& s,
                         xmlWriter().writeCharacters(", ");
                 }
                 xmlWriter().writeCharacters(" }");
-                xmlWriter().writeEndElement(); // <cxxEnumerationPrototype>
+                writeEndTag(); // <cxxEnumerationPrototype>
             }
 
-            xmlWriter().writeStartElement(CXXENUMERATIONNAMELOOKUP);
+            writeStartTag(DT_cxxEnumerationNameLookup);
             writeCharacters(en->parent()->name() + "::" + en->name());
-            xmlWriter().writeEndElement(); // <cxxEnumerationNameLookup>
+            writeEndTag(); // <cxxEnumerationNameLookup>
 
             // not included: <cxxEnumerationReimplemented>
 
             if (!items.isEmpty()) {
-                xmlWriter().writeStartElement(CXXENUMERATORS);
+                writeStartTag(DT_cxxEnumerators);
                 QList<EnumItem>::ConstIterator i = items.begin();
                 while (i != items.end()) {
-                    xmlWriter().writeStartElement(CXXENUMERATOR);
-                    xmlWriter().writeStartElement("apiName");
+                    writeStartTag(DT_cxxEnumerator);
+                    writeStartTag(DT_apiName);
                     writeCharacters((*i).name());
-                    xmlWriter().writeEndElement(); // </apiName>
+                    writeEndTag(); // </apiName>
 
                     QString fq = fullQualification(en->parent());
                     if (!fq.isEmpty()) {
-                        xmlWriter().writeStartElement(CXXENUMERATORSCOPEDNAME);
+                        writeStartTag(DT_cxxEnumeratorScopedName);
                         writeCharacters(fq + "::" + (*i).name());
-                        xmlWriter().writeEndElement(); // <cxxEnumeratorScopedName>
+                        writeEndTag(); // <cxxEnumeratorScopedName>
                     }
-                    xmlWriter().writeStartElement(CXXENUMERATORPROTOTYPE);
+                    writeStartTag(DT_cxxEnumeratorPrototype);
                     writeCharacters((*i).name());
-                    xmlWriter().writeEndElement(); // <cxxEnumeratorPrototype>
-                    xmlWriter().writeStartElement(CXXENUMERATORNAMELOOKUP);
+                    writeEndTag(); // <cxxEnumeratorPrototype>
+                    writeStartTag(DT_cxxEnumeratorNameLookup);
                     writeCharacters(en->parent()->name() + "::" + (*i).name());
-                    xmlWriter().writeEndElement(); // <cxxEnumeratorNameLookup>
+                    writeEndTag(); // <cxxEnumeratorNameLookup>
 
                     if (!(*i).value().isEmpty()) {
-                        xmlWriter().writeStartElement(CXXENUMERATORINITIALISER);
+                        writeStartTag(DT_cxxEnumeratorInitialiser);
                         xmlWriter().writeAttribute("value", (*i).value());
-                        xmlWriter().writeEndElement(); // <cxxEnumeratorInitialiser>
+                        writeEndTag(); // <cxxEnumeratorInitialiser>
                     }
 
                     // not included: <cxxEnumeratorAPIItemLocation>
 
                     if (!(*i).text().isEmpty()) {
-                        xmlWriter().writeStartElement("apiDesc");
+                        writeStartTag(DT_apiDesc);
                         generateText((*i).text(), en, marker);
-                        xmlWriter().writeEndElement(); // </apiDesc>
+                        writeEndTag(); // </apiDesc>
                     }
-                    xmlWriter().writeEndElement(); // <cxxEnumerator>
+                    writeEndTag(); // <cxxEnumerator>
                     ++i;
                 }
-                xmlWriter().writeEndElement(); // <cxxEnumerators>
+                writeEndTag(); // <cxxEnumerators>
             }
             
             writeLocation(en);
-            xmlWriter().writeEndElement(); // <cxxEnumerationDefinition>
+            writeEndTag(); // <cxxEnumerationDefinition>
 
-            writeDetailedDescription(en, marker, true, QString());
+            writeApiDesc(en, marker, QString());
 
             // not included: <example> or <apiImpl>
 
-            xmlWriter().writeEndElement(); // </cxxEnumerationDetail>
+            writeEndTag(); // </cxxEnumerationDetail>
 
             // not included: <related-links>
 
-            xmlWriter().writeEndElement(); // </cxxEnumeration>
+            writeEndTag(); // </cxxEnumeration>
         }
         ++m;
     }
@@ -4831,52 +5013,52 @@ void DitaXmlGenerator::writeTypedefs(const Section& s,
     while (m != s.members.end()) {
         if ((*m)->type() == Node::Typedef) {
             const TypedefNode* tn = static_cast<const TypedefNode*>(*m);
-            xmlWriter().writeStartElement(CXXTYPEDEF);
+            writeStartTag(DT_cxxTypedef);
             xmlWriter().writeAttribute("id",tn->guid());
             if (!attribute.isEmpty())
                 xmlWriter().writeAttribute("outputclass",attribute);
-            xmlWriter().writeStartElement("apiName");
+            writeStartTag(DT_apiName);
             writeCharacters(tn->name());
-            xmlWriter().writeEndElement(); // </apiName>
+            writeEndTag(); // </apiName>
             generateBrief(tn,marker);
 
             // not included: <prolog>
 
-            xmlWriter().writeStartElement(CXXTYPEDEFDETAIL);
-            xmlWriter().writeStartElement(CXXTYPEDEFDEFINITION);
-            xmlWriter().writeStartElement(CXXTYPEDEFACCESSSPECIFIER);
+            writeStartTag(DT_cxxTypedefDetail);
+            writeStartTag(DT_cxxTypedefDefinition);
+            writeStartTag(DT_cxxTypedefAccessSpecifier);
             xmlWriter().writeAttribute("value",tn->accessString());
-            xmlWriter().writeEndElement(); // <cxxTypedefAccessSpecifier>
+            writeEndTag(); // <cxxTypedefAccessSpecifier>
 
             // not included: <cxxTypedefDeclaredType>
 
             QString fq = fullQualification(tn);
             if (!fq.isEmpty()) {
-                xmlWriter().writeStartElement(CXXTYPEDEFSCOPEDNAME);
+                writeStartTag(DT_cxxTypedefScopedName);
                 writeCharacters(fq);
-                xmlWriter().writeEndElement(); // <cxxTypedefScopedName>
+                writeEndTag(); // <cxxTypedefScopedName>
             }
 
             // not included: <cxxTypedefPrototype>
 
-            xmlWriter().writeStartElement(CXXTYPEDEFNAMELOOKUP);
+            writeStartTag(DT_cxxTypedefNameLookup);
             writeCharacters(tn->parent()->name() + "::" + tn->name());
-            xmlWriter().writeEndElement(); // <cxxTypedefNameLookup>
+            writeEndTag(); // <cxxTypedefNameLookup>
 
             // not included: <cxxTypedefReimplemented>
 
             writeLocation(tn);
-            xmlWriter().writeEndElement(); // <cxxTypedefDefinition>
+            writeEndTag(); // <cxxTypedefDefinition>
 
-            writeDetailedDescription(tn, marker, true, QString());
+            writeApiDesc(tn, marker, QString());
 
             // not included: <example> or <apiImpl>
 
-            xmlWriter().writeEndElement(); // </cxxTypedefDetail>
+            writeEndTag(); // </cxxTypedefDetail>
 
             // not included: <related-links>
 
-            xmlWriter().writeEndElement(); // </cxxTypedef>
+            writeEndTag(); // </cxxTypedef>
         }
         ++m;
     }
@@ -4894,22 +5076,22 @@ void DitaXmlGenerator::writeProperties(const Section& s,
     while (m != s.members.end()) {
         if ((*m)->type() == Node::Property) {
             const PropertyNode* pn = static_cast<const PropertyNode*>(*m);
-            xmlWriter().writeStartElement(CXXVARIABLE);
+            writeStartTag(DT_cxxVariable);
             xmlWriter().writeAttribute("id",pn->guid());
             if (!attribute.isEmpty())
                 xmlWriter().writeAttribute("outputclass",attribute);
-            xmlWriter().writeStartElement("apiName");
+            writeStartTag(DT_apiName);
             writeCharacters(pn->name());
-            xmlWriter().writeEndElement(); // </apiName>
+            writeEndTag(); // </apiName>
             generateBrief(pn,marker);
 
             // not included: <prolog>
 
-            xmlWriter().writeStartElement(CXXVARIABLEDETAIL);
-            xmlWriter().writeStartElement(CXXVARIABLEDEFINITION);
-            xmlWriter().writeStartElement(CXXVARIABLEACCESSSPECIFIER);
+            writeStartTag(DT_cxxVariableDetail);
+            writeStartTag(DT_cxxVariableDefinition);
+            writeStartTag(DT_cxxVariableAccessSpecifier);
             xmlWriter().writeAttribute("value",pn->accessString());
-            xmlWriter().writeEndElement(); // <cxxVariableAccessSpecifier>
+            writeEndTag(); // <cxxVariableAccessSpecifier>
 
             // not included: <cxxVariableStorageClassSpecifierExtern>,
             //               <cxxVariableStorageClassSpecifierStatic>,
@@ -4917,18 +5099,18 @@ void DitaXmlGenerator::writeProperties(const Section& s,
             //               <cxxVariableConst>, <cxxVariableVolatile>
 
             if (!pn->qualifiedDataType().isEmpty()) {
-                xmlWriter().writeStartElement(CXXVARIABLEDECLAREDTYPE);
+                writeStartTag(DT_cxxVariableDeclaredType);
                 writeCharacters(pn->qualifiedDataType());
-                xmlWriter().writeEndElement(); // <cxxVariableDeclaredType>
+                writeEndTag(); // <cxxVariableDeclaredType>
             }
             QString fq = fullQualification(pn);
             if (!fq.isEmpty()) {
-                xmlWriter().writeStartElement(CXXVARIABLESCOPEDNAME);
+                writeStartTag(DT_cxxVariableScopedName);
                 writeCharacters(fq);
-                xmlWriter().writeEndElement(); // <cxxVariableScopedName>
+                writeEndTag(); // <cxxVariableScopedName>
             }
             
-            xmlWriter().writeStartElement(CXXVARIABLEPROTOTYPE);
+            writeStartTag(DT_cxxVariablePrototype);
             xmlWriter().writeCharacters("Q_PROPERTY(");
             writeCharacters(pn->qualifiedDataType());
             xmlWriter().writeCharacters(" ");
@@ -4964,32 +5146,32 @@ void DitaXmlGenerator::writeProperties(const Section& s,
             if (pn->isFinal())
                 xmlWriter().writeCharacters(" FINAL");
             xmlWriter().writeCharacters(")");
-            xmlWriter().writeEndElement(); // <cxxVariablePrototype>
+            writeEndTag(); // <cxxVariablePrototype>
 
-            xmlWriter().writeStartElement(CXXVARIABLENAMELOOKUP);
+            writeStartTag(DT_cxxVariableNameLookup);
             writeCharacters(pn->parent()->name() + "::" + pn->name());
-            xmlWriter().writeEndElement(); // <cxxVariableNameLookup>
+            writeEndTag(); // <cxxVariableNameLookup>
 
             if (pn->overriddenFrom() != 0) {
                 PropertyNode* opn = (PropertyNode*)pn->overriddenFrom();
-                xmlWriter().writeStartElement(CXXVARIABLEREIMPLEMENTED);
+                writeStartTag(DT_cxxVariableReimplemented);
                 xmlWriter().writeAttribute("href",opn->ditaXmlHref());
                 writeCharacters(marker->plainFullName(opn));
-                xmlWriter().writeEndElement(); // </cxxVariableReimplemented>
+                writeEndTag(); // </cxxVariableReimplemented>
             }
 
             writeLocation(pn);
-            xmlWriter().writeEndElement(); // <cxxVariableDefinition>
+            writeEndTag(); // <cxxVariableDefinition>
 
-            writeDetailedDescription(pn, marker, true, QString());
+            writeApiDesc(pn, marker, QString());
             
             // not included: <example> or <apiImpl>
 
-            xmlWriter().writeEndElement(); // </cxxVariableDetail>
+            writeEndTag(); // </cxxVariableDetail>
 
             // not included: <related-links>
 
-            xmlWriter().writeEndElement(); // </cxxVariable>
+            writeEndTag(); // </cxxVariable>
         }
         ++m;
     }
@@ -5006,74 +5188,74 @@ void DitaXmlGenerator::writeDataMembers(const Section& s,
     while (m != s.members.end()) {
         if ((*m)->type() == Node::Variable) {
             const VariableNode* vn = static_cast<const VariableNode*>(*m);
-            xmlWriter().writeStartElement(CXXVARIABLE);
+            writeStartTag(DT_cxxVariable);
             xmlWriter().writeAttribute("id",vn->guid());
             if (!attribute.isEmpty())
                 xmlWriter().writeAttribute("outputclass",attribute);
-            xmlWriter().writeStartElement("apiName");
+            writeStartTag(DT_apiName);
             writeCharacters(vn->name());
-            xmlWriter().writeEndElement(); // </apiName>
+            writeEndTag(); // </apiName>
             generateBrief(vn,marker);
 
             // not included: <prolog>
 
-            xmlWriter().writeStartElement(CXXVARIABLEDETAIL);
-            xmlWriter().writeStartElement(CXXVARIABLEDEFINITION);
-            xmlWriter().writeStartElement(CXXVARIABLEACCESSSPECIFIER);
+            writeStartTag(DT_cxxVariableDetail);
+            writeStartTag(DT_cxxVariableDefinition);
+            writeStartTag(DT_cxxVariableAccessSpecifier);
             xmlWriter().writeAttribute("value",vn->accessString());
-            xmlWriter().writeEndElement(); // <cxxVariableAccessSpecifier>
+            writeEndTag(); // <cxxVariableAccessSpecifier>
 
             // not included: <cxxVAriableStorageClassSpecifierExtern>
 
             if (vn->isStatic()) {
-                xmlWriter().writeStartElement(CXXVARIABLESTORAGECLASSSPECIFIERSTATIC);
+                writeStartTag(DT_cxxVariableStorageClassSpecifierStatic);
                 xmlWriter().writeAttribute("name","static");
                 xmlWriter().writeAttribute("value","static");
-                xmlWriter().writeEndElement(); // <cxxVariableStorageClassSpecifierStatic>
+                writeEndTag(); // <cxxVariableStorageClassSpecifierStatic>
             }
 
             // not included: <cxxVAriableStorageClassSpecifierMutable>,
             //               <cxxVariableConst>, <cxxVariableVolatile>
 
-            xmlWriter().writeStartElement(CXXVARIABLEDECLAREDTYPE);
+            writeStartTag(DT_cxxVariableDeclaredType);
             writeCharacters(vn->leftType());
             if (!vn->rightType().isEmpty())
                 writeCharacters(vn->rightType());
-            xmlWriter().writeEndElement(); // <cxxVariableDeclaredType>
+            writeEndTag(); // <cxxVariableDeclaredType>
 
             QString fq = fullQualification(vn);
             if (!fq.isEmpty()) {
-                xmlWriter().writeStartElement(CXXVARIABLESCOPEDNAME);
+                writeStartTag(DT_cxxVariableScopedName);
                 writeCharacters(fq);
-                xmlWriter().writeEndElement(); // <cxxVariableScopedName>
+                writeEndTag(); // <cxxVariableScopedName>
             }
             
-            xmlWriter().writeStartElement(CXXVARIABLEPROTOTYPE);
+            writeStartTag(DT_cxxVariablePrototype);
             writeCharacters(vn->leftType() + " ");
             //writeCharacters(vn->parent()->name() + "::" + vn->name()); 
             writeCharacters(vn->name()); 
             if (!vn->rightType().isEmpty())
                 writeCharacters(vn->rightType());
-            xmlWriter().writeEndElement(); // <cxxVariablePrototype>
+            writeEndTag(); // <cxxVariablePrototype>
 
-            xmlWriter().writeStartElement(CXXVARIABLENAMELOOKUP);
+            writeStartTag(DT_cxxVariableNameLookup);
             writeCharacters(vn->parent()->name() + "::" + vn->name());
-            xmlWriter().writeEndElement(); // <cxxVariableNameLookup>
+            writeEndTag(); // <cxxVariableNameLookup>
 
             // not included: <cxxVariableReimplemented>
 
             writeLocation(vn);
-            xmlWriter().writeEndElement(); // <cxxVariableDefinition>
+            writeEndTag(); // <cxxVariableDefinition>
 
-            writeDetailedDescription(vn, marker, true, QString());
+            writeApiDesc(vn, marker, QString());
 
             // not included: <example> or <apiImpl>
 
-            xmlWriter().writeEndElement(); // </cxxVariableDetail>
+            writeEndTag(); // </cxxVariableDetail>
 
             // not included: <related-links>
 
-            xmlWriter().writeEndElement(); // </cxxVariable>
+            writeEndTag(); // </cxxVariable>
         }
         ++m;
     }
@@ -5091,24 +5273,24 @@ void DitaXmlGenerator::writeMacros(const Section& s,
         if ((*m)->type() == Node::Function) {
             const FunctionNode* fn = static_cast<const FunctionNode*>(*m);
             if (fn->isMacro()) {
-                xmlWriter().writeStartElement(CXXDEFINE);
+                writeStartTag(DT_cxxDefine);
                 xmlWriter().writeAttribute("id",fn->guid());
                 if (!attribute.isEmpty())
                     xmlWriter().writeAttribute("outputclass",attribute);
-                xmlWriter().writeStartElement("apiName");
+                writeStartTag(DT_apiName);
                 writeCharacters(fn->name());
-                xmlWriter().writeEndElement(); // </apiName>
+                writeEndTag(); // </apiName>
                 generateBrief(fn,marker);
 
                 // not included: <prolog>
 
-                xmlWriter().writeStartElement(CXXDEFINEDETAIL);
-                xmlWriter().writeStartElement(CXXDEFINEDEFINITION);
-                xmlWriter().writeStartElement(CXXDEFINEACCESSSPECIFIER);
+                writeStartTag(DT_cxxDefineDetail);
+                writeStartTag(DT_cxxDefineDefinition);
+                writeStartTag(DT_cxxDefineAccessSpecifier);
                 xmlWriter().writeAttribute("value",fn->accessString());
-                xmlWriter().writeEndElement(); // <cxxDefineAccessSpecifier>
+                writeEndTag(); // <cxxDefineAccessSpecifier>
             
-                xmlWriter().writeStartElement(CXXDEFINEPROTOTYPE);
+                writeStartTag(DT_cxxDefinePrototype);
                 xmlWriter().writeCharacters("#define ");
                 writeCharacters(fn->name());
                 if (fn->metaness() == FunctionNode::MacroWithParams) {
@@ -5126,50 +5308,50 @@ void DitaXmlGenerator::writeMacros(const Section& s,
                         xmlWriter().writeCharacters(")");
                     }
                 }
-                xmlWriter().writeEndElement(); // <cxxDefinePrototype>
+                writeEndTag(); // <cxxDefinePrototype>
 
-                xmlWriter().writeStartElement(CXXDEFINENAMELOOKUP);
+                writeStartTag(DT_cxxDefineNameLookup);
                 writeCharacters(fn->name());
-                xmlWriter().writeEndElement(); // <cxxDefineNameLookup>
+                writeEndTag(); // <cxxDefineNameLookup>
 
                 if (fn->reimplementedFrom() != 0) {
                     FunctionNode* rfn = (FunctionNode*)fn->reimplementedFrom();
-                    xmlWriter().writeStartElement(CXXDEFINEREIMPLEMENTED);
+                    writeStartTag(DT_cxxDefineReimplemented);
                     xmlWriter().writeAttribute("href",rfn->ditaXmlHref());
                     writeCharacters(marker->plainFullName(rfn));
-                    xmlWriter().writeEndElement(); // </cxxDefineReimplemented>
+                    writeEndTag(); // </cxxDefineReimplemented>
                 }
 
                 if (fn->metaness() == FunctionNode::MacroWithParams) {
                     QStringList params = fn->parameterNames();
                     if (!params.isEmpty()) {
-                        xmlWriter().writeStartElement(CXXDEFINEPARAMETERS);
+                        writeStartTag(DT_cxxDefineParameters);
                         for (int i = 0; i < params.size(); ++i) {
-                            xmlWriter().writeStartElement(CXXDEFINEPARAMETER);
-                            xmlWriter().writeStartElement(CXXDEFINEPARAMETERDECLARATIONNAME);
+                            writeStartTag(DT_cxxDefineParameter);
+                            writeStartTag(DT_cxxDefineParameterDeclarationName);
                             writeCharacters(params[i]);
-                            xmlWriter().writeEndElement(); // <cxxDefineParameterDeclarationName>
+                            writeEndTag(); // <cxxDefineParameterDeclarationName>
 
                             // not included: <apiDefNote>
 
-                            xmlWriter().writeEndElement(); // <cxxDefineParameter>
+                            writeEndTag(); // <cxxDefineParameter>
                         }
-                        xmlWriter().writeEndElement(); // <cxxDefineParameters>
+                        writeEndTag(); // <cxxDefineParameters>
                     }
                 }
 
                 writeLocation(fn);
-                xmlWriter().writeEndElement(); // <cxxDefineDefinition>
+                writeEndTag(); // <cxxDefineDefinition>
 
-                writeDetailedDescription(fn, marker, true, QString());
+                writeApiDesc(fn, marker, QString());
 
                 // not included: <example> or <apiImpl>
 
-                xmlWriter().writeEndElement(); // </cxxDefineDetail>
+                writeEndTag(); // </cxxDefineDetail>
 
                 // not included: <related-links>
 
-                xmlWriter().writeEndElement(); // </cxxDefine>
+                writeEndTag(); // </cxxDefine>
             }
         }
         ++m;
@@ -5212,6 +5394,7 @@ void DitaXmlGenerator::beginSubPage(const Location& location,
     writer->setAutoFormatting(true);
     writer->setAutoFormattingIndent(4);
     writer->writeStartDocument();
+    clearSectionNesting();
 }
 
 /*!
@@ -5221,6 +5404,8 @@ void DitaXmlGenerator::beginSubPage(const Location& location,
  */
 void DitaXmlGenerator::endSubPage()
 {
+    if (inSection())
+        qDebug() << "Missing </section> in" << outFileName() << sectionNestingLevel;
     xmlWriter().writeEndDocument();
     delete xmlWriterStack.pop();
     PageGenerator::endSubPage();
@@ -5238,58 +5423,18 @@ QXmlStreamWriter& DitaXmlGenerator::xmlWriter()
 }
 
 /*!
-  Writes the \e {Detailed Description} section(s) for \a node to the
-  current XML stream using the code \a marker. if the \a apiDesc flag
-  is true, then the first section of the sequence of sections written
-  will be an \c {apiDesc>} element with a \e {spectitle} attribute of
-  \e {Detailed Description}. Otherwise, the first section will be a
-  \c {<section>} element with a \c {<title>} element of \e {Detailed
-  Description}. This function calls the Generator::generateBody()
-  function to write the XML for the section list.
+  Writes the \e {<apiDesc>} element for \a node to the current XML
+  stream using the code \a marker and the \a title.
  */
-void DitaXmlGenerator::writeDetailedDescription(const Node* node,
-                                                CodeMarker* marker,
-                                                bool apiDesc,
-                                                const QString& title)
+void DitaXmlGenerator::writeApiDesc(const Node* node,
+                                    CodeMarker* marker,
+                                    const QString& title)
 {
     if (!node->doc().isEmpty()) {
         inDetailedDescription = true;
-        if (apiDesc) {
-            inApiDesc = true;
-            xmlWriter().writeStartElement("apiDesc");
-            if (!title.isEmpty()) {
-                writeGuidAttribute(title);
-                xmlWriter().writeAttribute("spectitle",title);
-            }
-            else
-                writeGuidAttribute("Detailed Description");
-            xmlWriter().writeAttribute("outputclass","details");
-        }
-        else {
-            inSection = true;
-            xmlWriter().writeStartElement("section");
-            if (!title.isEmpty()) {
-                writeGuidAttribute(title);
-                xmlWriter().writeAttribute("outputclass","details");
-                xmlWriter().writeStartElement("title");
-                xmlWriter().writeAttribute("outputclass","h2");
-                writeCharacters(title);
-                xmlWriter().writeEndElement(); // </title>
-            }
-            else {
-                writeGuidAttribute("Detailed Description");
-                xmlWriter().writeAttribute("outputclass","details");
-            }
-        }
+        enterApiDesc(QString(),title);
         generateBody(node, marker);
-        if (inApiDesc) {
-            xmlWriter().writeEndElement(); // </apiDesc>
-            inApiDesc = false;
-        }
-        else if (inSection) {
-            xmlWriter().writeEndElement(); // </section>
-            inSection = false;
-        }
+        leaveSection();
     }
     inDetailedDescription = false;
 }
@@ -5302,23 +5447,23 @@ void DitaXmlGenerator::writeNestedClasses(const Section& s,
 {
     if (s.members.isEmpty())
         return;
-    xmlWriter().writeStartElement("cxxClassNested");
-    xmlWriter().writeStartElement("cxxClassNestedDetail");
+    writeStartTag(DT_cxxClassNested);
+    writeStartTag(DT_cxxClassNestedDetail);
     
     NodeList::ConstIterator m = s.members.begin();
     while (m != s.members.end()) {
         if ((*m)->type() == Node::Class) {
-            xmlWriter().writeStartElement("cxxClassNestedClass");
+            writeStartTag(DT_cxxClassNestedClass);
             QString link = linkForNode((*m), n);
             xmlWriter().writeAttribute("href", link);
             QString name = n->name() + "::" + (*m)->name();
             writeCharacters(name);
-            xmlWriter().writeEndElement(); // <cxxClassNestedClass>
+            writeEndTag(); // <cxxClassNestedClass>
         }
         ++m;
     }
-    xmlWriter().writeEndElement(); // <cxxClassNestedDetail>
-    xmlWriter().writeEndElement(); // <cxxClassNested>
+    writeEndTag(); // <cxxClassNestedDetail>
+    writeEndTag(); // <cxxClassNested>
 }
 
 /*!
@@ -5389,23 +5534,269 @@ void DitaXmlGenerator::writeDitaMap()
     doctype = "<!DOCTYPE cxxAPIMap PUBLIC \"-//NOKIA//DTD DITA C++ API Map Reference Type v0.6.0//EN\" \"dtd/cxxAPIMap.dtd\">";
 
     xmlWriter().writeDTD(doctype);
-    xmlWriter().writeStartElement("cxxAPIMap");
+    writeStartTag(DT_cxxAPIMap);
     xmlWriter().writeAttribute("id","Qt-DITA-Map");
     xmlWriter().writeAttribute("title","Qt DITA Map");
-    xmlWriter().writeStartElement("topicmeta");
-    xmlWriter().writeStartElement("shortdesc");
+    writeStartTag(DT_topicmeta);
+    writeStartTag(DT_shortdesc);
     xmlWriter().writeCharacters("The top level map for the Qt documentation");
-    xmlWriter().writeEndElement(); // </shortdesc>
-    xmlWriter().writeEndElement(); // </topicmeta>
+    writeEndTag(); // </shortdesc>
+    writeEndTag(); // </topicmeta>
     GuidMaps::iterator i = guidMaps.begin();
     while (i != guidMaps.end()) {
-        xmlWriter().writeStartElement("topicref");
+        writeStartTag(DT_topicref);
         xmlWriter().writeAttribute("href",i.key());
         xmlWriter().writeAttribute("type","topic");
-        xmlWriter().writeEndElement(); // </topicref>
+        writeEndTag(); // </topicref>
         ++i;
     }
     endSubPage();
+}
+
+/*!
+  Looks up the tag name for \a t in the map of metadata
+  values for the current topic in \a inner. If a value
+  for the tag is found, the element is written with the
+  found value. Otherwise if \a force is set, an empty
+  element is written using the tag.
+
+  Returns true or false depending on whether it writes
+  an element using the tag \a t.
+
+  \note If \a t is found in the metadata map, it is erased.
+  i.e. Once you call this function for a particular \a t,
+  you consume \a t.
+ */
+bool DitaXmlGenerator::writeMetadataElement(const InnerNode* inner,
+                                            DitaXmlGenerator::DitaTag t,
+                                            bool force)
+{
+    QString s = getMetadataElement(inner,t);
+    if (s.isEmpty() && !force)
+        return false;
+    writeStartTag(t);
+    if (!s.isEmpty())
+        xmlWriter().writeCharacters(s);
+    writeEndTag();
+    return true;
+}
+
+
+/*!
+  Looks up the tag name for \a t in the map of metadata
+  values for the current topic in \a inner. If one or more
+  value sfor the tag are found, the elements are written.
+  Otherwise nothing is written.
+
+  Returns true or false depending on whether it writes
+  at least one element using the tag \a t.
+
+  \note If \a t is found in the metadata map, it is erased.
+  i.e. Once you call this function for a particular \a t,
+  you consume \a t.
+ */
+bool DitaXmlGenerator::writeMetadataElements(const InnerNode* inner,
+                                             DitaXmlGenerator::DitaTag t)
+{
+    QStringList s = getMetadataElements(inner,t);
+    if (s.isEmpty())
+        return false;
+    for (int i=0; i<s.size(); ++i) {
+        writeStartTag(t);
+        xmlWriter().writeCharacters(s[i]);
+        writeEndTag();
+    }
+    return true;
+}
+
+/*!
+  Looks up the tag name for \a t in the map of metadata
+  values for the current topic in \a inner. If a value
+  for the tag is found, the value is returned.
+
+  \note If \a t is found in the metadata map, it is erased.
+  i.e. Once you call this function for a particular \a t,
+  you consume \a t.
+ */
+QString DitaXmlGenerator::getMetadataElement(const InnerNode* inner, DitaXmlGenerator::DitaTag t)
+{
+    QString s = Generator::getMetadataElement(inner, ditaTags[t]);
+    if (s.isEmpty())
+        s = metadataDefault(t);
+    return s;
+}
+
+/*!
+  Looks up the tag name for \a t in the map of metadata
+  values for the current topic in \a inner. If values
+  for the tag are found, they are returned in a string
+  list.
+
+  \note If \a t is found in the metadata map, all the
+  pairs having the key \a t are erased. i.e. Once you
+  all this function for a particular \a t, you consume
+  \a t.
+ */
+QStringList DitaXmlGenerator::getMetadataElements(const InnerNode* inner,
+                                                  DitaXmlGenerator::DitaTag t)
+{
+    QStringList s = Generator::getMetadataElements(inner,ditaTags[t]);
+    if (s.isEmpty())
+        s.append(metadataDefault(t));
+    return s;
+}
+
+/*!
+  Returns the value of key \a t or an empty string
+  if \a t is not found in the map.
+ */
+QString DitaXmlGenerator::metadataDefault(DitaTag t) const
+{
+    return metadataDefaults.value(ditaTags[t]);
+}
+
+/*!
+  Writes the <prolog> element for the \a inner node
+  using the \a marker. The <prolog> element contains
+  the <metadata> element, plus some others. This
+  function writes one or more of these elements:
+
+  \list
+    \o <audience> *
+    \o <author> *
+    \o <brand>
+    \o <category> *
+    \o <compomnent> *
+    \o <copyrholder> *
+    \o <copyright> *
+    \o <created>
+    \o <copyryear> *
+    \o <critdates>
+    \o <keyword>
+    \o <keywords>
+    \o <metadata> *
+    \o <othermeta>
+    \o <permissions> *
+    \o <platform>
+    \o <prodinfo> *
+    \o <prodname> *
+    \o <prolog> *
+    \o <publisher> *
+    \o <resourceid>
+    \o <revised>
+    \o <source>
+    \o <tm>
+    \o <unknown>
+    \o <vrm> *
+    \o <vrmlist> *
+  \endlist
+
+  \node * means the tag has been used.
+  
+ */
+void
+DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
+{
+    if (!inner)
+        return;
+    writeStartTag(DT_prolog);
+    writeMetadataElements(inner,DT_author);
+    writeMetadataElement(inner,DT_publisher);
+    QString s = getMetadataElement(inner,DT_copyryear);
+    QString t = getMetadataElement(inner,DT_copyrholder);
+    writeStartTag(DT_copyright);
+    writeStartTag(DT_copyryear);
+    if (!s.isEmpty())
+        xmlWriter().writeAttribute("year",s);
+    writeEndTag(); // </copyryear>
+    writeStartTag(DT_copyrholder);
+    if (!s.isEmpty())
+        xmlWriter().writeCharacters(t);
+    writeEndTag(); // </copyrholder>
+    writeEndTag(); // </copyright>
+    s = getMetadataElement(inner,DT_permissions);
+    writeStartTag(DT_permissions);
+    xmlWriter().writeAttribute("view",s);
+    writeEndTag(); // </permissions>
+    writeStartTag(DT_metadata);
+    QStringList sl = getMetadataElements(inner,DT_audience);
+    if (!sl.isEmpty()) {
+        for (int i=0; i<sl.size(); ++i) {
+            writeStartTag(DT_audience);
+            xmlWriter().writeAttribute("type",sl[i]);
+            writeEndTag(); // </audience>
+        }
+    }
+    if (!writeMetadataElement(inner,DT_category,false)) {
+        writeStartTag(DT_category);
+        QString category = "Page";
+        if (inner->type() == Node::Class)
+            category = "Class reference";
+        else if (inner->type() == Node::Namespace)
+            category = "Namespace";
+        else if (inner->type() == Node::Fake) {
+            if (inner->subType() == Node::QmlClass)
+                category = "QML Element Reference";
+            else if (inner->subType() == Node::QmlBasicType)
+                category = "QML Basic Type";
+            else if (inner->subType() == Node::HeaderFile)
+                category = "Header File";
+            else if (inner->subType() == Node::Module)
+                category = "Module";
+            else if (inner->subType() == Node::File)
+                category = "Example Source File";
+            else if (inner->subType() == Node::Example)
+                category = "Example";
+            else if (inner->subType() == Node::Image)
+                category = "Image";
+            else if (inner->subType() == Node::Group)
+                category = "Group";
+            else if (inner->subType() == Node::Page)
+                category = "Page";
+            else if (inner->subType() == Node::ExternalPage)
+                category = "External Page"; // Is this necessary?
+        }
+        xmlWriter().writeCharacters(category);
+        writeEndTag(); // </category>
+    }
+    if (vrm.size() > 0) {
+        writeStartTag(DT_prodinfo);
+        if (!writeMetadataElement(inner,DT_prodname,false)) {
+            writeStartTag(DT_prodname);
+            xmlWriter().writeCharacters(projectDescription);
+            writeEndTag(); // </prodname>
+        }
+        writeStartTag(DT_vrmlist);
+        writeStartTag(DT_vrm);
+        if (vrm.size() > 0)
+            xmlWriter().writeAttribute("version",vrm[0]);
+        if (vrm.size() > 1)
+            xmlWriter().writeAttribute("release",vrm[1]);
+        if (vrm.size() > 2)
+            xmlWriter().writeAttribute("modification",vrm[2]);
+        writeEndTag(); // <vrm>
+        writeEndTag(); // <vrmlist>
+        if (!writeMetadataElement(inner,DT_component,false)) {
+            QString component = inner->moduleName();
+            if (!component.isEmpty()) {
+                writeStartTag(DT_component);
+                xmlWriter().writeCharacters(component);
+                writeEndTag(); // </component>
+            }
+        }
+        writeEndTag(); // </prodinfo>
+    }
+    const QStringMultiMap& metaTagMap = inner->doc().metaTagMap(); 
+    QMapIterator<QString, QString> i(metaTagMap);
+    while (i.hasNext()) {
+        i.next();
+        writeStartTag(DT_othermeta);
+        xmlWriter().writeAttribute("name",i.key());
+        xmlWriter().writeAttribute("content",i.value());
+        writeEndTag(); // </othermeta>
+    }
+    writeEndTag(); // </metadata>
+    writeEndTag(); // </prolog>
 }
 
 QT_END_NAMESPACE

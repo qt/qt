@@ -51,6 +51,7 @@
 #include <qdesigner_utils_p.h>
 #include <qlayout_widget_p.h>
 #include <connectionedit_p.h>
+#include <metadatabase_p.h>
 
 #include <QtCore/qdebug.h>
 #include <QtGui/QLabel>
@@ -75,7 +76,8 @@ static bool canBeBuddy(QWidget *w, QDesignerFormWindowInterface *form)
         if (index != -1) {
             bool ok = false;
             const Qt::FocusPolicy q = static_cast<Qt::FocusPolicy>(qdesigner_internal::Utils::valueOf(sheet->property(index), &ok));
-            return ok && q != Qt::NoFocus;
+            // Refuse No-focus unless the widget is promoted.
+            return (ok && q != Qt::NoFocus) || qdesigner_internal::isPromoted(form->core(), w);
         }
     }
     return false;
