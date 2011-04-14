@@ -44,11 +44,13 @@
 
 static void qsgsimpletexturenode_update(QSGGeometry *g,
                                         QSGTexture *texture,
-                                        const QRectF &rect,
-                                        const QRectF &sourceRect)
+                                        const QRectF &rect)
 {
     if (!texture)
         return;
+
+    QSize ts = texture->textureSize();
+    QRectF sourceRect(0, ts.height(), ts.width(), -ts.height());
     QSGGeometry::updateTexturedRectGeometry(g, rect, texture->convertToNormalizedSourceRect(sourceRect));
 }
 
@@ -66,38 +68,11 @@ static void qsgsimpletexturenode_update(QSGGeometry *g,
  */
 QSGSimpleTextureNode::QSGSimpleTextureNode()
     : m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4)
-    , m_source_rect(0, 0, 1, 1)
 {
     setGeometry(&m_geometry);
     setMaterial(&m_opaque_material);
     setOpaqueMaterial(&m_material);
 }
-
-
-/*!
-    Sets the source rectangle in pixel coordinates to \a r.
-
-    The source rectangle specifies which part of the texture is used
-    for drawing.
- */
-void QSGSimpleTextureNode::setSourceRect(const QRectF &r)
-{
-    if (m_source_rect == r)
-        return;
-    m_source_rect = r;
-    qsgsimpletexturenode_update(&m_geometry, texture(), m_rect, m_source_rect);
-    markDirty(DirtyGeometry);
-}
-
-
-/*!
-    Returns the source rect in pixel coordinates.
- */
-QRectF QSGSimpleTextureNode::sourceRect() const
-{
-    return m_source_rect;
-}
-
 
 /*!
     Sets the filtering to be used for this texture node to \a filtering.
@@ -133,7 +108,7 @@ void QSGSimpleTextureNode::setRect(const QRectF &r)
     if (m_rect == r)
         return;
     m_rect = r;
-    qsgsimpletexturenode_update(&m_geometry, texture(), m_rect, m_source_rect);
+    qsgsimpletexturenode_update(&m_geometry, texture(), m_rect);
     markDirty(DirtyGeometry);
 }
 
@@ -158,7 +133,7 @@ void QSGSimpleTextureNode::setTexture(QSGTexture *texture)
         return;
     m_material.setTexture(texture);
     m_opaque_material.setTexture(texture);
-    qsgsimpletexturenode_update(&m_geometry, texture, m_rect, m_source_rect);
+    qsgsimpletexturenode_update(&m_geometry, texture, m_rect);
     markDirty(DirtyMaterial);
 }
 

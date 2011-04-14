@@ -57,10 +57,6 @@ class Q_DECLARATIVE_EXPORT QSGSimpleTextureNode : public QSGGeometryNode
 public:
     QSGSimpleTextureNode();
 
-    void setSourceRect(const QRectF &sourceRect);
-    inline void setSourceRect(qreal x, qreal y, qreal w, qreal h) { setSourceRect(QRectF(x, y, w, h)); }
-    QRectF sourceRect() const;
-
     void setRect(const QRectF &rect);
     inline void setRect(qreal x, qreal y, qreal w, qreal h) { setRect(QRectF(x, y, w, h)); }
     QRectF rect() const;
@@ -77,7 +73,6 @@ private:
     QSGTextureMaterialWithOpacity m_material;
 
     QRectF m_rect;
-    QRectF m_source_rect;
 };
 
 #endif // QSGSIMPLETEXTURENODE_H
