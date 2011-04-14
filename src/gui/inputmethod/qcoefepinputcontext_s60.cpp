@@ -531,13 +531,15 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
     // and greatly reduces event passing in orientation switch cases,
     // as the statuspane size is not changing.
 
+    if (alwaysResize)
+        windowToMove->setUpdatesEnabled(false);
+
     if (!(windowToMove->windowState() & Qt::WindowFullScreen)) {
         windowToMove->setWindowState(
             (windowToMove->windowState() & ~(Qt::WindowMinimized | Qt::WindowFullScreen)) | Qt::WindowFullScreen);
     }
 
     if (alwaysResize) {
-        windowToMove->setUpdatesEnabled(false);
         if (!moveWithinVisibleArea) {
             m_splitViewResizeBy = widget->height();
             windowTop = widget->geometry().top();
@@ -548,10 +550,12 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
             const QRectF microFocusRect = gv->scene()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
             gv->ensureVisible(microFocusRect);
         }
-        windowToMove->setUpdatesEnabled(true);
     } else {
         translateInputWidget();
     }
+
+    if (alwaysResize)
+        windowToMove->setUpdatesEnabled(true);
 
     widget->setAttribute(Qt::WA_Resized, userResize); //not a user resize
 }
