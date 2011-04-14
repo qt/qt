@@ -78,7 +78,6 @@ public:
         mFormat.setStencil(true);
         mFormat.setStereo(false);
         mFormat.setDirectRendering(false);
-        mFormat.setUseDefaultSharedContext(false);
 
         EAGLContext *aContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
         [mView setContext:aContext];
