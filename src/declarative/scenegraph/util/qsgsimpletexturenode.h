@@ -58,9 +58,11 @@ public:
     QSGSimpleTextureNode();
 
     void setSourceRect(const QRectF &sourceRect);
+    inline void setSourceRect(qreal x, qreal y, qreal w, qreal h) { setSourceRect(QRectF(x, y, w, h)); }
     QRectF sourceRect() const;
 
     void setRect(const QRectF &rect);
+    inline void setRect(qreal x, qreal y, qreal w, qreal h) { setRect(QRectF(x, y, w, h)); }
     QRectF rect() const;
 
     void setTexture(QSGTexture *texture);
