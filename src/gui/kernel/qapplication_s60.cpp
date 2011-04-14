@@ -1828,9 +1828,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     systemFont.setFamily(systemFont.defaultFamily());
     QApplicationPrivate::setSystemFont(systemFont);
 
-#ifdef Q_SYMBIAN_TRANSITION_EFFECTS
     QObject::connect(qApp, SIGNAL(aboutToQuit()), qApp, SLOT(_q_aboutToQuit()));
-#endif
 
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
     QApplicationPrivate::instance()->useTranslucentEGLSurfaces = true;
@@ -1920,6 +1918,9 @@ void qt_cleanup()
     delete S60->buttonGroupContainer();
     S60->setButtonGroupContainer(0);
 #endif
+
+    // Call EndFullScreen() to prevent confusing the system effect state machine.
+    qt_endFullScreenEffect();
 
     if (S60->qtOwnsS60Environment) {
         // Restore the S60 framework trap handler. See qt_init().
@@ -2659,6 +2660,8 @@ void QApplication::restoreOverrideCursor()
 
 void QApplicationPrivate::_q_aboutToQuit()
 {
+    qt_beginFullScreenEffect();
+
 #ifdef Q_SYMBIAN_TRANSITION_EFFECTS
     // Send the shutdown tfx command
     S60->wsSession().SendEffectCommand(ETfxCmdAppShutDown);
