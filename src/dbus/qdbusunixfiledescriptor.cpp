@@ -47,6 +47,8 @@
 # include <private/qcore_unix_p.h>
 #endif
 
+QT_BEGIN_NAMESPACE
+
 /*!
     \class QDBusUnixFileDescriptor
     \inmodule QtDBus
@@ -310,3 +312,5 @@ QDBusUnixFileDescriptorPrivate::~QDBusUnixFileDescriptorPrivate()
 }
 
 #endif
+
+QT_END_NAMESPACE
