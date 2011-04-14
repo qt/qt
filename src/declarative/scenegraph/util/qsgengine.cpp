@@ -23,7 +23,7 @@ public:
     Constructs a new QSGengine
  */
 QSGEngine::QSGEngine(QObject *parent) :
-    QObject(parent)
+    QObject(*(new QSGEnginePrivate), parent)
 {
 }
 
