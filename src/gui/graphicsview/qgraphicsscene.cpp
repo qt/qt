@@ -1320,8 +1320,10 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
 
     // Set focus on the topmost enabled item that can take focus.
     bool setFocus = false;
+
     foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
-        if (item->isBlockedByModalPanel()) {
+        if (item->isBlockedByModalPanel()
+            || (item->d_ptr->flags & QGraphicsItem::ItemStopsFocusHandling)) {
             // Make sure we don't clear focus.
             setFocus = true;
             break;
@@ -1334,9 +1336,9 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
                 break;
             }
         }
-        if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
-            break;
         if (item->isPanel())
+            break;
+        if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
             break;
     }
 
@@ -4946,6 +4948,19 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
 
         if (painterStateProtection || restorePainterClip)
             painter->restore();
+
+        static int drawRect = qgetenv("QT_DRAW_SCENE_ITEM_RECTS").toInt();
+        if (drawRect) {
+            QPen oldPen = painter->pen();
+            QBrush oldBrush = painter->brush();
+            quintptr ptr = reinterpret_cast<quintptr>(item);
+            const QColor color = QColor::fromHsv(ptr % 255, 255, 255);
+            painter->setPen(color);
+            painter->setBrush(Qt::NoBrush);
+            painter->drawRect(adjustedItemBoundingRect(item));
+            painter->setPen(oldPen);
+            painter->setBrush(oldBrush);
+        }
     }
 
     // Draw children in front
@@ -5913,6 +5928,7 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
 
     // Set focus on the topmost enabled item that can take focus.
     bool setFocus = false;
+
     foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
         if (item->isEnabled() && ((item->flags() & QGraphicsItem::ItemIsFocusable) && item->d_ptr->mouseSetsFocus)) {
             if (!item->isWidget() || ((QGraphicsWidget *)item)->focusPolicy() & Qt::ClickFocus) {
@@ -5926,6 +5942,11 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
             break;
         if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
             break;
+        if (item->d_ptr->flags & QGraphicsItem::ItemStopsFocusHandling) {
+            // Make sure we don't clear focus.
+            setFocus = true;
+            break;
+        }
     }
 
     // If nobody could take focus, clear it.
@@ -5957,8 +5978,6 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
             break;
         }
         if (item && item->isPanel())
-            break;
-        if (item && (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation))
             break;
     }
 

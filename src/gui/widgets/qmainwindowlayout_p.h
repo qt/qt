@@ -70,12 +70,12 @@
 
 //#define Q_DEBUG_MAINWINDOW_LAYOUT
 
-#ifdef Q_DEBUG_MAINWINDOW_LAYOUT
+#if defined(Q_DEBUG_MAINWINDOW_LAYOUT) && !defined(QT_NO_DOCKWIDGET)
 QT_BEGIN_NAMESPACE
 class QTextStream;
 Q_GUI_EXPORT void qt_dumpLayout(QTextStream &qout, QMainWindow *window);
 QT_END_NAMESPACE
-#endif // Q_DEBUG_MAINWINDOW_LAYOUT
+#endif // Q_DEBUG_MAINWINDOW_LAYOUT && !QT_NO_DOCKWIDGET
 
 #ifdef Q_WS_MAC
 // Forward defs to make avoid including Carbon.h (faster compile you know ;).

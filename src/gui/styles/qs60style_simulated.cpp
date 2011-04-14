@@ -308,7 +308,7 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size,
     return result;
 }
 
-QPixmap QS60StylePrivate::backgroundTexture()
+QPixmap QS60StylePrivate::backgroundTexture(bool /*skipCreation*/)
 {
     if (!m_background) {
         const QSize size = QApplication::desktop()->screen()->size();
@@ -316,11 +316,6 @@ QPixmap QS60StylePrivate::backgroundTexture()
         m_background = new QPixmap(background);
     }
     return *m_background;
-}
-
-QSize QS60StylePrivate::naviPaneSize()
-{
-    return QSize(0, 0);
 }
 
 bool QS60StylePrivate::isTouchSupported()

@@ -104,6 +104,8 @@ public:
 
     QImage *buffer(const QWidget *widget);
 
+    WindowSurfaceFeatures features() const;
+
     QGLContext *context() const;
 
     static QGLFormat surfaceFormat;

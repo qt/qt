@@ -79,6 +79,10 @@ neon:*-g++* {
     QMAKE_EXTRA_COMPILERS += neon_compiler
 }
 
+win32:!contains(QT_CONFIG, directwrite) {
+    DEFINES += QT_NO_DIRECTWRITE
+}
+
 contains(QMAKE_MAC_XARCH, no) {
     DEFINES += QT_NO_MAC_XARCH
 } else {

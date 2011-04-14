@@ -142,6 +142,60 @@ void QS60Data::setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, boo
         // Ensure that control rectangle is updated
         static_cast<QSymbianControl *>(QApplication::activeWindow()->winId())->handleClientAreaChange();
 }
+
+bool QS60Data::setRecursiveDecorationsVisibility(QWidget *window, Qt::WindowStates newState)
+{
+    // Show statusbar:
+    //   Topmost parent: Show unless fullscreen/minimized.
+    //   Child windows: Follow topmost parent, unless fullscreen, in which case do not show statusbar
+    // Show CBA:
+    //   Topmost parent: Show unless fullscreen/minimized.
+    //     Exception: Show if fullscreen with Qt::WindowSoftkeysVisibleHint.
+    //   Child windows:
+    //     Minimized: Unclear if there is an use case for having focused minimized window at all.
+    //       Always follow topmost parent just to be safe.
+    //     Maximized and normal: follow topmost parent.
+    //       Exception: If topmost parent is not showing CBA, show CBA if any softkey actions are
+    //                  defined.
+    //     Fullscreen: Show only if Qt::WindowSoftkeysVisibleHint set.
+
+    Qt::WindowStates comparisonState = newState;
+    QWidget *parentWindow = window->parentWidget();
+    if (parentWindow) {
+        while (parentWindow->parentWidget())
+            parentWindow = parentWindow->parentWidget();
+        comparisonState = parentWindow->windowState();
+    } else {
+        parentWindow = window;
+    }
+
+    bool decorationsVisible = !(comparisonState & (Qt::WindowFullScreen | Qt::WindowMinimized));
+    const bool parentIsFullscreen = comparisonState & Qt::WindowFullScreen;
+    const bool parentCbaVisibilityHint = parentWindow->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+    bool buttonGroupVisibility = (decorationsVisible || (parentIsFullscreen && parentCbaVisibilityHint));
+
+    // Do extra checking for child windows
+    if (window->parentWidget()) {
+        if (newState & Qt::WindowFullScreen) {
+            decorationsVisible = false;
+            if (window->windowFlags() & Qt::WindowSoftkeysVisibleHint)
+                buttonGroupVisibility = true;
+            else
+                buttonGroupVisibility = false;
+        } else if (!(newState & Qt::WindowMinimized) && !buttonGroupVisibility) {
+            for (int i = 0; i < window->actions().size(); ++i) {
+                if (window->actions().at(i)->softKeyRole() != QAction::NoSoftKey) {
+                    buttonGroupVisibility = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    S60->setStatusPaneAndButtonGroupVisibility(decorationsVisible, buttonGroupVisibility);
+
+    return decorationsVisible;
+}
 #endif
 
 void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
@@ -1132,7 +1186,8 @@ void QSymbianControl::Draw(const TRect& controlRect) const
             // Do nothing
             break;
         case QWExtra::Blit:
-            if (qwidget->d_func()->isOpaque)
+        case QWExtra::BlitWriteAlpha:
+            if (qwidget->d_func()->isOpaque || nativePaintMode == QWExtra::BlitWriteAlpha)
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
             gc.BitBlt(controlRect.iTl, bitmap, backingStoreRect);
             break;
@@ -1270,16 +1325,8 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         qwidget->d_func()->setWindowIcon_sys(true);
         qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
 #ifdef Q_WS_S60
-        // If widget is fullscreen/minimized, hide status pane and button container otherwise show them.
-        QWidget *const window = qwidget->window();
-        if (!window->parentWidget()) { // Only top level native windows have control over cba/status pane
-            const bool decorationsVisible = !(window->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
-            const bool statusPaneVisibility = decorationsVisible;
-            const bool isFullscreen = window->windowState() & Qt::WindowFullScreen;
-            const bool cbaVisibilityHint = window->windowFlags() & Qt::WindowSoftkeysVisibleHint;
-            const bool buttonGroupVisibility = (decorationsVisible || (isFullscreen && cbaVisibilityHint));
-            S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
-        }
+        if (qwidget->isWindow())
+            S60->setRecursiveDecorationsVisibility(qwidget, qwidget->windowState());
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
         bool focusedControlFound = false;
@@ -1452,6 +1499,35 @@ void QSymbianControl::setFocusSafely(bool focus)
 bool QSymbianControl::isControlActive()
 {
     return IsActivated() ? true : false;
+}
+
+void QSymbianControl::ensureFixNativeOrientation()
+{
+#if defined(Q_SYMBIAN_SUPPORTS_FIXNATIVEORIENTATION)
+    // Call FixNativeOrientation() for fullscreen QDeclarativeViews that
+    // have a locked orientation matching the native orientation of the device.
+    // This avoids unnecessary window rotation on wserv level.
+    if (!qwidget->isWindow() || qwidget->windowType() == Qt::Desktop
+        || !qwidget->inherits("QDeclarativeView")
+        || S60->screenNumberForWidget(qwidget) > 0)
+        return;
+    const bool isFullScreen = qwidget->windowState().testFlag(Qt::WindowFullScreen);
+    const bool isFixed = qwidget->d_func()->fixNativeOrientationCalled;
+    const bool matchesNative = qwidget->testAttribute(
+        S60->nativeOrientationIsPortrait ? Qt::WA_LockPortraitOrientation
+            : Qt::WA_LockLandscapeOrientation);
+    if (isFullScreen && matchesNative) {
+        if (!isFixed) {
+            Window().FixNativeOrientation();
+            qwidget->d_func()->fixNativeOrientationCalled = true;
+        }
+    } else if (isFixed) {
+        qwidget->d_func()->fixNativeOrientationCalled = false;
+        qwidget->hide();
+        qwidget->d_func()->create_sys(0, false, true);
+        qwidget->show();
+    }
+#endif
 }
 
 /*!
@@ -2131,7 +2207,8 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
         }
 #endif
 #ifdef QT_SOFTKEYS_ENABLED
-        QSoftKeyManager::updateSoftKeys();
+        if (!CEikonEnv::Static()->EikAppUi()->IsDisplayingMenuOrDialog())
+            QSoftKeyManager::updateSoftKeys();
 #endif
         break;
     case EEventFocusLost:

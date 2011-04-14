@@ -47,7 +47,7 @@ painter.setPen(pen);
 
 //! [1]
 QPainter painter(this);
-QPen pen();  // creates a default pen
+QPen pen;  // creates a default pen
 
 pen.setStyle(Qt::DashDotLine);
 pen.setWidth(3);

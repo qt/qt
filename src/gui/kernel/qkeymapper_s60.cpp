@@ -69,8 +69,17 @@ void QKeyMapperPrivate::clearMappings()
 
 QString QKeyMapperPrivate::translateKeyEvent(int keySym, Qt::KeyboardModifiers /* modifiers */)
 {
-    if (keySym >= Qt::Key_Escape)
-        return QString();
+    if (keySym >= Qt::Key_Escape) {
+        switch (keySym) {
+        case Qt::Key_Tab:
+            return QString(QChar('\t'));
+        case Qt::Key_Return:    // fall through
+        case Qt::Key_Enter:
+            return QString(QChar('\r'));
+        default:
+            return QString();
+        }
+    }
 
     // Symbian doesn't actually use modifiers, but gives us the character code directly.
 

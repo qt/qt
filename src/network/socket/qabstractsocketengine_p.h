@@ -61,7 +61,9 @@ QT_BEGIN_NAMESPACE
 
 class QAuthenticator;
 class QAbstractSocketEnginePrivate;
+#ifndef QT_NO_NETWORKINTERFACE
 class QNetworkInterface;
+#endif
 class QNetworkProxy;
 
 class QAbstractSocketEngineReceiver {
@@ -121,12 +123,14 @@ public:
     virtual qint64 write(const char *data, qint64 len) = 0;
 
 #ifndef QT_NO_UDPSOCKET
+#ifndef QT_NO_NETWORKINTERFACE
     virtual bool joinMulticastGroup(const QHostAddress &groupAddress,
                                     const QNetworkInterface &iface) = 0;
     virtual bool leaveMulticastGroup(const QHostAddress &groupAddress,
                                      const QNetworkInterface &iface) = 0;
     virtual QNetworkInterface multicastInterface() const = 0;
     virtual bool setMulticastInterface(const QNetworkInterface &iface) = 0;
+#endif // QT_NO_NETWORKINTERFACE
 
     virtual qint64 readDatagram(char *data, qint64 maxlen, QHostAddress *addr = 0,
                                 quint16 *port = 0) = 0;
@@ -134,7 +138,7 @@ public:
                                  quint16 port) = 0;
     virtual bool hasPendingDatagrams() const = 0;
     virtual qint64 pendingDatagramSize() const = 0;
-#endif
+#endif // QT_NO_UDPSOCKET
 
     virtual qint64 bytesToWrite() const = 0;
 

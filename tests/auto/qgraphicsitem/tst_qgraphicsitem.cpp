@@ -66,6 +66,7 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QGraphicsLinearLayout>
+#include <float.h>
 
 #include "../../shared/util.h"
 
@@ -447,7 +448,10 @@ private slots:
     void updateMicroFocus();
     void textItem_shortcuts();
     void scroll();
-    void stopClickFocusPropagation();
+    void focusHandling_data();
+    void focusHandling();
+    void touchEventPropagation_data();
+    void touchEventPropagation();
     void deviceCoordinateCache_simpleRotations();
 
     // task specific tests below me
@@ -10537,8 +10541,39 @@ void tst_QGraphicsItem::scroll()
     QCOMPARE(item2->lastExposedRect, expectedItem2Expose);
 }
 
-void tst_QGraphicsItem::stopClickFocusPropagation()
+Q_DECLARE_METATYPE(QGraphicsItem::GraphicsItemFlag);
+
+void tst_QGraphicsItem::focusHandling_data()
 {
+    QTest::addColumn<QGraphicsItem::GraphicsItemFlag>("focusFlag");
+    QTest::addColumn<bool>("useStickyFocus");
+    QTest::addColumn<int>("expectedFocusItem"); // 0: none, 1: focusableUnder, 2: itemWithFocus
+
+    QTest::newRow("Focus goes through.")
+        << static_cast<QGraphicsItem::GraphicsItemFlag>(0x0) << false << 1;
+
+    QTest::newRow("Focus goes through, even with sticky scene.")
+        << static_cast<QGraphicsItem::GraphicsItemFlag>(0x0) << true  << 1;
+
+    QTest::newRow("With ItemStopsClickFocusPropagation, we cannot focus the item beneath the flagged one (but can still focus-out).")
+        << QGraphicsItem::ItemStopsClickFocusPropagation << false << 0;
+
+    QTest::newRow("With ItemStopsClickFocusPropagation, we cannot focus the item beneath the flagged one (and cannot focus-out if scene is sticky).")
+        << QGraphicsItem::ItemStopsClickFocusPropagation << true << 2;
+
+    QTest::newRow("With ItemStopsFocusHandling, focus cannot be changed by presses.")
+        << QGraphicsItem::ItemStopsFocusHandling << false << 2;
+
+    QTest::newRow("With ItemStopsFocusHandling, focus cannot be changed by presses (even if scene is sticky).")
+        << QGraphicsItem::ItemStopsFocusHandling << true << 2;
+}
+
+void tst_QGraphicsItem::focusHandling()
+{
+    QFETCH(QGraphicsItem::GraphicsItemFlag, focusFlag);
+    QFETCH(bool, useStickyFocus);
+    QFETCH(int, expectedFocusItem);
+
     class MyItem : public QGraphicsRectItem
     {
     public:
@@ -10549,12 +10584,9 @@ void tst_QGraphicsItem::stopClickFocusPropagation()
         }
     };
 
-    QGraphicsScene scene(-50, -50, 400, 400);
-    scene.setStickyFocus(true);
-
     QGraphicsRectItem *noFocusOnTop = new MyItem;
+    noFocusOnTop->setFlag(QGraphicsItem::ItemIsFocusable, false);
     noFocusOnTop->setBrush(Qt::yellow);
-    noFocusOnTop->setFlag(QGraphicsItem::ItemStopsClickFocusPropagation);
 
     QGraphicsRectItem *focusableUnder = new MyItem;
     focusableUnder->setBrush(Qt::blue);
@@ -10566,9 +10598,13 @@ void tst_QGraphicsItem::stopClickFocusPropagation()
     itemWithFocus->setFlag(QGraphicsItem::ItemIsFocusable);
     itemWithFocus->setPos(250, 10);
 
+    QGraphicsScene scene(-50, -50, 400, 400);
     scene.addItem(noFocusOnTop);
     scene.addItem(focusableUnder);
     scene.addItem(itemWithFocus);
+    scene.setStickyFocus(useStickyFocus);
+
+    noFocusOnTop->setFlag(focusFlag);
     focusableUnder->stackBefore(noFocusOnTop);
     itemWithFocus->setFocus();
 
@@ -10580,14 +10616,102 @@ void tst_QGraphicsItem::stopClickFocusPropagation()
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
     QVERIFY(itemWithFocus->hasFocus());
 
-    QPointF mousePressPoint = noFocusOnTop->mapToScene(QPointF());
-    mousePressPoint.rx() += 60;
-    mousePressPoint.ry() += 60;
+    const QPointF mousePressPoint = noFocusOnTop->mapToScene(noFocusOnTop->boundingRect().center());
     const QList<QGraphicsItem *> itemsAtMousePressPosition = scene.items(mousePressPoint);
-    QVERIFY(itemsAtMousePressPosition.contains(focusableUnder));
+    QVERIFY(itemsAtMousePressPosition.contains(noFocusOnTop));
 
     sendMousePress(&scene, mousePressPoint);
-    QVERIFY(itemWithFocus->hasFocus());
+
+    switch (expectedFocusItem) {
+    case 0:
+        QCOMPARE(scene.focusItem(), static_cast<QGraphicsRectItem *>(0));
+        break;
+    case 1:
+        QCOMPARE(scene.focusItem(), focusableUnder);
+        break;
+    case 2:
+        QCOMPARE(scene.focusItem(), itemWithFocus);
+        break;
+    }
+
+    // Sanity check - manually setting the focus must work regardless of our
+    // focus handling flags:
+    focusableUnder->setFocus();
+    QCOMPARE(scene.focusItem(), focusableUnder);
+}
+
+void tst_QGraphicsItem::touchEventPropagation_data()
+{
+    QTest::addColumn<QGraphicsItem::GraphicsItemFlag>("flag");
+    QTest::addColumn<int>("expectedCount");
+
+    QTest::newRow("ItemIsPanel")
+        << QGraphicsItem::ItemIsPanel << 0;
+    QTest::newRow("ItemStopsClickFocusPropagation")
+        << QGraphicsItem::ItemStopsClickFocusPropagation << 1;
+    QTest::newRow("ItemStopsFocusHandling")
+        << QGraphicsItem::ItemStopsFocusHandling << 1;
+}
+
+void tst_QGraphicsItem::touchEventPropagation()
+{
+    QFETCH(QGraphicsItem::GraphicsItemFlag, flag);
+    QFETCH(int, expectedCount);
+
+    class Testee : public QGraphicsRectItem
+    {
+    public:
+        int touchBeginEventCount;
+
+        Testee()
+            : QGraphicsRectItem(0, 0, 100, 100)
+            , touchBeginEventCount(0)
+        {
+            setAcceptTouchEvents(true);
+            setFlag(QGraphicsItem::ItemIsFocusable, false);
+        }
+
+        bool sceneEvent(QEvent *ev)
+        {
+            if (ev->type() == QEvent::TouchBegin)
+                ++touchBeginEventCount;
+
+            return QGraphicsRectItem::sceneEvent(ev);
+        }
+    };
+
+    Testee *touchEventReceiver = new Testee;
+    QGraphicsItem *topMost = new QGraphicsRectItem(touchEventReceiver->boundingRect());
+
+    QGraphicsScene scene;
+    scene.addItem(topMost);
+    scene.addItem(touchEventReceiver);
+
+    topMost->setAcceptTouchEvents(true);
+    topMost->setZValue(FLT_MAX);
+    topMost->setFlag(QGraphicsItem::ItemIsFocusable, false);
+    topMost->setFlag(flag, true);
+
+    QGraphicsView view(&scene);
+    view.setSceneRect(touchEventReceiver->boundingRect());
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QCOMPARE(touchEventReceiver->touchBeginEventCount, 0);
+
+    QTouchEvent::TouchPoint tp(0);
+    tp.setState(Qt::TouchPointPressed);
+    tp.setScenePos(view.sceneRect().center());
+    tp.setLastScenePos(view.sceneRect().center());
+
+    QList<QTouchEvent::TouchPoint> touchPoints;
+    touchPoints << tp;
+
+    sendMousePress(&scene, tp.scenePos());
+    QTouchEvent touchBegin(QEvent::TouchBegin, QTouchEvent::TouchScreen, Qt::NoModifier, Qt::TouchPointPressed, touchPoints);
+
+    qApp->sendEvent(&scene, &touchBegin);
+    QCOMPARE(touchEventReceiver->touchBeginEventCount, expectedCount);
 }
 
 void tst_QGraphicsItem::deviceCoordinateCache_simpleRotations()
@@ -11129,6 +11253,6 @@ void tst_QGraphicsItem::QTBUG_16374_crashInDestructor()
     view.show();
     QTest::qWaitForWindowShown(&view);
 }
-    
+
 QTEST_MAIN(tst_QGraphicsItem)
 #include "tst_qgraphicsitem.moc"

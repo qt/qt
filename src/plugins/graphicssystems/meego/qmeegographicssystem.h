@@ -52,6 +52,8 @@ extern "C" typedef void (*QMeeGoSwitchCallback)(int type, const char *name);
 class QMeeGoGraphicsSystem : public QGraphicsSystem
 {
 public:
+    enum SwitchPolicy { AutomaticSwitch, ManualSwitch, NoSwitch };
+
     QMeeGoGraphicsSystem();
     ~QMeeGoGraphicsSystem();
 
@@ -84,6 +86,8 @@ public:
 
     static void registerSwitchCallback(QMeeGoSwitchCallback callback);
 
+    static SwitchPolicy switchPolicy;
+
 private:
     static bool meeGoRunning();
     static EGLSurface getSurfaceForLiveTexturePixmap(QPixmap *pixmap);
@@ -93,7 +97,6 @@ private:
     static bool surfaceWasCreated;
     static QHash<Qt::HANDLE, QPixmap*> liveTexturePixmaps;
     static QList<QMeeGoSwitchCallback> switchCallbacks;
-
 };
 
 /* C api */
@@ -118,6 +121,7 @@ extern "C" {
     Q_DECL_EXPORT void qt_meego_switch_to_raster(void);
     Q_DECL_EXPORT void qt_meego_switch_to_meego(void);
     Q_DECL_EXPORT void qt_meego_register_switch_callback(QMeeGoSwitchCallback callback);
+    Q_DECL_EXPORT void qt_meego_set_switch_policy(int policy);
 }
 
 #endif 

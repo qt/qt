@@ -117,6 +117,8 @@ public:
         // S60 types
         S60FontEngine, // Cannot be simply called "S60". Reason is qt_s60Data.h
 
+        DirectWrite,
+
         TestFontEngine = 0x1000
     };
 
@@ -201,7 +203,7 @@ public:
     virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
 
-    virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, const QTransform &matrix, GlyphFormat /*format*/)
+    virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed /*subPixelPosition*/, const QTransform &matrix, GlyphFormat /*format*/)
     {
         return boundingBox(glyph, matrix);
     }

@@ -426,6 +426,10 @@ void tst_QPainterPath::intersects_QRectF_data()
 
     QTest::newRow("horizontal line") << linePath(0, 0, 10, 0) << QRectF(1, -1, 2, 2) << true;
     QTest::newRow("vertical line") << linePath(0, 0, 0, 10) << QRectF(-1, 1, 2, 2) << true;
+
+    path = QPainterPath();
+    path.addEllipse(QRectF(-5000.0, -5000.0, 1500000.0, 1500000.0));
+    QTest::newRow("huge ellipse, qreal=float crash") << path << QRectF(1100000.35, 1098000.2, 1500000.0, 1500000.0) << true;
 }
 
 void tst_QPainterPath::intersects_QRectF()

@@ -262,6 +262,10 @@ void tst_QFtp::init()
 
 void tst_QFtp::cleanup()
 {
+    if (ftp) {
+        delete ftp;
+        ftp = 0;
+    }
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
         QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
@@ -289,6 +293,7 @@ void tst_QFtp::connectToHost()
 
     QTestEventLoop::instance().enterLoop( 61 );
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -337,6 +342,7 @@ void tst_QFtp::connectToUnresponsiveHost()
     QVERIFY( it.value().success == 0 );
 
     delete ftp;
+    ftp = 0;
 }
 
 void tst_QFtp::login_data()
@@ -369,6 +375,7 @@ void tst_QFtp::login()
 
     QTestEventLoop::instance().enterLoop( 30 );
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -415,6 +422,7 @@ void tst_QFtp::close()
 
     QTestEventLoop::instance().enterLoop( 30 );
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -482,6 +490,7 @@ void tst_QFtp::list()
 
     QTestEventLoop::instance().enterLoop( 30 );
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -542,6 +551,7 @@ void tst_QFtp::cd()
     QTestEventLoop::instance().enterLoop( 30 );
 
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() ) {
         QFAIL( "Network operation timed out" );
     }
@@ -617,6 +627,7 @@ void tst_QFtp::get()
 
     QTestEventLoop::instance().enterLoop( 50 );
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -743,6 +754,7 @@ void tst_QFtp::put()
             break;
     }
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -775,6 +787,7 @@ void tst_QFtp::put()
             break;
     }
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -792,6 +805,7 @@ void tst_QFtp::put()
 
     QTestEventLoop::instance().enterLoop( timestep );
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -860,6 +874,7 @@ void tst_QFtp::mkdir()
 
     QTestEventLoop::instance().enterLoop( 30 );
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -884,6 +899,7 @@ void tst_QFtp::mkdir()
 
     QTestEventLoop::instance().enterLoop( 30 );
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -903,6 +919,7 @@ void tst_QFtp::mkdir()
 
     QTestEventLoop::instance().enterLoop( 30 );
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -942,6 +959,7 @@ void tst_QFtp::mkdir2()
     QVERIFY(commandFinishedSpy.at(3).at(1).toBool());
 
     delete ftp;
+    ftp = 0;
 }
 
 void tst_QFtp::mkdir2Slot(int id, bool)
@@ -1019,6 +1037,7 @@ void tst_QFtp::renameInit( const QString &host, const QString &user, const QStri
 
         QTestEventLoop::instance().enterLoop( 50 );
         delete ftp;
+        ftp = 0;
         if ( QTestEventLoop::instance().timeout() )
             QFAIL( "Network operation timed out" );
 
@@ -1043,6 +1062,7 @@ void tst_QFtp::renameCleanup( const QString &host, const QString &user, const QS
 
         QTestEventLoop::instance().enterLoop( 30 );
         delete ftp;
+        ftp = 0;
         if ( QTestEventLoop::instance().timeout() )
             QFAIL( "Network operation timed out" );
 
@@ -1087,6 +1107,7 @@ void tst_QFtp::rename()
 
     QTestEventLoop::instance().enterLoop( 30 );
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -1273,6 +1294,7 @@ void tst_QFtp::commandSequence()
 
     QTestEventLoop::instance().enterLoop( 30 );
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -1330,6 +1352,7 @@ void tst_QFtp::abort()
             break;
     }
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -1367,6 +1390,7 @@ void tst_QFtp::abort()
 
         QTestEventLoop::instance().enterLoop( 30 );
         delete ftp;
+        ftp = 0;
         if ( QTestEventLoop::instance().timeout() )
             QFAIL( "Network operation timed out" );
 
@@ -1425,6 +1449,7 @@ void tst_QFtp::bytesAvailable()
     ftp->readAll();
     QVERIFY( ftp->bytesAvailable() == 0 );
     delete ftp;
+    ftp = 0;
 }
 
 void tst_QFtp::activeMode()
@@ -1497,6 +1522,7 @@ void tst_QFtp::proxy()
     QTestEventLoop::instance().enterLoop( 50 );
 
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() ) {
         QFAIL( "Network operation timed out" );
     }
@@ -1531,6 +1557,8 @@ void tst_QFtp::binaryAscii()
     addCommand(QFtp::Close, ftp->close());
 
     QTestEventLoop::instance().enterLoop( 30 );
+    delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -1551,6 +1579,8 @@ void tst_QFtp::binaryAscii()
     addCommand(QFtp::Close, ftp->close());
 
     QTestEventLoop::instance().enterLoop( 30 );
+    delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -1573,6 +1603,7 @@ void tst_QFtp::binaryAscii()
 
     QTestEventLoop::instance().enterLoop( 30 );
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -1920,6 +1951,7 @@ bool tst_QFtp::fileExists( const QString &host, quint16 port, const QString &use
     inFileDirExistsFunction = TRUE;
     QTestEventLoop::instance().enterLoop( 30 );
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() ) {
         // ### make this test work
         qWarning("tst_QFtp::fileExists: Network operation timed out");
@@ -1970,6 +2002,7 @@ bool tst_QFtp::dirExists( const QString &host, quint16 port, const QString &user
     inFileDirExistsFunction = TRUE;
     QTestEventLoop::instance().enterLoop( 30 );
     delete ftp;
+    ftp = 0;
     if ( QTestEventLoop::instance().timeout() ) {
         // ### make this test work
         // QFAIL( "Network operation timed out" );
@@ -1996,8 +2029,11 @@ void tst_QFtp::doneSignal()
     ftp.close();
 
     done_success = 0;
-    while ( ftp.hasPendingCommands() )
-        QCoreApplication::instance()->processEvents();
+    connect(&ftp, SIGNAL(done(bool)), &(QTestEventLoop::instance()), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(61);
+    if (QTestEventLoop::instance().timeout())
+        QFAIL("Network operation timed out");
+
     QTest::qWait(200);
 
     QCOMPARE(spy.count(), 1);

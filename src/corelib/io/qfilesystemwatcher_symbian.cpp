@@ -95,7 +95,10 @@ void QNotifyChangeEvent::RunL()
         SetActive();
 
         if (!failureCount) {
-            QT_TRYCATCH_LEAVING(engine->emitPathChanged(this));
+            int err;
+            QT_TRYCATCH_ERROR(err, engine->emitPathChanged(this));
+            if (err != KErrNone)
+                qWarning("QNotifyChangeEvent::RunL() - emitPathChanged threw exception (Converted error code: %d)", err);
         }
     }
 }

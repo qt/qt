@@ -49,6 +49,7 @@
 #include "qdebug.h"
 #include <QtCore/qcoreapplication.h>
 #include "private/qstylehelper_p.h"
+#include <QtCore/qnumeric.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1369,13 +1370,14 @@ QGradient::QGradient()
 
 void QGradient::setColorAt(qreal pos, const QColor &color)
 {
-    if (pos > 1 || pos < 0) {
+    if ((pos > 1 || pos < 0) && !qIsNaN(pos)) {
         qWarning("QGradient::setColorAt: Color position must be specified in the range 0 to 1");
         return;
     }
 
     int index = 0;
-    while (index < m_stops.size() && m_stops.at(index).first < pos) ++index;
+    if (!qIsNaN(pos))
+        while (index < m_stops.size() && m_stops.at(index).first < pos) ++index;
 
     if (index < m_stops.size() && m_stops.at(index).first == pos)
         m_stops[index].second = color;
@@ -1785,7 +1787,7 @@ static QPointF qt_radial_gradient_adapt_focal_point(const QPointF &center,
     // We have a one pixel buffer zone to avoid numerical instability on the
     // circle border
     //### this is hacky because technically we should adjust based on current matrix
-    const qreal compensated_radius = radius - radius * 0.001;
+    const qreal compensated_radius = radius - radius * qreal(0.001);
     QLineF line(center, focalPoint);
     if (line.length() > (compensated_radius))
         line.setLength(compensated_radius);

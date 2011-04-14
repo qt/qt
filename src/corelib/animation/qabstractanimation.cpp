@@ -167,7 +167,7 @@ Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
 
 QUnifiedTimer::QUnifiedTimer() :
     QObject(), defaultDriver(this), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
-    currentAnimationIdx(0), consistentTiming(false), slowMode(false),
+    currentAnimationIdx(0), insideTick(false), consistentTiming(false), slowMode(false),
     slowdownFactor(5.0f), isPauseTimerActive(false), runningLeafAnimations(0)
 {
     time.invalidate();
@@ -206,6 +206,10 @@ void QUnifiedTimer::ensureTimerUpdate()
 
 void QUnifiedTimer::updateAnimationsTime()
 {
+    //setCurrentTime can get this called again while we're the for loop. At least with pauseAnimations
+    if(insideTick)
+        return;
+
     qint64 totalElapsed = time.elapsed();
     // ignore consistentTiming in case the pause timer is active
     int delta = (consistentTiming && !isPauseTimerActive) ?
@@ -223,12 +227,14 @@ void QUnifiedTimer::updateAnimationsTime()
     //it might happen in some cases that the time doesn't change because events are delayed
     //when the CPU load is high
     if (delta) {
+        insideTick = true;
         for (currentAnimationIdx = 0; currentAnimationIdx < animations.count(); ++currentAnimationIdx) {
             QAbstractAnimation *animation = animations.at(currentAnimationIdx);
             int elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
                           + (animation->direction() == QAbstractAnimation::Forward ? delta : -delta);
             animation->setCurrentTime(elapsed);
         }
+        insideTick = false;
         currentAnimationIdx = 0;
     }
 }
