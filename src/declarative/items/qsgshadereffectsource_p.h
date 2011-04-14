@@ -183,6 +183,7 @@ public:
     void setMipmap(bool enabled);
 
     QSGTexture *texture() const;
+    const char *textureChangedSignal() const { return SIGNAL(textureChanged); }
 
     Q_INVOKABLE void grab();
 
