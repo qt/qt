@@ -55,7 +55,7 @@
 //
 
 #include "private/qsgitem_p.h"
-#include "private/qsgpainteditem_p_p.h"
+#include "private/qsgpainteditem_p.h"
 #include "private/qsgimplicitsizeitem_p.h"
 
 QT_BEGIN_NAMESPACE

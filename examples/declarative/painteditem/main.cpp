@@ -41,7 +41,7 @@
 #include <QtGui/qapplication.h>
 #include <QtDeclarative/qdeclarative.h>
 #include <QtDeclarative/qsgview.h>
-#include <private/qsgpainteditem_p.h>
+#include <QtDeclarative/qsgpainteditem.h>
 
 class MyPaintItem : public QSGPaintedItem
 {
@@ -69,6 +69,7 @@ int main(int argc, char ** argv)
     QGLFormat f = QGLFormat::defaultFormat();
     f.setSampleBuffers(true);
     QSGView view(f);
+    view.setResizeMode(QSGView::SizeRootObjectToView);
     view.setSource(QUrl::fromLocalFile("myfile.qml"));
     view.show();
     view.raise();

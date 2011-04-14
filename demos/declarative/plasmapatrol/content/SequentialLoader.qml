@@ -1,4 +1,3 @@
-// Commit: ac5c099cc3c5b8c7eec7a49fdeb8a21037230350
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -39,27 +38,17 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+import QtQuick 2.0
 
-#ifndef QSGPAINTEDITEM_P_P_H
-#define QSGPAINTEDITEM_P_P_H
-
-#include "qsgitem_p.h"
-#include <private/qsgtexture_p.h>
-
-QT_BEGIN_NAMESPACE
-
-class QSGPaintedItemPrivate : public QSGItemPrivate
-{
-public:
-    QSGPaintedItemPrivate();
-
-    QRect dirtyRect;
-
-    bool geometryDirty : 1;
-    bool contentsDirty : 1;
-    bool opaquePainting: 1;
-};
-
-QT_END_NAMESPACE
-
-#endif // QSGPAINTEDITEM_P_P_H
+Item{
+    id: container
+    //TODO: Somehow get particles into this?
+    property list<Component> pages
+    property Item cur: null
+    property int at: 0
+    function advance(){
+        if(cur != null)
+            cur.destroy();
+        cur = pages[at++].createObject(container);
+    }
+}

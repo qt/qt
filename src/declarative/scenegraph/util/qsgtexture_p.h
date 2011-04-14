@@ -97,7 +97,6 @@ protected:
 
     GLuint m_texture_id;
     QSize m_texture_size;
-    QRectF m_texture_rect;
 
     uint m_has_alpha : 1;
     uint m_has_mipmaps : 1;

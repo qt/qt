@@ -147,8 +147,7 @@ void QSGNinePatchNode::update()
         xChunkSize = xTexSize;
     } else if (m_horizontalTileMode == QSGBorderImage::Round) {
         xChunkCount = qCeil(xSize / xTexSize);
-        qreal fullWidth = xChunkCount * xTexSize;
-        xChunkSize = xTexSize * xSize / fullWidth;
+        xChunkSize = xSize / xChunkCount;
     } else {
         xChunkCount = 1;
         xChunkSize = xSize;
@@ -164,8 +163,7 @@ void QSGNinePatchNode::update()
         yChunkSize = yTexSize;
     } else if (m_verticalTileMode == QSGBorderImage::Round) {
         yChunkCount = qCeil(ySize / yTexSize);
-        qreal fullHeight = yChunkCount * yTexSize;
-        yChunkSize = yTexSize * ySize / fullHeight;
+        yChunkSize = ySize / yChunkCount;
     } else {
         yChunkCount = 1;
         yChunkSize = ySize;
@@ -186,10 +184,10 @@ void QSGNinePatchNode::update()
 
     // Fill in the vertices.. The loop below is pretty much an exact replica
     // of the one inside fillRow.
-    float yTexChunk1 = m_innerRect.top() / th;
-    float yTexChunk2 = m_innerRect.bottom() / th;
+    float yTexChunk1 = 1 - m_innerRect.top() / th;
+    float yTexChunk2 = 1 - m_innerRect.bottom() / th;
 
-    fillRow(v, 0, 0, xChunkCount, xChunkSize);
+    fillRow(v, 0, 1, xChunkCount, xChunkSize);
     fillRow(v, m_innerRect.y(), yTexChunk1, xChunkCount, xChunkSize);
 
     for (int yc=0; yc<yChunkCount; ++yc) {
@@ -208,7 +206,7 @@ void QSGNinePatchNode::update()
     }
 
     fillRow(v, m_targetRect.height() - bottomBorder, yTexChunk2, xChunkCount, xChunkSize);
-    fillRow(v, m_targetRect.height(), 1, xChunkCount, xChunkSize);
+    fillRow(v, m_targetRect.height(), 0, xChunkCount, xChunkSize);
 
 
 //    v = m_geometry.vertexDataAsTexturedPoint2D();
