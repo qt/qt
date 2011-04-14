@@ -1682,6 +1682,9 @@ static QDBusConnection::ConnectionCapabilities connectionCapabilies(DBusConnecti
         return result;
 # endif
 
+#ifndef DBUS_TYPE_UNIX_FD
+# define DBUS_TYPE_UNIX_FD int('h')
+#endif
     if (q_dbus_connection_can_send_type(connection, DBUS_TYPE_UNIX_FD))
         result |= QDBusConnection::UnixFileDescriptorPassing;
 #endif
