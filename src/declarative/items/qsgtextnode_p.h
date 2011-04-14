@@ -53,6 +53,7 @@ class QTextBlock;
 class QColor;
 class QTextDocument;
 class QSGContext;
+class QRawFont;
 
 class QSGTextNode : public QSGTransformNode
 {
@@ -73,9 +74,8 @@ private:
                       const QColor &overrideColor, QSGText::TextStyle style = QSGText::Normal, const QColor &styleColor = QColor());
     QSGGlyphNode *addGlyphs(const QPointF &position, const QGlyphs &glyphs, const QColor &color,
                                   QSGText::TextStyle style = QSGText::Normal, const QColor &styleColor = QColor());
-    void addTextDecorations(const QPointF &position, const QFont &font, const QColor &color,
-                            qreal width);
-
+    void addTextDecorations(const QPointF &position, const QRawFont &font, const QColor &color,
+                            qreal width, bool hasOverline, bool hasStrikeOut, bool hasUnderline);
     QSGContext *m_context;
 };
 

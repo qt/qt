@@ -47,6 +47,7 @@
 #include <qsggeometry.h>
 #include <qshareddata.h>
 #include <private/qsgtexture_p.h>
+#include <qrawfont.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -57,7 +58,7 @@ class Geometry;
 class QSGTextMaskMaterial: public QSGMaterial
 {
 public:
-    QSGTextMaskMaterial(QFontEngine *fontEngine);
+    QSGTextMaskMaterial(const QRawFont &font);
     ~QSGTextMaskMaterial();
 
     virtual QSGMaterialType *type() const;
@@ -84,8 +85,7 @@ private:
 
     QSGPlainTexture *m_texture;
     QExplicitlySharedDataPointer<QFontEngineGlyphCache> m_glyphCache;
-    QFontEngine *m_fontEngine;
-    QFontEngine *m_originalFontEngine;
+    QRawFont m_font;
     QColor m_color;
     QSize m_size;
 };

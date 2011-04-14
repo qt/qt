@@ -47,19 +47,12 @@
 #include <qglshaderprogram.h>
 #include <private/qglengineshadersource_p.h>
 #include <private/qsgcontext_p.h>
+#include <private/qrawfont_p.h>
 #include <qglfunctions.h>
+#include <qglyphs.h>
+#include <qrawfont.h>
 
 QT_BEGIN_NAMESPACE
-
-void qt_disableFontHinting(QFont &font)
-{
-    QFontEngine *fontEngine = QFontPrivate::get(font)->engineForScript(QUnicodeTables::Common);
-    if (fontEngine->type() == QFontEngine::Multi) {
-        QFontEngineMulti *fem = static_cast<QFontEngineMulti *>(fontEngine);
-        fontEngine = fem->engine(0);
-    }
-    fontEngine->setDefaultHintStyle(QFontEngine::HintNone);
-}
 
 #define QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE 54
 #define QT_DISTANCEFIELD_DEFAULT_TILESIZE 64
@@ -486,18 +479,20 @@ static void convert_to_Format_Alpha(QImage *image)
     }
 }
 
-static bool fontHasNarrowOutlines(const QFont &f)
+static bool fontHasNarrowOutlines(const QRawFont &f)
 {
-    QFont font = f;
+    return true;
+    QRawFont font = f;
     font.setPixelSize(QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE);
-    QRect br = QFontMetrics(font).boundingRect(QLatin1Char('O'));
-    QImage im(br.size(), QImage::Format_ARGB32_Premultiplied);
-    im.fill(Qt::transparent);
-    QPainter p(&im);
-    p.setCompositionMode(QPainter::CompositionMode_Source);
-    p.setFont(font);
-    p.drawText(-br.x(), -br.y(), QLatin1String("O"));
-    p.end();
+    Q_ASSERT(font.isValid());
+
+    QVector<quint32> glyphIndices = font.glyphIndexesForString(QLatin1String("O"));
+    if (glyphIndices.size() < 1)
+        return false;
+
+    QImage im = font.alphaMapForGlyph(glyphIndices.at(0), QRawFont::PixelAntialiasing);
+    if (im.isNull())
+        return false;
 
     int minHThick = 999;
     int minVThick = 999;
@@ -540,26 +535,20 @@ DEFINE_BOOL_CONFIG_OPTION(disableDistanceField, QML_DISABLE_DISTANCEFIELD)
 QHash<QString, QSGDistanceFieldGlyphCache *> QSGDistanceFieldGlyphCache::m_caches;
 QHash<QString, QGLContextGroupResource<QSGDistanceFieldGlyphCache::DistanceFieldTextureData> > QSGDistanceFieldGlyphCache::m_textures_data;
 
-static QString fontKey(const QFont &font)
+static QString fontKey(const QRawFont &font)
 {
     QString key;
 
-    QFontEngine *fontEngine = QFontPrivate::get(font)->engineForScript(QUnicodeTables::Common);
-    if (fontEngine->type() == QFontEngine::Multi) {
-        QFontEngineMulti *fem = static_cast<QFontEngineMulti *>(fontEngine);
-        fontEngine = fem->engine(0);
-    }
-
-    key = fontEngine->fontDef.family;
+    key = font.familyName();
     key.remove(QLatin1String(" "));
-    QString italic = font.italic() ? QLatin1String("i") : QLatin1String("");
+    QString italic = font.style() == QFont::StyleItalic ? QLatin1String("i") : QLatin1String("");
     QString bold = font.weight() > QFont::Normal ? QLatin1String("b") : QLatin1String("");
-    key += bold + italic + QString::number(fontEngine->fontDef.pixelSize);
+    key += bold + italic + QString::number(qreal(font.pixelSize()));
 
     return key;
 }
 
-QSGDistanceFieldGlyphCache *QSGDistanceFieldGlyphCache::get(const QGLContext *ctx, const QFont &font)
+QSGDistanceFieldGlyphCache *QSGDistanceFieldGlyphCache::get(const QGLContext *ctx, const QRawFont &font)
 {
     QString key = QString::number(long(ctx), 16) + fontKey(font);
     QHash<QString, QSGDistanceFieldGlyphCache *>::iterator atlas = m_caches.find(key);
@@ -574,39 +563,30 @@ QSGDistanceFieldGlyphCache::DistanceFieldTextureData *QSGDistanceFieldGlyphCache
     return m_textures_data[m_distanceFieldKey].value(ctx);
 }
 
-QSGDistanceFieldGlyphCache::QSGDistanceFieldGlyphCache(const QGLContext *c, const QFont &font)
+QSGDistanceFieldGlyphCache::QSGDistanceFieldGlyphCache(const QGLContext *c, const QRawFont &font)
     : QObject()
     , m_maxTextureSize(0)
     , ctx(c)
     , m_blitProgram(0)
 {
+    Q_ASSERT(font.isValid());
     m_font = font;
-    m_fontEngine = QFontPrivate::get(m_font)->engineForScript(QUnicodeTables::Common);
-    if (m_fontEngine->type() == QFontEngine::Multi) {
-        QFontEngineMulti *fem = static_cast<QFontEngineMulti *>(m_fontEngine);
-        m_fontEngine = fem->engine(0);
-    }
-    qt_disableFontHinting(m_font);
 
-    QString basename = m_fontEngine->fontDef.family;
+    QString basename = m_font.familyName();
     basename.remove(QLatin1String(" "));
-    QString italic = m_font.italic() ? QLatin1String("i") : QLatin1String("");
+    QString italic = m_font.style() == QFont::StyleItalic ? QLatin1String("i") : QLatin1String("");
     QString bold = m_font.weight() > QFont::Normal ? QLatin1String("b") : QLatin1String("");
     m_distanceFieldKey = basename + bold + italic;
     m_textureData = textureData();
 
-    m_glyphCount = m_fontEngine->glyphCount();
+    QRawFontPrivate *fontD = QRawFontPrivate::get(m_font);
+    m_glyphCount = fontD->fontEngine->glyphCount();
 
     m_textureData->doubleGlyphResolution = fontHasNarrowOutlines(font) && m_glyphCount < QT_DISTANCEFIELD_HIGHGLYPHCOUNT;
 
-    QFont referenceFont = m_font;
-    referenceFont.setPixelSize(QT_DISTANCEFIELD_BASEFONTSIZE);
-    qt_disableFontHinting(referenceFont);
-    m_referenceFontEngine = QFontPrivate::get(referenceFont)->engineForScript(QUnicodeTables::Common);
-    if (m_referenceFontEngine->type() == QFontEngine::Multi) {
-        QFontEngineMulti *fem = static_cast<QFontEngineMulti *>(m_referenceFontEngine);
-        m_referenceFontEngine = fem->engine(0);
-    }
+    m_referenceFont = m_font;
+    m_referenceFont.setPixelSize(QT_DISTANCEFIELD_BASEFONTSIZE);
+    Q_ASSERT(m_referenceFont.isValid());
 
     m_vertexCoordinateArray[0] = -1.0f;
     m_vertexCoordinateArray[1] = -1.0f;
@@ -666,9 +646,7 @@ QSGDistanceFieldGlyphCache::Metrics QSGDistanceFieldGlyphCache::glyphMetrics(gly
 {
     QHash<glyph_t, Metrics>::iterator metric = m_metrics.find(glyph);
     if (metric == m_metrics.end()) {
-        QPainterPath path;
-        QFixedPoint p;
-        m_fontEngine->addGlyphsToPath(&glyph, &p, 1, &path, 0);
+        QPainterPath path = m_font.pathForGlyph(glyph);
 
         Metrics m;
         m.width = path.boundingRect().width();
@@ -689,19 +667,10 @@ QSGDistanceFieldGlyphCache::TexCoord QSGDistanceFieldGlyphCache::glyphTexCoord(g
 
 QImage QSGDistanceFieldGlyphCache::renderDistanceFieldGlyph(glyph_t glyph) const
 {
-    QFont renderFont = m_font;
+    QRawFont renderFont = m_font;
     renderFont.setPixelSize(QT_DISTANCEFIELD_BASEFONTSIZE * QT_DISTANCEFIELD_SCALE);
-    qt_disableFontHinting(renderFont);
 
-    QFontEngine *fontEngine = QFontPrivate::get(renderFont)->engineForScript(QUnicodeTables::Common);
-    if (fontEngine->type() == QFontEngine::Multi) {
-        QFontEngineMulti *fem = static_cast<QFontEngineMulti *>(fontEngine);
-        fontEngine = fem->engine(0);
-    }
-
-    QPainterPath path;
-    QFixedPoint pt;
-    fontEngine->addGlyphsToPath(&glyph, &pt, 1, &path, 0);
+    QPainterPath path = renderFont.pathForGlyph(glyph);
     path.translate(-path.boundingRect().topLeft());
     path.setFillRule(Qt::WindingFill);
 
@@ -714,7 +683,7 @@ QImage QSGDistanceFieldGlyphCache::renderDistanceFieldGlyph(glyph_t glyph) const
 
 qreal QSGDistanceFieldGlyphCache::fontScale() const
 {
-    return m_fontEngine->fontDef.pixelSize / QT_DISTANCEFIELD_BASEFONTSIZE;
+    return qreal(m_font.pixelSize()) / QT_DISTANCEFIELD_BASEFONTSIZE;
 }
 
 int QSGDistanceFieldGlyphCache::distanceFieldRadius() const
@@ -738,10 +707,7 @@ void QSGDistanceFieldGlyphCache::populate(int count, const glyph_t *glyphs)
                 || (cacheIsFull() && m_textureData->unusedGlyphs.isEmpty()))
             continue;
 
-        QPainterPath path;
-        QFixedPoint p;
-        m_referenceFontEngine->addGlyphsToPath(&glyphIndex, &p, 1, &path, 0);
-
+        QPainterPath path = m_referenceFont.pathForGlyph(glyphIndex);
         if (path.isEmpty()) {
             m_textureData->texCoords.insert(glyphIndex, TexCoord());
             continue;
@@ -814,6 +780,7 @@ void QSGDistanceFieldGlyphCache::createTexture(int width, int height)
         glDeleteTextures(1, &m_textureData->texture);
         m_textureData->texture = 0;
     }
+
 }
 
 void QSGDistanceFieldGlyphCache::resizeTexture(int width, int height)

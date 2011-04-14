@@ -43,13 +43,12 @@
 #define DISTANCEFIELDGLYPHCACHE_H
 
 #include <qgl.h>
+#include <qrawfont.h>
 #include <private/qgl_p.h>
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
 
 QT_BEGIN_NAMESPACE
-
-void qt_disableFontHinting(QFont &font);
 
 class QGLShaderProgram;
 
@@ -59,7 +58,7 @@ class Q_DECLARATIVE_EXPORT QSGDistanceFieldGlyphCache : public QObject
 public:
     ~QSGDistanceFieldGlyphCache();
 
-    static QSGDistanceFieldGlyphCache *get(const QGLContext *ctx, const QFont &font);
+    static QSGDistanceFieldGlyphCache *get(const QGLContext *ctx, const QRawFont &font);
 
     struct Metrics {
         qreal width;
@@ -108,16 +107,16 @@ private Q_SLOTS:
     void onContextDestroyed(const QGLContext *context);
 
 private:
-    QSGDistanceFieldGlyphCache(const QGLContext *c, const QFont &font);
+    QSGDistanceFieldGlyphCache(const QGLContext *c, const QRawFont &font);
 
     void createTexture(int width, int height);
     void resizeTexture(int width, int height);
 
     static QHash<QString, QSGDistanceFieldGlyphCache *> m_caches;
 
-    QFont m_font;
-    QFontEngine *m_fontEngine;
-    QFontEngine *m_referenceFontEngine;
+    QRawFont m_font;
+    QRawFont m_referenceFont;
+
     QString m_distanceFieldKey;
     int m_glyphCount;
     QHash<glyph_t, Metrics> m_metrics;

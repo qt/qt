@@ -49,6 +49,8 @@
 
 #include <private/qsgtexture_p.h>
 
+#include <private/qrawfont_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QSGTextMaskMaterialData : public QSGMaterialShader
@@ -144,42 +146,33 @@ void QSGTextMaskMaterialData::updateState(const RenderState &state, QSGMaterial 
         m_program.setUniformValue(m_matrix_id, state.combinedMatrix());
 }
 
-QSGTextMaskMaterial::QSGTextMaskMaterial(QFontEngine *fontEngine)
-    : m_texture(0), m_glyphCache(), m_fontEngine(fontEngine), m_originalFontEngine(fontEngine)
+QSGTextMaskMaterial::QSGTextMaskMaterial(const QRawFont &font)
+    : m_texture(0), m_glyphCache(), m_font(font)
 {
-    Q_ASSERT(m_fontEngine != 0);
-
-#if defined(Q_WS_MAC)
-    // A QFont is always backed by a multi font engine on Mac. SInce QGlyphs contains a
-    // non-font-merging font at this point, we can assume the multi engine contains a
-    // single font engine which represents the font needed to display the glyphs.
-    if (m_originalFontEngine->type() == QFontEngine::Multi) {
-        m_fontEngine = static_cast<QFontEngineMulti *>(m_originalFontEngine)->engine(0);
-    }
-#endif
-
-    m_originalFontEngine->ref.ref();
     init();
 }
 
 QSGTextMaskMaterial::~QSGTextMaskMaterial()
 {
-    Q_ASSERT(m_originalFontEngine != 0);
-    m_originalFontEngine->ref.deref();
 }
 
 void QSGTextMaskMaterial::init()
 {
+    Q_ASSERT(m_font.isValid());
+
     QFontEngineGlyphCache::Type type = QFontEngineGlyphCache::Raster_A8;
     setFlag(Blending, true);
 
     QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     Q_ASSERT(ctx != 0);
 
-    m_glyphCache = m_fontEngine->glyphCache(ctx, type, QTransform());
-    if (!m_glyphCache || m_glyphCache->cacheType() != type) {
-        m_glyphCache = new QGLTextureGlyphCache(ctx, type, QTransform());
-        m_fontEngine->setGlyphCache(ctx, m_glyphCache.data());
+    QRawFontPrivate *fontD = QRawFontPrivate::get(m_font);
+    if (fontD->fontEngine != 0) {
+        m_glyphCache = fontD->fontEngine->glyphCache(ctx, type, QTransform());
+        if (!m_glyphCache || m_glyphCache->cacheType() != type) {
+            m_glyphCache = new QGLTextureGlyphCache(ctx, type, QTransform());
+            fontD->fontEngine->setGlyphCache(ctx, m_glyphCache.data());
+        }
     }
 
 #if !defined(QT_OPENGL_ES_2)
@@ -197,14 +190,16 @@ void QSGTextMaskMaterial::populate(const QPointF &p,
                                 QRectF *boundingRect,
                                 QPointF *baseLine)
 {
+    Q_ASSERT(m_font.isValid());
     QVector<QFixedPoint> fixedPointPositions;
     for (int i=0; i<glyphPositions.size(); ++i)
         fixedPointPositions.append(QFixedPoint::fromPointF(glyphPositions.at(i)));
 
     QTextureGlyphCache *cache = glyphCache();
 
-    cache->populate(m_fontEngine, glyphIndexes.size(), glyphIndexes.constData(),
-                           fixedPointPositions.data());
+    QRawFontPrivate *fontD = QRawFontPrivate::get(m_font);
+    cache->populate(fontD->fontEngine, glyphIndexes.size(), glyphIndexes.constData(),
+                    fixedPointPositions.data());
     cache->fillInPendingGlyphs();
 
     int margin = cache->glyphMargin();
@@ -215,8 +210,8 @@ void QSGTextMaskMaterial::populate(const QPointF &p,
     Q_ASSERT(geometry->stride() == sizeof(QVector4D));
     ushort *ip = geometry->indexDataAsUShort();
 
-    QPointF position(p.x(), p.y() - m_fontEngine->ascent().toReal());
-    bool supportsSubPixelPositions = m_fontEngine->supportsSubPixelPositions();
+    QPointF position(p.x(), p.y() - m_font.ascent());
+    bool supportsSubPixelPositions = fontD->fontEngine->supportsSubPixelPositions();
     for (int i=0; i<glyphIndexes.size(); ++i) {
          QFixed subPixelPosition;
          if (supportsSubPixelPositions)

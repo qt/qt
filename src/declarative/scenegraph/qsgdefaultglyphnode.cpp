@@ -74,8 +74,8 @@ void QSGDefaultGlyphNode::setGlyphs(const QPointF &position, const QGlyphs &glyp
     if (m_material != 0)
         delete m_material;
 
-    QFontEngine *fe = QFontPrivate::get(glyphs.font())->engineForScript(QUnicodeTables::Common);
-    m_material = new QSGTextMaskMaterial(fe);
+    QRawFont font = glyphs.font();
+    m_material = new QSGTextMaskMaterial(font);
     m_material->setColor(m_color);
 
     QRectF boundingRect;

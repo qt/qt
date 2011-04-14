@@ -89,8 +89,8 @@ void QSGDistanceFieldGlyphNode::setPreferredAntialiasingMode(AntialiasingMode mo
 
 void QSGDistanceFieldGlyphNode::setGlyphs(const QPointF &position, const QGlyphs &glyphs)
 {
-    QFontEngine *fe = QFontPrivate::get(glyphs.font())->engineForScript(QUnicodeTables::Common);
-    m_position = QPointF(position.x(), position.y() - fe->ascent().toReal());
+    QRawFont font = glyphs.font();
+    m_position = QPointF(position.x(), position.y() - font.ascent());
     m_glyphs = glyphs;
 
     updateFont();

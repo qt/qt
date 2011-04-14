@@ -702,7 +702,7 @@ void QSGText::setFont(const QFont &font)
     QFont oldFont = d->font;
     d->font = font;
     if (QSGDistanceFieldGlyphCache::distanceFieldEnabled())
-        qt_disableFontHinting(d->font);
+        d->font.setHintingPreference(QFont::PreferNoHinting);
 
     if (d->font.pointSizeF() != -1) {
         // 0.5pt resolution
