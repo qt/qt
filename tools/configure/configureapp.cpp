@@ -752,7 +752,7 @@ void Configure::parseCmdLine()
             } else if ( configCmdLine.at(i) == "es2" ) {
                 dictionary[ "OPENGL_ES_2" ]     = "yes";
             } else if ( configCmdLine.at(i) == "desktop" ) {
-                dictionary[ "OPENGL_ES_2" ]     = "yes";
+                // OPENGL=yes suffices
             } else {
                 cout << "Argument passed to -opengl option is not valid." << endl;
                 dictionary[ "DONE" ] = "error";

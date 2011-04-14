@@ -549,10 +549,35 @@ void Generator::generateAlsoList(const Node *node, CodeMarker *marker)
 
     if (!alsoList.isEmpty()) {
         Text text;
-        text << Atom::ParaLeft << "See also ";
+        text << Atom::ParaLeft
+             << Atom(Atom::FormattingLeft,ATOM_FORMATTING_BOLD)
+             << "See also "
+             << Atom(Atom::FormattingRight,ATOM_FORMATTING_BOLD);
 
         for (int i = 0; i < alsoList.size(); ++i)
             text << alsoList.at(i) << separator(i, alsoList.size());
+
+        text << Atom::ParaRight;
+        generateText(text, node, marker);
+    }
+}
+
+/*!
+  Generate a list of maintainers in the output
+ */
+void Generator::generateMaintainerList(const InnerNode* node, CodeMarker* marker)
+{
+    QStringList sl = getMetadataElements(node,"maintainer");
+
+    if (!sl.isEmpty()) {
+        Text text;
+        text << Atom::ParaLeft
+             << Atom(Atom::FormattingLeft,ATOM_FORMATTING_BOLD)
+             << "Maintained by: "
+             << Atom(Atom::FormattingRight,ATOM_FORMATTING_BOLD);
+
+        for (int i = 0; i < sl.size(); ++i)
+            text << sl.at(i) << separator(i, sl.size());
 
         text << Atom::ParaRight;
         generateText(text, node, marker);
@@ -566,7 +591,10 @@ void Generator::generateInherits(const ClassNode *classe, CodeMarker *marker)
 
     if (!classe->baseClasses().isEmpty()) {
         Text text;
-        text << Atom::ParaLeft << "Inherits ";
+        text << Atom::ParaLeft
+             << Atom(Atom::FormattingLeft,ATOM_FORMATTING_BOLD)
+             << "Inherits: "
+             << Atom(Atom::FormattingRight,ATOM_FORMATTING_BOLD);
 
         r = classe->baseClasses().begin();
         index = 0;
@@ -604,7 +632,10 @@ void Generator::generateInheritedBy(const ClassNode *classe,
 {
     if (!classe->derivedClasses().isEmpty()) {
         Text text;
-        text << Atom::ParaLeft << "Inherited by ";
+        text << Atom::ParaLeft
+             << Atom(Atom::FormattingLeft,ATOM_FORMATTING_BOLD)
+             << "Inherited by: "
+             << Atom(Atom::FormattingRight,ATOM_FORMATTING_BOLD);
 
         appendSortedNames(text, classe, classe->derivedClasses(), marker);
         text << Atom::ParaRight;
@@ -1273,6 +1304,46 @@ QString Generator::fullName(const Node *node,
 QString Generator::outputPrefix(const QString &nodeType)
 {
     return outputPrefixes[nodeType];
+}
+
+/*!
+  Looks up the tag \a t in the map of metadata values for the
+  current topic in \a inner. If a value for the tag is found,
+  the value is returned.
+
+  \note If \a t is found in the metadata map, it is erased.
+  i.e. Once you call this function for a particular \a t,
+  you consume \a t.
+ */
+QString Generator::getMetadataElement(const InnerNode* inner, const QString& t)
+{
+    QString s;
+    QStringMultiMap& metaTagMap = const_cast<QStringMultiMap&>(inner->doc().metaTagMap());
+    QStringMultiMap::iterator i = metaTagMap.find(t);
+    if (i != metaTagMap.end()) {
+        s = i.value();
+        metaTagMap.erase(i);
+    }
+    return s;
+}
+
+/*!
+  Looks up the tag \a t in the map of metadata values for the
+  current topic in \a inner. If values for the tag are found,
+  they are returned in a string list.
+
+  \note If \a t is found in the metadata map, all the pairs
+  having the key \a t are erased. i.e. Once you call this
+  function for a particular \a t, you consume \a t.
+ */
+QStringList Generator::getMetadataElements(const InnerNode* inner, const QString& t)
+{
+    QStringList s;
+    QStringMultiMap& metaTagMap = const_cast<QStringMultiMap&>(inner->doc().metaTagMap());
+    s = metaTagMap.values(t);
+    if (!s.isEmpty())
+        metaTagMap.remove(t);
+    return s;
 }
 
 QT_END_NAMESPACE

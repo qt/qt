@@ -1,0 +1,43 @@
+<RCC>
+    <qresource prefix="/">
+        <file>src/application.qml</file>
+        <file>src/mycomponents/adjustbars.js</file>
+        <file>src/mycomponents/Adjuster.qml</file>
+        <file>src/mycomponents/Meter.qml</file>
+        <file>src/mycomponents/NoteButtonView.qml</file>
+        <file>src/mycomponents/NotesModel.qml</file>
+        <file>src/mycomponents/ToggleButton.qml</file>
+        <file>src/mycomponents/images/meterBG.png</file>
+        <file>src/mycomponents/images/pointerShadow.png</file>
+        <file>src/mycomponents/images/sensitivity.png</file>
+        <file>src/mycomponents/images/tuner_a.png</file>
+        <file>src/mycomponents/images/tuner_a_on.png</file>
+        <file>src/mycomponents/images/tuner_b.png</file>
+        <file>src/mycomponents/images/tuner_b_on.png</file>
+        <file>src/mycomponents/images/tuner_d.png</file>
+        <file>src/mycomponents/images/tuner_d_on.png</file>
+        <file>src/mycomponents/images/tuner_e.png</file>
+        <file>src/mycomponents/images/tuner_e_on.png</file>
+        <file>src/mycomponents/images/tuner_g.png</file>
+        <file>src/mycomponents/images/tuner_g_on.png</file>
+        <file>src/mycomponents/images/voicemode_off.png</file>
+        <file>src/mycomponents/images/voicemode_on.png</file>
+        <file>src/mycomponents/images/volume.png</file>
+        <file>src/mycomponents/images/volume_off.png</file>
+        <file>src/mycomponents/images/guitartuner_skin.png</file>
+        <file>src/mycomponents/images/power.png</file>
+        <file>src/mycomponents/images/tuner_auto.png</file>
+        <file>src/mycomponents/images/tuner_auto_on.png</file>
+        <file>src/mycomponents/images/big_a.png</file>
+        <file>src/mycomponents/images/big_b.png</file>
+        <file>src/mycomponents/images/big_d.png</file>
+        <file>src/mycomponents/images/big_e.png</file>
+        <file>src/mycomponents/images/big_g.png</file>
+        <file>src/mycomponents/images/glowing_a.png</file>
+        <file>src/mycomponents/images/glowing_b.png</file>
+        <file>src/mycomponents/images/glowing_d.png</file>
+        <file>src/mycomponents/images/glowing_e.png</file>
+        <file>src/mycomponents/images/glowing_g.png</file>
+        <file>src/mycomponents/images/pointer.png</file>
+    </qresource>
+</RCC>

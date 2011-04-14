@@ -192,7 +192,7 @@ void NetworkAccessManager::proxyAuthenticationRequired(const QNetworkProxy &prox
 void NetworkAccessManager::sslErrors(QNetworkReply *reply, const QList<QSslError> &error)
 {
     // check if SSL certificate has been trusted already
-    QString replyHost = reply->url().host() + ":" + reply->url().port();
+    QString replyHost = reply->url().host() + QString(":%1").arg(reply->url().port());
     if(! sslTrustedHostList.contains(replyHost)) {
         BrowserMainWindow *mainWindow = BrowserApplication::instance()->mainWindow();
 

@@ -5979,9 +5979,6 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
         }
         if (item && item->isPanel())
             break;
-        if (item && (item->d_ptr->flags
-                     & (QGraphicsItem::ItemStopsClickFocusPropagation | QGraphicsItem::ItemStopsFocusHandling)))
-            break;
     }
 
     touchEvent->setAccepted(eventAccepted);

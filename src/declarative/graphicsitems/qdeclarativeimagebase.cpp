@@ -191,11 +191,9 @@ void QDeclarativeImageBase::load()
         d->pix.clear(this);
         d->status = Null;
         d->progress = 0.0;
-        setImplicitWidth(0);
-        setImplicitHeight(0);
+        pixmapChange();
         emit progressChanged(d->progress);
         emit statusChanged(d->status);
-        pixmapChange();
         update();
     } else {
         QDeclarativePixmap::Options options;
@@ -246,8 +244,7 @@ void QDeclarativeImageBase::requestFinished()
 
     d->progress = 1.0;
 
-    setImplicitWidth(d->pix.width());
-    setImplicitHeight(d->pix.height());
+    pixmapChange();
 
     if (d->sourcesize.width() != d->pix.width() || d->sourcesize.height() != d->pix.height())
         emit sourceSizeChanged();
@@ -256,7 +253,7 @@ void QDeclarativeImageBase::requestFinished()
         emit statusChanged(d->status);
     if (d->progress != oldProgress)
         emit progressChanged(d->progress);
-    pixmapChange();
+
     update();
 }
 
@@ -279,6 +276,9 @@ void QDeclarativeImageBase::componentComplete()
 
 void QDeclarativeImageBase::pixmapChange()
 {
+    Q_D(QDeclarativeImageBase);
+    setImplicitWidth(d->pix.width());
+    setImplicitHeight(d->pix.height());
 }
 
 QT_END_NAMESPACE

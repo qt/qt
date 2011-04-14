@@ -368,6 +368,10 @@ instead to create the signal handler:
 \o \snippet doc/src/snippets/declarative/qtbinding/signals-cpp/MyItem.qml 0
 \endtable
 
+C++ signals can use enum values as parameters provided that the enum is declared in the
+class that is emitting the signal, and that the enum is registered using Q_ENUMS.
+See \l {Using enumerations of a custom type} below for details.
+
 
 \section2 Modifying properties
 
@@ -501,6 +505,21 @@ must begin with a capital letter.
 See the \l {Tutorial: Writing QML extensions with C++}{Writing QML extensions with C++} tutorial and
 the \l {Extending QML Functionalities using C++} reference documentation for
 more information.
+
+
+\section2 Using enumeration values as signal parameters
+
+C++ signals may pass enumeration values as signal parameters to QML, providing that the enumeration
+and the signal are declared within the same class, or that the enumeration value is one of those declared
+in the \l {Qt}{Qt Namespace}.
+
+Additionally, if a C++ signal with an enum parameter should be connectable to a QML function using the
+\l {Connecting signals to methods and other signals}{connect()} function, the enum type must be
+registered using qRegisterMetaType().
+
+For QML signals, enum values may be used as signal parameters using the \c int type:
+
+\snippet doc/src/snippets/declarative/qtbinding/enums/standalone.qml 1
 
 
 \section2 Automatic type conversion from strings
