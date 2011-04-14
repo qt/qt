@@ -53,15 +53,22 @@ class QSGPaintedItemPrivate;
 class Q_DECLARATIVE_EXPORT QSGPaintedItem : public QSGItem
 {
     Q_OBJECT
+    Q_ENUMS(RenderTarget)
 
     Q_PROPERTY(QSize contentsSize READ contentsSize WRITE setContentsSize NOTIFY contentsSizeChanged)
     Q_PROPERTY(QColor fillColor READ fillColor WRITE setFillColor NOTIFY fillColorChanged)
     Q_PROPERTY(int pixelCacheSize READ pixelCacheSize WRITE setPixelCacheSize)
     Q_PROPERTY(bool smoothCache READ smoothCache WRITE setSmoothCache)
     Q_PROPERTY(qreal contentsScale READ contentsScale WRITE setContentsScale NOTIFY contentsScaleChanged)
+    Q_PROPERTY(RenderTarget renderTarget READ renderTarget WRITE setRenderTarget NOTIFY renderTargetChanged)
 public:
     QSGPaintedItem(QSGItem *parent = 0);
     virtual ~QSGPaintedItem();
+
+    enum RenderTarget {
+        Image,
+        FramebufferObject
+    };
 
     void update();
     void update(const QRect &);
@@ -85,12 +92,16 @@ public:
     QColor fillColor() const;
     void setFillColor(const QColor&);
 
+    RenderTarget renderTarget() const;
+    void setRenderTarget(RenderTarget target);
+
     virtual void paint(QPainter *) = 0;
 
 Q_SIGNALS:
     void fillColorChanged();
     void contentsSizeChanged();
     void contentsScaleChanged();
+    void renderTargetChanged();
 
 protected:
     QSGPaintedItem(QSGPaintedItemPrivate &dd, QSGItem *parent = 0);

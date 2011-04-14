@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 QSGPaintedItemPrivate::QSGPaintedItemPrivate()
     : QSGItemPrivate()
     , fillColor(Qt::transparent)
+    , renderTarget(QSGPaintedItem::Image)
     , geometryDirty(false)
     , contentsDirty(false)
     , opaquePainting(false)
@@ -172,6 +173,27 @@ void QSGPaintedItem::setFillColor(const QColor &c)
 
     d->fillColor = c;
     update();
+
+    emit fillColorChanged();
+}
+
+QSGPaintedItem::RenderTarget QSGPaintedItem::renderTarget() const
+{
+    Q_D(const QSGPaintedItem);
+    return d->renderTarget;
+}
+
+void QSGPaintedItem::setRenderTarget(RenderTarget target)
+{
+    Q_D(QSGPaintedItem);
+
+    if (d->renderTarget == target)
+        return;
+
+    d->renderTarget = target;
+    update();
+
+    emit renderTargetChanged();
 }
 
 void QSGPaintedItem::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
@@ -195,6 +217,7 @@ QSGNode *QSGPaintedItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *
     if (!node)
         node = new QSGPainterNode(this);
 
+    node->setPreferredRenderTarget(d->renderTarget);
     node->setSize(QSize(d->width, d->height));
     node->setSmoothPainting(d->smooth);
     node->setLinearFiltering(d->smooth);

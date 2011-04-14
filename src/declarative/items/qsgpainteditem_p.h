@@ -53,6 +53,7 @@ public:
     QSGPaintedItemPrivate();
 
     QColor fillColor;
+    QSGPaintedItem::RenderTarget renderTarget;
 
     QRect dirtyRect;
 
