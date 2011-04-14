@@ -442,15 +442,15 @@ void tst_qsgvisualdatamodel::modelProperties()
         QUrl source(QUrl::fromLocalFile(SRCDIR "/data/modelproperties2.qml"));
 
         //3 items, 3 warnings each
+        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":13: ReferenceError: Can't find variable: modelData");
+        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":13: ReferenceError: Can't find variable: modelData");
+        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":13: ReferenceError: Can't find variable: modelData");
         QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":11: ReferenceError: Can't find variable: modelData");
         QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":11: ReferenceError: Can't find variable: modelData");
         QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":11: ReferenceError: Can't find variable: modelData");
-        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":9: ReferenceError: Can't find variable: modelData");
-        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":9: ReferenceError: Can't find variable: modelData");
-        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":9: ReferenceError: Can't find variable: modelData");
-        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":15: TypeError: Result of expression 'model.modelData' [undefined] is not an object.");
-        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":15: TypeError: Result of expression 'model.modelData' [undefined] is not an object.");
-        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":15: TypeError: Result of expression 'model.modelData' [undefined] is not an object.");
+        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":17: TypeError: Result of expression 'model.modelData' [undefined] is not an object.");
+        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":17: TypeError: Result of expression 'model.modelData' [undefined] is not an object.");
+        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":17: TypeError: Result of expression 'model.modelData' [undefined] is not an object.");
 
         view.setSource(source);
 
