@@ -51,6 +51,7 @@ QString Atom::INDEX_         ("index");
 QString Atom::ITALIC_        ("italic");
 QString Atom::LINK_          ("link");
 QString Atom::PARAMETER_     ("parameter");
+QString Atom::SPAN_          ("span");
 QString Atom::SUBSCRIPT_     ("subscript");
 QString Atom::SUPERSCRIPT_   ("superscript");
 QString Atom::TELETYPE_      ("teletype");
@@ -107,7 +108,8 @@ QString Atom::UPPERROMAN_    ("upperroman");
   \value CodeOld
   \value CodeQuoteArgument
   \value CodeQuoteCommand
-  \value Div
+  \value DivLeft
+  \value DivRight
   \value EndQmlText
   \value FormatElse
   \value FormatEndif
@@ -180,8 +182,8 @@ static const struct {
     { "CodeOld", Atom::CodeOld },
     { "CodeQuoteArgument", Atom::CodeQuoteArgument },
     { "CodeQuoteCommand", Atom::CodeQuoteCommand },
-    { "Div", Atom::Div },
-    { "EndDiv", Atom::EndDiv },
+    { "DivLeft", Atom::DivLeft },
+    { "DivRight", Atom::DivRight },
 #ifdef QDOC_QML
     { "EndQmlText", Atom::EndQmlText },
 #endif

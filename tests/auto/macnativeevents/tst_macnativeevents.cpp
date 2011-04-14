@@ -69,7 +69,7 @@ private slots:
     void testMouseEnter();
     void testChildDialogInFrontOfModalParent();
 #ifdef QT_MAC_USE_COCOA
-    void testChildWindowInFrontOfParentWindow();
+//    void testChildWindowInFrontOfParentWindow();
 //    void testChildToolWindowInFrontOfChildNormalWindow();
     void testChildWindowInFrontOfStaysOnTopParentWindow();
 #endif
@@ -319,6 +319,11 @@ void tst_MacNativeEvents::testChildDialogInFrontOfModalParent()
 }
 
 #ifdef QT_MAC_USE_COCOA
+#if 0
+// This test is disabled as of Qt-4.7.4 because we cannot do it
+// unless we use the Cocoa sub window API. But using that opens up
+// a world of side effects that we cannot live with. So we rather
+// not support child-on-top-of-parent instead.
 void tst_MacNativeEvents::testChildWindowInFrontOfParentWindow()
 {
     // Test that a child window always stacks in front of its parent window.
@@ -343,6 +348,7 @@ void tst_MacNativeEvents::testChildWindowInFrontOfParentWindow()
     QTest::qWait(100);
     QVERIFY(!child.isVisible());
 }
+#endif
 
 /* This test can be enabled once setStackingOrder has been fixed in qwidget_mac.mm
 void tst_MacNativeEvents::testChildToolWindowInFrontOfChildNormalWindow()

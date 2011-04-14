@@ -128,7 +128,7 @@ inline QDBusSignature QDBusDemarshaller::toSignature()
 
 inline QDBusVariant QDBusDemarshaller::toVariant()
 {
-    QDBusDemarshaller sub;
+    QDBusDemarshaller sub(capabilities);
     sub.message = q_dbus_message_ref(message);
     q_dbus_message_iter_recurse(&iterator, &sub.iterator);
     q_dbus_message_iter_next(&iterator);
@@ -249,7 +249,7 @@ QStringList QDBusDemarshaller::toStringList()
 {
     QStringList list;
 
-    QDBusDemarshaller sub;
+    QDBusDemarshaller sub(capabilities);
     q_dbus_message_iter_recurse(&iterator, &sub.iterator);
     q_dbus_message_iter_next(&iterator);
     while (!sub.atEnd())
@@ -297,7 +297,7 @@ inline QDBusDemarshaller *QDBusDemarshaller::beginMapEntry()
 
 QDBusDemarshaller *QDBusDemarshaller::beginCommon()
 {
-    QDBusDemarshaller *d = new QDBusDemarshaller;
+    QDBusDemarshaller *d = new QDBusDemarshaller(capabilities);
     d->parent = this;
     d->message = q_dbus_message_ref(message);
 
@@ -336,7 +336,7 @@ QDBusDemarshaller *QDBusDemarshaller::endCommon()
 
 QDBusArgument QDBusDemarshaller::duplicate()
 {
-    QDBusDemarshaller *d = new QDBusDemarshaller;
+    QDBusDemarshaller *d = new QDBusDemarshaller(capabilities);
     d->iterator = iterator;
     d->message = q_dbus_message_ref(message);
 

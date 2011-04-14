@@ -136,12 +136,10 @@ void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
     Q_Q(QDeclarativeImage);
     pix.setPixmap(pixmap);
 
-    q->setImplicitWidth(pix.width());
-    q->setImplicitHeight(pix.height());
+    q->pixmapChange();
     status = pix.isNull() ? QDeclarativeImageBase::Null : QDeclarativeImageBase::Ready;
 
     q->update();
-    q->pixmapChange();
 }
 
 /*!
@@ -377,6 +375,9 @@ qreal QDeclarativeImage::paintedHeight() const
     If the source is a non-scalable image (eg. JPEG), the loaded image will
     be no greater than this property specifies. For some formats (currently only JPEG),
     the whole image will never actually be loaded into memory.
+
+    Since QtQuick 1.1 the sourceSize can be cleared to the natural size of the image
+    by setting sourceSize to \c undefined.
  
     \note \e {Changing this property dynamically causes the image source to be reloaded,
     potentially even from the network, if it is not in the disk cache.}
@@ -387,8 +388,11 @@ void QDeclarativeImage::updatePaintedGeometry()
     Q_D(QDeclarativeImage);
 
     if (d->fillMode == PreserveAspectFit) {
-        if (!d->pix.width() || !d->pix.height())
+        if (!d->pix.width() || !d->pix.height()) {
+            setImplicitWidth(0);
+            setImplicitHeight(0);
             return;
+        }
         qreal w = widthValid() ? width() : d->pix.width();
         qreal widthScale = w / qreal(d->pix.width());
         qreal h = heightValid() ? height() : d->pix.height();
@@ -402,9 +406,13 @@ void QDeclarativeImage::updatePaintedGeometry()
         }
         if (widthValid() && !heightValid()) {
             setImplicitHeight(d->paintedHeight);
+        } else {
+            setImplicitHeight(d->pix.height());
         }
         if (heightValid() && !widthValid()) {
             setImplicitWidth(d->paintedWidth);
+        } else {
+            setImplicitWidth(d->pix.width());
         }
     } else if (d->fillMode == PreserveAspectCrop) {
         if (!d->pix.width() || !d->pix.height())
@@ -563,6 +571,13 @@ void QDeclarativeImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWi
 
 void QDeclarativeImage::pixmapChange()
 {
+    Q_D(QDeclarativeImage);
+    // PreserveAspectFit calculates the implicit size differently so we
+    // don't call our superclass pixmapChange(), since that would
+    // result in the implicit size being set incorrectly, then updated
+    // in updatePaintedGeometry()
+    if (d->fillMode != PreserveAspectFit)
+        QDeclarativeImageBase::pixmapChange();
     updatePaintedGeometry();
 }
 

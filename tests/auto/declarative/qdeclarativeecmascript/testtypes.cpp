@@ -171,6 +171,9 @@ void registerTypes()
     qmlRegisterModuleApi("Qt.test.qobjectApi",1,3,qobject_api); // register (qobject) module API for a uri which doesn't contain elements, minor version set
     qmlRegisterModuleApi("Qt.test.qobjectApi",2,0,qobject_api); // register (qobject) module API for a uri which doesn't contain elements, major version set
     qmlRegisterModuleApi("Qt.test.qobjectApiParented",1,0,qobject_api_engine_parent); // register (parented qobject) module API for a uri which doesn't contain elements
+
+    qRegisterMetaType<MyQmlObject::MyType>("MyEnum2");
+    qRegisterMetaType<Qt::MouseButtons>("Qt::MouseButtons");
 }
 
 #include "testtypes.moc"

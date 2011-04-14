@@ -290,6 +290,7 @@ private:
     static const char *brushStyleTable[];
     static const char *penStyleTable[];
     static const char *fontWeightTable[];
+    static const char *fontHintingTable[];
     static const char *clipOperationTable[];
     static const char *spreadMethodTable[];
     static const char *coordinateMethodTable[];

@@ -1552,7 +1552,7 @@ void QTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton button, con
                 extendBlockwiseSelection(cursorPos);
             else if (selectedWordOnDoubleClick.hasSelection())
                 extendWordwiseSelection(cursorPos, pos.x());
-            else if (wordSelectionEnabled)
+            else if (!wordSelectionEnabled)
                 setCursorPosition(cursorPos, QTextCursor::KeepAnchor);
         } else {
 
