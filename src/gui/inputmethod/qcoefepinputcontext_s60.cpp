@@ -538,11 +538,11 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
 
     if (alwaysResize) {
         windowToMove->setUpdatesEnabled(false);
-        if (!moveWithinVisibleArea)
+        if (!moveWithinVisibleArea) {
             m_splitViewResizeBy = widget->height();
-
-        windowTop = widget->geometry().top();
-        widget->resize(widget->width(), splitViewRect.height() - windowTop);
+            windowTop = widget->geometry().top();
+            widget->resize(widget->width(), splitViewRect.height() - windowTop);
+        }
 
         if (gv->scene()) {
             const QRectF microFocusRect = gv->scene()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
