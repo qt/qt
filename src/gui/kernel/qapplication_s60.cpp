@@ -1855,6 +1855,8 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     } else {
         QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
     }
+    if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
+        QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
 #else
     QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
 #endif
