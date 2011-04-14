@@ -97,7 +97,7 @@ void setParticles(QStringList arg)
 private slots:
     void calcSystemOffset();
 protected:
-    virtual void reset() {;}
+    virtual void reset();
 
 //    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *){
 //        qDebug() << "Shouldn't be here..." << this;
