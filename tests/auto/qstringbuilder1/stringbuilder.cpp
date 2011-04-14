@@ -190,9 +190,6 @@ void runScenario()
         ba2 = (ba += QLatin1String(LITERAL) + QString::fromUtf8(UTF8_LITERAL));
         QCOMPARE(ba2, ba);
         QCOMPARE(ba, QByteArray(UTF8_LITERAL LITERAL UTF8_LITERAL));
-        ba = UTF8_LITERAL;
-        ba += QLatin1String(LITERAL) P withZero;
-        QCOMPARE(ba, QByteArray(UTF8_LITERAL LITERAL + withZero));
 #endif
     }
 
