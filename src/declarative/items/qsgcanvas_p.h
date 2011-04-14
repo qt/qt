@@ -55,7 +55,7 @@
 
 #include "qsgitem.h"
 #include "qsgcanvas.h"
-#include "qdeclarativeguard_p.h"
+#include <private/qdeclarativeguard_p.h>
 
 #include <private/qsgcontext_p.h>
 

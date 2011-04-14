@@ -67,7 +67,7 @@ class QSGShaderEffectTexture : public QSGDynamicTexture
 {
     Q_OBJECT
 public:
-    QSGShaderEffectTexture(QSGContext *context);
+    QSGShaderEffectTexture(QSGItem *shaderSource);
     ~QSGShaderEffectTexture();
 
     virtual bool updateTexture();
@@ -108,7 +108,7 @@ private:
     QSize m_size;
     GLenum m_format;
 
-    QSGContext *m_context;
+    QSGItem *m_shaderSource;
     QSGRenderer *m_renderer;
     QGLFramebufferObject *m_fbo;
     QGLFramebufferObject *m_multisampledFbo;

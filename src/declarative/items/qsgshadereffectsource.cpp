@@ -54,11 +54,11 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(qmlFboOverlay, QML_FBO_OVERLAY)
 
-QSGShaderEffectTexture::QSGShaderEffectTexture(QSGContext *context)
+QSGShaderEffectTexture::QSGShaderEffectTexture(QSGItem *shaderSource)
     : QSGDynamicTexture()
     , m_item(0)
     , m_format(GL_RGBA)
-    , m_context(context)
+    , m_shaderSource(shaderSource)
     , m_renderer(0)
     , m_fbo(0)
     , m_multisampledFbo(0)
@@ -188,8 +188,10 @@ void QSGShaderEffectTexture::grab()
         return;
     }
 
+    QSGContext *context = QSGItemPrivate::get(m_shaderSource)->sceneGraphContext();
+
     if (!m_renderer) {
-        m_renderer = m_context->createRenderer();
+        m_renderer = context->createRenderer();
         connect(m_renderer, SIGNAL(sceneGraphChanged()), this, SLOT(markDirtyTexture()));
     }
     m_renderer->setRootNode(static_cast<QSGRootNode *>(root));
@@ -237,7 +239,7 @@ void QSGShaderEffectTexture::grab()
 #ifdef QSG_DEBUG_FBO_OVERLAY
     if (qmlFboOverlay()) {
         if (!m_debugOverlay)
-            m_debugOverlay = m_context->createRectangleNode();
+            m_debugOverlay = context->createRectangleNode();
         m_debugOverlay->setRect(QRectF(0, 0, m_size.width(), m_size.height()));
         m_debugOverlay->setColor(QColor(0xff, 0x00, 0x80, 0x40));
         m_debugOverlay->setPenColor(QColor());
@@ -289,7 +291,7 @@ QSGShaderEffectSource::QSGShaderEffectSource(QSGItem *parent)
     , m_mipmap(false)
 {
     setFlag(ItemHasContents);
-    m_texture = new QSGShaderEffectTexture(QSGItemPrivate::get(this)->sceneGraphContext());
+    m_texture = new QSGShaderEffectTexture(this);
 }
 
 QSGShaderEffectSource::~QSGShaderEffectSource()
