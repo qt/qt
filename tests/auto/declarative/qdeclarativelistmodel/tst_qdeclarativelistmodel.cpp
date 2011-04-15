@@ -114,7 +114,6 @@ int tst_qdeclarativelistmodel::roleFromName(const QDeclarativeListModel *model, 
         if (model->toString(roles[i]) == roleName)
             return roles[i];
     }
-    Q_ASSERT(false);
     return -1;
 }
 
@@ -740,6 +739,7 @@ void tst_qdeclarativelistmodel::get()
          "}", QUrl());
     QDeclarativeListModel *model = qobject_cast<QDeclarativeListModel*>(component.create());
     int role = roleFromName(model, roleName);
+    QVERIFY(role >= 0);
 
     QSignalSpy spy(model, SIGNAL(itemsChanged(int, int, QList<int>)));
     QDeclarativeExpression expr(eng.rootContext(), model, expression);
@@ -801,6 +801,7 @@ void tst_qdeclarativelistmodel::get_worker()
     model.append(sv);
     model.append(sv);
     int role = roleFromName(&model, roleName);
+    QVERIFY(role >= 0);
 
     const char *warning = "<Unknown File>: QML ListModel: Cannot add list-type data when modifying or after modification from a worker script";
     if (roleValue.type() == QVariant::List || roleValue.type() == QVariant::Map)
@@ -892,6 +893,7 @@ void tst_qdeclarativelistmodel::get_nested()
         int outerListIndex = testData[i].first;
         QString outerListRoleName = testData[i].second;
         int outerListRole = roleFromName(model, outerListRoleName);
+        QVERIFY(outerListRole >= 0);
 
         childModel = qobject_cast<QDeclarativeListModel*>(model->data(outerListIndex, outerListRole).value<QObject*>());
         QVERIFY(childModel);
@@ -904,6 +906,7 @@ void tst_qdeclarativelistmodel::get_nested()
         QVERIFY(!expr.hasError());
 
         int role = roleFromName(childModel, roleName);
+        QVERIFY(role >= 0);
         QCOMPARE(childModel->data(index, role), roleValue);
         QCOMPARE(spy.count(), 1);
 
