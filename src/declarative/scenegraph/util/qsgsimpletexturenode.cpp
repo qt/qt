@@ -42,6 +42,8 @@
 
 #include "qsgsimpletexturenode.h"
 
+QT_BEGIN_NAMESPACE
+
 static void qsgsimpletexturenode_update(QSGGeometry *g,
                                         QSGTexture *texture,
                                         const QRectF &rect)
@@ -146,3 +148,5 @@ QSGTexture *QSGSimpleTextureNode::texture() const
 {
     return m_material.texture();
 }
+
+QT_END_NAMESPACE
