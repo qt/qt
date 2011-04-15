@@ -152,6 +152,7 @@ private slots:
     void preeditMicroFocus();
     void inputContextMouseHandler();
     void inputMethodComposing();
+    void cursorRectangleSize();
 
 private:
     void simulateKey(QSGView *, int key, Qt::KeyboardModifiers modifiers = 0);
@@ -2358,6 +2359,28 @@ void tst_qsgtextedit::inputMethodComposing()
     }
     QCOMPARE(edit->isInputMethodComposing(), false);
     QCOMPARE(spy.count(), 2);
+}
+
+void tst_qsgtextedit::cursorRectangleSize()
+{
+    QSGView *canvas = new QSGView(QUrl::fromLocalFile(SRCDIR "/data/CursorRect.qml"));
+    QVERIFY(canvas->rootObject() != 0);
+    canvas->show();
+    canvas->setFocus();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+
+    QSGTextEdit *textEdit = qobject_cast<QSGTextEdit *>(canvas->rootObject());
+    QVERIFY(textEdit != 0);
+    textEdit->setFocus(Qt::OtherFocusReason);
+    QRectF cursorRect = textEdit->positionToRectangle(textEdit->cursorPosition());
+    QRectF microFocusFromScene = canvas->inputMethodQuery(Qt::ImMicroFocus).toRectF();
+    QRectF microFocusFromApp= QApplication::focusWidget()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
+
+    QCOMPARE(microFocusFromScene.size(), cursorRect.size());
+    QCOMPARE(microFocusFromApp.size(), cursorRect.size());
+
+    delete canvas;
 }
 
 QTEST_MAIN(tst_qsgtextedit)

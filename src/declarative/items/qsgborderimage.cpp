@@ -1,4 +1,4 @@
-// Commit: 39013a4a8238d522ed1d13adb25e702da9e25fc9
+// Commit: 462429f5692f810bdd4e04b916db5f9af428d9e4
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -92,7 +92,7 @@ void QSGBorderImage::load()
     }
 
     if (d->url.isEmpty()) {
-        d->pix.clear();
+        d->pix.clear(this);
         d->status = Null;
         setImplicitWidth(0);
         setImplicitHeight(0);
@@ -132,6 +132,7 @@ void QSGBorderImage::load()
                 options |= QDeclarativePixmap::Asynchronous;
             if (d->cache)
                 options |= QDeclarativePixmap::Cache;
+            d->pix.clear(this);
             d->pix.load(qmlEngine(this), d->url, options);
 
             if (d->pix.isLoading()) {
@@ -220,6 +221,7 @@ void QSGBorderImage::setGridScaledImage(const QSGGridScaledImage& sci)
             options |= QDeclarativePixmap::Asynchronous;
         if (d->cache)
             options |= QDeclarativePixmap::Cache;
+        d->pix.clear(this);
         d->pix.load(qmlEngine(this), d->sciurl, options);
 
         if (d->pix.isLoading()) {
