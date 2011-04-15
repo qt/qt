@@ -176,7 +176,7 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
         d->privateKey == other.d->privateKey &&
         d->sessionCipher == other.d->sessionCipher &&
         d->ciphers == other.d->ciphers &&
-        d->caCertificates == d->caCertificates &&
+        d->caCertificates == other.d->caCertificates &&
         d->protocol == other.d->protocol &&
         d->peerVerifyMode == other.d->peerVerifyMode &&
         d->peerVerifyDepth == other.d->peerVerifyDepth;
