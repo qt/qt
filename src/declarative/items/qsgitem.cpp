@@ -1157,6 +1157,7 @@ void QSGItemPrivate::initCanvas(InitializationState *state, QSGCanvas *c)
     Q_Q(QSGItem);
 
     if (canvas) {
+        removeFromDirtyList();
         QSGCanvasPrivate *c = QSGCanvasPrivate::get(canvas);
         if (polishScheduled)
             c->itemsToPolish.remove(q);
