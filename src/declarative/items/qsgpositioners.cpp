@@ -1,4 +1,4 @@
-// Commit: cc6408ccd5453d1bed9f98b9caa14861cea5742b
+// Commit: 1f38d41854fa2daa51d938a4eb398752b1751e0b
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -335,6 +335,11 @@ void QSGRow::setLayoutDirection(Qt::LayoutDirection layoutDirection)
     QSGBasePositionerPrivate *d = static_cast<QSGBasePositionerPrivate* >(QSGBasePositionerPrivate::get(this));
     if (d->layoutDirection != layoutDirection) {
         d->layoutDirection = layoutDirection;
+        // For RTL layout the positioning changes when the width changes.
+        if (d->layoutDirection == Qt::RightToLeft)
+            d->addItemChangeListener(d, QSGItemPrivate::Geometry);
+        else
+            d->removeItemChangeListener(d, QSGItemPrivate::Geometry);
         prePositioning();
         emit layoutDirectionChanged();
         emit effectiveLayoutDirectionChanged();
@@ -463,6 +468,11 @@ void QSGGrid::setLayoutDirection(Qt::LayoutDirection layoutDirection)
     QSGBasePositionerPrivate *d = static_cast<QSGBasePositionerPrivate*>(QSGBasePositionerPrivate::get(this));
     if (d->layoutDirection != layoutDirection) {
         d->layoutDirection = layoutDirection;
+        // For RTL layout the positioning changes when the width changes.
+        if (d->layoutDirection == Qt::RightToLeft)
+            d->addItemChangeListener(d, QSGItemPrivate::Geometry);
+        else
+            d->removeItemChangeListener(d, QSGItemPrivate::Geometry);
         prePositioning();
         emit layoutDirectionChanged();
         emit effectiveLayoutDirectionChanged();

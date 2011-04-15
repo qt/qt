@@ -67,6 +67,7 @@ class Q_GUI_EXPORT QPlatformIntegration
 public:
     enum Capability {
         ThreadedPixmaps = 1,
+        OpenGL = 2
     };
 
     virtual ~QPlatformIntegration() { }
@@ -94,9 +95,6 @@ public:
 // This should only be used if it is only possible to do window system event processing in
 // the gui thread. All of the functions in QWindowSystemInterface are thread safe.
     virtual QPlatformEventLoopIntegration *createEventLoopIntegration() const;
-
-//jl:XXX should it be hasGLContext and do we need it at all?
-    virtual bool hasOpenGL() const;
 
 // Access native handles. The window handle is already available from Wid;
     virtual QPlatformNativeInterface *nativeInterface() const;

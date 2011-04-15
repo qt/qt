@@ -1,4 +1,4 @@
-// Commit: 695a39410c8ce186a2ce78cef51093c55fc32643
+// Commit: 462429f5692f810bdd4e04b916db5f9af428d9e4
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -177,7 +177,7 @@ void QSGImageBase::load()
     Q_D(QSGImageBase);
 
     if (d->url.isEmpty()) {
-        d->pix.clear();
+        d->pix.clear(this);
         d->status = Null;
         d->progress = 0.0;
         setImplicitWidth(0);
@@ -192,6 +192,7 @@ void QSGImageBase::load()
             options |= QDeclarativePixmap::Asynchronous;
         if (d->cache)
             options |= QDeclarativePixmap::Cache;
+        d->pix.clear(this);
         d->pix.load(qmlEngine(this), d->url, d->explicitSourceSize ? sourceSize() : QSize(), options);
 
         if (d->pix.isLoading()) {

@@ -75,6 +75,7 @@ bool QWaylandIntegration::hasCapability(QPlatformIntegration::Capability cap) co
 {
     switch (cap) {
     case ThreadedPixmaps: return true;
+    case OpenGL: return hasOpenGL();
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

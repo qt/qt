@@ -60,6 +60,7 @@ class QXlibIntegration : public QPlatformIntegration
 public:
     QXlibIntegration(bool useOpenGL = false);
 
+    bool hasCapability(Capability cap) const;
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
@@ -73,9 +74,9 @@ public:
 
     QPlatformNativeInterface *nativeInterface() const;
 
+private:
     bool hasOpenGL() const;
 
-private:
     bool mUseOpenGL;
     QXlibScreen *mPrimaryScreen;
     QList<QPlatformScreen *> mScreens;
