@@ -141,16 +141,16 @@ void FollowEmitter::emitWindow(int timeStamp)
             // Particle position
             qreal followT =  pt - d->pv.t;
             qreal followT2 = followT * followT * 0.5;
-            qreal sizeOffset = d->pv.size/2;//TODO: Current size
+            qreal sizeOffset = d->pv.size/2;//TODO: Current size? As an option
             //TODO: Set variations
-//            QRectF boundsRect(d->pv.x + d->pv.sx * followT + d->pv.ax * followT2 + offset.x() - m_emitterXVariation/2,
-//                              d->pv.y + d->pv.sy * followT + d->pv.ay * followT2 + offset.y() - m_emitterYVariation/2,
-//                              m_emitterXVariation,
-//                              m_emitterYVariation);
-            QRectF boundsRect(d->pv.x + d->pv.sx * followT + d->pv.ax * followT2 + offset.x() - sizeOffset,
-                              d->pv.y + d->pv.sy * followT + d->pv.ay * followT2 + offset.y() - sizeOffset,
-                              sizeOffset*2,
-                              sizeOffset*2);
+            QRectF boundsRect(d->pv.x + d->pv.sx * followT + d->pv.ax * followT2 + offset.x() - m_emitterXVariation/2,
+                              d->pv.y + d->pv.sy * followT + d->pv.ay * followT2 + offset.y() - m_emitterYVariation/2,
+                              m_emitterXVariation,
+                              m_emitterYVariation);
+//            QRectF boundsRect(d->pv.x + d->pv.sx * followT + d->pv.ax * followT2 + offset.x() - sizeOffset,
+//                              d->pv.y + d->pv.sy * followT + d->pv.ay * followT2 + offset.y() - sizeOffset,
+//                              sizeOffset*2,
+//                              sizeOffset*2);
 
             const QPointF &newPos = effectiveExtruder()->extrude(boundsRect);
             p.x = newPos.x();
