@@ -162,15 +162,14 @@ void QSGDistanceFieldTextMaterialShader::updateState(const RenderState &state, Q
     if (updateRange)
         updateAlphaRange();
 
-    Q_ASSERT(!material->texture().isNull());
+    Q_ASSERT(material->glyphCache());
 
-    Q_ASSERT(oldMaterial == 0 || !oldMaterial->texture().isNull());
     if (updated
             || oldMaterial == 0
-            || oldMaterial->texture()->textureId() != material->texture()->textureId()) {
+            || oldMaterial->glyphCache()->texture() != material->glyphCache()->texture()) {
         m_program.setUniformValue(m_textureScale_id, QVector2D(1.0 / material->glyphCache()->textureSize().width(),
                                                                1.0 / material->glyphCache()->textureSize().height()));
-        glBindTexture(GL_TEXTURE_2D, material->texture()->textureId());
+        glBindTexture(GL_TEXTURE_2D, material->glyphCache()->texture());
 
         if (updated) {
             // Set the mag/min filters to be linear. We only need to do this when the texture
@@ -184,7 +183,7 @@ void QSGDistanceFieldTextMaterialShader::updateState(const RenderState &state, Q
 }
 
 QSGDistanceFieldTextMaterial::QSGDistanceFieldTextMaterial()
-    : m_texture(0), m_glyph_cache(0)
+    : m_glyph_cache(0)
 {
    setFlag(Blending, true);
 }
@@ -209,12 +208,6 @@ bool QSGDistanceFieldTextMaterial::updateTexture()
     m_glyph_cache->updateCache();
     QSize glyphCacheSize = m_glyph_cache->textureSize();
     if (glyphCacheSize != m_size) {
-        QSGPlainTexture *t = new QSGPlainTexture;
-        t->setTextureId(m_glyph_cache->texture());
-        t->setTextureSize(glyphCacheSize);
-        t->setOwnsTexture(false);
-        m_texture = QSGTextureRef(t);
-
         m_size = glyphCacheSize;
 
         return true;
@@ -433,7 +426,7 @@ void DistanceFieldShiftedStyleTextMaterialShader::updateState(const RenderState 
     if (oldMaterial == 0
             || oldMaterial->glyphCache()->fontScale() != material->glyphCache()->fontScale()
             || oldMaterial->shift() != material->shift()
-            || oldMaterial->texture()->textureSize() != material->texture()->textureSize()) {
+            || oldMaterial->glyphCache()->textureSize() != material->glyphCache()->textureSize()) {
         updateShift(material->glyphCache(), material->shift());
     }
 }

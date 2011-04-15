@@ -98,6 +98,7 @@
 
 #include <qglpixelbuffer.h>
 #include <private/qglpixelbuffer_p.h>
+#include <private/qfont_p.h>
 #include <qimage.h>
 
 #ifndef QT_OPENGL_ES_2
@@ -423,9 +424,6 @@ QPaintEngine *QGLPixelBuffer::paintEngine() const
         return qt_buffer_engine()->engine();
 #endif
 }
-
-Q_GUI_EXPORT int qt_defaultDpiX();
-Q_GUI_EXPORT int qt_defaultDpiY();
 
 /*! \reimp */
 int QGLPixelBuffer::metric(PaintDeviceMetric metric) const

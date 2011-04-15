@@ -89,22 +89,22 @@ void QSGNinePatchNode::setVerticalTileMode(QSGBorderImage::TileMode mode)
 }
 
 
-void QSGNinePatchNode::setLinearFiltering(bool linearFiltering)
+void QSGNinePatchNode::setFiltering(QSGTexture::Filtering filtering)
 {
-    if (m_material.linearFiltering() == linearFiltering)
+    if (m_material.filtering() == filtering)
         return;
 
-    m_material.setLinearFiltering(linearFiltering);
-    m_materialO.setLinearFiltering(linearFiltering);
+    m_material.setFiltering(filtering);
+    m_materialO.setFiltering(filtering);
     markDirty(DirtyMaterial);
 }
 
-bool QSGNinePatchNode::linearFiltering() const
+QSGTexture::Filtering QSGNinePatchNode::filtering() const
 {
-    return m_material.linearFiltering();
+    return m_material.filtering();
 }
 
-void QSGNinePatchNode::setTexture(const QSGTextureRef &texture)
+void QSGNinePatchNode::setTexture(QSGTexture *texture)
 {
     if (texture == m_material.texture())
         return;
@@ -113,7 +113,7 @@ void QSGNinePatchNode::setTexture(const QSGTextureRef &texture)
     markDirty(DirtyMaterial);
 }
 
-QSGTextureRef QSGNinePatchNode::texture() const
+QSGTexture *QSGNinePatchNode::texture() const
 {
     return m_material.texture();
 }
@@ -127,7 +127,7 @@ void QSGNinePatchNode::update()
     // as more vertices could be reused then, but I doubt its where our main
     // problem will lie. This way, we at least share the algorithm between all
 
-    Q_ASSERT(!m_material.texture().isNull());
+    Q_ASSERT(m_material.texture());
 
     float tw = m_material.texture()->textureSize().width();
     float th = m_material.texture()->textureSize().height();

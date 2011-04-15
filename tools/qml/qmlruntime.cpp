@@ -1477,6 +1477,7 @@ void QDeclarativeViewer::setUseGL(bool useGL)
         QGLFormat format = QGLFormat::defaultFormat();
 #ifdef Q_WS_MAC
         format.setSampleBuffers(true);
+        format.setSwapInterval(1);
 #else
         format.setSampleBuffers(false);
 #endif

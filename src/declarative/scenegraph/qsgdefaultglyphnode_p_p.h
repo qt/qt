@@ -46,6 +46,7 @@
 #include <qsgtexture.h>
 #include <qsggeometry.h>
 #include <qshareddata.h>
+#include <private/qsgtexture_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,7 +67,7 @@ public:
     void setColor(const QColor &color) { m_color = color; }
     const QColor &color() const { return m_color; }
 
-    const QSGTextureRef &texture() const { return m_texture; }
+    QSGTexture *texture() const { return m_texture; }
 
     int cacheTextureWidth() const;
     int cacheTextureHeight() const;
@@ -81,7 +82,7 @@ public:
 private:
     void init();
 
-    QSGTextureRef m_texture;
+    QSGPlainTexture *m_texture;
     QExplicitlySharedDataPointer<QFontEngineGlyphCache> m_glyphCache;
     QFontEngine *m_fontEngine;
     QFontEngine *m_originalFontEngine;

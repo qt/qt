@@ -62,6 +62,7 @@ class QSGRenderer;
 class QSGTexture;
 class QSGMaterial;
 class QSGMaterialShader;
+class QSGEngine;
 
 class QGLContext;
 
@@ -72,6 +73,7 @@ class Q_DECLARATIVE_EXPORT QSGContext : public QObject
 
 public:
     explicit QSGContext(QObject *parent = 0);
+    ~QSGContext();
 
     virtual void initialize(QGLContext *context);
 
@@ -80,9 +82,8 @@ public:
     void setRootNode(QSGRootNode *node);
     QSGRootNode *rootNode() const;
 
+    QSGEngine *engine() const;
     QGLContext *glContext() const;
-
-    static QSGContext *current; // Evil nasty hack!! Get rid of this!
 
     bool isReady() const;
 
@@ -102,6 +103,9 @@ public:
     virtual QSGTexture *createTexture(const QImage &image = QImage()) const;
 
     static QSGContext *createDefaultContext();
+
+    void schdelueTextureForCleanup(QSGTexture *texture);
+    void cleanupTextures();
 
 signals:
     void ready();

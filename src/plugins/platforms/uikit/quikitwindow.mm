@@ -46,6 +46,8 @@
 #include "quikitscreen.h"
 
 #include <QtDebug>
+#include <QtGui/QApplication>
+#include <QtGui/QKeyEvent>
 #include <QtGui/QPlatformGLContext>
 #include <QtGui/QWindowSystemInterface>
 
@@ -76,7 +78,6 @@ public:
         mFormat.setStencil(true);
         mFormat.setStereo(false);
         mFormat.setDirectRendering(false);
-        mFormat.setUseDefaultSharedContext(false);
 
         EAGLContext *aContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
         [mView setContext:aContext];
@@ -120,15 +121,22 @@ private:
     return [CAEAGLLayer class];
 }
 
-- (id)init
+- (id)initWithFrame:(CGRect)frame
 {
-    if ((self = [super init])) {
+    if ((self = [super initWithFrame:frame])) {
         CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
         eaglLayer.opaque = TRUE;
         eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
                                         [NSNumber numberWithBool:NO], kEAGLDrawablePropertyRetainedBacking,
                                         kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
                                         nil];
+        autocapitalizationType = UITextAutocapitalizationTypeNone;
+        autocorrectionType = UITextAutocorrectionTypeNo;
+        enablesReturnKeyAutomatically = NO;
+        keyboardAppearance = UIKeyboardAppearanceDefault;
+        keyboardType = UIKeyboardTypeDefault;
+        returnKeyType = UIReturnKeyDone;
+        secureTextEntry = NO;
     }
     return self;
 }
@@ -246,6 +254,61 @@ private:
     [self sendMouseEventForTouches:touches withEvent:event fakeButtons:Qt::NoButton];
 }
 
+// ------- Text Input ----------
+
+@synthesize autocapitalizationType;
+@synthesize autocorrectionType;
+@synthesize enablesReturnKeyAutomatically;
+@synthesize keyboardAppearance;
+@synthesize keyboardType;
+@synthesize returnKeyType;
+@synthesize secureTextEntry;
+
+- (BOOL)canBecomeFirstResponder
+{
+    return YES;
+}
+
+- (BOOL)hasText
+{
+    return YES;
+}
+
+- (void)insertText:(NSString *)text
+{
+    QKeyEvent *ev;
+    int key = 0;
+    if ([text isEqualToString:@"\n"])
+        key = (int)Qt::Key_Return;
+    ev = new QKeyEvent(QEvent::KeyPress,
+                       key,
+                       Qt::NoModifier,
+                       QString::fromUtf8([text UTF8String])
+                       );
+    qApp->postEvent(qApp->focusWidget(), ev);
+    ev = new QKeyEvent(QEvent::KeyRelease,
+                       key,
+                       Qt::NoModifier,
+                       QString::fromUtf8([text UTF8String])
+                       );
+    qApp->postEvent(qApp->focusWidget(), ev);
+}
+
+- (void)deleteBackward
+{
+    QKeyEvent *ev;
+    ev = new QKeyEvent(QEvent::KeyPress,
+                       (int)Qt::Key_Backspace,
+                       Qt::NoModifier
+                       );
+    qApp->postEvent(qApp->focusWidget(), ev);
+    ev = new QKeyEvent(QEvent::KeyRelease,
+                       (int)Qt::Key_Backspace,
+                       Qt::NoModifier
+                       );
+    qApp->postEvent(qApp->focusWidget(), ev);
+}
+
 @end
 
 QT_BEGIN_NAMESPACE
@@ -284,7 +347,6 @@ UIWindow *QUIKitWindow::ensureNativeWindow()
 {
     if (!mWindow) {
         // window
-        CGRect screenBounds = [mScreen->uiScreen() bounds];
         QRect geom = geometry();
         CGRect frame = CGRectMake(geom.x(), geom.y(), geom.width(), geom.height());
         mWindow = [[UIWindow alloc] initWithFrame:frame];

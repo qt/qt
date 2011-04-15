@@ -52,11 +52,32 @@
 #include <private/qsgdistancefieldglyphcache_p.h>
 
 #include <private/qsgtexture_p.h>
+#include <qsgengine.h>
 
 #include <QApplication>
 #include <QGLContext>
 
 #include <private/qobject_p.h>
+#include <qmutex.h>
+
+/*!
+    Comments about this class from Gunnar:
+
+    The QSGContext class is right now two things.. The first is the
+    adaptation layer and central storage ground for all the things
+    in the scene graph, like textures and materials. This part really
+    belongs inside the scene graph coreapi.
+
+    The other part is the QML adaptation classes, like how to implement
+    rectangle nodes. This is not part of the scene graph core API, but
+    more part of the QML adaptation of scene graph.
+
+    If we ever move the scene graph core API into its own thing, this class
+    needs to be split in two. Right now its one because we're lazy when it comes
+    to defining plugin interfaces..
+
+ */
+
 
 QT_BEGIN_NAMESPACE
 
@@ -72,8 +93,6 @@ public:
 
     ~QSGContextPrivate() 
     {
-        delete rootNode;
-        delete renderer;
     }
 
     QSGRootNode *rootNode;
@@ -81,7 +100,12 @@ public:
 
     QGLContext *gl;
 
+    QSGEngine engine;
+
     QHash<QSGMaterialType *, QSGMaterialShader *> materials;
+
+    QMutex textureMutex;
+    QList<QSGTexture *> texturesToClean;
 };
 
 
@@ -95,8 +119,61 @@ public:
 QSGContext::QSGContext(QObject *parent) :
     QObject(*(new QSGContextPrivate), parent)
 {
+    Q_D(QSGContext);
+    d->engine.setContext(this);
 }
 
+
+QSGContext::~QSGContext()
+{
+    Q_D(QSGContext);
+    delete d->renderer;
+    delete d->rootNode;
+    cleanupTextures();
+    qDeleteAll(d->materials.values());
+}
+
+/*!
+    Returns the scene graph engine for this context.
+
+    The main purpose of the QSGEngine is to serve as a public API
+    to the QSGContext.
+
+ */
+QSGEngine *QSGContext::engine() const
+{
+    return const_cast<QSGEngine *>(&d_func()->engine);
+}
+
+/*!
+    Schedules the texture to be cleaned up on the rendering thread
+    at a later time.
+
+    The texture can be considered as deleted after this function has
+    been called.
+  */
+void QSGContext::schdelueTextureForCleanup(QSGTexture *texture)
+{
+    Q_D(QSGContext);
+    d->textureMutex.lock();
+    Q_ASSERT(!d->texturesToClean.contains(texture));
+    d->texturesToClean << texture;
+    d->textureMutex.unlock();
+}
+
+
+
+/*!
+    Deletes all textures that have been scheduled for cleanup
+ */
+void QSGContext::cleanupTextures()
+{
+    Q_D(QSGContext);
+    d->textureMutex.lock();
+    qDeleteAll(d->texturesToClean);
+    d->texturesToClean.clear();
+    d->textureMutex.unlock();
+}
 
 /*!
     Returns the renderer. The renderer instance is created through the adaptation layer.
@@ -125,8 +202,6 @@ QGLContext *QSGContext::glContext() const
     return d->gl;
 }
 
-QSGContext *QSGContext::current;
-
 /*!
     Initializes the scene graph context with the GL context \a context. This also
     emits the ready() signal so that the QML graph can start building scene graph nodes.
@@ -144,8 +219,6 @@ void QSGContext::initialize(QGLContext *context)
 
     d->rootNode = new QSGRootNode();
     d->renderer->setRootNode(d->rootNode);
-
-    current = this;
 
     emit ready();
 }
@@ -166,10 +239,8 @@ void QSGContext::renderNextFrame()
 {
     Q_D(QSGContext);
 
-//     printf("\nFRAME:\n");
-
+    cleanupTextures();
     emit aboutToRenderNextFrame();
-
     d->renderer->renderScene();
 }
 
@@ -178,7 +249,7 @@ void QSGContext::renderNextFrame()
  */
 QSGRectangleNode *QSGContext::createRectangleNode()
 {
-    return new QSGDefaultRectangleNode(QSGDefaultRectangleNode::PreferTextureMaterial, this);
+    return new QSGDefaultRectangleNode(this);
 }
 
 /*!

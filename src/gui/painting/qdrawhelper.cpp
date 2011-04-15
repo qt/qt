@@ -570,8 +570,8 @@ const uint * QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, const 
     int image_width = data->texture.width;
     int image_height = data->texture.height;
 
-    const qreal cx = x + 0.5;
-    const qreal cy = y + 0.5;
+    const qreal cx = x + qreal(0.5);
+    const qreal cy = y + qreal(0.5);
 
     const uint *end = buffer + length;
     uint *b = buffer;
@@ -792,8 +792,8 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
     int image_x2 = data->texture.x2 - 1;
     int image_y2 = data->texture.y2 - 1;
 
-    const qreal cx = x + 0.5;
-    const qreal cy = y + 0.5;
+    const qreal cx = x + qreal(0.5);
+    const qreal cy = y + qreal(0.5);
 
     uint *end = buffer + length;
     uint *b = buffer;
@@ -1188,8 +1188,8 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
 
         while (b < end) {
             const qreal iw = fw == 0 ? 1 : 1 / fw;
-            const qreal px = fx * iw - 0.5;
-            const qreal py = fy * iw - 0.5;
+            const qreal px = fx * iw - qreal(0.5);
+            const qreal py = fy * iw - qreal(0.5);
 
             int x1 = int(px) - (px < 0);
             int x2;
@@ -1349,7 +1349,7 @@ static const SourceFetchProc sourceFetch[NBlendTypes][QImage::NImageFormats] = {
 
 static inline uint qt_gradient_pixel(const QGradientData *data, qreal pos)
 {
-    int ipos = int(pos * (GRADIENT_STOPTABLE_SIZE - 1) + 0.5);
+    int ipos = int(pos * (GRADIENT_STOPTABLE_SIZE - 1) + qreal(0.5));
 
   // calculate the actual offset.
     if (ipos < 0 || ipos >= GRADIENT_STOPTABLE_SIZE) {
@@ -1430,8 +1430,8 @@ static const uint * QT_FASTCALL fetchLinearGradient(uint *buffer, const Operator
     if (op->linear.l == 0) {
         t = inc = 0;
     } else {
-        rx = data->m21 * (y + 0.5) + data->m11 * (x + 0.5) + data->dx;
-        ry = data->m22 * (y + 0.5) + data->m12 * (x + 0.5) + data->dy;
+        rx = data->m21 * (y + qreal(0.5)) + data->m11 * (x + qreal(0.5)) + data->dx;
+        ry = data->m22 * (y + qreal(0.5)) + data->m12 * (x + qreal(0.5)) + data->dy;
         t = op->linear.dx*rx + op->linear.dy*ry + op->linear.off;
         inc = op->linear.dx * data->m11 + op->linear.dy * data->m12;
         affine = !data->m13 && !data->m23;
@@ -1444,7 +1444,7 @@ static const uint * QT_FASTCALL fetchLinearGradient(uint *buffer, const Operator
 
     const uint *end = buffer + length;
     if (affine) {
-        if (inc > -1e-5 && inc < 1e-5) {
+        if (inc > qreal(-1e-5) && inc < qreal(1e-5)) {
             QT_MEMFILL_UINT(buffer, length, qt_gradient_pixel_fixed(&data->gradient, int(t * FIXPT_SIZE)));
         } else {
             if (t+inc*length < qreal(INT_MAX >> (FIXPT_BITS + 1)) &&
@@ -1467,7 +1467,7 @@ static const uint * QT_FASTCALL fetchLinearGradient(uint *buffer, const Operator
             }
         }
     } else { // fall back to float math here as well
-        qreal rw = data->m23 * (y + 0.5) + data->m13 * (x + 0.5) + data->m33;
+        qreal rw = data->m23 * (y + qreal(0.5)) + data->m13 * (x + qreal(0.5)) + data->m33;
         while (buffer < end) {
             qreal x = rx/rw;
             qreal y = ry/rw;
@@ -1514,10 +1514,10 @@ static const uint * QT_FASTCALL fetchRadialGradient(uint *buffer, const Operator
                                                     int y, int x, int length)
 {
     const uint *b = buffer;
-    qreal rx = data->m21 * (y + 0.5)
-               + data->dx + data->m11 * (x + 0.5);
-    qreal ry = data->m22 * (y + 0.5)
-               + data->dy + data->m12 * (x + 0.5);
+    qreal rx = data->m21 * (y + qreal(0.5))
+               + data->dx + data->m11 * (x + qreal(0.5));
+    qreal ry = data->m22 * (y + qreal(0.5))
+               + data->dy + data->m12 * (x + qreal(0.5));
     bool affine = !data->m13 && !data->m23;
     //qreal r  = data->gradient.radial.radius;
 
@@ -1563,8 +1563,8 @@ static const uint * QT_FASTCALL fetchRadialGradient(uint *buffer, const Operator
             ++buffer;
         }
     } else {
-        qreal rw = data->m23 * (y + 0.5)
-                   + data->m33 + data->m13 * (x + 0.5);
+        qreal rw = data->m23 * (y + qreal(0.5))
+                   + data->m33 + data->m13 * (x + qreal(0.5));
         if (!rw)
             rw = 1;
         while (buffer < end) {
@@ -1593,10 +1593,10 @@ static const uint * QT_FASTCALL fetchConicalGradient(uint *buffer, const Operato
                                                      int y, int x, int length)
 {
     const uint *b = buffer;
-    qreal rx = data->m21 * (y + 0.5)
-               + data->dx + data->m11 * (x + 0.5);
-    qreal ry = data->m22 * (y + 0.5)
-               + data->dy + data->m12 * (x + 0.5);
+    qreal rx = data->m21 * (y + qreal(0.5))
+               + data->dx + data->m11 * (x + qreal(0.5));
+    qreal ry = data->m22 * (y + qreal(0.5))
+               + data->dy + data->m12 * (x + qreal(0.5));
     bool affine = !data->m13 && !data->m23;
 
     const uint *end = buffer + length;
@@ -1613,8 +1613,8 @@ static const uint * QT_FASTCALL fetchConicalGradient(uint *buffer, const Operato
             ++buffer;
         }
     } else {
-        qreal rw = data->m23 * (y + 0.5)
-                   + data->m33 + data->m13 * (x + 0.5);
+        qreal rw = data->m23 * (y + qreal(0.5))
+                   + data->m33 + data->m13 * (x + qreal(0.5));
         if (!rw)
             rw = 1;
         while (buffer < end) {
@@ -2819,7 +2819,7 @@ static inline int soft_light_op(int dst, int src, int da, int sa)
 #   ifdef Q_CC_RVCT // needed to avoid compiler crash in RVCT 2.2
         return (dst * sa * 255 + da * (src2 - sa) * (qIntSqrtInt(dst_np * 255) - dst_np) + temp) / 65025;
 #   else
-        return (dst * sa * 255 + da * (src2 - sa) * (int(sqrt(qreal(dst_np * 255))) - dst_np) + temp) / 65025;
+        return (dst * sa * 255 + da * (src2 - sa) * (int(qSqrt(qreal(dst_np * 255))) - dst_np) + temp) / 65025;
 #   endif
     }
 }
@@ -5928,8 +5928,8 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_argb(int count, const QSpan *s
             uint *target = ((uint *)t) + spans->x;
             uint *image_bits = (uint *)data->texture.imageData;
 
-            const qreal cx = spans->x + 0.5;
-            const qreal cy = spans->y + 0.5;
+            const qreal cx = spans->x + qreal(0.5);
+            const qreal cy = spans->y + qreal(0.5);
 
             int x = int((data->m21 * cy
                          + data->m11 * cx + data->dx) * fixed_scale);
@@ -5976,8 +5976,8 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_argb(int count, const QSpan *s
             uint *target = ((uint *)t) + spans->x;
             uint *image_bits = (uint *)data->texture.imageData;
 
-            const qreal cx = spans->x + 0.5;
-            const qreal cy = spans->y + 0.5;
+            const qreal cx = spans->x + qreal(0.5);
+            const qreal cy = spans->y + qreal(0.5);
 
             qreal x = data->m21 * cy + data->m11 * cx + data->dx;
             qreal y = data->m22 * cy + data->m12 * cx + data->dy;
@@ -6328,8 +6328,8 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_tiled_argb(int count, const QS
             uint *target = ((uint *)t) + spans->x;
             uint *image_bits = (uint *)data->texture.imageData;
 
-            const qreal cx = spans->x + 0.5;
-            const qreal cy = spans->y + 0.5;
+            const qreal cx = spans->x + qreal(0.5);
+            const qreal cy = spans->y + qreal(0.5);
 
             int x = int((data->m21 * cy
                          + data->m11 * cx + data->dx) * fixed_scale);
@@ -6380,8 +6380,8 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_tiled_argb(int count, const QS
             uint *target = ((uint *)t) + spans->x;
             uint *image_bits = (uint *)data->texture.imageData;
 
-            const qreal cx = spans->x + 0.5;
-            const qreal cy = spans->y + 0.5;
+            const qreal cx = spans->x + qreal(0.5);
+            const qreal cy = spans->y + qreal(0.5);
 
             qreal x = data->m21 * cy + data->m11 * cx + data->dx;
             qreal y = data->m22 * cy + data->m12 * cx + data->dy;
@@ -7067,7 +7067,7 @@ static void qt_gradient_quint32(int count, const QSpan *spans, void *userData)
          */
         const int gss = GRADIENT_STOPTABLE_SIZE - 1;
         int yinc = int((linear.dy * data->m22 * gss) * FIXPT_SIZE);
-        int off = int((((linear.dy * (data->m22 * 0.5 + data->dy) + linear.off) * gss) * FIXPT_SIZE));
+        int off = int((((linear.dy * (data->m22 * qreal(0.5) + data->dy) + linear.off) * gss) * FIXPT_SIZE));
 
         while (count--) {
             int y = spans->y;
@@ -7115,7 +7115,7 @@ static void qt_gradient_quint16(int count, const QSpan *spans, void *userData)
          */
         const int gss = GRADIENT_STOPTABLE_SIZE - 1;
         int yinc = int((linear.dy * data->m22 * gss) * FIXPT_SIZE);
-        int off = int((((linear.dy * (data->m22 * 0.5 + data->dy) + linear.off) * gss) * FIXPT_SIZE));
+        int off = int((((linear.dy * (data->m22 * qreal(0.5) + data->dy) + linear.off) * gss) * FIXPT_SIZE));
 
         uint oldColor = data->solid.color;
         while (count--) {
@@ -7194,17 +7194,17 @@ void qt_build_pow_tables() {
 #ifdef Q_WS_MAC
     // decided by testing a few things on an iMac, should probably get this from the
     // system...
-    smoothing = 2.0;
+    smoothing = qreal(2.0);
 #endif
 
 #ifdef Q_WS_WIN
     int winSmooth;
     if (SystemParametersInfo(0x200C /* SPI_GETFONTSMOOTHINGCONTRAST */, 0, &winSmooth, 0))
-        smoothing = winSmooth / 1000.0;
+        smoothing = winSmooth / qreal(1000.0);
 
     // Safeguard ourselves against corrupt registry values...
     if (smoothing > 5 || smoothing < 1)
-        smoothing = 1.4;
+        smoothing = qreal(1.4);
 
 #endif
 
@@ -7226,7 +7226,7 @@ void qt_build_pow_tables() {
     for (int i=0; i<256; ++i)
         qt_pow_gamma[i] = uint(qRound(qPow(i / qreal(255.), gray_gamma) * 2047));
     for (int i=0; i<2048; ++i)
-        qt_pow_invgamma[i] = uchar(qRound(qPow(i / 2047.0, 1 / gray_gamma) * 255));
+        qt_pow_invgamma[i] = uchar(qRound(qPow(i / qreal(2047.0), 1 / gray_gamma) * 255));
 #endif
 }
 

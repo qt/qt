@@ -1087,7 +1087,7 @@ void QMapData::dump()
 
     \overload
 
-    The prefix -- operator (\c{--i}) makes the preceding item
+    The postfix -- operator (\c{i--}) makes the preceding item
     current and returns an iterator pointing to the previously
     current item.
 */

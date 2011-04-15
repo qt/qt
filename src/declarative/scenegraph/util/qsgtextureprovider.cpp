@@ -50,82 +50,15 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QSGTextureProvider
     \brief The QSGTextureProvider class encapsulates texture based entities in QML.
-
-    The QSGTextureProvider objects are live primarily on the QML thread, aside from
-    the functions that are specified otherwise.
  */
-
-QSGTextureProvider::QSGTextureProvider(QObject *parent)
-    : QObject(parent)
-{
-}
 
 
 /*!
-    Propegate the state in the texture provider to the texture and
-    binds the texture.
+    Convenience function for casting a QObject to a QSGTextureProvider
  */
-void QSGTextureProvider::bind(QSGTexture *oldTexture)
+QSGTextureProvider *QSGTextureProvider::from(QObject *object)
 {
-    QSGTexture *t = texture().texture();
-    t->setFiltering((QSGTexture::Filtering) filtering());
-    t->setMipmapFiltering((QSGTexture::Filtering) mipmapFiltering());
-    t->setHorizontalWrapMode((QSGTexture::WrapMode) horizontalWrapMode());
-    t->setVerticalWrapMode((QSGTexture::WrapMode) verticalWrapMode());
-    if (t != oldTexture)
-        t->bind();
-    else
-        t->updateBindOptions();
-}
-
-/*!
-    \fn void QSGTextureProvider::updateTexture()
-
-    This function will be called on the renderer thread when the textures should
-    be updated.
-
-    The function might be called even though the textureChanged() signal has
-    not been emitted, so implementations should consider doing some caching.
- */
-
-/*!
-    Returns true if this texture provider contains a texture that might change content
-    over time.
-
-    The default implementation returns false, meaning the texture may change from
-    frame to frame.
- */
-bool QSGTextureProvider::isStaticTexture() const
-{
-    return false;
-}
-
-GLint QSGTextureProvider::glTextureWrapS() const
-{
-    return horizontalWrapMode() == Repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;
-}
-
-GLint QSGTextureProvider::glTextureWrapT() const
-{
-    return verticalWrapMode() == Repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;
-}
-
-GLint QSGTextureProvider::glMinFilter() const
-{
-    bool linear = filtering() == Linear;
-    switch (mipmapFiltering()) {
-    case Nearest:
-        return linear ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST;
-    case Linear:
-        return linear ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR;
-    default:
-        return linear ? GL_LINEAR : GL_NEAREST;
-    }
-}
-
-GLint QSGTextureProvider::glMagFilter() const
-{
-    return filtering() == Linear ? GL_LINEAR : GL_NEAREST;
+    return static_cast<QSGTextureProvider *>(object->qt_metacast("QSGTextureProvider"));
 }
 
 

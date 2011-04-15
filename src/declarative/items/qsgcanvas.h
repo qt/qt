@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QSGItem;
-class QSGContext;
+class QSGEngine;
 class QSGCanvasPrivate;
 class Q_DECLARATIVE_EXPORT QSGCanvas : public QGLWidget
 {
@@ -72,6 +72,8 @@ public:
     bool sendEvent(QSGItem *, QEvent *);
 
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
+
+    QSGEngine *sceneGraphEngine() const;
 
 protected:
     QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent = 0, Qt::WindowFlags f = 0);

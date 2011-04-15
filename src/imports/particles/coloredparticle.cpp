@@ -48,6 +48,7 @@
 #include "coloredparticle.h"
 #include "particleemitter.h"
 #include <QGLFunctions>
+#include <qsgengine.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -60,6 +61,11 @@ public:
         setFlag(Blending, true);
     }
 
+    ~ParticleTrailsMaterial()
+    {
+        delete texture;
+    }
+
     virtual QSGMaterialType *type() const { static QSGMaterialType type; return &type; }
     virtual QSGMaterialShader *createShader() const;
     virtual int compare(const QSGMaterial *other) const
@@ -67,7 +73,7 @@ public:
         return this - static_cast<const ParticleTrailsMaterial *>(other);
     }
 
-    QSGTextureRef texture;
+    QSGTexture *texture;
 
     qreal timestamp;
 };
@@ -159,10 +165,15 @@ public:
     {
     }
 
+    ~ParticleTrailsMaterialCT()
+    {
+        delete colortable;
+    }
+
     virtual QSGMaterialType *type() const { static QSGMaterialType type; return &type; }
     virtual QSGMaterialShader *createShader() const;
 
-    QSGTextureRef colortable;
+    QSGTexture *colortable;
 };
 
 
@@ -315,8 +326,6 @@ static QSGGeometry::AttributeSet ColoredParticle_AttributeSet =
 
 QSGGeometryNode* ColoredParticle::buildParticleNode()
 {
-    QSGContext *sg = QSGContext::current;
-
     if (m_count * 4 > 0xffff) {
         printf("ColoredParticle: Too many particles... \n");
         return 0;
@@ -391,7 +400,7 @@ QSGGeometryNode* ColoredParticle::buildParticleNode()
         QImage table(m_colortable_name.toLocalFile());
         if (!table.isNull()) {
             m_material = new ParticleTrailsMaterialCT();
-            static_cast<ParticleTrailsMaterialCT *>(m_material)->colortable = sg->createTexture(table);
+            static_cast<ParticleTrailsMaterialCT *>(m_material)->colortable = sceneGraphEngine()->createTextureFromImage(table);
         }
     }
 
@@ -399,7 +408,7 @@ QSGGeometryNode* ColoredParticle::buildParticleNode()
         m_material = new ParticleTrailsMaterial();
 
 
-    m_material->texture = sg->createTexture(image);
+    m_material->texture = sceneGraphEngine()->createTextureFromImage(image);
     m_material->texture->setFiltering(QSGTexture::Linear);
 
     m_node = new QSGGeometryNode();

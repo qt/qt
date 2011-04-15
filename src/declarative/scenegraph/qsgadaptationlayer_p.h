@@ -77,13 +77,18 @@ public:
 };
 
 
-class QSGTextureProvider;
 class Q_DECLARATIVE_EXPORT QSGImageNode : public QSGGeometryNode
 {
 public:
     virtual void setTargetRect(const QRectF &rect) = 0;
     virtual void setSourceRect(const QRectF &rect) = 0;
-    virtual void setTexture(QSGTextureProvider *texture) = 0;
+    virtual void setTexture(QSGTexture *texture) = 0;
+
+    virtual void setMipmapFiltering(QSGTexture::Filtering filtering) = 0;
+    virtual void setFiltering(QSGTexture::Filtering filtering) = 0;
+    virtual void setHorizontalWrapMode(QSGTexture::WrapMode wrapMode) = 0;
+    virtual void setVerticalWrapMode(QSGTexture::WrapMode wrapMode) = 0;
+
     virtual void update() = 0;
 };
 

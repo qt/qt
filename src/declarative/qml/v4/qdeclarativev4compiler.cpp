@@ -535,6 +535,41 @@ void QDeclarativeV4CompilerPrivate::convertToInt(IR::Expr *expr, int reg)
     } // switch
 }
 
+void QDeclarativeV4CompilerPrivate::convertToBool(IR::Expr *expr, int reg)
+{
+    if (expr->type == IR::BoolType)
+        return;
+
+    Instr conv;
+    conv.unaryop.output = reg;
+    conv.unaryop.src = reg;
+
+    switch (expr->type) {
+    case IR::BoolType:
+        // nothing to do
+        break;
+
+    case IR::IntType:
+        conv.common.type = Instr::ConvertIntToBool;
+        gen(conv);
+        break;
+
+    case IR::RealType:
+        conv.common.type = Instr::ConvertRealToBool;
+        gen(conv);
+        return;
+
+    case IR::StringType:
+        conv.common.type = Instr::ConvertStringToBool;
+        gen(conv);
+        return;
+
+    default:
+        discard();
+        break;
+    } // switch
+}
+
 quint8 QDeclarativeV4CompilerPrivate::instructionOpcode(IR::Binop *e)
 {
     switch (e->op) {

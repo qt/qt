@@ -60,7 +60,7 @@ class QSGRenderer;
 class QSGNode;
 class QSGRootNode;
 class QSGGeometryNode;
-class TransformNode;
+class QSGTransformNode;
 class QSGClipNode;
 
 class Q_DECLARATIVE_EXPORT QSGNode
@@ -96,12 +96,17 @@ public:
     Q_DECLARE_FLAGS(DirtyFlags, DirtyFlag)
 
     enum Flag {
+        // Lower 16 bites reserved for general node
         OwnedByParent               = 0x0001,
         UsePreprocess               = 0x0002,
         ChildrenDoNotOverloap       = 0x0004,
 
+        // Upper 16 bits reserved for node subclasses
+
         // QSGBasicGeometryNode
-        OwnsGeometry                = 0x00010000
+        OwnsGeometry                = 0x00010000,
+        OwnsMaterial                = 0x00020000,
+        OwnsOpaqueMaterial          = 0x00040000
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -129,6 +134,7 @@ public:
 
     Flags flags() const { return m_nodeFlags; }
     void setFlag(Flag, bool = true);
+    void setFlags(Flags, bool = true);
 
     virtual void preprocess() { }
 
@@ -252,11 +258,11 @@ private:
 };
 
 
-class Q_DECLARATIVE_EXPORT TransformNode : public QSGNode
+class Q_DECLARATIVE_EXPORT QSGTransformNode : public QSGNode
 {
 public:
-    TransformNode();
-    ~TransformNode();
+    QSGTransformNode();
+    ~QSGTransformNode();
 
     virtual NodeType type() const { return TransformNodeType; }
 
@@ -289,11 +295,11 @@ private:
 };
 
 
-class Q_DECLARATIVE_EXPORT OpacityNode : public QSGNode
+class Q_DECLARATIVE_EXPORT QSGOpacityNode : public QSGNode
 {
 public:
-    OpacityNode();
-    ~OpacityNode();
+    QSGOpacityNode();
+    ~QSGOpacityNode();
 
     void setOpacity(qreal opacity);
     qreal opacity() const { return m_opacity; }
@@ -316,14 +322,14 @@ public:
     virtual ~QSGNodeVisitor();
 
 protected:
-    virtual void enterTransformNode(TransformNode *) {}
-    virtual void leaveTransformNode(TransformNode *) {}
+    virtual void enterTransformNode(QSGTransformNode *) {}
+    virtual void leaveTransformNode(QSGTransformNode *) {}
     virtual void enterClipNode(QSGClipNode *) {}
     virtual void leaveClipNode(QSGClipNode *) {}
     virtual void enterGeometryNode(QSGGeometryNode *) {}
     virtual void leaveGeometryNode(QSGGeometryNode *) {}
-    virtual void enterOpacityNode(OpacityNode *) {}
-    virtual void leaveOpacityNode(OpacityNode *) {}
+    virtual void enterOpacityNode(QSGOpacityNode *) {}
+    virtual void leaveOpacityNode(QSGOpacityNode *) {}
     virtual void visitNode(QSGNode *n);
     virtual void visitChildren(QSGNode *n);
 };
@@ -331,8 +337,8 @@ protected:
 #ifndef QT_NO_DEBUG_STREAM
 Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const QSGNode *n);
 Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const QSGGeometryNode *n);
-Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const TransformNode *n);
-Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const OpacityNode *n);
+Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const QSGTransformNode *n);
+Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const QSGOpacityNode *n);
 Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const QSGRootNode *n);
 
 class QSGNodeDumper : public QSGNodeVisitor {

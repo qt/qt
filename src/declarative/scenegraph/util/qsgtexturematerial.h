@@ -55,36 +55,34 @@ QT_MODULE(Declarative)
 class Q_DECLARATIVE_EXPORT QSGTextureMaterial : public QSGMaterial
 {
 public:
-    QSGTextureMaterial()
-        : m_texture(0)
-        , m_opaque(true)
-        , m_linear_filtering(false)
-        , m_clamp_to_edge(true)
-    {
-    }
+    QSGTextureMaterial();
 
     virtual QSGMaterialType *type() const;
     virtual QSGMaterialShader *createShader() const;
     virtual int compare(const QSGMaterial *other) const;
 
-    // ### gunnar: opaque -> alpha, as "hasAlphaChannel()" is what we normally use
-    void setTexture(const QSGTextureRef &texture, bool opaque = false);
-    const QSGTextureRef &texture() const { return m_texture; }
+    void setTexture(QSGTexture *texture);
+    QSGTexture *texture() const { return m_texture; }
 
-    void setLinearFiltering(bool linearFiltering) { m_linear_filtering = linearFiltering; }
-    bool linearFiltering() const { return m_linear_filtering; }
+    void setMipmapFiltering(QSGTexture::Filtering filtering) { m_mipmap_filtering = filtering; }
+    QSGTexture::Filtering mipmapFiltering() const { return (QSGTexture::Filtering) m_mipmap_filtering; }
 
-    void setClampToEdge(bool clamp) { m_clamp_to_edge = clamp; }
-    bool clampToEdge() const { return m_clamp_to_edge; }
+    void setFiltering(QSGTexture::Filtering filtering) { m_filtering = filtering; }
+    QSGTexture::Filtering filtering() const { return (QSGTexture::Filtering)  m_filtering; }
 
-    static bool is(const QSGMaterial *effect);
+    void setHorizontalWrapMode(QSGTexture::WrapMode mode) { m_horizontal_wrap = mode; }
+    QSGTexture::WrapMode horizontalWrapMode() const { return (QSGTexture::WrapMode) m_horizontal_wrap; }
+
+    void setVerticalWrapMode(QSGTexture::WrapMode mode) { m_vertical_wrap = mode; }
+    QSGTexture::WrapMode verticalWrapMode() const { return (QSGTexture::WrapMode) m_vertical_wrap; }
 
 protected:
-    QSGTextureRef m_texture;
+    QSGTexture *m_texture;
 
-    uint m_opaque : 1;
-    uint m_linear_filtering : 1;
-    uint m_clamp_to_edge : 1;
+    uint m_filtering: 2;
+    uint m_mipmap_filtering: 2;
+    uint m_vertical_wrap: 1;
+    uint m_horizontal_wrap : 1;
 };
 
 
@@ -93,8 +91,6 @@ class Q_DECLARATIVE_EXPORT QSGTextureMaterialWithOpacity : public QSGTextureMate
 public:
     virtual QSGMaterialType *type() const;
     virtual QSGMaterialShader *createShader() const;
-
-    static bool is(const QSGMaterial *effect);
 };
 
 QT_END_NAMESPACE

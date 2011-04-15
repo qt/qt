@@ -50,8 +50,6 @@
 #include <QtGui/QPlatformWindowFormat>
 #include <QtCore/QMutex>
 
-Q_GLOBAL_STATIC(QMutex,qt_defaultSharedContextMutex)
-
 QWaylandGLContext::QWaylandGLContext(EGLDisplay eglDisplay, const QPlatformWindowFormat &format)
     : QPlatformGLContext()
     , mEglDisplay(eglDisplay)
@@ -60,20 +58,7 @@ QWaylandGLContext::QWaylandGLContext(EGLDisplay eglDisplay, const QPlatformWindo
     , mFormat(qt_qPlatformWindowFormatFromConfig(mEglDisplay,mConfig))
 {
     QPlatformGLContext *sharePlatformContext = 0;
-    if (format.useDefaultSharedContext()) {
-        if (!QPlatformGLContext::defaultSharedContext()) {
-            if (qt_defaultSharedContextMutex()->tryLock()){
-                createDefaultSharedContext(eglDisplay);
-                qt_defaultSharedContextMutex()->unlock();
-            } else {
-                qt_defaultSharedContextMutex()->lock(); //wait to the the shared context is created
-                qt_defaultSharedContextMutex()->unlock();
-            }
-        }
-        sharePlatformContext = QPlatformGLContext::defaultSharedContext();
-    } else {
-        sharePlatformContext = format.sharedGLContext();
-    }
+    sharePlatformContext = format.sharedGLContext();
     mFormat.setSharedContext(sharePlatformContext);
     EGLContext shareEGLContext = EGL_NO_CONTEXT;
     if (sharePlatformContext)
@@ -126,20 +111,6 @@ void QWaylandGLContext::swapBuffers()
 void *QWaylandGLContext::getProcAddress(const QString &string)
 {
     return (void *) eglGetProcAddress(string.toLatin1().data());
-}
-
-void QWaylandGLContext::createDefaultSharedContext(EGLDisplay display)
-{
-    QVector<EGLint> eglContextAttrs;
-    eglContextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
-    eglContextAttrs.append(2);
-    eglContextAttrs.append(EGL_NONE);
-
-    QWaylandGLContext *defaultSharedContext = new QWaylandGLContext;
-    defaultSharedContext->mEglDisplay = display;
-    defaultSharedContext->mContext = eglCreateContext(mEglDisplay,mConfig,
-                                                      EGL_NO_CONTEXT, eglContextAttrs.constData());
-    QPlatformGLContext::setDefaultSharedContext(defaultSharedContext);
 }
 
 void QWaylandGLContext::setEglSurface(EGLSurface surface)

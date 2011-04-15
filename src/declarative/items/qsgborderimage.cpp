@@ -316,11 +316,11 @@ void QSGBorderImage::doUpdate()
     update();
 }
 
-QSGNode *QSGBorderImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data)
+QSGNode *QSGBorderImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
     Q_D(QSGBorderImage);
 
-    if (d->pix.texture().isNull() || width() <= 0 || height() <= 0) {
+    if (!d->pix.texture() || width() <= 0 || height() <= 0) {
         delete oldNode;
         return 0;
     }
@@ -339,7 +339,7 @@ QSGNode *QSGBorderImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *
                               d->pix.width() - border->right() - border->left(),
                               d->pix.height() - border->bottom() - border->top()));
     node->setRect(QRectF(0, 0, width(), height()));
-    node->setLinearFiltering(d->smooth);
+    node->setFiltering(d->smooth ? QSGTexture::Linear : QSGTexture::Nearest);
     node->setHorzontalTileMode(d->horizontalTileMode);
     node->setVerticalTileMode(d->verticalTileMode);
     node->update();

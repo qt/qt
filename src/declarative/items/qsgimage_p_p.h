@@ -56,34 +56,10 @@
 
 #include "qsgimagebase_p_p.h"
 #include "qsgimage_p.h"
-#include <private/qsgtextureprovider_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QSGImagePrivate;
-class QSGImageTextureProvider : public QSGTextureProvider
-{
-public:
-    QSGImageTextureProvider(QObject *parent = 0);
-    void setImage(const QImage &image);
-    QSGTextureRef texture();
-
-    virtual WrapMode horizontalWrapMode() const;
-    virtual WrapMode verticalWrapMode() const;
-    virtual Filtering filtering() const;
-    virtual Filtering mipmapFiltering() const;
-
-    void setHorizontalWrapMode(WrapMode mode);
-    void setVerticalWrapMode(WrapMode mode);
-    void setFiltering(Filtering filtering);
-
-    QSGTextureRef tex;
-
-private:
-    uint m_hWrapMode : 1;
-    uint m_vWrapMode : 1;
-    uint m_filtering : 2;
-};
 
 class QSGImagePrivate : public QSGImageBasePrivate
 {
@@ -95,7 +71,6 @@ public:
     QSGImage::FillMode fillMode;
     qreal paintedWidth;
     qreal paintedHeight;
-    QSGImageTextureProvider *textureProvider;
     void setPixmap(const QPixmap &pix);
 
     bool pixmapChanged : 1;

@@ -49,6 +49,7 @@
 #include <private/qgl_p.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qimage_p.h>
+#include <private/qfont_p.h>
 
 #include <private/qpaintengineex_opengl2_p.h>
 
@@ -789,9 +790,6 @@ QGLTexture* QGLPixmapData::texture() const
 {
     return &m_texture;
 }
-
-Q_GUI_EXPORT int qt_defaultDpiX();
-Q_GUI_EXPORT int qt_defaultDpiY();
 
 int QGLPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {

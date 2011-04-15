@@ -36,78 +36,106 @@
 
     \nextpage Qt Examples
 
-    A collection of tutorials and "walkthrough" guides are provided with Qt to
+    A collection of tutorials and \e walkthrough guides are provided with Qt to
     help new users get started with Qt development. These documents cover a
     range of topics, from basic use of widgets to step-by-step tutorials that
     show how an application is put together.
 
-    \table
-    \row
-    \o{2,1} \l{Widgets Tutorial}{\bold Widgets}
-    \o{2,1} \l{Address Book Tutorial}{\bold {Address Book}}
-    \row
-    \o \image widget-examples.png Widgets
-    \o
-    A beginner's guide to getting started with widgets and layouts to create
-    GUI applications.
+    For demonstrations on how to use different Qt technologies, visit the
+    \l{Qt Examples} page.
 
-    \o \image addressbook-tutorial.png AddressBook
-    \o
-    A seven part guide to creating a fully-functioning address book
-    application. This tutorial is also available with
-    \l{Tutoriel "Carnet d'adresses"}{French explanation}.
+    \section1 Qt Creator Tutorial
+    Qt Creator is the development environment for Qt.
+    \list
+    \o \l{external: Qt Creator Manual}{Qt Creator Manual} - The manual contains
+    information on how to achieve development tasks
+    These are excerpts from the manual:
+        \list
+        \o \l{external: Creating Qt Projects in Creator}{Creating Qt Projects in Creator}
+        \o \l{external: Developing Qt Quick Applications with Creator}{Developing Qt Quick Applications with Creator}
+        \o \l{external: Building and Running Applications in Creator}{Building and Running Applications in Creator}
+        \o \l{external: Debugging Applications in Creator}{Debugging Applications in Creator}
+        \o \l{external: Publishing Applications to Ovi Store}{Publishing Applications to Ovi Store}
+        \endlist
+    \endlist
 
-    \row
-    \o{2,1} \l{A Quick Start to Qt Designer}{\bold{Qt Designer}}
-    \o{2,1} \l{Qt Linguist Manual: Programmers#Tutorials}{\bold {Qt Linguist}}
-    \row
-    \o \image designer-examples.png QtDesigner
-    \o
-    A quick guide through \QD showing the basic steps to create a
-    form with this interactive tool.
+    \section1 Qt Essentials
+    The basic concepts and technologies in Qt are introduced in these essential
+    tutorials.
+        \list
+        \o \l{Getting Started Programming with Qt}{Qt Text Editor} - A simple
+        tutorial detailing the creation of a basic Qt application
+        Introduces the use of slots and signals, file operations, and widgets.
+        \o \l{Address Book Tutorial}{Address Book} - A beginner's guide to
+        widgets, container classes, and layouts. This tutorial is also available
+        with
+        \l{Tutoriel "Carnet d'adresses"}{French version}.
+        \image addressbook-tutorial.png AddressBook
+        \o \l{modelview.html}{ModelView} - This tutorial gives an introduction to
+        ModelView programming using the Qt cross-platform framework
+        \o\l{thread-basics.html}{Threads} - A short tutorial about thread concepts
+        in general and basic Qt classes to handle threads
+        \endlist
 
-    \o \image linguist-examples.png QtLinguist
-    \o
-    A guided tour through the translations process, explaining the
-    tools provided for developers, translators and release managers.
+    \section1 Qt Quick Essentials
+    Qt Quick and QML features are covered in several tutorials, ranging from
+    easy introductions to advanced tutorials that mix QML with C++ and
+    JavaScript.
+        \list
+        \o \l{QML Tutorial}{Hello World} - A very simple QML example that
+        demonstrates the basic QML features
+        \o \l{Getting Started Programming with QML}{QML Text Editor} - An
+        intermediate QML tutorial that covers many QML features such as states,
+        plugins, and C++ development
+        \o \l{QML Advanced Tutorial}{SameGame} - A walkthrough of creating a
+        simple game using QML for the interface and JavaScript for the game
+        logic
+        \image qml-samegame-demo-small.png Samegame
+        \endlist
 
+    \section1 QtWebKit
+    \list
+    \o \l{QtWebKit Guide} - An introductory guide to the features of QtWebKit
+    and HTML5.
+        \list
+        \o \l{QtWebKit Guide - Level 3 CSS}{CSS Chapter} - Covers what is
+        possible with CSS3 and QtWebKit.
+        \o \l{Canvas Graphics}{HTML5 Canvas Chapter} - Covers the basics of
+        integrating the <canvas> element into web applications.
+        \o \l{QtWebKit Guide - Client Storage}{Client Storage Chapter} -
+        Describes the basics of storing information on the client side.
+        \endlist
+    \endlist
 
-    \row
-    \o{2,1} \l{modelview.html}{\bold{ModelView}}
-    \o{2,1}
-    
-    \row
-    \o \image treeview_sml.png ModelView
-    \o This tutorial gives an introduction to ModelView programming using the Qt cross-platform framework
+    \section1 Qt Utilities
+    \list
+    \o \l{QTestLib Tutorial}{QTestLib} - This tutorial gives a short
+    introduction to how to use some of the features of Qt's unit-testing
+    framework, QTestLib. It is divided into four chapters.
+    \o \l{qmake Tutorial}{qmake} - This tutorial teaches you how to use \c
+    qmake. We recommend that you read the \l{qmake Manual}{qmake user guide}
+    after completing this tutorial.
+    \o \l{Qt Linguist Manual: Programmers#Tutorials}{Qt Linguist} - A guided
+    tour through the translations process, explaining the tools provided for
+    developers, translators and release managers.
+    \image linguist-examples.png QtLinguist
+    \endlist
 
-    \o
-    \o
-    
-    \row
-    \o{2,1} \l{QML Tutorial}{\bold QML Tutorial}
-    \o{2,1} \l{QML Advanced Tutorial}{\bold SameGame}
-    \row
-    \o{2,1}
-    This tutorial provides a very basic introduction to QML.
-    \o \image qml-samegame-demo-small.png Samegame
-    \o
-    This tutorial walks through creating a complete application with QML,
-    in this case a simple game. It is recommended that you complete the basic QML
-    tutorial first.
+    \section1 Online Learning Materials
+    These online materials provide further tutorials and developer
+    presentations.
 
-    \row
-    \o{2,1} \l{QTestLib Tutorial}{\bold QTestLib}
-    \o{2,1} \l{qmake Tutorial}{\bold qmake}
-    \row
-    \o{2,1}
-    This tutorial gives a short introduction to how to use some of the
-    features of Qt's unit-testing framework, QTestLib. It is divided into
-    four chapters.
+    \note The videos presented in these sites are not supported by the
+    Qt Creator browser and must be viewed in a web browser.
 
-    \o{2,1}
-    This tutorial teaches you how to use \c qmake. We recommend that
-    you read the \l{qmake Manual}{qmake user guide} after completing
-    this tutorial.
-
-    \endtable
+    \list
+    \o \l{Qt eLearning} - The Qt eLearning team provides training and Qt
+    certification. Many of their learning content are hosted online.
+        \list
+        \o \l{Qt eLearning Training Materials} - Additional training material
+        are available as videos, downloadable code, and PDF files.
+        \o \l{Qt Developer Days 2010} - The presentation slides and videos from
+        Qt Developer Days are available for viewing.
+        \endlist
+    \endlist
 */

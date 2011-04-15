@@ -89,9 +89,10 @@ class QSGKeyEvent;
 class QSGAnchors;
 class QSGItemPrivate;
 class QSGCanvas;
+class QSGEngine;
 class QTouchEvent;
 class QSGNode;
-class TransformNode;
+class QSGTransformNode;
 class Q_DECLARATIVE_EXPORT QSGItem : public QObject, public QDeclarativeParserStatus
 {
     Q_OBJECT
@@ -186,6 +187,8 @@ public:
 
     QSGItem(QSGItem *parent = 0);
     virtual ~QSGItem();
+
+    QSGEngine *sceneGraphEngine() const;
 
     QSGCanvas *canvas() const;
     QSGItem *parentItem() const;
@@ -294,7 +297,7 @@ public:
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 
     struct UpdatePaintNodeData {
-       TransformNode *transformNode;
+       QSGTransformNode *transformNode;
     private:
        friend class QSGCanvasPrivate;
        UpdatePaintNodeData();

@@ -42,6 +42,9 @@
 #ifndef QUIKITEVENTLOOP_H
 #define QUIKITEVENTLOOP_H
 
+#include "quikitsoftwareinputhandler.h"
+
+#include <QtCore/QEvent>
 #include <QtGui/QPlatformEventLoopIntegration>
 
 @class EventLoopHelper;
@@ -61,6 +64,7 @@ public:
 
     EventLoopHelper *mHelper;
     NSTimer *mTimer;
+    QUIKitSoftwareInputHandler *mInputHandler;
 };
 
 QT_END_NAMESPACE

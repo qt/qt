@@ -54,10 +54,11 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(qmlFboOverlay, QML_FBO_OVERLAY)
 
-QSGShaderEffectTextureProvider::QSGShaderEffectTextureProvider(QObject *parent)
-    : QSGTextureProvider(parent)
+QSGShaderEffectTexture::QSGShaderEffectTexture(QSGItem *shaderSource)
+    : QSGDynamicTexture()
     , m_item(0)
     , m_format(GL_RGBA)
+    , m_shaderSource(shaderSource)
     , m_renderer(0)
     , m_fbo(0)
     , m_multisampledFbo(0)
@@ -71,7 +72,7 @@ QSGShaderEffectTextureProvider::QSGShaderEffectTextureProvider(QObject *parent)
 {
 }
 
-QSGShaderEffectTextureProvider::~QSGShaderEffectTextureProvider()
+QSGShaderEffectTexture::~QSGShaderEffectTexture()
 {
     delete m_renderer;
     delete m_fbo;
@@ -81,53 +82,39 @@ QSGShaderEffectTextureProvider::~QSGShaderEffectTextureProvider()
 #endif
 }
 
-void QSGShaderEffectTextureProvider::updateTexture()
+
+int QSGShaderEffectTexture::textureId() const
 {
-    if (m_dirtyTexture)
+    return m_fbo->texture();
+}
+
+bool QSGShaderEffectTexture::hasAlphaChannel() const
+{
+    return m_format != GL_RGB;
+}
+
+bool QSGShaderEffectTexture::hasMipmaps() const
+{
+    return m_mipmapFiltering;
+}
+
+
+void QSGShaderEffectTexture::bind()
+{
+    glBindTexture(GL_TEXTURE_2D, m_fbo->texture());
+    updateBindOptions();
+}
+
+bool QSGShaderEffectTexture::updateTexture()
+{
+    if (m_dirtyTexture) {
         grab();
+        return true;
+    }
+    return false;
 }
 
-QSGTextureRef QSGShaderEffectTextureProvider::texture()
-{
-    return m_texture;
-}
-
-QSGTextureProvider::WrapMode QSGShaderEffectTextureProvider::horizontalWrapMode() const
-{
-    return WrapMode(m_hWrapMode);
-}
-
-QSGTextureProvider::WrapMode QSGShaderEffectTextureProvider::verticalWrapMode() const
-{
-    return WrapMode(m_vWrapMode);
-}
-
-QSGTextureProvider::Filtering QSGShaderEffectTextureProvider::filtering() const
-{
-    return Filtering(m_filtering);
-}
-
-QSGTextureProvider::Filtering QSGShaderEffectTextureProvider::mipmapFiltering() const
-{
-    return Filtering(m_mipmapFiltering);
-}
-
-void QSGShaderEffectTextureProvider::setHorizontalWrapMode(QSGTextureProvider::WrapMode mode)
-{
-    m_hWrapMode = mode;
-}
-
-void QSGShaderEffectTextureProvider::setVerticalWrapMode(QSGTextureProvider::WrapMode mode)
-{
-    m_vWrapMode = mode;
-}
-
-void QSGShaderEffectTextureProvider::setFiltering(QSGTextureProvider::Filtering filtering)
-{
-    m_filtering = filtering;
-}
-
-void QSGShaderEffectTextureProvider::setMipmapFiltering(QSGTextureProvider::Filtering filtering)
+void QSGShaderEffectTexture::setHasMipmaps(QSGTexture::Filtering filtering)
 {
     if (filtering == m_mipmapFiltering)
         return;
@@ -137,7 +124,7 @@ void QSGShaderEffectTextureProvider::setMipmapFiltering(QSGTextureProvider::Filt
 }
 
 
-void QSGShaderEffectTextureProvider::setItem(QSGNode *item)
+void QSGShaderEffectTexture::setItem(QSGNode *item)
 {
     if (item == m_item)
         return;
@@ -145,7 +132,7 @@ void QSGShaderEffectTextureProvider::setItem(QSGNode *item)
     markDirtyTexture();
 }
 
-void QSGShaderEffectTextureProvider::setRect(const QRectF &rect)
+void QSGShaderEffectTexture::setRect(const QRectF &rect)
 {
     if (rect == m_rect)
         return;
@@ -153,7 +140,7 @@ void QSGShaderEffectTextureProvider::setRect(const QRectF &rect)
     markDirtyTexture();
 }
 
-void QSGShaderEffectTextureProvider::setSize(const QSize &size)
+void QSGShaderEffectTexture::setSize(const QSize &size)
 {
     if (size == m_size)
         return;
@@ -161,7 +148,7 @@ void QSGShaderEffectTextureProvider::setSize(const QSize &size)
     markDirtyTexture();
 }
 
-void QSGShaderEffectTextureProvider::setFormat(GLenum format)
+void QSGShaderEffectTexture::setFormat(GLenum format)
 {
     if (format == m_format)
         return;
@@ -169,7 +156,7 @@ void QSGShaderEffectTextureProvider::setFormat(GLenum format)
     markDirtyTexture();
 }
 
-void QSGShaderEffectTextureProvider::setLive(bool live)
+void QSGShaderEffectTexture::setLive(bool live)
 {
     if (live == m_live)
         return;
@@ -177,7 +164,7 @@ void QSGShaderEffectTextureProvider::setLive(bool live)
     markDirtyTexture();
 }
 
-void QSGShaderEffectTextureProvider::markDirtyTexture()
+void QSGShaderEffectTexture::markDirtyTexture()
 {
     if (m_live) {
         m_dirtyTexture = true;
@@ -185,7 +172,7 @@ void QSGShaderEffectTextureProvider::markDirtyTexture()
     }
 }
 
-void QSGShaderEffectTextureProvider::grab()
+void QSGShaderEffectTexture::grab()
 {
     Q_ASSERT(m_item);
     QSGNode *root = m_item;
@@ -195,15 +182,16 @@ void QSGShaderEffectTextureProvider::grab()
         return;
 
     if (m_size.isEmpty()) {
-        m_texture = QSGTextureRef();
         delete m_fbo;
         delete m_multisampledFbo;
         m_multisampledFbo = m_fbo = 0;
         return;
     }
 
+    QSGContext *context = QSGItemPrivate::get(m_shaderSource)->sceneGraphContext();
+
     if (!m_renderer) {
-        m_renderer = QSGContext::current->createRenderer();
+        m_renderer = context->createRenderer();
         connect(m_renderer, SIGNAL(sceneGraphChanged()), this, SLOT(markDirtyTexture()));
     }
     m_renderer->setRootNode(static_cast<QSGRootNode *>(root));
@@ -233,13 +221,6 @@ void QSGShaderEffectTextureProvider::grab()
             format.setSamples(0);
             m_fbo = new QGLFramebufferObject(m_size, format);
 
-            QSGPlainTexture *tex = new QSGPlainTexture;
-            tex->setTextureSize(QSize(m_fbo->size()));
-            tex->setTextureId(m_fbo->texture());
-            tex->setOwnsTexture(false);
-            tex->setHasMipmaps(mipmap);
-            tex->setHasAlphaChannel(m_format != GL_RGB);
-            m_texture = QSGTextureRef(tex);
         } else {
             delete m_fbo;
             QGLFramebufferObjectFormat format;
@@ -247,13 +228,6 @@ void QSGShaderEffectTextureProvider::grab()
             format.setInternalTextureFormat(m_format);
             format.setMipmap(m_mipmapFiltering);
             m_fbo = new QGLFramebufferObject(m_size, format);
-            QSGPlainTexture *tex = new QSGPlainTexture;
-            tex->setTextureSize(QSize(m_fbo->size()));
-            tex->setTextureId(m_fbo->texture());
-            tex->setOwnsTexture(false);
-            tex->setHasMipmaps(mipmap);
-            tex->setHasAlphaChannel(m_format != GL_RGB);
-            m_texture = QSGTextureRef(tex);
         }
     }
 
@@ -265,7 +239,7 @@ void QSGShaderEffectTextureProvider::grab()
 #ifdef QSG_DEBUG_FBO_OVERLAY
     if (qmlFboOverlay()) {
         if (!m_debugOverlay)
-            m_debugOverlay = QSGContext::current->createRectangleNode();
+            m_debugOverlay = context->createRectangleNode();
         m_debugOverlay->setRect(QRectF(0, 0, m_size.width(), m_size.height()));
         m_debugOverlay->setColor(QColor(0xff, 0x00, 0x80, 0x40));
         m_debugOverlay->setPenColor(QColor());
@@ -278,22 +252,22 @@ void QSGShaderEffectTextureProvider::grab()
 
     m_dirtyTexture = false;
 
-    const QGLContext *ctx = QSGContext::current->glContext();
+    const QGLContext *ctx = QGLContext::currentContext();
     m_renderer->setDeviceRect(m_size);
     m_renderer->setViewportRect(m_size);
     m_renderer->setProjectMatrixToRect(m_rect);
     m_renderer->setClearColor(Qt::transparent);
 
     if (m_multisampling) {
-        m_renderer->renderScene(BindableFbo(const_cast<QGLContext *>(ctx), m_multisampledFbo));
+        m_renderer->renderScene(BindableFbo(m_multisampledFbo));
         QRect r(0, 0, m_fbo->width(), m_fbo->height());
         QGLFramebufferObject::blitFramebuffer(m_fbo, r, m_multisampledFbo, r);
     } else {
-        m_renderer->renderScene(BindableFbo(const_cast<QGLContext *>(ctx), m_fbo));
+        m_renderer->renderScene(BindableFbo(m_fbo));
     }
 
     if (mipmap) {
-        glBindTexture(GL_TEXTURE_2D, m_texture->textureId());
+        glBindTexture(GL_TEXTURE_2D, textureId());
         ctx->functions()->glGenerateMipmap(GL_TEXTURE_2D);
     }
 
@@ -308,7 +282,6 @@ void QSGShaderEffectTextureProvider::grab()
 
 QSGShaderEffectSource::QSGShaderEffectSource(QSGItem *parent)
     : QSGItem(parent)
-    , m_textureProvider(0)
     , m_wrapMode(ClampToEdge)
     , m_sourceItem(0)
     , m_textureSize(0, 0)
@@ -318,18 +291,14 @@ QSGShaderEffectSource::QSGShaderEffectSource(QSGItem *parent)
     , m_mipmap(false)
 {
     setFlag(ItemHasContents);
-    m_textureProvider = new QSGShaderEffectTextureProvider(this);
+    m_texture = new QSGShaderEffectTexture(this);
 }
 
 QSGShaderEffectSource::~QSGShaderEffectSource()
 {
+    delete m_texture;
     if (m_sourceItem)
         QSGItemPrivate::get(m_sourceItem)->derefFromEffectItem(m_hideSource);
-}
-
-QSGTextureProvider *QSGShaderEffectSource::textureProvider() const
-{
-    return m_textureProvider;
 }
 
 QSGShaderEffectSource::WrapMode QSGShaderEffectSource::wrapMode() const
@@ -456,6 +425,7 @@ void QSGShaderEffectSource::setMipmap(bool enabled)
 {
     if (enabled == m_mipmap)
         return;
+    printf("setting mipmap to: %d\n", enabled);
     m_mipmap = enabled;
     update();
     emit mipmapChanged();
@@ -471,7 +441,38 @@ void QSGShaderEffectSource::grab()
     QSGCanvasPrivate::get(canvas)->updateDirtyNodes();
     QGLContext *glctx = const_cast<QGLContext *>(canvas->context());
     glctx->makeCurrent();
-    static_cast<QSGShaderEffectTextureProvider *>(textureProvider())->grab();
+    qobject_cast<QSGShaderEffectTexture *>(m_texture)->grab();
+}
+
+static void get_wrap_mode(QSGShaderEffectSource::WrapMode mode, QSGTexture::WrapMode *hWrap, QSGTexture::WrapMode *vWrap)
+{
+    switch (mode) {
+    case QSGShaderEffectSource::RepeatHorizontally:
+        *hWrap = QSGTexture::Repeat;
+        *vWrap = QSGTexture::ClampToEdge;
+        break;
+    case QSGShaderEffectSource::RepeatVertically:
+        *vWrap = QSGTexture::Repeat;
+        *hWrap = QSGTexture::ClampToEdge;
+        break;
+    case QSGShaderEffectSource::Repeat:
+        *hWrap = *vWrap = QSGTexture::Repeat;
+        break;
+    default:
+        break;
+    }
+}
+
+
+QSGTexture *QSGShaderEffectSource::texture() const
+{
+    m_texture->setMipmapFiltering(m_mipmap ? QSGTexture::Linear : QSGTexture::None);
+    m_texture->setFiltering(QSGItemPrivate::get(this)->smooth ? QSGTexture::Linear : QSGTexture::Nearest);
+    QSGTexture::WrapMode h, v;
+    get_wrap_mode(m_wrapMode, &h, &v);
+    m_texture->setHorizontalWrapMode(h);
+    m_texture->setVerticalWrapMode(v);
+    return m_texture;
 }
 
 QSGNode *QSGShaderEffectSource::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
@@ -483,49 +484,38 @@ QSGNode *QSGShaderEffectSource::updatePaintNode(QSGNode *oldNode, UpdatePaintNod
 
     QSGImageNode *node = static_cast<QSGImageNode *>(oldNode);
     if (!node) {
-        node = QSGContext::current->createImageNode();
+        node = QSGItemPrivate::get(this)->sceneGraphContext()->createImageNode();
         node->setFlag(QSGNode::UsePreprocess, true);
-        node->setTexture(m_textureProvider);
+        node->setTexture(m_texture);
     }
 
-    m_textureProvider->setItem(QSGItemPrivate::get(m_sourceItem)->itemNode());
-    QRectF sourceRect = m_sourceRect.isEmpty() 
+    QSGShaderEffectTexture *tex = qobject_cast<QSGShaderEffectTexture *>(m_texture);
+
+    tex->setItem(QSGItemPrivate::get(m_sourceItem)->itemNode());
+    QRectF sourceRect = m_sourceRect.isEmpty()
                       ? QRectF(0, 0, m_sourceItem->width(), m_sourceItem->height())
                       : m_sourceRect;
-    m_textureProvider->setRect(sourceRect);
+    tex->setRect(sourceRect);
     QSize textureSize = m_textureSize.isEmpty()
                       ? QSize(qCeil(sourceRect.width()), qCeil(sourceRect.height()))
                       : m_textureSize;
-    m_textureProvider->setSize(textureSize);
-    m_textureProvider->setLive(m_live);
-    m_textureProvider->setFormat(GLenum(m_format));
+    tex->setSize(textureSize);
+    tex->setLive(m_live);
+    tex->setFormat(GLenum(m_format));
 
-    QSGTextureProvider::Filtering filtering = QSGItemPrivate::get(this)->smooth
-                                            ? QSGTextureProvider::Linear
-                                            : QSGTextureProvider::Nearest;
-    m_textureProvider->setMipmapFiltering(m_mipmap ? filtering : QSGTextureProvider::None);
+    QSGTexture::Filtering filtering = QSGItemPrivate::get(this)->smooth
+                                            ? QSGTexture::Linear
+                                            : QSGTexture::Nearest;
+    QSGTexture::Filtering mmFiltering = m_mipmap ? filtering : QSGTexture::None;
+    tex->setHasMipmaps(mmFiltering);
+    node->setMipmapFiltering(mmFiltering);
+    node->setFiltering(filtering);
 
-    QSGTextureProvider::WrapMode hWrap = QSGTextureProvider::ClampToEdge;
-    QSGTextureProvider::WrapMode vWrap = QSGTextureProvider::ClampToEdge;
-    switch (m_wrapMode) {
-    case RepeatHorizontally:
-        hWrap = QSGTextureProvider::Repeat;
-        break;
-    case RepeatVertically:
-        vWrap = QSGTextureProvider::Repeat;
-        break;
-    case Repeat:
-        hWrap = vWrap = QSGTextureProvider::Repeat;
-        break;
-    default:
-        break;
-    }
+    QSGTexture::WrapMode hWrap, vWrap;
+    get_wrap_mode(m_wrapMode, &hWrap, &vWrap);
 
-    m_textureProvider->setHorizontalWrapMode(hWrap);
-    m_textureProvider->setVerticalWrapMode(vWrap);
-    m_textureProvider->setFiltering(QSGItemPrivate::get(this)->smooth
-                                    ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
-
+    node->setHorizontalWrapMode(hWrap);
+    node->setVerticalWrapMode(vWrap);
     node->setTargetRect(QRectF(0, 0, width(), height()));
     node->setSourceRect(QRectF(0, 1, 1, -1));
     node->update();

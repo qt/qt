@@ -1587,6 +1587,9 @@ static void getXDefault(const char *group, const char *key, int *val)
         int v = strtol(str, &end, 0);
         if (str != end)
             *val = v;
+        // otherwise use fontconfig to convert the string to integer
+        else
+            FcNameConstant((FcChar8 *) str, val);
     }
 }
 
@@ -2237,6 +2240,7 @@ void qt_init(QApplicationPrivate *priv, int,
         }
         getXDefault("Xft", FC_ANTIALIAS, &X11->fc_antialias);
 #ifdef FC_HINT_STYLE
+        X11->fc_hint_style = -1;
         getXDefault("Xft", FC_HINT_STYLE, &X11->fc_hint_style);
 #endif
 #if 0

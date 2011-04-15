@@ -45,6 +45,7 @@
 #include <private/qsgcontext_p.h>
 #include <private/qsgadaptationlayer_p.h>
 #include <qsgnode.h>
+#include <qsgengine.h>
 #include <qsgtexturematerial.h>
 #include <qsgtexture.h>
 #include <QFile>
@@ -66,7 +67,7 @@ public:
         return this - static_cast<const SpriteMaterial *>(other);
     }
 
-    QSGTextureRef texture;
+    QSGTexture *texture;
 
     qreal timestamp;
     qreal timelength;
@@ -89,6 +90,7 @@ SpriteMaterial::SpriteMaterial()
 
 SpriteMaterial::~SpriteMaterial()
 {
+    delete texture;
 }
 
 class SpriteMaterialData : public QSGMaterialShader
@@ -236,8 +238,6 @@ static QSGGeometry::AttributeSet SpriteImage_AttributeSet =
 
 QSGGeometryNode* SpriteImage::buildNode()
 {
-    QSGContext *sg = QSGContext::current;
-
     if (!m_spriteEngine) {
         qWarning() << "SpriteImage: No sprite engine...";
         return 0;
@@ -253,7 +253,7 @@ QSGGeometryNode* SpriteImage::buildNode()
     QImage image = m_spriteEngine->assembledImage();
     if(image.isNull())
         return 0;
-    m_material->texture = sg->createTexture(image);
+    m_material->texture = sceneGraphEngine()->createTextureFromImage(image);
     m_material->texture->setFiltering(QSGTexture::Linear);
     m_material->framecount = m_spriteEngine->maxFrames();
 

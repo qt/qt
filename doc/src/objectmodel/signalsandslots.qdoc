@@ -440,7 +440,7 @@
     You can even use both mechanisms in the same project. Just add the
     following line to your qmake project (.pro) file.
 
-    \snippet doc/src/snippets/code/doc_src_containers.qdoc 22
+    \snippet doc/src/snippets/code/doc_src_containers.cpp 22
 
     It tells Qt not to define the moc keywords \c{signals}, \c{slots},
     and \c{emit}, because these names will be used by a 3rd party

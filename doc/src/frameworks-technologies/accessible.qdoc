@@ -52,12 +52,12 @@
     An application does not usually communicate directly with
     assistive tools but through an assistive technology, which is a
     bridge for exchange of information between the applications and
-    the tools. Information about user interface elements, such
-    as buttons and scroll bars, is exposed to the assistive technologies.
-    Qt supports Microsoft Active Accessibility (MSAA) on Windows and
-    Mac OS X Accessibility on Mac OS X.
-    On Unix/X11, support is preliminary. The individual technologies
-    are abstracted from Qt, and there is only a single interface to
+    the tools. Information about user interface elements, such as
+    buttons and scroll bars, is exposed to the assistive technologies.
+    Qt supports Microsoft Active Accessibility (MSAA) on Windows, Mac
+    OS X Accessibility on Mac OS X, and AT-SPI on Unix/X11. On
+    Unix/X11, support is preliminary. The individual technologies are
+    abstracted from Qt, and there is only a single interface to
     consider. We will use MSAA throughout this document when we need
     to address technology related issues.
 
@@ -256,7 +256,7 @@
     variable set to 1. For example, this is set in the following way with
     the bash shell:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-accessibility.qdoc environment
+    \snippet doc/src/snippets/code/doc_src_qt4-accessibility.cpp environment
 
     Accessibility features are built into Qt by default when the libraries
     are configured and built.
@@ -333,10 +333,16 @@
     \section2 QAccessibleWidget Example
 
     Instead of creating a custom widget and implementing an interface
-    for it, we will show how accessibility can be implemented for one of
-    Qt's standard widgets: QSlider. Making this widget accessible
-    demonstrates many of the issues that need to be faced when making
-    a custom widget accessible.
+    for it, we will show how accessibility is implemented for one of
+    Qt's standard widgets: QSlider. The accessible interface,
+    QAccessibleSlider, inherits from QAccessibleAbstractSlider, which
+    in turn inherits QAccessibleWidget. You do not need to examine the
+    QAccessibleAbstractSlider class to read this section. If you want
+    to take a look, the code for all of Qt's accessible interfaces are
+    found in src/plugins/accessible/widgets. Here is the
+    QAccessibleSlider's constructor:
+
+    \snippet doc/src/snippets/accessibilityslidersnippet.cpp 0
 
     The slider is a complex control that functions as a
     \l{QAccessible::}{Controller} for its accessible children.
@@ -345,8 +351,6 @@
     \l{QAccessibleInterface::}{navigate()}). This can be done
     using a controlling signal, which is a mechanism provided by
     QAccessibleWidget. We do this in the constructor:
-
-    \snippet doc/src/snippets/accessibilityslidersnippet.cpp 0
 
     The choice of signal shown is not important; the same principles
     apply to all signals that are declared in this way. Note that we
@@ -507,10 +511,10 @@
     plugin template, and the library containing the plugin must be
     placed on a path where Qt searches for accessible plugins.
 
-    We will go through the implementation of \c SliderPlugin, which is an
-    accessible plugin that produces interfaces for the
-    QAccessibleSlider we implemented in the \l{QAccessibleWidget Example}.
-    We start with the \c key() function:
+    We will go through the implementation of \c SliderPlugin, which is
+    an accessible plugin that produces the QAccessibleSlider interface
+    from the \l{QAccessibleWidget Example}. We start with the \c key()
+    function:
 
     \snippet doc/src/snippets/accessibilitypluginsnippet.cpp 0
 
@@ -521,13 +525,12 @@
 
     \snippet doc/src/snippets/accessibilitypluginsnippet.cpp 1
 
-    We check whether the interface requested is for the QSlider; if it
-    is, we create and return an interface for it. Note that \c object
-    will always be an instance of \c classname. You must return 0 if
-    you do not support the class.
-    \l{QAccessible::}{updateAccessibility()} checks with the
-    available accessibility plugins until it finds one that does not
-    return 0.
+    We check whether the interface requested is for QSlider; if it is,
+    we create and return an interface for it. Note that \c object will
+    always be an instance of \c classname. You must return 0 if you do
+    not support the class.  \l{QAccessible::}{updateAccessibility()}
+    checks with the available accessibility plugins until it finds one
+    that does not return 0.
 
     Finally, you need to include macros in the cpp file:
 
@@ -536,9 +539,9 @@
     The Q_EXPORT_PLUGIN2 macro exports the plugin in the \c
     SliderPlugin class into the \c acc_sliderplugin library. The first
     argument is the name of the plugin library file, excluding the
-    file suffix, and the second is the class name. For more information
-    on plugins, consult the plugins \l{How to Create Qt
-    Plugins}{overview document}.
+    file suffix, and the second is the class name. For more
+    information on plugins, you can consult the plugins \l{How to
+    Create Qt Plugins}{overview document}.
 
     You can omit the first macro unless you want the plugin
     to be statically linked with the application.
@@ -555,7 +558,7 @@
     \l{QAccessiblePlugin::}{create()} - a QString and a QObject. It
     also works the same way. You install the factory with the
     \l{QAccessible::}{installFactory()} function. We give an example
-    of how to create a factory for the \c SliderPlugin class:
+    of how to create a factory for the \c QAccessibleSlider interface:
 
     \snippet doc/src/snippets/accessibilityfactorysnippet.cpp 0
     \dots

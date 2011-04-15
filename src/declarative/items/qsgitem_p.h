@@ -60,6 +60,8 @@
 #include "qsganchors_p_p.h"
 #include "qsgitemchangelistener_p.h"
 
+#include "qsgcanvas_p.h"
+
 #include "qsgnode.h"
 #include "qsgclipnode_p.h"
 
@@ -255,6 +257,8 @@ public:
     quint32 dummy:2;
 
     QSGCanvas *canvas;
+    QSGContext *sceneGraphContext() const { return static_cast<QSGCanvasPrivate *>(QObjectPrivate::get(canvas))->context; }
+
     QSGItem *parentItem;
     QList<QSGItem *> childItems;
     QList<QSGItem *> paintOrderChildItems() const;
@@ -364,7 +368,7 @@ public:
     QSGItem *nextDirtyItem;
     QSGItem**prevDirtyItem;
 
-    inline TransformNode *itemNode();
+    inline QSGTransformNode *itemNode();
     inline QSGNode *childContainerNode();
 
     /*
@@ -376,15 +380,15 @@ public:
          - groupNode
      */
 
-    TransformNode *itemNodeInstance;
-    OpacityNode *opacityNode;
+    QSGTransformNode *itemNodeInstance;
+    QSGOpacityNode *opacityNode;
     QSGDefaultClipNode *clipNode;
     QSGRootNode *rootNode;
     QSGNode *groupNode;
     QSGNode *paintNode;
     int paintNodeIndex;
 
-    virtual TransformNode *createTransformNode();
+    virtual QSGTransformNode *createTransformNode();
 
     // A reference from an effect item means that this item is used by the effect, so
     // it should insert a root node.
@@ -661,7 +665,7 @@ private:
     static const SigMap sigMap[];
 };
 
-TransformNode *QSGItemPrivate::itemNode() 
+QSGTransformNode *QSGItemPrivate::itemNode()
 { 
     if (!itemNodeInstance) {
         itemNodeInstance = createTransformNode();

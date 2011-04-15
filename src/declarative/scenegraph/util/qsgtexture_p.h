@@ -47,6 +47,7 @@
 #include <QtOpenGL/qgl.h>
 
 #include "qsgtexture.h"
+#include <private/qsgcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,6 +68,7 @@ public:
 
 class Q_DECLARATIVE_EXPORT QSGPlainTexture : public QSGTexture
 {
+    Q_OBJECT
 public:
     QSGPlainTexture();
     virtual ~QSGPlainTexture();

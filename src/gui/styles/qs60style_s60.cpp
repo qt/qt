@@ -158,7 +158,6 @@ public:
     static bool disabledPartGraphic(QS60StyleEnums::SkinParts &part);
     static bool disabledFrameGraphic(QS60StylePrivate::SkinFrameElements &frame);
     static QPixmap generateMissingThemeGraphic(QS60StyleEnums::SkinParts &part, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
-    static QSize naviPaneSize();
     static TAknsItemID partSpecificThemeId(int part);
 
     static QVariant themeDefinition(QS60StyleEnums::ThemeDefinitions definition, QS60StyleEnums::SkinParts part);
@@ -777,16 +776,8 @@ QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
 {
     CCoeControl *control = targetWidget->effectiveWinId();
     TPoint pos(0,0);
-    if (control) {
-        // FIXME properly: S60 3.1 has a bug that CCoeControl::PositionRelativeToScreen sometimes
-        // freezes the device, possibly in cases where we run out of memory.
-        // We use CCoeControl::Position instead in S60 3.1, which returns same values
-        // in most cases.
-        if (QSysInfo::s60Version() == QSysInfo::SV_S60_3_1)
-            pos = control->Position();
-        else
-            pos = control->PositionRelativeToScreen();
-    }
+    if (control)
+        pos = control->PositionRelativeToScreen();
     return QPoint(pos.iX, pos.iY);
 }
 
@@ -1476,23 +1467,6 @@ void QS60StylePrivate::handleSkinChange()
     stopAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim); //todo: once we have more animations, we could say "stop all running ones"
     startAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim); //and "re-start all previously running ones"
 #endif
-}
-
-QSize QS60StylePrivate::naviPaneSize()
-{
-    return QS60StyleModeSpecifics::naviPaneSize();
-}
-
-QSize QS60StyleModeSpecifics::naviPaneSize()
-{
-    CAknNavigationControlContainer* naviContainer;
-    if (S60->statusPane()) {
-        TRAPD(err, naviContainer = static_cast<CAknNavigationControlContainer*>
-            (S60->statusPane()->ControlL(TUid::Uid(EEikStatusPaneUidNavi))));
-        if (err==KErrNone)
-            return QSize(naviContainer->Size().iWidth, naviContainer->Size().iHeight);
-    }
-    return QSize(0,0);
 }
 
 int QS60StylePrivate::currentAnimationFrame(QS60StyleEnums::SkinParts part)

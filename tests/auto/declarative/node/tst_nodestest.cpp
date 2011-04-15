@@ -42,11 +42,11 @@
 #include <QtCore/QString>
 #include <QtTest/QtTest>
 
-#include <node.h>
-#include <renderer.h>
-#include <private/nodeupdater_p.h>
+#include <qsgnode.h>
+#include <private/qsgrenderer_p.h>
+#include <private/qsgnodeupdater_p.h>
 
-#include <solidrectnode.h>
+#include <qsgsimplerectnode.h>
 
 class NodesTest : public QObject
 {
@@ -71,13 +71,13 @@ private Q_SLOTS:
     void basicOpacityNode();
     void opacityPropegation();
 
-    // NodeUpdater
+    // QSGNodeUpdater
     void isBlockedCheck();
 
 private:
     QGLWidget *widget;
 
-    NodeUpdater updater;
+    QSGNodeUpdater updater;
 };
 
 void NodesTest::initTestCase()
@@ -87,11 +87,12 @@ void NodesTest::initTestCase()
     widget->show();
 }
 
-class DummyRenderer : public Renderer
+class DummyRenderer : public QSGRenderer
 {
 public:
-    DummyRenderer(RootNode *root)
-        : changedNode(0)
+    DummyRenderer(QSGRootNode *root)
+        : QSGRenderer(QSGContext::createDefaultContext())
+        , changedNode(0)
         , changedFlags(0)
         , renderCount(0)
     {
@@ -103,14 +104,14 @@ public:
         renderingOrder = ++globalRendereringOrder;
     }
 
-    void nodeChanged(Node *node, Node::DirtyFlags flags) {
+    void nodeChanged(QSGNode *node, QSGNode::DirtyFlags flags) {
         changedNode = node;
         changedFlags = flags;
-        Renderer::nodeChanged(node, flags);
+        QSGRenderer::nodeChanged(node, flags);
     }
 
-    Node *changedNode;
-    Node::DirtyFlags changedFlags;
+    QSGNode *changedNode;
+    QSGNode::DirtyFlags changedFlags;
 
     int renderCount;
     int renderingOrder;
@@ -126,25 +127,25 @@ NodesTest::NodesTest()
 
 void NodesTest::propegate()
 {
-    RootNode root;
-    Node child;
+    QSGRootNode root;
+    QSGNode child; child.setFlag(QSGNode::OwnedByParent, false);
     root.appendChildNode(&child);
 
     DummyRenderer renderer(&root);
 
-    child.markDirty(Node::DirtyGeometry);
+    child.markDirty(QSGNode::DirtyGeometry);
 
     QCOMPARE(&child, renderer.changedNode);
-    QCOMPARE((int) renderer.changedFlags, (int) Node::DirtyGeometry);
+    QCOMPARE((int) renderer.changedFlags, (int) QSGNode::DirtyGeometry);
 }
 
 
 void NodesTest::propegateWithMultipleRoots()
 {
-    RootNode root1;
-    Node child2;
-    RootNode root3;
-    Node child4;
+    QSGRootNode root1;
+    QSGNode child2; child2.setFlag(QSGNode::OwnedByParent, false);
+    QSGRootNode root3; root3.setFlag(QSGNode::OwnedByParent, false);
+    QSGNode child4; child4.setFlag(QSGNode::OwnedByParent, false);
 
     root1.appendChildNode(&child2);
     child2.appendChildNode(&root3);
@@ -153,13 +154,13 @@ void NodesTest::propegateWithMultipleRoots()
     DummyRenderer ren1(&root1);
     DummyRenderer ren2(&root3);
 
-    child4.markDirty(Node::DirtyGeometry);
+    child4.markDirty(QSGNode::DirtyGeometry);
 
     QCOMPARE(ren1.changedNode, &child4);
     QCOMPARE(ren2.changedNode, &child4);
 
-    QCOMPARE((int) ren1.changedFlags, (int) Node::DirtyGeometry);
-    QCOMPARE((int) ren2.changedFlags, (int) Node::DirtyGeometry);
+    QCOMPARE((int) ren1.changedFlags, (int) QSGNode::DirtyGeometry);
+    QCOMPARE((int) ren2.changedFlags, (int) QSGNode::DirtyGeometry);
 }
 
 
@@ -167,7 +168,7 @@ void NodesTest::propegateWithMultipleRoots()
 class SimulatedEffectRenderer : public DummyRenderer
 {
 public:
-    SimulatedEffectRenderer(RootNode *root, BasicGeometryNode *c)
+    SimulatedEffectRenderer(QSGRootNode *root, QSGBasicGeometryNode *c)
         : DummyRenderer(root)
     {
         child = c;
@@ -178,14 +179,14 @@ public:
         DummyRenderer::render();
     }
 
-    BasicGeometryNode *child;
+    QSGBasicGeometryNode *child;
     QMatrix4x4 matrix;
 };
 
 
-class PseudoEffectNode : public Node {
+class PseudoEffectNode : public QSGNode {
 public:
-    PseudoEffectNode(Renderer *r)
+    PseudoEffectNode(QSGRenderer *r)
         : renderer(r)
     {
         setFlag(UsePreprocess);
@@ -195,18 +196,18 @@ public:
 
         if (renderer->rootNode()->parent()) {
             // Mark the root dirty to build a clean state from the root and down
-            renderer->rootNode()->markDirty(Node::DirtyAll);
+            renderer->rootNode()->markDirty(QSGNode::DirtyAll);
         }
 
         renderer->renderScene();
 
         if (renderer->rootNode()->parent()) {
             // Mark the parent of the root dirty to force the root and down to be updated.
-            renderer->rootNode()->parent()->markDirty(Node::DirtyAll);
+            renderer->rootNode()->parent()->markDirty(QSGNode::DirtyAll);
         }
     }
 
-    Renderer *renderer;
+    QSGRenderer *renderer;
 };
 
 void NodesTest::simulatedEffect_data()
@@ -221,10 +222,17 @@ void NodesTest::simulatedEffect()
 {
     QFETCH(bool, connected);
 
-    RootNode root;
-    RootNode source;
-    SolidRectNode geometry(QRectF(0, 0, 1, 1), Qt::red);
-    TransformNode xform;
+    QSGRootNode root;
+    QSGRootNode source;
+    QSGTransformNode xform;
+    QSGSimpleRectNode geometry;
+    geometry.setRect(QRectF(0, 0, 1, 1));
+    geometry.setColor(Qt::red);
+
+    root.setFlag(QSGNode::OwnedByParent, false);
+    source.setFlag(QSGNode::OwnedByParent, false);
+    xform.setFlag(QSGNode::OwnedByParent, false);
+    geometry.setFlag(QSGNode::OwnedByParent, false);
 
     SimulatedEffectRenderer rootRenderer(&root, &geometry);
     SimulatedEffectRenderer sourceRenderer(&source, &geometry);
@@ -265,31 +273,30 @@ void NodesTest::simulatedEffect()
 
 void NodesTest::basicOpacityNode()
 {
-    OpacityNode *n = new OpacityNode;
-    QCOMPARE(n->opacity(), 1.);
+    QSGOpacityNode n;
+    QCOMPARE(n.opacity(), 1.);
 
-    n->setOpacity(0.5);
-    QCOMPARE(n->opacity(), 0.5);
+    n.setOpacity(0.5);
+    QCOMPARE(n.opacity(), 0.5);
 
-    n->setOpacity(-1);
-    QCOMPARE(n->opacity(), 0.);
+    n.setOpacity(-1);
+    QCOMPARE(n.opacity(), 0.);
 
-    n->setOpacity(2);
-    QCOMPARE(n->opacity(), 1.);
+    n.setOpacity(2);
+    QCOMPARE(n.opacity(), 1.);
 }
 
 void NodesTest::opacityPropegation()
 {
-    RootNode *root = new RootNode();
-    OpacityNode *a = new OpacityNode;
-    OpacityNode *b = new OpacityNode;
-    OpacityNode *c = new OpacityNode;
+    QSGRootNode root;
+    QSGOpacityNode *a = new QSGOpacityNode;
+    QSGOpacityNode *b = new QSGOpacityNode;
+    QSGOpacityNode *c = new QSGOpacityNode;
 
-    GeometryNode *geometry = new GeometryNode;
-    geometry->setGeometry(GeometryHelper::createRectGeometry(QRectF(0, 0, 100, 100)));
-    geometry->setMaterial(new FlatColorMaterial);
+    QSGSimpleRectNode *geometry = new QSGSimpleRectNode;
+    geometry->setRect(0, 0, 100, 100);
 
-    root->appendChildNode(a);
+    root.appendChildNode(a);
     a->appendChildNode(b);
     b->appendChildNode(c);
     c->appendChildNode(geometry);
@@ -298,7 +305,7 @@ void NodesTest::opacityPropegation()
     b->setOpacity(0.8);
     c->setOpacity(0.7);
 
-    updater.updateStates(root);
+    updater.updateStates(&root);
 
     QCOMPARE(a->combinedOpacity(), 0.9);
     QCOMPARE(b->combinedOpacity(), 0.9 * 0.8);
@@ -306,7 +313,7 @@ void NodesTest::opacityPropegation()
     QCOMPARE(geometry->inheritedOpacity(), 0.9 * 0.8 * 0.7);
 
     b->setOpacity(0.1);
-    updater.updateStates(root);
+    updater.updateStates(&root);
 
     QCOMPARE(a->combinedOpacity(), 0.9);
     QCOMPARE(b->combinedOpacity(), 0.9 * 0.1);
@@ -314,7 +321,7 @@ void NodesTest::opacityPropegation()
     QCOMPARE(geometry->inheritedOpacity(), 0.9 * 0.1 * 0.7);
 
     b->setOpacity(0);
-    updater.updateStates(root);
+    updater.updateStates(&root);
 
     QVERIFY(b->isSubtreeBlocked());
 
@@ -326,20 +333,20 @@ void NodesTest::opacityPropegation()
 
 void NodesTest::isBlockedCheck()
 {
-    RootNode *root = new RootNode();
-    OpacityNode *opacity = new OpacityNode();
-    Node *node = new Node();
+    QSGRootNode root;
+    QSGOpacityNode *opacity = new QSGOpacityNode();
+    QSGNode *node = new QSGNode();
 
-    root->appendChildNode(opacity);
+    root.appendChildNode(opacity);
     opacity->appendChildNode(node);
 
-    NodeUpdater updater;
+    QSGNodeUpdater updater;
 
     opacity->setOpacity(0);
-    QVERIFY(updater.isNodeBlocked(node, root));
+    QVERIFY(updater.isNodeBlocked(node, &root));
 
     opacity->setOpacity(1);
-    QVERIFY(!updater.isNodeBlocked(node, root));
+    QVERIFY(!updater.isNodeBlocked(node, &root));
 }
 
 QTEST_MAIN(NodesTest);

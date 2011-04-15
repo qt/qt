@@ -57,8 +57,9 @@ public:
     QSGSimpleRectNode(const QRectF &rect, const QColor &color);
     QSGSimpleRectNode();
 
-    QRectF rect() const;
     void setRect(const QRectF &rect);
+    inline void setRect(qreal x, qreal y, qreal w, qreal h) { setRect(QRectF(x, y, w, h)); }
+    QRectF rect() const;
 
     void setColor(const QColor &color);
     QColor color() const;

@@ -43,6 +43,8 @@
 
 #include <private/qsgtexture_p.h>
 #include <qglfunctions.h>
+#include <private/qsgcontext_p.h>
+#include <qthread.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -56,16 +58,38 @@ QSGTexturePrivate::QSGTexturePrivate()
 {
 }
 
+#ifndef QT_NO_DEBUG
+static int qt_texture_count = 0;
+
+static void qt_print_texture_count()
+{
+    qDebug("Number of leaked textures: %i", qt_texture_count);
+    qt_texture_count = -1;
+}
+#endif
+
+
+
 QSGTexture::QSGTexture()
     : QObject(*(new QSGTexturePrivate))
-    , m_ref_count(0)
 {
-
+#ifndef QT_NO_DEBUG
+    ++qt_texture_count;
+    static bool atexit_registered = false;
+    if (!atexit_registered) {
+        atexit(qt_print_texture_count);
+        atexit_registered = true;
+    }
+#endif
 }
 
 QSGTexture::~QSGTexture()
 {
-
+#ifndef QT_NO_DEBUG
+    --qt_texture_count;
+    if (qt_texture_count < 0)
+        qDebug("Material destroyed after qt_print_texture_count() was called.");
+#endif
 }
 
 
@@ -123,7 +147,11 @@ QRectF QSGTexture::textureSubRect() const
 
 
 /*!
-    Sets whether mipmapping should be used when sampling from this texture.
+    Sets the mipmap sampling mode to be used for the upcoming bind() call to \a filter.
+
+    Setting the mipmap filtering has no effect it the texture does not have mipmaps.
+
+    \sa hasMipmaps()
  */
 void QSGTexture::setMipmapFiltering(Filtering filter)
 {
@@ -143,7 +171,9 @@ QSGTexture::Filtering QSGTexture::mipmapFiltering() const
 }
 
 
-
+/*!
+    Sets the sampling mode to be used for the upcoming bind() call to \a filter.
+ */
 void QSGTexture::setFiltering(QSGTexture::Filtering filter)
 {
     Q_D(QSGTexture);
@@ -159,6 +189,10 @@ QSGTexture::Filtering QSGTexture::filtering() const
 }
 
 
+
+/*!
+    Sets the horizontal wrap mode to be used for the upcoming bind() call to \a hwrap
+ */
 
 void QSGTexture::setHorizontalWrapMode(WrapMode hwrap)
 {
@@ -224,17 +258,6 @@ void QSGTexture::updateBindOptions(bool force)
     }
 }
 
-
-void QSGTextureRef::deref()
-{
-    // ### For multithreaded renderer we need to handle this better... Post something to the renderer thread, for instance
-    if (m_texture && !--m_texture->m_ref_count) {
-        delete m_texture;
-    }
-}
-
-
-
 QSGPlainTexture::QSGPlainTexture()
     : QSGTexture()
     , m_texture_id(0)
@@ -280,9 +303,13 @@ void QSGPlainTexture::setImage(const QImage &image)
 
 void QSGPlainTexture::setTextureId(int id)
 {
+    if (m_texture_id && m_owns_texture)
+        glDeleteTextures(1, &m_texture_id);
+
     m_texture_id = id;
     m_dirty_texture = false;
     m_dirty_bind_options = true;
+    m_image = QImage();
 }
 
 
@@ -297,7 +324,7 @@ void QSGPlainTexture::bind()
 
     m_dirty_texture = false;
 
-    if (m_texture_id)
+    if (m_texture_id && m_owns_texture)
         glDeleteTextures(1, &m_texture_id);
 
     if (m_image.isNull()) {
@@ -334,6 +361,29 @@ void QSGPlainTexture::bind()
 
     updateBindOptions(m_dirty_bind_options);
     m_dirty_bind_options = false;
- }
+}
+
+
+/*!
+    \class QSGDynamicTexture
+    \brief The QSGDynamicTexture class serves as a baseclass for dynamically changing textures,
+    such as content that is rendered to FBO's.
+
+    To update the content of the texture, call updateTexture() explicitely. Simply calling bind()
+    will not update the texture.
+ */
+
+
+/*!
+    \fn bool QSGDynamicTexture::updateTexture()
+
+    Call this function to explicitely update the dynamic texture. Calling bind() will bind
+    the content that was previously updated.
+
+    The function returns true if the texture was changed as a resul of the update; otherwise
+    returns false.
+ */
+
+
 
 QT_END_NAMESPACE

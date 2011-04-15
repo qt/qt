@@ -239,9 +239,9 @@ void QS60WindowSurface::setGeometry(const QRect& rect)
     QWindowSurface::setGeometry(rect);
 }
 
-bool QS60WindowSurface::hasStaticContentsSupport() const
+QWindowSurface::WindowSurfaceFeatures QS60WindowSurface::features() const
 {
-    return true;
+    return QWindowSurface::AllFeatures;
 }
 
 CFbsBitmap* QS60WindowSurface::symbianBitmap() const

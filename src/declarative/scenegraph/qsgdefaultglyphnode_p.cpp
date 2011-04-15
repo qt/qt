@@ -122,9 +122,9 @@ void QSGTextMaskMaterialData::updateState(const RenderState &state, QSGMaterial 
     }
 
     bool updated = material->ensureUpToDate();
-    Q_ASSERT(!material->texture().isNull());
+    Q_ASSERT(material->texture());
 
-    Q_ASSERT(oldMaterial == 0 || !oldMaterial->texture().isNull());
+    Q_ASSERT(oldMaterial == 0 || oldMaterial->texture());
     if (updated
             || oldMaterial == 0
             || oldMaterial->texture()->textureId() != material->texture()->textureId()) {
@@ -290,11 +290,12 @@ bool QSGTextMaskMaterial::ensureUpToDate()
 {
     QSize glyphCacheSize(glyphCache()->width(), glyphCache()->height());
     if (glyphCacheSize != m_size) {
-        QSGPlainTexture *t = new QSGPlainTexture();
-        t->setTextureId(glyphCache()->texture());
-        t->setTextureSize(QSize(glyphCache()->width(), glyphCache()->height()));
-        t->setOwnsTexture(false);
-        m_texture = QSGTextureRef(t);
+        if (m_texture)
+            delete m_texture;
+        m_texture = new QSGPlainTexture();
+        m_texture->setTextureId(glyphCache()->texture());
+        m_texture->setTextureSize(QSize(glyphCache()->width(), glyphCache()->height()));
+        m_texture->setOwnsTexture(false);
 
         m_size = glyphCacheSize;
 

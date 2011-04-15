@@ -192,7 +192,6 @@ void QSGShaderEffectItem::setSource(const QVariant &var, int index)
 
     SourceData &source = m_sources[index];
 
-    source.source = 0;
     source.item = 0;
     if (var.isNull()) {
         return;
@@ -203,11 +202,9 @@ void QSGShaderEffectItem::setSource(const QVariant &var, int index)
 
     QObject *obj = qVariantValue<QObject *>(var);
 
-    QSGTextureProviderInterface *int3rface = static_cast<QSGTextureProviderInterface *>(obj->qt_metacast("QSGTextureProviderInterface"));
-    if (int3rface) {
-        source.source = int3rface->textureProvider();
-    } else {
-        qWarning("Could not assign property '%s', did not implement QSGTextureProviderInterface.", source.name.constData());
+    QSGTextureProvider *int3rface = QSGTextureProvider::from(obj);
+    if (!int3rface) {
+        qWarning("Could not assign property '%s', did not implement QSGTextureProvider.", source.name.constData());
     }
 
     source.item = qobject_cast<QSGItem *>(obj);
@@ -345,7 +342,6 @@ void QSGShaderEffectItem::lookThroughShaderCode(const QByteArray &code)
                 if (type == "sampler2D") {
                     SourceData d;
                     d.mapper = new QSignalMapper;
-                    d.source = 0;
                     d.name = name;
                     d.item = 0;
                     m_sources.append(d);
@@ -422,26 +418,27 @@ QSGNode *QSGShaderEffectItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeD
 
     if (m_dirtyData) {
         QVector<QPair<QByteArray, QVariant> > values;
-        QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > textures;
-        const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &oldTextures = m_material.textures();
+        QVector<QPair<QByteArray, QPointer<QSGItem> > > textures;
+        const QVector<QPair<QByteArray, QPointer<QSGItem> > > &oldTextures = m_material.textureProviders();
 
         for (QSet<QByteArray>::const_iterator it = m_source.uniformNames.begin(); 
              it != m_source.uniformNames.end(); ++it) {
             values.append(qMakePair(*it, property(*it)));
         }
         for (int i = 0; i < oldTextures.size(); ++i) {
-            QPointer<QSGTextureProvider> oldSource = oldTextures.at(i).second;
-            if (oldSource)
-                disconnect(oldSource, SIGNAL(textureChanged()), node, SLOT(markDirtyTexture()));
+            QSGTextureProvider *oldSource = QSGTextureProvider::from(oldTextures.at(i).second);
+            if (oldSource && oldSource->textureChangedSignal())
+                disconnect(oldTextures.at(i).second, oldSource->textureChangedSignal(), node, SLOT(markDirtyTexture()));
         }
         for (int i = 0; i < m_sources.size(); ++i) {
             const SourceData &source = m_sources.at(i);
-            textures.append(qMakePair(source.name, source.source));
-            if (source.source)
-                connect(source.source, SIGNAL(textureChanged()), node, SLOT(markDirtyTexture()));
+            textures.append(qMakePair(source.name, source.item));
+            QSGTextureProvider *t = QSGTextureProvider::from(source.item);
+            if (t && t->textureChangedSignal())
+                connect(source.item, t->textureChangedSignal(), node, SLOT(markDirtyTexture()));
         }
         m_material.setUniforms(values);
-        m_material.setTextures(textures);
+        m_material.setTextureProviders(textures);
         node->markDirty(QSGNode::DirtyMaterial);
         m_dirtyData = false;
     }

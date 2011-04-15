@@ -471,7 +471,6 @@ QSGCanvasPrivate::QSGCanvasPrivate()
 
 QSGCanvasPrivate::~QSGCanvasPrivate()
 {
-    delete context; context = 0;
 }
 
 void QSGCanvasPrivate::init(QSGCanvas *c)
@@ -939,6 +938,8 @@ QSGCanvas::~QSGCanvas()
 
     delete d->rootItem; d->rootItem = 0;
     d->cleanupNodes();
+
+    delete d->context;
 }
 
 QSGItem *QSGCanvas::rootItem() const
@@ -1743,7 +1744,7 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
                       ? itemPriv->opacity : qreal(0);
 
         if (opacity != 1 && !itemPriv->opacityNode) {
-            itemPriv->opacityNode = new OpacityNode;
+            itemPriv->opacityNode = new QSGOpacityNode;
 
             QSGNode *parent = itemPriv->itemNode();
             QSGNode *child = itemPriv->clipNode;
@@ -1843,5 +1844,19 @@ void QSGCanvas::maybeUpdate()
     }
 }
 
+/*!
+    Returns the QSGEngine used for this scene.
+
+    The engine will only be available once the scene graph has been
+    initialized, typically during the very first showEvent.
+ */
+
+QSGEngine *QSGCanvas::sceneGraphEngine() const
+{
+    Q_D(const QSGCanvas);
+    if (d->context->isReady())
+        return d->context->engine();
+    return 0;
+}
 
 QT_END_NAMESPACE

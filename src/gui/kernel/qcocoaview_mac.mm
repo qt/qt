@@ -254,9 +254,9 @@ static int qCocoaViewCount = 0;
     qt_mac_retain_graphics_context(context);
 
     // We use a different graphics system.
-    // Also check for PaintOnScreen as such widgets, QGLWidget in particular, needs to
-    // do their own painting and flushing the raster surface on top of them would
-    // make them invisible.
+    //
+    // Widgets that are set to paint on screen, specifically QGLWidget,
+    // requires the native engine to execute in order to be drawn.
     if (QApplicationPrivate::graphicsSystem() != 0 && !qwidget->testAttribute(Qt::WA_PaintOnScreen)) {
 
         // Raster engine.
@@ -336,7 +336,6 @@ static int qCocoaViewCount = 0;
         if (qwidget->isWindow()) {
             qwidgetprivate->syncBackingStore(qwidget->rect());
         }
-
     }
 
     // Native engine.

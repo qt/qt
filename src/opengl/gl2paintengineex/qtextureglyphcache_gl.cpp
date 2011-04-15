@@ -378,4 +378,19 @@ int QGLTextureGlyphCache::maxTextureHeight() const
     else
         return ctx->d_ptr->maxTextureSize();
 }
+
+void QGLTextureGlyphCache::clear()
+{
+    if (ctx != 0) {
+        m_textureResource.cleanup(ctx);
+
+        m_w = 0;
+        m_h = 0;
+        m_cx = 0;
+        m_cy = 0;
+        m_currentRowHeight = 0;
+        coords.clear();
+    }
+}
+
 QT_END_NAMESPACE

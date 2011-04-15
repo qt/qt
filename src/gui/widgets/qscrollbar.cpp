@@ -330,7 +330,7 @@ void QScrollBar::initStyleOption(QStyleOptionSlider *option) const
 /*!
     Constructs a vertical scroll bar.
 
-    The \a parent arguments is sent to the QWidget constructor.
+    The \a parent argument is sent to the QWidget constructor.
 
     The \l {QAbstractSlider::minimum} {minimum} defaults to 0, the
     \l {QAbstractSlider::maximum} {maximum} to 99, with a
