@@ -78,7 +78,9 @@
 #include <eikspane.h>               // CEikStatusPane
 #include <AknPopupFader.h>          // MAknFadedComponent and TAknPopupFader
 #include <gfxtranseffect/gfxtranseffect.h> // BeginFullScreen
+#ifdef QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H
 #include <akntranseffect.h> // BeginFullScreen
+#endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -577,7 +579,7 @@ bool qt_symbian_is_cursor_visible();
 
 static inline bool qt_beginFullScreenEffect()
 {
-#ifdef Q_WS_S60
+#if defined(Q_WS_S60) && defined(QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H)
     // Only for post-S^3. On earlier versions the system transition effects
     // may not be able to capture the non-Avkon content, leading to confusing
     // looking effects, so just skip the whole thing.
@@ -593,12 +595,14 @@ static inline bool qt_beginFullScreenEffect()
         AknTransEffect::GfxTransParam(S60->uid,
             AknTransEffect::TParameter::EAvkonCheck | KQtAppExitFlag));
     return true;
+#else
+    return false;
 #endif
 }
 
 static inline void qt_abortFullScreenEffect()
 {
-#ifdef Q_WS_S60
+#if defined(Q_WS_S60) && defined(QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H)
     if (!S60->beginFullScreenCalled || QSysInfo::s60Version() <= QSysInfo::SV_S60_5_2)
         return;
     GfxTransEffect::AbortFullScreen();
@@ -608,7 +612,7 @@ static inline void qt_abortFullScreenEffect()
 
 static inline void qt_endFullScreenEffect()
 {
-#ifdef Q_WS_S60
+#if defined(Q_WS_S60) && defined(QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H)
     if (S60->endFullScreenCalled || QSysInfo::s60Version() <= QSysInfo::SV_S60_5_2)
         return;
     S60->endFullScreenCalled = true;
