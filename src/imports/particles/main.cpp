@@ -47,6 +47,7 @@
 #include "wanderaffector.h"
 //#include "rockingaffector.h"
 //#include "scalingaffector.h"
+#include "resetaffector.h"
 #include "gravityaffector.h"
 #include "driftaffector.h"
 #include "gravitationalsingularityaffector.h"
@@ -131,6 +132,7 @@ void ParticlesPlugin::registerTypes(const char *uri)
     qmlRegisterType<SpeedLimitAffector>(uri, 2, 0, "SpeedLimit");
     qmlRegisterType<GravityAffector>(uri, 2, 0, "Gravity");
     qmlRegisterType<EternalAffector>(uri, 2, 0, "Stasis");
+    qmlRegisterType<ResetAffector>(uri, 2, 0, "Reset");
     //qmlRegisterType<ZoneAffector>(uri, 2, 0, "Zone");
     //qmlRegisterType<ToggleAffector>(uri, 2, 0, "Toggle");
     qmlRegisterType<KillAffector>(uri, 2, 0, "Kill");

@@ -39,28 +39,39 @@
 **
 ****************************************************************************/
 
-#include "attractoraffector.h"
+#include "resetaffector.h"
 #include <cmath>
-#include <QDebug>
 QT_BEGIN_NAMESPACE
-AttractorAffector::AttractorAffector(QSGItem *parent) :
-    ParticleAffector(parent), m_strength(0.0), m_x(0), m_y(0)
+ResetAffector::ResetAffector(QSGItem *parent) :
+    ParticleAffector(parent)
 {
 }
 
-bool AttractorAffector::affectParticle(ParticleData *d, qreal dt)
+void ResetAffector::reset(int idx)
 {
-    if(m_strength == 0.0)
-        return false;
-    qreal dx = m_x - d->curX();
-    qreal dy = m_y - d->curY();
-    qreal r = sqrt((dx*dx) + (dy*dy));
-    qreal theta = atan2(dy,dx);
-    qreal ds = (m_strength / r) * dt;
-    dx = ds * cos(theta);
-    dy = ds * sin(theta);
-    d->setInstantaneousSX(d->pv.sx + dx);
-    d->setInstantaneousSY(d->pv.sy + dy);
-    return true;
+    ParticleAffector::reset(idx);
+    if(m_data[idx])
+        delete m_data[idx];
+    m_data.insert(idx, 0);//TODO: Either load with data now, or get data next tick whether active or not
+}
+
+bool ResetAffector::affectParticle(ParticleData *d, qreal dt)
+{
+    TrajectoryData* trajectory;
+    if(m_data[d->systemIndex]){
+        trajectory = m_data[d->systemIndex];
+        //TODO: Faster to calculate once (not 4 times)
+        d->setInstantaneousSX(trajectory->sx);
+        d->setInstantaneousSY(trajectory->sy);
+        d->setInstantaneousAX(trajectory->ax);
+        d->setInstantaneousAY(trajectory->ay);
+    }else{
+        trajectory = new TrajectoryData;
+    }
+    trajectory->sx = d->pv.sx;
+    trajectory->sy = d->pv.sy;
+    trajectory->ax = d->pv.ax;
+    trajectory->ay = d->pv.ay;
+    m_data.insert(d->systemIndex, trajectory);//overwrites
 }
 QT_END_NAMESPACE

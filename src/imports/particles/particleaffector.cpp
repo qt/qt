@@ -76,16 +76,18 @@ void ParticleAffector::affectSystem(qreal dt)
             m_groups << m_system->m_groupIds[p];//###Can this occur before group ids are properly assigned?
         m_updateIntSet = false;
     }
-    foreach(ParticleData* d, m_system->m_data){
+    //foreach(ParticleData* d, m_system->m_data){
+    for(int i=0; i<m_system->m_particle_count; i++){
+        ParticleData* d = m_system->m_data[i];
         if(!d || (m_onceOff && m_onceOffed.contains(d->systemIndex)))
-            return;
+            continue;
         if(m_groups.isEmpty() || m_groups.contains(d->group)){
             if(width() == 0 || height() == 0 || QRectF(m_offset.x(), m_offset.y(), width(), height()).contains(d->curX(), d->curY())){
-                 if(affectParticle(d, dt)){
-                     m_system->m_needsReset << d;
-                     if(m_onceOff)
-                         m_onceOffed << d->systemIndex;
-                 }
+                if(affectParticle(d, dt)){
+                    m_system->m_needsReset << d;
+                    if(m_onceOff)
+                        m_onceOffed << d->systemIndex;
+                }
             }
         }
     }
@@ -99,7 +101,7 @@ bool ParticleAffector::affectParticle(ParticleData *d, qreal dt)
 }
 
 void ParticleAffector::reset(int idx)
-{
+{//TODO: This, among other ones, should be restructured so they don't all need to remember to call the superclass
     if(m_onceOff)
         m_onceOffed.remove(idx);
 }

@@ -89,7 +89,7 @@ signals:
 public slots:
     void freeze(QSGItem* item);
     void unfreeze(QSGItem* item);
-    void take(QSGItem* item);//take by modelparticle
+    void take(QSGItem* item,bool prioritize=false);//take by modelparticle
     void give(QSGItem* item);//give from modelparticle
 
     void setFade(bool arg){if(arg == m_fade) return; m_fade = arg; emit fadeChanged();}

@@ -121,9 +121,12 @@ void ModelParticle::unfreeze(QSGItem* item)
     m_stasis.remove(item);
 }
 
-void ModelParticle::take(QSGItem *item)
+void ModelParticle::take(QSGItem *item, bool prioritize)
 {
-    m_pendingItems << item;
+    if(prioritize)
+        m_pendingItems.push_front(item);
+    else
+        m_pendingItems.push_back(item);
 }
 
 void ModelParticle::give(QSGItem *item)
@@ -163,6 +166,8 @@ void ModelParticle::load(ParticleData* d)
     }else{
         m_items[pos] = m_pendingItems.front();
         m_pendingItems.pop_front();
+        m_items[pos]->setX(d->curX() - m_items[pos]->width()/2);
+        m_items[pos]->setY(d->curY() - m_items[pos]->height()/2);
         ModelParticleAttached* mpa;
         if((mpa = qobject_cast<ModelParticleAttached*>(qmlAttachedPropertiesObject<ModelParticle>(m_items[pos]))))
             mpa->attach();

@@ -143,9 +143,9 @@ public://but only really for related class usage. Perhaps we should all be frien
         return m_overwrite;
     }
 
+    int m_particle_count;
 private:
     void initializeSystem();
-    int m_particle_count;
     bool m_running;
     QList<QPointer<ParticleEmitter> > m_emitters;
     QList<QPointer<ParticleAffector> > m_affectors;

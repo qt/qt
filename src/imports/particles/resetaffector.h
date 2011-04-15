@@ -39,28 +39,37 @@
 **
 ****************************************************************************/
 
-#include "attractoraffector.h"
-#include <cmath>
-#include <QDebug>
-QT_BEGIN_NAMESPACE
-AttractorAffector::AttractorAffector(QSGItem *parent) :
-    ParticleAffector(parent), m_strength(0.0), m_x(0), m_y(0)
-{
-}
+#ifndef RESETAFFECTOR_H
+#define RESETAFFECTOR_H
+#include "particleaffector.h"
+#include <QHash>
 
-bool AttractorAffector::affectParticle(ParticleData *d, qreal dt)
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+struct TrajectoryData{
+    qreal sx,sy,ax,ay;
+};
+
+class ResetAffector : public ParticleAffector
 {
-    if(m_strength == 0.0)
-        return false;
-    qreal dx = m_x - d->curX();
-    qreal dy = m_y - d->curY();
-    qreal r = sqrt((dx*dx) + (dy*dy));
-    qreal theta = atan2(dy,dx);
-    qreal ds = (m_strength / r) * dt;
-    dx = ds * cos(theta);
-    dy = ds * sin(theta);
-    d->setInstantaneousSX(d->pv.sx + dx);
-    d->setInstantaneousSY(d->pv.sy + dy);
-    return true;
-}
+    Q_OBJECT
+public:
+    explicit ResetAffector(QSGItem *parent = 0);
+    virtual void reset(int systemIdx);
+
+signals:
+
+public slots:
+protected:
+    virtual bool affectParticle(ParticleData *d, qreal dt);
+private:
+    QHash<int, TrajectoryData*> m_data;
+};
+
 QT_END_NAMESPACE
+QT_END_HEADER
+#endif // RESETAFFECTOR_H

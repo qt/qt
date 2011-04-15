@@ -43,7 +43,8 @@ HEADERS += \
     directedvector.h \
     modelparticle.h \
     eternalaffector.h \
-    lineextruder.h
+    lineextruder.h \
+    resetaffector.h
 
 SOURCES += \
     V1/qdeclarativeparticles.cpp \
@@ -86,7 +87,8 @@ SOURCES += \
     directedvector.cpp \
     modelparticle.cpp \
     eternalaffector.cpp \
-    lineextruder.cpp
+    lineextruder.cpp \
+    resetaffector.cpp
 
 QT += declarative opengl
 

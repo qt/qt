@@ -47,6 +47,11 @@ Item{
     id: root
     width: 640
     height: 480
+    Rectangle{
+        anchors.fill: parent
+        color: "black"
+        z: -1
+    }
     Item{
         id: loading
         Behavior on opacity{NumberAnimation{}}
@@ -54,21 +59,25 @@ Item{
         Text{
             anchors.centerIn: parent
             text: "Loading"
+            color: "white"
         }
     }
     ParticleSystem{ 
         id: sys;
         running: true
         overwrite: false
+        startTime: 12000//Doesn't actually work with the loading time though...
     }
     TrailEmitter{
+        id: emitter
         system: sys
         height: parent.height - 132/2
         x: -132/2
         y: 132/2
-        speed: PointVector{ x: 64; xVariation: 32 }
-        particlesPerSecond: 2
-        particleDuration: 32000 //TODO: A -1 or something which does 'infinite'? (but need disable fade first)
+        speed: PointVector{ x: 32; xVariation: 8 }
+        particlesPerSecond: 0.5
+        particleDuration: 120000 //TODO: A -1 or something which does 'infinite'? (but need disable fade first)
+        particle: "photos"
     }
     Kill{
         system: sys
@@ -76,83 +85,190 @@ Item{
         height: parent.height
         width: 1000
     }
+    ColoredParticle{
+        system: sys
+        particles: ["fireworks"]
+        image: "../trails/content/star.png"
+        z: 1000
+    }
     ModelParticle{
         id: mp
         z: 0
         system: sys
         fade: false
+        particles: ["photos"]
+    }
+    Component{
+        id: alertDelegate
+        Rectangle{
+            width: 132
+            height: 132
+            NumberAnimation on scale{
+                running: true
+                loops: 1
+                from: 0.2
+                to: 1
+            }
+            Image{
+                source: "../asteroid/content/rocket.png"
+                anchors.centerIn: parent
+            }
+            Text{
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "A new ship has arrived!"
+            }
+        }
+    }
+    property Item alertItem;
+    function alert(){
+        resetter.active = false
+        force.active = true;
+        alertItem = alertDelegate.createObject(root);
+        alertItem.x = root.width/2 - alertItem.width/2
+        alertItem.y = root.height/2 - alertItem.height/2
+        spawnFireworks.pulse(0.2);
+        stopAlert.start();
+    }
+    focus: true
+    Keys.onSpacePressed: alert();
+    Timer{
+        id: stopAlert
+        running: false
+        repeat: false
+        interval: 800
+        onTriggered: {
+            force.active = false
+            resetter.active = true;
+            mp.take(alertItem, true);
+            centerEmitter.burst(1);
+        }
+    }
+    Attractor{
+        id: force
+        system: sys
+        x: root.width/2
+        y: root.height/2
+        strength: -30000
+        active: false
+        anchors.centerIn: parent
+        width: parent.width/2
+        height: parent.height/2
+        particles:["photos"]
+    }
+    Reset{
+        id: resetter
+        system: sys
+        particles:["photos"]
+    }
+    TrailEmitter{
+        id: centerEmitter
+        speed: PointVector{ x: 32; xVariation: 8;}
+        particlesPerSecond: 0.5
+        particleDuration: 12000 //TODO: A -1 or something which does 'infinite'? (but need disable fade first)
+        maxParticles: 20
+        particle: "photos"
+        system: sys
+        anchors.centerIn: parent
+        emitting: false
+
+        //TODO: Zoom in effect
+    }
+    TrailEmitter{
+        id: spawnFireworks
+        particle: "fireworks"
+        system: sys
+        maxParticles: 400
+        particlesPerSecond: 400
+        particleDuration: 2800
+        x: parent.width/2
+        y: parent.height/2 - 64
+        width: 8
+        height: 8
+        emitting: false
+        particleSize: 32
+        particleEndSize: 8
+        speed: AngleVector{ magnitude: 160; magnitudeVariation: 120; angleVariation: 90; angle: 270 }
+        acceleration: PointVector{ y: 160 }
     }
     Item{ x: -1000; y: -1000 //offscreen
         Repeater{//Load them here, add to system on completed
-            model: RssModel{tags:"particle,particles"}
-            delegate: Rectangle{
-                id: container
-                border.width: 2
-                property real myRand: Math.random();
-                z: Math.floor(myRand * 100)
-                rotation: -10 + (myRand * 20)
-                width: 132
-                height: 132
-                ModelParticle.onDetached: mp.take(container);//respawns
-                function manage()
-                {
-                    if(state == "selected"){
-                 //       console.log("Taking " + index);
-                        mp.freeze(container);
-                    }else{
-                   //     console.log("Returning " +index);
-                        mp.unfreeze(container);
-                    }
+            model: theModel
+            delegate: theDelegate
+        }
+    }
+    RssModel{id: theModel; tags:"particle,particles"}
+    Component {
+        id: theDelegate
+        Rectangle {
+            id: container
+            border.width: 2
+            property real myRand: Math.random();//'depth'
+            z: Math.floor(myRand * 100)
+            scale: (myRand + 1.0)/2;
+            //TODO: Darken based on 'depth'
+            width: 132
+            height: 132
+            //ModelParticle.onAttached: console.log("I'm in"  + x + "," + y + ":" + opacity);
+            ModelParticle.onDetached: mp.take(container);//respawns
+            function manage()
+            {
+                if(state == "selected"){
+             //       console.log("Taking " + index);
+                    mp.freeze(container);
+                }else{
+               //     console.log("Returning " +index);
+                    mp.unfreeze(container);
                 }
-                Image{
-                    id: img
-                    anchors.centerIn: parent
-                    smooth: true; source: "http://" + Script.getImagePath(content); cache: true
-                    fillMode: Image.PreserveAspectFit; 
-                    width: parent.width-4; height: parent.height-4
-                    onStatusChanged: if(img.status == Image.Ready){
-                        loading.opacity = 0;
-                        mp.take(container);
-                    }
+            }
+            Image{
+                id: img
+                anchors.centerIn: parent
+                smooth: true; source: "http://" + Script.getImagePath(content); cache: true
+                fillMode: Image.PreserveAspectFit; 
+                width: parent.width-4; height: parent.height-4
+                onStatusChanged: if(img.status == Image.Ready){
+                    loading.opacity = 0;
+                    mp.take(container);
                 }
-                Text{
-                    anchors.bottom: parent.bottom
-                    width: parent.width
-                    horizontalAlignment: Text.AlignHCenter
-                    elide: Text.ElideRight
-                    text: title
-                    color: "black"
+            }
+            Text{
+                anchors.bottom: parent.bottom
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
+                text: title
+                color: "black"
+            }
+            MouseArea{
+                anchors.fill: parent
+                onClicked: container.state == "selected" ? container.state = "" : container.state = "selected"
+            }
+            states: State{
+                name: "selected"
+                ParentChange{
+                    target: container
+                    parent: root
+                    x: 0
+                    y: 0
                 }
-                MouseArea{
-                    anchors.fill: parent
-                    onClicked: container.state == "selected" ? container.state = "" : container.state = "selected"
+                PropertyChanges{
+                    target: container
+                    width: root.width
+                    height: root.height
+                    z: 101
+                    opacity: 1
+                    rotation: 0
                 }
-                states: State{
-                    name: "selected"
-                    ParentChange{
-                        target: container
-                        parent: root
-                        x: 0
-                        y: 0
-                    }
-                    PropertyChanges{
-                        target: container
-                        width: root.width
-                        height: root.height
-                        z: 101
-                        opacity: 1
-                        rotation: 0
-                    }
-                }
-                transitions: Transition{
-                    to: "selected"
-                    reversible: true
-                    SequentialAnimation{
-                        ScriptAction{script: container.manage();}
-                        ParallelAnimation{
-                            ParentAnimation{NumberAnimation{ properties: "x,y" }}//Doesn't work, particles takes control of x,y instantly
-                            NumberAnimation{ properties: "width, height, z, rotation" }
-                        }
+            }
+            transitions: Transition{
+                to: "selected"
+                reversible: true
+                SequentialAnimation{
+                    ScriptAction{script: container.manage();}
+                    ParallelAnimation{
+                        ParentAnimation{NumberAnimation{ properties: "x,y" }}//Doesn't work, particles takes control of x,y instantly
+                        NumberAnimation{ properties: "width, height, z, rotation" }
                     }
                 }
             }
