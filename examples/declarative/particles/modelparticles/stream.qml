@@ -89,6 +89,9 @@ Item{
         system: sys
         particles: ["fireworks"]
         image: "../trails/content/star.png"
+        color: "lightsteelblue"
+        alpha: 0
+        colorVariation: 0
         z: 1000
     }
     ModelParticle{

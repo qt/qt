@@ -73,5 +73,6 @@ bool ResetAffector::affectParticle(ParticleData *d, qreal dt)
     trajectory->ax = d->pv.ax;
     trajectory->ay = d->pv.ay;
     m_data.insert(d->systemIndex, trajectory);//overwrites
+    return true;
 }
 QT_END_NAMESPACE
