@@ -1108,7 +1108,18 @@ QScriptValue QDeclarativeVME::run(QDeclarativeContextData *parentCtxt, QDeclarat
     }
 
     scriptContext->pushScope(enginePriv->globalClass->staticGlobalObject());
-    QScriptValue scope = QScriptDeclarativeClass::newStaticScopeObject(scriptEngine);
+    // TODO: In the JSC-based back-end, newStaticScopeObject()
+    // created a JSVariableObject, so that variables and function
+    // declarations correctly ended up in this object, no matter
+    // where in the scope chain it was (JSC searches for the first
+    // JSVariableObject instance). However, in V8, variables and
+    // function declarations always end up in the function context
+    // (AKA "activation object"). This means we should set the new
+    // scope object as the context's activation object. However,
+    // since QScriptContext::setActivationObject() is not yet
+    // implemented, we use the default (empty) activation object
+    // as the scope to get the desired behavior.
+    QScriptValue scope = scriptContext->activationObject();// QScriptDeclarativeClass::newStaticScopeObject(scriptEngine);
     scriptContext->pushScope(scope);
 
     scriptEngine->evaluate(script->m_program);
