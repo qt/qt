@@ -195,7 +195,7 @@ void tst_qsgtext::text()
 {
     {
         QDeclarativeComponent textComponent(&engine);
-        textComponent.setData("import QtQuick 1.0\nText { text: \"\" }", QUrl::fromLocalFile(""));
+        textComponent.setData("import QtQuick 2.0\nText { text: \"\" }", QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
 
         QVERIFY(textObject != 0);
@@ -207,7 +207,7 @@ void tst_qsgtext::text()
 
     for (int i = 0; i < standard.size(); i++)
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"" + standard.at(i) + "\" }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"" + standard.at(i) + "\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
 
@@ -222,7 +222,7 @@ void tst_qsgtext::text()
 
     for (int i = 0; i < richText.size(); i++)
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"" + richText.at(i) + "\" }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"" + richText.at(i) + "\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -241,7 +241,7 @@ void tst_qsgtext::width()
     // uses Font metrics to find the width for standard and document to find the width for rich
     {
         QDeclarativeComponent textComponent(&engine);
-        textComponent.setData("import QtQuick 1.0\nText { text: \"\" }", QUrl::fromLocalFile(""));
+        textComponent.setData("import QtQuick 2.0\nText { text: \"\" }", QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
 
         QVERIFY(textObject != 0);
@@ -259,7 +259,7 @@ void tst_qsgtext::width()
         qreal metricWidth = fm.size(Qt::TextExpandTabs && Qt::TextShowMnemonic, standard.at(i)).width();
         metricWidth = qCeil(metricWidth);
 
-        QString componentStr = "import QtQuick 1.0\nText { text: \"" + standard.at(i) + "\" }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"" + standard.at(i) + "\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -282,7 +282,7 @@ void tst_qsgtext::width()
 
         int documentWidth = document.idealWidth();
 
-        QString componentStr = "import QtQuick 1.0\nText { text: \"" + richText.at(i) + "\" }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"" + richText.at(i) + "\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -301,7 +301,7 @@ void tst_qsgtext::wrap()
     // for specified width and wrap set true
     {
         QDeclarativeComponent textComponent(&engine);
-        textComponent.setData("import QtQuick 1.0\nText { text: \"Hello\"; wrapMode: Text.WordWrap; width: 300 }", QUrl::fromLocalFile(""));
+        textComponent.setData("import QtQuick 2.0\nText { text: \"Hello\"; wrapMode: Text.WordWrap; width: 300 }", QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
         textHeight = textObject->height();
 
@@ -314,7 +314,7 @@ void tst_qsgtext::wrap()
 
     for (int i = 0; i < standard.size(); i++)
     {
-        QString componentStr = "import QtQuick 1.0\nText { wrapMode: Text.WordWrap; width: 30; text: \"" + standard.at(i) + "\" }";
+        QString componentStr = "import QtQuick 2.0\nText { wrapMode: Text.WordWrap; width: 30; text: \"" + standard.at(i) + "\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -332,7 +332,7 @@ void tst_qsgtext::wrap()
 
     for (int i = 0; i < richText.size(); i++)
     {
-        QString componentStr = "import QtQuick 1.0\nText { wrapMode: Text.WordWrap; width: 30; text: \"" + richText.at(i) + "\" }";
+        QString componentStr = "import QtQuick 2.0\nText { wrapMode: Text.WordWrap; width: 30; text: \"" + richText.at(i) + "\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -351,7 +351,7 @@ void tst_qsgtext::wrap()
     // richtext again with a fixed height
     for (int i = 0; i < richText.size(); i++)
     {
-        QString componentStr = "import QtQuick 1.0\nText { wrapMode: Text.WordWrap; width: 30; height: 50; text: \"" + richText.at(i) + "\" }";
+        QString componentStr = "import QtQuick 2.0\nText { wrapMode: Text.WordWrap; width: 30; height: 50; text: \"" + richText.at(i) + "\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -378,7 +378,7 @@ void tst_qsgtext::elide()
 
         {
             QDeclarativeComponent textComponent(&engine);
-            textComponent.setData(("import QtQuick 1.0\nText { text: \"\"; "+elide+" width: 100 }").toLatin1(), QUrl::fromLocalFile(""));
+            textComponent.setData(("import QtQuick 2.0\nText { text: \"\"; "+elide+" width: 100 }").toLatin1(), QUrl::fromLocalFile(""));
             QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
 
             QCOMPARE(textObject->elideMode(), m);
@@ -389,7 +389,7 @@ void tst_qsgtext::elide()
 
         for (int i = 0; i < standard.size(); i++)
         {
-            QString componentStr = "import QtQuick 1.0\nText { "+elide+" width: 100; text: \"" + standard.at(i) + "\" }";
+            QString componentStr = "import QtQuick 2.0\nText { "+elide+" width: 100; text: \"" + standard.at(i) + "\" }";
             QDeclarativeComponent textComponent(&engine);
             textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
             QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -403,7 +403,7 @@ void tst_qsgtext::elide()
         // richtext - does nothing
         for (int i = 0; i < richText.size(); i++)
         {
-            QString componentStr = "import QtQuick 1.0\nText { "+elide+" width: 100; text: \"" + richText.at(i) + "\" }";
+            QString componentStr = "import QtQuick 2.0\nText { "+elide+" width: 100; text: \"" + richText.at(i) + "\" }";
             QDeclarativeComponent textComponent(&engine);
             textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
             QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -420,7 +420,7 @@ void tst_qsgtext::textFormat()
 {
     {
         QDeclarativeComponent textComponent(&engine);
-        textComponent.setData("import QtQuick 1.0\nText { text: \"Hello\"; textFormat: Text.RichText }", QUrl::fromLocalFile(""));
+        textComponent.setData("import QtQuick 2.0\nText { text: \"Hello\"; textFormat: Text.RichText }", QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
 
         QVERIFY(textObject != 0);
@@ -430,7 +430,7 @@ void tst_qsgtext::textFormat()
     }
     {
         QDeclarativeComponent textComponent(&engine);
-        textComponent.setData("import QtQuick 1.0\nText { text: \"<b>Hello</b>\"; textFormat: Text.PlainText }", QUrl::fromLocalFile(""));
+        textComponent.setData("import QtQuick 2.0\nText { text: \"<b>Hello</b>\"; textFormat: Text.PlainText }", QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
 
         QVERIFY(textObject != 0);
@@ -512,7 +512,7 @@ void tst_qsgtext::horizontalAlignment()
     {
         for (int j=0; j < horizontalAlignmentmentStrings.size(); j++)
         {
-            QString componentStr = "import QtQuick 1.0\nText { horizontalAlignment: \"" + horizontalAlignmentmentStrings.at(j) + "\"; text: \"" + standard.at(i) + "\" }";
+            QString componentStr = "import QtQuick 2.0\nText { horizontalAlignment: \"" + horizontalAlignmentmentStrings.at(j) + "\"; text: \"" + standard.at(i) + "\" }";
             QDeclarativeComponent textComponent(&engine);
             textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
             QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -527,7 +527,7 @@ void tst_qsgtext::horizontalAlignment()
     {
         for (int j=0; j < horizontalAlignmentmentStrings.size(); j++)
         {
-            QString componentStr = "import QtQuick 1.0\nText { horizontalAlignment: \"" + horizontalAlignmentmentStrings.at(j) + "\"; text: \"" + richText.at(i) + "\" }";
+            QString componentStr = "import QtQuick 2.0\nText { horizontalAlignment: \"" + horizontalAlignmentmentStrings.at(j) + "\"; text: \"" + richText.at(i) + "\" }";
             QDeclarativeComponent textComponent(&engine);
             textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
             QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -648,7 +648,7 @@ void tst_qsgtext::horizontalAlignment_RightToLeft()
 
 #ifndef Q_OS_MAC    // QTBUG-18040
     // alignment of Text with no text set to it
-    QString componentStr = "import QtQuick 1.0\nText {}";
+    QString componentStr = "import QtQuick 2.0\nText {}";
     QDeclarativeComponent textComponent(&engine);
     textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -666,7 +666,7 @@ void tst_qsgtext::verticalAlignment()
     {
         for (int j=0; j < verticalAlignmentmentStrings.size(); j++)
         {
-            QString componentStr = "import QtQuick 1.0\nText { verticalAlignment: \"" + verticalAlignmentmentStrings.at(j) + "\"; text: \"" + standard.at(i) + "\" }";
+            QString componentStr = "import QtQuick 2.0\nText { verticalAlignment: \"" + verticalAlignmentmentStrings.at(j) + "\"; text: \"" + standard.at(i) + "\" }";
             QDeclarativeComponent textComponent(&engine);
             textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
             QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -682,7 +682,7 @@ void tst_qsgtext::verticalAlignment()
     {
         for (int j=0; j < verticalAlignmentmentStrings.size(); j++)
         {
-            QString componentStr = "import QtQuick 1.0\nText { verticalAlignment: \"" + verticalAlignmentmentStrings.at(j) + "\"; text: \"" + richText.at(i) + "\" }";
+            QString componentStr = "import QtQuick 2.0\nText { verticalAlignment: \"" + verticalAlignmentmentStrings.at(j) + "\"; text: \"" + richText.at(i) + "\" }";
             QDeclarativeComponent textComponent(&engine);
             textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
             QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -700,7 +700,7 @@ void tst_qsgtext::font()
 {
     //test size, then bold, then italic, then family
     {
-        QString componentStr = "import QtQuick 1.0\nText { font.pointSize: 40; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nText { font.pointSize: 40; text: \"Hello World\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -713,7 +713,7 @@ void tst_qsgtext::font()
     }
 
     {
-        QString componentStr = "import QtQuick 1.0\nText { font.pixelSize: 40; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nText { font.pixelSize: 40; text: \"Hello World\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -726,7 +726,7 @@ void tst_qsgtext::font()
     }
 
     { 
-        QString componentStr = "import QtQuick 1.0\nText { font.bold: true; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nText { font.bold: true; text: \"Hello World\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -738,7 +738,7 @@ void tst_qsgtext::font()
     }
 
     { 
-        QString componentStr = "import QtQuick 1.0\nText { font.italic: true; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nText { font.italic: true; text: \"Hello World\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -750,7 +750,7 @@ void tst_qsgtext::font()
     }
 
     { 
-        QString componentStr = "import QtQuick 1.0\nText { font.family: \"Helvetica\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nText { font.family: \"Helvetica\"; text: \"Hello World\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -763,7 +763,7 @@ void tst_qsgtext::font()
     }
 
     { 
-        QString componentStr = "import QtQuick 1.0\nText { font.family: \"\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nText { font.family: \"\"; text: \"Hello World\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -779,7 +779,7 @@ void tst_qsgtext::style()
     //test style
     for (int i = 0; i < styles.size(); i++)
     { 
-        QString componentStr = "import QtQuick 1.0\nText { style: \"" + styleStrings.at(i) + "\"; styleColor: \"white\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nText { style: \"" + styleStrings.at(i) + "\"; styleColor: \"white\"; text: \"Hello World\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -789,7 +789,7 @@ void tst_qsgtext::style()
 
         delete textObject;
     }
-    QString componentStr = "import QtQuick 1.0\nText { text: \"Hello World\" }";
+    QString componentStr = "import QtQuick 2.0\nText { text: \"Hello World\" }";
     QDeclarativeComponent textComponent(&engine);
     textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -809,7 +809,7 @@ void tst_qsgtext::color()
     //test style
     for (int i = 0; i < colorStrings.size(); i++)
     { 
-        QString componentStr = "import QtQuick 1.0\nText { color: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nText { color: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -822,7 +822,7 @@ void tst_qsgtext::color()
 
     for (int i = 0; i < colorStrings.size(); i++)
     { 
-        QString componentStr = "import QtQuick 1.0\nText { styleColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nText { styleColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -838,7 +838,7 @@ void tst_qsgtext::color()
     { 
         for (int j = 0; j < colorStrings.size(); j++)
         {
-            QString componentStr = "import QtQuick 1.0\nText { color: \"" + colorStrings.at(i) + "\"; styleColor: \"" + colorStrings.at(j) + "\"; text: \"Hello World\" }";
+            QString componentStr = "import QtQuick 2.0\nText { color: \"" + colorStrings.at(i) + "\"; styleColor: \"" + colorStrings.at(j) + "\"; text: \"Hello World\" }";
             QDeclarativeComponent textComponent(&engine);
             textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
             QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -854,7 +854,7 @@ void tst_qsgtext::color()
         QColor testColor("#001234");
         testColor.setAlpha(170);
 
-        QString componentStr = "import QtQuick 1.0\nText { color: \"" + colorStr + "\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nText { color: \"" + colorStr + "\"; text: \"Hello World\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -870,7 +870,7 @@ void tst_qsgtext::smooth()
     for (int i = 0; i < standard.size(); i++)
     {
         {
-            QString componentStr = "import QtQuick 1.0\nText { smooth: true; text: \"" + standard.at(i) + "\" }";
+            QString componentStr = "import QtQuick 2.0\nText { smooth: true; text: \"" + standard.at(i) + "\" }";
             QDeclarativeComponent textComponent(&engine);
             textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
             QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -879,7 +879,7 @@ void tst_qsgtext::smooth()
             delete textObject;
         }
         {
-            QString componentStr = "import QtQuick 1.0\nText { text: \"" + standard.at(i) + "\" }";
+            QString componentStr = "import QtQuick 2.0\nText { text: \"" + standard.at(i) + "\" }";
             QDeclarativeComponent textComponent(&engine);
             textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
             QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -891,7 +891,7 @@ void tst_qsgtext::smooth()
     for (int i = 0; i < richText.size(); i++)
     {
         {
-            QString componentStr = "import QtQuick 1.0\nText { smooth: true; text: \"" + richText.at(i) + "\" }";
+            QString componentStr = "import QtQuick 2.0\nText { smooth: true; text: \"" + richText.at(i) + "\" }";
             QDeclarativeComponent textComponent(&engine);
             textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
             QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -900,7 +900,7 @@ void tst_qsgtext::smooth()
             delete textObject;
         }
         {
-            QString componentStr = "import QtQuick 1.0\nText { text: \"" + richText.at(i) + "\" }";
+            QString componentStr = "import QtQuick 2.0\nText { text: \"" + richText.at(i) + "\" }";
             QDeclarativeComponent textComponent(&engine);
             textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
             QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -914,7 +914,7 @@ void tst_qsgtext::smooth()
 void tst_qsgtext::weight()
 {
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"Hello world!\" }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"Hello world!\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -925,7 +925,7 @@ void tst_qsgtext::weight()
         delete textObject;
     }
     {
-        QString componentStr = "import QtQuick 1.0\nText { font.weight: \"Bold\"; text: \"Hello world!\" }";
+        QString componentStr = "import QtQuick 2.0\nText { font.weight: \"Bold\"; text: \"Hello world!\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -940,7 +940,7 @@ void tst_qsgtext::weight()
 void tst_qsgtext::underline()
 {
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"Hello world!\" }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"Hello world!\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -951,7 +951,7 @@ void tst_qsgtext::underline()
         delete textObject;
     }
     {
-        QString componentStr = "import QtQuick 1.0\nText { font.underline: true; text: \"Hello world!\" }";
+        QString componentStr = "import QtQuick 2.0\nText { font.underline: true; text: \"Hello world!\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -966,7 +966,7 @@ void tst_qsgtext::underline()
 void tst_qsgtext::overline()
 {
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"Hello world!\" }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"Hello world!\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -977,7 +977,7 @@ void tst_qsgtext::overline()
         delete textObject;
     }
     {
-        QString componentStr = "import QtQuick 1.0\nText { font.overline: true; text: \"Hello world!\" }";
+        QString componentStr = "import QtQuick 2.0\nText { font.overline: true; text: \"Hello world!\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -992,7 +992,7 @@ void tst_qsgtext::overline()
 void tst_qsgtext::strikeout()
 {
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"Hello world!\" }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"Hello world!\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -1003,7 +1003,7 @@ void tst_qsgtext::strikeout()
         delete textObject;
     }
     {
-        QString componentStr = "import QtQuick 1.0\nText { font.strikeout: true; text: \"Hello world!\" }";
+        QString componentStr = "import QtQuick 2.0\nText { font.strikeout: true; text: \"Hello world!\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -1018,7 +1018,7 @@ void tst_qsgtext::strikeout()
 void tst_qsgtext::capitalization()
 {
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"Hello world!\" }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"Hello world!\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -1029,7 +1029,7 @@ void tst_qsgtext::capitalization()
         delete textObject;
     }
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"Hello world!\"; font.capitalization: \"AllUppercase\" }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"Hello world!\"; font.capitalization: \"AllUppercase\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -1040,7 +1040,7 @@ void tst_qsgtext::capitalization()
         delete textObject;
     }
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"Hello world!\"; font.capitalization: \"AllLowercase\" }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"Hello world!\"; font.capitalization: \"AllLowercase\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -1051,7 +1051,7 @@ void tst_qsgtext::capitalization()
         delete textObject;
     }
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"Hello world!\"; font.capitalization: \"SmallCaps\" }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"Hello world!\"; font.capitalization: \"SmallCaps\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -1062,7 +1062,7 @@ void tst_qsgtext::capitalization()
         delete textObject;
     }
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"Hello world!\"; font.capitalization: \"Capitalize\" }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"Hello world!\"; font.capitalization: \"Capitalize\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -1077,7 +1077,7 @@ void tst_qsgtext::capitalization()
 void tst_qsgtext::letterSpacing()
 {
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"Hello world!\" }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"Hello world!\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -1088,7 +1088,7 @@ void tst_qsgtext::letterSpacing()
         delete textObject;
     }
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"Hello world!\"; font.letterSpacing: -2 }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"Hello world!\"; font.letterSpacing: -2 }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -1099,7 +1099,7 @@ void tst_qsgtext::letterSpacing()
         delete textObject;
     }
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"Hello world!\"; font.letterSpacing: 3 }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"Hello world!\"; font.letterSpacing: 3 }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -1114,7 +1114,7 @@ void tst_qsgtext::letterSpacing()
 void tst_qsgtext::wordSpacing()
 {
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"Hello world!\" }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"Hello world!\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -1125,7 +1125,7 @@ void tst_qsgtext::wordSpacing()
         delete textObject;
     }
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"Hello world!\"; font.wordSpacing: -50 }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"Hello world!\"; font.wordSpacing: -50 }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -1136,7 +1136,7 @@ void tst_qsgtext::wordSpacing()
         delete textObject;
     }
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"Hello world!\"; font.wordSpacing: 200 }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"Hello world!\"; font.wordSpacing: 200 }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -1170,7 +1170,14 @@ void tst_qsgtext::QTBUG_12291()
 class EventSender : public QSGItem
 {
 public:
-    void sendEvent(QEvent *event) { sceneEvent(event); }
+    void sendEvent(QEvent *event) {
+        if (event->type() == QEvent::GraphicsSceneMousePress)
+            mousePressEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
+        else if (event->type() == QEvent::GraphicsSceneMouseRelease)
+            mouseReleaseEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
+        else
+            qWarning() << "Trying to send unsupported event type";
+    }
 };
 
 class LinkTest : public QObject
@@ -1188,7 +1195,7 @@ public slots:
 void tst_qsgtext::clickLink()
 {
     {
-        QString componentStr = "import QtQuick 1.0\nText { text: \"<a href=\\\"http://qt.nokia.com\\\">Hello world!</a>\" }";
+        QString componentStr = "import QtQuick 2.0\nText { text: \"<a href=\\\"http://qt.nokia.com\\\">Hello world!</a>\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -1341,7 +1348,7 @@ void tst_qsgtext::implicitSize()
 {
     QFETCH(QString, text);
     QFETCH(QString, wrap);
-    QString componentStr = "import QtQuick 1.1\nText { text: \"" + text + "\"; width: 50; wrapMode: " + wrap + " }";
+    QString componentStr = "import QtQuick 2.0\nText { text: \"" + text + "\"; width: 50; wrapMode: " + wrap + " }";
     QDeclarativeComponent textComponent(&engine);
     textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QSGText *textObject = qobject_cast<QSGText*>(textComponent.create());
@@ -1366,7 +1373,7 @@ void tst_qsgtext::testQtQuick11Attributes()
     QObject *obj;
 
     QDeclarativeComponent valid(&engine);
-    valid.setData("import QtQuick 1.1; Text { " + code.toUtf8() + " }", QUrl(""));
+    valid.setData("import QtQuick 2.0; Text { " + code.toUtf8() + " }", QUrl(""));
     obj = valid.create();
     QVERIFY(obj);
     QVERIFY(valid.errorString().isEmpty());

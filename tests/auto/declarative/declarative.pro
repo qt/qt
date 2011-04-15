@@ -84,12 +84,14 @@ contains(QT_CONFIG, private_tests) {
            qsgflipable \
            qsgfocusscope \
            qsggridview \
+           qsglistview \
            qsgloader \
            qsgmousearea \
            qsgpathview \
            qsgpincharea \
            qsgpositioners \
            qsgrepeater \
+           qsgtext \
            qsgtextedit \
            qsgtextinput \
            qsgvisualdatamodel
