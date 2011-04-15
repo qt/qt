@@ -77,6 +77,10 @@
 #include <akncontext.h>             // CAknContextPane
 #include <eikspane.h>               // CEikStatusPane
 #include <AknPopupFader.h>          // MAknFadedComponent and TAknPopupFader
+#include <gfxtranseffect/gfxtranseffect.h> // BeginFullScreen
+#ifdef QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H
+#include <akntranseffect.h> // BeginFullScreen
+#endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -84,6 +88,9 @@ QT_BEGIN_NAMESPACE
 // Application internal HandleResourceChangeL events,
 // system events seems to start with 0x10
 const TInt KInternalStatusPaneChange = 0x50000000;
+
+// For BeginFullScreen().
+const TUint KQtAppExitFlag = 0x400;
 
 static const int qt_symbian_max_screens = 4;
 
@@ -193,6 +200,9 @@ public:
 
     int nativeScreenWidthInPixels;
     int nativeScreenHeightInPixels;
+
+    int beginFullScreenCalled : 1;
+    int endFullScreenCalled : 1;
 };
 
 Q_AUTOTEST_EXPORT QS60Data* qGlobalS60Data();
@@ -334,6 +344,8 @@ inline QS60Data::QS60Data()
 #ifdef Q_OS_SYMBIAN
   ,s60InstalledTrapHandler(0)
 #endif
+  ,beginFullScreenCalled(0),
+  endFullScreenCalled(0)
 {
 }
 
@@ -564,6 +576,49 @@ void qt_symbian_setGlobalCursor(const QCursor &cursor);
 void qt_symbian_set_cursor_visible(bool visible);
 bool qt_symbian_is_cursor_visible();
 #endif
+
+static inline bool qt_beginFullScreenEffect()
+{
+#if defined(Q_WS_S60) && defined(QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H)
+    // Only for post-S^3. On earlier versions the system transition effects
+    // may not be able to capture the non-Avkon content, leading to confusing
+    // looking effects, so just skip the whole thing.
+    if (S60->beginFullScreenCalled || QSysInfo::s60Version() <= QSysInfo::SV_S60_5_2)
+        return false;
+    S60->beginFullScreenCalled = true;
+    // For Avkon apps the app-exit effect is triggered from CAknAppUi::PrepareToExit().
+    // That is good for Avkon apps, but in case of Qt the RWindows are destroyed earlier.
+    // Therefore we call BeginFullScreen() ourselves.
+    GfxTransEffect::BeginFullScreen(AknTransEffect::EApplicationExit,
+        TRect(0, 0, 0, 0),
+        AknTransEffect::EParameterType,
+        AknTransEffect::GfxTransParam(S60->uid,
+            AknTransEffect::TParameter::EAvkonCheck | KQtAppExitFlag));
+    return true;
+#else
+    return false;
+#endif
+}
+
+static inline void qt_abortFullScreenEffect()
+{
+#if defined(Q_WS_S60) && defined(QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H)
+    if (!S60->beginFullScreenCalled || QSysInfo::s60Version() <= QSysInfo::SV_S60_5_2)
+        return;
+    GfxTransEffect::AbortFullScreen();
+    S60->beginFullScreenCalled = S60->endFullScreenCalled = false;
+#endif
+}
+
+static inline void qt_endFullScreenEffect()
+{
+#if defined(Q_WS_S60) && defined(QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H)
+    if (S60->endFullScreenCalled || QSysInfo::s60Version() <= QSysInfo::SV_S60_5_2)
+        return;
+    S60->endFullScreenCalled = true;
+    GfxTransEffect::EndFullScreen();
+#endif
+}
 
 QT_END_NAMESPACE
 
