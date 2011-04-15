@@ -75,4 +75,8 @@ private:
     QRectF m_rect;
 };
 
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
 #endif // QSGSIMPLETEXTURENODE_H
