@@ -240,8 +240,6 @@ QStringList tst_qmlvisual::findQmlFiles(const QDir &d)
 
 void action(Mode mode, const QString &file)
 {
-    Q_ASSERT(mode != Test);
-
     QString testdata = tst_qmlvisual::toTestScript(file,mode);
 
     QStringList arguments;
