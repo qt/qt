@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,30 +39,55 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDEGLWINDOW_H
-#define QWAYLANDEGLWINDOW_H
+#ifndef QWAYLANDXCOMPOSITEGLXINTEGRATION_H
+#define QWAYLANDXCOMPOSITEGLXINTEGRATION_H
 
-#include "qwaylandwindow.h"
+#include "gl_integration/qwaylandglintegration.h"
+#include "wayland-client.h"
 
-class QWaylandGLContext;
+#include <QtCore/QTextStream>
+#include <QtCore/QDataStream>
+#include <QtCore/QMetaType>
+#include <QtCore/QVariant>
+#include <QtGui/QWidget>
 
-class QWaylandEglWindow : public QWaylandWindow
+#include <X11/Xlib.h>
+
+struct wl_xcomposite;
+
+class QWaylandXCompositeGLXIntegration : public QWaylandGLIntegration
 {
 public:
-    QWaylandEglWindow(QWidget *window);
-    ~QWaylandEglWindow();
-    WindowType windowType() const;
-    void setGeometry(const QRect &rect);
-    void setParent(const QPlatformWindow *parent);
-    QPlatformGLContext *glContext() const;
-protected:
-    void newSurfaceCreated();
-private:
-    QWaylandGLContext *mGLContext;
-    struct wl_egl_window *mWaylandEglWindow;
-    EGLConfig mConfig;
+    QWaylandXCompositeGLXIntegration(QWaylandDisplay * waylandDispaly);
+    ~QWaylandXCompositeGLXIntegration();
 
-    const QWaylandWindow *mParentWindow;
+    void initialize();
+
+    QWaylandWindow *createEglWindow(QWidget *widget);
+
+    QWaylandDisplay *waylandDisplay() const;
+    struct wl_xcomposite *waylandXComposite() const;
+
+    Display *xDisplay() const;
+    int screen() const;
+    Window rootWindow() const;
+
+private:
+    QWaylandDisplay *mWaylandDisplay;
+    struct wl_xcomposite *mWaylandComposite;
+
+    Display *mDisplay;
+    int mScreen;
+    Window mRootWindow;
+
+    static void wlDisplayHandleGlobal(struct wl_display *display, uint32_t id,
+                             const char *interface, uint32_t version, void *data);
+
+    static const struct wl_xcomposite_listener xcomposite_listener;
+    static void rootInformation(void *data,
+                 struct wl_xcomposite *xcomposite,
+                 const char *display_name,
+                 uint32_t root_window);
 };
 
-#endif // QWAYLANDEGLWINDOW_H
+#endif // QWAYLANDXCOMPOSITEGLXINTEGRATION_H

@@ -47,7 +47,7 @@
 class QXlibEglIntegration
 {
 public:
-    static VisualID getCompatibleVisualId(Display *display, EGLConfig config);
+    static VisualID getCompatibleVisualId(Display *display, EGLDisplay eglDisplay, EGLConfig config);
 };
 
 #endif // QTESTLITEEGLINTEGRATION_H
