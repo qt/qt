@@ -65,7 +65,6 @@ Rectangle {
 //! [anchor fill]
 
 Rectangle {
-    id: button
     width: 100; height: 100
 
 //! [enable handlers]
@@ -79,7 +78,6 @@ Rectangle {
 }
 
 Rectangle {
-    id: button
     width: 100; height: 100
 
 //! [mouse handlers]

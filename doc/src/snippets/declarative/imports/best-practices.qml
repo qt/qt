@@ -42,7 +42,7 @@
 import QtQuick 1.0
 import QtWebKit 1.0
 import "subdirectory"
-import "script.js"
+import "script.js" as Script
 //! [imports]
 
 Item {
