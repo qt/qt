@@ -73,6 +73,15 @@ QXlibIntegration::QXlibIntegration(bool useOpenGL)
     mScreens.append(mPrimaryScreen);
 }
 
+bool QXlibIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case ThreadedPixmaps: return true;
+    case OpenGL: return hasOpenGL();
+    default: return QPlatformIntegration::hasCapability(cap);
+    }
+}
+
 QPixmapData *QXlibIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
 #ifndef QT_NO_OPENGL

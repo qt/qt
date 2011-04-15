@@ -127,7 +127,8 @@ void QGLContextPrivate::setupSharing() {
 
 bool QGLFormat::hasOpenGL()
 {
-    return QApplicationPrivate::platformIntegration()->hasOpenGL();
+    return QApplicationPrivate::platformIntegration()
+            ->hasCapability(QPlatformIntegration::OpenGL);
 }
 
 void qDeleteQGLContext(void *handle)

@@ -113,7 +113,7 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
 
 #if defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     if (tlw->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
-        && QApplicationPrivate::platformIntegration()->hasOpenGL())
+        && QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
     {
 #if defined(XCB_USE_GLX)
         XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), tlw->platformWindowFormat());
@@ -491,7 +491,7 @@ void QXcbWindow::requestActivateWindow()
 
 QPlatformGLContext *QXcbWindow::glContext() const
 {
-    if (!QApplicationPrivate::platformIntegration()->hasOpenGL()) {
+    if (!QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)) {
         printf("no opengl\n");
         return 0;
     }
