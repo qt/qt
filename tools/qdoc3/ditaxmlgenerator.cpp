@@ -769,6 +769,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::Code:
         {
             writeStartTag(DT_codeblock);
+            xmlWriter().writeAttribute("outputclass","cpp");
             QString chars = trimmedTrailing(atom->string()); 
             writeText(chars, marker, relative);
             writeEndTag(); // </codeblock>
@@ -776,6 +777,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
 	break;
     case Atom::Qml:
         writeStartTag(DT_codeblock);
+        xmlWriter().writeAttribute("outputclass","qml");
         writeText(trimmedTrailing(atom->string()), marker, relative);
         writeEndTag(); // </codeblock>
 	break;
