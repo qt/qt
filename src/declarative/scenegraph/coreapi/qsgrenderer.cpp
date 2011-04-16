@@ -319,6 +319,7 @@ void QSGRenderer::preprocess()
     preprocessTime = frameTimer.elapsed();
 #endif
 
+    nodeUpdater()->setToplevelOpacity(context()->renderAlpha());
     nodeUpdater()->updateStates(m_root_node);
 
 #ifdef QSG_RENDERER_TIMING

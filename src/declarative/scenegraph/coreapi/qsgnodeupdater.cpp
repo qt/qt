@@ -64,6 +64,24 @@ void QSGNodeUpdater::updateStates(QSGNode *n)
     visitNode(n);
 }
 
+/*!
+    \fn void QSGNodeUpdater::setToplevelOpacity(qreal opacity)
+
+    Sets the toplevel opacity that will be multiplied with the
+
+    The default opacity is 1. Any other value will cause artifacts, and is
+    primarily useful for debug purposes.
+
+    The changing the value during an update pass will have undefined results
+ */
+
+/*!
+    \fn qreal QSGNodeUpdater::toplevelOpacity() const
+
+    Returns the toplevel opacity for the node updater. The default
+    value is 1.
+ */
+
 
 /*!
     Returns true if \a node is has something that blocks it in the chain from

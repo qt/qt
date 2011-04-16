@@ -61,7 +61,7 @@
 #include <qmutex.h>
 
 DEFINE_BOOL_CONFIG_OPTION(qmlFlashMode, QML_FLASH_MODE)
-
+DEFINE_BOOL_CONFIG_OPTION(qmlTranslucentMode, QML_TRANSLUCENT_MODE)
 
 /*!
     Comments about this class from Gunnar:
@@ -93,6 +93,7 @@ public:
         , gl(0)
         , flashMode(qmlFlashMode())
     {
+        renderAlpha = qmlTranslucentMode() ? 0.3 : 1;
     }
 
     ~QSGContextPrivate() 
@@ -112,6 +113,7 @@ public:
     QList<QSGTexture *> texturesToClean;
 
     bool flashMode;
+    float renderAlpha;
 };
 
 
@@ -386,6 +388,32 @@ void QSGContext::setFlashModeEnabled(bool enabled)
 bool QSGContext::isFlashModeEnabled() const
 {
     return d_func()->flashMode;
+}
+
+
+/*!
+    Sets the toplevel opacity for rendering. This value will be multiplied into all
+    drawing calls where possible.
+
+    The default value is 1. Any other value will cause artifacts and is primarily
+    useful for debugging.
+ */
+void QSGContext::setRenderAlpha(qreal renderAlpha)
+{
+    d_func()->renderAlpha = renderAlpha;
+}
+
+
+/*!
+    Returns the toplevel opacity used for rendering.
+
+    The default value is 1.
+
+    \sa setRenderAlpha()
+ */
+qreal QSGContext::renderAlpha() const
+{
+    return d_func()->renderAlpha;
 }
 
 

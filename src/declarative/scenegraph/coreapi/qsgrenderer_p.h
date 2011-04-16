@@ -140,7 +140,6 @@ public:
 
     inline QSGMaterialShader::RenderState state(QSGMaterialShader::RenderState::DirtyStates dirty) const;
 
-
 signals:
     void sceneGraphChanged(); // Add, remove, ChangeFlags changes...
 

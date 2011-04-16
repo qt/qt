@@ -110,6 +110,9 @@ public:
     void setFlashModeEnabled(bool enabled);
     bool isFlashModeEnabled() const;
 
+    void setRenderAlpha(qreal renderAlpha);
+    qreal renderAlpha() const;
+
 signals:
     void ready();
 
