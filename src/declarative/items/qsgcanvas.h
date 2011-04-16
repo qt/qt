@@ -75,6 +75,9 @@ public:
 
     QSGEngine *sceneGraphEngine() const;
 
+signals:
+    void sceneGraphInitialized();
+
 protected:
     QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent = 0, Qt::WindowFlags f = 0);
     QSGCanvas(QSGCanvasPrivate &dd, const QGLFormat &format, QWidget *parent = 0, Qt::WindowFlags f = 0);

@@ -73,6 +73,16 @@ public:
     QSGTexture *createTextureFromImage(const QImage &image) const;
     QSGTexture *createTextureFromId(uint id, const QSize &size, TextureOptions options = TextureOption(0)) const;
 
+    void setClearBeforeRendering(bool enabled);
+    bool clearBeforeRendering() const;
+
+    void setClearColor(const QColor &color);
+    QColor clearColor() const;
+
+signals:
+    void beforeRendering();
+    void afterRendering();
+
 private:
     QSGEngine(QObject *parent = 0);
     ~QSGEngine();

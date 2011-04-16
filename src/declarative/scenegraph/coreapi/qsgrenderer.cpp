@@ -65,9 +65,13 @@ static int updatePassTime;
 static int frameNumber = 0;
 #endif
 
-void Bindable::clear() const
+void Bindable::clear(QSGRenderer::ClearMode mode) const
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    GLuint bits = 0;
+    if (mode & QSGRenderer::ClearColorBuffer) bits |= GL_COLOR_BUFFER_BIT;
+    if (mode & QSGRenderer::ClearDepthBuffer) bits |= GL_DEPTH_BUFFER_BIT;
+    if (mode & QSGRenderer::ClearStencilBuffer) bits |= GL_STENCIL_BUFFER_BIT;
+    glClear(bits);
 }
 
 // Reactivate the color buffer after switching to the stencil.
@@ -117,6 +121,7 @@ void BindableFbo::bind() const
 QSGRenderer::QSGRenderer(QSGContext *context)
     : QObject()
     , m_clear_color(Qt::transparent)
+    , m_clear_mode(ClearColorBuffer | ClearDepthBuffer)
     , m_render_opacity(1)
     , m_context(context)
     , m_root_node(0)

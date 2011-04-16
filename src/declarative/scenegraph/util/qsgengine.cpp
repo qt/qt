@@ -42,13 +42,22 @@
 #include "qsgengine.h"
 
 #include <private/qsgtexture_p.h>
+#include <private/qsgrenderer_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QSGEnginePrivate : public QObjectPrivate
 {
 public:
+    QSGEnginePrivate()
+        : context(0)
+        , clearBeforeRender(true)
+    {
+    }
+
     QSGContext *context;
+
+    bool clearBeforeRender;
 };
 
 
@@ -60,7 +69,10 @@ public:
     can implement any type of texture using the abstract QSGTexture class, the QSGEngine
     class provides some convenience for the default usecases. This also allows the scene
     graph to apply hardware specific optimzations.
+
  */
+
+
 
 /*!
     Constructs a new QSGengine
@@ -92,6 +104,67 @@ QSGEngine::~QSGEngine()
  */
 
 /*!
+    \fn void QSGEngine::beforeRendering()
+
+    This signal is emitted before the scene starts rendering.
+
+    Combined with the modes for clearing the background, this option
+    can be used to paint using raw GL under QML content.
+
+    The GL context used for rendering the scene graph will be bound
+    at this point.
+*/
+
+/*!
+    \fn void QSGEngine::afterRendering()
+
+    This signal is emitted after the scene has completed rendering, before swapbuffers is called.
+
+    This signal can be used to paint using raw GL on top of QML content,
+    or to do screen scraping of the current frame buffer.
+
+    The GL context used for rendering the scene graph will be bound at this point.
+ */
+
+
+
+/*!
+    Sets weither the scene graph rendering of QML should clear the color buffer
+    before it starts rendering to \a enbled.
+
+    By disabling clearing of the color buffer, it is possible to do GL painting
+    under the scene graph.
+
+    The color buffer is cleared by default.
+ */
+
+void QSGEngine::setClearBeforeRendering(bool enabled)
+{
+    Q_D(QSGEngine);
+    d->clearBeforeRender = enabled;
+    if (d->clearBeforeRender) {
+        d->context->renderer()->setClearMode(QSGRenderer::ClearDepthBuffer
+                                             | QSGRenderer::ClearColorBuffer);
+    } else {
+        d->context->renderer()->setClearMode(QSGRenderer::ClearDepthBuffer);
+    }
+}
+
+
+
+/*!
+    Returns weither clearing of the color buffer is done before rendering or not.
+ */
+
+bool QSGEngine::clearBeforeRendering() const
+{
+    Q_D(const QSGEngine);
+    return d->clearBeforeRender;
+}
+
+
+
+/*!
     Creates a new QSGTexture from the supplied \a image. If the image has an
     alpha channel, the corresponding texture will have an alpha channel.
 
@@ -105,6 +178,7 @@ QSGTexture *QSGEngine::createTextureFromImage(const QImage &image) const
     Q_D(const QSGEngine);
     return d->context->createTexture(image);
 }
+
 
 
 /*!
@@ -126,10 +200,45 @@ QSGTexture *QSGEngine::createTextureFromId(uint id, const QSize &size, TextureOp
 }
 
 
+
+/*!
+    \internal
+
+    Sets the scene graph context of this engine to context.
+
+    The context will be set by the QSGcontext::initialize() function,
+    as part of constructing the engine object.
+ */
+
 void QSGEngine::setContext(QSGContext *context)
 {
     Q_D(QSGEngine);
     d->context = context;
+}
+
+
+
+/*!
+    Sets the background color of the scene graph to \a color.
+
+    Changing the clear color has no effect when clearing before rendering is
+    disabled.
+ */
+
+void QSGEngine::setClearColor(const QColor &color)
+{
+    d_func()->context->renderer()->setClearColor(color);
+}
+
+
+
+/*!
+    Returns the background color of the scene graph
+ */
+
+QColor QSGEngine::clearColor() const
+{
+    return d_func()->context->renderer()->clearColor();
 }
 
 QT_END_NAMESPACE

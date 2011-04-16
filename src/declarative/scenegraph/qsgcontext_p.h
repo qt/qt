@@ -115,8 +115,6 @@ public:
 
 signals:
     void ready();
-
-    void aboutToRenderNextFrame();
 };
 
 QT_END_NAMESPACE

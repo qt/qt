@@ -204,7 +204,8 @@ void QMLRenderer::render()
 
     glDisable(GL_SCISSOR_TEST);
     glClearColor(m_clear_color.redF(), m_clear_color.greenF(), m_clear_color.blueF(), m_clear_color.alphaF());
-    bindable()->clear();
+
+    bindable()->clear(clearMode());
 
     QRect r = viewportRect();
     glViewport(r.x(), deviceRect().bottom() - r.bottom(), r.width(), r.height());

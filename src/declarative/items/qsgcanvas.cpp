@@ -294,6 +294,8 @@ void QSGCanvasPrivate::initializeSceneGraph()
     if (!QSGItemPrivate::get(rootItem)->itemNode()->parent()) {
         context->rootNode()->appendChildNode(QSGItemPrivate::get(rootItem)->itemNode());
     }
+
+    emit q_func()->sceneGraphInitialized();
 }
 
 void QSGCanvasPrivate::polishItems()
@@ -323,7 +325,6 @@ void QSGCanvasPrivate::renderSceneGraph()
     context->renderer()->setProjectMatrixToDeviceRect();
 
     context->renderNextFrame();
-
 
 #ifdef FRAME_TIMING
     sceneGraphRenderTime = frameTimer.elapsed();
@@ -1863,10 +1864,19 @@ void QSGCanvas::maybeUpdate()
 }
 
 /*!
+    \fn void QSGEngine::sceneGraphInitialized();
+
+    This signal is emitted when the scene graph has been initialized.
+
+    This signal will be emitted from the scene graph rendering thread.
+ */
+
+/*!
     Returns the QSGEngine used for this scene.
 
     The engine will only be available once the scene graph has been
-    initialized, typically during the very first showEvent.
+    initialized. Register for the sceneGraphEngine() signal to get
+    notification about this.
  */
 
 QSGEngine *QSGCanvas::sceneGraphEngine() const

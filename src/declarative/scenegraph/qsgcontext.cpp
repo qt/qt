@@ -247,9 +247,13 @@ void QSGContext::renderNextFrame()
 {
     Q_D(QSGContext);
 
+    emit d->engine.beforeRendering();
+
     cleanupTextures();
-    emit aboutToRenderNextFrame();
     d->renderer->renderScene();
+
+    emit d->engine.afterRendering();
+
 }
 
 /*!
