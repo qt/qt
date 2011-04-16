@@ -60,6 +60,9 @@
 #include <private/qobject_p.h>
 #include <qmutex.h>
 
+DEFINE_BOOL_CONFIG_OPTION(qmlFlashMode, QML_FLASH_MODE)
+
+
 /*!
     Comments about this class from Gunnar:
 
@@ -88,6 +91,7 @@ public:
         : rootNode(0)
         , renderer(0)
         , gl(0)
+        , flashMode(qmlFlashMode())
     {
     }
 
@@ -106,6 +110,8 @@ public:
 
     QMutex textureMutex;
     QList<QSGTexture *> texturesToClean;
+
+    bool flashMode;
 };
 
 
@@ -365,7 +371,22 @@ QSGMaterialShader *QSGContext::prepareMaterial(QSGMaterial *material)
     return shader;
 }
 
+/*!
+    Sets weither the scene graph should render with flashing update rectangles or not
+  */
+void QSGContext::setFlashModeEnabled(bool enabled)
+{
+    d_func()->flashMode = enabled;
+}
 
+
+/*!
+    Returns true if the scene graph should be rendered with flashing update rectangles
+ */
+bool QSGContext::isFlashModeEnabled() const
+{
+    return d_func()->flashMode;
+}
 
 
 QT_END_NAMESPACE

@@ -107,6 +107,9 @@ public:
     void schdelueTextureForCleanup(QSGTexture *texture);
     void cleanupTextures();
 
+    void setFlashModeEnabled(bool enabled);
+    bool isFlashModeEnabled() const;
+
 signals:
     void ready();
 

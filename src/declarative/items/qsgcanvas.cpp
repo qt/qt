@@ -46,6 +46,7 @@
 #include "qsgitem_p.h"
 
 #include <private/qsgrenderer_p.h>
+#include <private/qsgflashnode_p.h>
 
 #include <QtGui/qpainter.h>
 #include <QtGui/qgraphicssceneevent.h>
@@ -1602,6 +1603,10 @@ void QSGCanvasPrivate::updateDirtyNodes()
 
 void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
 {
+#ifdef QML_RUNTIME_TESTING
+    bool didFlash = false;
+#endif
+
     QSGItemPrivate *itemPriv = QSGItemPrivate::get(item);
     quint32 dirty = itemPriv->dirtyAttributes;
     itemPriv->dirtyAttributes = 0;
@@ -1817,6 +1822,19 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
             Q_ASSERT(containsChild);
         }
         ip = ic;
+    }
+#endif
+
+#ifdef QML_RUNTIME_TESTING
+    if (itemPriv->sceneGraphContext()->isFlashModeEnabled()) {
+        QSGFlashNode *flash = new QSGFlashNode();
+        flash->setRect(item->boundingRect());
+        itemPriv->childContainerNode()->appendChildNode(flash);
+        didFlash = true;
+    }
+    Q_Q(QSGCanvas);
+    if (didFlash) {
+        q->maybeUpdate();
     }
 #endif
 

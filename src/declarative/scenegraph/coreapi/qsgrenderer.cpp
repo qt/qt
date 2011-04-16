@@ -302,8 +302,13 @@ void QSGRenderer::preprocess()
 {
     Q_ASSERT(m_root_node);
 
-    for (QSet<QSGNode *>::const_iterator it = m_nodes_to_preprocess.constBegin();
-         it != m_nodes_to_preprocess.constEnd(); ++it) {
+    // We need to take a copy here, in case any of the preprocess calls deletes a node that
+    // is in the preprocess list and thus, changes the m_nodes_to_preprocess behind our backs
+    // For the default case, when this does not happen, the cost is neglishible.
+    QSet<QSGNode *> items = m_nodes_to_preprocess;
+
+    for (QSet<QSGNode *>::const_iterator it = items.constBegin();
+         it != items.constEnd(); ++it) {
         QSGNode *n = *it;
         if (!nodeUpdater()->isNodeBlocked(n, m_root_node)) {
             n->preprocess();

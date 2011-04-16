@@ -141,7 +141,6 @@ public:
 
     void dirtyItem(QSGItem *);
     void cleanup(QSGNode *);
-    void maybeUpdate();
 
     void initializeSceneGraph();
     void polishItems();
