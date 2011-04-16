@@ -58,6 +58,28 @@ static void qt_print_node_count()
 }
 #endif
 
+/*!
+    \class QSGNode
+    \bried The QSGNode class is the base class for all nodes in the scene graph.
+
+    The QSGNode class can be used as a child container. Children are added with
+    the appendChildNode(), prependChildNode(), insertChildNodeBefore() and
+    insertChildNodeAfter(). Ordering is important as nodes are rendered in
+    order. Actually, the scene may reorder nodes freely, but the resulting visual
+    order is still guaranteed.
+
+    If nodes change every frame, the preprocess() function can be used to
+    apply changes to a node for every frame its rendered. The use of preprocess()
+    must be explicitly enabled by setting the QSGNode::UsePreprocess flag
+    on the node.
+
+    The virtual isSubtreeBlocked() function can be used to disable a subtree all
+    together. Nodes in a blocked subtree will not be preprocessed() and not
+    rendered.
+
+    Anything related to QSGNode should happen on the scene graph rendering thread.
+ */
+
 QSGNode::QSGNode()
     : m_parent(0)
     , m_nodeFlags(OwnedByParent)
@@ -83,6 +105,33 @@ QSGNode::~QSGNode()
 #endif
     destroy();
 }
+
+
+/*!
+    \fn void QSGNode::preprocess()
+
+    Override this function to do processing on the node before it is rendered.
+
+    Preprocessing needs to be explicitly enabled by setting the flag
+    QSGNode::UsePreprocess. The flag needs to be set before the node is added
+    to the scene graph and will cause the preprocess() function to be called
+    for every frame the node is rendered.
+
+    The preprocess function is called before the update pass that propegates
+    opacity and transformations through the scene graph. That means that
+    functions like QSGOpacityNode::combinedOpacity() and
+    QSGTransformNode::combinedMatrix() will not contain up-to-date values.
+    If such values are changed during the preprocess, these changes will be
+    propegated through the scene graph before it is rendered.
+
+    \warning Beware of deleting nodes while they are being preprocessed. It is
+    possible, with a small performance hit, to delete a single node during its
+    own preprocess call. Deleting a subtree which has nodes that also use
+    preprocessing may result in a segmentation fault. This is done for
+    performance reasons.
+ */
+
+
 
 
 /*!
