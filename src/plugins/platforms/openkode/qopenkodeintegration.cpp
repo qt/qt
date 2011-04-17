@@ -122,7 +122,9 @@ QOpenKODEScreen::QOpenKODEScreen(KDDisplayNV *kdDisplay,  KDDesktopNV *kdDesktop
 }
 
 QOpenKODEIntegration::QOpenKODEIntegration()
-    : mEventLoopIntegration(0), mFontDb(new QGenericUnixFontDatabase())
+    : mEventLoopIntegration(0)
+    , mFontDb(new QGenericUnixFontDatabase())
+    , mMainGlContext(0)
 {
     if (kdInitializeNV() == KD_ENOTINITIALIZED) {
         qFatal("Did not manage to initialize openkode");
@@ -190,6 +192,7 @@ bool QOpenKODEIntegration::hasCapability(QPlatformIntegration::Capability cap) c
 {
     switch (cap) {
     case ThreadedPixmaps: return true;
+    case OpenGL: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
@@ -224,11 +227,6 @@ QWindowSurface *QOpenKODEIntegration::createWindowSurface(QWidget *widget, WId) 
     }
 
     return returnSurface;
-}
-
-bool QOpenKODEIntegration::hasOpenGL() const
-{
-    return true;
 }
 
 QPlatformEventLoopIntegration *QOpenKODEIntegration::createEventLoopIntegration() const

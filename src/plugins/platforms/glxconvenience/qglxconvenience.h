@@ -39,43 +39,18 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDGLCONTEXT_H
-#define QWAYLANDGLCONTEXT_H
+#ifndef QGLXCONVENIENCE_H
+#define QGLXCONVENIENCE_H
 
-#include "qwaylanddisplay.h"
+#include <QPlatformWindowFormat>
 
-#include <QtGui/QPlatformGLContext>
+#include <X11/Xlib.h>
+#include <GL/glx.h>
 
-class QWaylandWindow;
-class QWaylandDrmWindowSurface;
+XVisualInfo *qglx_findVisualInfo(Display *display, int screen, const QPlatformWindowFormat &format);
+GLXFBConfig qglx_findConfig(Display *display, int screen, const QPlatformWindowFormat &format, int drawableBit = GLX_WINDOW_BIT);
+QPlatformWindowFormat qglx_platformWindowFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext context);
+QVector<int> qglx_buildSpec(const QPlatformWindowFormat &format, int drawableBit = GLX_WINDOW_BIT);
+QPlatformWindowFormat qglx_reducePlatformWindowFormat(const QPlatformWindowFormat &format, bool *reduced);
 
-#include "qwaylandinclude.h"
-
-class QWaylandGLContext : public QPlatformGLContext {
-public:
-    QWaylandGLContext(QWaylandDisplay *wd, const QPlatformWindowFormat &format);
-    ~QWaylandGLContext();
-    void makeCurrent();
-    void doneCurrent();
-    void swapBuffers();
-    void* getProcAddress(const QString&);
-
-    QPlatformWindowFormat platformWindowFormat() const { return mFormat; }
-
-    void setEglSurface(EGLSurface surface);
-    EGLConfig eglConfig() const;
-private:
-    QWaylandDisplay *mDisplay;
-
-    EGLContext mContext;
-    EGLSurface mSurface;
-    EGLConfig mConfig;
-    QPlatformWindowFormat mFormat;
-
-    void createDefaultSharedContex(QWaylandDisplay *display);
-    QWaylandGLContext();
-
-};
-
-
-#endif // QWAYLANDGLCONTEXT_H
+#endif // QGLXCONVENIENCE_H

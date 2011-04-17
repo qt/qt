@@ -5,6 +5,6 @@ contains(QT_CONFIG, fontconfig) {
     include(../basicunix/basicunix.pri)
 }
 
-INCLUDEPATH += $$QT_SOURCE_TREE/src/plugins/platforms/fontdatabases/genericunix
+INCLUDEPATH += $$PWD
 HEADERS += \
-           $$QT_SOURCE_TREE/src/plugins/platforms/fontdatabases/genericunix/qgenericunixfontdatabase.h
+           $$PWD/qgenericunixfontdatabase.h

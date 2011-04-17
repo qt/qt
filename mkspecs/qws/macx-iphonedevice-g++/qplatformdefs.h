@@ -94,4 +94,6 @@
 #define QT_SNPRINTF		::snprintf
 #define QT_VSNPRINTF		::vsnprintf
 
+#define QT_QPA_DEFAULT_PLATFORM_NAME "uikit"
+
 #endif // QPLATFORMDEFS_H

@@ -43,9 +43,12 @@
 
 #include "qwaylandbuffer.h"
 
+#include <QtCore/QVector>
+
+#include <QtCore/QDebug>
+
 QWaylandShmWindow::QWaylandShmWindow(QWidget *widget)
     : QWaylandWindow(widget)
-    , mBuffer(0)
 {
     newSurfaceCreated();
 }
@@ -66,24 +69,3 @@ QPlatformGLContext * QWaylandShmWindow::glContext() const
     return 0;
 }
 
-void QWaylandShmWindow::attach(QWaylandBuffer *buffer)
-{
-    mBuffer = buffer;
-    if (mSurface) {
-        wl_surface_attach(mSurface, buffer->buffer(),0,0);
-    }
-}
-
-
-void QWaylandShmWindow::damage(const QRect &rect)
-{
-    wl_surface_damage(mSurface,
-                      rect.x(), rect.y(), rect.width(), rect.height());
-}
-
-void QWaylandShmWindow::newSurfaceCreated()
-{
-    if (mBuffer) {
-        wl_surface_attach(mSurface,mBuffer->buffer(),0,0);
-    }
-}

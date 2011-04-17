@@ -43,23 +43,6 @@
 #define QUIKITWINDOWSURFACE_H
 
 #include <QtGui/QPlatformIntegration>
-#include <QtGui/QImage>
-#include <QtGui/QWindowSystemInterface>
-
-#include <UIKit/UIKit.h>
-
-@interface QImageView : UIView
-{
-    CGImageRef m_cgImage;
-    QWidget *m_widget;
-}
-
-- (void)setImage:(QImage *)image;
-- (void)setWidget:(QWidget *)widget;
-
-//- (QList<struct QWindowSystemInterface::TouchPoint>)touchPointsForTouches:(NSSet *)touches;
-- (void)sendMouseEventForTouches:(NSSet *)touches withEvent:(UIEvent *)event fakeButtons:(Qt::MouseButtons)buttons;
-@end
 
 QT_BEGIN_NAMESPACE
 
@@ -70,12 +53,9 @@ public:
 
     QPaintDevice *paintDevice();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    void resize (const QSize &size);
 
-    QImageView *nativeView() const { return mView; }
 private:
-    QImage *mImage;
-    QImageView *mView;
+    QPaintDevice *mPaintDevice;
 };
 
 QT_END_NAMESPACE

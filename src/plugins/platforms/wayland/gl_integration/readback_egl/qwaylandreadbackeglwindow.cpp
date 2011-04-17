@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,32 +39,38 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDDRMSURFACE_H
-#define QWAYLANDDRMSURFACE_H
+#include "qwaylandreadbackeglwindow.h"
 
-#include "qwaylanddisplay.h"
+#include "qwaylandreadbackeglcontext.h"
 
-#include <QtGui/private/qwindowsurface_p.h>
-
-class QGLFramebufferObject;
-
-class QWaylandDrmWindowSurface : public QWindowSurface
+QWaylandReadbackEglWindow::QWaylandReadbackEglWindow(QWidget *window, QWaylandReadbackEglIntegration *eglIntegration)
+    : QWaylandShmWindow(window)
+    , mEglIntegration(eglIntegration)
+    , mContext(0)
 {
-public:
-    QWaylandDrmWindowSurface(QWidget *window);
-    ~QWaylandDrmWindowSurface();
+}
 
-    void beginPaint(const QRegion &);
+QWaylandWindow::WindowType QWaylandReadbackEglWindow::windowType() const
+{
+    //We'r lying, maybe we should add a type, but for now it will do
+    //since this is primarly used by the windowsurface.
+    return QWaylandWindow::Egl;
+}
 
-    QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+QPlatformGLContext *QWaylandReadbackEglWindow::glContext() const
+{
+    if (!mContext) {
+        QWaylandReadbackEglWindow *that = const_cast<QWaylandReadbackEglWindow *>(this);
+        that->mContext = new QWaylandReadbackEglContext(mEglIntegration,that);
+    }
+    return mContext;
+}
 
-    void resize(const QSize &size);
+void QWaylandReadbackEglWindow::setGeometry(const QRect &rect)
+{
+    QPlatformWindow::setGeometry(rect);
 
-private:
+    if (mContext)
+        mContext->geometryChanged();
+}
 
-    QWaylandDisplay *mDisplay;
-    QGLFramebufferObject *mPaintDevice;
-};
-
-#endif // QWAYLANDDRMSURFACE_H

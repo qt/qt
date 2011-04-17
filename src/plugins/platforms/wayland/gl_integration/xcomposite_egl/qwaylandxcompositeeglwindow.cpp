@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,25 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDINCLUDE_H
-#define QWAYLANDINCLUDE_H
+#include "qwaylandxcompositeeglwindow.h"
 
-#include <wayland-client.h>
+#include <QtCore/QDebug>
 
-#ifdef QT_WAYLAND_GL_SUPPORT
-#include <wayland-egl.h>
+QWaylandXCompositeEGLWindow::QWaylandXCompositeEGLWindow(QWidget *window, QWaylandXCompositeEGLIntegration *glxIntegration)
+    : QWaylandWindow(window)
+    , mGlxIntegration(glxIntegration)
+    , mContext(0)
+{
 
-#define GL_GLEXT_PROTOTYPES
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+}
 
-#define EGL_EGLEXT_PROTOTYPES
- #include <EGL/egl.h>
- #include <EGL/eglext.h>
+QWaylandWindow::WindowType QWaylandXCompositeEGLWindow::windowType() const
+{
+    //yeah. this type needs a new name
+    return QWaylandWindow::Egl;
+}
 
-#else
-typedef void* EGLDisplay;
-typedef void* EGLConfig;
-#endif
+QPlatformGLContext * QWaylandXCompositeEGLWindow::glContext() const
+{
+    if (!mContext) {
+        qDebug() << "creating glcontext;";
+        QWaylandXCompositeEGLWindow *that = const_cast<QWaylandXCompositeEGLWindow *>(this);
+        that->mContext = new QWaylandXCompositeEGLContext(mGlxIntegration,that);
+    }
+    return mContext;
+}
 
-#endif // QWAYLANDINCLUDE_H
+void QWaylandXCompositeEGLWindow::setGeometry(const QRect &rect)
+{
+    QWaylandWindow::setGeometry(rect);
+
+    if (mContext) {
+        mContext->geometryChanged();
+    }
+}

@@ -43,6 +43,7 @@
 #define QWAYLANDSHMWINDOW_H
 
 #include "qwaylandwindow.h"
+#include <QtGui/QRegion>
 
 class QWaylandShmWindow : public QWaylandWindow
 {
@@ -52,12 +53,6 @@ public:
 
     WindowType windowType() const;
     QPlatformGLContext *glContext() const;
-    void attach(QWaylandBuffer *buffer);
-    void damage(const QRect &rect);
-protected:
-    void newSurfaceCreated();
-private:
-    QWaylandBuffer *mBuffer;
 };
 
 #endif // QWAYLANDSHMWINDOW_H
