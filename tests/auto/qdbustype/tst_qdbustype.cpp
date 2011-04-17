@@ -85,7 +85,9 @@ static void addFixedTypes()
     QTest::newRow("int64") << DBUS_TYPE_INT64_AS_STRING << true << true;
     QTest::newRow("uint64") << DBUS_TYPE_UINT64_AS_STRING << true << true;
     QTest::newRow("double") << DBUS_TYPE_DOUBLE_AS_STRING << true << true;
-    QTest::newRow("unixfd") << "h" << true << true;
+#ifdef DBUS_TYPE_UNIX_FD_AS_STRING
+    QTest::newRow("unixfd") << DBUS_TYPE_UNIX_FD_AS_STRING << true << true;
+#endif
 }
 
 static void addInvalidSingleLetterTypes()
