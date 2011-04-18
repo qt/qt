@@ -377,7 +377,7 @@ static void qDBusUpdateDispatchStatus(DBusConnection *connection, DBusDispatchSt
 
 static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, void *data)
 {
-    // ### We may want to separate the server from the QDBusConnectionPrivate    
+    // ### We may want to separate the server from the QDBusConnectionPrivate
     Q_ASSERT(server); Q_UNUSED(server);
     Q_ASSERT(connection);
     Q_ASSERT(data);
@@ -385,16 +385,13 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
     // keep the connection alive
     q_dbus_connection_ref(connection);
     QDBusConnectionPrivate *d = new QDBusConnectionPrivate;
-    
-    // setConnection does the error handling for us
+
+    // setPeer does the error handling for us
     QDBusErrorInternal error;
     d->setPeer(connection, error);
 
     QDBusConnection retval = QDBusConnectionPrivate::q(d);
     d->setBusService(retval);
-
-    //d->name = QString::number(reinterpret_cast<int>(d));
-    //d->setConnection(d->name, d); 
 
     // make QDBusServer emit the newConnection signal
     QDBusConnectionPrivate *server_d = static_cast<QDBusConnectionPrivate *>(data);
@@ -1630,7 +1627,7 @@ void QDBusConnectionPrivate::setServer(DBusServer *s, const QDBusErrorInternal &
                                                                        this, 0);
     //qDebug() << "time_functions_set" << time_functions_set;
     Q_UNUSED(time_functions_set);
-    
+
     q_dbus_server_set_new_connection_function(server, qDBusNewConnection, this, 0);
 
     dbus_bool_t data_set = q_dbus_server_set_data(server, server_slot, this, 0);
@@ -1647,7 +1644,7 @@ void QDBusConnectionPrivate::setPeer(DBusConnection *c, const QDBusErrorInternal
 
     connection = c;
     mode = PeerMode;
-    
+
     q_dbus_connection_set_exit_on_disconnect(connection, false);
     q_dbus_connection_set_watch_functions(connection,
                                         qDBusAddWatch,

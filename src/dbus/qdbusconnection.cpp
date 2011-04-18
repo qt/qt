@@ -371,7 +371,7 @@ QDBusConnection QDBusConnection::connectToBus(BusType type, const QString &name)
 }
 
 /*!
-    Opens a peer-to-peer connection on address \a address and associate with it the
+    Opens a connection to a private bus on address \a address and associate with it the
     connection name \a name. Returns a QDBusConnection object associated with that connection.
 */
 QDBusConnection QDBusConnection::connectToBus(const QString &address,
@@ -413,7 +413,7 @@ QDBusConnection QDBusConnection::connectToBus(const QString &address,
 }
 
 /*!
-    Closes the connection of name \a name.
+    Closes the bus connection of name \a name.
 
     Note that if there are still QDBusConnection objects associated
     with the same connection, the connection will not be closed until

@@ -74,7 +74,6 @@ QDBusServer::QDBusServer(const QString &address, QObject *parent)
     QObject::connect(d, SIGNAL(newServerConnection(QDBusConnection)),
                      this, SIGNAL(newConnection(QDBusConnection)));
 
-    // server = q_dbus_server_listen( "unix:tmpdir=/tmp", &error);
     QDBusErrorInternal error;
     d->setServer(q_dbus_server_listen(address.toUtf8().constData(), error), error);
 }
@@ -113,11 +112,12 @@ QString QDBusServer::address() const
 
     return addr;
 }
+
 /*!
   \fn void QDBusServer::newConnection(const QDBusConnection &connection)
 
-  This signal is currently not used, but if and when it is
-  used, \a connection will be the new connection. 
+  This signal is emitted when a new client connection \a connection is
+  established to the server.
  */
 
 QT_END_NAMESPACE
