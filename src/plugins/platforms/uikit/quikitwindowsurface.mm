@@ -73,7 +73,6 @@ QT_BEGIN_NAMESPACE
 QUIKitWindowSurface::QUIKitWindowSurface(QWidget *window)
     : QWindowSurface(window), mPaintDevice(new EAGLPaintDevice(window->platformWindow()))
 {
-    setPartialUpdateSupport(false);
 }
 
 QPaintDevice *QUIKitWindowSurface::paintDevice()
@@ -87,6 +86,11 @@ void QUIKitWindowSurface::flush(QWidget *widget, const QRegion &region, const QP
     Q_UNUSED(region);
     Q_UNUSED(offset);
     widget->platformWindow()->glContext()->swapBuffers();
+}
+
+QWindowSurface::WindowSurfaceFeatures QUIKitWindowSurface::features() const
+{
+    return PartialUpdates;
 }
 
 QT_END_NAMESPACE

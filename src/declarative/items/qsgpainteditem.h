@@ -70,8 +70,7 @@ public:
         FramebufferObject
     };
 
-    void update();
-    void update(const QRect &);
+    void update(const QRect &rect = QRect());
 
     bool opaquePainting() const;
     void setOpaquePainting(bool opaque);
@@ -95,7 +94,7 @@ public:
     RenderTarget renderTarget() const;
     void setRenderTarget(RenderTarget target);
 
-    virtual void paint(QPainter *) = 0;
+    virtual void paint(QPainter *painter) = 0;
 
 Q_SIGNALS:
     void fillColorChanged();
