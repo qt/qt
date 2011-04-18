@@ -248,7 +248,8 @@ qpa {
                 kernel/qplatformglcontext_qpa.cpp \
                 kernel/qplatformcursor_qpa.cpp \
                 kernel/qplatformclipboard_qpa.cpp \
-                kernel/qplatformnativeinterface_qpa.cpp
+                kernel/qplatformnativeinterface_qpa.cpp \
+                kernel/qsessionmanager_qpa.cpp
 
         contains(QT_CONFIG, glib) {
             SOURCES += \

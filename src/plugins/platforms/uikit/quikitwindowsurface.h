@@ -53,6 +53,7 @@ public:
 
     QPaintDevice *paintDevice();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+    WindowSurfaceFeatures features() const;
 
 private:
     QPaintDevice *mPaintDevice;
