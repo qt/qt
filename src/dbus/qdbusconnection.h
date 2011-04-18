@@ -174,6 +174,7 @@ public:
     static QDBusConnection connectToBus(const QString &address, const QString &name);
     static QDBusConnection connectToPeer(const QString &address, const QString &name);
     static void disconnectFromBus(const QString &name);
+    static void disconnectFromPeer(const QString &name);
 
     static QDBusConnection sessionBus();
     static QDBusConnection systemBus();

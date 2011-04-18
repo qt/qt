@@ -466,6 +466,27 @@ void QDBusConnection::disconnectFromBus(const QString &name)
 }
 
 /*!
+    \since 4.8
+
+    Closes the peer connection of name \a name.
+
+    Note that if there are still QDBusConnection objects associated
+    with the same connection, the connection will not be closed until
+    all references are dropped. However, no further references can be
+    created using the QDBusConnection constructor.
+*/
+void QDBusConnection::disconnectFromPeer(const QString &name)
+{
+    if (_q_manager()) {
+        QMutexLocker locker(&_q_manager()->mutex);
+        QDBusConnectionPrivate *d = _q_manager()->connection(name);
+        if(d && d->mode != QDBusConnectionPrivate::PeerMode)
+            return;
+        _q_manager()->removeConnection(name);
+    }
+}
+
+/*!
     Sends the \a message over this connection, without waiting for a
     reply. This is suitable for errors, signals, and return values as
     well as calls whose return values are not necessary.
