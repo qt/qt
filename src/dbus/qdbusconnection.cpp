@@ -814,7 +814,7 @@ void QDBusConnection::unregisterObject(const QString &path, UnregisterMode mode)
 
     // find the object
     while (node) {
-        if (pathComponents.count() == i) {
+        if (pathComponents.count() == i || !path.compare(QLatin1String("/"))) {
             // found it
             node->obj = 0;
             node->flags = 0;

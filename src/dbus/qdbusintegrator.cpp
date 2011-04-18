@@ -430,6 +430,11 @@ static bool findObject(const QDBusConnectionPrivate::ObjectTreeNode *root,
                        const QString &fullpath, int &usedLength,
                        QDBusConnectionPrivate::ObjectTreeNode &result)
 {
+    if (!fullpath.compare(QLatin1String("/")) && root->obj) {
+        usedLength = 1;
+        result = *root;
+        return root;
+    }
     int start = 0;
     int length = fullpath.length();
     if (fullpath.at(0) == QLatin1Char('/'))
