@@ -179,10 +179,10 @@ void QSGPaintedItem::setOpaquePainting(bool opaque)
 {
     Q_D(QSGPaintedItem);
 
-    if (d->opaquePainting == o)
+    if (d->opaquePainting == opaque)
         return;
 
-    d->opaquePainting = o;
+    d->opaquePainting = opaque;
     QSGItem::update();
 }
 
