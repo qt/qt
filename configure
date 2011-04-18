@@ -6767,8 +6767,15 @@ if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ] || [ "$CFG_JAVASCRIPTCORE_JIT" = "auto"
         if [ $? != "0" ]; then
            CFG_JAVASCRIPTCORE_JIT=no
         fi
-    elif [ "$XPLATFORM" = "symbian-gcce" ]; then
-        CFG_JAVASCRIPTCORE_JIT=no
+    else
+	case "$XPLATFORM" in
+	    symbian-gcce)
+		CFG_JAVASCRIPTCORE_JIT=no
+		;;
+	    linux-icc*)
+		CFG_JAVASCRIPTCORE_JIT=no
+		;;
+	esac
     fi
 fi
 
@@ -8602,7 +8609,7 @@ case "$CFG_WEBKIT" in
     debug) echo "WebKit module .......... yes (debug)" ;;
     no)    echo "WebKit module .......... no" ;;
 esac
-if [ "$CFG_WEBKIT" != "no" ]; then
+if [ "$CFG_WEBKIT" != "no" ] || [ "$CFG_SCRIPT" != "no" ]; then
     if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
         echo "JavaScriptCore JIT ..... To be decided by JavaScriptCore"
     else

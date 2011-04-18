@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qdbusargument_p.h"
+#include "qdbusconnection.h"
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
@@ -126,6 +127,13 @@ inline QDBusSignature QDBusDemarshaller::toSignature()
     return QDBusSignature(QString::fromUtf8(qIterGet<char *>(&iterator)));
 }
 
+inline QDBusUnixFileDescriptor QDBusDemarshaller::toUnixFileDescriptor()
+{
+    QDBusUnixFileDescriptor fd;
+    fd.giveFileDescriptor(qIterGet<dbus_int32_t>(&iterator));
+    return fd;
+}
+
 inline QDBusVariant QDBusDemarshaller::toVariant()
 {
     QDBusDemarshaller sub(capabilities);
@@ -172,6 +180,10 @@ QDBusArgument::ElementType QDBusDemarshaller::currentType()
         return QDBusArgument::StructureType;
     case DBUS_TYPE_DICT_ENTRY:
         return QDBusArgument::MapEntryType;
+
+    case DBUS_TYPE_UNIX_FD:
+        return capabilities & QDBusConnection::UnixFileDescriptorPassing ?
+                    QDBusArgument::BasicType : QDBusArgument::UnknownType;
 
     case DBUS_TYPE_INVALID:
         return QDBusArgument::UnknownType;
@@ -230,6 +242,11 @@ QVariant QDBusDemarshaller::toVariantInternal()
 
     case DBUS_TYPE_STRUCT:
         return QVariant::fromValue(duplicate());
+
+    case DBUS_TYPE_UNIX_FD:
+        if (capabilities & QDBusConnection::UnixFileDescriptorPassing)
+            return qVariantFromValue(toUnixFileDescriptor());
+        // fall through
 
     default:
 //        qWarning("QDBusDemarshaller: Found unknown D-Bus type %d '%c'",
