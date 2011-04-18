@@ -44,12 +44,11 @@
 #include <qrawfont.h>
 #include <private/qrawfont_p.h>
 
-#if !defined(QT_NO_RAWFONT)
-
 class tst_QRawFont: public QObject
 {
     Q_OBJECT
 
+#if !defined(QT_NO_RAWFONT)
 private slots:
     void invalidRawFont();
 
@@ -92,8 +91,10 @@ private slots:
 
     void unsupportedWritingSystem_data();
     void unsupportedWritingSystem();
+#endif // QT_NO_RAWFONT
 };
 
+#if !defined(QT_NO_RAWFONT)
 Q_DECLARE_METATYPE(QFont::HintingPreference)
 Q_DECLARE_METATYPE(QFont::Style)
 Q_DECLARE_METATYPE(QFont::Weight)
@@ -806,7 +807,8 @@ void tst_QRawFont::unsupportedWritingSystem()
     fontDatabase.removeApplicationFont(id);
 }
 
+#endif // QT_NO_RAWFONT
+
 QTEST_MAIN(tst_QRawFont)
 #include "tst_qrawfont.moc"
 
-#endif // QT_NO_RAWFONT
