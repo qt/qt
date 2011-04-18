@@ -55,11 +55,9 @@ DEFINES += Q_INTERNAL_QAPP_SRC
 symbian {
     TARGET.UID3=0x2001B2DD
 
-    symbian-abld|symbian-sbsv2 {
-        # ro-section in gui can exceed default allocated space, so move rw-section a little further
-        QMAKE_LFLAGS.ARMCC += --rw-base 0x800000
-        QMAKE_LFLAGS.GCCE += -Tdata 0xC00000
-    }
+    # ro-section in gui can exceed default allocated space, so move rw-section a little further
+    QMAKE_LFLAGS.ARMCC += --rw-base 0x800000
+    QMAKE_LFLAGS.GCCE += -Tdata 0x800000
 }
 
 neon:*-g++* {

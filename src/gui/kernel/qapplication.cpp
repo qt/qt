@@ -128,6 +128,10 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 
 //#define ALIEN_DEBUG
 
+#if defined(Q_OS_SYMBIAN)
+#include "qt_s60_p.h"
+#endif
+
 static void initResources()
 {
 #if defined(Q_WS_WINCE)
@@ -2438,6 +2442,11 @@ bool QApplication::event(QEvent *e)
 {
     Q_D(QApplication);
     if(e->type() == QEvent::Close) {
+#if defined(Q_OS_SYMBIAN)
+        // In order to have proper application-exit effects on Symbian, certain
+        // native APIs have to be called _before_ closing/destroying the widgets.
+        bool effectStarted = qt_beginFullScreenEffect();
+#endif
         QCloseEvent *ce = static_cast<QCloseEvent*>(e);
         ce->accept();
         closeAllWindows();
@@ -2451,8 +2460,14 @@ bool QApplication::event(QEvent *e)
                 break;
             }
         }
-        if(ce->isAccepted())
+        if (ce->isAccepted()) {
             return true;
+        } else {
+#if defined(Q_OS_SYMBIAN)
+            if (effectStarted)
+                qt_abortFullScreenEffect();
+#endif
+        }
     } else if(e->type() == QEvent::LanguageChange) {
 #ifndef QT_NO_TRANSLATION
         setLayoutDirection(qt_detectRTLLanguage()?Qt::RightToLeft:Qt::LeftToRight);
