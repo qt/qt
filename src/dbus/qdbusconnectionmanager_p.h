@@ -38,47 +38,51 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QDBUSSERVER_H
-#define QDBUSSERVER_H
 
-#include <QtCore/qobject.h>
-#include <QtCore/qstring.h>
-#include <QtDBus/qdbusmacros.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the public API.  This header file may
+// change from version to version without notice, or even be
+// removed.
+//
+// We mean it.
+//
+//
+
+#ifndef QDBUSCONNECTIONMANAGER_P_H
+#define QDBUSCONNECTIONMANAGER_P_H
+
+#include "qdbusconnection_p.h"
 
 #ifndef QT_NO_DBUS
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(DBus)
-
-class QDBusConnectionPrivate;
-class QDBusError;
-class QDBusConnection;
-
-class Q_DBUS_EXPORT QDBusServer: public QObject
+class QDBusConnectionManager
 {
-    Q_OBJECT
 public:
-    QDBusServer(const QString &address = "unix:tmpdir=/tmp", QObject *parent = 0);
-    virtual ~QDBusServer();
+    QDBusConnectionManager() {}
+    ~QDBusConnectionManager();
+    static QDBusConnectionManager* instance();
 
-    bool isConnected() const;
-    QDBusError lastError() const;
-    QString address() const;
+    QDBusConnectionPrivate *connection(const QString &name) const;
+    void removeConnection(const QString &name);
+    void setConnection(const QString &name, QDBusConnectionPrivate *c);
 
-Q_SIGNALS:
-    void newConnection(const QDBusConnection &connection);
+    QDBusConnectionPrivate *sender() const;
+    void setSender(const QDBusConnectionPrivate *s);
 
+    mutable QMutex mutex;
 private:
-    Q_DISABLE_COPY(QDBusServer)
-    QDBusConnectionPrivate *d;
+    QHash<QString, QDBusConnectionPrivate *> connectionHash;
+
+    mutable QMutex senderMutex;
+    QString senderName; // internal; will probably change
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_DBUS
 #endif

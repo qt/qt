@@ -377,28 +377,23 @@ static void qDBusUpdateDispatchStatus(DBusConnection *connection, DBusDispatchSt
 
 static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, void *data)
 {
-    // ### We may want to separate the server from the QDBusConnectionPrivate    
+    // ### We may want to separate the server from the QDBusConnectionPrivate
     Q_ASSERT(server); Q_UNUSED(server);
     Q_ASSERT(connection);
     Q_ASSERT(data);
 
     // keep the connection alive
     q_dbus_connection_ref(connection);
-    QDBusConnectionPrivate *d = new QDBusConnectionPrivate;
-    
-    // setConnection does the error handling for us
+    QDBusConnectionPrivate *d = static_cast<QDBusConnectionPrivate *>(data);
+
+    // setPeer does the error handling for us
     QDBusErrorInternal error;
     d->setPeer(connection, error);
 
     QDBusConnection retval = QDBusConnectionPrivate::q(d);
-    d->setBusService(retval);
-
-    //d->name = QString::number(reinterpret_cast<int>(d));
-    //d->setConnection(d->name, d); 
 
     // make QDBusServer emit the newConnection signal
-    QDBusConnectionPrivate *server_d = static_cast<QDBusConnectionPrivate *>(data);
-    server_d->serverConnection(retval);
+    d->serverConnection(retval);
 }
 
 } // extern "C"
@@ -435,6 +430,11 @@ static bool findObject(const QDBusConnectionPrivate::ObjectTreeNode *root,
                        const QString &fullpath, int &usedLength,
                        QDBusConnectionPrivate::ObjectTreeNode &result)
 {
+    if (!fullpath.compare(QLatin1String("/")) && root->obj) {
+        usedLength = 1;
+        result = *root;
+        return root;
+    }
     int start = 0;
     int length = fullpath.length();
     if (fullpath.at(0) == QLatin1Char('/'))
@@ -1036,11 +1036,10 @@ void QDBusConnectionPrivate::closeConnection()
     mode = InvalidMode; // prevent reentrancy
     baseService.clear();
 
-    if (oldMode == ServerMode) {
-        if (server) {
-            q_dbus_server_disconnect(server);
-        }
-    } else if (oldMode == ClientMode || oldMode == PeerMode) {
+    if (server)
+        q_dbus_server_disconnect(server);
+
+    if (oldMode == ClientMode || oldMode == PeerMode) {
         if (connection) {
             q_dbus_connection_close(connection);
             // send the "close" message
@@ -1629,7 +1628,7 @@ void QDBusConnectionPrivate::setServer(DBusServer *s, const QDBusErrorInternal &
                                                                        this, 0);
     //qDebug() << "time_functions_set" << time_functions_set;
     Q_UNUSED(time_functions_set);
-    
+
     q_dbus_server_set_new_connection_function(server, qDBusNewConnection, this, 0);
 
     dbus_bool_t data_set = q_dbus_server_set_data(server, server_slot, this, 0);
@@ -1646,7 +1645,7 @@ void QDBusConnectionPrivate::setPeer(DBusConnection *c, const QDBusErrorInternal
 
     connection = c;
     mode = PeerMode;
-    
+
     q_dbus_connection_set_exit_on_disconnect(connection, false);
     q_dbus_connection_set_watch_functions(connection,
                                         qDBusAddWatch,
@@ -2098,21 +2097,23 @@ void QDBusConnectionPrivate::connectSignal(const QString &key, const SignalHook 
     matchRefCounts.insert(hook.matchRule, 1);
 
     if (connection) {
-        qDBusDebug("Adding rule: %s", hook.matchRule.constData());
-        q_dbus_bus_add_match(connection, hook.matchRule, NULL);
+        if (mode != QDBusConnectionPrivate::PeerMode) {
+            qDBusDebug("Adding rule: %s", hook.matchRule.constData());
+            q_dbus_bus_add_match(connection, hook.matchRule, NULL);
 
-        // Successfully connected the signal
-        // Do we need to watch for this name?
-        if (shouldWatchService(hook.service)) {
-            WatchedServicesHash::mapped_type &data = watchedServices[hook.service];
-            if (++data.refcount == 1) {
-                // we need to watch for this service changing
-                connectSignal(dbusServiceString(), QString(), dbusInterfaceString(),
-                              QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
-                              this, SLOT(serviceOwnerChangedNoLock(QString,QString,QString)));
-                data.owner = getNameOwnerNoCache(hook.service);
-                qDBusDebug() << this << "Watching service" << hook.service << "for owner changes (current owner:"
-                             << data.owner << ")";
+            // Successfully connected the signal
+            // Do we need to watch for this name?
+            if (shouldWatchService(hook.service)) {
+                WatchedServicesHash::mapped_type &data = watchedServices[hook.service];
+                if (++data.refcount == 1) {
+                    // we need to watch for this service changing
+                    connectSignal(dbusServiceString(), QString(), dbusInterfaceString(),
+                                  QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
+                                  this, SLOT(serviceOwnerChangedNoLock(QString,QString,QString)));
+                    data.owner = getNameOwnerNoCache(hook.service);
+                    qDBusDebug() << this << "Watching service" << hook.service << "for owner changes (current owner:"
+                                 << data.owner << ")";
+                }
             }
         }
     }
@@ -2176,18 +2177,20 @@ QDBusConnectionPrivate::disconnectSignal(SignalHookHash::Iterator &it)
 
     // we don't care about errors here
     if (connection && erase) {
-        qDBusDebug("Removing rule: %s", hook.matchRule.constData());
-        q_dbus_bus_remove_match(connection, hook.matchRule, NULL);
+        if (mode != QDBusConnectionPrivate::PeerMode) {
+            qDBusDebug("Removing rule: %s", hook.matchRule.constData());
+            q_dbus_bus_remove_match(connection, hook.matchRule, NULL);
 
-        // Successfully disconnected the signal
-        // Were we watching for this name?
-        WatchedServicesHash::Iterator sit = watchedServices.find(hook.service);
-        if (sit != watchedServices.end()) {
-            if (--sit.value().refcount == 0) {
-                watchedServices.erase(sit);
-                disconnectSignal(dbusServiceString(), QString(), dbusInterfaceString(),
-                              QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
-                              this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+            // Successfully disconnected the signal
+            // Were we watching for this name?
+            WatchedServicesHash::Iterator sit = watchedServices.find(hook.service);
+            if (sit != watchedServices.end()) {
+                if (--sit.value().refcount == 0) {
+                    watchedServices.erase(sit);
+                    disconnectSignal(dbusServiceString(), QString(), dbusInterfaceString(),
+                                  QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
+                                  this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+                }
             }
         }
 
@@ -2390,7 +2393,7 @@ void QDBusConnectionPrivate::unregisterServiceNoLock(const QString &serviceName)
 
 bool QDBusConnectionPrivate::isServiceRegisteredByThread(const QString &serviceName) const
 {
-    if (serviceName == baseService)
+    if (!serviceName.isEmpty() && serviceName == baseService)
         return true;
     QStringList copy = serviceNames;
     return copy.contains(serviceName);
