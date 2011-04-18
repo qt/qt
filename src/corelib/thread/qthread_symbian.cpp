@@ -319,6 +319,8 @@ void *QThreadPrivate::start(void *arg)
         data->quitNow = thr->d_func()->exited;
     }
 
+    CTrapCleanup *cleanup = CTrapCleanup::New();
+
     // ### TODO: allow the user to create a custom event dispatcher
     createEventDispatcher(data);
 
@@ -326,6 +328,8 @@ void *QThreadPrivate::start(void *arg)
     thr->run();
 
     QThreadPrivate::finish(arg);
+
+    delete cleanup;
 
     return 0;
 }
