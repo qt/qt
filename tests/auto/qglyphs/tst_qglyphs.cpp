@@ -46,14 +46,13 @@
 #include <qtextlayout.h>
 #include <qfontdatabase.h>
 
-#if !defined(QT_NO_RAWFONT)
-
 // #define DEBUG_SAVE_IMAGE
 
 class tst_QGlyphs: public QObject
 {
     Q_OBJECT
 
+#if !defined(QT_NO_RAWFONT)
 private slots:
     void initTestCase();
     void cleanupTestCase();
@@ -77,7 +76,11 @@ private slots:
 private:
     int m_testFontId;
     QFont m_testFont;
+#endif // QT_NO_RAWFONT
+
 };
+
+#if !defined(QT_NO_RAWFONT)
 
 Q_DECLARE_METATYPE(QGlyphs);
 
@@ -572,7 +575,8 @@ void tst_QGlyphs::drawRightToLeft()
 
 }
 
+#endif // QT_NO_RAWFONT
+
 QTEST_MAIN(tst_QGlyphs)
 #include "tst_qglyphs.moc"
 
-#endif // QT_NO_RAWFONT
