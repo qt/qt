@@ -107,7 +107,7 @@ bool QDBusAbstractInterfacePrivate::canMakeCalls() const
 {
     // recheck only if we have a wildcard (i.e. empty) service or path
     // if any are empty, set the error message according to QDBusUtil
-    if (service.isEmpty())
+    if (service.isEmpty() && connectionPrivate()->mode != QDBusConnectionPrivate::PeerMode)
         return QDBusUtil::checkBusName(service, QDBusUtil::EmptyNotAllowed, &lastError);
     if (path.isEmpty())
         return QDBusUtil::checkObjectPath(path, QDBusUtil::EmptyNotAllowed, &lastError);

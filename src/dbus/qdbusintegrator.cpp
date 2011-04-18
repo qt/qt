@@ -2390,7 +2390,7 @@ void QDBusConnectionPrivate::unregisterServiceNoLock(const QString &serviceName)
 
 bool QDBusConnectionPrivate::isServiceRegisteredByThread(const QString &serviceName) const
 {
-    if (serviceName == baseService)
+    if (!serviceName.isEmpty() && serviceName == baseService)
         return true;
     QStringList copy = serviceNames;
     return copy.contains(serviceName);
