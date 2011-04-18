@@ -1088,6 +1088,17 @@ QObject *qmlAttachedPropertiesObject(int *idCache, const QObject *object,
     return qmlAttachedPropertiesObjectById(*idCache, object, create);
 }
 
+QDeclarativeDebuggingEnabler::QDeclarativeDebuggingEnabler()
+{
+#ifndef QDECLARATIVE_NO_DEBUG_PROTOCOL
+    if (!QDeclarativeEnginePrivate::qml_debugging_enabled) {
+        qWarning("Qml debugging is enabled. Only use this in a safe environment!");
+    }
+    QDeclarativeEnginePrivate::qml_debugging_enabled = true;
+#endif
+}
+
+
 class QDeclarativeDataExtended {
 public:
     QDeclarativeDataExtended();
