@@ -501,11 +501,6 @@ void QNativeWifiEngine::requestUpdate()
         return;
     }
 
-    if (interfaceList->dwNumberOfItems == 0) {
-        local_WlanFreeMemory(interfaceList);
-        return;
-    }
-
     bool requested = false;
     for (unsigned int i = 0; i < interfaceList->dwNumberOfItems; ++i) {
         result = local_WlanScan(handle, &interfaceList->InterfaceInfo[i].InterfaceGuid, 0, 0, 0);
