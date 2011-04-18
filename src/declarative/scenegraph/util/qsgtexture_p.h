@@ -85,7 +85,7 @@ public:
     void setHasAlphaChannel(bool alpha) { m_has_alpha = alpha; }
     bool hasAlphaChannel() const { return m_has_alpha; }
 
-    void setHasMipmaps(bool mm) { m_has_mipmaps = mm; }
+    void setHasMipmaps(bool mm);
     bool hasMipmaps() const { return m_has_mipmaps; }
 
     void setImage(const QImage &image);
@@ -103,6 +103,7 @@ protected:
     uint m_dirty_texture : 1;
     uint m_dirty_bind_options : 1;
     uint m_owns_texture : 1;
+    uint m_mipmaps_generated : 1;
 };
 
 QT_END_NAMESPACE
