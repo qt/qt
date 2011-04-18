@@ -2098,21 +2098,23 @@ void QDBusConnectionPrivate::connectSignal(const QString &key, const SignalHook 
     matchRefCounts.insert(hook.matchRule, 1);
 
     if (connection) {
-        qDBusDebug("Adding rule: %s", hook.matchRule.constData());
-        q_dbus_bus_add_match(connection, hook.matchRule, NULL);
+        if (mode != QDBusConnectionPrivate::PeerMode) {
+            qDBusDebug("Adding rule: %s", hook.matchRule.constData());
+            q_dbus_bus_add_match(connection, hook.matchRule, NULL);
 
-        // Successfully connected the signal
-        // Do we need to watch for this name?
-        if (shouldWatchService(hook.service)) {
-            WatchedServicesHash::mapped_type &data = watchedServices[hook.service];
-            if (++data.refcount == 1) {
-                // we need to watch for this service changing
-                connectSignal(dbusServiceString(), QString(), dbusInterfaceString(),
-                              QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
-                              this, SLOT(serviceOwnerChangedNoLock(QString,QString,QString)));
-                data.owner = getNameOwnerNoCache(hook.service);
-                qDBusDebug() << this << "Watching service" << hook.service << "for owner changes (current owner:"
-                             << data.owner << ")";
+            // Successfully connected the signal
+            // Do we need to watch for this name?
+            if (shouldWatchService(hook.service)) {
+                WatchedServicesHash::mapped_type &data = watchedServices[hook.service];
+                if (++data.refcount == 1) {
+                    // we need to watch for this service changing
+                    connectSignal(dbusServiceString(), QString(), dbusInterfaceString(),
+                                  QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
+                                  this, SLOT(serviceOwnerChangedNoLock(QString,QString,QString)));
+                    data.owner = getNameOwnerNoCache(hook.service);
+                    qDBusDebug() << this << "Watching service" << hook.service << "for owner changes (current owner:"
+                                 << data.owner << ")";
+                }
             }
         }
     }
@@ -2176,18 +2178,20 @@ QDBusConnectionPrivate::disconnectSignal(SignalHookHash::Iterator &it)
 
     // we don't care about errors here
     if (connection && erase) {
-        qDBusDebug("Removing rule: %s", hook.matchRule.constData());
-        q_dbus_bus_remove_match(connection, hook.matchRule, NULL);
+        if (mode != QDBusConnectionPrivate::PeerMode) {
+            qDBusDebug("Removing rule: %s", hook.matchRule.constData());
+            q_dbus_bus_remove_match(connection, hook.matchRule, NULL);
 
-        // Successfully disconnected the signal
-        // Were we watching for this name?
-        WatchedServicesHash::Iterator sit = watchedServices.find(hook.service);
-        if (sit != watchedServices.end()) {
-            if (--sit.value().refcount == 0) {
-                watchedServices.erase(sit);
-                disconnectSignal(dbusServiceString(), QString(), dbusInterfaceString(),
-                              QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
-                              this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+            // Successfully disconnected the signal
+            // Were we watching for this name?
+            WatchedServicesHash::Iterator sit = watchedServices.find(hook.service);
+            if (sit != watchedServices.end()) {
+                if (--sit.value().refcount == 0) {
+                    watchedServices.erase(sit);
+                    disconnectSignal(dbusServiceString(), QString(), dbusInterfaceString(),
+                                  QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
+                                  this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+                }
             }
         }
 
