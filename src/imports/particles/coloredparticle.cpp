@@ -441,7 +441,7 @@ QSGGeometryNode* ColoredParticle::buildParticleNode()
         if(sizetable.isNull())
             sizetable = QImage(":resources/identitytable.png");
         if(opacitytable.isNull())
-            opacitytable = QImage(":resources/identitytable.png");
+            opacitytable = QImage(":resources/defaultFadeInOut.png");
         Q_ASSERT(!colortable.isNull());
         Q_ASSERT(!sizetable.isNull());
         Q_ASSERT(!opacitytable.isNull());

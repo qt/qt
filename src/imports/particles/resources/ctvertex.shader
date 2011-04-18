@@ -6,7 +6,6 @@ attribute lowp vec4 vColor;
 
 uniform highp mat4 matrix;                              
 uniform highp float timestamp;
-uniform lowp float opacity;
 uniform sampler2D sizetable;
 uniform sampler2D opacitytable;
 
@@ -34,7 +33,6 @@ void main() {
     gl_Position = matrix * vec4(pos.x, pos.y, 0, 1);
 
     fColor = vColor;
-    fColor.w = fColor.w * opacity * texture2D(opacitytable, vec2(t, 0.5)).w;
     tt = t;
 
 }
