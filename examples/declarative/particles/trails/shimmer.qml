@@ -57,7 +57,7 @@ Rectangle{
         anchors.fill: parent
         system: particles
         image: "content/star.png"
-        sizetable: "content/sparkleSize.png"
+        sizeTable: "content/sparkleSize.png"
         alpha: 0
         colorVariation: 0.6
     }

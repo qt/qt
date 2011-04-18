@@ -54,8 +54,8 @@ Rectangle {
         alpha: 0
 
         image: "content/particle.png"
-        colortable: "content/colortable.png"
-        sizetable: "content/colortable.png"
+        colorTable: "content/colortable.png"
+        sizeTable: "content/colortable.png"
     }
     TrailEmitter{
         system: particles

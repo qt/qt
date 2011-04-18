@@ -57,9 +57,9 @@ class ColoredParticle : public ParticleType
 {
     Q_OBJECT
     Q_PROPERTY(QUrl image READ image WRITE setImage NOTIFY imageChanged)
-    Q_PROPERTY(QUrl colortable READ colortable WRITE setColortable NOTIFY colortableChanged)
-    Q_PROPERTY(QUrl sizetable READ sizetable WRITE setSizetable NOTIFY sizetableChanged)
-    Q_PROPERTY(QUrl opacitytable READ opacitytable WRITE setOpacitytable NOTIFY opacitytableChanged)
+    Q_PROPERTY(QUrl colorTable READ colortable WRITE setColortable NOTIFY colortableChanged)
+    Q_PROPERTY(QUrl sizeTable READ sizetable WRITE setSizetable NOTIFY sizetableChanged)
+    Q_PROPERTY(QUrl opacityTable READ opacitytable WRITE setOpacitytable NOTIFY opacitytableChanged)
 
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
     //Stacks (added) with individual colorVariations
