@@ -299,7 +299,7 @@ void QDeclarativeTextLayout::clearLayout()
     QTextLayout::clearLayout();
 }
 
-void QDeclarativeTextLayout::prepare()
+void QDeclarativeTextLayout::prepare(QPainter *painter)
 {
     if (!d || !d->cached) {
 
@@ -308,6 +308,7 @@ void QDeclarativeTextLayout::prepare()
 
         InertTextPainter *itp = inertTextPainter();
         itp->device.begin(d);
+        itp->painter.setPen(painter->pen());
         QTextLayout::draw(&itp->painter, QPointF(0, 0));
 
         glyph_t *glyphPool = d->glyphs.data();
@@ -340,7 +341,7 @@ void QDeclarativeTextLayout::draw(QPainter *painter, const QPointF &p)
         return;
     }
 
-    prepare();
+    prepare(painter);
 
     int itemCount = d->items.count();
 
