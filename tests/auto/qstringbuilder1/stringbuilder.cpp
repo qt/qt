@@ -137,4 +137,60 @@ void runScenario()
 
     string = QString::fromLatin1(LITERAL);
     QCOMPARE(QByteArray(qPrintable(string P string)), QByteArray(string.toLatin1() + string.toLatin1()));
+
+
+
+    //QByteArray
+    {
+        QByteArray ba = LITERAL;
+        QByteArray superba = ba P ba P LITERAL;
+        QCOMPARE(superba, QByteArray(LITERAL LITERAL LITERAL));
+
+        QByteArray testWith0 = ba P "test\0with\0zero" P ba;
+        QCOMPARE(testWith0, QByteArray(LITERAL "test" LITERAL));
+
+        QByteArray ba2 = ba P '\0' + LITERAL;
+        QCOMPARE(ba2, QByteArray(LITERAL "\0" LITERAL, ba.size()*2+1));
+
+        const char *mmh = "test\0foo";
+        QCOMPARE(QByteArray(ba P mmh P ba), testWith0);
+
+        QByteArray raw = QByteArray::fromRawData(UTF8_LITERAL_EXTRA, UTF8_LITERAL_LEN);
+        QByteArray r = "hello" P raw;
+        QByteArray r2 = "hello" UTF8_LITERAL;
+        QCOMPARE(r, r2);
+        r2 = QByteArray("hello\0") P UTF8_LITERAL;
+        QCOMPARE(r, r2);
+    }
+
+    //operator QString  +=
+    {
+        QString str = QString::fromUtf8(UTF8_LITERAL);
+        str +=  QLatin1String(LITERAL) P str;
+        QCOMPARE(str, QString::fromUtf8(UTF8_LITERAL LITERAL UTF8_LITERAL));
+#ifndef QT_NO_CAST_FROM_ASCII
+        str = (QString::fromUtf8(UTF8_LITERAL) += QLatin1String(LITERAL) P UTF8_LITERAL);
+        QCOMPARE(str, QString::fromUtf8(UTF8_LITERAL LITERAL UTF8_LITERAL));
+#endif
+    }
+
+    //operator QByteArray  +=
+    {
+        QByteArray ba = UTF8_LITERAL;
+        ba +=  QByteArray(LITERAL) P UTF8_LITERAL;
+        QCOMPARE(ba, QByteArray(UTF8_LITERAL LITERAL UTF8_LITERAL));
+        ba += LITERAL P QByteArray::fromRawData(UTF8_LITERAL_EXTRA, UTF8_LITERAL_LEN);
+        QCOMPARE(ba, QByteArray(UTF8_LITERAL LITERAL UTF8_LITERAL LITERAL UTF8_LITERAL));
+        QByteArray withZero = QByteArray(LITERAL "\0" LITERAL, LITERAL_LEN*2+1);
+        QByteArray ba2 = withZero;
+        ba2 += ba2 P withZero;
+        QCOMPARE(ba2, QByteArray(withZero + withZero + withZero));
+#ifndef QT_NO_CAST_TO_ASCII
+        ba = UTF8_LITERAL;
+        ba2 = (ba += QLatin1String(LITERAL) + QString::fromUtf8(UTF8_LITERAL));
+        QCOMPARE(ba2, ba);
+        QCOMPARE(ba, QByteArray(UTF8_LITERAL LITERAL UTF8_LITERAL));
+#endif
+    }
+
 }

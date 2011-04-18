@@ -53,6 +53,7 @@ QT_MODULE(Core)
 
 #ifndef QT_NO_TRANSLATION
 
+class QLocale;
 class QTranslatorPrivate;
 
 class Q_CORE_EXPORT QTranslator : public QObject
@@ -76,6 +77,11 @@ public:
     bool load(const QString & filename,
               const QString & directory = QString(),
               const QString & search_delimiters = QString(),
+              const QString & suffix = QString());
+    bool load(const QLocale & locale,
+              const QString & filename,
+              const QString & prefix = QString(),
+              const QString & directory = QString(),
               const QString & suffix = QString());
     bool load(const uchar *data, int len);
 

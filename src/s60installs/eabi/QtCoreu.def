@@ -183,7 +183,7 @@ EXPORTS
 	_ZN10QEventLoopD1Ev @ 182 NONAME
 	_ZN10QEventLoopD2Ev @ 183 NONAME
 	_ZN10QMutexPool17globalInstanceGetEPKv @ 184 NONAME
-	_ZN10QMutexPool3getEPKv @ 185 NONAME
+	_ZN10QMutexPool3getEPKv @ 185 NONAME ABSENT
 	_ZN10QMutexPool8instanceEv @ 186 NONAME
 	_ZN10QMutexPoolC1EN6QMutex13RecursionModeEi @ 187 NONAME
 	_ZN10QMutexPoolC2EN6QMutex13RecursionModeEi @ 188 NONAME

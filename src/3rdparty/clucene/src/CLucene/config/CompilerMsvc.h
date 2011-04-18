@@ -22,7 +22,9 @@
 	# pragma warning(disable: 4512) // This would be very annoying
 	# pragma warning(disable: 4290) // Ignore exception specification warning
     # pragma warning(disable: 4250) // Ignore 'class1' : inherits 'class2::member' via dominance (e.g. in MultiReader)
-	#if (_MSC_VER < 1310)
+	// Check for STLport presence
+	#include <string>
+	#if (_MSC_VER < 1310) || defined(_STLPORT_VERSION)
 		#define CL_NS_HASHING(func) std::func //the namespace is different on VC 7.0
 	#else
 		#define CL_NS_HASHING(func) stdext::func

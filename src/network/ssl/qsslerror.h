@@ -83,6 +83,7 @@ public:
         NoPeerCertificate,
         HostNameMismatch,
         NoSslSupport,
+        CertificateBlacklisted,
         UnspecifiedError = -1
     };
 
