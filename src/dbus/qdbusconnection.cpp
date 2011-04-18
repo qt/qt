@@ -379,7 +379,7 @@ QDBusConnection QDBusConnection::connectToBus(const QString &address,
 {
 //    Q_ASSERT_X(QCoreApplication::instance(), "QDBusConnection::addConnection",
 //               "Cannot create connection without a Q[Core]Application instance");
-    if (!qdbus_loadLibDBus()){
+    if (!qdbus_loadLibDBus()) {
         QDBusConnectionPrivate *d = 0;
         return QDBusConnection(d);
     }
@@ -422,7 +422,7 @@ QDBusConnection QDBusConnection::connectToPeer(const QString &address,
 {
 //    Q_ASSERT_X(QCoreApplication::instance(), "QDBusConnection::addConnection",
 //               "Cannot create connection without a Q[Core]Application instance");
-    if (!qdbus_loadLibDBus()){
+    if (!qdbus_loadLibDBus()) {
         QDBusConnectionPrivate *d = 0;
         return QDBusConnection(d);
     }
@@ -459,7 +459,7 @@ void QDBusConnection::disconnectFromBus(const QString &name)
     if (_q_manager()) {
         QMutexLocker locker(&_q_manager()->mutex);
         QDBusConnectionPrivate *d = _q_manager()->connection(name);
-        if(d && d->mode != QDBusConnectionPrivate::ClientMode)
+        if (d && d->mode != QDBusConnectionPrivate::ClientMode)
             return;
         _q_manager()->removeConnection(name);
     }
@@ -480,7 +480,7 @@ void QDBusConnection::disconnectFromPeer(const QString &name)
     if (_q_manager()) {
         QMutexLocker locker(&_q_manager()->mutex);
         QDBusConnectionPrivate *d = _q_manager()->connection(name);
-        if(d && d->mode != QDBusConnectionPrivate::PeerMode)
+        if (d && d->mode != QDBusConnectionPrivate::PeerMode)
             return;
         _q_manager()->removeConnection(name);
     }

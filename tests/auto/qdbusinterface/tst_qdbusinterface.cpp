@@ -369,7 +369,7 @@ void tst_QDBusInterface::callMethod()
                          TEST_INTERFACE_NAME);
 
     MyObject::callCount = 0;
-   
+
     // call a SLOT method
     QDBusMessage reply = iface.call("ping", qVariantFromValue(QDBusVariant("foo")));
     QCOMPARE(MyObject::callCount, 1);
@@ -388,7 +388,7 @@ void tst_QDBusInterface::callMethod()
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().type(), QVariant::String);
     QCOMPARE(dv.variant().toString(), QString("foo"));
-    
+
     // call an INVOKABLE method
     reply = iface.call("ping_invokable", qVariantFromValue(QDBusVariant("bar")));
     QCOMPARE(MyObject::callCount, 2);
@@ -416,7 +416,7 @@ void tst_QDBusInterface::invokeMethod()
                          TEST_INTERFACE_NAME);
 
     MyObject::callCount = 0;
-    
+
     // make the SLOT call without a return type
     QDBusVariant arg("foo");
     QVERIFY(QMetaObject::invokeMethod(&iface, "ping", Q_ARG(QDBusVariant, arg)));
@@ -428,7 +428,7 @@ void tst_QDBusInterface::invokeMethod()
     QDBusVariant dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().type(), QVariant::String);
     QCOMPARE(dv.variant().toString(), QString("foo"));
-    
+
     // make the INVOKABLE call without a return type
     QDBusVariant arg2("bar");
     QVERIFY(QMetaObject::invokeMethod(&iface, "ping_invokable", Q_ARG(QDBusVariant, arg2)));
@@ -465,7 +465,7 @@ void tst_QDBusInterface::invokeMethodWithReturn()
 
     // verify that we got the reply as expected
     QCOMPARE(retArg.variant(), arg.variant());
-    
+
     // make the INVOKABLE call without a return type
     QDBusVariant arg2("bar");
     QVERIFY(QMetaObject::invokeMethod(&iface, "ping_invokable", Q_RETURN_ARG(QDBusVariant, retArg), Q_ARG(QDBusVariant, arg2)));
@@ -490,7 +490,7 @@ void tst_QDBusInterface::invokeMethodWithMultiReturn()
 
     MyObject::callCount = 0;
     QDBusVariant retArg, retArg2;
-    
+
     // make the SLOT call without a return type
     QDBusVariant arg("foo"), arg2("bar");
     QVERIFY(QMetaObject::invokeMethod(&iface, "ping",
@@ -515,7 +515,7 @@ void tst_QDBusInterface::invokeMethodWithMultiReturn()
     // verify that we got the replies as expected
     QCOMPARE(retArg.variant(), arg.variant());
     QCOMPARE(retArg2.variant(), arg2.variant());
-    
+
     // make the INVOKABLE call without a return type
     QDBusVariant arg3("hello"), arg4("world");
     QVERIFY(QMetaObject::invokeMethod(&iface, "ping_invokable",
@@ -550,7 +550,7 @@ void tst_QDBusInterface::invokeMethodWithComplexReturn()
 
     MyObject::callCount = 0;
     QList<int> retArg;
-    
+
     // make the SLOT call without a return type
     QList<int> arg = QList<int>() << 42 << -47;
     QVERIFY(QMetaObject::invokeMethod(&iface, "ping", Q_RETURN_ARG(QList<int>, retArg), Q_ARG(QList<int>, arg)));

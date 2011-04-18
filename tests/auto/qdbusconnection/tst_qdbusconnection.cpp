@@ -579,7 +579,7 @@ class MyServer2 : public QDBusServer
     Q_OBJECT
 public:
     MyServer2(QString addr, QObject* parent) : QDBusServer(addr, parent),
-                                              m_conn("none")
+                                               m_conn("none")
     {
         connect(this, SIGNAL(newConnection(const QDBusConnection&)), SLOT(handleConnection(const QDBusConnection&)));
     }
