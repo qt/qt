@@ -384,18 +384,16 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
 
     // keep the connection alive
     q_dbus_connection_ref(connection);
-    QDBusConnectionPrivate *d = new QDBusConnectionPrivate;
+    QDBusConnectionPrivate *d = static_cast<QDBusConnectionPrivate *>(data);
 
     // setPeer does the error handling for us
     QDBusErrorInternal error;
     d->setPeer(connection, error);
 
     QDBusConnection retval = QDBusConnectionPrivate::q(d);
-    d->setBusService(retval);
 
     // make QDBusServer emit the newConnection signal
-    QDBusConnectionPrivate *server_d = static_cast<QDBusConnectionPrivate *>(data);
-    server_d->serverConnection(retval);
+    d->serverConnection(retval);
 }
 
 } // extern "C"
@@ -1033,11 +1031,10 @@ void QDBusConnectionPrivate::closeConnection()
     mode = InvalidMode; // prevent reentrancy
     baseService.clear();
 
-    if (oldMode == ServerMode) {
-        if (server) {
-            q_dbus_server_disconnect(server);
-        }
-    } else if (oldMode == ClientMode || oldMode == PeerMode) {
+    if (server)
+        q_dbus_server_disconnect(server);
+
+    if (oldMode == ClientMode || oldMode == PeerMode) {
         if (connection) {
             q_dbus_connection_close(connection);
             // send the "close" message
