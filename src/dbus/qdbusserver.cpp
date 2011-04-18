@@ -41,6 +41,7 @@
 
 #include "qdbusserver.h"
 #include "qdbusconnection_p.h"
+#include "qdbusconnectionmanager_p.h"
 
 #ifndef QT_NO_DBUS
 
@@ -71,13 +72,25 @@ QDBusServer::QDBusServer(const QString &address, QObject *parent)
     }
     d = new QDBusConnectionPrivate(this);
 
-    d->name = QLatin1String("QDBusServer-") + QString::number(reinterpret_cast<qulonglong>(d));
+    QMutexLocker locker(&QDBusConnectionManager::instance()->mutex);
+    QDBusConnectionManager::instance()->setConnection(QLatin1String("QDBusServer-") + QString::number(reinterpret_cast<qulonglong>(d)), d);
 
     QObject::connect(d, SIGNAL(newServerConnection(QDBusConnection)),
                      this, SIGNAL(newConnection(QDBusConnection)));
 
     QDBusErrorInternal error;
     d->setServer(q_dbus_server_listen(address.toUtf8().constData(), error), error);
+}
+
+/*!
+    Destructs a QDBusServer
+*/
+QDBusServer::~QDBusServer()
+{
+    if (QDBusConnectionManager::instance()) {
+        QMutexLocker locker(&QDBusConnectionManager::instance()->mutex);
+        QDBusConnectionManager::instance()->removeConnection(d->name);
+    }
 }
 
 /*!

@@ -52,33 +52,13 @@
 #include "qdbusconnection_p.h"
 #include "qdbusinterface_p.h"
 #include "qdbusutil_p.h"
+#include "qdbusconnectionmanager_p.h"
 
 #include "qdbusthreaddebug_p.h"
 
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
-
-class QDBusConnectionManager
-{
-public:
-    QDBusConnectionManager() {}
-    ~QDBusConnectionManager();
-
-    QDBusConnectionPrivate *connection(const QString &name) const;
-    void removeConnection(const QString &name);
-    void setConnection(const QString &name, QDBusConnectionPrivate *c);
-
-    QDBusConnectionPrivate *sender() const;
-    void setSender(const QDBusConnectionPrivate *s);
-
-    mutable QMutex mutex;
-private:
-    QHash<QString, QDBusConnectionPrivate *> connectionHash;
-
-    mutable QMutex senderMutex;
-    QString senderName; // internal; will probably change
-};
 
 Q_GLOBAL_STATIC(QDBusConnectionManager, _q_manager)
 
@@ -124,6 +104,11 @@ QDBusConnectionManager::~QDBusConnectionManager()
             d->closeConnection();
     }
     connectionHash.clear();
+}
+
+QDBusConnectionManager* QDBusConnectionManager::instance()
+{
+    return _q_manager();
 }
 
 Q_DBUS_EXPORT void qDBusBindToApplication();
