@@ -424,6 +424,9 @@ void QDBusConnection::disconnectFromBus(const QString &name)
 {
     if (_q_manager()) {
         QMutexLocker locker(&_q_manager()->mutex);
+        QDBusConnectionPrivate *d = _q_manager()->connection(name);
+        if(d && d->mode != QDBusConnectionPrivate::ClientMode)
+            return;
         _q_manager()->removeConnection(name);
     }
 }
