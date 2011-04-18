@@ -1253,11 +1253,12 @@
         automatically be added to the project.
     \row \o console \o The target is a Win32 console application (app only). The
         proper include paths, compiler flags and libraries will
-        automatically be added to the
-        project.
+        automatically be added to the project.
     \row \o shared \o{1,3} The target is a shared object/DLL. The proper
         include paths, compiler flags and libraries will automatically be
-        added to the project.
+        added to the project. Note that \c dll can also be used on all platforms;
+        a shared library file with the appropriate suffix for the target platform
+        (dll, so, dylib) will be created.
     \row \o dll \o
     \row \o dylib \o
     \row \o static \o{1,2} The target is a static library (lib only).  The proper
