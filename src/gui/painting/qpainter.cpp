@@ -75,6 +75,7 @@
 #include <private/qstatictext_p.h>
 #include <private/qglyphs_p.h>
 #include <private/qstylehelper_p.h>
+#include <private/qrawfont_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -502,8 +503,12 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
 
     q->save();
     state->matrix = QTransform();
-    state->dirtyFlags |= QPaintEngine::DirtyTransform;
-    updateState(state);
+    if (extended) {
+        extended->transformChanged();
+    } else {
+        state->dirtyFlags |= QPaintEngine::DirtyTransform;
+        updateState(state);
+    }
     engine->drawImage(absPathRect,
                  image,
                  QRectF(0, 0, absPathRect.width(), absPathRect.height()),
@@ -686,11 +691,14 @@ void QPainterPrivate::updateInvMatrix()
     invMatrix = state->matrix.inverted();
 }
 
+extern bool qt_isExtendedRadialGradient(const QBrush &brush);
+
 void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
 {
     bool alpha = false;
     bool linearGradient = false;
     bool radialGradient = false;
+    bool extendedRadialGradient = false;
     bool conicalGradient = false;
     bool patternBrush = false;
     bool xform = false;
@@ -722,6 +730,7 @@ void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
                            (brushStyle == Qt::LinearGradientPattern));
         radialGradient = ((penBrushStyle == Qt::RadialGradientPattern) ||
                            (brushStyle == Qt::RadialGradientPattern));
+        extendedRadialGradient = radialGradient && (qt_isExtendedRadialGradient(penBrush) || qt_isExtendedRadialGradient(s->brush));
         conicalGradient = ((penBrushStyle == Qt::ConicalGradientPattern) ||
                             (brushStyle == Qt::ConicalGradientPattern));
         patternBrush = (((penBrushStyle > Qt::SolidPattern
@@ -805,7 +814,7 @@ void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
         s->emulationSpecifier &= ~QPaintEngine::LinearGradientFill;
 
     // Radial gradient emulation
-    if (radialGradient && !engine->hasFeature(QPaintEngine::RadialGradientFill))
+    if (extendedRadialGradient || (radialGradient && !engine->hasFeature(QPaintEngine::RadialGradientFill)))
         s->emulationSpecifier |= QPaintEngine::RadialGradientFill;
     else
         s->emulationSpecifier &= ~QPaintEngine::RadialGradientFill;
@@ -5790,12 +5799,14 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
 
     \sa QGlyphs::setFont(), QGlyphs::setPositions(), QGlyphs::setGlyphIndexes()
 */
+#if !defined(QT_NO_RAWFONT)
 void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
 {
     Q_D(QPainter);
 
-    QFont oldFont = d->state->font;
-    d->state->font = glyphs.font();
+    QRawFont font = glyphs.font();
+    if (!font.isValid())
+        return;
 
     QVector<quint32> glyphIndexes = glyphs.glyphIndexes();
     QVector<QPointF> glyphPositions = glyphs.positions();
@@ -5814,39 +5825,20 @@ void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
         fixedPointPositions[i] = QFixedPoint::fromPointF(processedPosition);
     }
 
-    d->drawGlyphs(glyphIndexes.data(), fixedPointPositions.data(), count);
-
-    d->state->font = oldFont;
+    d->drawGlyphs(glyphIndexes.data(), fixedPointPositions.data(), count, font, glyphs.overline(),
+                  glyphs.underline(), glyphs.strikeOut());
 }
 
-void qt_draw_glyphs(QPainter *painter, const quint32 *glyphArray, const QPointF *positionArray,
-                    int glyphCount)
-{
-    QVarLengthArray<QFixedPoint, 128> positions(glyphCount);
-    for (int i=0; i<glyphCount; ++i)
-        positions[i] = QFixedPoint::fromPointF(positionArray[i]);
-
-    QPainterPrivate *painter_d = QPainterPrivate::get(painter);
-    painter_d->drawGlyphs(const_cast<quint32 *>(glyphArray), positions.data(), glyphCount);
-}
-
-void QPainterPrivate::drawGlyphs(quint32 *glyphArray, QFixedPoint *positions, int glyphCount)
+void QPainterPrivate::drawGlyphs(quint32 *glyphArray, QFixedPoint *positions, int glyphCount,
+                                 const QRawFont &font, bool overline, bool underline,
+                                 bool strikeOut)
 {
     Q_Q(QPainter);
 
     updateState(state);
 
-    QFontEngine *fontEngine = state->font.d->engineForScript(QUnicodeTables::Common);
-
-    while (fontEngine->type() == QFontEngine::Multi) {
-        // Pick engine based on first glyph in array if we are using a multi engine.
-        // (all glyphs must be for same font)
-        int engineIdx = 0;
-        if (glyphCount > 0)
-            engineIdx = glyphArray[0] >> 24;
-
-        fontEngine = static_cast<QFontEngineMulti *>(fontEngine)->engine(engineIdx);
-    }
+    QRawFontPrivate *fontD = QRawFontPrivate::get(font);
+    QFontEngine *fontEngine = fontD->fontEngine;
 
     QFixed leftMost;
     QFixed rightMost;
@@ -5881,7 +5873,6 @@ void QPainterPrivate::drawGlyphs(quint32 *glyphArray, QFixedPoint *positions, in
         extended->drawStaticTextItem(&staticTextItem);
     } else {
         QTextItemInt textItem;
-        textItem.f = &state->font;
         textItem.fontEngine = fontEngine;
 
         QVarLengthArray<QFixed, 128> advances(glyphCount);
@@ -5903,20 +5894,21 @@ void QPainterPrivate::drawGlyphs(quint32 *glyphArray, QFixedPoint *positions, in
     }
 
     QTextItemInt::RenderFlags flags;
-    if (state->font.underline())
+    if (underline)
         flags |= QTextItemInt::Underline;
-    if (state->font.overline())
+    if (overline)
         flags |= QTextItemInt::Overline;
-    if (state->font.strikeOut())
+    if (strikeOut)
         flags |= QTextItemInt::StrikeOut;
 
     drawTextItemDecoration(q, QPointF(leftMost.toReal(), baseLine.toReal()),
                            fontEngine,
-                           (state->font.underline()
-                                ? QTextCharFormat::SingleUnderline
-                                : QTextCharFormat::NoUnderline),
+                           (underline
+                              ? QTextCharFormat::SingleUnderline
+                              : QTextCharFormat::NoUnderline),
                            flags, width.toReal(), QTextCharFormat());
 }
+#endif // QT_NO_RAWFONT
 
 /*!
 

@@ -69,10 +69,8 @@ class QFontEngineDirectWrite : public QFontEngine
 {
     Q_OBJECT
 public:
-    explicit QFontEngineDirectWrite(const QString &name,
-                                    IDWriteFactory *directWriteFactory,
-                                    IDWriteGdiInterop *directWriteGdiInterop,
-                                    IDWriteFont *directWriteFont,
+    explicit QFontEngineDirectWrite(IDWriteFactory *directWriteFactory,
+                                    IDWriteFontFace *directWriteFontFace,
                                     qreal pixelSize);
     ~QFontEngineDirectWrite();
 
@@ -107,15 +105,14 @@ public:
     Type type() const;
 
 private:
+    friend class QRawFontPrivate;
+
     QImage imageForGlyph(glyph_t t, QFixed subPixelPosition, int margin, const QTransform &xform);
     void collectMetrics();
 
-    QString m_name;
-    IDWriteFont *m_directWriteFont;
     IDWriteFontFace *m_directWriteFontFace;
     IDWriteFactory *m_directWriteFactory;
     IDWriteBitmapRenderTarget *m_directWriteBitmapRenderTarget;
-    IDWriteGdiInterop *m_directWriteGdiInterop;
 
     QFixed m_lineThickness;
     int m_unitsPerEm;
