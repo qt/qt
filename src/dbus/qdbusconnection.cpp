@@ -411,6 +411,40 @@ QDBusConnection QDBusConnection::connectToBus(const QString &address,
 
     return retval;
 }
+/*!
+    \since 4.8
+
+    Opens a peer-to-peer connection on address \a address and associate with it the
+    connection name \a name. Returns a QDBusConnection object associated with that connection.
+*/
+QDBusConnection QDBusConnection::connectToPeer(const QString &address,
+                                               const QString &name)
+{
+//    Q_ASSERT_X(QCoreApplication::instance(), "QDBusConnection::addConnection",
+//               "Cannot create connection without a Q[Core]Application instance");
+    if (!qdbus_loadLibDBus()){
+        QDBusConnectionPrivate *d = 0;
+        return QDBusConnection(d);
+    }
+
+    QMutexLocker locker(&_q_manager()->mutex);
+
+    QDBusConnectionPrivate *d = _q_manager()->connection(name);
+    if (d || name.isEmpty())
+        return QDBusConnection(d);
+
+    d = new QDBusConnectionPrivate;
+    // setPeer does the error handling for us
+    QDBusErrorInternal error;
+    DBusConnection *c = q_dbus_connection_open_private(address.toUtf8().constData(), error);
+
+    d->setPeer(c, error);
+    _q_manager()->setConnection(name, d);
+
+    QDBusConnection retval(d);
+
+    return retval;
+}
 
 /*!
     Closes the bus connection of name \a name.
