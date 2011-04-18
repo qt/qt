@@ -418,7 +418,7 @@ void tst_qdeclarativexmllistmodel::headers()
     QTRY_COMPARE(model->status(), QDeclarativeXmlListModel::Ready);
 
     QVariantMap expectedHeaders;
-    expectedHeaders["Accept"] = "application/xml";
+    expectedHeaders["Accept"] = "application/xml,*/*";
 
     QCOMPARE(factory.lastSentHeaders.count(), expectedHeaders.count());
     foreach (const QString &header, expectedHeaders.keys()) {

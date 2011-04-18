@@ -41,7 +41,9 @@
 
 #include "qwaylandwindow.h"
 
+#include "qwaylandbuffer.h"
 #include "qwaylanddisplay.h"
+#include "qwaylandinputdevice.h"
 #include "qwaylandscreen.h"
 
 #include <QtGui/QWidget>
@@ -52,15 +54,23 @@
 QWaylandWindow::QWaylandWindow(QWidget *window)
     : QPlatformWindow(window)
     , mDisplay(QWaylandScreen::waylandScreenFromWidget(window)->display())
+    , mBuffer(0)
+    , mWaitingForFrameSync(false)
 {
     static WId id = 1;
     mWindowId = id++;
 
-    mSurface = mDisplay->createSurface();
+    mSurface = mDisplay->createSurface(this);
 }
 
 QWaylandWindow::~QWaylandWindow()
 {
+    if (mSurface)
+        wl_surface_destroy(mSurface);
+
+    QList<QWaylandInputDevice *> inputDevices = mDisplay->inputDevices();
+    for (int i = 0; i < inputDevices.size(); ++i)
+        inputDevices.at(i)->handleWindowDestroyed(this);
 }
 
 WId QWaylandWindow::winId() const
@@ -71,18 +81,17 @@ WId QWaylandWindow::winId() const
 void QWaylandWindow::setParent(const QPlatformWindow *parent)
 {
     Q_UNUSED(parent);
-    qWarning("Trying to add a raster window as a sub-window");
+    qWarning("Sub window is not supported");
 }
 
 void QWaylandWindow::setVisible(bool visible)
 {
-    if (!mSurface) {
-        mSurface = mDisplay->createSurface();
+    if (!mSurface && visible) {
+        mSurface = mDisplay->createSurface(this);
         newSurfaceCreated();
     }
 
     if (visible) {
-        wl_surface_set_user_data(mSurface, this);
         wl_surface_map_toplevel(mSurface);
     } else {
         wl_surface_destroy(mSurface);
@@ -101,4 +110,49 @@ void QWaylandWindow::configure(uint32_t time, uint32_t edges,
     setGeometry(geometry);
 
     QWindowSystemInterface::handleGeometryChange(widget(), geometry);
+}
+
+void QWaylandWindow::attach(QWaylandBuffer *buffer)
+{
+    mBuffer = buffer;
+    if (mSurface) {
+        wl_surface_attach(mSurface, buffer->buffer(),0,0);
+    }
+}
+
+
+void QWaylandWindow::damage(const QRegion &region)
+{
+    //We have to do sync stuff before calling damage, or we might
+    //get a frame callback before we get the timestamp
+    mDisplay->frameCallback(QWaylandWindow::frameCallback, mSurface, this);
+    mWaitingForFrameSync = true;
+
+    QVector<QRect> rects = region.rects();
+    for (int i = 0; i < rects.size(); i++) {
+        const QRect rect = rects.at(i);
+        wl_surface_damage(mSurface,
+                          rect.x(), rect.y(), rect.width(), rect.height());
+    }
+}
+
+void QWaylandWindow::newSurfaceCreated()
+{
+    if (mBuffer) {
+        wl_surface_attach(mSurface,mBuffer->buffer(),0,0);
+    }
+}
+
+void QWaylandWindow::frameCallback(struct wl_surface *surface, void *data, uint32_t time)
+{
+    Q_UNUSED(time);
+    QWaylandWindow *self = static_cast<QWaylandWindow*>(data);
+    self->mWaitingForFrameSync = false;
+}
+
+void QWaylandWindow::waitForFrameSync()
+{
+    mDisplay->flushRequests();
+    while (mWaitingForFrameSync)
+        mDisplay->blockingReadEvents();
 }

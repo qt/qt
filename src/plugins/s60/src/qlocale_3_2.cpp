@@ -42,6 +42,7 @@
 #include <exception>
 #include <e32std.h>
 #include <e32base.h>
+#include <numberconversion.h>
 
 EXPORT_C TPtrC defaultGetLongDateFormatSpec(TExtendedLocale& locale)
 {
@@ -61,4 +62,5 @@ EXPORT_C TPtrC defaultGetTimeFormatSpec(TExtendedLocale& locale)
 EXPORT_C void defaultFormatL(TTime& time, TDes& des, const TDesC& format, const TLocale& locale)
 {
     time.FormatL(des, format, locale);
+    NumberConversion::ConvertDigits(des, locale.DigitType());
 }

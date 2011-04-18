@@ -100,8 +100,9 @@
     if any allocation fails. Allocations can fail if the system runs out of memory or
     doesn't have enough continuous memory to allocate the requested size.
 
-    Exceptions to that rule are documented. As an example, \l QImage::create()
-    returns false if not enough memory exists instead of throwing an exception.
+    Exceptions to that rule are documented. As an example, QImage constructors will
+    create a \l{QImage::isNull()}{null} image if not enough memory exists instead
+    of throwing an exception.
 
     \section1 Recovering from exceptions
 

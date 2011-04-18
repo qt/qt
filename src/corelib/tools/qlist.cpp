@@ -590,6 +590,14 @@ void **QListData::erase(void **xi)
     \sa operator=()
 */
 
+/*! \fn QList::QList(std::initializer_list<T> args)
+    \since 4.8
+
+    Construct a list from a std::initilizer_list.
+
+    This constructor is only enabled if the compiler supports C++0x
+*/
+
 /*! \fn QList::~QList()
 
     Destroys the list. References to the values in the list and all

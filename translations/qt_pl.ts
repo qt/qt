@@ -321,6 +321,10 @@ zainstalowałeś libgstreamer-plugins-base.</translation>
         <source>Playback complete</source>
         <translation>Zakończono odtwarzanie</translation>
     </message>
+    <message>
+        <source>Download error</source>
+        <translation>Błąd pobierania</translation>
+    </message>
 </context>
 <context>
     <name>Phonon::MMF::AbstractVideoPlayer</name>
@@ -439,6 +443,10 @@ zainstalowałeś libgstreamer-plugins-base.</translation>
     <message>
         <source>Error opening source: media type could not be determined</source>
         <translation>Błąd otwierania źródła: nie można określić typu multimediów</translation>
+    </message>
+    <message>
+        <source>Failed to set requested IAP</source>
+        <translation>Nie można ustawić żądanego IAP</translation>
     </message>
 </context>
 <context>
@@ -1200,6 +1208,11 @@ na
         <translation>%1: zasoby wyczerpane</translation>
     </message>
     <message>
+        <source>%1: permission denied</source>
+        <comment>QSystemSemaphore</comment>
+        <translation>%1: brak uprawnień</translation>
+    </message>
+    <message>
         <source>%1: unknown error %2</source>
         <comment>QSystemSemaphore</comment>
         <translation>%1: nieznany błąd %2</translation>
@@ -1366,6 +1379,13 @@ na
     </message>
 </context>
 <context>
+    <name>QDeclarativeApplication</name>
+    <message>
+        <source>Application is an abstract class</source>
+        <translation>&quot;Application&quot; jest klasą abstrakcyjną</translation>
+    </message>
+</context>
+<context>
     <name>QDeclarativeBehavior</name>
     <message>
         <source>Cannot change the animation assigned to a Behavior.</source>
@@ -1501,6 +1521,14 @@ na
         <translation>Nie można utworzyć pustej specyfikacji komponentu</translation>
     </message>
     <message>
+        <source>&quot;%1.%2&quot; is not available in %3 %4.%5.</source>
+        <translation>&quot;%1.%2&quot; nie jest dostępne w %3 %4.%5.</translation>
+    </message>
+    <message>
+        <source>&quot;%1.%2&quot; is not available due to component versioning.</source>
+        <translation>&quot;%1.%2&quot; nie jest dostępny z powodu niekompatybilności wersji komponentu.</translation>
+    </message>
+    <message>
         <source>Incorrectly specified signal assignment</source>
         <translation>Przypisanie sygnału błędnie podane</translation>
     </message>
@@ -1597,6 +1625,10 @@ na
         <translation>Niepoprawne przypisanie wartości: oczekiwano skryptu</translation>
     </message>
     <message>
+        <source>Cannot assign multiple values to a singular property</source>
+        <translation>Nie można przypisać wielu wartości do pojedynczej właściwości</translation>
+    </message>
+    <message>
         <source>Cannot assign object to property</source>
         <translation>Nie można przypisać obiektu dla właściwości</translation>
     </message>
@@ -1678,7 +1710,7 @@ na
     </message>
     <message>
         <source>ID illegally masks global JavaScript property</source>
-        <translation type="unfinished"></translation>
+        <translation>Identyfikator nielegalnie maskuje globalną właściwość JavaScript</translation>
     </message>
     <message>
         <source>No property alias location</source>
@@ -1689,8 +1721,16 @@ na
         <translation>Niepoprawne położenie aliasu</translation>
     </message>
     <message>
+        <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt;, &lt;id&gt;.&lt;property&gt; or &lt;id&gt;.&lt;value property&gt;.&lt;property&gt;</source>
+        <translation>Niepoprawna referencja aliasu. Referencja aliasu musi być podana jako &lt;id&gt;, &lt;id&gt;.&lt;property&gt; lub &lt;id&gt;.&lt;value property&gt;.&lt;property&gt;</translation>
+    </message>
+    <message>
+        <source>Alias property exceeds alias bounds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
-        <translation>Niepoprawna referencja aliasu. Referencja aliasu musi być podana jako &lt;id&gt; lub &lt;id&gt; &lt;property&gt;</translation>
+        <translation type="obsolete">Niepoprawna referencja aliasu. Referencja aliasu musi być podana jako &lt;id&gt; lub &lt;id&gt; &lt;property&gt;</translation>
     </message>
     <message>
         <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
@@ -1703,24 +1743,28 @@ na
         <source>Invalid empty URL</source>
         <translation>Niepoprawny pusty URL</translation>
     </message>
+    <message>
+        <source>createObject: value is not an object</source>
+        <translation>&quot;createObject&quot;: wartość nie jest obiektem</translation>
+    </message>
 </context>
 <context>
     <name>QDeclarativeCompositeTypeManager</name>
     <message>
         <source>Resource %1 unavailable</source>
-        <translation>Zasób %1 nie jest dostępny</translation>
+        <translation type="obsolete">Zasób %1 nie jest dostępny</translation>
     </message>
     <message>
         <source>Namespace %1 cannot be used as a type</source>
-        <translation>Przestrzeń nazw %1 nie może być użyta jako typ</translation>
+        <translation type="obsolete">Przestrzeń nazw %1 nie może być użyta jako typ</translation>
     </message>
     <message>
         <source>%1 %2</source>
-        <translation>%1 %2</translation>
+        <translation type="obsolete">%1 %2</translation>
     </message>
     <message>
         <source>Type %1 unavailable</source>
-        <translation>Typ %1 nie jest dostępny</translation>
+        <translation type="obsolete">Typ %1 nie jest dostępny</translation>
     </message>
 </context>
 <context>
@@ -1762,7 +1806,7 @@ na
     </message>
     <message>
         <source>transaction: missing callback</source>
-        <translation type="unfinished"></translation>
+        <translation>transakcja: brak wywołania zwrotnego</translation>
     </message>
     <message>
         <source>SQL: database version mismatch</source>
@@ -1782,6 +1826,10 @@ na
 </context>
 <context>
     <name>QDeclarativeImportDatabase</name>
+    <message>
+        <source>cannot load module &quot;%1&quot;: File name case mismatch for &quot;%2&quot;</source>
+        <translation>nie można załadować modułu &quot;%1&quot;: Niezgodność wielkości liter w &quot;%2&quot;</translation>
+    </message>
     <message>
         <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
         <translation>definicja &quot;%2&quot; modułu &quot;%1&quot; nie może zostać odczytana</translation>
@@ -1838,6 +1886,10 @@ na
         <source>is not a type</source>
         <translation>nie jest typem</translation>
     </message>
+    <message>
+        <source>File name case mismatch for &quot;%2&quot;</source>
+        <translation>Niezgodność wielkości liter w &quot;%2&quot;</translation>
+    </message>
 </context>
 <context>
     <name>QDeclarativeKeyNavigationAttached</name>
@@ -1851,6 +1903,17 @@ na
     <message>
         <source>Keys is only available via attached properties</source>
         <translation>&quot;Keys&quot; jest dostępny jedynie poprzez dołączone właściwości</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeLayoutMirroringAttached</name>
+    <message>
+        <source>LayoutDirection attached property only works with Items</source>
+        <translation>Dołączona właściwość &quot;LayoutDirection&quot; działa tylko z &quot;Item&quot;</translation>
+    </message>
+    <message>
+        <source>LayoutMirroring is only available via attached properties</source>
+        <translation>&quot;LayoutMirroring&quot; dostępny jest tylko poprzez dołączone właściwości</translation>
     </message>
 </context>
 <context>
@@ -1911,37 +1974,37 @@ na
     <name>QDeclarativeParentAnimation</name>
     <message>
         <source>Unable to preserve appearance under complex transform</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można utrzymać wyglądu przy złożonej transformacji</translation>
     </message>
     <message>
         <source>Unable to preserve appearance under non-uniform scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można utrzymać wyglądu przy niejednolitej skali</translation>
     </message>
     <message>
         <source>Unable to preserve appearance under scale of 0</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można utrzymać wyglądu przy zerowej skali</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeParentChange</name>
     <message>
         <source>Unable to preserve appearance under complex transform</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można utrzymać wyglądu przy złożonej transformacji</translation>
     </message>
     <message>
         <source>Unable to preserve appearance under non-uniform scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można utrzymać wyglądu przy niejednolitej skali</translation>
     </message>
     <message>
         <source>Unable to preserve appearance under scale of 0</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można utrzymać wyglądu przy zerowej skali</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeParser</name>
     <message>
         <source>Illegal unicode escape sequence</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawny znak w sekwencji escape</translation>
     </message>
     <message>
         <source>Illegal character</source>
@@ -1953,7 +2016,7 @@ na
     </message>
     <message>
         <source>Illegal escape sequence</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawna sekwencja escape</translation>
     </message>
     <message>
         <source>Unclosed comment at end of file</source>
@@ -1965,7 +2028,7 @@ na
     </message>
     <message>
         <source>Identifier cannot start with numeric literal</source>
-        <translation>Identyfikator nie może rozpoczynać się stałą liczbową</translation>
+        <translation>Identyfikator nie może rozpoczynać się literałem liczbowym</translation>
     </message>
     <message>
         <source>Unterminated regular expression literal</source>
@@ -1977,7 +2040,7 @@ na
     </message>
     <message>
         <source>Unterminated regular expression backslash sequence</source>
-        <translation type="unfinished"></translation>
+        <translation>Niedokończone sekwencja backslash wyrażenia regularnego</translation>
     </message>
     <message>
         <source>Unterminated regular expression class</source>
@@ -2005,7 +2068,7 @@ na
     </message>
     <message>
         <source>Invalid import qualifier ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawny kwalifikator ID importu</translation>
     </message>
     <message>
         <source>Reserved name &quot;Qt&quot; cannot be used as an qualifier</source>
@@ -2115,11 +2178,30 @@ na
     <name>QDeclarativeTextInput</name>
     <message>
         <source>Could not load cursor delegate</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można załadować delegata kursora</translation>
     </message>
     <message>
         <source>Could not instantiate cursor delegate</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można zinstancjonować delegata kursora</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeTypeLoader</name>
+    <message>
+        <source>Script %1 unavailable</source>
+        <translation>Skrypt &quot;%1&quot; nie jest dostępny</translation>
+    </message>
+    <message>
+        <source>Type %1 unavailable</source>
+        <translation>Typ %1 nie jest dostępny</translation>
+    </message>
+    <message>
+        <source>Namespace %1 cannot be used as a type</source>
+        <translation>Przestrzeń nazw %1 nie może być użyta jako typ</translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <translation>%1 %2</translation>
     </message>
 </context>
 <context>
@@ -2142,7 +2224,7 @@ na
     </message>
     <message>
         <source>Cannot assign an object to signal property %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można przypisać obiektu do właściwości sygnału %1</translation>
     </message>
     <message>
         <source>Cannot assign object to list</source>
@@ -2150,7 +2232,7 @@ na
     </message>
     <message>
         <source>Cannot assign object to interface property</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można przypisać obiektu do właściwości interfejsu</translation>
     </message>
     <message>
         <source>Unable to create attached object</source>
@@ -2165,7 +2247,7 @@ na
     <name>QDeclarativeVisualDataModel</name>
     <message>
         <source>Delegate component must be Item type.</source>
-        <translation type="unfinished"></translation>
+        <translation>Delegat musi być typu &quot;Item&quot;.</translation>
     </message>
 </context>
 <context>
@@ -3343,11 +3425,11 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     <name>QLibrary</name>
     <message>
         <source>Could not mmap &apos;%1&apos;: %2</source>
-        <translation>Nie można wykonać przypisania &apos;%1&apos;: %2</translation>
+        <translation type="obsolete">Nie można wykonać przypisania &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <source>Could not unmap &apos;%1&apos;: %2</source>
-        <translation>Nie można usunąć przypisania &apos;%1&apos;: %2</translation>
+        <translation type="obsolete">Nie można usunąć przypisania &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <source>Plugin verification data mismatch in &apos;%1&apos;</source>
@@ -4111,7 +4193,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     </message>
     <message>
         <source>&quot;%1&quot; duplicates a previous role name and will be disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>&quot;%1&quot; powiela poprzednią nazwę roli i zostanie wyłączone.</translation>
     </message>
     <message>
         <source>invalid query: &quot;%1&quot;</source>
@@ -5488,7 +5570,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <source>Media Pause</source>
         <extracomment>Media player pause button</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Media pauza</translation>
     </message>
     <message>
         <source>Toggle Media Play/Pause</source>
@@ -5870,27 +5952,27 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <source>Toggle Call/Hangup</source>
         <extracomment>Button that will hang up if we&apos;re in call, or make a call if we&apos;re not.</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Przełącz dzwoń/zawieś</translation>
     </message>
     <message>
         <source>Voice Dial</source>
-        <extracomment>Button to trigger voice dialling</extracomment>
-        <translation type="unfinished"></translation>
+        <extracomment>Button to trigger voice dialing</extracomment>
+        <translation>Wybieranie głosowe</translation>
     </message>
     <message>
         <source>Last Number Redial</source>
         <extracomment>Button to redial the last number called</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Wykręć ostatni numer</translation>
     </message>
     <message>
         <source>Camera Shutter</source>
         <extracomment>Button to trigger the camera shutter (take a picture)</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Migawka aparatu</translation>
     </message>
     <message>
         <source>Camera Focus</source>
         <extracomment>Button to focus the camera</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Ostrość aparatu</translation>
     </message>
     <message>
         <source>Kanji</source>
@@ -6523,6 +6605,10 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <source>Error creating SSL session: %1</source>
         <translation>Błąd tworzenia sesji SSL: %1</translation>
+    </message>
+    <message>
+        <source>The peer certificate is blacklisted</source>
+        <translation>Element równorzędny widnieje na czarnej liście</translation>
     </message>
     <message>
         <source>Cannot provide a certificate with no key, %1</source>
@@ -7717,7 +7803,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     </message>
     <message>
         <source>external parsed general entity reference not allowed in attribute value</source>
-        <translation>odwołanie do jednostki ogólnej zewnętrznie przetworzonej nie dozwolone dla wartości atrybutu </translation>
+        <translation>odwołanie do jednostki ogólnej zewnętrznie przetworzonej nie dozwolone dla wartości atrybutu</translation>
     </message>
     <message>
         <source>external parsed general entity reference not allowed in DTD</source>
@@ -7827,7 +7913,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     </message>
     <message>
         <source>Unexpected character &apos;%1&apos; in public id literal.</source>
-        <translation>Nieoczekiwany znak &apos;%1&apos; w publicznej stałej znakowej.</translation>
+        <translation>Nieoczekiwany znak &apos;%1&apos; w publicznym literale.</translation>
     </message>
     <message>
         <source>Invalid XML version string.</source>
@@ -8062,7 +8148,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     </message>
     <message>
         <source>When casting to %1 or types derived from it, the source value must be of the same type, or it must be a string literal. Type %2 is not allowed.</source>
-        <translation>Podczas rzutowania na %1 lub na typ pochodny, wartość źródłowa musi być tego samego typu lub musi być stałą znakową. Typ %2 nie jest dozwolony.</translation>
+        <translation>Podczas rzutowania na %1 lub na typ pochodny, wartość źródłowa musi być tego samego typu lub musi być literałem znakowym. Typ %2 nie jest dozwolony.</translation>
     </message>
     <message>
         <source>A comment cannot contain %1</source>
@@ -8150,11 +8236,11 @@ Proszę wybrać inną nazwę pliku.</translation>
     </message>
     <message>
         <source>In the replacement string, %1 must be followed by at least one digit when not escaped.</source>
-        <translation type="unfinished">W ciągu zastępczym, po %1 musi następować przynajmniej jedna cyfra</translation>
+        <translation>W ciągu zastępczym, po %1 musi następować przynajmniej jedna cyfra pod warunkiem, że nie jest ona w sekwencji escape.</translation>
     </message>
     <message>
         <source>In the replacement string, %1 can only be used to escape itself or %2, not %3</source>
-        <translation type="unfinished">W ciągu zastępczym, %1 może być użyte tylko do zabezpieczenia samej siebie lub %2, nigdy %3</translation>
+        <translation>W ciągu zastępczym, %1 może być użyte tylko do zabezpieczenia samej siebie lub %2, nigdy %3</translation>
     </message>
     <message>
         <source>%1 matches newline characters</source>
@@ -8298,7 +8384,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     </message>
     <message>
         <source>%1 is not a valid numeric literal.</source>
-        <translation>%1 nie jest poprawną stałą liczbową.</translation>
+        <translation>%1 nie jest poprawnym literałem liczbowym.</translation>
     </message>
     <message>
         <source>W3C XML Schema identity constraint selector</source>
@@ -8350,15 +8436,15 @@ Proszę wybrać inną nazwę pliku.</translation>
     </message>
     <message>
         <source>When function %1 is used for matching inside a pattern, the argument must be a variable reference or a string literal.</source>
-        <translation>Gdy funkcja %1 jest wykorzystana do dopasowania wewnątrz wzorca, jej argument musi być referencją do zmiennej lub stałą znakową.</translation>
+        <translation>Gdy funkcja %1 jest wykorzystana do dopasowania wewnątrz wzorca, jej argument musi być referencją do zmiennej lub literałem znakowym.</translation>
     </message>
     <message>
         <source>In an XSL-T pattern, the first argument to function %1 must be a string literal, when used for matching.</source>
-        <translation>We wzorze XSL-T pierwszy argument w funkcji %1 musi być stałą znakową podczas dopasowywania.</translation>
+        <translation>We wzorze XSL-T pierwszy argument w funkcji %1 musi być literałem znakowym podczas dopasowywania.</translation>
     </message>
     <message>
         <source>In an XSL-T pattern, the first argument to function %1 must be a literal or a variable reference, when used for matching.</source>
-        <translation>We wzorze XSL-T pierwszy argument w funkcji %1 musi być stałą znakową lub nazwą zmiennej podczas dopasowywania.</translation>
+        <translation>We wzorze XSL-T pierwszy argument w funkcji %1 musi być literałem znakowym lub nazwą zmiennej podczas dopasowywania.</translation>
     </message>
     <message>
         <source>In an XSL-T pattern, function %1 cannot have a third argument.</source>
@@ -9747,7 +9833,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     </message>
     <message>
         <source>Key constraint %1 contains references nillable element %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ograniczenie klucza %1 zawiera odwołania do elementu zerowalnego %2.</translation>
     </message>
     <message>
         <source>No referenced value found for key reference %1.</source>

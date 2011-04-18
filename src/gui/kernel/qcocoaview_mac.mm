@@ -254,7 +254,10 @@ static int qCocoaViewCount = 0;
     qt_mac_retain_graphics_context(context);
 
     // We use a different graphics system.
-    if (QApplicationPrivate::graphicsSystem() != 0) {
+    //
+    // Widgets that are set to paint on screen, specifically QGLWidget,
+    // requires the native engine to execute in order to be drawn.
+    if (QApplicationPrivate::graphicsSystem() != 0 && !qwidget->testAttribute(Qt::WA_PaintOnScreen)) {
 
         // Raster engine.
         if (QApplicationPrivate::graphics_system_name == QLatin1String("raster")) {
@@ -334,12 +337,6 @@ static int qCocoaViewCount = 0;
             qwidget->update(qwidget->rect());
             qwidgetprivate->syncBackingStore(qwidget->rect());
         }
-
-        // Since we don't want to use the native engine, we must exit, however
-        // widgets that are set to paint on screen, specifically QGLWidget,
-        // requires the following code to execute in order to be drawn.
-        if (!qwidget->testAttribute(Qt::WA_PaintOnScreen))
-            return;
     }
 
     // Native engine.

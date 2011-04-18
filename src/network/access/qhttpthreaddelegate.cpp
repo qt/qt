@@ -78,6 +78,11 @@ static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const 
         code = QNetworkReply::ProxyAuthenticationRequiredError;
         break;
 
+    case 418:               // I'm a teapot
+        code = QNetworkReply::ProtocolInvalidOperationError;
+        break;
+
+
     default:
         if (httpStatusCode > 500) {
             // some kind of server error
@@ -131,6 +136,8 @@ static QByteArray makeCacheKey(QUrl &url, QNetworkProxy *proxy)
             result = key.toEncoded();
         }
     }
+#else
+    Q_UNUSED(proxy)
 #endif
 
     return "http-connection:" + result;
@@ -226,11 +233,13 @@ void QHttpThreadDelegate::startRequest()
     QUrl urlCopy = httpRequest.url();
     urlCopy.setPort(urlCopy.port(ssl ? 443 : 80));
 
+#ifndef QT_NO_NETWORKPROXY
     if (transparentProxy.type() != QNetworkProxy::NoProxy)
         cacheKey = makeCacheKey(urlCopy, &transparentProxy);
     else if (cacheProxy.type() != QNetworkProxy::NoProxy)
         cacheKey = makeCacheKey(urlCopy, &cacheProxy);
     else
+#endif
         cacheKey = makeCacheKey(urlCopy, 0);
 
 

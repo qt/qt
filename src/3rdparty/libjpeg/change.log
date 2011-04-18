@@ -1,6 +1,42 @@
 CHANGE LOG for Independent JPEG Group's JPEG software
 
 
+Version 8c  16-Jan-2011
+-----------------------
+
+Add option to compression library and cjpeg (-block N) to use
+different DCT block size.
+All N from 1 to 16 are possible.  Default is 8 (baseline format).
+Larger values produce higher compression,
+smaller values produce higher quality.
+SmartScale capable decoder (introduced with IJG JPEG 8) required.
+
+
+Version 8b  16-May-2010
+-----------------------
+
+Repair problem in new memory source manager with corrupt JPEG data.
+Thank to Ted Campbell and Samuel Chun for the report.
+
+Repair problem in Makefile.am test target.
+Thank to anonymous user for the report.
+
+Support MinGW installation with automatic configure.
+Thank to Volker Grabsch for the suggestion.
+
+
+Version 8a  28-Feb-2010
+-----------------------
+
+Writing tables-only datastreams via jpeg_write_tables works again.
+
+Support 32-bit BMPs (RGB image with Alpha channel) for read in cjpeg.
+Thank to Brett Blackham for the suggestion.
+
+Improve accuracy in floating point IDCT calculation.
+Thank to Robert Hooke for the hint.
+
+
 Version 8  10-Jan-2010
 ----------------------
 

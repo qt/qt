@@ -266,6 +266,6 @@ xcb_dri2_dri2_buffer_t * QDri2Context::backBuffer()
 
 void * QDri2Context::eglContext() const
 {
-    Q_D(QDri2Context);
+    Q_D(const QDri2Context);
     return d->eglContext;
 }

@@ -1670,21 +1670,21 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
     for (int i = 0; i < project.SingleProjects.count(); ++i) {
         VCFilter filter;
         const VCProjectSingleConfig &singleCfg = project.SingleProjects.at(i);
-        if (filtername == "Root Files") {
+        if (filtername.startsWith("Root Files")) {
             filter = singleCfg.RootFiles;
-        } else if (filtername == "Source Files") {
+        } else if (filtername.startsWith("Source Files")) {
             filter = singleCfg.SourceFiles;
-        } else if (filtername == "Header Files") {
+        } else if (filtername.startsWith("Header Files")) {
             filter = singleCfg.HeaderFiles;
-        } else if (filtername == "Generated Files") {
+        } else if (filtername.startsWith("Generated Files")) {
             filter = singleCfg.GeneratedFiles;
-        } else if (filtername == "LexYacc Files") {
+        } else if (filtername.startsWith("LexYacc Files")) {
             filter = singleCfg.LexYaccFiles;
-        } else if (filtername == "Translation Files") {
+        } else if (filtername.startsWith("Translation Files")) {
             filter = singleCfg.TranslationFiles;
-        } else if (filtername == "Form Files") {
+        } else if (filtername.startsWith("Form Files")) {
             filter = singleCfg.FormFiles;
-        } else if (filtername == "Resource Files") {
+        } else if (filtername.startsWith("Resource Files")) {
             filter = singleCfg.ResourceFiles;
         } else {
             // ExtraCompilers
@@ -1698,7 +1698,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
 
     if ( !fileAdded )
     {
-        if (filtername == "Source Files") {
+        if (filtername.startsWith("Source Files")) {
 
             xmlFilter << tag("ClCompile")
                       << attrTag("Include",Option::fixPathToLocalOS(info.file))
@@ -1707,7 +1707,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
             xml << tag("ClCompile")
                 << attrTag("Include",Option::fixPathToLocalOS(info.file));
 
-        } else if(filtername == "Header Files") {
+        } else if(filtername.startsWith("Header Files")) {
 
             xmlFilter << tag("ClInclude")
                 << attrTag("Include",Option::fixPathToLocalOS(info.file))
@@ -1715,7 +1715,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
 
             xml << tag("ClInclude")
                 << attrTag("Include",Option::fixPathToLocalOS(info.file));
-        } else if(filtername == "Generated Files" || filtername == "Form Files") {
+        } else if(filtername.startsWith("Generated Files") || filtername.startsWith("Form Files")) {
 
             if (info.file.endsWith(".h")) {
 
@@ -1751,7 +1751,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
                     << attrTag("Include",Option::fixPathToLocalOS(info.file));
             }
 
-        } else if(filtername == "Root Files") {
+        } else if(filtername.startsWith("Root Files")) {
 
             if (info.file.endsWith(".rc")) {
 
@@ -1831,7 +1831,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
                 xml << tag("CustomBuild")
                     << attrTag("Include",Option::fixPathToLocalOS(filename));
 
-                if ( filtername == "Form Files" || filtername == "Generated Files" || filtername == "Resource Files" )
+                if ( filtername.startsWith("Form Files") || filtername.startsWith("Generated Files") || filtername.startsWith("Resource Files") )
                     xml << attrTagS("FileType", "Document");
             }
 
@@ -1842,7 +1842,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
         {
             fileAdded = true;
 
-            if (filtername == "Source Files") {
+            if (filtername.startsWith("Source Files")) {
 
                 xmlFilter << tag("ClCompile")
                           << attrTag("Include",Option::fixPathToLocalOS(filename))
@@ -1851,7 +1851,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
                 xml << tag("ClCompile")
                     << attrTag("Include",Option::fixPathToLocalOS(filename));
 
-            } else if(filtername == "Header Files") {
+            } else if(filtername.startsWith("Header Files")) {
 
                 xmlFilter << tag("ClInclude")
                     << attrTag("Include",Option::fixPathToLocalOS(filename))
@@ -1859,7 +1859,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
 
                 xml << tag("ClInclude")
                     << attrTag("Include",Option::fixPathToLocalOS(filename));
-            } else if(filtername == "Generated Files" || filtername == "Form Files") {
+            } else if(filtername.startsWith("Generated Files") || filtername.startsWith("Form Files")) {
 
                 if (filename.endsWith(".h")) {
 
@@ -1894,7 +1894,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
                     xml << tag("CustomBuild")
                         << attrTag("Include",Option::fixPathToLocalOS(filename));
                 }
-            } else if(filtername == "Root Files") {
+            } else if(filtername.startsWith("Root Files")) {
 
                 if (filename.endsWith(".rc")) {
 

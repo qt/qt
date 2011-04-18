@@ -65,8 +65,8 @@ class QDBusDemarshaller;
 class QDBusArgumentPrivate
 {
 public:
-    inline QDBusArgumentPrivate()
-        : message(0), ref(1)
+    inline QDBusArgumentPrivate(int flags = 0)
+        : message(0), ref(1), capabilities(flags)
     { }
     ~QDBusArgumentPrivate();
 
@@ -89,6 +89,7 @@ public:
 public:
     DBusMessage *message;
     QAtomicInt ref;
+    int capabilities;
     enum Direction {
         Marshalling,
         Demarshalling
@@ -98,7 +99,7 @@ public:
 class QDBusMarshaller: public QDBusArgumentPrivate
 {
 public:
-    QDBusMarshaller() : parent(0), ba(0), closeCode(0), ok(true)
+    QDBusMarshaller(int flags) : QDBusArgumentPrivate(flags), parent(0), ba(0), closeCode(0), ok(true)
     { direction = Marshalling; }
     ~QDBusMarshaller();
 
@@ -153,7 +154,8 @@ private:
 class QDBusDemarshaller: public QDBusArgumentPrivate
 {
 public:
-    inline QDBusDemarshaller() : parent(0) { direction = Demarshalling; }
+    inline QDBusDemarshaller(int flags) : QDBusArgumentPrivate(flags), parent(0)
+    { direction = Demarshalling; }
     ~QDBusDemarshaller();
 
     QString currentSignature();

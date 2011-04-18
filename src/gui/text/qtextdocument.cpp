@@ -60,6 +60,7 @@
 #include <qdir.h>
 #include <qapplication.h>
 #include "qtextcontrol_p.h"
+#include "qfont_p.h"
 #include "private/qtextedit_p.h"
 #include "private/qdataurl_p.h"
 
@@ -1670,8 +1671,6 @@ static void printPage(int index, QPainter *painter, const QTextDocument *doc, co
 
     painter->restore();
 }
-
-Q_GUI_EXPORT extern int qt_defaultDpi();
 
 /*!
     Prints the document to the given \a printer. The QPrinter must be

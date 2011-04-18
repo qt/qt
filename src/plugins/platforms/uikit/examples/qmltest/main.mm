@@ -39,36 +39,40 @@
 **
 ****************************************************************************/
 
-//
-//  main.m
-//  qmltest
-//
-//  Created by Eike Troll on 18.02.11.
-//  Copyright 2011 __MyCompanyName__. All rights reserved.
-//
-
 #import <UIKit/UIKit.h>
 
 #include "qmlapplicationviewer/qmlapplicationviewer.h"
 
 #include <QtGui/QApplication>
 #include <QtCore/QtPlugin>
+#include <QtDeclarative/QDeclarativeEngine>
 
 Q_IMPORT_PLUGIN(UIKit)
+
+static QString qStringFromNSString(NSString *nsstring)
+{
+	return QString::fromUtf8([nsstring UTF8String]);
+}
+
+static QString documentsDirectory()
+{
+	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+	NSString *documentsDirectory = [paths objectAtIndex:0];
+	return qStringFromNSString(documentsDirectory);
+}
 
 int main(int argc, char *argv[]) {
 
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 
-	setenv("QT_QPA_PLATFORM","uikit",1);
-
-	QApplication app(argc, argv);
+    QApplication app(argc, argv);
     QmlApplicationViewer viewer;
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
-	NSString *resourcePath = [[NSBundle mainBundle] resourcePath];
-    viewer.setMainQmlFile(QString::fromUtf8([[resourcePath stringByAppendingPathComponent:@"qml/main.qml"] UTF8String]));
+	viewer.engine()->setOfflineStoragePath(documentsDirectory());
+    NSString *resourcePath = [[NSBundle mainBundle] resourcePath];
+    viewer.setMainQmlFile(qStringFromNSString([resourcePath stringByAppendingPathComponent:@"qml/main.qml"]));
     viewer.showMaximized();
-	int retVal = app.exec();
+    int retVal = app.exec();
     [pool release];
     return retVal;
 }

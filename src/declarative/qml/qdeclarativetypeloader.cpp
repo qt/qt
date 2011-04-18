@@ -629,7 +629,18 @@ QDeclarativeTypeLoader::~QDeclarativeTypeLoader()
 }
 
 /*!
-Return a QDeclarativeTypeData for \a url.  The QDeclarativeTypeData may be cached.
+\enum QDeclarativeTypeLoader::Option
+
+This enum defines the options that control the way type data is handled.
+
+\value None             The default value, indicating that no other options
+                        are enabled.
+\value PreserveParser   The parser used to handle the type data is preserved
+                        after the data has been parsed.
+*/
+
+/*!
+Returns a QDeclarativeTypeData for the specified \a url.  The QDeclarativeTypeData may be cached.
 */
 QDeclarativeTypeData *QDeclarativeTypeLoader::get(const QUrl &url)
 {
@@ -650,8 +661,10 @@ QDeclarativeTypeData *QDeclarativeTypeLoader::get(const QUrl &url)
 }
 
 /*!
-Return a QDeclarativeTypeData for \a data with the provided base \a url.  The 
+Returns a QDeclarativeTypeData for the given \a data with the provided base \a url.  The 
 QDeclarativeTypeData will not be cached.
+
+The specified \a options control how the loader handles type data.
 */
 QDeclarativeTypeData *QDeclarativeTypeLoader::get(const QByteArray &data, const QUrl &url, Options options)
 {

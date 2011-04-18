@@ -1538,6 +1538,51 @@ void fromLatin1_sse2_improved(ushort *dst, const char *str, int size)
     fromLatin1_epilog(dst + counter, str + counter, size - counter);
 }
 
+void fromLatin1_sse2_improved2(ushort *dst, const char *str, int size)
+{
+    const __m128i nullMask = _mm_set1_epi32(0);
+    qptrdiff counter = 0;
+    size -= 32;
+    while (size >= counter) {
+        const __m128i chunk1 = _mm_loadu_si128((__m128i*)(str + counter)); // load
+        const __m128i chunk2 = _mm_loadu_si128((__m128i*)(str + counter + 16)); // load
+
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf1 = _mm_unpacklo_epi8(chunk1, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter), firstHalf1); // store
+
+        // unpack the last 8 bytes, padding with zeros
+        const __m128i secondHalf1 = _mm_unpackhi_epi8(chunk1, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter + 8), secondHalf1); // store
+
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf2 = _mm_unpacklo_epi8(chunk2, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter + 16), firstHalf2); // store
+
+        // unpack the last 8 bytes, padding with zeros
+        const __m128i secondHalf2 = _mm_unpackhi_epi8(chunk2, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter + 24), secondHalf2); // store
+
+        counter += 32;
+    }
+    size += 16;
+    if (size >= counter) {
+        const __m128i chunk = _mm_loadu_si128((__m128i*)(str + counter)); // load
+
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter), firstHalf); // store
+
+        // unpack the last 8 bytes, padding with zeros
+        const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter + 8), secondHalf); // store
+
+        counter += 16;
+    }
+    size += 16;
+    fromLatin1_epilog(dst + counter, str + counter, size - counter);
+}
+
 void fromLatin1_prolog_unrolled(ushort *dst, const char *str, int size)
 {
     // QString's data pointer is most often ending in 0x2 or 0xa
@@ -1694,10 +1739,76 @@ void fromLatin1_neon_improved(ushort *dst, const char *str, int len)
     fromLatin1_epilog(dst, str, len);
 }
 
+void fromLatin1_neon_improved2(ushort *dst, const char *str, int len)
+{
+    while (len >= 16) {
+        // load 16 bytes into one quadword Neon register
+        const uint8x16_t chunk = vld1q_u8((uint8_t *)str);
+        str += 16;
+
+        // expand each doubleword of the quadword register into a quadword
+        const uint16x8_t expanded_low = vmovl_u8(vget_low_u8(chunk));
+        vst1q_u16(dst, expanded_low); // store
+        dst += 8;
+        const uint16x8_t expanded_high = vmovl_u8(vget_high_u8(chunk));
+        vst1q_u16(dst, expanded_high); // store
+        dst += 8;
+
+        len -= 16;
+    }
+
+    if (len >= 8) {
+        // load 8 bytes into one doubleword Neon register
+        const uint8x8_t chunk = vld1_u8((uint8_t *)str);
+        str += 8;
+
+        // expand 8 bytes into 16 bytes in a quadword register
+        const uint16x8_t expanded = vmovl_u8(chunk);
+        vst1q_u16(dst, expanded); // store
+        dst += 8;
+
+        len -= 8;
+    }
+    fromLatin1_epilog(dst, str, len);
+}
+
 void fromLatin1_neon_handwritten(ushort *dst, const char *str, int len)
 {
     // same as above, but handwritten Neon
     while (len >= 8) {
+        uint16x8_t chunk;
+        asm (
+            "vld1.8     %[chunk], [%[str]]!\n"
+            "vmovl.u8   %q[chunk], %[chunk]\n"
+            "vst1.16    %h[chunk], [%[dst]]!\n"
+            : [dst] "+r" (dst),
+              [str] "+r" (str),
+              [chunk] "=w" (chunk));
+        len -= 8;
+    }
+
+    fromLatin1_epilog(dst, str, len);
+}
+
+void fromLatin1_neon_handwritten2(ushort *dst, const char *str, int len)
+{
+    // same as above, but handwritten Neon
+    while (len >= 16) {
+        uint16x8_t chunk1, chunk2;
+        asm (
+            "vld1.8     %h[chunk1], [%[str]]!\n"
+            "vmovl.u8   %q[chunk2], %f[chunk1]\n"
+            "vmovl.u8   %q[chunk1], %e[chunk1]\n"
+            "vst1.16    %h[chunk1], [%[dst]]!\n"
+            "vst1.16    %h[chunk2], [%[dst]]!\n"
+          : [dst] "+r" (dst),
+            [str] "+r" (str),
+            [chunk1] "=w" (chunk1),
+            [chunk2] "=w" (chunk2));
+        len -= 16;
+    }
+
+    if (len >= 8) {
         uint16x8_t chunk;
         asm (
             "vld1.8     %[chunk], [%[str]]!\n"
@@ -1721,6 +1832,7 @@ void tst_QString::fromLatin1Alternatives_data() const
 #ifdef __SSE2__
     QTest::newRow("sse2-qt4.7") << &fromLatin1_sse2_qt47;
     QTest::newRow("sse2-improved") << &fromLatin1_sse2_improved;
+    QTest::newRow("sse2-improved2") << &fromLatin1_sse2_improved2;
     QTest::newRow("sse2-with-prolog-regular") << &fromLatin1_sse2_withprolog<&fromLatin1_regular>;
     QTest::newRow("sse2-with-prolog-unrolled") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_unrolled>;
     QTest::newRow("sse2-with-prolog-sse2-overcommit") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_sse2_overcommit>;
@@ -1731,7 +1843,9 @@ void tst_QString::fromLatin1Alternatives_data() const
 #endif
 #ifdef __ARM_NEON__
     QTest::newRow("neon-improved") << &fromLatin1_neon_improved;
+    QTest::newRow("neon-improved2") << &fromLatin1_neon_improved2;
     QTest::newRow("neon-handwritten") << &fromLatin1_neon_handwritten;
+    QTest::newRow("neon-handwritten2") << &fromLatin1_neon_handwritten2;
 #endif
 }
 

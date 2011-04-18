@@ -55,6 +55,7 @@ public:
     QXcbIntegration();
     ~QXcbIntegration();
 
+    bool hasCapability(Capability cap) const;
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
@@ -65,11 +66,11 @@ public:
     QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 
     QPlatformFontDatabase *fontDatabase() const;
-    bool hasOpenGL() const;
 
     QPlatformNativeInterface *nativeInterface()const;
 
 private:
+    bool hasOpenGL() const;
     QList<QPlatformScreen *> m_screens;
     QXcbConnection *m_connection;
 

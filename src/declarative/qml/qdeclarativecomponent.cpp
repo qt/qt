@@ -137,7 +137,7 @@ class QByteArray;
     }
     \endcode
 
-    \sa {Using QML in C++ Applications}, {Integrating QML with existing Qt UI code}
+    \sa {Using QML Bindings in C++ Applications}, {Integrating QML Code with Existing Qt UI Code}
 */
 
 /*!
@@ -643,11 +643,11 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
     The \a properties argument is specified as a map of property-value items. For example, the code
     below creates an object with initial \c x and \c y values of 100 and 200, respectively:
 
-    \qml
+    \js
         var component = Qt.createComponent("Button.qml");
         if (component.status == Component.Ready)
             component.createObject(parent, {"x": 100, "y": 100});
-    \endqml
+    \endjs
 
     Dynamically created instances can be deleted with the \c destroy() method.
     See \l {Dynamic Object Management in QML} for more information.

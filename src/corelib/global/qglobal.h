@@ -497,6 +497,10 @@ namespace QT_NAMESPACE {}
 #    define Q_TYPEOF(expr)    __typeof__(expr)
 #    define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
 #  endif
+#  if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)
+#    define Q_LIKELY(expr)    __builtin_expect(!!(expr), true)
+#    define Q_UNLIKELY(expr)  __builtin_expect(!!(expr), false)
+#  endif
 /* GCC 3.1 and GCC 3.2 wrongly define _SB_CTYPE_MACROS on HP-UX */
 #  if defined(Q_OS_HPUX) && __GNUC__ == 3 && __GNUC_MINOR__ >= 1
 #    define Q_WRONG_SB_CTYPE_MACROS
@@ -759,6 +763,7 @@ namespace QT_NAMESPACE {}
 #    endif
 #    if __HP_aCC-0 >= 062000
 #      define Q_DECL_EXPORT     __attribute__((visibility("default")))
+#      define Q_DECL_HIDDEN     __attribute__((visibility("hidden")))
 #      define Q_DECL_IMPORT     Q_DECL_EXPORT
 #    endif
 #  else
@@ -773,10 +778,10 @@ namespace QT_NAMESPACE {}
 #elif defined(__WINSCW__) && !defined(Q_CC_NOKIAX86)
 #  define Q_CC_NOKIAX86
 
-
 #else
 #  error "Qt has not been tested with this compiler - talk to qt-bugs@trolltech.com"
 #endif
+
 
 #ifdef Q_CC_INTEL
 #  if __INTEL_COMPILER < 1200
@@ -799,6 +804,13 @@ namespace QT_NAMESPACE {}
 #ifndef Q_PACKED
 #  define Q_PACKED
 #  undef Q_NO_PACKED_REFERENCE
+#endif
+
+#ifndef Q_LIKELY
+#  define Q_LIKELY(x) (x)
+#endif
+#ifndef Q_UNLIKELY
+#  define Q_UNLIKELY(x) (x)
 #endif
 
 #ifndef Q_CONSTRUCTOR_FUNCTION
@@ -1238,6 +1250,7 @@ class QDataStream;
 #if defined(Q_OS_LINUX) && defined(Q_CC_RVCT)
 #  define Q_DECL_EXPORT     __attribute__((visibility("default")))
 #  define Q_DECL_IMPORT     __attribute__((visibility("default")))
+#  define Q_DECL_HIDDEN     __attribute__((visibility("hidden")))
 #endif
 
 #ifndef Q_DECL_EXPORT
@@ -1245,6 +1258,7 @@ class QDataStream;
 #    define Q_DECL_EXPORT __declspec(dllexport)
 #  elif defined(QT_VISIBILITY_AVAILABLE)
 #    define Q_DECL_EXPORT __attribute__((visibility("default")))
+#    define Q_DECL_HIDDEN __attribute__((visibility("hidden")))
 #  endif
 #  ifndef Q_DECL_EXPORT
 #    define Q_DECL_EXPORT
@@ -1257,6 +1271,10 @@ class QDataStream;
 #    define Q_DECL_IMPORT
 #  endif
 #endif
+#ifndef Q_DECL_HIDDEN
+#  define Q_DECL_HIDDEN
+#endif
+
 
 /*
    Create Qt DLL if QT_DLL is defined (Windows and Symbian only)
@@ -1599,7 +1617,7 @@ public:
         SV_SF_1 = SV_9_4,
         SV_SF_2 = 40,
         SV_SF_3 = 50,
-        SV_SF_4 = 60
+        SV_SF_4 = 60  // Deprecated
     };
     static SymbianVersion symbianVersion();
     enum S60Version {
@@ -1608,9 +1626,9 @@ public:
         SV_S60_3_1 = SV_9_2,
         SV_S60_3_2 = SV_9_3,
         SV_S60_5_0 = SV_9_4,
-        //versions beyond 5.0 are to be confirmed - it is better to use symbian version
         SV_S60_5_1 = SV_SF_2,
-        SV_S60_5_2 = SV_SF_3
+        SV_S60_5_2 = SV_SF_3,
+        SV_S60_5_3 = 70
     };
     static S60Version s60Version();
 #endif
@@ -2515,6 +2533,10 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 
 #ifdef SYMBIAN_WSERV_AND_CONE_MULTIPLE_SCREENS
 #define Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS
+#endif
+
+#ifdef SYMBIAN_GRAPHICS_FIXNATIVEORIENTATION
+#define Q_SYMBIAN_SUPPORTS_FIXNATIVEORIENTATION
 #endif
 
 //Symbian does not support data imports from a DLL
