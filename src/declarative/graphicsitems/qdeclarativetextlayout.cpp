@@ -327,6 +327,12 @@ void QDeclarativeTextLayout::prepare(QPainter *painter)
     }
 }
 
+// Defined in qpainter.cpp
+extern Q_GUI_EXPORT void qt_draw_decoration_for_glyphs(QPainter *painter, const glyph_t *glyphArray,
+                                                       const QFixedPoint *positions, int glyphCount,
+                                                       QFontEngine *fontEngine, const QFont &font,
+                                                       const QTextCharFormat &charFormat);
+
 void QDeclarativeTextLayout::draw(QPainter *painter, const QPointF &p)
 {
     QPainterPrivate *priv = QPainterPrivate::get(painter);
@@ -372,6 +378,10 @@ void QDeclarativeTextLayout::draw(QPainter *painter, const QPointF &p)
             currentColor = item.color;
         }
         priv->extended->drawStaticTextItem(&item);
+
+        qt_draw_decoration_for_glyphs(painter, item.glyphs, item.glyphPositions,
+                                      item.numGlyphs, item.fontEngine(), painter->font(),
+                                      QTextCharFormat());
     }
     if (currentColor != oldPen.color())
         painter->setPen(oldPen);
