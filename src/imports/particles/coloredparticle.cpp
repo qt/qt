@@ -168,12 +168,16 @@ public:
     ~ParticleTrailsMaterialCT()
     {
         delete colortable;
+        delete sizetable;
+        delete opacitytable;
     }
 
     virtual QSGMaterialType *type() const { static QSGMaterialType type; return &type; }
     virtual QSGMaterialShader *createShader() const;
 
     QSGTexture *colortable;
+    QSGTexture *sizetable;
+    QSGTexture *opacitytable;
 };
 
 
@@ -190,6 +194,8 @@ public:
     virtual void initialize() {
         ParticleTrailsMaterialData::initialize();
         m_colortable_id = m_program.uniformLocation("colortable");
+        m_sizetable_id = m_program.uniformLocation("sizetable");
+        m_opacitytable_id = m_program.uniformLocation("opacitytable");
     }
 
     virtual void updateState(const RenderState &state, QSGMaterial *current, QSGMaterial *old)
@@ -201,10 +207,20 @@ public:
         m->colortable->bind();
         m_program.setUniformValue(m_colortable_id, 1);
 
+        state.context()->functions()->glActiveTexture(GL_TEXTURE2);
+        m->sizetable->bind();
+        m_program.setUniformValue(m_sizetable_id, 2);
+
+        state.context()->functions()->glActiveTexture(GL_TEXTURE3);
+        m->opacitytable->bind();
+        m_program.setUniformValue(m_opacitytable_id, 3);
+
         ParticleTrailsMaterialData::updateState(state, current, old);
     }
 
     int m_colortable_id;
+    int m_sizetable_id;
+    int m_opacitytable_id;
 };
 
 
@@ -266,7 +282,7 @@ void ColoredParticle::setImage(const QUrl &image)
         return;
     m_image_name = image;
     emit imageChanged();
-    //m_system->pleaseReset();//XXX
+    reset();
 }
 
 
@@ -276,7 +292,25 @@ void ColoredParticle::setColortable(const QUrl &table)
         return;
     m_colortable_name = table;
     emit colortableChanged();
-    //m_system->pleaseReset();//XXX
+    reset();
+}
+
+void ColoredParticle::setSizetable(const QUrl &table)
+{
+    if (table == m_sizetable_name)
+        return;
+    m_sizetable_name = table;
+    emit sizetableChanged();
+    reset();
+}
+
+void ColoredParticle::setOpacitytable(const QUrl &table)
+{
+    if (table == m_opacitytable_name)
+        return;
+    m_opacitytable_name = table;
+    emit opacitytableChanged();
+    reset();
 }
 
 void ColoredParticle::setColor(const QColor &color)
@@ -396,12 +430,25 @@ QSGGeometryNode* ColoredParticle::buildParticleNode()
         m_material = 0;
     }
 
-    if (!m_colortable_name.isEmpty()) {
-        QImage table(m_colortable_name.toLocalFile());
-        if (!table.isNull()) {
-            m_material = new ParticleTrailsMaterialCT();
-            static_cast<ParticleTrailsMaterialCT *>(m_material)->colortable = sceneGraphEngine()->createTextureFromImage(table);
-        }
+    QImage colortable(m_colortable_name.toLocalFile());
+    QImage sizetable(m_sizetable_name.toLocalFile());
+    QImage opacitytable(m_opacitytable_name.toLocalFile());
+    if(!colortable.isNull() || !sizetable.isNull() || !opacitytable.isNull()){
+        //using tabled shaders
+        m_material = new ParticleTrailsMaterialCT();
+        if(colortable.isNull())
+            colortable = QImage(":resources/identitytable.png");
+        if(sizetable.isNull())
+            sizetable = QImage(":resources/identitytable.png");
+        if(opacitytable.isNull())
+            opacitytable = QImage(":resources/identitytable.png");
+        Q_ASSERT(!colortable.isNull());
+        Q_ASSERT(!sizetable.isNull());
+        Q_ASSERT(!opacitytable.isNull());
+        ParticleTrailsMaterialCT* ct_material = static_cast<ParticleTrailsMaterialCT *>(m_material);
+        ct_material->colortable = sceneGraphEngine()->createTextureFromImage(colortable);
+        ct_material->sizetable = sceneGraphEngine()->createTextureFromImage(sizetable);
+        ct_material->opacitytable = sceneGraphEngine()->createTextureFromImage(opacitytable);
     }
 
     if (!m_material)

@@ -8,5 +8,6 @@
         <file>resources/trailsvertex.shader</file>
         <file>resources/spriteimagefragment.shader</file>
         <file>resources/spriteimagevertex.shader</file>
+        <file>resources/identitytable.png</file>
     </qresource>
 </RCC>

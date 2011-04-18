@@ -58,6 +58,8 @@ class ColoredParticle : public ParticleType
     Q_OBJECT
     Q_PROPERTY(QUrl image READ image WRITE setImage NOTIFY imageChanged)
     Q_PROPERTY(QUrl colortable READ colortable WRITE setColortable NOTIFY colortableChanged)
+    Q_PROPERTY(QUrl sizetable READ sizetable WRITE setSizetable NOTIFY sizetableChanged)
+    Q_PROPERTY(QUrl opacitytable READ opacitytable WRITE setOpacitytable NOTIFY opacitytableChanged)
 
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
     //Stacks (added) with individual colorVariations
@@ -82,6 +84,12 @@ public:
 
     QUrl colortable() const { return m_colortable_name; }
     void setColortable(const QUrl &table);
+
+    QUrl sizetable() const { return m_sizetable_name; }
+    void setSizetable (const QUrl &table);
+
+    QUrl opacitytable() const { return m_opacitytable_name; }
+    void setOpacitytable(const QUrl &table);
 
     QColor color() const { return m_color; }
     void setColor(const QColor &color);
@@ -120,6 +128,8 @@ signals:
 
     void imageChanged();
     void colortableChanged();
+    void sizetableChanged();
+    void opacitytableChanged();
 
     void colorChanged();
     void colorVariationChanged();
@@ -187,6 +197,8 @@ private:
 
     QUrl m_image_name;
     QUrl m_colortable_name;
+    QUrl m_sizetable_name;
+    QUrl m_opacitytable_name;
 
 
     QColor m_color;

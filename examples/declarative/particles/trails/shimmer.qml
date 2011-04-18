@@ -57,8 +57,9 @@ Rectangle{
         anchors.fill: parent
         system: particles
         image: "content/star.png"
+        sizetable: "content/sparkleSize.png"
         alpha: 0
-        colorVariation: 0.2
+        colorVariation: 0.6
     }
     TrailEmitter{
         anchors.fill: parent
@@ -66,7 +67,7 @@ Rectangle{
         particlesPerSecond: 2000
         particleDuration: 2000
         emitting: true
-        particleSize: 40
+        particleSize: 30
         particleSizeVariation: 10
     }
 }
