@@ -268,9 +268,6 @@ void QWaylandInputDevice::inputHandleKey(void *data,
 
     sym = translateKey(sym, s, sizeof s);
 
-    qWarning("keycode %d, sym %d, string %d, modifiers 0x%x",
-	     code, sym, s[0], (int) inputDevice->mModifiers);
-
     if (window) {
         QWindowSystemInterface::handleKeyEvent(window->widget(),
                                                time, type, sym,
