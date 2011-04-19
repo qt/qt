@@ -413,9 +413,9 @@ void sigSegvHandler(int) {
 void printUsage(const QString &appName)
 {
     qWarning() << qPrintable(QString(
-                                 "Usage: %1 [--notrelocatable] module.uri version [module/import/path]\n"
-                                 "       %1 --path path/to/qmldir/directory [version]\n"
-                                 "       %1 --builtins\n"
+                                 "Usage: %1 [-notrelocatable] module.uri version [module/import/path]\n"
+                                 "       %1 -path path/to/qmldir/directory [version]\n"
+                                 "       %1 -builtins\n"
                                  "Example: %1 Qt.labs.particles 4.7 /home/user/dev/qt-install/imports").arg(
                                  appName));
 }
@@ -441,7 +441,10 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     const QStringList args = app.arguments();
     const QString appName = QFileInfo(app.applicationFilePath()).baseName();
-    if (!(args.size() >= 3 || (args.size() == 2 && args.at(1) == QLatin1String("--builtins")))) {
+    if (!(args.size() >= 3
+          || (args.size() == 2
+              && (args.at(1) == QLatin1String("--builtins")
+                  || args.at(1) == QLatin1String("-builtins"))))) {
         printUsage(appName);
         return EXIT_INVALIDARGUMENTS;
     }
@@ -454,14 +457,16 @@ int main(int argc, char *argv[])
     if (args.size() >= 3) {
         QStringList positionalArgs;
         foreach (const QString &arg, args) {
-            if (!arg.startsWith("--")) {
+            if (!arg.startsWith(QLatin1Char('-'))) {
                 positionalArgs.append(arg);
                 continue;
             }
 
-            if (arg == QLatin1String("--notrelocatable")) {
+            if (arg == QLatin1String("--notrelocatable")
+                    || arg == QLatin1String("-notrelocatable")) {
                 relocatable = false;
-            } else if (arg == QLatin1String("--path")) {
+            } else if (arg == QLatin1String("--path")
+                       || arg == QLatin1String("-path")) {
                 pathImport = true;
             } else {
                 qWarning() << "Invalid argument: " << arg;
