@@ -93,7 +93,9 @@ Q_DECLARE_METATYPE(QNetworkReply::NetworkError)
 Q_DECLARE_METATYPE(QBuffer*)
 Q_DECLARE_METATYPE(QHttpMultiPart *)
 Q_DECLARE_METATYPE(QList<QFile*>) // for multiparts
+#ifndef QT_NO_OPENSSL
 Q_DECLARE_METATYPE(QSslConfiguration)
+#endif
 
 class QNetworkReplyPtr: public QSharedPointer<QNetworkReply>
 {
