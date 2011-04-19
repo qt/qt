@@ -365,10 +365,12 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
     if (!win)
         return;
 
-#ifndef QT_NO_QWS_PROXYSCREEN
+#if !defined(QT_NO_QWS_PROXYSCREEN) && !defined(QT_NO_GRAPHICSVIEW)
     QWExtra *extra = qt_widget_private(widget)->extraData();
     if (extra && extra->proxyWidget)
         return;
+#else
+    Q_UNUSED(widget);
 #endif
 
     const quint8 windowOpacity = quint8(win->windowOpacity() * 0xff);
