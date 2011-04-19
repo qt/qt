@@ -10,5 +10,7 @@
         <file>resources/spriteimagevertex.shader</file>
         <file>resources/identitytable.png</file>
         <file>resources/defaultFadeInOut.png</file>
+        <file>resources/deformablefragment.shader</file>
+        <file>resources/deformablevertex.shader</file>
     </qresource>
 </RCC>
