@@ -375,6 +375,13 @@ void tst_qdeclarativetextinput::selection()
         QCOMPARE(textinputObject->selectionEnd(), i);
         QVERIFY(textinputObject->selectedText().isNull());
     }
+    //Test cursor follows selection
+    for(int i=0; i<= testStr.size(); i++) {
+        textinputObject->select(i,i);
+        QCOMPARE(textinputObject->cursorPosition(), i);
+        QCOMPARE(textinputObject->selectionStart(), i);
+        QCOMPARE(textinputObject->selectionEnd(), i);
+    }
 
     textinputObject->setCursorPosition(0);
     QVERIFY(textinputObject->cursorPosition() == 0);
@@ -399,10 +406,12 @@ void tst_qdeclarativetextinput::selection()
     for(int i=0; i<= testStr.size(); i++) {
         textinputObject->select(0,i);
         QCOMPARE(testStr.mid(0,i), textinputObject->selectedText());
+        QCOMPARE(textinputObject->cursorPosition(), i);
     }
     for(int i=0; i<= testStr.size(); i++) {
         textinputObject->select(i,testStr.size());
         QCOMPARE(testStr.mid(i,testStr.size()-i), textinputObject->selectedText());
+        QCOMPARE(textinputObject->cursorPosition(), testStr.size());
     }
 
     textinputObject->setCursorPosition(0);
