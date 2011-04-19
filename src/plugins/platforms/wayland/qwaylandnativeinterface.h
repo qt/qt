@@ -39,41 +39,22 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_WAYLAND_H
-#define QPLATFORMINTEGRATION_WAYLAND_H
+#ifndef QWAYLANDNATIVEINTERFACE_H
+#define QWAYLANDNATIVEINTERFACE_H
 
-#include <QtGui/QPlatformIntegration>
+#include "qwaylandscreen.h"
 
-QT_BEGIN_NAMESPACE
+#include <QtGui/QPlatformNativeInterface>
 
-class QWaylandBuffer;
-class QWaylandDisplay;
-
-class QWaylandIntegration : public QPlatformIntegration
+class QWaylandNativeInterface : public QPlatformNativeInterface
 {
 public:
-    QWaylandIntegration(bool useOpenGL = false);
-
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
-
-    QList<QPlatformScreen *> screens() const;
-
-    QPlatformFontDatabase *fontDatabase() const;
-
-    QPlatformNativeInterface *nativeInterface() const;
+    void *nativeResourceForWidget(const QByteArray &resourceString,
+				  QWidget *widget);
 
 private:
-    bool hasOpenGL() const;
-
-    QPlatformFontDatabase *mFontDb;
-    QWaylandDisplay *mDisplay;
-    bool mUseOpenGL;
-    QPlatformNativeInterface *mNativeInterface;
+    static QWaylandScreen *qPlatformScreenForWidget(QWidget *widget);
 };
 
-QT_END_NAMESPACE
 
-#endif
+#endif // QWAYLANDNATIVEINTERFACE_H

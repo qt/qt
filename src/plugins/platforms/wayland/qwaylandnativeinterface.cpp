@@ -39,41 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_WAYLAND_H
-#define QPLATFORMINTEGRATION_WAYLAND_H
+#include "qwaylandnativeinterface.h"
 
-#include <QtGui/QPlatformIntegration>
+#include "qwaylanddisplay.h"
+#include "qwaylandwindow.h"
+#include <QtGui/private/qapplication_p.h>
 
-QT_BEGIN_NAMESPACE
-
-class QWaylandBuffer;
-class QWaylandDisplay;
-
-class QWaylandIntegration : public QPlatformIntegration
+void *QWaylandNativeInterface::nativeResourceForWidget(const QByteArray &resourceString, QWidget *widget)
 {
-public:
-    QWaylandIntegration(bool useOpenGL = false);
+    QByteArray lowerCaseResource = resourceString.toLower();
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    if (lowerCaseResource == "display")
+	return qPlatformScreenForWidget(widget)->display()->wl_display();
+    if (lowerCaseResource == "surface") {
+	return ((QWaylandWindow *) widget->platformWindow())->wl_surface();
+    }
 
-    QList<QPlatformScreen *> screens() const;
+    return NULL;
+}
 
-    QPlatformFontDatabase *fontDatabase() const;
 
-    QPlatformNativeInterface *nativeInterface() const;
+QWaylandScreen * QWaylandNativeInterface::qPlatformScreenForWidget(QWidget *widget)
+{
+    QWaylandScreen *screen;
 
-private:
-    bool hasOpenGL() const;
-
-    QPlatformFontDatabase *mFontDb;
-    QWaylandDisplay *mDisplay;
-    bool mUseOpenGL;
-    QPlatformNativeInterface *mNativeInterface;
-};
-
-QT_END_NAMESPACE
-
-#endif
+    if (widget) {
+        screen = static_cast<QWaylandScreen *>(QPlatformScreen::platformScreenForWidget(widget));
+    } else {
+        screen = static_cast<QWaylandScreen *>(QApplicationPrivate::platformIntegration()->screens()[0]);
+    }
+    return screen;
+}
