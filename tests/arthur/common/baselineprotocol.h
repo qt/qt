@@ -48,29 +48,49 @@
 #include <QVector>
 #include <QMap>
 #include <QPointer>
+#include <QStringList>
 
 #define QLS QLatin1String
 #define QLC QLatin1Char
 
 #define FileFormat "png"
 
-const QString PI_TestCase(QLS("TestCase"));
-const QString PI_HostName(QLS("HostName"));
-const QString PI_HostAddress(QLS("HostAddress"));
-const QString PI_OSName(QLS("OSName"));
-const QString PI_OSVersion(QLS("OSVersion"));
-const QString PI_QtVersion(QLS("QtVersion"));
-const QString PI_BuildKey(QLS("BuildKey"));
-const QString PI_GitCommit(QLS("GitCommit"));
-const QString PI_QMakeSpec(QLS("QMakeSpec"));
-const QString PI_PulseGitBranch(QLS("PulseGitBranch"));
-const QString PI_PulseTestrBranch(QLS("PulseTestrBranch"));
+extern const QString PI_TestCase;
+extern const QString PI_HostName;
+extern const QString PI_HostAddress;
+extern const QString PI_OSName;
+extern const QString PI_OSVersion;
+extern const QString PI_QtVersion;
+extern const QString PI_BuildKey;
+extern const QString PI_GitCommit;
+extern const QString PI_QMakeSpec;
+extern const QString PI_PulseGitBranch;
+extern const QString PI_PulseTestrBranch;
 
 class PlatformInfo : public QMap<QString, QString>
 {
 public:
-    PlatformInfo(bool useLocal = false);
+    PlatformInfo();
+    PlatformInfo(const PlatformInfo &other);
+    ~PlatformInfo()
+    {}
+    PlatformInfo &operator=(const PlatformInfo &other);
+
+    static PlatformInfo localHostInfo();
+
+    void addSignificantKeys(const QStringList& keys, bool replaceDefaultKeys=false);
+    QStringList addedKeys() const;
+    bool addedKeysReplaceDefault() const;
+
+private:
+    QStringList sigKeys;
+    bool replaceDefault;
+    friend QDataStream & operator<< (QDataStream &stream, const PlatformInfo &pi);
+    friend QDataStream & operator>> (QDataStream &stream, PlatformInfo& pi);
 };
+QDataStream & operator<< (QDataStream &stream, const PlatformInfo &pi);
+QDataStream & operator>> (QDataStream &stream, PlatformInfo& pi);
+
 
 struct ImageItem
 {
@@ -99,6 +119,7 @@ public:
     QImage image;
     QList<quint64> imageChecksums;
     quint16 itemChecksum;
+    QByteArray misc;
 
     void writeImageToStream(QDataStream &stream) const;
     void readImageFromStream(QDataStream &stream);
@@ -123,7 +144,7 @@ public:
     // Important constants here
     // ****************************************************
     enum Constant {
-        ProtocolVersion = 4,
+        ProtocolVersion = 5,
         ServerPort = 54129,
         Timeout = 5000
     };

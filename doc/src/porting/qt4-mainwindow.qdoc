@@ -86,7 +86,7 @@
     the first time it is called. You can also call
     QMainWindow::setMenuBar() to use a custom menu bar in the main window.
 
-    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.cpp 0
     \dots
     \snippet examples/mainwindows/menus/mainwindow.cpp 5
     \dots
@@ -110,7 +110,7 @@
 
     \snippet examples/mainwindows/sdi/mainwindow.cpp 0
     \dots
-    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.cpp 1
 
     In this example, the toolbar is restricted to the top and bottom
     toolbar areas of the main window, and is initially placed in the
@@ -132,7 +132,7 @@
     required, the default can be changed with the
     QMainWindow::setCorner() function:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.cpp 2
 
     The following diagram shows the configuration produced by the above code.
     Note that the left and right dock widgets will occupy the top and bottom
@@ -143,7 +143,7 @@
     Once all of the main window components have been set up, the central widget
     is created and installed by using code similar to the following:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.cpp 3
 
     The central widget can be any subclass of QWidget.
 
@@ -217,17 +217,17 @@
     constructed using the general QMenu class.
 
     Qt 3:
-    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.cpp 4
     Qt 4:
-    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.cpp 5
 
     Toolbars follow the same pattern as menus, with the new, more
     consistent behavior:
 
     Qt 3:
-    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.qdoc 6
+    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.cpp 6
     Qt 4:
-    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.qdoc 7
+    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.cpp 7
 
     The behavior of dock widgets is now configured through the member
     functions of QDockWidget. For example, compare the old and new ways
@@ -235,7 +235,7 @@
     main window.
 
     In Qt 3:
-    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.qdoc 8
+    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.cpp 8
     In Qt 4:
-    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.qdoc 9
+    \snippet doc/src/snippets/code/doc_src_qt4-mainwindow.cpp 9
 */

@@ -46,15 +46,17 @@
 
 #if !defined(Q_WS_MAC) || (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
 
+class QRawFontPrivate;
 class QCoreTextFontEngineMulti;
 class QCoreTextFontEngine : public QFontEngine
 {
 public:
-    QCoreTextFontEngine(CTFontRef font, const QFontDef &def,
-                        QCoreTextFontEngineMulti *multiEngine = 0);
+    QCoreTextFontEngine(CTFontRef font, const QFontDef &def);
+    QCoreTextFontEngine(CGFontRef font, const QFontDef &def);
     ~QCoreTextFontEngine();
+
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const;
-    virtual void recalcAdvances(int , QGlyphLayout *, QTextEngine::ShaperFlags) const;
+    virtual void recalcAdvances(QGlyphLayout *, QTextEngine::ShaperFlags) const;
 
     virtual glyph_metrics_t boundingBox(const QGlyphLayout &glyphs);
     virtual glyph_metrics_t boundingBox(glyph_t glyph);
@@ -87,23 +89,29 @@ public:
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
     virtual qreal minRightBearing() const;
     virtual qreal minLeftBearing() const;
-    virtual QFont createExplicitFont() const;
+    virtual QFixed emSquareSize() const;
 
 private:
+    friend class QRawFontPrivate;
+
+    void init();
     QImage imageForGlyph(glyph_t glyph, QFixed subPixelPosition, int margin, bool colorful);
     CTFontRef ctfont;
     CGFontRef cgFont;
-    QCoreTextFontEngineMulti *parentEngine;
     int synthesisFlags;
     CGAffineTransform transform;
+    QFixed avgCharWidth;
+    qreal ctMaxCharWidth;
+    qreal ctMinLeftBearing;
+    qreal ctMinRightBearing;
     friend class QCoreTextFontEngineMulti;
-    int antialiasing_threshold;
 };
 
 class QCoreTextFontEngineMulti : public QFontEngineMulti
 {
 public:
     QCoreTextFontEngineMulti(const QCFString &name, const QFontDef &fontDef, bool kerning);
+    QCoreTextFontEngineMulti(CGFontRef cgFontRef, const QFontDef &fontDef, bool kerning);
     ~QCoreTextFontEngineMulti();
 
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
@@ -112,19 +120,16 @@ public:
                       QTextEngine::ShaperFlags flags,
                       unsigned short *logClusters, const HB_CharAttributes *charAttributes) const;
 
-
-    virtual void recalcAdvances(int , QGlyphLayout *, QTextEngine::ShaperFlags) const;
-    virtual void doKerning(int , QGlyphLayout *, QTextEngine::ShaperFlags) const;
-
     virtual const char *name() const { return "CoreText"; }
 protected:
     virtual void loadEngine(int at);
 
 private:
+    void init(bool kerning);
     inline const QCoreTextFontEngine *engineAt(int i) const
     { return static_cast<const QCoreTextFontEngine *>(engines.at(i)); }
 
-    uint fontIndexForFont(CTFontRef id) const;
+    uint fontIndexForFont(CTFontRef font) const;
     CTFontRef ctfont;
     mutable QCFType<CFMutableDictionaryRef> attributeDict;
     CGAffineTransform transform;

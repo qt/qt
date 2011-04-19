@@ -54,34 +54,23 @@
 #include "qpainterpath.h"
 #include "qglyphs.h"
 #include "qglyphs_p.h"
+#include "qrawfont.h"
+#include "qrawfont_p.h"
 #include <limits.h>
 
 #include <qdebug.h>
 
 #include "qfontengine_p.h"
 
+#if !defined(QT_NO_FREETYPE)
+#  include "qfontengine_ft_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #define ObjectSelectionBrush (QTextFormat::ForegroundBrush + 1)
 #define SuppressText 0x5012
 #define SuppressBackground 0x513
-
-static inline QFixed leadingSpaceWidth(QTextEngine *eng, const QScriptLine &line)
-{
-    if (!line.hasTrailingSpaces
-        || (eng->option.flags() & QTextOption::IncludeTrailingSpaces)
-        || !(eng->option.alignment() & Qt::AlignRight)
-        || !eng->isRightToLeft())
-        return QFixed();
-
-    int pos = line.length;
-    const HB_CharAttributes *attributes = eng->attributes();
-    if (!attributes)
-        return QFixed();
-    while (pos > 0 && attributes[line.from + pos - 1].whiteSpace)
-        --pos;
-    return eng->width(line.from + pos, line.length - pos);
-}
 
 static QFixed alignLine(QTextEngine *eng, const QScriptLine &line)
 {
@@ -93,7 +82,7 @@ static QFixed alignLine(QTextEngine *eng, const QScriptLine &line)
         if (align & Qt::AlignJustify && eng->isRightToLeft())
             align = Qt::AlignRight;
         if (align & Qt::AlignRight)
-            x = line.width - (line.textAdvance + leadingSpaceWidth(eng, line));
+            x = line.width - (line.textAdvance + eng->leadingSpaceWidth(line));
         else if (align & Qt::AlignHCenter)
             x = (line.width - line.textAdvance)/2;
     }
@@ -1175,6 +1164,7 @@ static inline QRectF clipIfValid(const QRectF &rect, const QRectF &clip)
 
     \sa draw(), QPainter::drawGlyphs()
 */
+#if !defined(QT_NO_RAWFONT)
 QList<QGlyphs> QTextLayout::glyphs() const
 {
     QList<QGlyphs> glyphs;
@@ -1183,6 +1173,7 @@ QList<QGlyphs> QTextLayout::glyphs() const
 
     return glyphs;
 }
+#endif // QT_NO_RAWFONT
 
 /*!
     Draws the whole layout on the painter \a p at the position specified by \a pos.
@@ -2274,6 +2265,7 @@ namespace {
 
     \sa QTextLayout::glyphs()
 */
+#if !defined(QT_NO_RAWFONT)
 QList<QGlyphs> QTextLine::glyphs(int from, int length) const
 {
     const QScriptLine &line = eng->lines[i];
@@ -2348,17 +2340,41 @@ QList<QGlyphs> QTextLine::glyphs(int from, int length) const
         QFontEngine *fontEngine = keys.at(i);
 
         // Make a font for this particular engine
-        QFont font = fontEngine->createExplicitFont();
+        QRawFont font;
+        QRawFontPrivate *fontD = QRawFontPrivate::get(font);
+        fontD->fontEngine = fontEngine;
+        fontD->fontEngine->ref.ref();
+
+#if defined(Q_WS_WIN)
+        if (fontEngine->supportsSubPixelPositions())
+            fontD->hintingPreference = QFont::PreferVerticalHinting;
+        else
+            fontD->hintingPreference = QFont::PreferFullHinting;
+#elif defined(Q_WS_MAC)
+        fontD->hintingPreference = QFont::PreferNoHinting;
+#elif !defined(QT_NO_FREETYPE)
+        if (fontEngine->type() == QFontEngine::Freetype) {
+            QFontEngineFT *freeTypeEngine = static_cast<QFontEngineFT *>(fontEngine);
+            switch (freeTypeEngine->defaultHintStyle()) {
+            case QFontEngineFT::HintNone:
+                fontD->hintingPreference = QFont::PreferNoHinting;
+                break;
+            case QFontEngineFT::HintLight:
+                fontD->hintingPreference = QFont::PreferVerticalHinting;
+                break;
+            case QFontEngineFT::HintMedium:
+            case QFontEngineFT::HintFull:
+                fontD->hintingPreference = QFont::PreferFullHinting;
+                break;
+            };
+        }
+#endif
 
         QList<GlyphInfo> glyphLayouts = glyphLayoutHash.values(fontEngine);
         for (int j=0; j<glyphLayouts.size(); ++j) {
             const QPointF &pos = glyphLayouts.at(j).itemPosition;
             const QGlyphLayout &glyphLayout = glyphLayouts.at(j).glyphLayout;
             const QTextItem::RenderFlags &flags = glyphLayouts.at(j).flags;            
-
-            font.setOverline(flags.testFlag(QTextItem::Overline));
-            font.setUnderline(flags.testFlag(QTextItem::Underline));
-            font.setStrikeOut(flags.testFlag(QTextItem::StrikeOut));
 
             QVarLengthArray<glyph_t> glyphsArray;
             QVarLengthArray<QFixedPoint> positionsArray;
@@ -2378,19 +2394,22 @@ QList<QGlyphs> QTextLine::glyphs(int from, int length) const
             glyphIndexes.setGlyphIndexes(glyphs);
             glyphIndexes.setPositions(positions);
 
+            glyphIndexes.setOverline(flags.testFlag(QTextItem::Overline));
+            glyphIndexes.setUnderline(flags.testFlag(QTextItem::Underline));
+            glyphIndexes.setStrikeOut(flags.testFlag(QTextItem::StrikeOut));
+            glyphIndexes.setFont(font);
+
             QPair<QFontEngine *, int> key(fontEngine, int(flags));
-
             if (!glyphsHash.contains(key))
-                glyphsHash.insert(key, QGlyphs());
-
-            QGlyphs &target = glyphsHash[key];
-            target += glyphIndexes;
-            target.setFont(font);
+                glyphsHash.insert(key, glyphIndexes);
+            else
+                glyphsHash[key] += glyphIndexes;
         }
     }
 
     return glyphsHash.values();
 }
+#endif // QT_NO_RAWFONT
 
 /*!
     \fn void QTextLine::draw(QPainter *painter, const QPointF &position, const QTextLayout::FormatRange *selection) const

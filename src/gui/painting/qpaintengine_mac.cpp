@@ -972,7 +972,7 @@ void QCoreGraphicsPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, co
         return;
 
     bool differentSize = (QRectF(0, 0, pm.width(), pm.height()) != sr), doRestore = false;
-    CGRect rect = CGRectMake(qRound(r.x()), qRound(r.y()), qRound(r.width()), qRound(r.height()));
+    CGRect rect = CGRectMake(r.x(), r.y(), r.width(), r.height());
     QCFType<CGImageRef> image;
     bool isBitmap = (pm.depth() == 1);
     if (isBitmap) {

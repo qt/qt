@@ -72,7 +72,7 @@ QByteArray QDBusArgumentPrivate::createSignature(int id)
         return "";
 
     QByteArray signature;
-    QDBusMarshaller *marshaller = new QDBusMarshaller;
+    QDBusMarshaller *marshaller = new QDBusMarshaller(0);
     marshaller->ba = &signature;
 
     // run it
@@ -114,7 +114,7 @@ bool QDBusArgumentPrivate::checkWrite(QDBusArgumentPrivate *&d)
             return false;
 
         if (d->message && d->ref != 1) {
-            QDBusMarshaller *dd = new QDBusMarshaller;
+            QDBusMarshaller *dd = new QDBusMarshaller(d->capabilities);
             dd->message = q_dbus_message_copy(d->message);
             q_dbus_message_iter_init_append(dd->message, &dd->iterator);
 
@@ -157,7 +157,7 @@ bool QDBusArgumentPrivate::checkReadAndDetach(QDBusArgumentPrivate *&d)
     if (d->ref == 1)
         return true;            // no need to detach
 
-    QDBusDemarshaller *dd = new QDBusDemarshaller;
+    QDBusDemarshaller *dd = new QDBusDemarshaller(d->capabilities);
     dd->message = q_dbus_message_ref(d->message);
     dd->iterator = static_cast<QDBusDemarshaller*>(d)->iterator;
 
@@ -295,7 +295,7 @@ QDBusArgument::QDBusArgument()
         return;
     }
 
-    QDBusMarshaller *dd = new QDBusMarshaller;
+    QDBusMarshaller *dd = new QDBusMarshaller(0);
     d = dd;
 
     // create a new message with any type, we won't sent it anyways
@@ -479,6 +479,20 @@ QDBusArgument &QDBusArgument::operator<<(const QDBusObjectPath &arg)
     signature) to the D-Bus stream.
 */
 QDBusArgument &QDBusArgument::operator<<(const QDBusSignature &arg)
+{
+    if (QDBusArgumentPrivate::checkWrite(d))
+        d->marshaller()->append(arg);
+    return *this;
+}
+
+/*!
+    \overload
+    \since 4.8
+    \internal
+    Appends the primitive value \a arg of type \c{UNIX_FILE_DESCRIPTOR} (Unix
+    File Descriptor) to the D-Bus stream.
+*/
+QDBusArgument &QDBusArgument::operator<<(const QDBusUnixFileDescriptor &arg)
 {
     if (QDBusArgumentPrivate::checkWrite(d))
         d->marshaller()->append(arg);
@@ -724,6 +738,20 @@ const QDBusArgument &QDBusArgument::operator>>(QDBusSignature &arg) const
 {
     if (QDBusArgumentPrivate::checkReadAndDetach(d))
         arg = d->demarshaller()->toSignature();
+    return *this;
+}
+
+/*!
+    \overload
+    \since 4.8
+    \internal
+    Extracts one D-Bus primitive argument of type \c{UNIX_FILE_DESCRIPTOR}
+    (Unix file descriptor) from the D-Bus stream.
+*/
+const QDBusArgument &QDBusArgument::operator>>(QDBusUnixFileDescriptor &arg) const
+{
+    if (QDBusArgumentPrivate::checkReadAndDetach(d))
+        arg = d->demarshaller()->toUnixFileDescriptor();
     return *this;
 }
 

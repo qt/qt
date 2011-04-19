@@ -197,6 +197,9 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 
 /*!
     Constructs a QNetworkConfigurationManager with the given \a parent.
+
+    Note that to ensure a valid list of current configurations immediately available, updating
+    is done during construction which causes some delay.
 */
 QNetworkConfigurationManager::QNetworkConfigurationManager(QObject *parent)
     : QObject(parent)

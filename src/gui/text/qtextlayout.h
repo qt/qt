@@ -167,7 +167,9 @@ public:
     qreal minimumWidth() const;
     qreal maximumWidth() const;
 
+#if !defined(QT_NO_RAWFONT)
     QList<QGlyphs> glyphs() const;
+#endif
 
     QTextEngine *engine() const { return d; }
     void setFlags(int flags);
@@ -239,7 +241,10 @@ public:
 private:
     QTextLine(int line, QTextEngine *e) : i(line), eng(e) {}
     void layout_helper(int numGlyphs);
+
+#if !defined(QT_NO_RAWFONT)
     QList<QGlyphs> glyphs(int from, int length) const;
+#endif
 
     friend class QTextLayout;
     friend class QTextFragment;

@@ -54,9 +54,15 @@
 //
 
 #include <qdbusargument.h>
+#include "qdbusunixfiledescriptor.h"
 #include "qdbus_symbols_p.h"
 
 #ifndef QT_NO_DBUS
+
+#ifndef DBUS_TYPE_UNIX_FD
+# define DBUS_TYPE_UNIX_FD int('h')
+# define DBUS_TYPE_UNIX_FD_AS_STRING "h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -65,8 +71,8 @@ class QDBusDemarshaller;
 class QDBusArgumentPrivate
 {
 public:
-    inline QDBusArgumentPrivate()
-        : message(0), ref(1)
+    inline QDBusArgumentPrivate(int flags = 0)
+        : message(0), ref(1), capabilities(flags)
     { }
     ~QDBusArgumentPrivate();
 
@@ -89,6 +95,7 @@ public:
 public:
     DBusMessage *message;
     QAtomicInt ref;
+    int capabilities;
     enum Direction {
         Marshalling,
         Demarshalling
@@ -98,7 +105,7 @@ public:
 class QDBusMarshaller: public QDBusArgumentPrivate
 {
 public:
-    QDBusMarshaller() : parent(0), ba(0), closeCode(0), ok(true)
+    QDBusMarshaller(int flags) : QDBusArgumentPrivate(flags), parent(0), ba(0), closeCode(0), ok(true)
     { direction = Marshalling; }
     ~QDBusMarshaller();
 
@@ -116,6 +123,7 @@ public:
     void append(const QString &arg);
     void append(const QDBusObjectPath &arg);
     void append(const QDBusSignature &arg);
+    void append(const QDBusUnixFileDescriptor &arg);
     void append(const QStringList &arg);
     void append(const QByteArray &arg);
     bool append(const QDBusVariant &arg); // this one can fail
@@ -153,7 +161,8 @@ private:
 class QDBusDemarshaller: public QDBusArgumentPrivate
 {
 public:
-    inline QDBusDemarshaller() : parent(0) { direction = Demarshalling; }
+    inline QDBusDemarshaller(int flags) : QDBusArgumentPrivate(flags), parent(0)
+    { direction = Demarshalling; }
     ~QDBusDemarshaller();
 
     QString currentSignature();
@@ -170,6 +179,7 @@ public:
     QString toString();
     QDBusObjectPath toObjectPath();
     QDBusSignature toSignature();
+    QDBusUnixFileDescriptor toUnixFileDescriptor();
     QDBusVariant toVariant();
     QStringList toStringList();
     QByteArray toByteArray();

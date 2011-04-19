@@ -1485,18 +1485,20 @@ MakefileGenerator::createObjectList(const QStringList &sources)
 
 ReplaceExtraCompilerCacheKey::ReplaceExtraCompilerCacheKey(const QString &v, const QStringList &i, const QStringList &o)
 {
+    static QString doubleColon = QLatin1String("::");
+
     hash = 0;
     pwd = qmake_getpwd();
     var = v;
     {
         QStringList il = i;
         il.sort();
-        in = il.join("::");
+        in = il.join(doubleColon);
     }
     {
         QStringList ol = o;
         ol.sort();
-        out = ol.join("::");
+        out = ol.join(doubleColon);
     }
 }
 
@@ -2813,17 +2815,6 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
         return file;
     QString ret = unescapeFilePath(file);
 
-    //setup the cache
-    static QHash<FileFixifyCacheKey, QString> *cache = 0;
-    if(!cache) {
-        cache = new QHash<FileFixifyCacheKey, QString>;
-        qmakeAddCacheClear(qmakeDeleteCacheClear<QHash<FileFixifyCacheKey, QString> >, (void**)&cache);
-    }
-    FileFixifyCacheKey cacheKey(ret, out_d, in_d, fix, canon);
-    QString cacheVal = cache->value(cacheKey);
-    if(!cacheVal.isNull())
-        return cacheVal;
-
     //do the fixin'
     QString pwd = qmake_getpwd();
     if (!pwd.endsWith('/'))
@@ -2908,7 +2899,6 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
     debug_msg(3, "Fixed[%d,%d] %s :: to :: %s [%s::%s] [%s::%s]", fix, canon, orig_file.toLatin1().constData(),
               ret.toLatin1().constData(), in_d.toLatin1().constData(), out_d.toLatin1().constData(),
               pwd.toLatin1().constData(), Option::output_dir.toLatin1().constData());
-    cache->insert(cacheKey, ret);
     return ret;
 }
 

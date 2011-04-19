@@ -68,9 +68,6 @@
 #include <qlibrary.h>
 #include <private/qstylehelper_p.h>
 
-#define CL_MAX(a,b) (a)>(b) ? (a):(b) // ### qMin/qMax does not work for vc6
-#define CL_MIN(a,b) (a)<(b) ? (a):(b) // remove this when it is working
-
 QT_BEGIN_NAMESPACE
 
 using namespace QStyleHelper;
@@ -533,8 +530,8 @@ static void qt_cleanlooks_draw_mdibutton(QPainter *painter, const QStyleOptionTi
 {
     QColor dark;
     dark.setHsv(option->palette.button().color().hue(),
-                CL_MIN(255, (int)(option->palette.button().color().saturation()*1.9)),
-                CL_MIN(255, (int)(option->palette.button().color().value()*0.7)));
+                qMin(255, (int)(option->palette.button().color().saturation()*1.9)),
+                qMin(255, (int)(option->palette.button().color().value()*0.7)));
 
     QColor highlight = option->palette.highlight().color();
 
@@ -691,11 +688,11 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
     QColor darkOutline;
     QColor dark;
     darkOutline.setHsv(button.hue(),
-                CL_MIN(255, (int)(button.saturation()*3.0)),
-                CL_MIN(255, (int)(button.value()*0.6)));
+                qMin(255, (int)(button.saturation()*3.0)),
+                qMin(255, (int)(button.value()*0.6)));
     dark.setHsv(button.hue(),
-                CL_MIN(255, (int)(button.saturation()*1.9)),
-                CL_MIN(255, (int)(button.value()*0.7)));
+                qMin(255, (int)(button.saturation()*1.9)),
+                qMin(255, (int)(button.value()*0.7)));
     QColor tabFrameColor = mergedColors(option->palette.background().color(),
                                                 dark.lighter(135), 60);
 
@@ -1117,8 +1114,8 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
             QColor gradientMidColor = option->palette.button().color();
             QColor gradientStopColor;
             gradientStopColor.setHsv(buttonColor.hue(),
-                                     CL_MIN(255, (int)(buttonColor.saturation()*1.9)),
-                                     CL_MIN(255, (int)(buttonColor.value()*0.96)));
+                                     qMin(255, (int)(buttonColor.saturation()*1.9)),
+                                     qMin(255, (int)(buttonColor.value()*0.96)));
 
             QRect gradRect = rect.adjusted(1, 2, -1, -2);
             // gradient fill
@@ -1384,12 +1381,12 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
     QColor button = option->palette.button().color();
     QColor dark;
     dark.setHsv(button.hue(),
-                CL_MIN(255, (int)(button.saturation()*1.9)),
-                CL_MIN(255, (int)(button.value()*0.7)));
+                qMin(255, (int)(button.saturation()*1.9)),
+                qMin(255, (int)(button.value()*0.7)));
     QColor darkOutline;
     darkOutline.setHsv(button.hue(),
-                CL_MIN(255, (int)(button.saturation()*2.0)),
-                CL_MIN(255, (int)(button.value()*0.6)));
+                qMin(255, (int)(button.saturation()*2.0)),
+                qMin(255, (int)(button.value()*0.6)));
     QRect rect = option->rect;
     QColor shadow = mergedColors(option->palette.background().color().darker(120),
                                  dark.lighter(130), 60);
@@ -1662,8 +1659,8 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
             QColor gradientStopColor;
             QColor gradientStartColor = option->palette.button().color();
             gradientStopColor.setHsv(gradientStartColor.hue(),
-                                     CL_MIN(255, (int)(gradientStartColor.saturation()*2)),
-                                     CL_MIN(255, (int)(gradientStartColor.value()*0.96)));
+                                     qMin(255, (int)(gradientStartColor.saturation()*2)),
+                                     qMin(255, (int)(gradientStartColor.value()*0.96)));
             QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
             if (option->palette.background().gradient()) {
                 gradient.setStops(option->palette.background().gradient()->stops());
@@ -2425,14 +2422,14 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
     QColor grooveColor;
     QColor darkOutline;
     dark.setHsv(button.hue(),
-                CL_MIN(255, (int)(button.saturation()*1.9)),
-                CL_MIN(255, (int)(button.value()*0.7)));
+                qMin(255, (int)(button.saturation()*1.9)),
+                qMin(255, (int)(button.value()*0.7)));
     grooveColor.setHsv(button.hue(),
-                CL_MIN(255, (int)(button.saturation()*2.6)),
-                CL_MIN(255, (int)(button.value()*0.9)));
+                qMin(255, (int)(button.saturation()*2.6)),
+                qMin(255, (int)(button.value()*0.9)));
     darkOutline.setHsv(button.hue(),
-                CL_MIN(255, (int)(button.saturation()*3.0)),
-                CL_MIN(255, (int)(button.value()*0.6)));
+                qMin(255, (int)(button.saturation()*3.0)),
+                qMin(255, (int)(button.value()*0.6)));
 
     QColor alphaCornerColor;
     if (widget) {

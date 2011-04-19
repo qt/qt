@@ -159,7 +159,7 @@ public:
     
 signals:
     void basicSignal();
-    void argumentSignal(int a, QString b, qreal c);
+    void argumentSignal(int a, QString b, qreal c, MyEnum2 d, Qt::MouseButtons e);
     void stringChanged();
     void objectChanged();
     void anotherBasicSignal();

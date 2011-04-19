@@ -142,6 +142,8 @@ public:
     FilterMode filterMode() const { return m_filterMode; }
     void setFilterMode(FilterMode m) { m_filterMode = m; }
 
+    void clear();
+
     void freeResource(void *) { ctx = 0; }
 
 private:

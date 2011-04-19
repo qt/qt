@@ -216,7 +216,7 @@ public:
 
     inline void serverConnection(const QDBusConnection &connection)
         { emit newServerConnection(connection); }
-    
+
 private:
     void checkThread();
     bool handleError(const QDBusErrorInternal &error);
@@ -262,6 +262,7 @@ signals:
 
 public:
     QAtomicInt ref;
+    QDBusConnection::ConnectionCapabilities capabilities;
     QString name;               // this connection's name
     QString baseService;        // this connection's base service
 

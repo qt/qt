@@ -169,11 +169,7 @@ void tst_Symbols::globalObjects()
     }
 
     if (isFailed) {
-#if QT_VERSION >= 0x040600
         QVERIFY2(!isFailed, "Libraries contain static global objects. See Debug output above.");
-#else
-        QSKIP("Libraries contains static global objects. See Debug output above. [These errors cannot be fixed in 4.5 in time]", SkipSingle);
-#endif
     }
 }
 

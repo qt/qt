@@ -82,6 +82,11 @@ public:
 
     QXlibKeyboard *keyboard() const;
 
+#if !defined(QT_NO_OPENGL) && defined(QT_OPENGL_ES_2)
+    void *eglDisplay() const { return mEGLDisplay; }
+    void setEglDisplay(void *display) { mEGLDisplay = display; }
+#endif
+
 public slots:
     void eventDispatcher();
 
@@ -96,6 +101,9 @@ private:
     QXlibKeyboard *mKeyboard;
 
     QXlibDisplay * mDisplay;
+#if !defined(QT_NO_OPENGL) && defined(QT_OPENGL_ES_2)
+    void *mEGLDisplay;
+#endif
     int mScreen;
 };
 

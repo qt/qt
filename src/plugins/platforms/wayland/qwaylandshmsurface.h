@@ -74,11 +74,8 @@ public:
     void beginPaint(const QRegion &);
 
 private:
-    static void frameCallback(void *data, uint32_t time);\
-
     QWaylandShmBuffer *mBuffer;
     QWaylandDisplay *mDisplay;
-    bool mWaitingForFrameSync;
 };
 
 QT_END_NAMESPACE
