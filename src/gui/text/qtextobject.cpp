@@ -1666,6 +1666,7 @@ QTextBlock::iterator &QTextBlock::iterator::operator--()
 
     \sa QGlyphs, QTextBlock::layout(), QTextLayout::position(), QPainter::drawGlyphs()
 */
+#if !defined(QT_NO_RAWFONT)
 QList<QGlyphs> QTextFragment::glyphs() const
 {
     if (!p || !n)
@@ -1689,6 +1690,7 @@ QList<QGlyphs> QTextFragment::glyphs() const
 
     return ret;
 }
+#endif // QT_NO_RAWFONT
 
 /*!
     Returns the position of this text fragment in the document.
