@@ -175,16 +175,19 @@ QDeclarativeAnchors::~QDeclarativeAnchors()
 
 void QDeclarativeAnchorsPrivate::fillChanged()
 {
+    Q_Q(QDeclarativeAnchors);
     if (!fill || !isItemComplete())
         return;
 
     if (updatingFill < 2) {
         ++updatingFill;
 
+        qreal horizontalMargin = q->mirrored() ? rightMargin : leftMargin;
+
         if (fill == item->parentItem()) {                         //child-parent
-            setItemPos(QPointF(leftMargin, topMargin));
+            setItemPos(QPointF(horizontalMargin, topMargin));
         } else if (fill->parentItem() == item->parentItem()) {   //siblings
-            setItemPos(QPointF(fill->x()+leftMargin, fill->y()+topMargin));
+            setItemPos(QPointF(fill->x()+horizontalMargin, fill->y()+topMargin));
         }
         QGraphicsItemPrivate *fillPrivate = QGraphicsItemPrivate::get(fill);
         setItemSize(QSizeF(fillPrivate->width()-leftMargin-rightMargin, fillPrivate->height()-topMargin-bottomMargin));
@@ -199,18 +202,21 @@ void QDeclarativeAnchorsPrivate::fillChanged()
 
 void QDeclarativeAnchorsPrivate::centerInChanged()
 {
+    Q_Q(QDeclarativeAnchors);
     if (!centerIn || fill || !isItemComplete())
         return;
 
     if (updatingCenterIn < 2) {
         ++updatingCenterIn;
+
+        qreal effectiveHCenterOffset = q->mirrored() ? -hCenterOffset : hCenterOffset;
         if (centerIn == item->parentItem()) {
-            QPointF p(hcenter(item->parentItem()) - hcenter(item) + hCenterOffset,
+            QPointF p(hcenter(item->parentItem()) - hcenter(item) + effectiveHCenterOffset,
                       vcenter(item->parentItem()) - vcenter(item) + vCenterOffset);
             setItemPos(p);
 
         } else if (centerIn->parentItem() == item->parentItem()) {
-            QPointF p(centerIn->x() + hcenter(centerIn) - hcenter(item) + hCenterOffset,
+            QPointF p(centerIn->x() + hcenter(centerIn) - hcenter(item) + effectiveHCenterOffset,
                       centerIn->y() + vcenter(centerIn) - vcenter(item) + vCenterOffset);
             setItemPos(p);
         }
@@ -309,6 +315,13 @@ void QDeclarativeAnchors::componentComplete()
 {
     Q_D(QDeclarativeAnchors);
     d->componentComplete = true;
+}
+
+bool QDeclarativeAnchors::mirrored()
+{
+    Q_D(QDeclarativeAnchors);
+    QGraphicsItemPrivate * itemPrivate = QGraphicsItemPrivate::get(d->item);
+    return itemPrivate->isDeclarativeItem ? static_cast<QDeclarativeItemPrivate *>(itemPrivate)->effectiveLayoutMirror : false;
 }
 
 void QDeclarativeAnchorsPrivate::setItemHeight(qreal v)
@@ -570,58 +583,94 @@ void QDeclarativeAnchorsPrivate::updateVerticalAnchors()
     }
 }
 
+inline QDeclarativeAnchorLine::AnchorLine reverseAnchorLine(QDeclarativeAnchorLine::AnchorLine anchorLine) {
+    if (anchorLine == QDeclarativeAnchorLine::Left) {
+        return QDeclarativeAnchorLine::Right;
+    } else if (anchorLine == QDeclarativeAnchorLine::Right) {
+        return QDeclarativeAnchorLine::Left;
+    } else {
+        return anchorLine;
+    }
+}
+
 void QDeclarativeAnchorsPrivate::updateHorizontalAnchors()
 {
+    Q_Q(QDeclarativeAnchors);
     if (fill || centerIn || !isItemComplete())
         return;
 
-    if (updatingHorizontalAnchor < 2) {
+    if (updatingHorizontalAnchor < 3) {
         ++updatingHorizontalAnchor;
+        qreal effectiveRightMargin, effectiveLeftMargin, effectiveHorizontalCenterOffset;
+        QDeclarativeAnchorLine effectiveLeft, effectiveRight, effectiveHorizontalCenter;
+        QDeclarativeAnchors::Anchor effectiveLeftAnchor, effectiveRightAnchor;
+        if (q->mirrored()) {
+            effectiveLeftAnchor = QDeclarativeAnchors::RightAnchor;
+            effectiveRightAnchor = QDeclarativeAnchors::LeftAnchor;
+            effectiveLeft.item = right.item;
+            effectiveLeft.anchorLine = reverseAnchorLine(right.anchorLine);
+            effectiveRight.item = left.item;
+            effectiveRight.anchorLine = reverseAnchorLine(left.anchorLine);
+            effectiveHorizontalCenter.item = hCenter.item;
+            effectiveHorizontalCenter.anchorLine = reverseAnchorLine(hCenter.anchorLine);
+            effectiveLeftMargin = rightMargin;
+            effectiveRightMargin = leftMargin;
+            effectiveHorizontalCenterOffset = -hCenterOffset;
+        } else {
+            effectiveLeftAnchor = QDeclarativeAnchors::LeftAnchor;
+            effectiveRightAnchor = QDeclarativeAnchors::RightAnchor;
+            effectiveLeft = left;
+            effectiveRight = right;
+            effectiveHorizontalCenter = hCenter;
+            effectiveLeftMargin = leftMargin;
+            effectiveRightMargin = rightMargin;
+            effectiveHorizontalCenterOffset = hCenterOffset;
+        }
+
         QGraphicsItemPrivate *itemPrivate = QGraphicsItemPrivate::get(item);
-        if (usedAnchors & QDeclarativeAnchors::LeftAnchor) {
+        if (usedAnchors & effectiveLeftAnchor) {
             //Handle stretching
             bool invalid = true;
             qreal width = 0.0;
-            if (usedAnchors & QDeclarativeAnchors::RightAnchor) {
-                invalid = calcStretch(left, right, leftMargin, -rightMargin, QDeclarativeAnchorLine::Left, width);
+            if (usedAnchors & effectiveRightAnchor) {
+                invalid = calcStretch(effectiveLeft, effectiveRight, effectiveLeftMargin, -effectiveRightMargin, QDeclarativeAnchorLine::Left, width);
             } else if (usedAnchors & QDeclarativeAnchors::HCenterAnchor) {
-                invalid = calcStretch(left, hCenter, leftMargin, hCenterOffset, QDeclarativeAnchorLine::Left, width);
+                invalid = calcStretch(effectiveLeft, effectiveHorizontalCenter, effectiveLeftMargin, effectiveHorizontalCenterOffset, QDeclarativeAnchorLine::Left, width);
                 width *= 2;
             }
             if (!invalid)
                 setItemWidth(width);
 
             //Handle left
-            if (left.item == item->parentItem()) {
-                setItemX(adjustedPosition(left.item, left.anchorLine) + leftMargin);
-            } else if (left.item->parentItem() == item->parentItem()) {
-                setItemX(position(left.item, left.anchorLine) + leftMargin);
+            if (effectiveLeft.item == item->parentItem()) {
+                setItemX(adjustedPosition(effectiveLeft.item, effectiveLeft.anchorLine) + effectiveLeftMargin);
+            } else if (effectiveLeft.item->parentItem() == item->parentItem()) {
+                setItemX(position(effectiveLeft.item, effectiveLeft.anchorLine) + effectiveLeftMargin);
             }
-        } else if (usedAnchors & QDeclarativeAnchors::RightAnchor) {
+        } else if (usedAnchors & effectiveRightAnchor) {
             //Handle stretching (left + right case is handled in updateLeftAnchor)
             if (usedAnchors & QDeclarativeAnchors::HCenterAnchor) {
                 qreal width = 0.0;
-                bool invalid = calcStretch(hCenter, right, hCenterOffset, -rightMargin,
+                bool invalid = calcStretch(effectiveHorizontalCenter, effectiveRight, effectiveHorizontalCenterOffset, -effectiveRightMargin,
                                               QDeclarativeAnchorLine::Left, width);
                 if (!invalid)
                     setItemWidth(width*2);
             }
 
             //Handle right
-            if (right.item == item->parentItem()) {
-                setItemX(adjustedPosition(right.item, right.anchorLine) - itemPrivate->width() - rightMargin);
-            } else if (right.item->parentItem() == item->parentItem()) {
-                setItemX(position(right.item, right.anchorLine) - itemPrivate->width() - rightMargin);
+            if (effectiveRight.item == item->parentItem()) {
+                setItemX(adjustedPosition(effectiveRight.item, effectiveRight.anchorLine) - itemPrivate->width() - effectiveRightMargin);
+            } else if (effectiveRight.item->parentItem() == item->parentItem()) {
+                setItemX(position(effectiveRight.item, effectiveRight.anchorLine) - itemPrivate->width() - effectiveRightMargin);
             }
         } else if (usedAnchors & QDeclarativeAnchors::HCenterAnchor) {
             //Handle hCenter
-            if (hCenter.item == item->parentItem()) {
-                setItemX(adjustedPosition(hCenter.item, hCenter.anchorLine) - hcenter(item) + hCenterOffset);
-            } else if (hCenter.item->parentItem() == item->parentItem()) {
-                setItemX(position(hCenter.item, hCenter.anchorLine) - hcenter(item) + hCenterOffset);
+            if (effectiveHorizontalCenter.item == item->parentItem()) {
+                setItemX(adjustedPosition(effectiveHorizontalCenter.item, effectiveHorizontalCenter.anchorLine) - hcenter(item) + effectiveHorizontalCenterOffset);
+            } else if (effectiveHorizontalCenter.item->parentItem() == item->parentItem()) {
+                setItemX(position(effectiveHorizontalCenter.item, effectiveHorizontalCenter.anchorLine) - hcenter(item) + effectiveHorizontalCenterOffset);
             }
         }
-
         --updatingHorizontalAnchor;
     } else {
         // ### Make this certain :)

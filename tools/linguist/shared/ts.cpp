@@ -264,6 +264,7 @@ bool TSReader::read(Translator &translator)
             //qDebug() << "TS " << attributes();
             QHash<QString, int> currentLine;
             QString currentFile;
+            bool maybeRelative = false, maybeAbsolute = false;
 
             QXmlStreamAttributes atts = attributes();
             //QString version = atts.value(strversion).toString();
@@ -342,10 +343,12 @@ bool TSReader::read(Translator &translator)
                                     msg.setTranslatorComment(readContents());
                                 } else if (elementStarts(strlocation)) {
                                     // <location/>
+                                    maybeAbsolute = true;
                                     QXmlStreamAttributes atts = attributes();
                                     QString fileName = atts.value(strfilename).toString();
                                     if (fileName.isEmpty()) {
                                         fileName = currentMsgFile;
+                                        maybeRelative = true;
                                     } else {
                                         if (refs.isEmpty())
                                             currentFile = fileName;
@@ -353,7 +356,6 @@ bool TSReader::read(Translator &translator)
                                     }
                                     const QString lin = atts.value(strline).toString();
                                     if (lin.isEmpty()) {
-                                        translator.setLocationsType(Translator::RelativeLocations);
                                         refs.append(TranslatorMessage::Reference(fileName, -1));
                                     } else {
                                         bool bOK;
@@ -361,9 +363,7 @@ bool TSReader::read(Translator &translator)
                                         if (bOK) {
                                             if (lin.startsWith(QLatin1Char('+')) || lin.startsWith(QLatin1Char('-'))) {
                                                 lineNo = (currentLine[fileName] += lineNo);
-                                                translator.setLocationsType(Translator::RelativeLocations);
-                                            } else {
-                                                translator.setLocationsType(Translator::AbsoluteLocations);
+                                                maybeRelative = true;
                                             }
                                             refs.append(TranslatorMessage::Reference(fileName, lineNo));
                                         }
@@ -422,6 +422,9 @@ bool TSReader::read(Translator &translator)
                 } else {
                     handleError();
                 }
+                translator.setLocationsType(maybeRelative ? Translator::RelativeLocations :
+                                            maybeAbsolute ? Translator::AbsoluteLocations :
+                                                            Translator::NoLocations);
             } // </TS>
         } else {
             handleError();
@@ -727,7 +730,6 @@ bool saveTS(const Translator &translator, QIODevice &dev, ConversionData &cd, in
 
 bool loadTS(Translator &translator, QIODevice &dev, ConversionData &cd)
 {
-    translator.setLocationsType(Translator::NoLocations);
     TSReader reader(dev, cd);
     return reader.read(translator);
 }

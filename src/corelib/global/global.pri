@@ -19,13 +19,16 @@ INCLUDEPATH += $$QT_BUILD_TREE/src/corelib/global
 # Only used on platforms with CONFIG += precompile_header
 PRECOMPILED_HEADER = global/qt_pch.h
 
-linux*:!static:!linux-armcc:!linux-gcce {
+linux*:!static:!symbian-armcc:!symbian-gcce {
    QMAKE_LFLAGS += -Wl,-e,qt_core_boilerplate
    prog=$$quote(if (/program interpreter: (.*)]/) { print $1; })
    DEFINES += ELF_INTERPRETER=\\\"$$system(readelf -l /bin/ls | perl -n -e \'$$prog\')\\\"
 }
 
 # Compensate for lack of platform defines in Symbian3 and Symbian4
-symbian: DEFINES += SYMBIAN_VERSION_$$upper($$replace(SYMBIAN_VERSION,\\.,_))
+symbian {
+    DEFINES += SYMBIAN_VERSION_$$upper($$replace(SYMBIAN_VERSION,\\.,_)) \
+               S60_VERSION_$$upper($$replace(S60_VERSION,\\.,_))
+}
 
 include(../../../tools/shared/symbian/epocroot.pri)

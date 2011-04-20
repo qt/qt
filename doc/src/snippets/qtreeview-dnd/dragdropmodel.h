@@ -38,17 +38,6 @@
 **
 ****************************************************************************/
 
-/****************************************************************************
-**
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
-**
-** This file is part of an example program for Qt.
-** EDITIONS: NOLIMITS
-**
-****************************************************************************/
-
 #ifndef DRAGDROPMODEL_H
 #define DRAGDROPMODEL_H
 

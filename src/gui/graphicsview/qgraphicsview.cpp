@@ -2498,7 +2498,7 @@ QVariant QGraphicsView::inputMethodQuery(Qt::InputMethodQuery query) const
     else if (value.type() == QVariant::PointF)
         value = mapFromScene(value.toPointF());
     else if (value.type() == QVariant::Rect)
-        value = mapFromScene(value.toRect()).boundingRect();
+        value = d->mapRectFromScene(value.toRect()).toRect();
     else if (value.type() == QVariant::Point)
         value = mapFromScene(value.toPoint());
     return value;

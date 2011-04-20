@@ -66,6 +66,10 @@ public:
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QWindowSurface *createWindowSurface(QWidget *widget) const;
+
+#ifdef QGL_USE_TEXTURE_POOL
+    void releaseCachedResources();
+#endif
 private:
     bool m_useX11GL;
 };

@@ -42,8 +42,8 @@
     Qt is a cross-platform application and UI framework for writing
     web-enabled applications for desktop, mobile, and embedded
     operating systems. This page contains links to articles and overviews
-	explaining key components and techniques used in Qt development.
-	
+    explaining key components and techniques used in Qt development.
+
     \generatelist {related}
  */
 
@@ -62,7 +62,7 @@
 
 /*!
     \group qt-graphics
-	\ingroup qt-basic-concepts
+    \ingroup qt-basic-concepts
     \title Qt Graphics and Printing
 
     \brief The Qt components for doing graphics.
@@ -112,7 +112,7 @@
   \ingroup technology-apis
   \ingroup best-practices
   \ingroup qt-basic-concepts
-  
+
 
   These pages document Qt's API's for using SQL database systems
   in Qt applications.
@@ -133,7 +133,7 @@
 
     \generatelist{related}
 */
-/*! 
+/*!
 
 	\group licensing
 	\title Qt Licenses and Credits
@@ -145,4 +145,57 @@
 
 	\generatelist {related}
 
+*/
+
+/*!
+    \group qml-best-practices
+    \title QML Best Practices Guides
+
+    \brief QML Programming Best Practices Guides
+
+    These documents provide guidelines and best practices for using QML and Qt
+    to solve specific technical problems.
+
+    \generatelist {related}
+*/
+/*!
+    \group qml-features
+    \title QML Features
+
+    \brief Features of the QML Language
+
+These are overviews of the many features of the QML language and \l{Qt Quick}.
+
+\list
+\o \l{QML Basic Elements}{Basic Elements}
+\o \l{QML Basic Types}{Data Types}
+\o \l{Property Binding}
+\o \l{Using QML Positioner and Repeater Items}{Component Layouts}
+\o \l{Anchor-based Layout in QML}{Layouts using Anchors}
+\o \l{QML Mouse Events}{Mouse Events}
+\o \l{QML Text Handling and Validators}{Text Handling and Validators}
+\o \l{Keyboard Focus in QML}{Keyboard Focus}
+\o \l{QML Signal and Handler Event System}{Signal and Handler Event System}
+\o \l{Importing Reusable Components}
+\o \l{QML States}{States}
+\o \l{QML Animation and Transitions}{Animation and Transitions}
+\o \l{QML Data Models}{Structuring Data with Models}
+\o \l{Presenting Data with Views}
+\o \l{Extending QML Functionalities using C++}
+\o \l{Using QML Bindings in C++ Applications}
+\o \l{Integrating QML Code with Existing Qt UI Code}
+\o \l{Dynamic Object Management in QML}{Dynamic Object Management}
+\o \l{Network Transparency}{Loading Resources in QML}
+\o \l{QML Internationalization}{Internationalization}
+\endlist
+*/
+/*!
+    \group qml-architecture
+    \title QML Architecture
+
+    \brief QML Architecture
+
+    These are overviews of the architecture of QML and Qt Declarative Module.
+
+    \generatelist {related}
 */

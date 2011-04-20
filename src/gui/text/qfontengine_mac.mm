@@ -144,7 +144,7 @@ void qmacfontengine_gamma_correct(QImage *image)
 
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
-QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, const ATSFontRef &atsFontRef, const QFontDef &fontDef, bool kerning)
+QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &atsFamilyRef, const ATSFontRef &atsFontRef, const QFontDef &fontDef, bool kerning)
     : QFontEngineMulti(0)
 {
     this->fontDef = fontDef;
@@ -162,6 +162,8 @@ QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, con
 
     QCFString name;
     ATSFontGetName(atsFontRef, kATSOptionFlagsDefault, &name);
+    if (QString(name).isEmpty())
+        ATSFontFamilyGetName(atsFamilyRef, kATSOptionFlagsDefault, &name);
 
     transform = CGAffineTransformIdentity;
     if (fontDef.stretch != 100) {

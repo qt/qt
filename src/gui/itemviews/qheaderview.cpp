@@ -643,8 +643,12 @@ int QHeaderView::sectionSize(int logicalIndex) const
 }
 
 /*!
-    Returns the section position of the given \a logicalIndex, or -1 if the
-    section is hidden.
+
+    Returns the section position of the given \a logicalIndex, or -1
+    if the section is hidden. The position is measured in pixels from
+    the first visible item's top-left corner to the top-left corner of
+    the item with \a logicalIndex. The measurement is along the x-axis
+    for horizontal headers and along the y-axis for vertical headers.
 
     \sa sectionViewportPosition()
 */

@@ -238,81 +238,25 @@
 /*!
     \enum Qt::GlobalColor
 
-    \raw HTML
-    <style type="text/css" id="colorstyles">
-     #white { background-color: #ffffff; color: #000000 }
-     #black { background-color: #000000; color: #ffffff }
-     #red { background-color: #ff0000; color: #000000 }
-     #darkRed { background-color: #800000; color: #ffffff }
-     #green { background-color: #00ff00; color: #000000 }
-     #darkGreen { background-color: #008000; color: #ffffff }
-     #blue { background-color: #0000ff; color: #ffffff }
-     #darkBlue { background-color: #000080; color: #ffffff }
-     #cyan { background-color: #00ffff; color: #000000 }
-     #darkCyan { background-color: #008080; color: #ffffff }
-     #magenta { background-color: #ff00ff; color: #000000 }
-     #darkMagenta { background-color: #800080; color: #ffffff }
-     #yellow { background-color: #ffff00; color: #000000 }
-     #darkYellow { background-color: #808000; color: #ffffff }
-     #gray { background-color: #a0a0a4; color: #000000 }
-     #darkGray { background-color: #808080; color: #ffffff }
-     #lightGray { background-color: #c0c0c0; color: #000000 }
-    </style>
-    \endraw
-
     Qt's predefined QColor objects:
 
-    \value white       \raw HTML
-    White <tt id="white">(#ffffff)</tt>
-    \endraw
-    \value black       \raw HTML
-    Black <tt id="black">(#000000)</tt>
-    \endraw
-    \value red         \raw HTML
-    Red <tt id="red">(#ff0000)</tt>
-    \endraw
-    \value darkRed     \raw HTML
-    Dark red <tt id="darkRed">(#800000)</tt>
-    \endraw
-    \value green       \raw HTML
-    Green <tt id="green">(#00ff00)</tt>
-    \endraw
-    \value darkGreen   \raw HTML
-    Dark green <tt id="darkGreen">(#008000)</tt>
-    \endraw
-    \value blue        \raw HTML
-    Blue <tt id="blue">(#0000ff)</tt>
-    \endraw
-    \value darkBlue    \raw HTML
-    Dark blue <tt id="darkBlue">(#000080)</tt>
-    \endraw
-    \value cyan        \raw HTML
-    Cyan <tt id="cyan">(#00ffff)</tt>
-    \endraw
-    \value darkCyan    \raw HTML
-    Dark cyan <tt id="darkCyan">(#008080)</tt>
-    \endraw
-    \value magenta     \raw HTML
-    Magenta <tt id="magenta">(#ff00ff)</tt>
-    \endraw
-    \value darkMagenta \raw HTML
-    Dark magenta <tt id="darkMagenta">(#800080)</tt>
-    \endraw
-    \value yellow      \raw HTML
-    Yellow <tt id="yellow">(#ffff00)</tt>
-    \endraw
-    \value darkYellow  \raw HTML
-    Dark yellow <tt id="darkYellow">(#808000)</tt>
-    \endraw
-    \value gray        \raw HTML
-    Gray <tt id="gray">(#a0a0a4)</tt>
-    \endraw
-    \value darkGray    \raw HTML
-    Dark gray <tt id="darkGray">(#808080)</tt>
-    \endraw
-    \value lightGray   \raw HTML
-    Light gray <tt id="lightGray">(#c0c0c0)</tt>
-    \endraw
+    \value white       \span {id="color-white"} {White (#ffffff) }
+    \value black       \span {id="color-black"} {Black (#000000) }
+    \value red         \span {id="color-red"} {Red (#ff0000) }
+    \value darkRed     \span {id="color-darkRed"} {Dark red (#800000) }
+    \value green       \span {id="color-green"} {Green (#00ff00) }
+    \value darkGreen   \span {id="color-darkGreen"} {Dark green (#008000) }
+    \value blue        \span {id="color-blue"} {Blue (#0000ff) }
+    \value darkBlue    \span {id="color-darkBlue"} {Dark blue (#000080) }
+    \value cyan        \span {id="color-cyan"} {Cyan (#00ffff) }
+    \value darkCyan    \span {id="color-darkCyan"} {Dark cyan (#008080) }
+    \value magenta     \span {id="color-magenta"} {Magenta (#ff00ff) }
+    \value darkMagenta \span {id="color-darkMagenta"} {Dark magenta (#800080) }
+    \value yellow      \span {id="color-yellow"} {Yellow (#ffff00) }
+    \value darkYellow  \span {id="color-darkYellow"} {Dark yellow (#808000) }
+    \value gray        \span {id="color-gray"} {Gray (#a0a0a4) }
+    \value darkGray    \span {id="color-darkGray"} {Dark gray (#808080) }
+    \value lightGray   \span {id="color-lightGray"} {Light gray (#c0c0c0) }
     \value transparent a transparent black value (i.e., QColor(0, 0, 0, 0))
     \value color0 0 pixel value (for bitmaps)
     \value color1 1 pixel value (for bitmaps)
@@ -1300,6 +1244,7 @@
     \omitvalue WA_SetWindowModality
     \omitvalue WA_WState_WindowOpacitySet
     \omitvalue WA_WState_AcceptedTouchBeginEvent
+    \omitvalue WA_SymbianNoSystemRotation
 */
 
 /*! \typedef Qt::HANDLE
@@ -2872,7 +2817,7 @@
     INT_MIN, inclusive. For example, you can define custom priorities
     as being relative to each other:
 
-    \snippet doc/src/snippets/code/doc_src_qnamespace.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qnamespace.cpp 1
 
     \sa QCoreApplication::postEvent()
 */

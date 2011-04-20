@@ -79,9 +79,9 @@ QString HtmlGenerator::sinceTitles[] =
         "    New Properties",
         "    New Variables",
         "    New QML Elements",
-        "    New Qml Properties",
-        "    New Qml Signals",
-        "    New Qml Methods",
+        "    New QML Properties",
+        "    New QML Signals",
+        "    New QML Methods",
         ""
     };
 
@@ -401,6 +401,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
 
     switch (atom->type()) {
     case Atom::AbstractLeft:
+        if (relative)
+            relative->doc().location().warning(tr("\abstract is not implemented."));
+        else
+            Location::information(tr("\abstract is not implemented."));
         break;
     case Atom::AbstractRight:
         break;
@@ -476,6 +480,17 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         out() << formattingRightMap()[ATOM_FORMATTING_TELETYPE];
         break;
+    case Atom::CaptionLeft:
+        out() << "<p class=\"figCaption\">";
+        in_para = true;
+        break;
+    case Atom::CaptionRight:
+        endLink();
+        if (in_para) {
+            out() << "</p>\n";
+            in_para = false;
+        }
+        break;
     case Atom::Code:
         out() << "<pre class=\"cpp\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
@@ -511,12 +526,14 @@ int HtmlGenerator::generateAtom(const Atom *atom,
               << trimmedTrailing(protectEnc(plainCode(indent(codeIndent,atom->string()))))
               << "</pre>\n";
         break;
-    case Atom::Div:
+    case Atom::DivLeft:
         out() << "<div";
         if (!atom->string().isEmpty())
-            out() << " class=\"" << atom->string() << "\">";
-        else
-            out() << ">";
+            out() << " " << atom->string();
+        out() << ">";
+        break;
+    case Atom::DivRight:
+        out() << "</div>";
         break;
     case Atom::FootnoteLeft:
         // ### For now
@@ -535,7 +552,11 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::FormatIf:
         break;
     case Atom::FormattingLeft:
-        out() << formattingLeftMap()[atom->string()];
+        if (atom->string().startsWith("span ")) {
+            out() << "<" + atom->string() << ">";
+        }
+        else
+            out() << formattingLeftMap()[atom->string()];
         if (atom->string() == ATOM_FORMATTING_PARAMETER) {
             if (atom->next() != 0 && atom->next()->type() == Atom::String) {
                 QRegExp subscriptRegExp("([a-z]+)_([0-9n])");
@@ -550,6 +571,9 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::FormattingRight:
         if (atom->string() == ATOM_FORMATTING_LINK) {
             endLink();
+        }
+        else if (atom->string().startsWith("span ")) {
+            out() << "</span>";
         }
         else {
             out() << formattingRightMap()[atom->string()];
@@ -891,9 +915,9 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             if (threeColumnEnumValueTable) {
                 out() << "<table class=\"valuelist\">";
                 if (++numTableRows % 2 == 1)
-                        out() << "<tr class=\"odd\">";
+                        out() << "<tr valign=\"top\" class=\"odd\">";
                 else
-                        out() << "<tr class=\"even\">";
+                        out() << "<tr valign=\"top\" class=\"even\">";
 
                 out() << "<th class=\"tblConst\">Constant</th>"
                       << "<th class=\"tblval\">Value</th>"
@@ -935,10 +959,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         else { // (atom->string() == ATOM_LIST_VALUE)
             // ### Trenton
 
-            out() << "<tr><td  class=\"topAlign\"><tt>"
+            out() << "<tr><td class=\"topAlign\"><tt>"
                   << protectEnc(plainCode(marker->markedUpEnumValue(atom->next()->string(),
                                                                  relative)))
-                  << "</tt></td><td class=\" topAlign\">";
+                  << "</tt></td><td class=\"topAlign\">";
 
             QString itemValue;
             if (relative->type() == Node::Enum) {
@@ -964,7 +988,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         else if (atom->string() == ATOM_LIST_VALUE) {
             if (threeColumnEnumValueTable) {
-                out() << "</td><td  class=\"topAlign\">";
+                out() << "</td><td class=\"topAlign\">";
                 if (matchAhead(atom, Atom::ListItemRight))
                     out() << "&nbsp;";
             }
@@ -1056,8 +1080,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             in_para = false;
         }
         if (!atom->string().isEmpty()) {
-            if (atom->string().contains("%"))
-                out() << "<table class=\"generic\">\n "; // width=\"" << atom->string() << "\">\n ";
+            if (atom->string().contains("%")) {
+                out() << "<table class=\"generic\" width=\""
+                      << atom->string() << "\">\n ";
+            }
             else {
                 out() << "<table class=\"generic\">\n";
             }
@@ -1071,14 +1097,14 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         out() << "</table>\n";
         break;
     case Atom::TableHeaderLeft:
-        out() << "<thead><tr class=\"qt-style topAlign\">";
+        out() << "<thead><tr class=\"qt-style\">";
         inTableHeader = true;
         break;
     case Atom::TableHeaderRight:
         out() << "</tr>";
         if (matchAhead(atom, Atom::TableHeaderLeft)) {
             skipAhead = 1;
-            out() << "\n<tr class=\"qt-style topAlign\">";
+            out() << "\n<tr class=\"qt-style\">";
         }
         else {
             out() << "</thead>\n";
@@ -1086,10 +1112,12 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         break;
     case Atom::TableRowLeft:
-        if (++numTableRows % 2 == 1)
-            out() << "<tr class=\"odd topAlign\">";
+        if (!atom->string().isEmpty())
+            out() << "<tr " << atom->string() << ">";
+        else if (++numTableRows % 2 == 1)
+            out() << "<tr valign=\"top\" class=\"odd\">";
         else
-            out() << "<tr class=\"even topAlign\">";
+            out() << "<tr valign=\"top\" class=\"even\">";
         break;
     case Atom::TableRowRight:
         out() << "</tr>\n";
@@ -1101,16 +1129,28 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             else
                 out() << "<td ";
 
-            QStringList spans = atom->string().split(",");
-            if (spans.size() == 2) {
-                if (spans.at(0) != "1")
-                    out() << " colspan=\"" << spans.at(0) << "\"";
-                if (spans.at(1) != "1")
-                    out() << " rowspan=\"" << spans.at(1) << "\"";
+            for (int i=0; i<atom->count(); ++i) {
+                if (i > 0)
+                    out() << " ";
+                QString p = atom->string(i);
+                if (p.contains('=')) {
+                    out() << p;
+                }
+                else {
+                    QStringList spans = p.split(",");
+                    if (spans.size() == 2) {
+                        if (spans.at(0) != "1")
+                            out() << " colspan=\"" << spans.at(0) << "\"";
+                        if (spans.at(1) != "1")
+                            out() << " rowspan=\"" << spans.at(1) << "\"";
+                    }
+                }
+            }
             if (inTableHeader)
                 out() << ">";
-            else
-                out() << "><p>"; 
+            else {
+                out() << ">"; 
+                //out() << "><p>"; 
             }
             if (matchAhead(atom, Atom::ParaLeft))
                 skipAhead = 1;
@@ -1119,8 +1159,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::TableItemRight:
         if (inTableHeader)
             out() << "</th>";
-        else
-            out() << "</p></td>";
+        else {
+            out() << "</td>";
+            //out() << "</p></td>";
+        }
         if (matchAhead(atom, Atom::ParaLeft))
             skipAhead = 1;
         break;
@@ -1135,9 +1177,6 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::UnknownCommand:
         out() << "<b class=\"redFont\"><code>\\" << protectEnc(atom->string())
               << "</code></b>";
-        break;
-    case Atom::EndDiv:
-        out() << "</div>";
         break;
 #ifdef QDOC_QML
     case Atom::QmlText:
@@ -1288,6 +1327,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
         generateBody(inner, marker);
         out() << "</div>\n"; // QTBUG-9504
         generateAlsoList(inner, marker);
+        generateMaintainerList(inner, marker);
         generateExtractionMark(inner, EndMark);
     }
 
@@ -1556,75 +1596,125 @@ QString HtmlGenerator::fileExtension(const Node * /* node */) const
 /*!
   Output breadcrumb list in the html file.
  */
-void HtmlGenerator::generateBreadCrumbs(const QString& title,
+void HtmlGenerator::generateBreadCrumbs(const QString &title,
                                         const Node *node,
                                         CodeMarker *marker)
 {
-    Text breadcrumb;
+    Text breadcrumbs;
+
     if (node->type() == Node::Class) {
-        const ClassNode* cn = static_cast<const ClassNode*>(node);
+        const ClassNode *cn = static_cast<const ClassNode *>(node);
         QString name =  node->moduleName();
-        out() << "              <li><a href=\"modules.html\">Modules</a></li>";
-        if (!name.isEmpty()) {
-            out() << "              <li>";
-            breadcrumb << Atom(Atom::AutoLink,name);
-            generateText(breadcrumb, node, marker);
-            out() << "</li>\n";
-        }
+        breadcrumbs << Atom(Atom::ListItemLeft)
+                    << Atom(Atom::Link, QLatin1String("All Modules"))
+                    << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                    << Atom(Atom::String, QLatin1String("Modules"))
+                    << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
+                    << Atom(Atom::ListItemRight);
+        if (!name.isEmpty())
+            breadcrumbs << Atom(Atom::ListItemLeft)
+                        << Atom(Atom::AutoLink, name)
+                        << Atom(Atom::ListItemRight);
         if (!cn->name().isEmpty())
-            out() << "              <li>" << protectEnc(cn->name()) << "</li>\n";
+            breadcrumbs << Atom(Atom::ListItemLeft)
+                        << Atom(Atom::String, protectEnc(cn->name()))
+                        << Atom(Atom::ListItemRight);
     }
     else if (node->type() == Node::Fake) {
         const FakeNode* fn = static_cast<const FakeNode*>(node);
         if (node->subType() == Node::Module) {
-            out() << "              <li><a href=\"modules.html\">Modules</a></li>";
+            breadcrumbs << Atom(Atom::ListItemLeft)
+                        << Atom(Atom::Link, QLatin1String("All Modules"))
+                        << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                        << Atom(Atom::String, QLatin1String("Modules"))
+                        << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
+                        << Atom(Atom::ListItemRight);
             QString name =  node->name();
             if (!name.isEmpty())
-                out() << "              <li>" << protectEnc(name) << "</li>\n";
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::String, protectEnc(name))
+                            << Atom(Atom::ListItemRight);
         }
         else if (node->subType() == Node::Group) {
             if (fn->name() == QString("modules"))
-                out() << "              <li>Modules</li>";
-            else {
-                out() << "              <li>" << protectEnc(title) << "</li>";
-            }
+                breadcrumbs << Atom(Atom::String, QLatin1String("Modules"));
+            else
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::String, protectEnc(title))
+                            << Atom(Atom::ListItemRight);
         }
         else if (node->subType() == Node::Page) {
             if (fn->name() == QString("qdeclarativeexamples.html")) {
-                out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
-                out() << "              <li>QML Examples &amp; Demos</li>";
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::Link, QLatin1String("Qt Examples"))
+                            << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                            << Atom(Atom::String, QLatin1String("Examples"))
+                            << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
+                            << Atom(Atom::ListItemRight);
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::AutoLink, QLatin1String("QML Examples & Demos"))
+                            << Atom(Atom::ListItemRight);
             }
             else if (fn->name().startsWith("examples-")) {
-                out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
-                out() << "              <li>" << protectEnc(title) << "</li>";
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::Link, QLatin1String("Qt Examples"))
+                            << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                            << Atom(Atom::String, QLatin1String("Examples"))
+                            << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
+                            << Atom(Atom::ListItemRight);
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::String, protectEnc(title))
+                            << Atom(Atom::ListItemRight);
             }
-            else if (fn->name() == QString("namespaces.html")) {
-                out() << "              <li>Namespaces</li>";
-            }
-            else {
-                out() << "              <li>" << protectEnc(title) << "</li>";
-            }
+            else if (fn->name() == QString("namespaces.html"))
+                breadcrumbs << Atom(Atom::String, QLatin1String("Namespaces"));
+            else
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::String, protectEnc(title))
+                            << Atom(Atom::ListItemRight);
         }
         else if (node->subType() == Node::QmlClass) {
-            out() << "              <li><a href=\"qdeclarativeelements.html\">QML Elements</a></li>";
-            out() << "              <li>" << protectEnc(title) << "</li>";
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::AutoLink, QLatin1String("QML Elements"))
+                            << Atom(Atom::ListItemRight);
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::String, protectEnc(title))
+                            << Atom(Atom::ListItemRight);
         }
         else if (node->subType() == Node::Example) {
-            out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
+            breadcrumbs << Atom(Atom::ListItemLeft)
+                        << Atom(Atom::Link, QLatin1String("Qt Examples"))
+                        << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                        << Atom(Atom::String, QLatin1String("Examples"))
+                        << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
+                        << Atom(Atom::ListItemRight);
             QStringList sl = fn->name().split('/');
             if (sl.contains("declarative"))
-                out() << "              <li><a href=\"qdeclarativeexamples.html\">QML Examples &amp; Demos</a></li>";
+                breadcrumbs << Atom(Atom::ListItemLeft)
+                            << Atom(Atom::AutoLink, QLatin1String("QML Examples & Demos"))
+                            << Atom(Atom::ListItemRight);
             else {
                 QString name = protectEnc("examples-" + sl.at(0) + ".html"); // this generates an empty link
                 QString t = CodeParser::titleFromName(name);
             }
-            out() << "              <li>" << protectEnc(title) << "</li>";
+            breadcrumbs << Atom(Atom::ListItemLeft)
+                        << Atom(Atom::String, protectEnc(title))
+                        << Atom(Atom::ListItemRight);
         }
     }
     else if (node->type() == Node::Namespace) {
-        out() << "              <li><a href=\"namespaces.html\">Namespaces</a></li>";
-        out() << "              <li>" << protectEnc(title) << "</li>";
+        breadcrumbs << Atom(Atom::ListItemLeft)
+                    << Atom(Atom::Link, QLatin1String("All Namespaces"))
+                    << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                    << Atom(Atom::String, QLatin1String("Namespaces"))
+                    << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
+                    << Atom(Atom::ListItemRight);
+        breadcrumbs << Atom(Atom::ListItemLeft)
+                    << Atom(Atom::String, protectEnc(title))
+                    << Atom(Atom::ListItemRight);
     }
+
+    generateText(breadcrumbs, node, marker);
 }
 
 void HtmlGenerator::generateHeader(const QString& title,
@@ -2571,7 +2661,7 @@ void HtmlGenerator::generateSection(const NodeList& nl,
         else {
             if (twoColumn)
                 out() << "<table class=\"propsummary\">\n"
-                      << "<tr><td  class=\"topAlign\">";
+                      << "<tr><td class=\"topAlign\">";
             out() << "<ul>\n";
         }
 
@@ -2588,7 +2678,7 @@ void HtmlGenerator::generateSection(const NodeList& nl,
             }
             else {
                 if (twoColumn && i == (int) (nl.count() + 1) / 2)
-                    out() << "</ul></td><td  class=\"topAlign\"><ul>\n";
+                    out() << "</ul></td><td class=\"topAlign\"><ul>\n";
                 out() << "<li class=\"fn\">";
             }
 
@@ -2632,7 +2722,7 @@ void HtmlGenerator::generateSectionList(const Section& section,
         else {
             if (twoColumn)
                 out() << "<table class=\"propsummary\">\n"
-                      << "<tr><td  class=\"topAlign\">";
+                      << "<tr><td class=\"topAlign\">";
             out() << "<ul>\n";
         }
 
@@ -3833,9 +3923,9 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
             if ((*p)->type() == Node::QmlProperty) {
                 qpn = static_cast<const QmlPropertyNode*>(*p);
                 if (++numTableRows % 2 == 1)
-                    out() << "<tr class=\"odd\">";
+                    out() << "<tr valign=\"top\" class=\"odd\">";
                 else
-                    out() << "<tr class=\"even\">";
+                    out() << "<tr valign=\"top\" class=\"even\">";
 
                 out() << "<td class=\"tblQmlPropNode\"><p>";
 
@@ -3860,9 +3950,9 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         out() << "<table class=\"qmlname\">";
         //out() << "<tr>";
         if (++numTableRows % 2 == 1)
-            out() << "<tr class=\"odd\">";
+            out() << "<tr valign=\"top\" class=\"odd\">";
         else
-            out() << "<tr class=\"even\">";
+            out() << "<tr valign=\"top\" class=\"even\">";
         out() << "<td class=\"tblQmlFuncNode\"><p>";
         out() << "<a name=\"" + refForNode(qsn) + "\"></a>";
         generateSynopsis(qsn,relative,marker,CodeMarker::Detailed,false);
@@ -3877,9 +3967,9 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         out() << "<table class=\"qmlname\">";
         //out() << "<tr>";
         if (++numTableRows % 2 == 1)
-            out() << "<tr class=\"odd\">";
+            out() << "<tr valign=\"top\" class=\"odd\">";
         else
-            out() << "<tr class=\"even\">";
+            out() << "<tr valign=\"top\" class=\"even\">";
         out() << "<td class=\"tblQmlFuncNode\"><p>";
         out() << "<a name=\"" + refForNode(qmn) + "\"></a>";
         generateSynopsis(qmn,relative,marker,CodeMarker::Detailed,false);

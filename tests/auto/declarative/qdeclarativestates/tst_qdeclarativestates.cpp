@@ -120,6 +120,9 @@ private slots:
     void anchorChanges3();
     void anchorChanges4();
     void anchorChanges5();
+    void anchorChangesRTL();
+    void anchorChangesRTL2();
+    void anchorChangesRTL3();
     void anchorChangesCrash();
     void anchorRewindBug();
     void anchorRewindBug2();
@@ -809,6 +812,125 @@ void tst_qdeclarativestates::anchorChanges5()
     //QCOMPARE(aChanges->anchors()->horizontalCenter().anchorLine, bottomGuideline->horizontalCenter().anchorLine);
     //QCOMPARE(aChanges->anchors()->baseline().item, leftGuideline->baseline().item);
     //QCOMPARE(aChanges->anchors()->baseline().anchorLine, leftGuideline->baseline().anchorLine);
+
+    delete rect;
+}
+
+void mirrorAnchors(QDeclarativeItem *item) {
+    QDeclarativeItemPrivate *itemPrivate = QDeclarativeItemPrivate::get(item);
+    itemPrivate->setLayoutMirror(true);
+}
+
+qreal offsetRTL(QDeclarativeItem *anchorItem, QDeclarativeItem *item) {
+    return anchorItem->width()+2*anchorItem->x()-item->width();
+}
+
+void tst_qdeclarativestates::anchorChangesRTL()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorChanges1.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+
+    QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
+    QVERIFY(innerRect != 0);
+    mirrorAnchors(innerRect);
+
+    QDeclarativeListReference list(rect, "states");
+    QDeclarativeState *state = qobject_cast<QDeclarativeState*>(list.at(0));
+    QVERIFY(state != 0);
+
+    qmlExecuteDeferred(state);
+    QDeclarativeAnchorChanges *aChanges = qobject_cast<QDeclarativeAnchorChanges*>(state->operationAt(0));
+    QVERIFY(aChanges != 0);
+
+    rectPrivate->setState("right");
+    QCOMPARE(innerRect->x(), offsetRTL(rect, innerRect) - qreal(150));
+    QCOMPARE(aChanges->object(), qobject_cast<QDeclarativeItem*>(innerRect));
+    QCOMPARE(QDeclarativeItemPrivate::get(aChanges->object())->anchors()->left().anchorLine, QDeclarativeAnchorLine::Invalid);  //### was reset (how do we distinguish from not set at all)
+    QCOMPARE(QDeclarativeItemPrivate::get(aChanges->object())->anchors()->right().item, rectPrivate->right().item);
+    QCOMPARE(QDeclarativeItemPrivate::get(aChanges->object())->anchors()->right().anchorLine, rectPrivate->right().anchorLine);
+
+    rectPrivate->setState("");
+    QCOMPARE(innerRect->x(), offsetRTL(rect, innerRect) -qreal(5));
+
+    delete rect;
+}
+
+void tst_qdeclarativestates::anchorChangesRTL2()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorChanges2.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+
+    QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
+    QVERIFY(innerRect != 0);
+    mirrorAnchors(innerRect);
+
+    rectPrivate->setState("right");
+    QCOMPARE(innerRect->x(), offsetRTL(rect, innerRect) - qreal(150));
+
+    rectPrivate->setState("");
+    QCOMPARE(innerRect->x(), offsetRTL(rect, innerRect) - qreal(5));
+
+    delete rect;
+}
+
+void tst_qdeclarativestates::anchorChangesRTL3()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorChanges3.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+
+    QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
+    QVERIFY(innerRect != 0);
+    mirrorAnchors(innerRect);
+
+    QDeclarativeItem *leftGuideline = qobject_cast<QDeclarativeItem*>(rect->findChild<QDeclarativeItem*>("LeftGuideline"));
+    QVERIFY(leftGuideline != 0);
+
+    QDeclarativeItem *bottomGuideline = qobject_cast<QDeclarativeItem*>(rect->findChild<QDeclarativeItem*>("BottomGuideline"));
+    QVERIFY(bottomGuideline != 0);
+
+    QDeclarativeListReference list(rect, "states");
+    QDeclarativeState *state = qobject_cast<QDeclarativeState*>(list.at(0));
+    QVERIFY(state != 0);
+
+    qmlExecuteDeferred(state);
+    QDeclarativeAnchorChanges *aChanges = qobject_cast<QDeclarativeAnchorChanges*>(state->operationAt(0));
+    QVERIFY(aChanges != 0);
+
+    rectPrivate->setState("reanchored");
+    QCOMPARE(aChanges->object(), qobject_cast<QDeclarativeItem*>(innerRect));
+    QCOMPARE(QDeclarativeItemPrivate::get(aChanges->object())->anchors()->left().item, QDeclarativeItemPrivate::get(leftGuideline)->left().item);
+    QCOMPARE(QDeclarativeItemPrivate::get(aChanges->object())->anchors()->left().anchorLine, QDeclarativeItemPrivate::get(leftGuideline)->left().anchorLine);
+    QCOMPARE(QDeclarativeItemPrivate::get(aChanges->object())->anchors()->right().item, rectPrivate->right().item);
+    QCOMPARE(QDeclarativeItemPrivate::get(aChanges->object())->anchors()->right().anchorLine, rectPrivate->right().anchorLine);
+    QCOMPARE(QDeclarativeItemPrivate::get(aChanges->object())->anchors()->top().item, rectPrivate->top().item);
+    QCOMPARE(QDeclarativeItemPrivate::get(aChanges->object())->anchors()->top().anchorLine, rectPrivate->top().anchorLine);
+    QCOMPARE(QDeclarativeItemPrivate::get(aChanges->object())->anchors()->bottom().item, QDeclarativeItemPrivate::get(bottomGuideline)->bottom().item);
+    QCOMPARE(QDeclarativeItemPrivate::get(aChanges->object())->anchors()->bottom().anchorLine, QDeclarativeItemPrivate::get(bottomGuideline)->bottom().anchorLine);
+
+    QCOMPARE(innerRect->x(), offsetRTL(leftGuideline, innerRect) - qreal(10));
+    QCOMPARE(innerRect->y(), qreal(0));
+    // between left side of parent and leftGuideline.x: 10, which has width 0
+    QCOMPARE(innerRect->width(), qreal(10));
+    QCOMPARE(innerRect->height(), qreal(150));
+
+    rectPrivate->setState("");
+    QCOMPARE(innerRect->x(), offsetRTL(rect, innerRect) - qreal(0));
+    QCOMPARE(innerRect->y(), qreal(10));
+    // between right side of parent and left side of rightGuideline.x: 150, which has width 0
+    QCOMPARE(innerRect->width(), qreal(50));
+    QCOMPARE(innerRect->height(), qreal(190));
 
     delete rect;
 }

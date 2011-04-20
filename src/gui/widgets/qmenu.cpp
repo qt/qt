@@ -1247,37 +1247,15 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     response to button presses; these are just like context menus
     except for how they are invoked.
 
-    \raw HTML
-    <table align="center" cellpadding="0">
-    <tr>
-        <td>
-            \endraw
-            \inlineimage plastique-menu.png
-            \raw HTML
-        </td>
-        <td>
-            \endraw
-            \inlineimage windowsxp-menu.png
-            \raw HTML
-        </td>
-        <td>
-            \endraw
-            \inlineimage macintosh-menu.png
-            \raw HTML
-        </td>
-
-    </tr>
-    <tr>
-        <td colspan="3">
-           \endraw
-           A menu shown in \l{Plastique Style Widget Gallery}{Plastique widget style},
+    \table 100%
+    \row
+    \o \inlineimage plastique-menu.png
+    \o \inlineimage windowsxp-menu.png
+    \o \inlineimage macintosh-menu.png
+    \endtable
+    \caption Fig. A menu shown in \l{Plastique Style Widget Gallery}{Plastique widget style},
            \l{Windows XP Style Widget Gallery}{Windows XP widget style},
            and \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-           \raw HTML
-        </td>
-    </tr>
-    </table>
-    \endraw
 
     \section1 Actions
 

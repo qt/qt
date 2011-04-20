@@ -44,11 +44,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "4.7.3"
+#define QT_VERSION_STR   "4.7.4"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x040703
+#define QT_VERSION 0x040704
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -284,7 +284,7 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#if defined(Q_OS_MAC64) && !defined(QT_MAC_USE_COCOA) && !defined(QT_BUILD_QMAKE)
+#if defined(Q_OS_MAC64) && !defined(QT_MAC_USE_COCOA) && !defined(QT_BUILD_QMAKE) && !defined(QT_BOOTSTRAPPED)
 #error "You are building a 64-bit application, but using a 32-bit version of Qt. Check your build configuration."
 #endif
 
@@ -1524,7 +1524,9 @@ public:
         SV_SF_1 = SV_9_4,
         SV_SF_2 = 40,
         SV_SF_3 = 50,
-        SV_SF_4 = 60
+        SV_SF_4 = 60,  // Deprecated
+        SV_API_5_3 = 70,
+        SV_API_5_4 = 80
     };
     static SymbianVersion symbianVersion();
     enum S60Version {
@@ -1533,9 +1535,10 @@ public:
         SV_S60_3_1 = SV_9_2,
         SV_S60_3_2 = SV_9_3,
         SV_S60_5_0 = SV_9_4,
-        //versions beyond 5.0 are to be confirmed - it is better to use symbian version
-        SV_S60_5_1 = SV_SF_2,
-        SV_S60_5_2 = SV_SF_3
+        SV_S60_5_1 = SV_SF_2,  // Deprecated
+        SV_S60_5_2 = SV_SF_3,
+        SV_S60_5_3 = SV_API_5_3,
+        SV_S60_5_4 = SV_API_5_4
     };
     static S60Version s60Version();
 #endif
@@ -2457,6 +2460,10 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 
 #ifdef SYMBIAN_WSERV_AND_CONE_MULTIPLE_SCREENS
 #define Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS
+#endif
+
+#ifdef SYMBIAN_GRAPHICS_FIXNATIVEORIENTATION
+#define Q_SYMBIAN_SUPPORTS_FIXNATIVEORIENTATION
 #endif
 
 //Symbian does not support data imports from a DLL

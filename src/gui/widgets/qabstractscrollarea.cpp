@@ -500,7 +500,7 @@ QAbstractScrollArea::QAbstractScrollArea(QAbstractScrollAreaPrivate &dd, QWidget
 /*!
     Constructs a viewport.
 
-    The \a parent arguments is sent to the QWidget constructor.
+    The \a parent argument is sent to the QWidget constructor.
 */
 QAbstractScrollArea::QAbstractScrollArea(QWidget *parent)
     :QFrame(*new QAbstractScrollAreaPrivate, parent)

@@ -42,6 +42,7 @@
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qwidget.h>
+#include <QtGui/private/qapplication_p.h>
 
 #include "qegl_p.h"
 #include "qeglcontext_p.h"
@@ -73,10 +74,14 @@ void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
         return;
 
     int devType = dev->devType();
-    if (devType == QInternal::Image)
+    if (devType == QInternal::Image) {
         setPixelFormat(static_cast<QImage *>(dev)->format());
-    else
-        setPixelFormat(QImage::Format_RGB32);
+    } else {
+        QImage::Format format = QImage::Format_RGB32;
+        if (QApplicationPrivate::instance() && QApplicationPrivate::instance()->useTranslucentEGLSurfaces)
+            format = QImage::Format_ARGB32_Premultiplied;
+        setPixelFormat(format);
+    }
 }
 
 
