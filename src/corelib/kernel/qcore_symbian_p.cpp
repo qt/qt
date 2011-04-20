@@ -44,6 +44,7 @@
 #include <e32uid.h>
 #include "qcore_symbian_p.h"
 #include <string>
+#include <in_sock.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -203,11 +204,114 @@ private:
     RFs iFs;
 };
 
+uint qHash(const RSubSessionBase& key)
+{
+    return qHash(key.SubSessionHandle());
+}
+
 Q_GLOBAL_STATIC(QS60RFsSession, qt_s60_RFsSession);
 
 Q_CORE_EXPORT RFs& qt_s60GetRFs()
 {
     return qt_s60_RFsSession()->GetRFs();
+}
+
+QSymbianSocketManager::QSymbianSocketManager() :
+    iNextSocket(0), iDefaultConnection(0)
+{
+    TSessionPref preferences;
+    // ### In future this could be changed to KAfInet6 when that is more common than IPv4
+    preferences.iAddrFamily = KAfInet;
+    preferences.iProtocol = KProtocolInetIp;
+    //use global message pool, as we do not know how many sockets app will use
+    //TODO: is this the right choice?
+    qt_symbian_throwIfError(iSocketServ.Connect(preferences, -1));
+    qt_symbian_throwIfError(iSocketServ.ShareAuto());
+}
+
+QSymbianSocketManager::~QSymbianSocketManager()
+{
+    iSocketServ.Close();
+    if(!socketMap.isEmpty()) {
+        qWarning("leaked %d sockets on exit", socketMap.count());
+    }
+}
+
+RSocketServ& QSymbianSocketManager::getSocketServer() {
+    return iSocketServ;
+}
+
+int QSymbianSocketManager::addSocket(const RSocket& socket) {
+    QHashableSocket sock(static_cast<const QHashableSocket &>(socket));
+    QMutexLocker l(&iMutex);
+    Q_ASSERT(!socketMap.contains(sock));
+    if(socketMap.contains(sock))
+        return socketMap.value(sock);
+    // allocate socket number
+    int guard = 0;
+    while(reverseSocketMap.contains(iNextSocket)) {
+        iNextSocket++;
+        iNextSocket %= max_sockets;
+        guard++;
+        if(guard > max_sockets)
+            return -1;
+    }
+    int id = iNextSocket;
+
+    socketMap[sock] = id;
+    reverseSocketMap[id] = sock;
+    return id + socket_offset;
+}
+
+bool QSymbianSocketManager::removeSocket(const RSocket &socket) {
+    QHashableSocket sock(static_cast<const QHashableSocket &>(socket));
+    QMutexLocker l(&iMutex);
+    if(!socketMap.contains(sock))
+        return false;
+    int id = socketMap.value(sock);
+    socketMap.remove(sock);
+    reverseSocketMap.remove(id);
+    return true;
+}
+
+int QSymbianSocketManager::lookupSocket(const RSocket& socket) const {
+    QHashableSocket sock(static_cast<const QHashableSocket &>(socket));
+    QMutexLocker l(&iMutex);
+    if(!socketMap.contains(sock))
+        return -1;
+    int id = socketMap.value(sock);
+    return id + socket_offset;
+}
+
+bool QSymbianSocketManager::lookupSocket(int fd, RSocket& socket) const {
+    QMutexLocker l(&iMutex);
+    int id = fd - socket_offset;
+    if(!reverseSocketMap.contains(id))
+        return false;
+    socket = reverseSocketMap.value(id);
+    return true;
+}
+
+void QSymbianSocketManager::setDefaultConnection(RConnection* con)
+{
+    iDefaultConnection = con;
+}
+
+RConnection* QSymbianSocketManager::defaultConnection() const
+{
+    return iDefaultConnection;
+}
+
+Q_GLOBAL_STATIC(QSymbianSocketManager, qt_symbianSocketManager);
+
+QSymbianSocketManager& QSymbianSocketManager::instance()
+{
+    return *(qt_symbianSocketManager());
+}
+
+Q_CORE_EXPORT RSocketServ& qt_symbianGetSocketServer()
+{
+    return QSymbianSocketManager::instance().getSocketServer();
 }
 
 QT_END_NAMESPACE
