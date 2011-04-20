@@ -3301,8 +3301,8 @@ void tst_QXmlQuery::bindVariableQXmlQueryInvalidate() const
     QXmlQuery query2;
     query2.setQuery("'query2'");
 
-    query2.bindVariable(QLatin1String("name"), query);
-    QVERIFY(!query2.isValid());
+    query.bindVariable(QLatin1String("name"), query2);
+    QVERIFY(!query.isValid());
 }
 
 void tst_QXmlQuery::unknownSourceLocation() const
