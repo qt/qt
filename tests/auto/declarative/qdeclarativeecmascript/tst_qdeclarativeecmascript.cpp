@@ -925,6 +925,27 @@ void tst_qdeclarativeecmascript::scope()
 
         delete object;
     }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scope.5.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test1").toBool(), true);
+        QCOMPARE(object->property("test2").toBool(), true);
+
+        delete object;
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scope.6.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test").toBool(), true);
+
+        delete object;
+    }
 }
 
 /*
