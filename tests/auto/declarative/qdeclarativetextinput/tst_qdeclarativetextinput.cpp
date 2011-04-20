@@ -2285,6 +2285,20 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
     ic.sendPreeditText(preeditText.mid(0, 3), 1);
     QCOMPARE(input.positionAt(0), 0);
     QCOMPARE(input.positionAt(input.width()), 5);
+
+    ic.sendEvent(QInputMethodEvent());
+    input.setAutoScroll(true);
+    // Test committing pre-edit text at the start of the string. QTBUG-18789
+    input.setCursorPosition(0);
+    ic.sendPreeditText(input.text(), 5);
+    QCOMPARE(input.positionAt(0), 0);
+
+    QInputMethodEvent event;
+    event.setCommitString(input.text());
+    ic.sendEvent(event);
+
+    QCOMPARE(input.positionAt(0), 0);
+    QCOMPARE(input.positionAt(input.width()), 5);
 }
 
 void tst_qdeclarativetextinput::preeditMicroFocus()
