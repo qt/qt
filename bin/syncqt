@@ -334,7 +334,9 @@ sub syncHeader {
         open HEADER, ">$header" || die "Could not open $header for writing!\n";
         print HEADER "#include \"$iheader_out\"\n";
         close HEADER;
-        utime(time, $ts, $header) or die "$iheader, $header";
+        if(defined($ts)) {
+            utime(time, $ts, $header) or die "$iheader, $header";
+        }
         return 1;
     }
     return 0;
