@@ -138,11 +138,11 @@ protected:
     bool activeGroup(int g) {return m_groups.isEmpty() || m_groups.contains(g);}
     bool m_active;
     virtual void componentComplete();
+    QPointF m_offset;
 private:
     QSet<int> m_groups;
     QSet<int> m_onceOffed;
     bool m_updateIntSet;
-    QPointF m_offset;
 
     bool m_onceOff;
 

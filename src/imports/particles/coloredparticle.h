@@ -51,7 +51,36 @@ QT_MODULE(Declarative)
 
 class ParticleTrailsMaterial;
 class QSGGeometryNode;
-struct ColoredParticleVertex;
+
+struct Color4ub {
+    uchar r;
+    uchar g;
+    uchar b;
+    uchar a;
+};
+
+struct ColoredParticleVertex {
+    float x;
+    float y;
+    float tx;
+    float ty;
+    float t;
+    float lifeSpan;
+    float size;
+    float endSize;
+    float sx;
+    float sy;
+    float ax;
+    float ay;
+    Color4ub color;
+};
+
+struct ColoredParticleVertices {
+    ColoredParticleVertex v1;
+    ColoredParticleVertex v2;
+    ColoredParticleVertex v3;
+    ColoredParticleVertex v4;
+};
 
 class ColoredParticle : public ParticleType
 {
@@ -146,46 +175,47 @@ signals:
     void blueVariationChanged(qreal arg);
 
 public slots:
-void setAlphaVariation(qreal arg)
-{
-    if (m_alphaVariation != arg) {
-        m_alphaVariation = arg;
-        emit alphaVariationChanged(arg);
+    void setAlphaVariation(qreal arg)
+    {
+        if (m_alphaVariation != arg) {
+            m_alphaVariation = arg;
+            emit alphaVariationChanged(arg);
+        }
     }
-}
 
-void setAlpha(qreal arg)
-{
-    if (m_alpha != arg) {
-        m_alpha = arg;
-        emit alphaChanged(arg);
+    void setAlpha(qreal arg)
+    {
+        if (m_alpha != arg) {
+            m_alpha = arg;
+            emit alphaChanged(arg);
+        }
     }
-}
 
-void setRedVariation(qreal arg)
-{
-    if (m_redVariation != arg) {
-        m_redVariation = arg;
-        emit redVariationChanged(arg);
+    void setRedVariation(qreal arg)
+    {
+        if (m_redVariation != arg) {
+            m_redVariation = arg;
+            emit redVariationChanged(arg);
+        }
     }
-}
 
-void setGreenVariation(qreal arg)
-{
-    if (m_greenVariation != arg) {
-        m_greenVariation = arg;
-        emit greenVariationChanged(arg);
+    void setGreenVariation(qreal arg)
+    {
+        if (m_greenVariation != arg) {
+            m_greenVariation = arg;
+            emit greenVariationChanged(arg);
+        }
     }
-}
 
-void setBlueVariation(qreal arg)
-{
-    if (m_blueVariation != arg) {
-        m_blueVariation = arg;
-        emit blueVariationChanged(arg);
+    void setBlueVariation(qreal arg)
+    {
+        if (m_blueVariation != arg) {
+            m_blueVariation = arg;
+            emit blueVariationChanged(arg);
+        }
     }
-}
 
+    void reloadColor(const Color4ub &c, ParticleData* d);
 protected:
     QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
     void reset();

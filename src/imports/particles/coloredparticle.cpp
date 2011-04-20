@@ -229,37 +229,6 @@ QSGMaterialShader *ParticleTrailsMaterialCT::createShader() const
     return new ParticleTrailsMaterialDataCT;
 }
 
-struct Color4ub {
-    uchar r;
-    uchar g;
-    uchar b;
-    uchar a;
-};
-
-struct ColoredParticleVertex {
-    float x;
-    float y;
-    float tx;
-    float ty;
-    float t;
-    float lifeSpan;
-    float size;
-    float endSize;
-    float sx;
-    float sy;
-    float ax;
-    float ay;
-    Color4ub color;
-};
-
-struct ColoredParticleVertices {
-    ColoredParticleVertex v1;
-    ColoredParticleVertex v2;
-    ColoredParticleVertex v3;
-    ColoredParticleVertex v4;
-};
-
-
 ColoredParticle::ColoredParticle(QSGItem* parent)
     : ParticleType(parent)
     , m_do_reset(false)
@@ -503,6 +472,13 @@ void ColoredParticle::prepareNextFrame()
     m_material->timestamp = time;
 }
 
+void ColoredParticle::reloadColor(const Color4ub &c, ParticleData* d)
+{
+    ColoredParticleVertices *particles = (ColoredParticleVertices *) m_node->geometry()->vertexData();
+    int pos = particleTypeIndex(d);
+    ColoredParticleVertices &p = particles[pos];
+    p.v1.color = p.v2.color = p.v3.color = p.v4.color = c;
+}
 
 void ColoredParticle::vertexCopy(ColoredParticleVertex &b,const ParticleVertex& a)
 {

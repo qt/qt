@@ -45,7 +45,8 @@ HEADERS += \
     eternalaffector.h \
     lineextruder.h \
     resetaffector.h \
-    deformableparticle.h
+    deformableparticle.h \
+    pictureaffector.h
 
 SOURCES += \
     V1/qdeclarativeparticles.cpp \
@@ -90,7 +91,8 @@ SOURCES += \
     eternalaffector.cpp \
     lineextruder.cpp \
     resetaffector.cpp \
-    deformableparticle.cpp
+    deformableparticle.cpp \
+    pictureaffector.cpp
 
 QT += declarative opengl
 

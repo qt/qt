@@ -194,6 +194,7 @@ DeformableParticle::DeformableParticle(QSGItem* parent)
     , m_autoRotation(false)
     , m_xVector(0)
     , m_yVector(0)
+    , m_rotationVariation(0)
 {
     setFlag(ItemHasContents);
 }
@@ -418,7 +419,8 @@ void DeformableParticle::load(ParticleData *d)
         p.v1.yx = p.v2.yx = p.v3.yx = p.v4.yx = ret.x();
         p.v1.yy = p.v2.yy = p.v3.yy = p.v4.yy = ret.y();
     }
-    p.v1.rotation = p.v2.rotation = p.v3.rotation = p.v4.rotation = m_rotation * CONV;
+    p.v1.rotation = p.v2.rotation = p.v3.rotation = p.v4.rotation =
+            (m_rotation + (m_rotationVariation - 2*((qreal)rand()/RAND_MAX)*m_rotationVariation) ) * CONV;
     p.v1.autoRotate = p.v2.autoRotate = p.v3.autoRotate = p.v4.autoRotate = m_autoRotation?1.0:0.0;
 
     vertexCopy(p.v1, d->pv);

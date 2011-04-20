@@ -61,6 +61,7 @@ class DeformableParticle : public ParticleType
     Q_PROPERTY(QUrl image READ image WRITE setImage NOTIFY imageChanged)
 
     Q_PROPERTY(qreal rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
+    Q_PROPERTY(qreal rotationVariation READ rotationVariation WRITE setRotationVariation NOTIFY rotationVariationChanged)
     //If true, then will face the direction of motion. Stacks with rotation, e.g. setting rotation
     //to 180 will lead to facing away from the direction of motion
     Q_PROPERTY(bool autoRotation READ autoRotation WRITE autoRotation NOTIFY autoRotationChanged)
@@ -77,7 +78,7 @@ class DeformableParticle : public ParticleType
     //Q_PROPERTY(QUrl sizeTable READ sizetable WRITE setSizetable NOTIFY sizetableChanged)
     //Q_PROPERTY(QUrl opacityTable READ opacitytable WRITE setOpacitytable NOTIFY opacitytableChanged)
 
-    //Does it need alpha? For convenience as images probably don't have it
+    //Does it need alpha? For convenience only, as images probably don't have it
     //Q_PROPERTY(qreal alpha READ alpha WRITE setAlpha NOTIFY alphaChanged)
     //Q_PROPERTY(qreal alphaVariation READ alphaVariation WRITE setAlphaVariation NOTIFY alphaVariationChanged)
 
@@ -112,6 +113,11 @@ public:
         return m_yVector;
     }
 
+    qreal rotationVariation() const
+    {
+        return m_rotationVariation;
+    }
+
 signals:
 
     void imageChanged();
@@ -122,6 +128,8 @@ signals:
     void xVectorChanged(VaryingVector* arg);
 
     void yVectorChanged(VaryingVector* arg);
+
+    void rotationVariationChanged(qreal arg);
 
 public slots:
 void setRotation(qreal arg)
@@ -156,6 +164,14 @@ void setYVector(VaryingVector* arg)
     }
 }
 
+void setRotationVariation(qreal arg)
+{
+    if (m_rotationVariation != arg) {
+        m_rotationVariation = arg;
+        emit rotationVariationChanged(arg);
+    }
+}
+
 protected:
     QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
     void reset();
@@ -178,6 +194,7 @@ private:
     bool m_autoRotation;
     VaryingVector* m_xVector;
     VaryingVector* m_yVector;
+    qreal m_rotationVariation;
 };
 
 QT_END_NAMESPACE
