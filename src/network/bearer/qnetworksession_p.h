@@ -55,8 +55,15 @@
 
 #include "qnetworksession.h"
 #include "qnetworkconfiguration_p.h"
+#include "QtCore/qsharedpointer.h"
 
 #ifndef QT_NO_BEARERMANAGEMENT
+
+#ifdef Q_OS_SYMBIAN
+class RConnection;
+class RSocket;
+class RHostResolver;
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -68,7 +75,7 @@ class Q_NETWORK_EXPORT QNetworkSessionPrivate : public QObject
 
 public:
     QNetworkSessionPrivate() : QObject(),
-        state(QNetworkSession::Invalid), isOpen(false)
+        state(QNetworkSession::Invalid), isOpen(false), mutex(QMutex::Recursive)
     {}
     virtual ~QNetworkSessionPrivate()
     {}
@@ -102,6 +109,15 @@ public:
     virtual quint64 bytesReceived() const = 0;
     virtual quint64 activeTime() const = 0;
 
+#ifdef Q_OS_SYMBIAN
+    // get internal RConnection (not thread safe, call only from thread that owns the QNetworkSession)
+    static RConnection* nativeSession(QNetworkSession&);
+    virtual RConnection* nativeSession() = 0;
+    // open socket using the internal RConnection (thread safe)
+    static TInt nativeOpenSocket(QNetworkSession& session, RSocket& socket, TUint family, TUint type, TUint protocol);
+    // open host resolver using the internal RConnection (thread safe)
+    static TInt nativeOpenHostResolver(QNetworkSession& session, RHostResolver& resolver, TUint family, TUint protocol);
+#endif
 protected:
     inline QNetworkConfigurationPrivatePointer privateConfiguration(const QNetworkConfiguration &config) const
     {
@@ -141,9 +157,13 @@ protected:
 
     QNetworkSession::State state;
     bool isOpen;
+
+    QMutex mutex;
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QSharedPointer<QNetworkSession>)
 
 #endif // QT_NO_BEARERMANAGEMENT
 

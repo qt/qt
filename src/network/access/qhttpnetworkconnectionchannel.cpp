@@ -54,6 +54,10 @@
 #    include <QtNetwork/qsslconfiguration.h>
 #endif
 
+#ifndef QT_NO_BEARERMANAGEMENT
+#include "private/qnetworksession_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // TODO: Put channel specific stuff here so it does not polute qhttpnetworkconnection.cpp
@@ -90,6 +94,11 @@ void QHttpNetworkConnectionChannel::init()
         socket = new QTcpSocket;
 #else
     socket = new QTcpSocket;
+#endif
+#ifndef QT_NO_BEARERMANAGEMENT
+    //push session down to socket
+    if (networkSession)
+        socket->setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
 #ifndef QT_NO_NETWORKPROXY
     // Set by QNAM anyway, but let's be safe here
@@ -833,7 +842,10 @@ void QHttpNetworkConnectionChannel::handleStatus()
 
 bool QHttpNetworkConnectionChannel::resetUploadData()
 {
-    Q_ASSERT(reply);
+    if (!reply) {
+        //this happens if server closes connection while QHttpNetworkConnectionPrivate::_q_startNextRequest is pending
+        return false;
+    }
     QNonContiguousByteDevice* uploadByteDevice = request.uploadByteDevice();
     if (!uploadByteDevice)
         return true;

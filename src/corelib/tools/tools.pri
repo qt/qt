@@ -97,6 +97,11 @@ else:SOURCES += tools/qelapsedtimer_generic.cpp
 contains(QT_CONFIG, zlib):include($$PWD/../../3rdparty/zlib.pri)
 else:include($$PWD/../../3rdparty/zlib_dependency.pri)
 
+contains(QT_CONFIG,icu) {
+    SOURCES += tools/qlocale_icu.cpp
+    DEFINES += QT_USE_ICU
+}
+
 DEFINES += HB_EXPORT=Q_CORE_EXPORT
 INCLUDEPATH += ../3rdparty/harfbuzz/src
 HEADERS += ../3rdparty/harfbuzz/src/harfbuzz.h
