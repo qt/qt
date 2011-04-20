@@ -117,7 +117,7 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
     m_fepState->SetDefaultCase( EAknEditorTextCase );
     m_fepState->SetPermittedCases( EAknEditorAllCaseModes );
     m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
-    m_fepState->SetNumericKeymap( EAknEditorStandardNumberModeKeymap );
+    m_fepState->SetNumericKeymap(EAknEditorAlphanumericNumberModeKeymap);
 }
 
 QCoeFepInputContext::~QCoeFepInputContext()
