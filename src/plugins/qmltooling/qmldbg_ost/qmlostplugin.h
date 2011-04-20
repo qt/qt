@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,50 +39,43 @@
 **
 ****************************************************************************/
 
-#include <QtGui/qpaintdevice.h>
-#include <QtGui/qpixmap.h>
-#include <QtGui/qwidget.h>
-#include <QtGui/private/qapplication_p.h>
+#ifndef QMLOSTPLUGIN_H
+#define QMLOSTPLUGIN_H
 
-#include "qegl_p.h"
-#include "qeglcontext_p.h"
-
-#include <coecntrl.h>
+#include <QtGui/QStylePlugin>
+#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
 
 QT_BEGIN_NAMESPACE
 
-EGLNativeDisplayType QEgl::nativeDisplay()
+class QDeclarativeDebugServer;
+class QmlOstPluginPrivate;
+
+class QmlOstPlugin : public QObject, public QDeclarativeDebugServerConnection
 {
-    return EGL_DEFAULT_DISPLAY;
-}
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlOstPlugin)
+    Q_DISABLE_COPY(QmlOstPlugin)
+    Q_INTERFACES(QDeclarativeDebugServerConnection)
 
-EGLNativeWindowType QEgl::nativeWindow(QWidget* widget)
-{
-    return (EGLNativeWindowType)(widget->winId()->DrawableWindow());
-}
 
-EGLNativePixmapType QEgl::nativePixmap(QPixmap*)
-{
-    qWarning("QEgl: EGL pixmap surfaces not implemented yet on Symbian");
-    return (EGLNativePixmapType)0;
-}
+public:
+    QmlOstPlugin();
+    ~QmlOstPlugin();
 
-// Set pixel format and other properties based on a paint device.
-void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
-{
-    if(!dev)
-        return;
+    void setServer(QDeclarativeDebugServer *server);
+    void setPort(int port, bool bock);
 
-    int devType = dev->devType();
-    if (devType == QInternal::Image) {
-        setPixelFormat(static_cast<QImage *>(dev)->format());
-    } else {
-        QImage::Format format = QImage::Format_RGB32;
-        if (QApplicationPrivate::instance() && QApplicationPrivate::instance()->useTranslucentEGLSurfaces)
-            format = QImage::Format_ARGB32_Premultiplied;
-        setPixelFormat(format);
-    }
-}
+    bool isConnected() const;
+    void send(const QByteArray &message);
+    void disconnect();
 
+private Q_SLOTS:
+    void readyRead();
+
+private:
+    QmlOstPluginPrivate *d_ptr;
+};
 
 QT_END_NAMESPACE
+
+#endif // QMLOSTPLUGIN_H

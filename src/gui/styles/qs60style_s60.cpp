@@ -89,17 +89,25 @@ enum TSupportRelease {
     ES60_5_0      = 0x0004,
     ES60_5_1      = 0x0008,
     ES60_5_2      = 0x0010,
+    ES60_5_3      = 0x0020,
     ES60_3_X      = ES60_3_1 | ES60_3_2,
     // Releases before Symbian Foundation
     ES60_PreSF    = ES60_3_1 | ES60_3_2 | ES60_5_0,
+    // Releases before the S60 5.2
+    ES60_Pre52    = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1,
+    // Releases before S60 5.3
+    ES60_Pre53    = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1 | ES60_5_2,
     // Add all new releases here
-    ES60_All = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1 | ES60_5_2
+    ES60_All = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1 | ES60_5_2 | ES60_5_3
 };
 
 typedef struct {
-    const TAknsItemID &skinID;
-    TDrawType drawType;
-    int supportInfo;
+    const TAknsItemID &skinID; // Determines default theme graphics ID.
+    TDrawType drawType; // Determines which native drawing routine is used to draw this item.
+    int supportInfo;    // Defines the S60 versions that use the default graphics.
+    // These two, define new graphics that are used in releases other than partMapEntry.supportInfo defined releases.
+    // In general, these are given in numeric form to allow style compilation in earlier 
+    // native releases that do not contain the new graphics.
     int newMajorSkinId;
     int newMinorSkinId;
 } partMapEntry;
@@ -188,12 +196,14 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QgnGrafScrollArrowLeft */        {KAknsIIDQgnGrafScrollArrowLeft,     EDrawGulIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafScrollArrowRight */       {KAknsIIDQgnGrafScrollArrowRight,    EDrawGulIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafScrollArrowUp */          {KAknsIIDQgnGrafScrollArrowUp,       EDrawGulIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabActiveL */             {KAknsIIDQgnGrafTabActiveL,             EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabActiveM */             {KAknsIIDQgnGrafTabActiveM,             EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabActiveR */             {KAknsIIDQgnGrafTabActiveR,             EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabPassiveL */            {KAknsIIDQgnGrafTabPassiveL,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabPassiveM */            {KAknsIIDQgnGrafTabPassiveM,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabPassiveR */            {KAknsIIDQgnGrafTabPassiveR,            EDrawIcon,   ES60_All,    -1,-1},
+
+    // In S60 5.3 there is a new tab graphic
+    /* SP_QgnGrafTabActiveL */             {KAknsIIDQgnGrafTabActiveL,             EDrawIcon,   ES60_Pre53,    EAknsMajorSkin, 0x2219}, //KAknsIIDQtgFrTabActiveNormalL
+    /* SP_QgnGrafTabActiveM */             {KAknsIIDQgnGrafTabActiveM,             EDrawIcon,   ES60_Pre53,    EAknsMajorSkin, 0x221b}, //KAknsIIDQtgFrTabActiveNormalC
+    /* SP_QgnGrafTabActiveR */             {KAknsIIDQgnGrafTabActiveR,             EDrawIcon,   ES60_Pre53,    EAknsMajorSkin, 0x221a}, //KAknsIIDQtgFrTabActiveNormalR
+    /* SP_QgnGrafTabPassiveL */            {KAknsIIDQgnGrafTabPassiveL,            EDrawIcon,   ES60_Pre53,    EAknsMajorSkin, 0x2221}, //KAknsIIDQtgFrTabPassiveNormalL
+    /* SP_QgnGrafTabPassiveM */            {KAknsIIDQgnGrafTabPassiveM,            EDrawIcon,   ES60_Pre53,    EAknsMajorSkin, 0x2223}, //KAknsIIDQtgFrTabPassiveNormalC
+    /* SP_QgnGrafTabPassiveR */            {KAknsIIDQgnGrafTabPassiveR,            EDrawIcon,   ES60_Pre53,    EAknsMajorSkin, 0x2222}, //KAknsIIDQtgFrTabPassiveNormalR
 
     // In 3.1 there is no slider groove.
     /* SP_QgnGrafNsliderEndLeft */         {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x19cf /* KAknsIIDQgnGrafNsliderEndLeft */},
@@ -1132,7 +1142,8 @@ bool QS60StyleModeSpecifics::checkSupport(const int supportedRelease)
              (currentRelease == QSysInfo::SV_S60_3_2 && supportedRelease & ES60_3_2) ||
              (currentRelease == QSysInfo::SV_S60_5_0 && supportedRelease & ES60_5_0) ||
              (currentRelease == QSysInfo::SV_S60_5_1 && supportedRelease & ES60_5_1) ||
-             (currentRelease == QSysInfo::SV_S60_5_2 && supportedRelease & ES60_5_2));
+             (currentRelease == QSysInfo::SV_S60_5_2 && supportedRelease & ES60_5_2) ||
+             (currentRelease == QSysInfo::SV_S60_5_3 && supportedRelease & ES60_5_3) );
 }
 
 TAknsItemID QS60StyleModeSpecifics::partSpecificThemeId(int part)

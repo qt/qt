@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,50 +39,37 @@
 **
 ****************************************************************************/
 
-#include <QtGui/qpaintdevice.h>
-#include <QtGui/qpixmap.h>
-#include <QtGui/qwidget.h>
-#include <QtGui/private/qapplication_p.h>
+#ifndef QOSTDEVICE_H
+#define QOSTDEVICE_H
 
-#include "qegl_p.h"
-#include "qeglcontext_p.h"
-
-#include <coecntrl.h>
+#include <qiodevice.h>
 
 QT_BEGIN_NAMESPACE
 
-EGLNativeDisplayType QEgl::nativeDisplay()
+class QOstDevicePrivate;
+
+class QOstDevice : public QIODevice
 {
-    return EGL_DEFAULT_DISPLAY;
-}
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QOstDevice)
+    Q_DISABLE_COPY(QOstDevice)
 
-EGLNativeWindowType QEgl::nativeWindow(QWidget* widget)
-{
-    return (EGLNativeWindowType)(widget->winId()->DrawableWindow());
-}
+public:
+    explicit QOstDevice(QObject *parent=0);
+    ~QOstDevice();
 
-EGLNativePixmapType QEgl::nativePixmap(QPixmap*)
-{
-    qWarning("QEgl: EGL pixmap surfaces not implemented yet on Symbian");
-    return (EGLNativePixmapType)0;
-}
+    bool open(int ostProtocolId);
+    void close();
 
-// Set pixel format and other properties based on a paint device.
-void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
-{
-    if(!dev)
-        return;
+protected:
+    qint64 readData(char *data, qint64 maxSize);
+    qint64 writeData(const char *data, qint64 maxSize);
+    qint64 bytesAvailable() const;
 
-    int devType = dev->devType();
-    if (devType == QInternal::Image) {
-        setPixelFormat(static_cast<QImage *>(dev)->format());
-    } else {
-        QImage::Format format = QImage::Format_RGB32;
-        if (QApplicationPrivate::instance() && QApplicationPrivate::instance()->useTranslucentEGLSurfaces)
-            format = QImage::Format_ARGB32_Premultiplied;
-        setPixelFormat(format);
-    }
-}
-
+private:
+    QOstDevicePrivate* d_ptr;
+};
 
 QT_END_NAMESPACE
+
+#endif // QOSTDEVICE_H
