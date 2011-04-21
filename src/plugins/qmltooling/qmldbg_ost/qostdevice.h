@@ -42,7 +42,7 @@
 #ifndef QOSTDEVICE_H
 #define QOSTDEVICE_H
 
-#include <qiodevice.h>
+#include <QtCore/QIODevice>
 
 QT_BEGIN_NAMESPACE
 

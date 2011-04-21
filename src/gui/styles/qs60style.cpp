@@ -963,6 +963,17 @@ bool QS60StylePrivate::isWidgetPressed(const QWidget *widget)
     return (widget && widget == m_pressedWidget);
 }
 
+// Generates 1*1 white pixmap as a placeholder for real texture.
+// The actual theme texture is drawn in qt_s60_fill_background().
+QPixmap QS60StylePrivate::placeHolderTexture()
+{
+    if (!m_placeHolderTexture) {
+        m_placeHolderTexture = new QPixmap(1,1);
+        m_placeHolderTexture->fill(Qt::green);
+    }
+    return *m_placeHolderTexture;
+}
+
 /*!
   \class QS60Style
   \brief The QS60Style class provides a look and feel suitable for applications on S60.
