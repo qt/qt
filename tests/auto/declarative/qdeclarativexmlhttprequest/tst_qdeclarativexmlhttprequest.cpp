@@ -524,7 +524,7 @@ void tst_qdeclarativexmlhttprequest::send_ignoreData()
         QVERIFY(server.isValid());
         QVERIFY(server.wait(TEST_FILE("send_ignoreData_PUT.expect"), 
                             TEST_FILE("send_ignoreData.reply"), 
-                            TEST_FILE("testdocument.html")));
+                            QUrl()));
 
         QDeclarativeComponent component(&engine, TEST_FILE("send_ignoreData.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
