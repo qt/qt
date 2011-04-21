@@ -74,7 +74,7 @@ bool PictureAffector::affectParticle(ParticleData *d, qreal dt)
     QPoint pos = QPoint(d->curX() - m_offset.x(), d->curY() - m_offset.y());
     if(!QRect(0,0,width(),height()).contains(pos)){
         //XXX: Just a debugging helper, as I don't think it can get here.
-        qWarning() << "An unexpected situation has occured. But don't worry, everything will be fine.";
+        qWarning() << "An unexpected situation has occurred. But don't worry, everything will be fine.";
         return false;
     }
     Color4ub c;

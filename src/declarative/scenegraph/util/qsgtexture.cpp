@@ -383,7 +383,7 @@ void QSGPlainTexture::bind()
     \brief The QSGDynamicTexture class serves as a baseclass for dynamically changing textures,
     such as content that is rendered to FBO's.
 
-    To update the content of the texture, call updateTexture() explicitely. Simply calling bind()
+    To update the content of the texture, call updateTexture() explicitly. Simply calling bind()
     will not update the texture.
  */
 
