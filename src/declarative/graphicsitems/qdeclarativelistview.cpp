@@ -2302,10 +2302,18 @@ void QDeclarativeListView::setCacheBuffer(int b)
     depending on the "size" property of the model item. The \c sectionHeading
     delegate component provides the light blue bar that marks the beginning of
     each section.
+
        
     \snippet examples/declarative/modelviews/listview/sections.qml 0
 
     \image qml-listview-sections-example.png
+
+    \note Adding sections to a ListView does not automatically re-order the
+    list items by the section criteria.
+    If the model is not ordered by section, then it is possible that
+    the sections created will not be unique; each boundary between
+    differing sections will result in a section header being created
+    even if that section exists elsewhere.
 
     \sa {declarative/modelviews/listview}{ListView examples}
 */
