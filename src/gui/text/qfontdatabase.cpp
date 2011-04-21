@@ -136,6 +136,21 @@ static int getFontWeight(const QString &weightString)
     return (int) QFont::Normal;
 }
 
+// convert 0 ~ 1000 integer to QFont::Weight
+QFont::Weight weightFromInteger(int weight)
+{
+    if (weight < 400)
+        return QFont::Light;
+    else if (weight < 600)
+        return QFont::Normal;
+    else if (weight < 700)
+        return QFont::DemiBold;
+    else if (weight < 800)
+        return QFont::Bold;
+    else
+        return QFont::Black;
+}
+
 struct QtFontEncoding
 {
     signed int encoding : 16;
@@ -497,8 +512,6 @@ QtFontFoundry *QtFontFamily::foundry(const QString &f, bool create)
 
 // ### copied to tools/makeqpf/qpf2.cpp
 
-#if (defined(Q_WS_QWS) && !defined(QT_NO_FREETYPE)) || defined(Q_WS_WIN)  || defined(Q_OS_SYMBIAN) || (defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA))
-
 // see the Unicode subset bitfields in the MSDN docs
 static int requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] = {
         // Any,
@@ -576,7 +589,7 @@ static int requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] = {
 #define JapaneseCsbBit 17
 #define KoreanCsbBit 21
 
-static QList<QFontDatabase::WritingSystem> determineWritingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2])
+QList<QFontDatabase::WritingSystem> qt_determine_writing_systems_from_truetype_bits(quint32 unicodeRange[4], quint32 codePageRange[2])
 {
     QList<QFontDatabase::WritingSystem> writingSystems;
     bool hasScript = false;
@@ -623,7 +636,6 @@ static QList<QFontDatabase::WritingSystem> determineWritingSystemsFromTrueTypeBi
 
     return writingSystems;
 }
-#endif
 
 #if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
 // class with virtual destructor, derived in qfontdatabase_s60.cpp
@@ -873,7 +885,7 @@ QStringList QFontDatabasePrivate::addTTFile(const QByteArray &file, const QByteA
                     os2->ulCodePageRange1, os2->ulCodePageRange2
                 };
 
-                writingSystems = determineWritingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
+                writingSystems = qt_determine_writing_systems_from_truetype_bits(unicodeRange, codePageRange);
                 //for (int i = 0; i < writingSystems.count(); ++i)
                 //    qDebug() << QFontDatabase::writingSystemName(writingSystems.at(i));
             }
@@ -935,6 +947,11 @@ static const int scriptForWritingSystem[] = {
     QUnicodeTables::Runic, // Runic
     QUnicodeTables::Nko // Nko
 };
+
+int qt_script_for_writing_system(QFontDatabase::WritingSystem writingSystem)
+{
+    return scriptForWritingSystem[writingSystem];
+}
 
 
 #if defined Q_WS_QWS || (defined(Q_WS_X11) && !defined(QT_NO_FONTCONFIG)) || defined(Q_WS_WIN)

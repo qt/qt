@@ -1514,7 +1514,7 @@ QDBusActivateObjectEvent::~QDBusActivateObjectEvent()
     // semaphore releasing happens in ~QMetaCallEvent
 }
 
-int QDBusActivateObjectEvent::placeMetaCall(QObject *)
+void QDBusActivateObjectEvent::placeMetaCall(QObject *)
 {
     QDBusConnectionPrivate *that = QDBusConnectionPrivate::d(connection);
 
@@ -1525,7 +1525,6 @@ int QDBusActivateObjectEvent::placeMetaCall(QObject *)
                                         QDBusLockerBase::AfterDeliver, that);
 
     handled = true;
-    return -1;
 }
 
 void QDBusConnectionPrivate::handleSignal(const QString &key, const QDBusMessage& msg)

@@ -133,7 +133,16 @@ static void destroy_current_thread_data(void *p)
     // this destructor function, so we need to set it back to the
     // right value...
     pthread_setspecific(current_thread_data_key, p);
-    reinterpret_cast<QThreadData *>(p)->deref();
+    QThreadData *data = static_cast<QThreadData *>(p);
+    if (data->isAdopted) {
+        QThread *thread = data->thread;
+        Q_ASSERT(thread);
+        QThreadPrivate *thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
+        Q_ASSERT(!thread_p->finished);
+        thread_p->finish(thread);
+    }
+    data->deref();
+
     // ... but we must reset it to zero before returning so we aren't
     // called again (POSIX allows implementations to call destructor
     // functions repeatedly until all values are zero)
@@ -161,18 +170,28 @@ Q_DESTRUCTOR_FUNCTION(destroy_current_thread_data_key)
 // Utility functions for getting, setting and clearing thread specific data.
 static QThreadData *get_thread_data()
 {
+#ifdef HAVE_TLS
+    return currentThreadData;
+#else
     pthread_once(&current_thread_data_once, create_current_thread_data_key);
     return reinterpret_cast<QThreadData *>(pthread_getspecific(current_thread_data_key));
+#endif
 }
 
 static void set_thread_data(QThreadData *data)
 {
+#ifdef HAVE_TLS
+    currentThreadData = data;
+#endif
     pthread_once(&current_thread_data_once, create_current_thread_data_key);
     pthread_setspecific(current_thread_data_key, data);
 }
 
 static void clear_thread_data()
 {
+#ifdef HAVE_TLS
+    currentThreadData = 0;
+#endif
     pthread_setspecific(current_thread_data_key, 0);
 }
 
@@ -202,6 +221,8 @@ QThreadData *QThreadData::current()
             }
             data->deref();
         }
+        data->isAdopted = true;
+        data->threadId = (Qt::HANDLE)pthread_self();
         if (!QCoreApplicationPrivate::theMainThread)
             QCoreApplicationPrivate::theMainThread = data->thread;
     }
@@ -259,6 +280,7 @@ void *QThreadPrivate::start(void *arg)
         thr->setPriority(QThread::Priority(thr->d_func()->priority & ~ThreadPriorityResetFlag));
     }
 
+    data->threadId = (Qt::HANDLE)pthread_self();
     set_thread_data(data);
 
     data->ref();

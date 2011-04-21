@@ -17,17 +17,9 @@ win32 {
 
 wince* {
     DEFINES += SRCDIR=\\\"./\\\"
-
-    certFiles.files = certs ssl.tar.gz
-    certFiles.path    = .
-    DEPLOYMENT += certFiles
 } else:symbian {
     TARGET.EPOCHEAPSIZE="0x100 0x1000000"
-    TARGET.CAPABILITY=NetworkServices
-
-    certFiles.files = certs ssl.tar.gz
-    certFiles.path    = .
-    DEPLOYMENT += certFiles
+    TARGET.CAPABILITY=NetworkServices ReadUserData
     INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE  # Needed for e32svr.h in S^3 envs
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"

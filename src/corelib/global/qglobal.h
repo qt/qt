@@ -763,6 +763,7 @@ namespace QT_NAMESPACE {}
 #    endif
 #    if __HP_aCC-0 >= 062000
 #      define Q_DECL_EXPORT     __attribute__((visibility("default")))
+#      define Q_DECL_HIDDEN     __attribute__((visibility("hidden")))
 #      define Q_DECL_IMPORT     Q_DECL_EXPORT
 #    endif
 #  else
@@ -777,10 +778,10 @@ namespace QT_NAMESPACE {}
 #elif defined(__WINSCW__) && !defined(Q_CC_NOKIAX86)
 #  define Q_CC_NOKIAX86
 
-
 #else
 #  error "Qt has not been tested with this compiler - talk to qt-bugs@trolltech.com"
 #endif
+
 
 #ifdef Q_CC_INTEL
 #  if __INTEL_COMPILER < 1200
@@ -1249,6 +1250,7 @@ class QDataStream;
 #if defined(Q_OS_LINUX) && defined(Q_CC_RVCT)
 #  define Q_DECL_EXPORT     __attribute__((visibility("default")))
 #  define Q_DECL_IMPORT     __attribute__((visibility("default")))
+#  define Q_DECL_HIDDEN     __attribute__((visibility("hidden")))
 #endif
 
 #ifndef Q_DECL_EXPORT
@@ -1256,6 +1258,7 @@ class QDataStream;
 #    define Q_DECL_EXPORT __declspec(dllexport)
 #  elif defined(QT_VISIBILITY_AVAILABLE)
 #    define Q_DECL_EXPORT __attribute__((visibility("default")))
+#    define Q_DECL_HIDDEN __attribute__((visibility("hidden")))
 #  endif
 #  ifndef Q_DECL_EXPORT
 #    define Q_DECL_EXPORT
@@ -1268,6 +1271,10 @@ class QDataStream;
 #    define Q_DECL_IMPORT
 #  endif
 #endif
+#ifndef Q_DECL_HIDDEN
+#  define Q_DECL_HIDDEN
+#endif
+
 
 /*
    Create Qt DLL if QT_DLL is defined (Windows and Symbian only)
@@ -2741,6 +2748,12 @@ QT_LICENSED_MODULE(DBus)
 #  if defined (Q_OS_LINUX) || defined (Q_OS_SOLARIS) || defined (Q_OS_FREEBSD) || defined (Q_OS_OPENBSD) || defined (Q_OS_IRIX)
 #    define Q_OF_ELF
 #  endif
+#endif
+
+#if !(defined(Q_WS_WIN) && !defined(Q_WS_WINCE)) \
+    && !(defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)) \
+    && !(defined(Q_WS_X11) && !defined(QT_NO_FREETYPE))
+#  define QT_NO_RAWFONT
 #endif
 
 QT_END_NAMESPACE

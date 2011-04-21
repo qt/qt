@@ -62,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-// this is the common part between QNetworkRequestPrivate and QNetworkReplyPrivate
+// this is the common part between QNetworkRequestPrivate, QNetworkReplyPrivate and QHttpPartPrivate
 class QNetworkHeadersPrivate
 {
 public:
@@ -77,6 +77,7 @@ public:
     QWeakPointer<QObject> originatingObject;
 
     RawHeadersList::ConstIterator findRawHeader(const QByteArray &key) const;
+    RawHeadersList allRawHeaders() const;
     QList<QByteArray> rawHeadersKeys() const;
     void setRawHeader(const QByteArray &key, const QByteArray &value);
     void setAllRawHeaders(const RawHeadersList &list);

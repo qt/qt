@@ -41,7 +41,9 @@ HEADERS += \
 	text/qstatictext_p.h \
 	text/qstatictext.h \
         text/qglyphs.h \
-        text/qglyphs_p.h
+        text/qglyphs_p.h \
+        text/qrawfont.h \
+        text/qrawfont_p.h
 
 SOURCES += \
 	text/qfont.cpp \
@@ -72,12 +74,14 @@ SOURCES += \
 	text/qzip.cpp \
 	text/qtextodfwriter.cpp \
 	text/qstatictext.cpp \
-        text/qglyphs.cpp
+        text/qglyphs.cpp \
+        text/qrawfont.cpp
 
 win32 {
 	SOURCES += \
 		text/qfont_win.cpp \
-		text/qfontengine_win.cpp
+                text/qfontengine_win.cpp \
+                text/qrawfont_win.cpp
 	HEADERS += text/qfontengine_win_p.h
 }
 
@@ -95,7 +99,8 @@ unix:x11 {
 	SOURCES += \
 		text/qfont_x11.cpp \
 		text/qfontengine_x11.cpp \
-		text/qfontengine_ft.cpp
+                text/qfontengine_ft.cpp \
+                text/qrawfont_ft.cpp
 }
 
 !embedded:!qpa:!x11:mac {
@@ -104,7 +109,8 @@ unix:x11 {
         OBJECTIVE_HEADERS += \
                 text/qfontengine_coretext_p.h
 	SOURCES += \
-                text/qfont_mac.cpp
+                text/qfont_mac.cpp \
+                text/qrawfont_mac.cpp
         OBJECTIVE_SOURCES += \
                 text/qfontengine_coretext.mm \
                 text/qfontengine_mac.mm
@@ -116,7 +122,8 @@ embedded {
 		text/qfontengine_qws.cpp \
 		text/qfontengine_ft.cpp \
 		text/qfontengine_qpf.cpp \
-		text/qabstractfontengine_qws.cpp
+                text/qabstractfontengine_qws.cpp \
+                text/qrawfont_ft.cpp
 	HEADERS += \
 		text/qfontengine_ft_p.h \
 		text/qfontengine_qpf_p.h \
@@ -143,7 +150,8 @@ symbian {
 		text/qfont_s60.cpp
 	contains(QT_CONFIG, freetype) {
 		SOURCES += \
-			text/qfontengine_ft.cpp
+                        text/qfontengine_ft.cpp \
+                        text/qrawfont_ft.cpp
 		HEADERS += \
 			text/qfontengine_ft_p.h
 		DEFINES += \

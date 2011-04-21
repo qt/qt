@@ -217,6 +217,13 @@ void tst_QSslSocket_onDemandCertificates_member::onDemandRootCertLoadingMemberMe
     socket3->setCaCertificates(QList<QSslCertificate>());
     socket3->connectToHostEncrypted(host, 443);
     QVERIFY(!socket3->waitForEncrypted());
+
+    // setting empty SSL configuration explicitly -> should not work
+    QSslSocketPtr socket4 = newSocket();
+    this->socket = socket4;
+    socket4->setSslConfiguration(QSslConfiguration());
+    socket4->connectToHostEncrypted(host, 443);
+    QVERIFY(!socket4->waitForEncrypted());
 }
 
 #endif // QT_NO_OPENSSL
