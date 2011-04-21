@@ -378,7 +378,8 @@ void ParticleData::debugDump()
              << "Pos: " << pv.x << "," << pv.y
              << "Vel: " << pv.sx << "," << pv.sy
              << "Acc: " << pv.ax << "," << pv.ay
-             << "Time: " << pv.t;// << "," << (system->m_timeInt / 1000.0);
+             << "Size: " << pv.size << "," << pv.endSize
+             << "Time: " << pv.t << "," <<pv.lifeSpan;
 }
 
 bool ParticleData::stillAlive()

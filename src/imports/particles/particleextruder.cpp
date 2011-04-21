@@ -70,4 +70,9 @@ QPointF ParticleExtruder::extrude(const QRectF &rect)
     }
 }
 
+bool ParticleExtruder::contains(const QRectF &bounds, const QPointF &point)
+{
+    return bounds.contains(point);
+}
+
 QT_END_NAMESPACE

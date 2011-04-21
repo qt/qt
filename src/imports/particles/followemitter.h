@@ -55,12 +55,14 @@ class FollowEmitter : public ParticleEmitter
 {
     Q_OBJECT
     Q_PROPERTY(QString follow READ follow WRITE setFollow NOTIFY followChanged)
+    //### Remove, and just document that particles per second is per particle? But has count issues
     Q_PROPERTY(int particlesPerParticlePerSecond READ particlesPerParticlePerSecond WRITE setParticlesPerParticlePerSecond NOTIFY particlesPerParticlePerSecondChanged)
 
     //TODO: Document that FollowEmitter's box is where it follows. It emits in a rect centered on the followed particle
     //TODO: A set of properties that can involve the particle size of the followed
-    Q_PROPERTY(qreal emitterXVariation READ emitterXVariation WRITE setEmitterXVariation NOTIFY emitterXVariationChanged)
-    Q_PROPERTY(qreal emitterYVariation READ emitterYVariation WRITE setEmitterYVariation NOTIFY emitterYVariationChanged)
+    Q_PROPERTY(ParticleExtruder* emissionShape READ emissonShape WRITE setEmissionShape NOTIFY emissionShapeChanged)
+    Q_PROPERTY(qreal emissionHeight READ emitterYVariation WRITE setEmitterYVariation NOTIFY emitterYVariationChanged)
+    Q_PROPERTY(qreal emissionWidth READ emitterXVariation WRITE setEmitterXVariation NOTIFY emitterXVariationChanged)
 
 public:
     explicit FollowEmitter(QSGItem *parent = 0);
@@ -87,6 +89,11 @@ public:
         return m_follow;
     }
 
+    ParticleExtruder* emissonShape() const
+    {
+        return m_emissionExtruder;
+    }
+
 signals:
 
     void particlesPerParticlePerSecondChanged(int arg);
@@ -96,6 +103,8 @@ signals:
     void emitterYVariationChanged(qreal arg);
 
     void followChanged(QString arg);
+
+    void emissionShapeChanged(ParticleExtruder* arg);
 
 public slots:
 
@@ -130,6 +139,14 @@ public slots:
         }
     }
 
+    void setEmissionShape(ParticleExtruder* arg)
+    {
+        if (m_emissionExtruder != arg) {
+            m_emissionExtruder = arg;
+            emit emissionShapeChanged(arg);
+        }
+    }
+
 private slots:
     void recalcParticlesPerSecond();
 
@@ -142,6 +159,8 @@ private:
     qreal m_emitterYVariation;
     QString m_follow;
     int m_followCount;
+    ParticleExtruder* m_emissionExtruder;
+    ParticleExtruder* m_defaultEmissionExtruder;
 };
 
 QT_END_NAMESPACE

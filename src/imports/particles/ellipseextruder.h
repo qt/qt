@@ -53,10 +53,11 @@ QT_MODULE(Declarative)
 class EllipseExtruder : public ParticleExtruder
 {
     Q_OBJECT
-    Q_PROPERTY(bool fill READ fill WRITE setFill NOTIFY fillChanged)
+    Q_PROPERTY(bool fill READ fill WRITE setFill NOTIFY fillChanged)//###Use base class? If it's still box
 public:
     explicit EllipseExtruder(QObject *parent = 0);
     virtual QPointF extrude(const QRectF &);
+    virtual bool contains(const QRectF &bounds, const QPointF &point);
 
     bool fill() const
     {

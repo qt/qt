@@ -55,4 +55,10 @@ QPointF EllipseExtruder::extrude(const QRectF & r)
     return QPointF(r.x() + r.width()/2 + mag * (r.width()/2) * cos(theta),
                    r.y() + r.height()/2 + mag * (r.height()/2) * sin(theta));
 }
+
+bool EllipseExtruder::contains(const QRectF &bounds, const QPointF &point)
+{
+    return bounds.contains(point);//TODO: Ellipse
+}
+
 QT_END_NAMESPACE

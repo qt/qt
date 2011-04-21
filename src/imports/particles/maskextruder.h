@@ -57,6 +57,7 @@ class MaskExtruder : public ParticleExtruder
 public:
     explicit MaskExtruder(QObject *parent = 0);
     virtual QPointF extrude(const QRectF &);
+    virtual bool contains(const QRectF &bounds, const QPointF &point);
 
     QUrl source() const
     {

@@ -50,7 +50,7 @@ Rectangle{
         system: sys
         anchors.fill: parent
         image: "content/singlesmile.png"
- //       onceOff: true
+        onceOff: true
     }
     ColoredParticle{
         system: sys

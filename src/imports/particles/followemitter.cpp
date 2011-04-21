@@ -50,6 +50,8 @@ FollowEmitter::FollowEmitter(QSGItem *parent) :
   , m_emitterXVariation(0)
   , m_emitterYVariation(0)
   , m_followCount(0)
+  , m_emissionExtruder(0)
+  , m_defaultEmissionExtruder(new ParticleExtruder(this))
 {
     connect(this, SIGNAL(followChanged(QString)),
             this, SLOT(recalcParticlesPerSecond()));
@@ -103,7 +105,7 @@ void FollowEmitter::emitWindow(int timeStamp)
     qreal pt;
 
     //Have to map it into this system, because particlesystem automaps it back
-    QPointF offset = this->mapFromItem(m_system, QPointF(0, 0));
+    QPointF offset = m_system->mapFromItem(this, QPointF(0, 0));
     qreal sizeAtEnd = m_particleEndSize >= 0 ? m_particleEndSize : m_particleSize;
 
     int gId = m_system->m_groupIds[m_follow];
@@ -115,7 +117,8 @@ void FollowEmitter::emitWindow(int timeStamp)
             continue;
         if(pt < d->pv.t)
             pt = d->pv.t;
-        if(!QRect(offset.x(), offset.y(), width(), height()).contains(d->curX(), d->curY())){
+
+        if(!effectiveExtruder()->contains(QRectF(offset.x(), offset.y(), width(), height()),QPointF(d->curX(), d->curY()))){
             m_lastEmission[i] = time;//jump over this time period without emitting, because it's outside
             continue;
         }
@@ -143,8 +146,9 @@ void FollowEmitter::emitWindow(int timeStamp)
             qreal followT2 = followT * followT * 0.5;
             qreal sizeOffset = d->pv.size/2;//TODO: Current size? As an option
             //TODO: Set variations
-            QRectF boundsRect(d->pv.x + d->pv.sx * followT + d->pv.ax * followT2 + offset.x() - m_emitterXVariation/2,
-                              d->pv.y + d->pv.sy * followT + d->pv.ay * followT2 + offset.y() - m_emitterYVariation/2,
+            //Subtract offset, because PS expects this in emitter coordinates
+            QRectF boundsRect(d->pv.x - offset.x() + d->pv.sx * followT + d->pv.ax * followT2 - m_emitterXVariation/2,
+                              d->pv.y - offset.y() + d->pv.sy * followT + d->pv.ay * followT2 - m_emitterYVariation/2,
                               m_emitterXVariation,
                               m_emitterYVariation);
 //            QRectF boundsRect(d->pv.x + d->pv.sx * followT + d->pv.ax * followT2 + offset.x() - sizeOffset,
@@ -152,7 +156,8 @@ void FollowEmitter::emitWindow(int timeStamp)
 //                              sizeOffset*2,
 //                              sizeOffset*2);
 
-            const QPointF &newPos = effectiveExtruder()->extrude(boundsRect);
+            ParticleExtruder* effectiveEmissionExtruder = m_emissionExtruder ? m_emissionExtruder : m_defaultEmissionExtruder;
+            const QPointF &newPos = effectiveEmissionExtruder->extrude(boundsRect);
             p.x = newPos.x();
             p.y = newPos.y();
 
