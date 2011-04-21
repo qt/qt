@@ -116,6 +116,7 @@ public:
     bool requireImplicitWidth:1;
     bool hAlignImplicit:1;
     bool rightToLeftText:1;
+    bool layoutTextElided:1;
 
     QRect layedOutTextRect;
     QSize paintedSize;
