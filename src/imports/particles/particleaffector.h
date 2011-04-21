@@ -132,7 +132,7 @@ void setOnceOff(bool arg)
 protected:
     friend class ParticleSystem;
     virtual bool affectParticle(ParticleData *d, qreal dt);
-    bool m_needsReset;
+    bool m_needsReset;//### What is this really saving?
     ParticleSystem* m_system;
     QStringList m_particles;
     bool activeGroup(int g) {return m_groups.isEmpty() || m_groups.contains(g);}

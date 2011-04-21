@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 PictureAffector::PictureAffector(QSGItem *parent) :
     ParticleAffector(parent)
 {
+    m_needsReset = true;
 }
 
 void PictureAffector::reset(int systemIdx)
