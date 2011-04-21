@@ -205,7 +205,7 @@ public:
     inline QTextBlock(const QTextBlock &o) : p(o.p), n(o.n) {}
     inline QTextBlock &operator=(const QTextBlock &o) { p = o.p; n = o.n; return *this; }
 
-    inline bool isValid() const { return p != 0 && n != 0; }
+    bool isValid() const;
 
     inline bool operator==(const QTextBlock &o) const { return p == o.p && n == o.n; }
     inline bool operator!=(const QTextBlock &o) const { return p != o.p || n != o.n; }
@@ -316,7 +316,9 @@ public:
     int charFormatIndex() const;
     QString text() const;
 
+#if !defined(QT_NO_RAWFONT)
     QList<QGlyphs> glyphs() const;
+#endif
 
 private:
     const QTextDocumentPrivate *p;

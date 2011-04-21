@@ -41,6 +41,7 @@
 
 #include "qdbusserver.h"
 #include "qdbusconnection_p.h"
+#include "qdbusconnectionmanager_p.h"
 
 #ifndef QT_NO_DBUS
 
@@ -62,21 +63,34 @@ QT_BEGIN_NAMESPACE
 QDBusServer::QDBusServer(const QString &address, QObject *parent)
     : QObject(parent)
 {
+    if (address.isEmpty())
+        return;
+
     if (!qdbus_loadLibDBus()) {
         d = 0;
         return;
     }
     d = new QDBusConnectionPrivate(this);
 
-    if (address.isEmpty())
-        return;
+    QMutexLocker locker(&QDBusConnectionManager::instance()->mutex);
+    QDBusConnectionManager::instance()->setConnection(QLatin1String("QDBusServer-") + QString::number(reinterpret_cast<qulonglong>(d)), d);
 
     QObject::connect(d, SIGNAL(newServerConnection(QDBusConnection)),
                      this, SIGNAL(newConnection(QDBusConnection)));
 
-    // server = q_dbus_server_listen( "unix:tmpdir=/tmp", &error);
     QDBusErrorInternal error;
     d->setServer(q_dbus_server_listen(address.toUtf8().constData(), error), error);
+}
+
+/*!
+    Destructs a QDBusServer
+*/
+QDBusServer::~QDBusServer()
+{
+    if (QDBusConnectionManager::instance()) {
+        QMutexLocker locker(&QDBusConnectionManager::instance()->mutex);
+        QDBusConnectionManager::instance()->removeConnection(d->name);
+    }
 }
 
 /*!
@@ -113,11 +127,12 @@ QString QDBusServer::address() const
 
     return addr;
 }
+
 /*!
   \fn void QDBusServer::newConnection(const QDBusConnection &connection)
 
-  This signal is currently not used, but if and when it is
-  used, \a connection will be the new connection. 
+  This signal is emitted when a new client connection \a connection is
+  established to the server.
  */
 
 QT_END_NAMESPACE

@@ -47,6 +47,7 @@
 #include <private/qimage_p.h>
 #include <qstatictext.h>
 #include <private/qstatictext_p.h>
+#include <private/qrawfont_p.h>
 
 #include <QDebug>
 
@@ -54,8 +55,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GUI_EXPORT extern int qt_defaultDpiX();
-Q_GUI_EXPORT extern int qt_defaultDpiY();
 extern void qt_format_text(const QFont &font,
                            const QRectF &_r, int tf, const QTextOption *option, const QString& str, QRectF *brect,
                            int tabstops, int* tabarray, int tabarraylen,
@@ -1756,26 +1755,38 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
         painter->setClipRegion(region, Qt::ClipOperation(cmd.extra));
         break; }
         
+#if !defined(QT_NO_RAWFONT)
     case QPaintBufferPrivate::Cmd_DrawStaticText: {
             
             QVariantList variants(d->variants.at(cmd.offset).value<QVariantList>());
             
             QFont font = variants.at(0).value<QFont>();
 
-            QVector<quint32> glyphs;
+            QVector<quint32> glyphIndexes;
             QVector<QPointF> positions;
 
             for (int i=0; i<(variants.size() - 1) / 2; ++i) {
-                glyphs.append(variants.at(i*2 + 1).toUInt());
+                glyphIndexes.append(variants.at(i*2 + 1).toUInt());
                 positions.append(variants.at(i*2 + 2).toPointF());
             }
 
             painter->setFont(font);
 
-            qt_draw_glyphs(painter, glyphs.constData(), positions.constData(), glyphs.size());
-            
-        break;
+            QRawFont rawFont;
+            QRawFontPrivate *rawFontD = QRawFontPrivate::get(rawFont);
+            QFontPrivate *fontD = QFontPrivate::get(font);
+            rawFontD->fontEngine = fontD->engineForScript(QUnicodeTables::Common);
+            rawFontD->fontEngine->ref.ref();
+
+            QGlyphs glyphs;
+            glyphs.setFont(rawFont);
+            glyphs.setGlyphIndexes(glyphIndexes);
+            glyphs.setPositions(positions);
+
+            painter->drawGlyphs(QPointF(), glyphs);
+            break;
     }
+#endif
 
     case QPaintBufferPrivate::Cmd_DrawText: {
         QPointF pos(d->floats.at(cmd.extra), d->floats.at(cmd.extra+1));

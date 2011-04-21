@@ -257,10 +257,10 @@ void tst_QTextBoundaryFinder::sentenceBoundaries()
 
 void tst_QTextBoundaryFinder::isAtWordStart()
 {
-    QString txt("The quick brown fox jumped over $the lazy. dog  ");
+    QString txt("The quick brown fox jumped over $the lazy. dog  I win!");
     QList<int> start, end;
-    start << 0 << 4 << 10 << 16 << 20 << 27 << 32 << 33 << 37 << 41 << 43;
-    end << 3 << 9 << 15 << 19 << 26 << 31 << 33 << 36 << 41 << 42 << 46;
+    start << 0 << 4 << 10 << 16 << 20 << 27 << 32 << 33 << 37 << 41 << 43 << 48 << 50 << 53;
+    end << 3 << 9 << 15 << 19 << 26 << 31 << 33 << 36 << 41 << 42 << 46 << 49 << 53 << 54;
     QTextBoundaryFinder finder(QTextBoundaryFinder::Word, txt);
     for(int i=0; i < txt.length(); ++i) {
         finder.setPosition(i);

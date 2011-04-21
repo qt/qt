@@ -147,9 +147,9 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
     }
 
 
+    QOpenKODEIntegration *integration = static_cast<QOpenKODEIntegration *>(QApplicationPrivate::platformIntegration());
 
-
-    if (!isFullScreen || (isFullScreen && !QPlatformGLContext::defaultSharedContext())) {
+    if (!isFullScreen || (isFullScreen && !integration->mainGLContext())) {
         if (kdRealizeWindow(m_kdWindow, &m_eglWindow)) {
             qErrnoWarning(kdGetError(), "Could not realize native window");
             return;
@@ -158,9 +158,9 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
         EGLSurface surface = eglCreateWindowSurface(screen->eglDisplay(),m_eglConfig,m_eglWindow,m_eglWindowAttrs.constData());
         m_platformGlContext = new QEGLPlatformContext(screen->eglDisplay(), m_eglConfig,
                                                       m_eglContextAttrs.data(), surface, m_eglApi);
-        m_platformGlContext->makeDefaultSharedContext();
+        integration->setMainGLContext(m_platformGLContext);
     } else {
-        m_platformGlContext = const_cast<QEGLPlatformContext *>(static_cast<const QEGLPlatformContext *>(QPlatformGLContext::defaultSharedContext()));
+        m_platformGlContext = integration->mainGLContext();
         kdDestroyWindow(m_kdWindow);
         m_kdWindow = 0;
     }
@@ -169,7 +169,7 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
 
 QOpenKODEWindow::~QOpenKODEWindow()
 {
-    if (m_platformGlContext != QPlatformGLContext::defaultSharedContext()) {
+    if (m_platformGlContext != static_cast<QOpenKODEIntegration *>(QApplicationPrivate::platformIntegration())) {
         delete m_platformGlContext;
     }
     if (m_kdWindow)

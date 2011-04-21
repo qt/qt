@@ -856,8 +856,6 @@ void QTextEngine::shapeLine(const QScriptLine &line)
     }
 }
 
-Q_GUI_EXPORT extern int qt_defaultDpiY(); // in qfont.cpp
-
 void QTextEngine::shapeText(int item) const
 {
     Q_ASSERT(item < layoutData->items.size());
@@ -2611,8 +2609,6 @@ void QTextEngine::splitItem(int item, int pos) const
 //     qDebug("split at position %d itempos=%d", pos, item);
 }
 
-Q_GUI_EXPORT extern int qt_defaultDpiY();
-
 QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
 {
     const QScriptItem &si = layoutData->items[item];
@@ -2723,6 +2719,22 @@ void QTextEngine::resolveAdditionalFormats() const
         indices[i] = collection->indexForFormat(f);
     }
     specialData->resolvedFormatIndices = indices;
+}
+
+QFixed QTextEngine::leadingSpaceWidth(const QScriptLine &line)
+{
+    if (!line.hasTrailingSpaces
+        || (option.flags() & QTextOption::IncludeTrailingSpaces)
+        || !isRightToLeft())
+        return QFixed();
+
+    int pos = line.length;
+    const HB_CharAttributes *attributes = this->attributes();
+    if (!attributes)
+        return QFixed();
+    while (pos > 0 && attributes[line.from + pos - 1].whiteSpace)
+        --pos;
+    return width(line.from + pos, line.length - pos);
 }
 
 QStackTextEngine::QStackTextEngine(const QString &string, const QFont &f)

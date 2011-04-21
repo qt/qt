@@ -67,11 +67,19 @@ public:
     explicit QMutexPool(QMutex::RecursionMode recursionMode = QMutex::NonRecursive, int size = 131);
     ~QMutexPool();
 
-    QMutex *get(const void *address);
+    inline QMutex *get(const void *address) {
+        int index = uint(quintptr(address)) % mutexes.count();
+        QMutex *m = mutexes[index];
+        if (m)
+            return m;
+        else
+            return createMutex(index);
+    }
     static QMutexPool *instance();
     static QMutex *globalInstanceGet(const void *address);
 
 private:
+    QMutex *createMutex(int index);
     QVarLengthArray<QAtomicPointer<QMutex>, 131> mutexes;
     QMutex::RecursionMode recursionMode;
 };

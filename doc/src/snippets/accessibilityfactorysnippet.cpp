@@ -45,9 +45,8 @@ QAccessibleInterface *sliderFactory(const QString &classname, QObject *object)
 {
     QAccessibleInterface *interface = 0;
 
-    if (classname == "QSlider" && object && object->isWidgetType())
-        interface = new SliderInterface(classname,
-                                        static_cast<QWidget *>(object));
+    if (classname == QLatin1String("QSlider") && object && object->isWidgetType())
+        interface = new QAccessibleSlider(static_cast<QWidget *>(object));
     
     return interface;
 }

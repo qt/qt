@@ -491,7 +491,7 @@ static QString encode(const QString &string)
 #endif
 }
 
-QStringList CodeMarker::macRefsForNode(const Node *node)
+QStringList CodeMarker::macRefsForNode(Node *node)
 {
     QString result = QLatin1String("cpp/");
     switch (node->type()) {
@@ -583,7 +583,7 @@ QStringList CodeMarker::macRefsForNode(const Node *node)
          {
              NodeList list = static_cast<const PropertyNode*>(node)->functions();
              QStringList stringList;
-             foreach (const Node *node, list) {
+             foreach (Node* node, list) {
                 stringList += macRefsForNode(node);
              }
              return stringList;

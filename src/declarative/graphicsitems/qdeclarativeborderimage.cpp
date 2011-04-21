@@ -300,7 +300,7 @@ void QDeclarativeBorderImage::load()
     }
 
     if (d->url.isEmpty()) {
-        d->pix.clear();
+        d->pix.clear(this);
         d->status = Null;
         setImplicitWidth(0);
         setImplicitHeight(0);
@@ -340,6 +340,7 @@ void QDeclarativeBorderImage::load()
                 options |= QDeclarativePixmap::Asynchronous;
             if (d->cache)
                 options |= QDeclarativePixmap::Cache;
+            d->pix.clear(this);
             d->pix.load(qmlEngine(this), d->url, options);
 
             if (d->pix.isLoading()) {
@@ -472,6 +473,7 @@ void QDeclarativeBorderImage::setGridScaledImage(const QDeclarativeGridScaledIma
             options |= QDeclarativePixmap::Asynchronous;
         if (d->cache)
             options |= QDeclarativePixmap::Cache;
+        d->pix.clear(this);
         d->pix.load(qmlEngine(this), d->sciurl, options);
 
         if (d->pix.isLoading()) {

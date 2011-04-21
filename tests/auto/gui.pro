@@ -140,6 +140,7 @@ SUBDIRS=\
     qpushbutton \
     qquaternion \
     qradiobutton \
+    qrawfont \
     qregexpvalidator \
     qregion \
     qscrollarea \

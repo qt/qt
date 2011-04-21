@@ -1,0 +1,11 @@
+Source: leveltemplate
+Section: user/games
+Priority: extra
+Maintainer: Antonio Aloisio <antonio.aloisio@nokia.com>
+Standards-Version: 3.7.2
+
+Package: leveltemplate
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: QuickHit - Level Template
+ QuickHit - Level Template

@@ -330,6 +330,23 @@ bool QCoeFepInputContext::symbianFilterEvent(QWidget *keyWidget, const QSymbianE
         // This should also happen for commands.
         reset();
 
+    if (event->type() == QSymbianEvent::WindowServerEvent
+        && event->windowServerEvent()
+        && event->windowServerEvent()->Type() == EEventWindowVisibilityChanged
+        && S60->splitViewLastWidget) {
+
+        QGraphicsView *gv = qobject_cast<QGraphicsView*>(S60->splitViewLastWidget);
+        const bool alwaysResize = (gv && gv->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff);
+
+        if (alwaysResize) {
+            TUint visibleFlags = event->windowServerEvent()->VisibilityChanged()->iFlags;
+            if (visibleFlags & TWsVisibilityChangedEvent::EPartiallyVisible)
+                ensureFocusWidgetVisible(S60->splitViewLastWidget);
+            if (visibleFlags & TWsVisibilityChangedEvent::ENotVisible)
+                resetSplitViewWidget(true);
+        }
+    }
+
     return false;
 }
 
@@ -393,10 +410,14 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
     windowToMove->setUpdatesEnabled(false);
 
     if (!alwaysResize) {
-        if (gv->scene()) {
-            if (gv->scene()->focusItem())
+        if (gv->scene() && gv->scene()->focusItem()) {
+            // Check if the widget contains cursorPositionChanged signal and disconnect from it.
+            QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
+            int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
+            if (index != -1)
                 disconnect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
-            QGraphicsItem *rootItem;
+
+            QGraphicsItem *rootItem = 0;
             foreach (QGraphicsItem *item, gv->scene()->items()) {
                 if (!item->parentItem()) {
                     rootItem = item;
@@ -484,6 +505,13 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
     // states getting changed.
 
     if (!moveWithinVisibleArea) {
+        // Check if the widget contains cursorPositionChanged signal and connect to it.
+        QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
+        if (gv->scene() && gv->scene()->focusItem()) {
+            int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
+            if (index != -1)
+                connect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
+        }
         S60->splitViewLastWidget = widget;
         m_splitViewPreviousWindowStates = windowToMove->windowState();
     }
@@ -520,13 +548,6 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
         }
         windowToMove->setUpdatesEnabled(true);
     } else {
-        if (!moveWithinVisibleArea) {
-            // Check if the widget contains cursorPositionChanged signal and connect to it.
-            const char *signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged())).constData();
-            int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal + 1);
-            if (index != -1)
-                connect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
-        }
         translateInputWidget();
     }
 
@@ -705,6 +726,8 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_EMAIL_ADDR_SPECIAL_CHARACTER_TABLE_DIALOG);
     } else if (needsCharMap) {
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
+    } else if ((hints & ImhFormattedNumbersOnly) || (hints & ImhDialableCharactersOnly)) {
+        m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
     } else {
         m_fepState->SetSpecialCharacterTableResourceId(0);
     }
@@ -808,7 +831,7 @@ void QCoeFepInputContext::translateInputWidget()
         return;
 
     // Fetch root item (i.e. graphicsitem with no parent)
-    QGraphicsItem *rootItem;
+    QGraphicsItem *rootItem = 0;
     foreach (QGraphicsItem *item, gv->scene()->items()) {
         if (!item->parentItem()) {
             rootItem = item;

@@ -3820,16 +3820,32 @@ bool QETWidget::translateConfigEvent(const MSG &msg)
                     QApplication::sendSpontaneousEvent(this, &e);
                     hideChildren(true);
                 }
-            } else if (msg.wParam != SIZE_MINIMIZED && isMinimized()) {
+            } else if (msg.wParam != SIZE_MINIMIZED) {
+                bool window_state_changed = false;
+                Qt::WindowStates oldstate = Qt::WindowStates(dataPtr()->window_state);
+                if (isMinimized()) {
 #ifndef Q_WS_WINCE
-                const QString title = windowTitle();
-                if (!title.isEmpty())
-                    d_func()->setWindowTitle_helper(title);
+                    const QString title = windowTitle();
+                    if (!title.isEmpty())
+                        d_func()->setWindowTitle_helper(title);
 #endif
-                data->window_state &= ~Qt::WindowMinimized;
-                showChildren(true);
-                QShowEvent e;
-                QApplication::sendSpontaneousEvent(this, &e);
+                    data->window_state &= ~Qt::WindowMinimized;
+                    showChildren(true);
+                    QShowEvent e;
+                    QApplication::sendSpontaneousEvent(this, &e);
+                // Capture SIZE_MAXIMIZED and SIZE_RESTORED without preceding WM_SYSCOMMAND
+                // (Aero Snap on Win7)
+                } else if (msg.wParam == SIZE_MAXIMIZED && !isMaximized()) {
+                    data->window_state |= Qt::WindowMaximized;
+                    window_state_changed = true;
+                } else if (msg.wParam == SIZE_RESTORED && isMaximized()) {
+                    data->window_state &= ~(Qt::WindowMaximized);
+                    window_state_changed = true;
+                }
+                if (window_state_changed) {
+                    QWindowStateChangeEvent e(oldstate);
+                    QApplication::sendSpontaneousEvent(this, &e);
+                }
             }
         }
         if (msg.wParam != SIZE_MINIMIZED && oldSize != newSize) {
@@ -3861,7 +3877,7 @@ bool QETWidget::translateConfigEvent(const MSG &msg)
                 QApplication::postEvent(this, e);
             }
         }
-} else if (msg.message == WM_MOVE) {        // move event
+    } else if (msg.message == WM_MOVE) {        // move event
         int a = (int) (short) LOWORD(msg.lParam);
         int b = (int) (short) HIWORD(msg.lParam);
         QPoint oldPos = geometry().topLeft();

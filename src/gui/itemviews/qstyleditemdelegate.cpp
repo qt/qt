@@ -263,6 +263,11 @@ QStyledItemDelegate::~QStyledItemDelegate()
 
     The default implementation uses the QLocale::toString to convert \a value into
     a QString.
+
+    This function is not called for empty model indices, i.e., indices for which
+    the model returns an invalid QVariant.
+
+    \sa QAbstractItemModel::data()
 */
 QString QStyledItemDelegate::displayText(const QVariant &value, const QLocale& locale) const
 {

@@ -318,11 +318,6 @@ QPixmap QS60StylePrivate::backgroundTexture(bool /*skipCreation*/)
     return *m_background;
 }
 
-QSize QS60StylePrivate::naviPaneSize()
-{
-    return QSize(0, 0);
-}
-
 bool QS60StylePrivate::isTouchSupported()
 {
 #ifdef QT_KEYPAD_NAVIGATION

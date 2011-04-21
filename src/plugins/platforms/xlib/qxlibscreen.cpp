@@ -191,6 +191,9 @@ qDebug() << "qt_x_errhandler" << err->error_code;
 
 QXlibScreen::QXlibScreen()
         : mFormat(QImage::Format_RGB32)
+#if !defined(QT_NO_OPENGL) && defined(QT_OPENGL_ES_2)
+        , mEGLDisplay(0)
+#endif
 {
     char *display_name = getenv("DISPLAY");
     Display *display = XOpenDisplay(display_name);
@@ -467,7 +470,7 @@ int QXlibScreen::xScreenNumber() const
 
 Visual * QXlibScreen::defaultVisual() const
 {
-    DefaultVisual(display()->nativeDisplay(), xScreenNumber());
+    return DefaultVisual(display()->nativeDisplay(), xScreenNumber());
 }
 
 QXlibKeyboard * QXlibScreen::keyboard() const

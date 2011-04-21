@@ -291,6 +291,7 @@ void tst_QHostInfo::lookupIPv6_data()
     QTest::addColumn<int>("err");
 
     QTest::newRow("ip6") << "www.ipv6-net.org" << "62.93.217.177 2001:618:1401:0:0:0:0:4" << int(QHostInfo::NoError);
+    QTest::newRow("ip6") << "ipv6.google.com" << "2A00:1450:8007:0:0:0:0:63" << int(QHostInfo::NoError);
 
     // avoid using real IPv6 addresses here because this will do a DNS query
     // real addresses are between 2000:: and 3fff:ffff:ffff:ffff:ffff:ffff:ffff
@@ -337,7 +338,7 @@ void tst_QHostInfo::reverseLookup_data()
 
     // ### Use internal DNS instead. Discussed with Andreas.
     //QTest::newRow("classical.hexago.com") << QString("2001:5c0:0:2::24") << QStringList(QString("classical.hexago.com")) << 0;
-    QTest::newRow("origin.cisco.com") << QString("12.159.148.94") << QStringList(QString("origin.cisco.com")) << 0;
+    QTest::newRow("gitorious.org") << QString("87.238.52.168") << QStringList(QString("gitorious.org")) << 0;
     QTest::newRow("bogus-name") << QString("1::2::3::4") << QStringList() << 1;
 }
 

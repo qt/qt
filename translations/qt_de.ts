@@ -320,6 +320,10 @@ Bitte überprüfen Sie Ihre GStreamer-Installation und stellen Sie sicher, dass 
         <source>Playback complete</source>
         <translation>Abspielen beendet</translation>
     </message>
+    <message>
+        <source>Download error</source>
+        <translation>Fehler beim Download</translation>
+    </message>
 </context>
 <context>
     <name>Phonon::MMF::AbstractVideoPlayer</name>
@@ -438,6 +442,10 @@ Bitte überprüfen Sie Ihre GStreamer-Installation und stellen Sie sicher, dass 
     <message>
         <source>Error opening source: media type could not be determined</source>
         <translation>Die Quelle konnte nicht geöffnet werden: Der Medientyp konnte nicht bestimmt werden</translation>
+    </message>
+    <message>
+        <source>Failed to set requested IAP</source>
+        <translation>Der angeforderte Internetzugriffspunkt konnte nicht gesetzt werden</translation>
     </message>
 </context>
 <context>
@@ -1214,6 +1222,11 @@ nach
         <translation>%1: Keine Ressourcen mehr verfügbar</translation>
     </message>
     <message>
+        <source>%1: permission denied</source>
+        <comment>QSystemSemaphore</comment>
+        <translation>%1: Zugriff verweigert</translation>
+    </message>
+    <message>
         <source>%1: unknown error %2</source>
         <comment>QSystemSemaphore</comment>
         <translation>%1: Unbekannter Fehler %2</translation>
@@ -1362,6 +1375,13 @@ nach
     <message>
         <source>Qt was built without support for QMovie</source>
         <translation>Diese Version der Qt-Bibliothek wurde ohne Unterstützung für die Klasse QMovie erstellt</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeApplication</name>
+    <message>
+        <source>Application is an abstract class</source>
+        <translation>&apos;Application&apos; ist eine abstrakte Klasse</translation>
     </message>
 </context>
 <context>
@@ -1544,6 +1564,14 @@ nach
         <translation>Komponentenobjekte können keine neuen Funktionen deklarieren.</translation>
     </message>
     <message>
+        <source>&quot;%1.%2&quot; is not available in %3 %4.%5.</source>
+        <translation>&quot;%1.%2&quot; ist in %3 %4.%5 nicht verfügbar.</translation>
+    </message>
+    <message>
+        <source>&quot;%1.%2&quot; is not available due to component versioning.</source>
+        <translation>&quot;%1.%2&quot; ist in dieser Version der Komponente nicht verfügbar </translation>
+    </message>
+    <message>
         <source>Cannot assign a value to a signal (expecting a script to be run)</source>
         <translation>Einem Signal können keine Werte zugewiesen werden (es wird ein Skript erwartet)</translation>
     </message>
@@ -1594,6 +1622,10 @@ nach
     <message>
         <source>Invalid property assignment: script expected</source>
         <translation>Ungültige Zuweisung bei Eigenschaft: Es wird ein Skript erwartet</translation>
+    </message>
+    <message>
+        <source>Cannot assign multiple values to a singular property</source>
+        <translation>Eine Zuweisung mehrerer Werte an eine einfache Eigenschaft ist nicht zulässig</translation>
     </message>
     <message>
         <source>Cannot assign object to property</source>
@@ -1688,8 +1720,16 @@ nach
         <translation>Ungültige Quellangabe bei Alias-Eigenschaft</translation>
     </message>
     <message>
+        <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt;, &lt;id&gt;.&lt;property&gt; or &lt;id&gt;.&lt;value property&gt;.&lt;property&gt;</source>
+        <translation>Ungültige Alias-Referenz. Eine Alias-Referenz muss in der Form &lt;id&gt;, &lt;id&gt;.&lt;property&gt; or &lt;id&gt;.&lt;value property&gt;.&lt;property&gt; angegeben werden</translation>
+    </message>
+    <message>
+        <source>Alias property exceeds alias bounds</source>
+        <translation>Die Alias-Eigenschaft überschreitet die Grenzen des Alias</translation>
+    </message>
+    <message>
         <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
-        <translation>Ungültige Referenzierung einer Alias-Eigenschaft. Die Referenz muss in der Form &lt;id&gt; oder &lt;id&gt;.&lt;property&gt; angegeben werden</translation>
+        <translation type="obsolete">Ungültige Referenzierung einer Alias-Eigenschaft. Die Referenz muss in der Form &lt;id&gt; oder &lt;id&gt;.&lt;property&gt; angegeben werden</translation>
     </message>
     <message>
         <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
@@ -1701,6 +1741,10 @@ nach
     <message>
         <source>Invalid empty URL</source>
         <translation>Ungültige (leere) URL</translation>
+    </message>
+    <message>
+        <source>createObject: value is not an object</source>
+        <translation>createObject: Der Wert ist kein Objekt</translation>
     </message>
 </context>
 <context>
@@ -1782,6 +1826,10 @@ nach
 <context>
     <name>QDeclarativeImportDatabase</name>
     <message>
+        <source>cannot load module &quot;%1&quot;: File name case mismatch for &quot;%2&quot;</source>
+        <translation>Der Module &quot;%1&quot; kann nicht geladen werden: Der Dateiname &quot;%2&quot; unterscheidet sich in der Groß/Kleinschreibung</translation>
+    </message>
+    <message>
         <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
         <translation>Modul &quot;%1&quot; Definition &quot;%2&quot; kann nicht gelesen werden</translation>
     </message>
@@ -1837,6 +1885,10 @@ nach
         <source>is not a type</source>
         <translation>ist kein Typ</translation>
     </message>
+    <message>
+        <source>File name case mismatch for &quot;%2&quot;</source>
+        <translation>Die Groß/Kleinschreibung des Dateinamens &quot;%2&quot; stimmt nicht überein</translation>
+    </message>
 </context>
 <context>
     <name>QDeclarativeKeyNavigationAttached</name>
@@ -1850,6 +1902,17 @@ nach
     <message>
         <source>Keys is only available via attached properties</source>
         <translation>Die Unterstützung für Tasten ist nur über Eigenschaften des Typs &apos;attached&apos; verfügbar</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeLayoutMirroringAttached</name>
+    <message>
+        <source>LayoutDirection attached property only works with Items</source>
+        <translation>Eigenschaften des Typs &apos;attached&apos; können nur mit Elementen der Klasse Item verwendet werden</translation>
+    </message>
+    <message>
+        <source>LayoutMirroring is only available via attached properties</source>
+        <translation>LayoutMirroring ist nur in Verbindung mit Eigenschaften des Typs &quot;attached&quot; möglich</translation>
     </message>
 </context>
 <context>
@@ -2450,6 +2513,10 @@ nach
     <message>
         <source>Cannot create %1 for output</source>
         <translation>%1 kann nicht erstellt werden</translation>
+    </message>
+    <message>
+        <source>No file engine available or engine does not support UnMapExtension</source>
+        <translation>Es ist kein Datei-Engine verfügbar oder der gegenwärtig aktive Engine unterstützt die UnMap-Erweiterung nicht</translation>
     </message>
 </context>
 <context>
@@ -3420,6 +3487,18 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <source>Cannot resolve symbol &quot;%1&quot; in %2: %3</source>
         <translation>Das Symbol &quot;%1&quot; kann in %2 nicht aufgelöst werden: %3</translation>
     </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object (%2)</source>
+        <translation>&apos;%1&apos; ist keine ELF-Objektdatei (%2)</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object</source>
+        <translation>&apos;%1&apos; ist keine ELF-Objektdatei</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is an invalid ELF object (%2)</source>
+        <translation>&apos;%1&apos; ist keine gültige ELF-Objektdatei (%2)</translation>
+    </message>
 </context>
 <context>
     <name>QLineEdit</name>
@@ -3516,6 +3595,10 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     <message>
         <source>%1: Unknown error %2</source>
         <translation>%1: Unbekannter Fehler %2</translation>
+    </message>
+    <message>
+        <source>%1: Access denied</source>
+        <translation>%1: Zugriff verweigert</translation>
     </message>
 </context>
 <context>
@@ -3859,7 +3942,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     <name>QNetworkAccessDataBackend</name>
     <message>
         <source>Operation not supported on %1</source>
-        <translation>Diese Operation wird von %1 nicht unterstützt</translation>
+        <translation type="obsolete">Diese Operation wird von %1 nicht unterstützt</translation>
     </message>
     <message>
         <source>Invalid URI: %1</source>
@@ -6187,7 +6270,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>Voice Dial</source>
-        <extracomment>Button to trigger voice dialling</extracomment>
+        <extracomment>Button to trigger voice dialing</extracomment>
         <translation>Sprachwahl</translation>
     </message>
     <message>
@@ -6554,6 +6637,10 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <source>Error creating SSL session: %1</source>
         <translation>Es konnte keine SSL-Sitzung erzeugt werden: %1</translation>
+    </message>
+    <message>
+        <source>The peer certificate is blacklisted</source>
+        <translation>Das Zertifikat der Gegenstelle ist in einer Schwarzen Liste enthalten</translation>
     </message>
     <message>
         <source>Cannot provide a certificate with no key, %1</source>

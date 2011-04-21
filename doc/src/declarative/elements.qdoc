@@ -31,7 +31,8 @@
   \title QML Elements
   \brief A listing of standard QML elements.
 
-These are the functionally grouped lists of QML elements.
+These are the functionally grouped lists of QML elements as part of
+\l{Qt Quick}.
 
 Elements are declared with the their name and two curly braces. Elements may
 be nested in elements, thereby creating a parent-child relationship between the
@@ -44,7 +45,7 @@ To see the QML elements listed by functional area, see the
 \list
 \o \l {Item} - Basic item element inherited by QML elements
 \o \l {Component} - Encapsulates QML elements during importing
-\o \l {QML:QtObject} {QtObject} - Basic element containing only the objectName property
+\o \l {QML:QtObject} {QtObject} - Basic element containing only the \c {objectName} property
 \endlist
 
 \section1 Graphics
@@ -54,7 +55,7 @@ To see the QML elements listed by functional area, see the
 \o \l {BorderImage} - Allows the use of images as borders
 \o \l {AnimatedImage} - For playing animations stored in a series of frames
 \o \l {Gradient} - For defining a color gradient
-\o \l {GradientStop} - Used to define a color within a \l {Gradient}
+\o \l {GradientStop} - Used to define a color within a \l {Gradient}
 \o \l {SystemPalette} - Provides access to the Qt palettes
 \endlist
 
@@ -74,7 +75,7 @@ To see the QML elements listed by functional area, see the
 \o \l {MouseArea} - Sets up an area for mouse interaction
 \o \l {Keys} - Provides components with attached properties to handle key input.
 \o \l {FocusScope} - Element that mediate keyboard focus changes
-\o \l {Flickable} - Provides a surface that can be "flicked"
+\o \l {Flickable} - Provides a surface that can be "flicked"
 \o \l {Flipable} - Provides a surface that produces "flipping" effects
 \o \l {PinchArea} - Enables simple pinch gesture handling
 \endlist

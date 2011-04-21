@@ -697,11 +697,11 @@ void tst_QString::acc_01()
     QVERIFY(a<=c);
     QVERIFY(!(c<=a));
     QVERIFY(!(d<=a));
-    QCOMPARE(a+b,(QString)"ABCABC");
-    QCOMPARE(a	+"XXXX",(QString)"ABCXXXX");
-    QCOMPARE(a+'X',(QString)"ABCX");
-    QCOMPARE("XXXX"+a,(QString)"XXXXABC");
-    QCOMPARE('X'+a,(QString)"XABC");
+    QCOMPARE(QString(a+b),(QString)"ABCABC");
+    QCOMPARE(QString(a+"XXXX"),(QString)"ABCXXXX");
+    QCOMPARE(QString(a+'X'),(QString)"ABCX");
+    QCOMPARE(QString("XXXX"+a),(QString)"XXXXABC");
+    QCOMPARE(QString('X'+a),(QString)"XABC");
     a = (const char*)0;
     QVERIFY(a.isNull());
     QVERIFY(*a.toLatin1().constData() == '\0');
@@ -1060,12 +1060,12 @@ void tst_QString::indexOf_data()
     QString veryBigHaystack(500, 'a');
     veryBigHaystack += 'B';
     QTest::newRow("BoyerMooreStressTest") << veryBigHaystack << veryBigHaystack << 0 << true << 0;
-    QTest::newRow("BoyerMooreStressTest2") << veryBigHaystack + 'c' << veryBigHaystack << 0 << true << 0;
-    QTest::newRow("BoyerMooreStressTest3") << 'c' + veryBigHaystack << veryBigHaystack << 0 << true << 1;
-    QTest::newRow("BoyerMooreStressTest4") << veryBigHaystack << veryBigHaystack + 'c' << 0 << true << -1;
-    QTest::newRow("BoyerMooreStressTest5") << veryBigHaystack << 'c' + veryBigHaystack << 0 << true << -1;
-    QTest::newRow("BoyerMooreStressTest6") << 'd' + veryBigHaystack << 'c' + veryBigHaystack << 0 << true << -1;
-    QTest::newRow("BoyerMooreStressTest6") << veryBigHaystack + 'c' << 'c' + veryBigHaystack << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest2") << QString(veryBigHaystack + 'c') << veryBigHaystack << 0 << true << 0;
+    QTest::newRow("BoyerMooreStressTest3") << QString('c' + veryBigHaystack) << veryBigHaystack << 0 << true << 1;
+    QTest::newRow("BoyerMooreStressTest4") << veryBigHaystack << QString(veryBigHaystack + 'c') << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest5") << veryBigHaystack << QString('c' + veryBigHaystack) << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest6") << QString('d' + veryBigHaystack) << QString('c' + veryBigHaystack) << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest6") << QString(veryBigHaystack + 'c') << QString('c' + veryBigHaystack) << 0 << true << -1;
 
     QTest::newRow("BoyerMooreInsensitiveStressTest") << veryBigHaystack << veryBigHaystack << 0 << false << 0;
 
@@ -1175,14 +1175,14 @@ void tst_QString::indexOf2_data()
     QString whale = "a5zby6cx7dw8evf9ug0th1si2rj3qkp4lomn";
     QString minnow = "zby";
     QTest::newRow( "data40" ) << whale << minnow << 2;
-    QTest::newRow( "data41" ) << (whale + whale) << minnow << 2;
-    QTest::newRow( "data42" ) << (minnow + whale) << minnow << 0;
+    QTest::newRow( "data41" ) << QString(whale + whale) << minnow << 2;
+    QTest::newRow( "data42" ) << QString(minnow + whale) << minnow << 0;
     QTest::newRow( "data43" ) << whale << whale << 0;
-    QTest::newRow( "data44" ) << (whale + whale) << whale << 0;
-    QTest::newRow( "data45" ) << whale << (whale + whale) << -1;
-    QTest::newRow( "data46" ) << (whale + whale) << (whale + whale) << 0;
-    QTest::newRow( "data47" ) << (whale + whale) << (whale + minnow) << -1;
-    QTest::newRow( "data48" ) << (minnow + whale) << whale << (int)minnow.length();
+    QTest::newRow( "data44" ) << QString(whale + whale) << whale << 0;
+    QTest::newRow( "data45" ) << whale << QString(whale + whale) << -1;
+    QTest::newRow( "data46" ) << QString(whale + whale) << QString(whale + whale) << 0;
+    QTest::newRow( "data47" ) << QString(whale + whale) << QString(whale + minnow) << -1;
+    QTest::newRow( "data48" ) << QString(minnow + whale) << whale << (int)minnow.length();
 }
 
 void tst_QString::indexOf2()
@@ -1631,7 +1631,7 @@ void tst_QString::toLower()
     QCOMPARE( QString("`ABYZ{").toLower(), QString("`abyz{"));
     QCOMPARE( QString("`abyz{").toLower(), QString("`abyz{"));
 
-    QCOMPARE( QString(1, QChar(0x130)).toLower(), QString(1, QChar(0x69)) + QChar(0x307));
+    QCOMPARE( QString(1, QChar(0x130)).toLower(), QString(QString(1, QChar(0x69)) + QChar(0x307)));
 
     QString lower;
     lower += QChar(QChar::highSurrogate(0x10428));

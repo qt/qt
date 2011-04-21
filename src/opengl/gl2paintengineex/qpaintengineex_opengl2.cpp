@@ -90,16 +90,16 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_SYMBIAN)
-#define QT_GL_NO_SCISSOR_TEST
-#endif
-
 #if defined(Q_WS_WIN)
 extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif
 
 #ifdef Q_WS_MAC
 extern bool qt_applefontsmoothing_enabled;
+#endif
+
+#if !defined(QT_MAX_CACHED_GLYPH_SIZE)
+#  define QT_MAX_CACHED_GLYPH_SIZE 64
 #endif
 
 Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
@@ -540,27 +540,32 @@ void QGL2PaintEngineEx::beginNativePainting()
         glDisableVertexAttribArray(i);
 
 #ifndef QT_OPENGL_ES_2
-    // be nice to people who mix OpenGL 1.x code with QPainter commands
-    // by setting modelview and projection matrices to mirror the GL 1
-    // paint engine
-    const QTransform& mtx = state()->matrix;
-
-    float mv_matrix[4][4] =
+    const QGLFormat &fmt = d->device->format();
+    if (fmt.majorVersion() < 3 || (fmt.majorVersion() == 3 && fmt.minorVersion() < 1)
+        || fmt.profile() == QGLFormat::CompatibilityProfile)
     {
-        { float(mtx.m11()), float(mtx.m12()),     0, float(mtx.m13()) },
-        { float(mtx.m21()), float(mtx.m22()),     0, float(mtx.m23()) },
-        {                0,                0,     1,                0 },
-        {  float(mtx.dx()),  float(mtx.dy()),     0, float(mtx.m33()) }
-    };
+        // be nice to people who mix OpenGL 1.x code with QPainter commands
+        // by setting modelview and projection matrices to mirror the GL 1
+        // paint engine
+        const QTransform& mtx = state()->matrix;
 
-    const QSize sz = d->device->size();
+        float mv_matrix[4][4] =
+        {
+            { float(mtx.m11()), float(mtx.m12()),     0, float(mtx.m13()) },
+            { float(mtx.m21()), float(mtx.m22()),     0, float(mtx.m23()) },
+            {                0,                0,     1,                0 },
+            {  float(mtx.dx()),  float(mtx.dy()),     0, float(mtx.m33()) }
+        };
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0, sz.width(), sz.height(), 0, -999999, 999999);
+        const QSize sz = d->device->size();
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf(&mv_matrix[0][0]);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0, sz.width(), sz.height(), 0, -999999, 999999);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadMatrixf(&mv_matrix[0][0]);
+    }
 #else
     Q_UNUSED(ctx);
 #endif
@@ -591,7 +596,9 @@ void QGL2PaintEngineExPrivate::resetGLState()
     ctx->d_func()->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, false);
     ctx->d_func()->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, false);
 #ifndef QT_OPENGL_ES_2
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // color may have been changed by glVertexAttrib()
+    // gl_Color, corresponding to vertex attribute 3, may have been changed
+    float color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    glVertexAttrib4fv(3, color);
 #endif
 }
 
@@ -1477,7 +1484,8 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
     // don't try to cache huge fonts or vastly transformed fonts
     const qreal pixelSize = ti.fontEngine->fontDef.pixelSize;
-    if (pixelSize * pixelSize * qAbs(det) >= 64 * 64 || det < 0.25f || det > 4.f)
+    if (pixelSize * pixelSize * qAbs(det) >= QT_MAX_CACHED_GLYPH_SIZE * QT_MAX_CACHED_GLYPH_SIZE ||
+        det < 0.25f || det > 4.f)
         drawCached = false;
 
     QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0
@@ -1581,8 +1589,13 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     // cache so this text is performed before we test if the cache size has changed.
     if (recreateVertexArrays) {
         cache->setPaintEnginePrivate(this);
-        cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
-                        staticTextItem->glyphs, staticTextItem->glyphPositions);
+        if (!cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
+                             staticTextItem->glyphs, staticTextItem->glyphPositions)) {
+            // No space for glyphs in cache. We need to reset it and try again.
+            cache->clear();
+            cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
+                            staticTextItem->glyphs, staticTextItem->glyphPositions);
+        }
         cache->fillInPendingGlyphs();
     }
 

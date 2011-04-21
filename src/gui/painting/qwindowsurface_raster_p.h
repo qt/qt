@@ -109,7 +109,7 @@ public:
     void beginPaint(const QRegion &rgn);
     void setGeometry(const QRect &rect);
     bool scroll(const QRegion &area, int dx, int dy);
-    bool hasStaticContentsSupport() const;
+    WindowSurfaceFeatures features() const;
 
 #ifdef QT_MAC_USE_COCOA
     CGContextRef imageContext();

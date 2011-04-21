@@ -34,7 +34,9 @@ HEADERS += \
     access/qabstractnetworkcache.h \
     access/qnetworkdiskcache_p.h \
     access/qnetworkdiskcache.h \
-    access/qhttpthreaddelegate_p.h
+    access/qhttpthreaddelegate_p.h \
+    access/qhttpmultipart.h \
+    access/qhttpmultipart_p.h
 
 SOURCES += \
     access/qftp.cpp \
@@ -62,6 +64,7 @@ SOURCES += \
     access/qnetworkreplyfileimpl.cpp \
     access/qabstractnetworkcache.cpp \
     access/qnetworkdiskcache.cpp \
-    access/qhttpthreaddelegate.cpp
+    access/qhttpthreaddelegate.cpp \
+    access/qhttpmultipart.cpp
 
 include($$PWD/../../3rdparty/zlib_dependency.pri)

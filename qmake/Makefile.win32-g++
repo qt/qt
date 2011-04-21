@@ -28,7 +28,7 @@ CFLAGS	    =	-c -o$@ -O \
 		-DQT_BOOTSTRAPPED -DQLIBRARYINFO_EPOCROOT
 CXXFLAGS    =   $(CFLAGS)
 LFLAGS	    = -static-libgcc -static-libstdc++ -s
-LIBS	    = -lole32 -luuid
+LIBS	    = -lole32 -luuid -ladvapi32 -lkernel32
 LINKQMAKE   =	g++ $(LFLAGS) -o qmake.exe $(OBJS) $(QTOBJS) $(LIBS)
 ADDCLEAN    =
 
@@ -75,6 +75,8 @@ QTOBJS= \
 	qlist.o \
 	qlinkedlist.o \
 	qlocale.o \
+	qlocale_tools.o \
+	qlocale_win.o \
 	qmalloc.o \
 	qmap.o \
 	qregexp.o \
@@ -175,6 +177,12 @@ qstring.o: $(SOURCE_PATH)/src/corelib/tools/qstring.cpp
 
 qlocale.o: $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp
+
+qlocale_tools.o: $(SOURCE_PATH)/src/corelib/tools/qlocale_tools.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlocale_tools.cpp
+
+qlocale_win.o: $(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp
 
 quuid.o: $(SOURCE_PATH)/src/corelib/plugin/quuid.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/plugin/quuid.cpp

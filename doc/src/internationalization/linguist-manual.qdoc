@@ -29,6 +29,7 @@
     \page linguist-manual.html
     \title Qt Linguist Manual
     \ingroup qttools
+    \ingroup internationalization
 
     \startpage {index.html}{Qt Reference Documentation}
     \nextpage Qt Linguist Manual: Release Manager
@@ -46,10 +47,10 @@
     at the person with overall responsibility for the release of the
     application. They will typically coordinate the work of the
     software engineers and the translator. The chapter describes the
-    use of two tools. The \l{lupdate} tool is used to synchronize
-    source code and translations. The \l{lrelease} tool is used to
-    create run-time translation files for use by the released
-    application.
+    use of two tools. The \l{linguist-manager.html#lupdate}{lupdate}
+    tool is used to synchronize source code and translations. The
+    \l{linguist-manager.html#lrelease}{lrelease} tool is used to create
+    run-time translation files for use by the released application.
 
     The \l{linguist-translators.html}{Translators} chapter is for
     translators. It describes the use of the \QL tool.
@@ -77,7 +78,7 @@
     programmer is able to add additional context information to phrases
     when necessary. The release manager generates a set of translation
     files that are produced from the source files and passes these to the
-    translator. The translator opens the translation files using \QL, 
+    translator. The translator opens the translation files using \QL,
     enters their translations and saves the results back into
     the translation files, which they pass back to the release manager.
     The release manager then generates fast compact versions of these
@@ -144,13 +145,11 @@
 /*!
     \page linguist-manager.html
     \title Qt Linguist Manual: Release Manager
+    \ingroup internationalization
 
     \contentspage {Qt Linguist Manual}{Contents}
     \previouspage Qt Linguist Manual
     \nextpage Qt Linguist Manual: Translators
-
-    \keyword lupdate
-    \keyword lrelease
 
     Two tools are provided for the release manager, \l lupdate and \l
     lrelease. These tools can process \l qmake project files, or operate
@@ -158,11 +157,10 @@
 
     \section1 Qt Project Files
 
-    The easiest method to use \l{#lupdate} {lupdate} and \l{#lrelease}
-    {lrelease} is by specifying a \c .pro Qt project file. There must
-    be an entry in the \c TRANSLATIONS section of the project file for
-    each language that is additional to the native language. A typical
-    entry looks like this:
+    The easiest method to use \l lupdate and \l lrelease is by specifying
+    a \c .pro Qt project file. There must be an entry in the \c TRANSLATIONS
+    section of the project file for each language that is additional to
+    the native language. A typical entry looks like this:
 
     \snippet examples/linguist/arrowpad/arrowpad.pro 1
 
@@ -173,8 +171,8 @@
     An example of a complete \c .pro file with four translation source
     files:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 0
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.pro 0
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.pro 1
 
     QTextCodec::setCodecForTr() makes it possible to choose a 8-bit
     encoding for literal strings that appear within \c tr() calls.
@@ -186,14 +184,14 @@
     application, \QL needs you to set the \c CODECFORTR
     entry in the \c .pro file as well. For example:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.pro 1
 
     Also, if your compiler uses a different encoding for its runtime
     system as for its source code and you want to use  non-ASCII
     characters in string literals, you will need to set the \c
     CODECFORSRC. For example:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.pro 2
 
     Microsoft Visual Studio 2005 .NET appears to be the only compiler
     for which this is necessary. However, if you want to write
@@ -201,9 +199,8 @@
     in your source files. You can still specify non-ASCII characters
     portably using escape sequences, for example:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 3
 
-    \target lupdate manual
     \section1 lupdate
 
     Usage: \c {lupdate myproject.pro}
@@ -238,8 +235,8 @@
     can also process Localization Interchange File Format (XLIFF)
     format files; files in this format typically have file names that
     end with the \c .xlf suffix.
-    
-    \note The minimum supported version for XLIFF format files is 
+
+    \note The minimum supported version for XLIFF format files is
     1.1. XLIFF 1.0 version files are not supported.
 
     Pass the \c -help option to \c lupdate to obtain the list of
@@ -271,7 +268,7 @@
     are available the application will detect them and use them
     automatically.
 
-    Note that lrelease will only incorporate translations that are
+    Note that \l lrelease will only incorporate translations that are
     marked as "finished". Otherwise the original text will be used
     instead.
 
@@ -285,12 +282,13 @@
     Both \l lupdate and \l lrelease may be used with TS
     translation source files which are incomplete. Missing
     translations will be replaced with the native language phrases at
-    runtime.  
+    runtime.
 */
 
 /*!
     \page linguist-translators.html
     \title Qt Linguist Manual: Translators
+    \ingroup internationalization
 
     \contentspage {Qt Linguist Manual}{Contents}
     \previouspage Qt Linguist Manual: Release Manager
@@ -315,7 +313,7 @@
     arranged around a central \l{The Translation Area} {translation
     area}. The \l{Context Window} {context list} is normally shown
     on the left, and the \l{Sources and Forms Window} {source code},
-    \l{Strings Window} {string list}, and either the \l{Phrases and 
+    \l{Strings Window} {string list}, and either the \l{Phrases and
     Guesses Window} {phrases and guesses}, or the \l{Warnings Window}
     {warnings} are shown above and below the \l{The Translation Area}
     {translations area}.
@@ -331,9 +329,9 @@
     \key{tick mark} button on the toolbar, or click the icon to the
     left of the selected source string in the string list. Repeat this
     process until all strings in the string list are marked with
-    \inlineimage linguist-check-on.png 
+    \inlineimage linguist-check-on.png
     or
-    \inlineimage linguist-check-warning.png 
+    \inlineimage linguist-check-warning.png
     . Then select the next context and continue.
 
     Translation options are shown in the \l{Phrases and Guesses
@@ -389,17 +387,17 @@
     that aren't in a subclass of QObject.
 
     To the left of the \e{Context} column is a column labeled
-    \inlineimage linguist-check-obsolete.png  
+    \inlineimage linguist-check-obsolete.png
     . This column uses the following list of icons to summarize the
     current translation state for each context:
 
     \list
 
-    \o \inlineimage linguist-check-on.png 
+    \o \inlineimage linguist-check-on.png
     All strings in the context have been translated, and all the
     translations passed the \l{Validation Tests} {validation tests}.
 
-    \o \inlineimage linguist-check-warning.png 
+    \o \inlineimage linguist-check-warning.png
     All strings in the context have been translated or marked as
     translated, but at least one translation failed the \l{Validation
     Tests} {validation tests}.
@@ -427,19 +425,19 @@
     selected.  Its \e{Items} entry shows \bold{18/18}, which means it
     has 18 translatable strings and all 18 strings currently have
     translations. However, the context has been marked with the
-    \inlineimage linguist-check-warning.png 
-    icon, which means that at least one of the current translations 
-    failed a \l{Validation Tests} {validation test}. In the 
-    \l{Strings Window} {strings window} to the right, we see that one 
-    of the strings is indeed marked with the 
-    \inlineimage linguist-check-warning.png 
+    \inlineimage linguist-check-warning.png
+    icon, which means that at least one of the current translations
+    failed a \l{Validation Tests} {validation test}. In the
+    \l{Strings Window} {strings window} to the right, we see that one
+    of the strings is indeed marked with the
+    \inlineimage linguist-check-warning.png
     icon.
 
     The context window is a dockable window. It can be dragged to
     another position in the main window, or dragged out of the main
     window to be a separate window. If you move the context window,
     \QL remembers the new position and puts the context window there
-    whenever you start the program. If the context window has been 
+    whenever you start the program. If the context window has been
     closed, it can be restored by pressing \key{F6}.
 
     \section2 Strings Window
@@ -475,16 +473,16 @@
     \o The source string has a translation (possibly empty); the user
     has accepted the translation, and the translation passes all the
     \l{Validation Tests} {validation tests}. If the translation is
-    empty, the user has chosen to leave it empty. Click the icon to 
-    revoke acceptance of the translation and decrement the number of 
+    empty, the user has chosen to leave it empty. Click the icon to
+    revoke acceptance of the translation and decrement the number of
     accepted translations in the \e{Items} column of the \l{Context
-    Window} {context list} by 1. The state is reset to 
-    \inlineimage linguist-check-off.png 
+    Window} {context list} by 1. The state is reset to
+    \inlineimage linguist-check-off.png
     if the string has a translation, or to
     \inlineimage linguist-check-empty.png
-    if the string's translation is empty. If \c{lupdate} changes the 
-    contents of a string, its acceptance state is automatically reset 
-    to \inlineimage linguist-check-off.png 
+    if the string's translation is empty. If \c{lupdate} changes the
+    contents of a string, its acceptance state is automatically reset
+    to \inlineimage linguist-check-off.png
     .
 
     \row
@@ -493,44 +491,44 @@
     \o The user has accepted the translation, but the translation does
     not pass all the \l{Validation Tests} {validation tests}. The
     validation test failures are shown in the \l{Warnings Window}
-    {warnings window}. Click the icon to revoke acceptance of the 
-    translation. The state is reset to \inlineimage linguist-danger.png 
-    , and the number of accepted translations in the \e{Items} column 
-    of the \l{Context Window} {context list} is decremented by 1. 
+    {warnings window}. Click the icon to revoke acceptance of the
+    translation. The state is reset to \inlineimage linguist-danger.png
+    , and the number of accepted translations in the \e{Items} column
+    of the \l{Context Window} {context list} is decremented by 1.
 
     \row
     \o Not Accepted
     \o \inlineimage linguist-check-off.png
-    \o The string has a non-empty translation that passes all the 
-    \l{Validation Tests} {validation tests}, but the user has not yet 
+    \o The string has a non-empty translation that passes all the
+    \l{Validation Tests} {validation tests}, but the user has not yet
     accepted the translation. Click the icon or press \key{Ctrl+Enter}
-    to accept the translation. The state is reset to  
+    to accept the translation. The state is reset to
     \inlineimage linguist-check-on.png
-    , and the number of accepted translations in the \e{Items} column 
-    of the \l{Context Window} {context list} is incremented by 1.  
+    , and the number of accepted translations in the \e{Items} column
+    of the \l{Context Window} {context list} is incremented by 1.
 
     \row
     \o No Translation
     \o \inlineimage linguist-check-empty.png
-    \o The string does not have a translation. Click the icon to 
-    accept the empty translation anyway. The state is reset to  
+    \o The string does not have a translation. Click the icon to
+    accept the empty translation anyway. The state is reset to
     \inlineimage linguist-check-on.png
-    , and the number of accepted translations in the \e{Items} column 
+    , and the number of accepted translations in the \e{Items} column
     of the \l{Context Window} {context list} is incremented by 1.
 
     \row
     \o Validation Failures
     \o \inlineimage linguist-danger.png
-    \o The string has a translation, but the translation does not 
-    pass all the \l{Validation Tests} {validation tests}. Validation 
-    test failures are shown in the \l{Warnings Window} {warnings} 
-    window. Click on the icon or press \key{Ctrl+Return} to accept 
-    the translation even with validation failures. The state is 
+    \o The string has a translation, but the translation does not
+    pass all the \l{Validation Tests} {validation tests}. Validation
+    test failures are shown in the \l{Warnings Window} {warnings}
+    window. Click on the icon or press \key{Ctrl+Return} to accept
+    the translation even with validation failures. The state is
     reset to  \inlineimage linguist-check-warning.png
-    . We recommended editing the translation to fix the causes of 
+    . We recommended editing the translation to fix the causes of
     the validation failures. The state will reset automatically to
     \inlineimage linguist-check-off.png
-    , when all the failures have been fixed. 
+    , when all the failures have been fixed.
 
     \row
     \o Obsolete
@@ -558,12 +556,12 @@
 
     If the developer provides a \l{QObject::tr()} {disambiguating
     comment}, it will appear below the source text area, under the
-    label \menu{Developer comments}. 
+    label \menu{Developer comments}.
 
     Below the source text and optional developer comments are two text
     entry widgets for the translator, one for entering the translation
     of the current string, and one for the translator to enter an
-    optional comment to be read by other translators. 
+    optional comment to be read by other translators.
 
     When \l{Translating Multiple Languages Simultaneously} {multiple
     languages} are being translated, this sequence of fields is
@@ -578,7 +576,7 @@
     translation(s) will be listed in this window. If the current
     string is the same as, or similar to, another string that has
     already been translated, that other string and its translation
-    will also be listed in this window. 
+    will also be listed in this window.
 
     To use a translation from the Phrases and Guesses Window, you can
     double click the translation, and it will be copied into the
@@ -607,7 +605,7 @@
     If the source context shows the wrong source line, it probably
     means the translation file is out of sync with the source files.
     To re-sync the translation file with the source files, see the
-    \l{lupdate manual} {lupdate manual}.
+    \l{linguist-manager.html#lupdate}{lupdate} manual.
 
     The Sources and Forms window is a dockable window. If it has been
     closed, it can be made visible again by pressing the \e{Sources
@@ -638,12 +636,12 @@
     and you are given an application's Polish translation file and
     asked to update the application's Japanese translation file. You
     are more comfortable translating Polish to Japanese than you are
-    translating English to Japanese. 
+    translating English to Japanese.
 
     Below is the UI snapshot shown earlier, but this time with both
     \e{Polish} and \e{Japanese} translation files loaded.
 
-    \image linguist-linguist_2.png 
+    \image linguist-linguist_2.png
 
     The first thing to notice is that the \l{The Translation Area}
     {translation area} has text editing areas for both Polish and
@@ -662,18 +660,18 @@
     selected in the snapshot shown above. Recall that in the first UI
     snapshot (Polish only), the numbers for this context were
     \e{18/18}, meaning 18 translatable strings had been found in the
-    context, and all 18 strings had accepted translations.  In the UI 
+    context, and all 18 strings had accepted translations.  In the UI
     snapshot above, the numbers for the \bold{MessageEditor} context
     are now \e{1/18}, meaning that both languages have 18 translatable
     strings for that context, but for Japanese, only 1 of the 18
-    strings has an accepted translation. The 
-    \inlineimage linguist-check-off.png 
+    strings has an accepted translation. The
+    \inlineimage linguist-check-off.png
     icon in the Japanese column means that at least one string in the
-    context doesn't have an accepted Japanese translation yet. In fact, 
-    17 of the 18 strings don't have accepted Japanese translations yet. 
-    We will see \e{18/18} in the \e{Items} column when all 18 strings 
-    have accepted translations for all the loaded translation files, 
-    e.g., both Polish and Japanese in the snapshot. 
+    context doesn't have an accepted Japanese translation yet. In fact,
+    17 of the 18 strings don't have accepted Japanese translations yet.
+    We will see \e{18/18} in the \e{Items} column when all 18 strings
+    have accepted translations for all the loaded translation files,
+    e.g., both Polish and Japanese in the snapshot.
 
     \section1 Common Tasks
 
@@ -726,7 +724,7 @@
     key in the translation text ("File") precede it with an ampersand,
     e.g. \e{\&File}. If a string to be translated has an ampersand in
     it, then the translation for that string should also have an
-    ampersand in it, preferably in front of the same character. 
+    ampersand in it, preferably in front of the same character.
 
     The meaning of an Alt key accelerator can be determined from the
     phrase in which the ampersand is embedded. The translator can
@@ -810,7 +808,7 @@
 
     If the translated text is similar to the source text, choose the
     \e {Copy from source text} entry in the \menu Translation menu (press
-    \key{Ctrl+B}) which will copy the source text into the 
+    \key{Ctrl+B}) which will copy the source text into the
     \l{The Translation Area} {translation area}.
 
     \QL automatically lists possible translations from any open
@@ -839,9 +837,9 @@
 
     A \QL phrase book is a set of source phrases, target
     (translated) phrases, and optional definitions. Typically one phrase book
-    will be created per language and family of applications. Phrase books 
-    are used to provide a common set of translations to help ensure consistency. 
-    They can also be used to avoid duplication of effort since the translations 
+    will be created per language and family of applications. Phrase books
+    are used to provide a common set of translations to help ensure consistency.
+    They can also be used to avoid duplication of effort since the translations
     for a family of applications can be produced once in the phrase book.
     If the translator reaches an non-translated phrase that is the same as a
     source phrase in a phrase book, \QL will show the
@@ -861,25 +859,25 @@
     The phrase book contents can be displayed and changed by selecting
     \menu{Phrase|Edit Phrase Book}, and then activating the phrase book you
     want to work on. This will pop up the Phrase Book Dialog as shown
-    in the image above. To add a new phrase click the \gui{New Phrase} 
-    button (or press Alt+N) and type in a new source phrase. Press Tab and 
-    type in the translation. Optionally press Tab and enter a definition -- 
-    this is useful to distinguish different translations of the same source 
-    phrase. This process may be repeated as often as necessary. You can delete 
+    in the image above. To add a new phrase click the \gui{New Phrase}
+    button (or press Alt+N) and type in a new source phrase. Press Tab and
+    type in the translation. Optionally press Tab and enter a definition \mdash
+    this is useful to distinguish different translations of the same source
+    phrase. This process may be repeated as often as necessary. You can delete
     a phrase by selecting it in the phrases list and clicking
-    Remove Phrase. Click the \gui Close button (press Esc) once you've finished 
+    Remove Phrase. Click the \gui Close button (press Esc) once you've finished
     adding (and removing) phrases.
 
     \section2 Shortcuts for Editing Phrase Books
 
     You can also create a new phrase book entry directly out of the translation you
     are working on: Clicking \menu{Phrases|Add to Phrase Book} or pressing
-    \key{Ctrl+T} will add the source text and the content of the first translation 
+    \key{Ctrl+T} will add the source text and the content of the first translation
     field to the current phrase book. If multiple phrase books are loaded,
     you have to specify the phrase book to add the entry to in a dialogue.
-    If you detect an error in a phrase book entry that is shown in the 
-    \l{Phrases and Guesses Window}, you can also edit it in place by right 
-    clicking on the entry, and selecting \menu{Edit}. After fixing the error 
+    If you detect an error in a phrase book entry that is shown in the
+    \l{Phrases and Guesses Window}, you can also edit it in place by right
+    clicking on the entry, and selecting \menu{Edit}. After fixing the error
     press \key{Return} to leave the editing mode.
 
     \section2 Batch Translation
@@ -890,7 +888,7 @@
     translate source texts that are also in a phrase book. Selecting
     \menu{Tools|Batch Translation} will show you the batch translation dialog,
     which let you configure which phrase books to use in what order during the
-    batch translation process. Furthermore you can set whether only entries 
+    batch translation process. Furthermore you can set whether only entries
     with no present translation should be considered, and whether batch translated
     entries should be set to finished (see also \l {String Translation States}).
 
@@ -929,7 +927,7 @@
     Forms created by \e{Qt Designer} are stored in special UI files.
     \QL can make use of these UI files to show the translations
     done so far on the form itself. This of course requires access to the UI
-    files during the translation process. Activate 
+    files during the translation process. Activate
     \menu{Tools|Open/Refresh Form Preview} to open the window shown above.
     The list of UI files \QL has detected are displayed in the Forms
     List on the left hand. If the path to the files has changed, you can load
@@ -947,17 +945,18 @@
     \list
     \o TS \e {translation source files} \BR are human-readable XML
     files containing source phrases and their translations. These files are
-    usually created and updated by \l lupdate and are specific to an
-    application.
+    usually created and updated by \l{linguist-manager.html#lupdate}{lupdate}
+    and are specific to an application.
     \o \c .xlf \e {XLIFF files} \BR are human-readable XML files that adhere
     to the international XML Localization Interchange File Format. \QL
-    can be used to edit XLIFF files generated by other programs. However, for 
-    standard Qt projects, only the TS file format is used.  \note The minimum 
-    supported version for XLIFF format files is 1.1. XLIFF 1.0 version files 
+    can be used to edit XLIFF files generated by other programs. However, for
+    standard Qt projects, only the TS file format is used.  \note The minimum
+    supported version for XLIFF format files is 1.1. XLIFF 1.0 version files
     are not supported.
     \o QM \e {Qt message files} \BR are binary files that contain
     translations used by an application at run-time. These files are
-    generated by \l lrelease, but can also be generated by \QL.
+    generated by \l{linguist-manager.html#lrelease}{lrelease}, but can also
+    be generated by \QL.
     \o \c .qph \e {Qt phrase book files} \BR are human-readable XML
     files containing standard phrases and their translations. These files
     are created and updated by \QL and may be used by any
@@ -982,13 +981,15 @@
         name, format and/or put in a different location.
         \o \gui {Release} \BR create a Qt message QM file with the same base
         name as the current translation source file. The release manager's
-        command line tool \l lrelease performs the same function on
-        \e all of an application's translation source files.
+        command line tool \l{linguist-manager.html#lrelease}{lrelease}
+        performs the same function on \e all of an application's translation
+        source files.
         \o \gui {Release As...} \BR pops up a save as file dialog. The
         filename entered will be a Qt message QM file of the translation
         based on the current translation source file. The release manager's
-        command line tool \l lrelease performs the same function on
-        \e all of an application's translation source files.
+        command line tool \l{linguist-manager.html#lrelease}{lrelease}
+        performs the same function on \e all of an application's translation
+        source files.
         \o \gui {Print... Ctrl+P} \BR pops up a print dialog. If you click
         OK the translation source and the translations will be printed.
         \o \gui {Exit Ctrl+Q} \BR closes \QL.
@@ -1018,10 +1019,10 @@
         Source phrases, translations and comments may be searched.
         \o \gui {Find Next F3} \BR finds the next occurrence of the text that
         was last entered in the Find dialog.
-        \o \gui {Search and Translate...} \BR pops up the Search and 
+        \o \gui {Search and Translate...} \BR pops up the Search and
         Replace Dialog. Use this dialog to translate the same text in multiple items.
         \o \gui {Translation File Settings...} \BR let you configure the target
-        language and the country/region of a translation source file. 
+        language and the country/region of a translation source file.
         \endlist
 
     \o \gui {Translation}
@@ -1123,7 +1124,7 @@
         \o \gui {Manual F1} \BR opens this manual.
         \o \gui {About Qt Linguist} \BR Shows information about \QL.
         \o \gui {About Qt} \BR Shows information about \e{Qt}.
-        \o \gui {What's This? Shift+F1} \BR Click on one item in the main window 
+        \o \gui {What's This? Shift+F1} \BR Click on one item in the main window
         to get additional information about it.
         \endlist
 
@@ -1219,6 +1220,7 @@
 /*!
     \page linguist-programmers.html
     \title Qt Linguist Manual: Programmers
+    \ingroup internationalization
 
     \contentspage {Qt Linguist Manual}{Contents}
     \previouspage Qt Linguist Manual: Translators
@@ -1262,28 +1264,31 @@
     Translation files are created as follows:
 
     \list 1
-    \o Run \l lupdate initially to generate the first set of TS
-    translation source files with all the user-visible text but no
-    translations.
+    \o Run \l {linguist-manager.html#lupdate}{lupdate} initially to
+    generate the first set of TS translation source files with all the
+    user-visible text but no translations.
     \o The TS files are given to the translator who adds translations
     using \QL. \QL takes care of any changed
     or deleted source text.
-    \o Run \l lupdate to incorporate any new text added to the
-    application. \l lupdate synchronizes the user-visible text from the
-    application with the translations; it does not destroy any data.
+    \o Run \l{linguist-manager.html#lupdate}{lupdate} to incorporate any new
+    text added to the application. \l{linguist-manager.html#lupdate}{lupdate}
+    synchronizes the user-visible text from the application with the
+    translations; it does not destroy any data.
     \o Steps 2 and 3 are repeated as often as necessary.
-    \o When a release of the application is needed \l lrelease is run to
+    \o When a release of the application is needed
+    \l{linguist-manager.html#lrelease}{lrelease} is run to
     read the TS files and produce the QM files used by the
     application at runtime.
     \endlist
 
-    For \l lupdate to work successfully, it must know which translation
-    files to produce. The files are simply listed in the application's \c
-    .pro Qt project file, for example:
+    For \l{linguist-manager.html#lupdate}{lupdate} to work successfully,
+    it must know which translation files to produce. The files are simply
+    listed in the application's \c .pro Qt project file, for example:
 
     \snippet examples/linguist/arrowpad/arrowpad.pro 1
 
-    If your sources contain genuine non-Latin1 strings, \l lupdate needs
+    If your sources contain genuine non-Latin1 strings,
+    \l{linguist-manager.html#lupdate}{lupdate} needs
     to be told about it in the \c .pro file by using, for example,
     the following line:
 
@@ -1291,7 +1296,8 @@
         CODECFORTR = UTF-8
     \endcode
 
-    See the \l lupdate and \l lrelease sections.
+    See the \l{linguist-manager.html#lupdate}{lupdate} and
+    \l{linguist-manager.html#lrelease}{lrelease} sections.
 
     \section2 Loading Translations
 
@@ -1333,11 +1339,11 @@
     User-visible strings are marked as translation targets by wrapping them
     in a \c tr() call, for example:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 6
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 6
 
     would become
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 7
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 7
 
     All QObject subclasses that use the \c Q_OBJECT macro implement
     the \c tr() function.
@@ -1346,29 +1352,29 @@
     usually called as a member function of a QObject subclass, in
     other cases an explicit class name can be supplied, for example:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 8
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 8
 
     or
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 9
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 9
 
     \section2 Distinguishing Between Identical Translatable Strings
 
-    The \l lupdate program automatically provides a \e context for every
-    source text. This context is the class name of the class that contains
-    the \c tr() call. This is sufficient in the vast majority of cases.
-    Sometimes however, the translator will need further information to
-    uniquely identify a source text; for example, a dialog that contained
-    two separate frames, each of which contained an "Enabled" option would
-    need each identified because in some languages the translation would
-    differ between the two. This is easily achieved using the
+    The \l{linguist-manager.html#lupdate}{lupdate} program automatically
+    provides a \e context for every source text. This context is the class
+    name of the class that contains the \c tr() call. This is sufficient in
+    the vast majority of cases. Sometimes however, the translator will need
+    further information to uniquely identify a source text; for example,
+    a dialog that contained two separate frames, each of which contained an
+    "Enabled" option would need each identified because in some languages the
+    translation would differ between the two. This is easily achieved using the
     two argument form of the \c tr() call, e.g.
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 10
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 10
 
     and
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 11
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 11
 
     Ctrl key accelerators are also translatable:
 
@@ -1385,44 +1391,46 @@
     solved by adding a comment using the keyword \e TRANSLATOR which
     describes the navigation steps to reach the text in question; e.g.
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 12
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 12
 
     These comments are particularly useful for widget classes.
 
     \section2 Handling Plural Forms
 
-    Qt includes a \c tr() overload that will make it very easy to 
-    write "plural-aware" internationalized applications. This overload 
+    Qt includes a \c tr() overload that will make it very easy to
+    write "plural-aware" internationalized applications. This overload
     has the following signature:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 17
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 17
 
-    Depending on the value of \c n, the \c tr() function will return a different 
-    translation, with the correct grammatical number for the target language. 
+    Depending on the value of \c n, the \c tr() function will return a different
+    translation, with the correct grammatical number for the target language.
     Also, any occurrence of \c %n is replaced with \c{n}'s value. For example:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 18
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 18
 
-    If a French translation is loaded, this will expand to "0 item 
-    remplac\unicode{233}", "1 item remplac\unicode{233}", "2 items 
-    remplac\unicode{233}s", etc., depending on \c{n}'s value. 
-    And if no translation is loaded, the original string is used, with \c %n 
+    If a French translation is loaded, this will expand to "0 item
+    remplac\unicode{233}", "1 item remplac\unicode{233}", "2 items
+    remplac\unicode{233}s", etc., depending on \c{n}'s value.
+    And if no translation is loaded, the original string is used, with \c %n
     replaced with count's value (e.g., "6 item(s) replaced").
 
-    To handle plural forms in the native language, you need to load a 
-    translation file for this language, too. \l lupdate has the 
+    To handle plural forms in the native language, you need to load a
+    translation file for this language, too.
+    \l{linguist-manager.html#lupdate}{lupdate} has the
     \c -pluralonly command line option, which allows the creation of
     TS files containing only entries with plural forms.
 
-    See the \l{http://doc.qt.nokia.com/qq/}{Qt Quarterly} Article 
+    See the \l{http://doc.qt.nokia.com/qq/}{Qt Quarterly} Article
     \l{http://doc.qt.nokia.com/qq/qq19-plurals.html}{Plural Forms in Translations}
     for further details on this issue.
 
     \section2 Coping With C++ Namespaces
 
     C++ namespaces and the \c {using namespace} statement can confuse
-    \l lupdate. It will interpret \c MyClass::tr() as meaning just
-    that, not as \c MyNamespace::MyClass::tr(), even if \c MyClass is
+    \l{linguist-manager.html#lupdate}{lupdate}. It will interpret
+    \c MyClass::tr() as meaning just that, not as
+    \c MyNamespace::MyClass::tr(), even if \c MyClass is
     defined in the \c MyNamespace namespace. Runtime translation of
     these strings will fail because of that.
 
@@ -1430,7 +1438,7 @@
     comment at the beginning of the source files that use \c
     MyClass::tr():
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 13
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 13
 
     After the comment, all references to \c MyClass::tr() will be
     understood as meaning \c MyNamespace::MyClass::tr().
@@ -1443,20 +1451,21 @@
     use either the tr() function of an appropriate class, or the
     QCoreApplication::translate() function directly:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 14
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 14
 
     \section3 Using QT_TR_NOOP() and QT_TRANSLATE_NOOP()
 
     If you need to have translatable text completely outside a function,
     there are two macros to help: QT_TR_NOOP() and QT_TRANSLATE_NOOP().
-    These macros merely mark the text for extraction by \l{lupdate}.
+    These macros merely mark the text for extraction by
+    \l{linguist-manager.html#lupdate}{lupdate}.
     The macros expand to just the text (without the context).
 
     Example of QT_TR_NOOP():
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 15
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 15
 
     Example of QT_TRANSLATE_NOOP():
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 16
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 16
 
     \section1 Tutorials
 
@@ -1484,8 +1493,9 @@
     applications for translation.
 
     At the beginning of a project add the translation source files to be
-    used to the project file and add calls to \l lupdate and \l lrelease to
-    the makefile.
+    used to the project file and add calls to
+    \l{linguist-manager.html#lupdate}{lupdate} and
+    \l{linguist-manager.html#lrelease}{lrelease} to the Makefile.
 
     During the project all the programmer must do is wrap any user-visible
     text in \c tr() calls. They should also use the two argument form for
@@ -1498,6 +1508,7 @@
 /*!
     \page linguist-ts-file-format.html
     \title Qt Linguist Manual: TS File Format
+    \ingroup internationalization
 
     \contentspage {Qt Linguist Manual}{Contents}
     \previouspage Qt Linguist Manual: Programmers
@@ -1508,5 +1519,5 @@
     may change in future Qt releases.
 
     \quotefile tools/linguist/shared/ts.dtd
-    
+
 */

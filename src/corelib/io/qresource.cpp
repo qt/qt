@@ -373,7 +373,7 @@ QResourcePrivate::ensureChildren() const
     Constructs a QResource pointing to \a file. \a locale is used to
     load a specific localization of a resource data.
 
-    \sa QFileInfo, searchPaths(), setFileName(), setLocale()
+    \sa QFileInfo, QDir::searchPaths(), setFileName(), setLocale()
 */
 
 QResource::QResource(const QString &file, const QLocale &locale) : d_ptr(new QResourcePrivate(this))
@@ -418,7 +418,7 @@ QLocale QResource::locale() const
 /*!
     Sets a QResource to point to \a file. \a file can either be absolute,
     in which case it is opened directly, if relative then the file will be
-    tried to be found in searchPaths().
+    tried to be found in QDir::searchPaths().
 
     \sa absoluteFilePath()
 */
@@ -446,7 +446,7 @@ QString QResource::fileName() const
 
 /*!
     Returns the real path that this QResource represents, if the resource
-    was found via the searchPaths() it will be indicated in the path.
+    was found via the QDir::searchPaths() it will be indicated in the path.
 
     \sa fileName()
 */

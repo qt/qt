@@ -170,17 +170,12 @@ namespace {
 
 }
 
-QFontEngineDirectWrite::QFontEngineDirectWrite(const QString &name,
-                                               IDWriteFactory *directWriteFactory,
-                                               IDWriteGdiInterop *directWriteGdiInterop,
-                                               IDWriteFont *directWriteFont,
+QFontEngineDirectWrite::QFontEngineDirectWrite(IDWriteFactory *directWriteFactory,
+                                               IDWriteFontFace *directWriteFontFace,
                                                qreal pixelSize)
-    : m_name(name)
-    , m_directWriteFont(directWriteFont)
-    , m_directWriteFontFace(0)
+    : m_directWriteFontFace(directWriteFontFace)
     , m_directWriteFactory(directWriteFactory)
     , m_directWriteBitmapRenderTarget(0)
-    , m_directWriteGdiInterop(directWriteGdiInterop)
     , m_lineThickness(-1)
     , m_unitsPerEm(-1)
     , m_ascent(-1)
@@ -188,24 +183,17 @@ QFontEngineDirectWrite::QFontEngineDirectWrite(const QString &name,
     , m_xHeight(-1)
     , m_lineGap(-1)
 {
-    m_directWriteFont->AddRef();
     m_directWriteFactory->AddRef();
-    m_directWriteGdiInterop->AddRef();
+    m_directWriteFontFace->AddRef();
 
     fontDef.pixelSize = pixelSize;
-
-    HRESULT hr = m_directWriteFont->CreateFontFace(&m_directWriteFontFace);
-    if (FAILED(hr))
-        qErrnoWarning("QFontEngineDirectWrite: CreateFontFace failed");
-
     collectMetrics();
 }
 
 QFontEngineDirectWrite::~QFontEngineDirectWrite()
 {
-    m_directWriteFont->Release();
     m_directWriteFactory->Release();
-    m_directWriteGdiInterop->Release();
+    m_directWriteFontFace->Release();
 
     if (m_directWriteBitmapRenderTarget != 0)
         m_directWriteBitmapRenderTarget->Release();
@@ -213,10 +201,10 @@ QFontEngineDirectWrite::~QFontEngineDirectWrite()
 
 void QFontEngineDirectWrite::collectMetrics()
 {
-    if (m_directWriteFont != 0) {
+    if (m_directWriteFontFace != 0) {
         DWRITE_FONT_METRICS metrics;
 
-        m_directWriteFont->GetMetrics(&metrics);
+        m_directWriteFontFace->GetMetrics(&metrics);
         m_unitsPerEm = metrics.designUnitsPerEm;
 
         m_lineThickness = DESIGN_TO_LOGICAL(metrics.underlineThickness);
@@ -616,19 +604,25 @@ const char *QFontEngineDirectWrite::name() const
 
 bool QFontEngineDirectWrite::canRender(const QChar *string, int len)
 {
-    for (int i=0; i<len; ++i) {
-        BOOL exists;
-        UINT32 codePoint = getChar(string, i, len);
-        HRESULT hr = m_directWriteFont->HasCharacter(codePoint, &exists);
-        if (FAILED(hr)) {
-            qErrnoWarning("QFontEngineDirectWrite::canRender: HasCharacter failed");
-            return false;
-        } else if (!exists) {
-            return false;
-        }
-    }
+    QVarLengthArray<UINT32> codePoints(len);
+    int actualLength = 0;
+    for (int i=0; i<len; ++i, actualLength++)
+        codePoints[actualLength] = getChar(string, i, len);
 
-    return true;
+    QVarLengthArray<UINT16> glyphIndices(actualLength);
+    HRESULT hr = m_directWriteFontFace->GetGlyphIndices(codePoints.data(), actualLength,
+                                                        glyphIndices.data());
+    if (FAILED(hr)) {
+        qErrnoWarning(hr, "QFontEngineDirectWrite::canRender: GetGlyphIndices failed");
+        return false;
+    } else {
+        for (int i=0; i<glyphIndices.size(); ++i) {
+            if (glyphIndices.at(i) == 0)
+                return false;
+        }
+
+        return true;
+    }
 }
 
 QFontEngine::Type QFontEngineDirectWrite::type() const

@@ -307,11 +307,6 @@ QPoint QWindowSurface::offset(const QWidget *widget) const
   window surface.
 */
 
-bool QWindowSurface::hasStaticContentsSupport() const
-{
-    return false;
-}
-
 void QWindowSurface::setStaticContents(const QRegion &region)
 {
     d_ptr->staticContents = region;
@@ -324,12 +319,12 @@ QRegion QWindowSurface::staticContents() const
 
 bool QWindowSurface::hasStaticContents() const
 {
-    return hasStaticContentsSupport() && !d_ptr->staticContents.isEmpty();
+    return hasFeature(QWindowSurface::StaticContents) && !d_ptr->staticContents.isEmpty();
 }
 
-bool QWindowSurface::hasPartialUpdateSupport() const
+QWindowSurface::WindowSurfaceFeatures QWindowSurface::features() const
 {
-    return true;
+    return PartialUpdates | PreservedContents;
 }
 
 #ifdef Q_WS_QPA

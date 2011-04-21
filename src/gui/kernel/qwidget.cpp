@@ -312,6 +312,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , qd_hd(0)
 #elif defined(Q_OS_SYMBIAN)
       , symbianScreenNumber(0)
+      , fixNativeOrientationCalled(false)
 #endif
 {
     if (!qApp) {
@@ -611,8 +612,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     \brief The QWidget class is the base class of all user interface objects.
 
     \ingroup basicwidgets
-
-
+    
     The widget is the atom of the user interface: it receives mouse, keyboard
     and other events from the window system, and paints a representation of
     itself on the screen. Every widget is rectangular, and they are sorted in a
@@ -10970,6 +10970,9 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         }
         QT_TRAP_THROWING(appUi->SetOrientationL(s60orientation));
         S60->orientationSet = true;
+        QSymbianControl *window = static_cast<QSymbianControl *>(internalWinId());
+        if (window)
+            window->ensureFixNativeOrientation();
 #endif
         break;
     }

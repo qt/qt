@@ -49,6 +49,7 @@
 #include <private/qblittable_p.h>
 
 #include <private/qdrawhelper_p.h>
+#include <private/qfont_p.h>
 
 #ifndef QT_NO_BLITTABLE
 QT_BEGIN_NAMESPACE
@@ -104,8 +105,6 @@ void QBlittablePixmapData::resize(int width, int height)
     h = height;
     is_null = (w <= 0 || h <= 0);
 }
-Q_GUI_EXPORT extern int qt_defaultDpiX();
-Q_GUI_EXPORT extern int qt_defaultDpiY();
 
 int QBlittablePixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {

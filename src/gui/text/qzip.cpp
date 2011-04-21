@@ -572,7 +572,7 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
         "directory",
         "file     ",
         "symlink  " };
-    ZDEBUG() << "adding" << entryTypes[type] <<":" << fileName.toUtf8().data() << (type == 2 ? (" -> " + contents).constData() : "");
+    ZDEBUG() << "adding" << entryTypes[type] <<":" << fileName.toUtf8().data() << (type == 2 ? QByteArray(" -> " + contents).constData() : "");
 #endif
 
     if (! (device->isOpen() || device->open(QIODevice::WriteOnly))) {

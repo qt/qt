@@ -98,6 +98,8 @@ QTOBJS= \
 	qlist.obj \
 	qlinkedlist.obj \
 	qlocale.obj \
+	qlocale_tools.obj \
+	qlocale_win.obj \
 	qmalloc.obj \
 	qmap.obj \
 	qregexp.obj \

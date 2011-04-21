@@ -51,6 +51,7 @@
 #include <QMessageBox>
 #include <QAtomicInt>
 #include "qdeclarativetester.h"
+#include <private/qdeclarativedebughelper_p.h>
 
 QT_USE_NAMESPACE
 
@@ -537,6 +538,8 @@ int main(int argc, char ** argv)
     if (!gsSpecified)
         QApplication::setGraphicsSystem("raster");
 #endif
+
+    QDeclarativeDebugHelper::enableDebugging();
 
     Application app(argc, argv);
     app.setApplicationName("QtQmlViewer");
