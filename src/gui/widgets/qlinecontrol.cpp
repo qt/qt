@@ -435,7 +435,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
         removeSelectedText();
     }
     if (!event->commitString().isEmpty()) {
-        insert(event->commitString());
+        internalInsert(event->commitString());
         cursorPositionChanged = true;
     }
 

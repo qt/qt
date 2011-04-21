@@ -1432,17 +1432,6 @@ QPixmap QS60StylePrivate::backgroundTexture(bool skipCreation)
     return *m_background;
 }
 
-// Generates 1*1 white pixmap as a placeholder for real texture.
-// The actual theme texture is drawn in qt_s60_fill_background().
-QPixmap QS60StylePrivate::placeHolderTexture()
-{
-    if (!m_placeHolderTexture) {
-        m_placeHolderTexture = new QPixmap(1,1);
-        m_placeHolderTexture->fill(Qt::white);
-    }
-    return *m_placeHolderTexture;
-}
-
 QSize QS60StylePrivate::screenSize()
 {
     return QSize(S60->screenWidthInPixels, S60->screenHeightInPixels);

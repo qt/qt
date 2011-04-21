@@ -202,7 +202,7 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
                     connection->setServer(server);
                     connection->setPort(port, block);
                 } else {
-                    qWarning() << QString::fromAscii("QDeclarativeDebugServer: Ignoring\"-qmljsdebugger=%1\". "
+                    qWarning() << QString::fromAscii("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
                                                      "Remote debugger plugin has not been found.").arg(appD->qmljsDebugArgumentsString());
                 }
 
