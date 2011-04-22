@@ -50,6 +50,7 @@
 #include <QtGui/qevent.h>
 #include <QtGui/qtextformat.h>
 #include <QtGui/qglyphs.h>
+#include <QtGui/qtextcursor.h>
 
 QT_BEGIN_HEADER
 
@@ -136,6 +137,9 @@ public:
     void setCacheEnabled(bool enable);
     bool cacheEnabled() const;
 
+    void setCursorMoveStyle(QTextCursor::MoveStyle style);
+    QTextCursor::MoveStyle cursorMoveStyle() const;
+
     void beginLayout();
     void endLayout();
     void clearLayout();
@@ -153,6 +157,8 @@ public:
     bool isValidCursorPosition(int pos) const;
     int nextCursorPosition(int oldPos, CursorMode mode = SkipCharacters) const;
     int previousCursorPosition(int oldPos, CursorMode mode = SkipCharacters) const;
+    int leftCursorPosition(int oldPos) const;
+    int rightCursorPosition(int oldPos) const;
 
     void draw(QPainter *p, const QPointF &pos, const QVector<FormatRange> &selections = QVector<FormatRange>(),
               const QRectF &clip = QRectF()) const;
@@ -167,7 +173,9 @@ public:
     qreal minimumWidth() const;
     qreal maximumWidth() const;
 
+#if !defined(QT_NO_RAWFONT)
     QList<QGlyphs> glyphs() const;
+#endif
 
     QTextEngine *engine() const { return d; }
     void setFlags(int flags);
@@ -239,7 +247,10 @@ public:
 private:
     QTextLine(int line, QTextEngine *e) : i(line), eng(e) {}
     void layout_helper(int numGlyphs);
+
+#if !defined(QT_NO_RAWFONT)
     QList<QGlyphs> glyphs(int from, int length) const;
+#endif
 
     friend class QTextLayout;
     friend class QTextFragment;
