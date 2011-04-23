@@ -63,6 +63,7 @@
 #include "qstyleoption.h"
 #include "q3stylesheet.h"
 #include "qtextstream.h"
+#include <private/qtextdocument_p.h>
 #include <private/qtextengine_p.h>
 
 #include <stdlib.h>
