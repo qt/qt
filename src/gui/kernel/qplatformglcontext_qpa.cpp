@@ -125,24 +125,6 @@ QPlatformGLContext::~QPlatformGLContext()
 
 }
 
-
-/*!
-    Makes it possible to set the context which can be the default for making new contexts.
-*/
-void QPlatformGLContext::setDefaultSharedContext(QPlatformGLContext *sharedContext)
-{
-    QPlatformGLContextPrivate::staticSharedContext = sharedContext;
-}
-
-/*!
-    Default shared context is intended to be a globally awailable pointer to a context which can
-    be used for sharing resources when creating new contexts. Its default value is 0;
-*/
-QPlatformGLContext *QPlatformGLContext::defaultSharedContext()
-{
-    return QPlatformGLContextPrivate::staticSharedContext;
-}
-
 /*!
     Reimplement in subclass to do makeCurrent on native GL context
 */

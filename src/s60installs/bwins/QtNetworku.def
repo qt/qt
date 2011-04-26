@@ -1159,6 +1159,82 @@ EXPORTS
 	?engines@QNetworkConfigurationManagerPrivate@@QBE?AV?$QList@PAVQBearerEngine@@@@XZ @ 1158 NONAME ; class QList<class QBearerEngine *> QNetworkConfigurationManagerPrivate::engines(void) const
 	?isOnline@QNetworkConfigurationManagerPrivate@@QBE_NXZ @ 1159 NONAME ; bool QNetworkConfigurationManagerPrivate::isOnline(void) const
 	?startPolling@QNetworkConfigurationManagerPrivate@@AAEXXZ @ 1160 NONAME ; void QNetworkConfigurationManagerPrivate::startPolling(void)
-	?setPeerVerifyName@QSslSocket@@QAEXABVQString@@@Z @ 1161 NONAME ; void QSslSocket::setPeerVerifyName(class QString const &)
-	?peerVerifyName@QSslSocket@@QBE?AVQString@@XZ @ 1162 NONAME ; class QString QSslSocket::peerVerifyName(void) const
+	?peerVerifyName@QSslSocket@@QBE?AVQString@@XZ @ 1161 NONAME ; class QString QSslSocket::peerVerifyName(void) const
+	?setPeerVerifyName@QSslSocket@@QAEXABVQString@@@Z @ 1162 NONAME ; void QSslSocket::setPeerVerifyName(class QString const &)
+	?nativeSession@QNetworkSessionPrivate@@SAPAVRConnection@@AAVQNetworkSession@@@Z @ 1163 NONAME ; class RConnection * QNetworkSessionPrivate::nativeSession(class QNetworkSession &)
+	?nativeOpenSocket@QNetworkSessionPrivate@@SAHAAVQNetworkSession@@AAVRSocket@@III@Z @ 1164 NONAME ; int QNetworkSessionPrivate::nativeOpenSocket(class QNetworkSession &, class RSocket &, unsigned int, unsigned int, unsigned int)
+	?nativeOpenHostResolver@QNetworkSessionPrivate@@SAHAAVQNetworkSession@@AAVRHostResolver@@II@Z @ 1165 NONAME ; int QNetworkSessionPrivate::nativeOpenHostResolver(class QNetworkSession &, class RHostResolver &, unsigned int, unsigned int)
+	??_EQHttpMultiPart@@UAE@I@Z @ 1166 NONAME ; QHttpMultiPart::~QHttpMultiPart(unsigned int)
+	??1QHttpPart@@QAE@XZ @ 1167 NONAME ; QHttpPart::~QHttpPart(void)
+	?trUtf8@QHttpMultiPart@@SA?AVQString@@PBD0@Z @ 1168 NONAME ; class QString QHttpMultiPart::trUtf8(char const *, char const *)
+	??0QHttpPart@@QAE@ABV0@@Z @ 1169 NONAME ; QHttpPart::QHttpPart(class QHttpPart const &)
+	?setBody@QHttpPart@@QAEXABVQByteArray@@@Z @ 1170 NONAME ; void QHttpPart::setBody(class QByteArray const &)
+	?trUtf8@QHttpMultiPart@@SA?AVQString@@PBD0H@Z @ 1171 NONAME ; class QString QHttpMultiPart::trUtf8(char const *, char const *, int)
+	?staticMetaObject@QHttpMultiPart@@2UQMetaObject@@B @ 1172 NONAME ; struct QMetaObject const QHttpMultiPart::staticMetaObject
+	??4QHttpPart@@QAEAAV0@ABV0@@Z @ 1173 NONAME ; class QHttpPart & QHttpPart::operator=(class QHttpPart const &)
+	?append@QHttpMultiPart@@QAEXABVQHttpPart@@@Z @ 1174 NONAME ; void QHttpMultiPart::append(class QHttpPart const &)
+	?setContentType@QHttpMultiPart@@QAEXW4ContentType@1@@Z @ 1175 NONAME ; void QHttpMultiPart::setContentType(enum QHttpMultiPart::ContentType)
+	?d_func@QHttpMultiPart@@AAEPAVQHttpMultiPartPrivate@@XZ @ 1176 NONAME ; class QHttpMultiPartPrivate * QHttpMultiPart::d_func(void)
+	??9QHttpPart@@QBE_NABV0@@Z @ 1177 NONAME ; bool QHttpPart::operator!=(class QHttpPart const &) const
+	??0QHttpMultiPart@@QAE@W4ContentType@0@PAVQObject@@@Z @ 1178 NONAME ; QHttpMultiPart::QHttpMultiPart(enum QHttpMultiPart::ContentType, class QObject *)
+	??0QHttpPart@@QAE@XZ @ 1179 NONAME ; QHttpPart::QHttpPart(void)
+	?post@QNetworkAccessManager@@QAEPAVQNetworkReply@@ABVQNetworkRequest@@PAVQHttpMultiPart@@@Z @ 1180 NONAME ; class QNetworkReply * QNetworkAccessManager::post(class QNetworkRequest const &, class QHttpMultiPart *)
+	??0QHttpMultiPart@@QAE@PAVQObject@@@Z @ 1181 NONAME ; QHttpMultiPart::QHttpMultiPart(class QObject *)
+	??8QHttpPart@@QBE_NABV0@@Z @ 1182 NONAME ; bool QHttpPart::operator==(class QHttpPart const &) const
+	?setBodyDevice@QHttpPart@@QAEXPAVQIODevice@@@Z @ 1183 NONAME ; void QHttpPart::setBodyDevice(class QIODevice *)
+	?getStaticMetaObject@QHttpMultiPart@@SAABUQMetaObject@@XZ @ 1184 NONAME ; struct QMetaObject const & QHttpMultiPart::getStaticMetaObject(void)
+	?qt_metacast@QHttpMultiPart@@UAEPAXPBD@Z @ 1185 NONAME ; void * QHttpMultiPart::qt_metacast(char const *)
+	?put@QNetworkAccessManager@@QAEPAVQNetworkReply@@ABVQNetworkRequest@@PAVQHttpMultiPart@@@Z @ 1186 NONAME ; class QNetworkReply * QNetworkAccessManager::put(class QNetworkRequest const &, class QHttpMultiPart *)
+	?tr@QHttpMultiPart@@SA?AVQString@@PBD0@Z @ 1187 NONAME ; class QString QHttpMultiPart::tr(char const *, char const *)
+	?qt_metacall@QHttpMultiPart@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 1188 NONAME ; int QHttpMultiPart::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?boundary@QHttpMultiPart@@QBE?AVQByteArray@@XZ @ 1189 NONAME ; class QByteArray QHttpMultiPart::boundary(void) const
+	?setRawHeader@QHttpPart@@QAEXABVQByteArray@@0@Z @ 1190 NONAME ; void QHttpPart::setRawHeader(class QByteArray const &, class QByteArray const &)
+	?metaObject@QHttpMultiPart@@UBEPBUQMetaObject@@XZ @ 1191 NONAME ; struct QMetaObject const * QHttpMultiPart::metaObject(void) const
+	?setHeader@QHttpPart@@QAEXW4KnownHeaders@QNetworkRequest@@ABVQVariant@@@Z @ 1192 NONAME ; void QHttpPart::setHeader(enum QNetworkRequest::KnownHeaders, class QVariant const &)
+	??1QHttpMultiPart@@UAE@XZ @ 1193 NONAME ; QHttpMultiPart::~QHttpMultiPart(void)
+	?d_func@QHttpMultiPart@@ABEPBVQHttpMultiPartPrivate@@XZ @ 1194 NONAME ; class QHttpMultiPartPrivate const * QHttpMultiPart::d_func(void) const
+	?tr@QHttpMultiPart@@SA?AVQString@@PBD0H@Z @ 1195 NONAME ; class QString QHttpMultiPart::tr(char const *, char const *, int)
+	?setBoundary@QHttpMultiPart@@QAEXABVQByteArray@@@Z @ 1196 NONAME ; void QHttpMultiPart::setBoundary(class QByteArray const &)
+	?qt_static_metacall@QNetworkSessionPrivate@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1197 NONAME ; void QNetworkSessionPrivate::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QUdpSocket@@0UQMetaObjectExtraData@@B @ 1198 NONAME ; struct QMetaObjectExtraData const QUdpSocket::staticMetaObjectExtraData
+	?qt_static_metacall@QLocalSocket@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1199 NONAME ; void QLocalSocket::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QFtp@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1200 NONAME ; void QFtp::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QTcpServer@@0UQMetaObjectExtraData@@B @ 1201 NONAME ; struct QMetaObjectExtraData const QTcpServer::staticMetaObjectExtraData
+	?qt_static_metacall@QSslSocket@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1202 NONAME ; void QSslSocket::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QNetworkSession@@0UQMetaObjectExtraData@@B @ 1203 NONAME ; struct QMetaObjectExtraData const QNetworkSession::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QNetworkAccessManager@@0UQMetaObjectExtraData@@B @ 1204 NONAME ; struct QMetaObjectExtraData const QNetworkAccessManager::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QAbstractSocket@@0UQMetaObjectExtraData@@B @ 1205 NONAME ; struct QMetaObjectExtraData const QAbstractSocket::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QTcpSocket@@0UQMetaObjectExtraData@@B @ 1206 NONAME ; struct QMetaObjectExtraData const QTcpSocket::staticMetaObjectExtraData
+	?qt_static_metacall@QTcpServer@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1207 NONAME ; void QTcpServer::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QNetworkSessionPrivate@@0UQMetaObjectExtraData@@B @ 1208 NONAME ; struct QMetaObjectExtraData const QNetworkSessionPrivate::staticMetaObjectExtraData
+	?qt_static_metacall@QNetworkConfigurationManagerPrivate@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1209 NONAME ; void QNetworkConfigurationManagerPrivate::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QHttp@@0UQMetaObjectExtraData@@B @ 1210 NONAME ; struct QMetaObjectExtraData const QHttp::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QSslSocket@@0UQMetaObjectExtraData@@B @ 1211 NONAME ; struct QMetaObjectExtraData const QSslSocket::staticMetaObjectExtraData
+	?qt_static_metacall@QNetworkReply@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1212 NONAME ; void QNetworkReply::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QLocalServer@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1213 NONAME ; void QLocalServer::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QNetworkConfigurationManager@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1214 NONAME ; void QNetworkConfigurationManager::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QAbstractNetworkCache@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1215 NONAME ; void QAbstractNetworkCache::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QNetworkCookieJar@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1216 NONAME ; void QNetworkCookieJar::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QAbstractNetworkCache@@0UQMetaObjectExtraData@@B @ 1217 NONAME ; struct QMetaObjectExtraData const QAbstractNetworkCache::staticMetaObjectExtraData
+	?qt_static_metacall@QHttpMultiPart@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1218 NONAME ; void QHttpMultiPart::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QBearerEngine@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1219 NONAME ; void QBearerEngine::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QLocalSocket@@0UQMetaObjectExtraData@@B @ 1220 NONAME ; struct QMetaObjectExtraData const QLocalSocket::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QHttpMultiPart@@0UQMetaObjectExtraData@@B @ 1221 NONAME ; struct QMetaObjectExtraData const QHttpMultiPart::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QNetworkConfigurationManagerPrivate@@0UQMetaObjectExtraData@@B @ 1222 NONAME ; struct QMetaObjectExtraData const QNetworkConfigurationManagerPrivate::staticMetaObjectExtraData
+	?qt_static_metacall@QHttp@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1223 NONAME ; void QHttp::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QLocalServer@@0UQMetaObjectExtraData@@B @ 1224 NONAME ; struct QMetaObjectExtraData const QLocalServer::staticMetaObjectExtraData
+	?qt_static_metacall@QUdpSocket@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1225 NONAME ; void QUdpSocket::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QBearerEngine@@0UQMetaObjectExtraData@@B @ 1226 NONAME ; struct QMetaObjectExtraData const QBearerEngine::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QBearerEnginePlugin@@0UQMetaObjectExtraData@@B @ 1227 NONAME ; struct QMetaObjectExtraData const QBearerEnginePlugin::staticMetaObjectExtraData
+	?qt_static_metacall@QNetworkAccessManager@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1228 NONAME ; void QNetworkAccessManager::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QNetworkCookieJar@@0UQMetaObjectExtraData@@B @ 1229 NONAME ; struct QMetaObjectExtraData const QNetworkCookieJar::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QNetworkReply@@0UQMetaObjectExtraData@@B @ 1230 NONAME ; struct QMetaObjectExtraData const QNetworkReply::staticMetaObjectExtraData
+	?qt_static_metacall@QNetworkSession@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1231 NONAME ; void QNetworkSession::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QAbstractSocket@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1232 NONAME ; void QAbstractSocket::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QNetworkDiskCache@@0UQMetaObjectExtraData@@B @ 1233 NONAME ; struct QMetaObjectExtraData const QNetworkDiskCache::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QFtp@@0UQMetaObjectExtraData@@B @ 1234 NONAME ; struct QMetaObjectExtraData const QFtp::staticMetaObjectExtraData
+	?qt_static_metacall@QNetworkDiskCache@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1235 NONAME ; void QNetworkDiskCache::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QBearerEnginePlugin@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1236 NONAME ; void QBearerEnginePlugin::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QNetworkConfigurationManager@@0UQMetaObjectExtraData@@B @ 1237 NONAME ; struct QMetaObjectExtraData const QNetworkConfigurationManager::staticMetaObjectExtraData
+	?qt_static_metacall@QTcpSocket@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1238 NONAME ; void QTcpSocket::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 

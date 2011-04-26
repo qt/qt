@@ -46,6 +46,9 @@
 
 #include <QList>
 #include <QObject>
+#include <QVector>
+
+#define Q_XCB_DEBUG
 
 class QXcbScreen;
 
@@ -221,6 +224,8 @@ public:
     QXcbConnection(const char *displayName = 0);
     ~QXcbConnection();
 
+    QXcbConnection *connection() const { return const_cast<QXcbConnection *>(this); }
+
     QList<QXcbScreen *> screens() const { return m_screens; }
     int primaryScreen() const { return m_primaryScreen; }
 
@@ -247,11 +252,15 @@ public:
     void *egl_display() const { return m_egl_display; }
 #endif
 
+    void sync();
+    void handleXcbError(xcb_generic_error_t *error);
+
 private slots:
-    void eventDispatcher();
+    void processXcbEvents();
 
 private:
     void initializeAllAtoms();
+    void sendConnectionEvent(QXcbAtom::Atom atom, uint id = 0);
 #ifdef XCB_USE_DRI2
     void initializeDri2();
 #endif
@@ -283,9 +292,37 @@ private:
     void *m_egl_display;
     bool m_has_egl;
 #endif
+#ifdef Q_XCB_DEBUG
+    struct CallInfo {
+        int sequence;
+        QByteArray file;
+        int line;
+    };
+    QVector<CallInfo> m_callLog;
+    void log(const char *file, int line, int sequence);
+    template <typename cookie_t>
+    friend cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection, const char *file, int line);
+#endif
 };
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))
+
+#ifdef Q_XCB_DEBUG
+template <typename cookie_t>
+cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection, const char *file, int line)
+{
+    connection->log(file, line, cookie.sequence);
+    return cookie;
+}
+#define Q_XCB_CALL(x) q_xcb_call_template(x, connection(), __FILE__, __LINE__)
+#define Q_XCB_CALL2(x, connection) q_xcb_call_template(x, connection, __FILE__, __LINE__)
+#define Q_XCB_NOOP(c) q_xcb_call_template(xcb_no_operation(c->xcb_connection()), c, __FILE__, __LINE__);
+#else
+#define Q_XCB_CALL(x) x
+#define Q_XCB_CALL2(x, connection) x
+#define Q_XCB_NOOP(c)
+#endif
+
 
 #if defined(XCB_USE_DRI2) || defined(XCB_USE_EGL)
 #define EGL_DISPLAY_FROM_XCB(object) ((EGLDisplay)(object->connection()->egl_display()))

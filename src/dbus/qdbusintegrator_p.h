@@ -95,13 +95,12 @@ class QDBusCallDeliveryEvent: public QMetaCallEvent
 public:
     QDBusCallDeliveryEvent(const QDBusConnection &c, int id, QObject *sender,
                            const QDBusMessage &msg, const QList<int> &types, int f = 0)
-        : QMetaCallEvent(id, sender, -1), connection(c), message(msg), metaTypes(types), flags(f)
+        : QMetaCallEvent(0, id, 0, sender, -1), connection(c), message(msg), metaTypes(types), flags(f)
         { }
 
-    int placeMetaCall(QObject *object)
+    void placeMetaCall(QObject *object)
     {
         QDBusConnectionPrivate::d(connection)->deliverCall(object, flags, message, metaTypes, id());
-        return -1;
     }
 
 private:
@@ -117,12 +116,12 @@ public:
     QDBusActivateObjectEvent(const QDBusConnection &c, QObject *sender,
                              const QDBusConnectionPrivate::ObjectTreeNode &n,
                              int p, const QDBusMessage &m, QSemaphore *s = 0)
-        : QMetaCallEvent(-1, sender, -1, 0, 0, 0, s), connection(c), node(n),
+        : QMetaCallEvent(0, -1, 0, sender, -1, 0, 0, 0, s), connection(c), node(n),
           pathStartPos(p), message(m), handled(false)
         { }
     ~QDBusActivateObjectEvent();
 
-    int placeMetaCall(QObject *);
+    void placeMetaCall(QObject *);
 
 private:
     QDBusConnection connection; // just for refcounting

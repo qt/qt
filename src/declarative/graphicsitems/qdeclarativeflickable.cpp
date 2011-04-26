@@ -266,7 +266,7 @@ void QDeclarativeFlickablePrivate::flickY(qreal velocity)
     flick(vData, q->minYExtent(), q->maxYExtent(), q->height(), fixupY_callback, velocity);
 }
 
-void QDeclarativeFlickablePrivate::flick(AxisData &data, qreal minExtent, qreal maxExtent, qreal vSize,
+void QDeclarativeFlickablePrivate::flick(AxisData &data, qreal minExtent, qreal maxExtent, qreal,
                                          QDeclarativeTimeLineCallback::Callback fixupCallback, qreal velocity)
 {
     Q_Q(QDeclarativeFlickable);

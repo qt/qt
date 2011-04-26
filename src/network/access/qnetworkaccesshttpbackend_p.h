@@ -148,7 +148,7 @@ private:
 
     quint64 resumeOffset;
 
-    void validateCache(QHttpNetworkRequest &httpRequest, bool &loadedFromCache);
+    bool loadFromCacheIfAllowed(QHttpNetworkRequest &httpRequest);
     void invalidateCache();
     void postRequest();
     void readFromHttp();

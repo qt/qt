@@ -61,6 +61,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(DBus)
 
+class QDBusUnixFileDescriptor;
+
 class QDBusArgumentPrivate;
 class QDBusDemarshaller;
 class QDBusMarshaller;
@@ -96,6 +98,7 @@ public:
     QDBusArgument &operator<<(const QDBusVariant &arg);
     QDBusArgument &operator<<(const QDBusObjectPath &arg);
     QDBusArgument &operator<<(const QDBusSignature &arg);
+    QDBusArgument &operator<<(const QDBusUnixFileDescriptor &arg);
     QDBusArgument &operator<<(const QStringList &arg);
     QDBusArgument &operator<<(const QByteArray &arg);
 
@@ -127,6 +130,7 @@ public:
     const QDBusArgument &operator>>(QDBusVariant &arg) const;
     const QDBusArgument &operator>>(QDBusObjectPath &arg) const;
     const QDBusArgument &operator>>(QDBusSignature &arg) const;
+    const QDBusArgument &operator>>(QDBusUnixFileDescriptor &arg) const;
     const QDBusArgument &operator>>(QStringList &arg) const;
     const QDBusArgument &operator>>(QByteArray &arg) const;
 

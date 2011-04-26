@@ -791,7 +791,7 @@ void QMetaObjectBuilder::addMetaObject
     }
 
     if ((members & StaticMetacall) != 0) {
-        if (priv(prototype->d.data)->revision >= 2) {
+        if (priv(prototype->d.data)->revision >= 6) {
             const QMetaObjectExtraData *extra =
                 (const QMetaObjectExtraData *)(prototype->d.extradata);
             if (extra && extra->static_metacall)

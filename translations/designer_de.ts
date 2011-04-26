@@ -364,7 +364,7 @@
     </message>
     <message>
         <source>page</source>
-        <translation>Seite</translation>
+        <translation type="obsolete">Seite</translation>
     </message>
     <message>
         <source>Insert Page</source>
@@ -476,7 +476,7 @@
     </message>
     <message>
         <source>subwindow</source>
-        <translation>subwindow</translation>
+        <translation type="obsolete">subwindow</translation>
     </message>
     <message>
         <source>Subwindow</source>
@@ -518,6 +518,10 @@
     <message>
         <source>Change layout of &apos;%1&apos; from %2 to %3</source>
         <translation>Layout von &apos;%1&apos; von %2 in %3 umwandeln</translation>
+    </message>
+    <message>
+        <source>Change layout alignment</source>
+        <translation>Ausrichtung des Layouts ändern</translation>
     </message>
     <message>
         <source>Add &apos;%1&apos; to &apos;%2&apos;</source>
@@ -1834,7 +1838,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
     </message>
     <message>
         <source>Edit</source>
-        <translation>Bearbeiten</translation>
+        <translation type="obsolete">Bearbeiten</translation>
     </message>
     <message>
         <source>Toolbars</source>
@@ -1847,6 +1851,10 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
     <message>
         <source>&amp;View</source>
         <translation>&amp;Ansicht</translation>
+    </message>
+    <message>
+        <source>&amp;Edit</source>
+        <translation>&amp;Bearbeiten</translation>
     </message>
     <message>
         <source>&amp;Settings</source>
@@ -3734,12 +3742,20 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Geerbt</translation>
     </message>
     <message>
+        <source>[Theme] %1</source>
+        <translation>[Thema] %1</translation>
+    </message>
+    <message>
         <source>Horizontal</source>
         <translation>Horizontal</translation>
     </message>
     <message>
         <source>Vertical</source>
         <translation>Vertikal</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>Thema</translation>
     </message>
     <message>
         <source>Normal Off</source>
@@ -4328,6 +4344,17 @@ Möchten Sie sie überschreiben?</translation>
     </message>
 </context>
 <context>
+    <name>qdesigner_internal::IconThemeDialog</name>
+    <message>
+        <source>Set Icon From Theme</source>
+        <translation>Icon aus Thema setzen</translation>
+    </message>
+    <message>
+        <source>Input icon name from the current theme:</source>
+        <translation>Icon-Name vom aktuellen Thema eingeben:</translation>
+    </message>
+</context>
+<context>
     <name>qdesigner_internal::ItemListEditor</name>
     <message>
         <source>Properties &amp;&lt;&lt;</source>
@@ -4470,15 +4497,15 @@ Möchten Sie sie überschreiben?</translation>
     </message>
     <message>
         <source>Shortcut:</source>
-        <translation>Tastenkürzel</translation>
+        <translation type="obsolete">Tastenkürzel</translation>
     </message>
     <message>
         <source>Checkable:</source>
-        <translation>Ankreuzbar:</translation>
+        <translation type="obsolete">Ankreuzbar:</translation>
     </message>
     <message>
         <source>ToolTip:</source>
-        <translation>ToolTip:</translation>
+        <translation type="obsolete">ToolTip:</translation>
     </message>
     <message>
         <source>...</source>
@@ -4491,6 +4518,22 @@ Möchten Sie sie überschreiben?</translation>
     <message>
         <source>Object &amp;name:</source>
         <translation>Objekt&amp;name:</translation>
+    </message>
+    <message>
+        <source>T&amp;oolTip:</source>
+        <translation>T&amp;oolTip:</translation>
+    </message>
+    <message>
+        <source>Icon th&amp;eme:</source>
+        <translation>Icon-Th&amp;ema:</translation>
+    </message>
+    <message>
+        <source>&amp;Checkable:</source>
+        <translation>&amp;Ankreuzbar:</translation>
+    </message>
+    <message>
+        <source>&amp;Shortcut:</source>
+        <translation>Tastenk&amp;ürzel</translation>
     </message>
 </context>
 <context>
@@ -4748,8 +4791,16 @@ Please select another name.</source>
         <translation>Datei auswählen...</translation>
     </message>
     <message>
+        <source>Set Icon From Theme...</source>
+        <translation>Icon aus Thema setzen...</translation>
+    </message>
+    <message>
         <source>...</source>
         <translation>...</translation>
+    </message>
+    <message>
+        <source>[Theme] %1</source>
+        <translation>[Thema] %1</translation>
     </message>
 </context>
 <context>
@@ -5132,6 +5183,42 @@ Klasse: %2</translation>
         <translation>Größe</translation>
     </message>
     <message>
+        <source>Layout Alignment</source>
+        <translation>Ausrichtung des Layouts</translation>
+    </message>
+    <message>
+        <source>No Horizontal Alignment</source>
+        <translation>Keine horizontale Ausrichtung</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Links</translation>
+    </message>
+    <message>
+        <source>Center Horizontally</source>
+        <translation>Horizontal zentrieren</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Rechts</translation>
+    </message>
+    <message>
+        <source>No Vertical Alignment</source>
+        <translation>Keine vertikale Ausrichtung</translation>
+    </message>
+    <message>
+        <source>Top</source>
+        <translation>Oben</translation>
+    </message>
+    <message>
+        <source>Center Vertically</source>
+        <translation>Vertikal zentrieren</translation>
+    </message>
+    <message>
+        <source>Bottom</source>
+        <translation>Unten</translation>
+    </message>
+    <message>
         <source>Set Minimum Width</source>
         <translation>Minimalbreite festlegen</translation>
     </message>
@@ -5337,6 +5424,10 @@ Klasse: %2</translation>
     <message>
         <source>Insert &amp;Image</source>
         <translation>&amp;Bild einfügen</translation>
+    </message>
+    <message>
+        <source>Simplify Rich Text</source>
+        <translation>Formatierbaren Text vereinfachen</translation>
     </message>
 </context>
 <context>

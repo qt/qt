@@ -66,8 +66,7 @@ public:
         HasOverlay              = 0x0100,
         SampleBuffers           = 0x0200,
         DeprecatedFunctions     = 0x0400,
-        UseDefaultSharedContext = 0x0800,
-        HasWindowSurface        = 0x1000,
+        HasWindowSurface        = 0x0800,
         SingleBuffer            = DoubleBuffer    << 16,
         NoDepthBuffer           = DepthBuffer     << 16,
         ColorIndex              = Rgba            << 16,
@@ -79,7 +78,6 @@ public:
         NoOverlay               = HasOverlay      << 16,
         NoSampleBuffers         = SampleBuffers   << 16,
         NoDeprecatedFunctions   = DeprecatedFunctions << 16,
-        NoDefaultSharedContext  = UseDefaultSharedContext << 16,
         NoWindowSurface         = HasWindowSurface << 16
 
     };
@@ -149,8 +147,6 @@ public:
     void setStereo(bool enable);
     bool directRendering() const;
     void setDirectRendering(bool enable);
-    bool useDefaultSharedContext() const;
-    void setUseDefaultSharedContext(bool enable);
     bool hasWindowSurface() const;
     void setWindowSurface(bool enable);
 
@@ -229,11 +225,6 @@ inline bool QPlatformWindowFormat::hasWindowSurface() const
 inline bool QPlatformWindowFormat::sampleBuffers() const
 {
     return testOption(QPlatformWindowFormat::SampleBuffers);
-}
-
-inline bool QPlatformWindowFormat::useDefaultSharedContext() const
-{
-    return testOption(QPlatformWindowFormat::UseDefaultSharedContext);
 }
 
 QT_END_NAMESPACE

@@ -108,19 +108,23 @@ public:
         QList<QVariant> propertyValues;
     };
 
+    typedef void (*StaticMetaCallFunction)(QObject *, QMetaObject::Call, int, void **);
     struct Connection
     {
         QObject *sender;
         QObject *receiver;
-        int method;
-        uint connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
-        QBasicAtomicPointer<int> argumentTypes;
+        StaticMetaCallFunction callFunction;
         // The next pointer for the singly-linked ConnectionList
         Connection *nextConnectionList;
         //senders linked list
         Connection *next;
         Connection **prev;
+        QBasicAtomicPointer<int> argumentTypes;
+        ushort method_offset;
+        ushort method_relative;
+        ushort connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
         ~Connection();
+        int method() const { return method_offset + method_relative; }
     };
     // ConnectionList is a singly-linked list
     struct ConnectionList {
@@ -253,25 +257,27 @@ class QSemaphore;
 class Q_CORE_EXPORT QMetaCallEvent : public QEvent
 {
 public:
-    QMetaCallEvent(int id, const QObject *sender, int signalId,
+    QMetaCallEvent(ushort method_offset, ushort method_relative, QObjectPrivate::StaticMetaCallFunction callFunction , const QObject *sender, int signalId,
                    int nargs = 0, int *types = 0, void **args = 0, QSemaphore *semaphore = 0);
     ~QMetaCallEvent();
 
-    inline int id() const { return id_; }
+    inline int id() const { return method_offset_ + method_relative_; }
     inline const QObject *sender() const { return sender_; }
     inline int signalId() const { return signalId_; }
     inline void **args() const { return args_; }
 
-    virtual int placeMetaCall(QObject *object);
+    virtual void placeMetaCall(QObject *object);
 
 private:
-    int id_;
     const QObject *sender_;
     int signalId_;
     int nargs_;
     int *types_;
     void **args_;
     QSemaphore *semaphore_;
+    QObjectPrivate::StaticMetaCallFunction callFunction_;
+    ushort method_offset_;
+    ushort method_relative_;
 };
 
 class QBoolBlocker

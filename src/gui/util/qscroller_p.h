@@ -148,10 +148,6 @@ public slots:
     void targetDestroyed();
 
 public:
-    // static
-    static QMap<QObject *, QScroller *> allScrollers;
-    static QSet<QScroller *> activeScrollers;
-
     // non static
     QObject *target;
     QScrollerProperties properties;
