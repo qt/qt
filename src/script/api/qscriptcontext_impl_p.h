@@ -262,7 +262,7 @@ inline void QScriptContextPrivate::setActivationObject(QScriptValuePrivate *acti
 inline QScriptValueList QScriptContextPrivate::scopeChain() const
 {
     QScriptValueList list;
-    for (int i = 0; i < scopes.size(); ++i) {
+    for (int i = scopes.size() - 1; i >= 0; --i) {
         v8::Handle<v8::Object> object = scopes.at(i)->GetExtensionObject();
         list.append(QScriptValuePrivate::get(new QScriptValuePrivate(engine, object)));
     }
