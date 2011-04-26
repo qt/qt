@@ -3671,8 +3671,12 @@ Local<Context> v8::Context::GetPrevious() {
   if (IsDeadCheck("v8::Context::GetPrevious()")) return Local<Context>();
   ENTER_V8;
   i::Handle<i::Context> env = Utils::OpenHandle(this);
-  if (env->IsGlobalContext() || env->is_function_context()) return Local<Context>();
-  i::Context* previous = env->previous();
+  if (env->IsGlobalContext()) return Local<Context>();
+  i::Context* previous = 0;
+  if (env->is_function_context())
+    previous = env->closure()->context();
+  else
+    previous = env->previous();
   if (!previous) return Local<Context>();
   i::Handle<i::Context> previous_handle(previous);
   return Utils::ToLocal(previous_handle);
