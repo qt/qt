@@ -93,6 +93,7 @@ QDeclarativeObjectScriptClass::QDeclarativeObjectScriptClass(QDeclarativeEngine 
     m_destroyId = createPersistentIdentifier(QLatin1String("destroy"));
     m_toString = scriptEngine->newFunction(tostring);
     m_toStringId = createPersistentIdentifier(QLatin1String("toString"));
+    m_valueOfId = createPersistentIdentifier(QLatin1String("valueOf"));
 }
 
 QDeclarativeObjectScriptClass::~QDeclarativeObjectScriptClass()
@@ -160,7 +161,7 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
         name == m_toStringId.identifier)
         return QScriptClass::HandlesReadAccess;
 
-    if (!obj)
+    if (name == m_valueOfId.identifier || !obj)
         return 0;
 
     QDeclarativeEnginePrivate *enginePrivate = QDeclarativeEnginePrivate::get(engine);
