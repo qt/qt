@@ -82,6 +82,8 @@
 #include "angledvector.h"
 #include "directedvector.h"
 //#include "followaffector.h"
+#include "deformableparticle.h"
+#include "pictureaffector.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -105,6 +107,7 @@ void ParticlesPlugin::registerTypes(const char *uri)
     qmlRegisterType<SpriteParticle>(uri, 2, 0, "SpriteParticle");
     qmlRegisterType<ModelParticle>(uri, 2, 0, "ModelParticle");
     //qmlRegisterType<PairedParticle>(uri, 2, 0, "PairedParticle");
+    qmlRegisterType<DeformableParticle>(uri, 2, 0, "DeformableParticle");
 
     qmlRegisterType<ParticleEmitter>(uri, 2, 0, "ParticleEmitter");
     qmlRegisterType<TrailsEmitter>(uri, 2, 0, "TrailEmitter");
@@ -139,6 +142,7 @@ void ParticlesPlugin::registerTypes(const char *uri)
     qmlRegisterType<SpriteGoalAffector>(uri, 2, 0, "SpriteGoal");
     qmlRegisterType<SwarmAffector>(uri, 2, 0 , "Swarm");
     qmlRegisterType<TurbulenceAffector>(uri, 2, 0 , "Turbulence");
+    qmlRegisterType<PictureAffector>(uri, 2, 0, "Picture");
 }
 
 QT_END_NAMESPACE

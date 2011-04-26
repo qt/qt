@@ -1424,10 +1424,6 @@ QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags()
         }
     }
 
-#ifdef Q_WS_QPA
-    hasOpenGL(); // ### I have no idea why this is needed here, but it makes things work for testlite
-#endif
-
     QString versionString(QLatin1String(reinterpret_cast<const char*>(glGetString(GL_VERSION))));
     OpenGLVersionFlags versionFlags = qOpenGLVersionFlagsFromString(versionString);
     if (currentCtx) {

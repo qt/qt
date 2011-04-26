@@ -60,6 +60,12 @@ QPointF MaskExtruder::extrude(const QRectF &r)
     return p + r.topLeft();
 }
 
+bool MaskExtruder::contains(const QRectF &bounds, const QPointF &point)
+{
+    ensureInitialized(bounds);//###Current usage patterns WILL lead to different bounds/r calls. Separate list?
+    return m_mask.contains(QPointF(point.toPoint() - bounds.topLeft().toPoint()));
+}
+
 void MaskExtruder::ensureInitialized(const QRectF &r)
 {
     if(m_lastWidth == r.width() && m_lastHeight == r.height())

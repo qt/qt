@@ -51,13 +51,44 @@ QT_MODULE(Declarative)
 
 class ParticleTrailsMaterial;
 class QSGGeometryNode;
-struct ColoredParticleVertex;
+
+struct Color4ub {
+    uchar r;
+    uchar g;
+    uchar b;
+    uchar a;
+};
+
+struct ColoredParticleVertex {
+    float x;
+    float y;
+    float tx;
+    float ty;
+    float t;
+    float lifeSpan;
+    float size;
+    float endSize;
+    float sx;
+    float sy;
+    float ax;
+    float ay;
+    Color4ub color;
+};
+
+struct ColoredParticleVertices {
+    ColoredParticleVertex v1;
+    ColoredParticleVertex v2;
+    ColoredParticleVertex v3;
+    ColoredParticleVertex v4;
+};
 
 class ColoredParticle : public ParticleType
 {
     Q_OBJECT
     Q_PROPERTY(QUrl image READ image WRITE setImage NOTIFY imageChanged)
-    Q_PROPERTY(QUrl colortable READ colortable WRITE setColortable NOTIFY colortableChanged)
+    Q_PROPERTY(QUrl colorTable READ colortable WRITE setColortable NOTIFY colortableChanged)
+    Q_PROPERTY(QUrl sizeTable READ sizetable WRITE setSizetable NOTIFY sizetableChanged)
+    Q_PROPERTY(QUrl opacityTable READ opacitytable WRITE setOpacitytable NOTIFY opacitytableChanged)
 
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
     //Stacks (added) with individual colorVariations
@@ -82,6 +113,12 @@ public:
 
     QUrl colortable() const { return m_colortable_name; }
     void setColortable(const QUrl &table);
+
+    QUrl sizetable() const { return m_sizetable_name; }
+    void setSizetable (const QUrl &table);
+
+    QUrl opacitytable() const { return m_opacitytable_name; }
+    void setOpacitytable(const QUrl &table);
 
     QColor color() const { return m_color; }
     void setColor(const QColor &color);
@@ -120,6 +157,8 @@ signals:
 
     void imageChanged();
     void colortableChanged();
+    void sizetableChanged();
+    void opacitytableChanged();
 
     void colorChanged();
     void colorVariationChanged();
@@ -136,46 +175,47 @@ signals:
     void blueVariationChanged(qreal arg);
 
 public slots:
-void setAlphaVariation(qreal arg)
-{
-    if (m_alphaVariation != arg) {
-        m_alphaVariation = arg;
-        emit alphaVariationChanged(arg);
+    void setAlphaVariation(qreal arg)
+    {
+        if (m_alphaVariation != arg) {
+            m_alphaVariation = arg;
+            emit alphaVariationChanged(arg);
+        }
     }
-}
 
-void setAlpha(qreal arg)
-{
-    if (m_alpha != arg) {
-        m_alpha = arg;
-        emit alphaChanged(arg);
+    void setAlpha(qreal arg)
+    {
+        if (m_alpha != arg) {
+            m_alpha = arg;
+            emit alphaChanged(arg);
+        }
     }
-}
 
-void setRedVariation(qreal arg)
-{
-    if (m_redVariation != arg) {
-        m_redVariation = arg;
-        emit redVariationChanged(arg);
+    void setRedVariation(qreal arg)
+    {
+        if (m_redVariation != arg) {
+            m_redVariation = arg;
+            emit redVariationChanged(arg);
+        }
     }
-}
 
-void setGreenVariation(qreal arg)
-{
-    if (m_greenVariation != arg) {
-        m_greenVariation = arg;
-        emit greenVariationChanged(arg);
+    void setGreenVariation(qreal arg)
+    {
+        if (m_greenVariation != arg) {
+            m_greenVariation = arg;
+            emit greenVariationChanged(arg);
+        }
     }
-}
 
-void setBlueVariation(qreal arg)
-{
-    if (m_blueVariation != arg) {
-        m_blueVariation = arg;
-        emit blueVariationChanged(arg);
+    void setBlueVariation(qreal arg)
+    {
+        if (m_blueVariation != arg) {
+            m_blueVariation = arg;
+            emit blueVariationChanged(arg);
+        }
     }
-}
 
+    void reloadColor(const Color4ub &c, ParticleData* d);
 protected:
     QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
     void reset();
@@ -187,6 +227,8 @@ private:
 
     QUrl m_image_name;
     QUrl m_colortable_name;
+    QUrl m_sizetable_name;
+    QUrl m_opacitytable_name;
 
 
     QColor m_color;

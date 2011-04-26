@@ -54,7 +54,8 @@ Rectangle {
         alpha: 0
 
         image: "content/particle.png"
-        colortable: "content/colortable.png"
+        colorTable: "content/colortable.png"
+        sizeTable: "content/colortable.png"
     }
     TrailEmitter{
         system: particles
@@ -74,8 +75,8 @@ Rectangle {
         speed: PointVector{ xVariation: 5; yVariation: 5;}
         acceleration: PointVector{ xVariation: 5; yVariation: 5;}
 
-        particleSize: 2
-        particleEndSize: 8
-        particleSizeVariation: 8
+        particleSize: 16
+        //particleEndSize: 8
+        //particleSizeVariation: 8
     }
 }

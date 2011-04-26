@@ -60,6 +60,7 @@ class ParticleExtruder : public QObject
 public:
     explicit ParticleExtruder(QObject *parent = 0);
     virtual QPointF extrude(const QRectF &);
+    virtual bool contains(const QRectF &bounds, const QPointF &point);//###Needed for follow emitter, but does it belong? Only marginally conceptually valid, and that's from user's perspective
     bool fill() const
     {
         return m_fill;

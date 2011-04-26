@@ -125,8 +125,8 @@ Rectangle {
 
         particlesPerParticlePerSecond: 120
         particleDuration: 180
-        emitterXVariation: 8
-        emitterYVariation: 8
+        emissionWidth: 8
+        emissionHeight: 8
 
         particleSize: 16
         particleSizeVariation: 4
@@ -142,8 +142,8 @@ Rectangle {
 
         particlesPerParticlePerSecond: 128
         particleDuration: 2400
-        emitterXVariation: 16
-        emitterYVariation: 16
+        emissionWidth: 16
+        emissionHeight: 16
 
         speed: PointVector{yVariation: 16; xVariation: 16}
         acceleration: PointVector{y: -16}

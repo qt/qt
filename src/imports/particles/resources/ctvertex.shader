@@ -6,7 +6,8 @@ attribute lowp vec4 vColor;
 
 uniform highp mat4 matrix;                              
 uniform highp float timestamp;
-uniform lowp float opacity;
+uniform sampler2D sizetable;
+uniform sampler2D opacitytable;
 
 varying highp vec2 fTex;                                
 varying lowp vec4 fColor;
@@ -19,7 +20,7 @@ void main() {
 
     highp float t = (timestamp - vData.x) / vData.y;
 
-    highp float currentSize = mix(size, endSize, t * t);
+    highp float currentSize = mix(size, endSize, t * t) * texture2D(sizetable, vec2(t,0.5)).w;
 
     if (t < 0. || t > 1.)
         currentSize = 0.;
@@ -31,12 +32,7 @@ void main() {
 
     gl_Position = matrix * vec4(pos.x, pos.y, 0, 1);
 
-//    highp float fadeIn = min(t * 10., 1.);
-//    highp float fadeOut = 1. - max(0., min((t - 0.75) * 4., 1.));
-
-    fColor = vColor
-//            * fadeIn * fadeOut
-            * opacity;
+    fColor = vColor;
     tt = t;
 
 }

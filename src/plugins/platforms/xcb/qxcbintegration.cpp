@@ -73,6 +73,15 @@ QXcbIntegration::~QXcbIntegration()
     delete m_connection;
 }
 
+bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case ThreadedPixmaps: return true;
+    case OpenGL: return hasOpenGL();
+    default: return QPlatformIntegration::hasCapability(cap);
+    }
+}
+
 QPixmapData *QXcbIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
     return new QRasterPixmapData(type);

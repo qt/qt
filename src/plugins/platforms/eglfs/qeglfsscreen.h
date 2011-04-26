@@ -44,6 +44,7 @@
 
 #include <QPlatformScreen>
 
+#include <QtCore/QTextStream>
 
 #include <EGL/egl.h>
 

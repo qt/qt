@@ -265,6 +265,7 @@ QSGPlainTexture::QSGPlainTexture()
     , m_has_mipmaps(false)
     , m_dirty_bind_options(false)
     , m_owns_texture(true)
+    , m_mipmaps_generated(false)
 {
 }
 
@@ -310,6 +311,13 @@ void QSGPlainTexture::setTextureId(int id)
     m_dirty_texture = false;
     m_dirty_bind_options = true;
     m_image = QImage();
+    m_mipmaps_generated = false;
+}
+
+void QSGPlainTexture::setHasMipmaps(bool mm)
+{
+    m_has_mipmaps = mm;
+    m_mipmaps_generated = false;
 }
 
 
@@ -317,6 +325,11 @@ void QSGPlainTexture::bind()
 {
     if (!m_dirty_texture) {
         glBindTexture(GL_TEXTURE_2D, m_texture_id);
+        if (m_has_mipmaps && !m_mipmaps_generated) {
+            const QGLContext *ctx = QGLContext::currentContext();
+            ctx->functions()->glGenerateMipmap(GL_TEXTURE_2D);
+            m_mipmaps_generated = true;
+        }
         updateBindOptions(m_dirty_bind_options);
         m_dirty_bind_options = false;
         return;
@@ -355,6 +368,7 @@ void QSGPlainTexture::bind()
     if (m_has_mipmaps) {
         const QGLContext *ctx = QGLContext::currentContext();
         ctx->functions()->glGenerateMipmap(GL_TEXTURE_2D);
+        m_mipmaps_generated = true;
     }
 
     m_texture_size = QSize(w, h);
@@ -369,7 +383,7 @@ void QSGPlainTexture::bind()
     \brief The QSGDynamicTexture class serves as a baseclass for dynamically changing textures,
     such as content that is rendered to FBO's.
 
-    To update the content of the texture, call updateTexture() explicitely. Simply calling bind()
+    To update the content of the texture, call updateTexture() explicitly. Simply calling bind()
     will not update the texture.
  */
 
