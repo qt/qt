@@ -118,10 +118,14 @@ public:
 
 
 /*!
+    \class QSGContext
+
     \brief The QSGContext holds the scene graph entry points for one QML engine.
 
     The context is not ready for use until it has a QGLContext. Once that happens,
     the scene graph population can start.
+
+    \internal
  */
 
 QSGContext::QSGContext(QObject *parent) :
