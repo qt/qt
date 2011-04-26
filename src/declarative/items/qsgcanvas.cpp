@@ -1621,6 +1621,11 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
         if (itemPriv->x != 0. || itemPriv->y != 0.) 
             matrix.translate(itemPriv->x, itemPriv->y);
 
+        if (dirty & QSGItemPrivate::ComplexTransformUpdateMask) {
+            for (int ii = itemPriv->transforms.count() - 1; ii >= 0; --ii)
+                itemPriv->transforms.at(ii)->applyTo(&matrix);
+        }
+
         if (itemPriv->scale != 1. || itemPriv->rotation != 0.) {
             QPointF origin = itemPriv->computeTransformOrigin();
             matrix.translate(origin.x(), origin.y());
@@ -1629,11 +1634,6 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
             if (itemPriv->rotation != 0.)
                 matrix.rotate(itemPriv->rotation, 0, 0, 1);
             matrix.translate(-origin.x(), -origin.y());
-        }
-
-        if (dirty & QSGItemPrivate::ComplexTransformUpdateMask) {
-            for (int ii = 0; ii < itemPriv->transforms.count(); ++ii)
-                itemPriv->transforms.at(ii)->applyTo(&matrix);
         }
 
         itemPriv->itemNode()->setMatrix(matrix);
