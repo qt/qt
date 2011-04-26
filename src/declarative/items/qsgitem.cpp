@@ -1238,19 +1238,19 @@ void QSGItemPrivate::itemToParentTransform(QTransform &t) const
     if (x || y)
         t.translate(x, y);
 
+    if (!transforms.isEmpty()) {
+        QMatrix4x4 m(t);
+        for (int ii = transforms.count() - 1; ii >= 0; --ii)
+            transforms.at(ii)->applyTo(&m);
+        t = m.toTransform();
+    }
+
     if (scale != 1. || rotation != 0.) {
         QPointF tp = computeTransformOrigin();
         t.translate(tp.x(), tp.y());
         t.scale(scale, scale);
         t.rotate(rotation);
         t.translate(-tp.x(), -tp.y());
-    }
-
-    if (!transforms.isEmpty()) {
-        QMatrix4x4 m(t);
-        for (int ii = 0; ii < transforms.count(); ++ii)
-            transforms.at(ii)->applyTo(&m);
-        t = m.toTransform();
     }
 }
 
