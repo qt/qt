@@ -93,7 +93,7 @@ public:
         , gl(0)
         , flashMode(qmlFlashMode())
     {
-        renderAlpha = qmlTranslucentMode() ? 0.3 : 1;
+        renderAlpha = qmlTranslucentMode() ? 0.5 : 1;
     }
 
     ~QSGContextPrivate() 
