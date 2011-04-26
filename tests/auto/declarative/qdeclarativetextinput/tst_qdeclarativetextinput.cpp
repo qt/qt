@@ -375,6 +375,13 @@ void tst_qdeclarativetextinput::selection()
         QCOMPARE(textinputObject->selectionEnd(), i);
         QVERIFY(textinputObject->selectedText().isNull());
     }
+    //Test cursor follows selection
+    for(int i=0; i<= testStr.size(); i++) {
+        textinputObject->select(i,i);
+        QCOMPARE(textinputObject->cursorPosition(), i);
+        QCOMPARE(textinputObject->selectionStart(), i);
+        QCOMPARE(textinputObject->selectionEnd(), i);
+    }
 
     textinputObject->setCursorPosition(0);
     QVERIFY(textinputObject->cursorPosition() == 0);
@@ -399,10 +406,12 @@ void tst_qdeclarativetextinput::selection()
     for(int i=0; i<= testStr.size(); i++) {
         textinputObject->select(0,i);
         QCOMPARE(testStr.mid(0,i), textinputObject->selectedText());
+        QCOMPARE(textinputObject->cursorPosition(), i);
     }
     for(int i=0; i<= testStr.size(); i++) {
         textinputObject->select(i,testStr.size());
         QCOMPARE(testStr.mid(i,testStr.size()-i), textinputObject->selectedText());
+        QCOMPARE(textinputObject->cursorPosition(), testStr.size());
     }
 
     textinputObject->setCursorPosition(0);
@@ -1368,8 +1377,10 @@ void tst_qdeclarativetextinput::inputMethods()
     QVERIFY(canvas->rootObject() != 0);
     QDeclarativeTextInput *input = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
     QVERIFY(input != 0);
+    QVERIFY(input->imHints() & Qt::ImhNoPredictiveText);
     QVERIFY(input->inputMethodHints() & Qt::ImhNoPredictiveText);
-    input->setInputMethodHints(Qt::ImhUppercaseOnly);
+    input->setIMHints(Qt::ImhUppercaseOnly);
+    QVERIFY(input->imHints() & Qt::ImhUppercaseOnly);
     QVERIFY(input->inputMethodHints() & Qt::ImhUppercaseOnly);
 
     QVERIFY(canvas->rootObject() != 0);
@@ -1813,6 +1824,7 @@ void tst_qdeclarativetextinput::echoMode()
     ref &= ~Qt::ImhHiddenText;
     ref &= ~(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
     QCOMPARE(input->inputMethodHints(), ref);
+    QCOMPARE(input->imHints(), Qt::ImhNone);
     input->setEchoMode(QDeclarativeTextInput::NoEcho);
     QCOMPARE(input->text(), initial);
     QCOMPARE(input->displayText(), QLatin1String(""));
@@ -1821,6 +1833,7 @@ void tst_qdeclarativetextinput::echoMode()
     ref |= Qt::ImhHiddenText;
     ref |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
     QCOMPARE(input->inputMethodHints(), ref);
+    QCOMPARE(input->imHints(), Qt::ImhNone);
     input->setEchoMode(QDeclarativeTextInput::Password);
     //Password
     ref |= Qt::ImhHiddenText;
@@ -1828,6 +1841,7 @@ void tst_qdeclarativetextinput::echoMode()
     QCOMPARE(input->text(), initial);
     QCOMPARE(input->displayText(), QLatin1String("********"));
     QCOMPARE(input->inputMethodHints(), ref);
+    QCOMPARE(input->imHints(), Qt::ImhNone);
     input->setPasswordCharacter(QChar('Q'));
     QCOMPARE(input->passwordCharacter(), QLatin1String("Q"));
     QCOMPARE(input->text(), initial);
@@ -1837,6 +1851,7 @@ void tst_qdeclarativetextinput::echoMode()
     ref &= ~Qt::ImhHiddenText;
     ref |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
     QCOMPARE(input->inputMethodHints(), ref);
+    QCOMPARE(input->imHints(), Qt::ImhNone);
     QCOMPARE(input->text(), initial);
     QCOMPARE(input->displayText(), QLatin1String("QQQQQQQQ"));
     QCOMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QLatin1String("QQQQQQQQ"));
@@ -1856,6 +1871,40 @@ void tst_qdeclarativetextinput::echoMode()
     QCOMPARE(input->text(), initial);
     QCOMPARE(input->displayText(), initial);
     QCOMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), initial);
+
+    // Test echo mode doesn't override imHints.
+    input->setIMHints(Qt::ImhHiddenText | Qt::ImhDialableCharactersOnly);
+    ref |=  Qt::ImhDialableCharactersOnly;
+    //Normal
+    input->setEchoMode(QDeclarativeTextInput::Normal);
+    ref |= Qt::ImhHiddenText;
+    ref &= ~(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    QCOMPARE(input->inputMethodHints(), ref);
+    QCOMPARE(input->imHints(), Qt::ImhHiddenText | Qt::ImhDialableCharactersOnly);
+    //NoEcho
+    input->setEchoMode(QDeclarativeTextInput::NoEcho);
+    ref |= Qt::ImhHiddenText;
+    ref |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    QCOMPARE(input->inputMethodHints(), ref);
+    QCOMPARE(input->imHints(), Qt::ImhHiddenText | Qt::ImhDialableCharactersOnly);
+    //Password
+    input->setEchoMode(QDeclarativeTextInput::Password);
+    ref |= Qt::ImhHiddenText;
+    ref |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    QCOMPARE(input->inputMethodHints(), ref);
+    QCOMPARE(input->imHints(), Qt::ImhHiddenText | Qt::ImhDialableCharactersOnly);
+    //PasswordEchoOnEdit
+    input->setEchoMode(QDeclarativeTextInput::PasswordEchoOnEdit);
+    ref &= ~Qt::ImhHiddenText;
+    ref |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    QCOMPARE(input->inputMethodHints(), ref);
+    QCOMPARE(input->imHints(), Qt::ImhHiddenText | Qt::ImhDialableCharactersOnly);
+    //Normal
+    input->setEchoMode(QDeclarativeTextInput::Normal);
+    ref |= Qt::ImhHiddenText;
+    ref &= ~(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    QCOMPARE(input->inputMethodHints(), ref);
+    QCOMPARE(input->imHints(), Qt::ImhHiddenText | Qt::ImhDialableCharactersOnly);
 
     delete canvas;
 }
@@ -2291,6 +2340,20 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
 
     input.setAutoScroll(false);
     ic.sendPreeditText(preeditText.mid(0, 3), 1);
+    QCOMPARE(input.positionAt(0), 0);
+    QCOMPARE(input.positionAt(input.width()), 5);
+
+    ic.sendEvent(QInputMethodEvent());
+    input.setAutoScroll(true);
+    // Test committing pre-edit text at the start of the string. QTBUG-18789
+    input.setCursorPosition(0);
+    ic.sendPreeditText(input.text(), 5);
+    QCOMPARE(input.positionAt(0), 0);
+
+    QInputMethodEvent event;
+    event.setCommitString(input.text());
+    ic.sendEvent(event);
+
     QCOMPARE(input.positionAt(0), 0);
     QCOMPARE(input.positionAt(input.width()), 5);
 }

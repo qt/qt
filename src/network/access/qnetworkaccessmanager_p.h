@@ -79,6 +79,7 @@ public:
 #endif
 #ifndef QT_NO_BEARERMANAGEMENT
           networkSession(0),
+          lastSessionState(QNetworkSession::Invalid),
           networkAccessible(QNetworkAccessManager::Accessible),
           online(false),
           initializeSession(true),
@@ -119,6 +120,8 @@ public:
     void _q_networkSessionStateChanged(QNetworkSession::State state);
 #endif
 
+    QNetworkRequest prepareMultipart(const QNetworkRequest &request, QHttpMultiPart *multiPart);
+
     // this is the cache for storing downloaded files
     QAbstractNetworkCache *networkCache;
 
@@ -134,6 +137,7 @@ public:
 
 #ifndef QT_NO_BEARERMANAGEMENT
     QSharedPointer<QNetworkSession> networkSession;
+    QNetworkSession::State lastSessionState;
     QString networkConfiguration;
     QNetworkAccessManager::NetworkAccessibility networkAccessible;
     bool online;

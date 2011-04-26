@@ -96,11 +96,6 @@ contains(QT_CONFIG, private_tests) {
            qsgtextinput \
            qsgvisualdatamodel
 
-
-contains(QT_CONFIG, webkit) {
-    SUBDIRS += \
-           qdeclarativewebview
-}
 }
 
 # Tests which should run in Pulse

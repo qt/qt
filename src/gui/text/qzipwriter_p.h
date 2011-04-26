@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 class QZipWriterPrivate;
 
 
-class Q_AUTOTEST_EXPORT QZipWriter
+class Q_GUI_EXPORT QZipWriter
 {
 public:
     QZipWriter(const QString &fileName, QIODevice::OpenMode mode = (QIODevice::WriteOnly | QIODevice::Truncate) );

@@ -66,16 +66,6 @@ typedef std::basic_string<wchar_t> QStdWString;
 #error qstring.h must be included before any header file that defines truncate
 #endif
 
-#if defined(Q_CC_GNU) && (__GNUC__ == 4 && __GNUC_MINOR__ == 0)
-//There is a bug in GCC 4.0 that tries to instantiate template of annonymous enum
-#  ifdef QT_USE_FAST_OPERATOR_PLUS
-#    undef QT_USE_FAST_OPERATOR_PLUS
-#  endif
-#  ifdef QT_USE_FAST_CONCATENATION
-#    undef QT_USE_FAST_CONCATENATION
-#  endif
-#endif
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -485,6 +475,9 @@ public:
     const_iterator constEnd() const;
 
     // STL compatibility
+    typedef const QChar & const_reference;
+    typedef QChar & reference;
+    typedef QChar value_type;
     inline void push_back(QChar c) { append(c); }
     inline void push_back(const QString &s) { append(s); }
     inline void push_front(QChar c) { prepend(c); }

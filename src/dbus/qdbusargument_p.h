@@ -54,9 +54,15 @@
 //
 
 #include <qdbusargument.h>
+#include "qdbusunixfiledescriptor.h"
 #include "qdbus_symbols_p.h"
 
 #ifndef QT_NO_DBUS
+
+#ifndef DBUS_TYPE_UNIX_FD
+# define DBUS_TYPE_UNIX_FD int('h')
+# define DBUS_TYPE_UNIX_FD_AS_STRING "h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -117,6 +123,7 @@ public:
     void append(const QString &arg);
     void append(const QDBusObjectPath &arg);
     void append(const QDBusSignature &arg);
+    void append(const QDBusUnixFileDescriptor &arg);
     void append(const QStringList &arg);
     void append(const QByteArray &arg);
     bool append(const QDBusVariant &arg); // this one can fail
@@ -172,6 +179,7 @@ public:
     QString toString();
     QDBusObjectPath toObjectPath();
     QDBusSignature toSignature();
+    QDBusUnixFileDescriptor toUnixFileDescriptor();
     QDBusVariant toVariant();
     QStringList toStringList();
     QByteArray toByteArray();

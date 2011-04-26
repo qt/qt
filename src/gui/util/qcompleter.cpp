@@ -926,7 +926,7 @@ void QCompleterPrivate::_q_fileSystemModelDirectoryLoaded(const QString &path)
     // If we hide the popup because there was no match because the model was not loaded yet,
     // we re-start the completion when we get the results
     if (hiddenBecauseNoMatch
-        && prefix.startsWith(path) && prefix != (path + '/')
+        && prefix.startsWith(path) && prefix != (path + QLatin1Char('/'))
         && widget) {
         q->complete();
     }

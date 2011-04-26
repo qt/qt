@@ -42,10 +42,6 @@
 
 #include <QtTest/QtTest>
 
-#if QT_VERSION < 0x040200
-QTEST_NOOP_MAIN
-#else
-
 #include <qeasingcurve.h>
 
 //TESTED_CLASS=
@@ -578,5 +574,3 @@ void tst_QEasingCurve::metaTypes()
 
 QTEST_MAIN(tst_QEasingCurve)
 #include "tst_qeasingcurve.moc"
-
-#endif //QT_VERSION

@@ -227,6 +227,7 @@ QDeclarativeContextScriptClass::queryProperty(QDeclarativeContextData *bindConte
         if (data)  {
             lastData = data;
             lastContext = bindContext;
+            lastScopeObject = scopeObject;
             return QScriptClass::HandlesReadAccess;
         }
     }
@@ -268,17 +269,12 @@ QDeclarativeContextScriptClass::property(Object *object, const Identifier &name)
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
 
-    if (lastScopeObject) {
-
-        return ep->objectClass->property(lastScopeObject, name);
-
-    } else if (lastData) {
+    if (lastData) {
 
         if (lastData->type) {
-            return Value(scriptEngine, ep->typeNameClass->newObject(bindContext->contextObject, lastData->type));
+            return Value(scriptEngine, ep->typeNameClass->newObject(lastScopeObject, lastData->type));
         } else if (lastData->typeNamespace) {
-            return Value(scriptEngine, ep->typeNameClass->newObject(bindContext->contextObject, 
-                                                                    lastData->typeNamespace));
+            return Value(scriptEngine, ep->typeNameClass->newObject(lastScopeObject, lastData->typeNamespace));
         } else {
             int index = lastData->importedScriptIndex;
             if (index < bindContext->importedScripts.count()) {
@@ -287,6 +283,10 @@ QDeclarativeContextScriptClass::property(Object *object, const Identifier &name)
                 return Value();
             }
         }
+
+    } else if (lastScopeObject) {
+
+        return ep->objectClass->property(lastScopeObject, name);
 
     } else if (lastPropertyIndex != -1) {
 

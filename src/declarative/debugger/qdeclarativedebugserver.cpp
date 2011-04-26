@@ -95,7 +95,7 @@ public:
 private:
     // private slot
     void _q_deliverMessage(const QString &serviceName, const QByteArray &message);
-    static QDeclarativeDebugServerConnection *loadConnectionPlugin();
+    static QDeclarativeDebugServerConnection *loadConnectionPlugin(const QString &pluginName);
 };
 
 QDeclarativeDebugServerPrivate::QDeclarativeDebugServerPrivate() :
@@ -117,7 +117,8 @@ void QDeclarativeDebugServerPrivate::advertisePlugins()
     connection->send(message);
 }
 
-QDeclarativeDebugServerConnection *QDeclarativeDebugServerPrivate::loadConnectionPlugin()
+QDeclarativeDebugServerConnection *QDeclarativeDebugServerPrivate::loadConnectionPlugin(
+    const QString &pluginName)
 {
     QStringList pluginCandidates;
     const QStringList paths = QCoreApplication::libraryPaths();
@@ -126,7 +127,8 @@ QDeclarativeDebugServerConnection *QDeclarativeDebugServerPrivate::loadConnectio
         if (dir.exists()) {
             QStringList plugins(dir.entryList(QDir::Files));
             foreach (const QString &pluginPath, plugins) {
-                pluginCandidates << dir.absoluteFilePath(pluginPath);
+                if (QFileInfo(pluginPath).fileName().contains(pluginName))
+                    pluginCandidates << dir.absoluteFilePath(pluginPath);
             }
         }
     }
@@ -170,7 +172,7 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
         bool block = false;
         bool ok = false;
 
-        // format: qmljsdebugger=port:3768[,block]
+        // format: qmljsdebugger=port:3768[,block] OR qmljsdebugger=ost[,block]
         if (!appD->qmljsDebugArgumentsString().isEmpty()) {
             if (!QDeclarativeEnginePrivate::qml_debugging_enabled) {
                 const QString message =
@@ -181,24 +183,30 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
                 return 0;
             }
 
+            QString pluginName;
             if (appD->qmljsDebugArgumentsString().indexOf(QLatin1String("port:")) == 0) {
                 int separatorIndex = appD->qmljsDebugArgumentsString().indexOf(QLatin1Char(','));
                 port = appD->qmljsDebugArgumentsString().mid(5, separatorIndex - 5).toInt(&ok);
+                pluginName = QLatin1String("qmldbg_tcp");
+            } else if (appD->qmljsDebugArgumentsString().contains("ost")) {
+                pluginName = QLatin1String("qmldbg_ost");
+                ok = true;
             }
+
             block = appD->qmljsDebugArgumentsString().contains(QLatin1String("block"));
 
             if (ok) {
                 server = new QDeclarativeDebugServer();
 
                 QDeclarativeDebugServerConnection *connection
-                        = QDeclarativeDebugServerPrivate::loadConnectionPlugin();
+                        = QDeclarativeDebugServerPrivate::loadConnectionPlugin(pluginName);
                 if (connection) {
                     server->d_func()->connection = connection;
 
                     connection->setServer(server);
                     connection->setPort(port, block);
                 } else {
-                    qWarning() << QString::fromAscii("QDeclarativeDebugServer: Ignoring\"-qmljsdebugger=%1\". "
+                    qWarning() << QString::fromAscii("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
                                                      "Remote debugger plugin has not been found.").arg(appD->qmljsDebugArgumentsString());
                 }
 

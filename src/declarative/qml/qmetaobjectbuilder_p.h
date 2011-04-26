@@ -169,7 +169,7 @@ public:
     int indexOfEnumerator(const QByteArray& name);
     int indexOfClassInfo(const QByteArray& name);
 
-    typedef int (*StaticMetacallFunction)(QMetaObject::Call, int, void **);
+    typedef QMetaObjectExtraData::StaticMetacallFunction StaticMetacallFunction;
 
     QMetaObjectBuilder::StaticMetacallFunction staticMetacallFunction() const;
     void setStaticMetacallFunction(QMetaObjectBuilder::StaticMetacallFunction value);

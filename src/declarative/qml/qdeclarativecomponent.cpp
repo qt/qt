@@ -908,6 +908,7 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *parentCon
 
         state->bindValues = enginePriv->bindValues;
         state->parserStatus = enginePriv->parserStatus;
+        state->finalizedParserStatus = enginePriv->finalizedParserStatus;
         state->componentAttached = enginePriv->componentAttached;
         if (state->componentAttached)
             state->componentAttached->prev = &state->componentAttached;
@@ -915,6 +916,7 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *parentCon
         enginePriv->componentAttached = 0;
         enginePriv->bindValues.clear();
         enginePriv->parserStatus.clear();
+        enginePriv->finalizedParserStatus.clear();
         state->completePending = true;
         enginePriv->inProgressCreations++;
     }
@@ -950,6 +952,7 @@ void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeEnginePrivate *engi
 
         state->bindValues = enginePriv->bindValues;
         state->parserStatus = enginePriv->parserStatus;
+        state->finalizedParserStatus = enginePriv->finalizedParserStatus;
         state->componentAttached = enginePriv->componentAttached;
         if (state->componentAttached)
             state->componentAttached->prev = &state->componentAttached;
@@ -957,6 +960,7 @@ void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeEnginePrivate *engi
         enginePriv->componentAttached = 0;
         enginePriv->bindValues.clear();
         enginePriv->parserStatus.clear();
+        enginePriv->finalizedParserStatus.clear();
         state->completePending = true;
         enginePriv->inProgressCreations++;
     }
@@ -994,6 +998,18 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
             QDeclarativeEnginePrivate::clear(ps);
         }
 
+        for (int ii = 0; ii < state->finalizedParserStatus.count(); ++ii) {
+            QPair<QDeclarativeGuard<QObject>, int> status = state->finalizedParserStatus.at(ii);
+            QObject *obj = status.first;
+            if (obj) {
+                void *args[] = { 0 };
+                QMetaObject::metacall(obj, QMetaObject::InvokeMetaMethod,
+                                      status.second, args);
+            }
+        }
+
+        //componentComplete() can register additional finalization objects
+        //that are then never handled. Handle them manually here.
         if (1 == enginePriv->inProgressCreations) {
             for (int ii = 0; ii < enginePriv->finalizedParserStatus.count(); ++ii) {
                 QPair<QDeclarativeGuard<QObject>, int> status = enginePriv->finalizedParserStatus.at(ii);
@@ -1019,6 +1035,7 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
 
         state->bindValues.clear();
         state->parserStatus.clear();
+        state->finalizedParserStatus.clear();
         state->completePending = false;
 
         enginePriv->inProgressCreations--;

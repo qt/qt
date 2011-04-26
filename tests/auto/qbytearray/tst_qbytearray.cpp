@@ -898,12 +898,12 @@ void tst_QByteArray::indexOf_data()
     QByteArray veryBigHaystack(500, 'a');
     veryBigHaystack += 'B';
     QTest::newRow("BoyerMooreStressTest") << veryBigHaystack << veryBigHaystack << 0 << 0;
-    QTest::newRow("BoyerMooreStressTest2") << veryBigHaystack + 'c' << veryBigHaystack << 0 << 0;
-    QTest::newRow("BoyerMooreStressTest3") << 'c' + veryBigHaystack << veryBigHaystack << 0 << 1;
-    QTest::newRow("BoyerMooreStressTest4") << veryBigHaystack << veryBigHaystack + 'c' << 0 << -1;
-    QTest::newRow("BoyerMooreStressTest5") << veryBigHaystack << 'c' + veryBigHaystack << 0 << -1;
-    QTest::newRow("BoyerMooreStressTest6") << 'd' + veryBigHaystack << 'c' + veryBigHaystack << 0 << -1;
-    QTest::newRow("BoyerMooreStressTest6") << veryBigHaystack + 'c' << 'c' + veryBigHaystack << 0 << -1;
+    QTest::newRow("BoyerMooreStressTest2") << QByteArray(veryBigHaystack + 'c') <<  QByteArray(veryBigHaystack) << 0 << 0;
+    QTest::newRow("BoyerMooreStressTest3") << QByteArray('c' + veryBigHaystack) <<  QByteArray(veryBigHaystack) << 0 << 1;
+    QTest::newRow("BoyerMooreStressTest4") << QByteArray(veryBigHaystack) <<  QByteArray(veryBigHaystack + 'c') << 0 << -1;
+    QTest::newRow("BoyerMooreStressTest5") << QByteArray(veryBigHaystack) <<  QByteArray('c' + veryBigHaystack) << 0 << -1;
+    QTest::newRow("BoyerMooreStressTest6") << QByteArray('d' + veryBigHaystack) <<  QByteArray('c' + veryBigHaystack) << 0 << -1;
+    QTest::newRow("BoyerMooreStressTest6") << QByteArray(veryBigHaystack + 'c') <<  QByteArray('c' + veryBigHaystack) << 0 << -1;
 }
 
 void tst_QByteArray::indexOf()
