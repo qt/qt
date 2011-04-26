@@ -688,10 +688,10 @@ CFG_XRANDR=runtime
 CFG_XRENDER=auto
 CFG_MITSHM=auto
 CFG_OPENGL=auto
-CFG_OPENVG=no
+CFG_OPENVG=auto
 CFG_OPENVG_LC_INCLUDES=no
-CFG_OPENVG_SHIVA=no
-CFG_OPENVG_ON_OPENGL=no
+CFG_OPENVG_SHIVA=auto
+CFG_OPENVG_ON_OPENGL=auto
 CFG_EGL=no
 CFG_EGL_GLES_INCLUDES=no
 CFG_SSE=auto
@@ -7505,7 +7505,6 @@ EOF
         canBuildQtConcurrent="no"
 	;;
     symbian-gcce)
-        canBuildWebKit="no"
         canBuildQtConcurrent="no"
         ;;
     symbian-armcc)

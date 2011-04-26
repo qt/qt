@@ -321,6 +321,10 @@ have libgstreamer-plugins-base installed.</source>
         <source>Playback complete</source>
         <translation>Відтворення завершене</translation>
     </message>
+    <message>
+        <source>Download error</source>
+        <translation>Помилка звантаження</translation>
+    </message>
 </context>
 <context>
     <name>Phonon::MMF::AbstractVideoPlayer</name>
@@ -439,6 +443,10 @@ have libgstreamer-plugins-base installed.</source>
     <message>
         <source>Error opening source: media type could not be determined</source>
         <translation>Помилка відкриття джерела: не вдалося визначити тип медіа-даних</translation>
+    </message>
+    <message>
+        <source>Failed to set requested IAP</source>
+        <translation>Збій встановлення точки доступу до Інтернет</translation>
     </message>
 </context>
 <context>
@@ -1200,6 +1208,11 @@ to
         <translation>%1: недостатньо ресурсів</translation>
     </message>
     <message>
+        <source>%1: permission denied</source>
+        <comment>QSystemSemaphore</comment>
+        <translation>%1: доступ заборонено</translation>
+    </message>
+    <message>
         <source>%1: unknown error %2</source>
         <comment>QSystemSemaphore</comment>
         <translation>%1: невідома помилка %2</translation>
@@ -1366,6 +1379,13 @@ to
     </message>
 </context>
 <context>
+    <name>QDeclarativeApplication</name>
+    <message>
+        <source>Application is an abstract class</source>
+        <translation>Application - це абстрактний клас</translation>
+    </message>
+</context>
+<context>
     <name>QDeclarativeBehavior</name>
     <message>
         <source>Cannot change the animation assigned to a Behavior.</source>
@@ -1493,6 +1513,14 @@ to
         <translation>Неможливо створити порожню специфікацію компоненти</translation>
     </message>
     <message>
+        <source>&quot;%1.%2&quot; is not available in %3 %4.%5.</source>
+        <translation>&quot;%1.%2&quot; не доступно в %3 %4.%5.</translation>
+    </message>
+    <message>
+        <source>&quot;%1.%2&quot; is not available due to component versioning.</source>
+        <translation>&quot;%1.%2&quot; не доступно через версіювання компонента.</translation>
+    </message>
+    <message>
         <source>Incorrectly specified signal assignment</source>
         <translation>Неправильно вказане призначення сигналу</translation>
     </message>
@@ -1589,6 +1617,10 @@ to
         <translation>Неправильне присвоєння властивості: очікувався скрипт</translation>
     </message>
     <message>
+        <source>Cannot assign multiple values to a singular property</source>
+        <translation>Неможливо присвоїти декілька значенть до одиничної властивості</translation>
+    </message>
+    <message>
         <source>Cannot assign object to property</source>
         <translation>Неможливо призначити об&apos;єкт властивості</translation>
     </message>
@@ -1681,8 +1713,16 @@ to
         <translation>Непраильна позиція псевдоніму</translation>
     </message>
     <message>
+        <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt;, &lt;id&gt;.&lt;property&gt; or &lt;id&gt;.&lt;value property&gt;.&lt;property&gt;</source>
+        <translation>Неправильне посилання на псевдонім. Посилання на псевдонім повинно бути вказане як &lt;id&gt;, &lt;id&gt;.&lt;властивість&gt; або &lt;id&gt;.&lt;властивість-значення&gt;.&lt;властивість&gt;</translation>
+    </message>
+    <message>
+        <source>Alias property exceeds alias bounds</source>
+        <translation>Властивість-псевдонім виходить за межі псевдоніму</translation>
+    </message>
+    <message>
         <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
-        <translation>Неправильне посилання на псевдонім. Посилання на псевдонім має бути вказане, як &lt;id&gt; або &lt;id&gt;.&lt;property&gt;</translation>
+        <translation type="obsolete">Неправильне посилання на псевдонім. Посилання на псевдонім має бути вказане, як &lt;id&gt; або &lt;id&gt;.&lt;property&gt;</translation>
     </message>
     <message>
         <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
@@ -1694,6 +1734,10 @@ to
     <message>
         <source>Invalid empty URL</source>
         <translation>Неправильний порожній URL</translation>
+    </message>
+    <message>
+        <source>createObject: value is not an object</source>
+        <translation>createObject: значення не є об’єктом</translation>
     </message>
 </context>
 <context>
@@ -1756,6 +1800,10 @@ to
 <context>
     <name>QDeclarativeImportDatabase</name>
     <message>
+        <source>cannot load module &quot;%1&quot;: File name case mismatch for &quot;%2&quot;</source>
+        <translation>неможливо завантажити модуль &quot;%1&quot;: Регістр імені файлу не збігається для &quot;%2&quot;</translation>
+    </message>
+    <message>
         <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
         <translation>неможливо прочитати визначення &quot;%2&quot; модуля &quot;%1&quot;</translation>
     </message>
@@ -1811,6 +1859,10 @@ to
         <source>is not a type</source>
         <translation>не є типом</translation>
     </message>
+    <message>
+        <source>File name case mismatch for &quot;%2&quot;</source>
+        <translation>Регістр імені файлу не збігається для &quot;%2&quot;</translation>
+    </message>
 </context>
 <context>
     <name>QDeclarativeKeyNavigationAttached</name>
@@ -1824,6 +1876,17 @@ to
     <message>
         <source>Keys is only available via attached properties</source>
         <translation>Keys доступні лише через прикріплені властивості</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeLayoutMirroringAttached</name>
+    <message>
+        <source>LayoutDirection attached property only works with Items</source>
+        <translation>Прикріплена властивість LayoutDirection працює лише з Item</translation>
+    </message>
+    <message>
+        <source>LayoutMirroring is only available via attached properties</source>
+        <translation>LayoutMirroring доступна лише через прикріплені властивості</translation>
     </message>
 </context>
 <context>
@@ -6590,6 +6653,10 @@ Do you want to overwrite it?</source>
     <message>
         <source>Error during SSL handshake: %1</source>
         <translation>Помилка рукостискання SSL: %1</translation>
+    </message>
+    <message>
+        <source>The peer certificate is blacklisted</source>
+        <translation>Сертифікат іншої сторони в чорному списку</translation>
     </message>
 </context>
 <context>
