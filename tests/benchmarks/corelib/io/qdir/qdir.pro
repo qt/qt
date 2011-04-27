@@ -1,2 +1,4 @@
 TEMPLATE = subdirs
-SUBDIRS  = 10000
+SUBDIRS  = \
+         10000 \
+         tree
