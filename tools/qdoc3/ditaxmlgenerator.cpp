@@ -5664,29 +5664,29 @@ QString DitaXmlGenerator::metadataDefault(DitaTag t) const
   \list
     \o <audience> *
     \o <author> *
-    \o <brand>
+    \o <brand> not used
     \o <category> *
     \o <compomnent> *
     \o <copyrholder> *
     \o <copyright> *
-    \o <created>
+    \o <created> not used
     \o <copyryear> *
-    \o <critdates>
-    \o <keyword>
-    \o <keywords>
+    \o <critdates> not used
+    \o <keyword> not used
+    \o <keywords> not used
     \o <metadata> *
-    \o <othermeta>
+    \o <othermeta> *
     \o <permissions> *
-    \o <platform>
+    \o <platform> not used
     \o <prodinfo> *
     \o <prodname> *
     \o <prolog> *
     \o <publisher> *
-    \o <resourceid>
-    \o <revised>
-    \o <source>
-    \o <tm>
-    \o <unknown>
+    \o <resourceid> not used
+    \o <revised> not used
+    \o <source> not used
+    \o <tm> not used
+    \o <unknown> not used
     \o <vrm> *
     \o <vrmlist> *
   \endlist

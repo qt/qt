@@ -49,11 +49,15 @@ int main(int argc, char **argv)
     Window win;
 
     bool smallScreen = QApplication::arguments().contains("-small-screen");
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
+    win.showMaximized();
+#else
     if (!smallScreen) {
         win.show();
     } else {
         win.showFullScreen();
     }
+#endif
 
     return app.exec();
 }
