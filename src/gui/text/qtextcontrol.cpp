@@ -1518,7 +1518,7 @@ void QTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton button, con
     const QTextCursor oldSelection = cursor;
     const int oldCursorPos = cursor.position();
 
-    mousePressed = true;
+    mousePressed = (interactionFlags & Qt::TextSelectableByMouse);
 #ifndef QT_NO_DRAGANDDROP
     mightStartDrag = false;
 #endif
@@ -1607,13 +1607,11 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
     if (!(buttons & Qt::LeftButton))
         return;
 
-    const bool selectable = interactionFlags & Qt::TextSelectableByMouse;
     const bool editable = interactionFlags & Qt::TextEditable;
 
-    if (!selectable && !editable)
-        return;
-
     if (!(mousePressed
+          || editable
+          || mightStartDrag
           || selectedWordOnDoubleClick.hasSelection()
           || selectedBlockOnTrippleClick.hasSelection()))
         return;
@@ -1627,7 +1625,7 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
         return;
     }
 
-    if (!selectable)
+    if (!mousePressed)
         return;
 
     const qreal mouseX = qreal(mousePos.x());
@@ -1695,10 +1693,8 @@ void QTextControlPrivate::mouseReleaseEvent(QEvent *e, Qt::MouseButton button, c
     if (mousePressed) {
         mousePressed = false;
 #ifndef QT_NO_CLIPBOARD
-        if (interactionFlags & Qt::TextSelectableByMouse) {
-            setClipboardSelection();
-            selectionChanged(true);
-        }
+        setClipboardSelection();
+        selectionChanged(true);
     } else if (button == Qt::MidButton
                && (interactionFlags & Qt::TextEditable)
                && QApplication::clipboard()->supportsSelection()) {

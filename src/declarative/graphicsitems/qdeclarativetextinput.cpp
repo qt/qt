@@ -1168,9 +1168,10 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
     if (d->selectByMouse) {
         setKeepMouseGrab(false);
+        d->selectPressed = true;
         d->pressPos = event->pos();
     }
-    bool mark = event->modifiers() & Qt::ShiftModifier;
+    bool mark = (event->modifiers() & Qt::ShiftModifier) && d->selectByMouse;
     int cursor = d->xToPos(event->pos().x());
     d->control->moveCursor(cursor, mark);
     event->setAccepted(true);
@@ -1181,7 +1182,7 @@ void QDeclarativeTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QDeclarativeTextInput);
     if (d->sendMouseEventToInputContext(event, QEvent::MouseMove))
         return;
-    if (d->selectByMouse) {
+    if (d->selectPressed) {
         if (qAbs(int(event->pos().x() - d->pressPos.x())) > QApplication::startDragDistance())
             setKeepMouseGrab(true);
         moveCursorSelection(d->xToPos(event->pos().x()), d->mouseSelectionMode);
@@ -1200,8 +1201,10 @@ void QDeclarativeTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QDeclarativeTextInput);
     if (d->sendMouseEventToInputContext(event, QEvent::MouseButtonRelease))
         return;
-    if (d->selectByMouse)
+    if (d->selectPressed) {
+        d->selectPressed = false;
         setKeepMouseGrab(false);
+    }
     if (!d->showInputPanelOnFocus) { // input panel on click
         if (d->focusOnPress && !isReadOnly() && boundingRect().contains(event->pos())) {
             if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
@@ -1257,8 +1260,10 @@ bool QDeclarativeTextInputPrivate::sendMouseEventToInputContext(
 
 bool QDeclarativeTextInput::sceneEvent(QEvent *event)
 {
+    Q_D(QDeclarativeTextInput);
     bool rv = QDeclarativeItem::sceneEvent(event);
     if (event->type() == QEvent::UngrabMouse) {
+        d->selectPressed = false;
         setKeepMouseGrab(false);
     }
     return rv;
