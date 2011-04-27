@@ -194,6 +194,8 @@ private slots:
 #if defined(Q_OS_SYMBIAN) && !defined(QT_NO_OPENVG)
     void vgImageReadBack();
 #endif
+
+    void drawPixmapWhilePainterOpen();
 };
 
 static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
@@ -1880,6 +1882,50 @@ void tst_QPixmap::vgImageReadBack()
     }
 }
 #endif // Symbian & OpenVG
+
+class PixmapWidget : public QWidget
+{
+public:
+    PixmapWidget(QPixmap &pixmap) : QWidget(0), m_pixmap(pixmap)
+    {
+        resize(pixmap.width(), pixmap.height());
+    }
+
+protected:
+    void paintEvent(QPaintEvent *)
+    {
+        QPainter p(this);
+        p.drawPixmap(0, 0, m_pixmap);
+    }
+
+private:
+    QPixmap &m_pixmap;
+};
+
+void tst_QPixmap::drawPixmapWhilePainterOpen()
+{
+    int size = 100;
+    QPixmap pix(size, size);
+    pix.fill(Qt::red);
+
+    PixmapWidget w(pix);
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+    QTest::qWait(1000);
+
+    QPainter p(&pix);
+    p.fillRect(0, 0, size, size, Qt::blue);
+    w.update();
+    QTest::qWait(1000);
+
+    p.fillRect(0, 0, size, size, Qt::green);
+    w.update();
+    QTest::qWait(1000);
+
+    QPixmap actual = QPixmap::grabWindow(w.effectiveWinId(), 0, 0, size, size);
+
+    QVERIFY(lenientCompare(actual, pix));
+}
 
 QTEST_MAIN(tst_QPixmap)
 #include "tst_qpixmap.moc"

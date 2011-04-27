@@ -12182,4 +12182,5 @@ EXPORTS
 	_ZNK14QVolatileImage9constBitsEv @ 12181 NONAME
 	_ZN15QGraphicsSystem22releaseCachedResourcesEv @ 12182 NONAME
 	_Z32qt_s60_setPartialScreenInputModeb @ 12183 NONAME
+	_ZNK14QVolatileImage14paintingActiveEv @ 12184 NONAME
 
