@@ -1378,8 +1378,6 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
         d->itemize();
 
     QPointF position = pos + d->position;
-    QFixed pos_x = QFixed::fromReal(position.x());
-    QFixed pos_y = QFixed::fromReal(position.y());
 
     cursorPosition = qBound(0, cursorPosition, d->layoutData->string.length());
     int line = 0;
