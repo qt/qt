@@ -1643,6 +1643,15 @@ void tst_qdeclarativetextinput::cursorDelegate()
         QCOMPARE(textInputObject->cursorRectangle().x(), qRound(delegateObject->x()));
         QCOMPARE(textInputObject->cursorRectangle().y(), qRound(delegateObject->y()));
     }
+    const QString preedit = "preedit";
+    for (int i = 0; i <= preedit.length(); i++) {
+        QInputMethodEvent event(preedit, QList<QInputMethodEvent::Attribute>()
+                << QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, i, 1, QVariant()));
+        QApplication::sendEvent(view, &event);
+
+        QCOMPARE(textInputObject->cursorRectangle().x(), qRound(delegateObject->x()));
+        QCOMPARE(textInputObject->cursorRectangle().y(), qRound(delegateObject->y()));
+    }
     textInputObject->setCursorPosition(0);
     QCOMPARE(textInputObject->cursorRectangle().x(), qRound(delegateObject->x()));
     QCOMPARE(textInputObject->cursorRectangle().y(), qRound(delegateObject->y()));

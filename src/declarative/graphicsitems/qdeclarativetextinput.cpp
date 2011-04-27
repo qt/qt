@@ -949,6 +949,8 @@ void QDeclarativeTextInput::setCursorDelegate(QDeclarativeComponent* c)
         //note that the components are owned by something else
         disconnect(d->control, SIGNAL(cursorPositionChanged(int,int)),
                 this, SLOT(moveCursor()));
+        disconnect(d->control, SIGNAL(updateMicroFocus()),
+                this, SLOT(moveCursor()));
         delete d->cursorItem;
     }else{
         d->startCreatingCursor();
@@ -961,7 +963,9 @@ void QDeclarativeTextInputPrivate::startCreatingCursor()
 {
     Q_Q(QDeclarativeTextInput);
     q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
-            q, SLOT(moveCursor()));
+               q, SLOT(moveCursor()), Qt::UniqueConnection);
+    q->connect(control, SIGNAL(updateMicroFocus()),
+            q, SLOT(moveCursor()), Qt::UniqueConnection);
     if(cursorComponent->isReady()){
         q->createCursor();
     }else if(cursorComponent->isLoading()){
