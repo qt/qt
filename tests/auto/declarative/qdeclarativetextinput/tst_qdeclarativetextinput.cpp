@@ -95,6 +95,12 @@ private slots:
     void moveCursorSelection();
     void moveCursorSelectionSequence_data();
     void moveCursorSelectionSequence();
+    void mouseSelection_data();
+    void mouseSelection();
+    void deferEnableSelectByMouse_data();
+    void deferEnableSelectByMouse();
+    void deferDisableSelectByMouse_data();
+    void deferDisableSelectByMouse();
     void dragMouseSelection();
     void mouseSelectionMode_data();
     void mouseSelectionMode();
@@ -909,6 +915,141 @@ void tst_qdeclarativetextinput::moveCursorSelectionSequence()
     QCOMPARE(textinputObject->selectedText(), testStr.mid(selection2Start, selection2End - selection2Start));
     QCOMPARE(textinputObject->selectionStart(), selection2Start);
     QCOMPARE(textinputObject->selectionEnd(), selection2End);
+}
+
+void tst_qdeclarativetextinput::mouseSelection_data()
+{
+    QTest::addColumn<QString>("qmlfile");
+    QTest::addColumn<bool>("expectSelection");
+
+    // import installed
+    QTest::newRow("on") << SRCDIR "/data/mouseselection_true.qml" << true;
+    QTest::newRow("off") << SRCDIR "/data/mouseselection_false.qml" << false;
+    QTest::newRow("default") << SRCDIR "/data/mouseselection_default.qml" << false;
+    QTest::newRow("on word selection") << SRCDIR "/data/mouseselection_true_words.qml" << true;
+    QTest::newRow("off word selection") << SRCDIR "/data/mouseselection_false_words.qml" << false;
+    QTest::newRow("on read only") << SRCDIR "/data/mouseselection_true_readonly.qml" << true;
+    QTest::newRow("off read only") << SRCDIR "/data/mouseselection_false_readonly.qml" << false;
+}
+
+void tst_qdeclarativetextinput::mouseSelection()
+{
+    QFETCH(QString, qmlfile);
+    QFETCH(bool, expectSelection);
+
+    QDeclarativeView *canvas = createView(qmlfile);
+
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QVERIFY(canvas->rootObject() != 0);
+    QDeclarativeTextInput *textInputObject = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
+    QVERIFY(textInputObject != 0);
+
+    // press-and-drag-and-release from x1 to x2
+    int x1 = 10;
+    int x2 = 70;
+    int y = textInputObject->height()/2;
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x1,y)));
+    //QTest::mouseMove(canvas->viewport(), canvas->mapFromScene(QPoint(x2,y))); // doesn't work
+    QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(x2,y)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+    QApplication::sendEvent(canvas->viewport(), &mv);
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x2,y)));
+    QString str = textInputObject->selectedText();
+    if (expectSelection)
+        QVERIFY(str.length() > 3); // don't reallly care *what* was selected (and it's too sensitive to platform)
+    else
+        QVERIFY(str.isEmpty());
+
+    // Clicking and shift to clicking between the same points should select the same text.
+    textInputObject->setCursorPosition(0);
+    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, Qt::NoModifier, canvas->mapFromScene(QPoint(x1,y)));
+    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, Qt::ShiftModifier, canvas->mapFromScene(QPoint(x2,y)));
+    QCOMPARE(textInputObject->selectedText(), str);
+
+    delete canvas;
+}
+
+void tst_qdeclarativetextinput::deferEnableSelectByMouse_data()
+{
+    QTest::addColumn<QString>("qmlfile");
+
+    QTest::newRow("writable") << SRCDIR "/data/mouseselection_false.qml";
+    QTest::newRow("read only") << SRCDIR "/data/mouseselection_false_readonly.qml";
+}
+
+void tst_qdeclarativetextinput::deferEnableSelectByMouse()
+{
+    // Verify text isn't selected if selectByMouse is enabled after the mouse button has been pressed.
+    QFETCH(QString, qmlfile);
+
+    QDeclarativeView *canvas = createView(qmlfile);
+
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QVERIFY(canvas->rootObject() != 0);
+    QDeclarativeTextInput *textInputObject = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
+    QVERIFY(textInputObject != 0);
+
+    // press-and-drag-and-release from x1 to x2
+    int x1 = 10;
+    int x2 = 70;
+    int y = textInputObject->height()/2;
+
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x1,y)));
+    textInputObject->setSelectByMouse(true);
+    //QTest::mouseMove(canvas->viewport(), canvas->mapFromScene(QPoint(x2,y))); // doesn't work
+    QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(x2,y)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+    QApplication::sendEvent(canvas->viewport(), &mv);
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x2,y)));
+    QVERIFY(textInputObject->selectedText().isEmpty());
+
+    delete canvas;
+}
+
+void tst_qdeclarativetextinput::deferDisableSelectByMouse_data()
+{
+    QTest::addColumn<QString>("qmlfile");
+
+    QTest::newRow("writable") << SRCDIR "/data/mouseselection_true.qml";
+    QTest::newRow("read only") << SRCDIR "/data/mouseselection_true_readonly.qml";
+}
+
+void tst_qdeclarativetextinput::deferDisableSelectByMouse()
+{
+    // Verify text isn't selected if selectByMouse is enabled after the mouse button has been pressed.
+    QFETCH(QString, qmlfile);
+
+    QDeclarativeView *canvas = createView(qmlfile);
+
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QVERIFY(canvas->rootObject() != 0);
+    QDeclarativeTextInput *textInputObject = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
+    QVERIFY(textInputObject != 0);
+
+    // press-and-drag-and-release from x1 to x2
+    int x1 = 10;
+    int x2 = 70;
+    int y = textInputObject->height()/2;
+
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x1,y)));
+    textInputObject->setSelectByMouse(false);
+    //QTest::mouseMove(canvas->viewport(), canvas->mapFromScene(QPoint(x2,y))); // doesn't work
+    QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(x2,y)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+    QApplication::sendEvent(canvas->viewport(), &mv);
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x2,y)));
+    QVERIFY(textInputObject->selectedText().length() > 3);
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextinput::dragMouseSelection()
