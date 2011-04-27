@@ -1115,7 +1115,7 @@ static int qCocoaViewCount = 0;
 - (BOOL)resignFirstResponder
 {
     if (!qwidget)
-        return NO;
+        return YES;
     // Seems like the following test only triggers if this
     // view is inside a QMacNativeWidget:
     if (qwidget == QApplication::focusWidget())

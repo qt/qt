@@ -163,10 +163,11 @@ static inline bool fuzzyCompare(qreal p1, qreal p2)
 {
     // increase delta on small machines using float instead of double
     if (sizeof(qreal) == sizeof(float))
-        return (qAbs(p1 - p2) <= 0.00002f * qMin(qAbs(p1), qAbs(p2)));
+        return (qAbs(p1 - p2) <= 0.00003f * qMin(qAbs(p1), qAbs(p2)));
     else
         return (qAbs(p1 - p2) <= 0.00001f * qMin(qAbs(p1), qAbs(p2)));
 }
+
 static bool fuzzyCompare(const QTransform& t1, const QTransform& t2)
 {
     return fuzzyCompare(t1.m11(), t2.m11()) &&
@@ -178,6 +179,15 @@ static bool fuzzyCompare(const QTransform& t1, const QTransform& t2)
            fuzzyCompare(t1.m31(), t2.m31()) &&
            fuzzyCompare(t1.m32(), t2.m32()) &&
            fuzzyCompare(t1.m33(), t2.m33());
+}
+
+static inline bool fuzzyCompare(const QMatrix4x4& m1, const QMatrix4x4& m2)
+{
+    bool ok = true;
+    for (int y = 0; y < 4; ++y)
+        for (int x = 0; x < 4; ++x)
+            ok &= fuzzyCompare(m1(y, x), m2(y, x));
+    return ok;
 }
 
 void tst_QGraphicsTransform::rotation()
@@ -271,7 +281,7 @@ void tst_QGraphicsTransform::rotation3d()
         // because the deg2rad value in QTransform is not accurate
         // enough to match what QMatrix4x4 is doing.
     } else {
-        QVERIFY(qFuzzyCompare(t, r));
+        QVERIFY(fuzzyCompare(t, r));
     }
 
     //now let's check that a null vector will not change the transform

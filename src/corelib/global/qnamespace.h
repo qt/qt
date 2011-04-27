@@ -526,6 +526,8 @@ public:
 
         WA_X11DoNotAcceptFocus = 132,
 
+        WA_SymbianNoSystemRotation = 133,
+
         // Add new attributes before this line
         WA_AttributeCount
     };
@@ -575,7 +577,8 @@ public:
         PreferDither            = 0x00000040,
         AvoidDither             = 0x00000080,
 
-        NoOpaqueDetection       = 0x00000100
+        NoOpaqueDetection       = 0x00000100,
+        NoFormatConversion      = 0x00000200
     };
     Q_DECLARE_FLAGS(ImageConversionFlags, ImageConversionFlag)
 

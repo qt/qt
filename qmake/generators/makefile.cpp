@@ -364,7 +364,7 @@ MakefileGenerator::findFilesInVPATH(QStringList l, uchar flags, const QString &v
                     dir = regex.left(regex.lastIndexOf(Option::dir_sep) + 1);
                     real_dir = dir;
                     if(!(flags & VPATH_NoFixify))
-                        real_dir = fileFixify(real_dir, qmake_getpwd(), Option::output_dir);
+                        real_dir = fileFixify(real_dir, qmake_getpwd(), Option::output_dir) + '/';
                     regex.remove(0, dir.length());
                 }
                 if(real_dir.isEmpty() || exists(real_dir)) {
@@ -383,16 +383,15 @@ MakefileGenerator::findFilesInVPATH(QStringList l, uchar flags, const QString &v
                         for(int i = (int)files.count()-1; i >= 0; i--) {
                             if(files[i] == "." || files[i] == "..")
                                 continue;
-                            a = dir + files[i];
+                            a = real_dir + files[i];
                             if(!(flags & VPATH_NoFixify))
                                 a = fileFixify(a);
                             l.insert(val_it, a);
                         }
                     }
                 } else {
-                    debug_msg(1, "%s:%d Cannot match %s%c%s, as %s does not exist.",
+                    debug_msg(1, "%s:%d Cannot match %s%s, as %s does not exist.",
                               __FILE__, __LINE__, real_dir.toLatin1().constData(),
-                              QDir::separator().toLatin1(),
                               regex.toLatin1().constData(), real_dir.toLatin1().constData());
                     if(flags & VPATH_RemoveMissingFiles)
                         remove_file = true;
@@ -484,19 +483,22 @@ MakefileGenerator::init()
                              subs.at(i).toLatin1().constData());
                     continue;
                 }
-                inn = tinn.first();
-                outn = toutn.first();
+                inn = fileFixify(tinn.first(), qmake_getpwd());
+                outn = fileFixify(toutn.first(), qmake_getpwd(), Option::output_dir);
             } else {
-                inn = subs.at(i);
+                inn = fileFixify(subs.at(i), qmake_getpwd());
+                if (!QFile::exists(inn)) {
+                    // random insanity for backwards compat: .in file specified with absolute out dir
+                    inn = fileFixify(subs.at(i));
+                }
                 if(!inn.endsWith(".in")) {
                     warn_msg(WarnLogic, "Substitute '%s' does not end with '.in'",
                              inn.toLatin1().constData());
                     continue;
                 }
-                outn = inn.left(inn.length()-3);
+                outn = fileFixify(inn.left(inn.length()-3), qmake_getpwd(), Option::output_dir);
             }
-            QFile in(fileFixify(inn));
-            QFile out(fileFixify(outn, qmake_getpwd(), Option::output_dir));
+            QFile in(inn);
             if(in.open(QFile::ReadOnly)) {
                 QString contents;
                 QStack<int> state;
@@ -545,9 +547,10 @@ MakefileGenerator::init()
                         else
                             state.pop();
                     } else if(state.isEmpty() || state.top() == IN_CONDITION) {
-                        contents += project->expand(line).join(QString(Option::field_sep));
+                        contents += project->expand(line, in.fileName(), count);
                     }
                 }
+                QFile out(outn);
                 if(out.exists() && out.open(QFile::ReadOnly)) {
                     QString old = QString::fromUtf8(out.readAll());
                     if(contents == old) {
@@ -782,10 +785,8 @@ MakefileGenerator::init()
     }
 
     { //get the output_dir into the pwd
-        if(fileFixify(Option::output_dir) != fileFixify(qmake_getpwd()))
-            project->values("INCLUDEPATH").append(fileFixify(Option::output_dir,
-                                                                  Option::output_dir,
-                                                                  Option::output_dir));
+        if(Option::output_dir != qmake_getpwd())
+            project->values("INCLUDEPATH").append(".");
     }
 
     //fix up the target deps
@@ -1746,7 +1747,7 @@ MakefileGenerator::writeExtraTargets(QTextStream &t)
             deps += " " + escapeDependencyPath(dep);
         }
         if(project->values((*it) + ".CONFIG").indexOf("fix_target") != -1)
-            targ = fileFixify(targ);
+            targ = fileFixify(targ, Option::output_dir, Option::output_dir);
         if(project->isEmpty("QMAKE_NOFORCE") &&
            project->values((*it) + ".CONFIG").indexOf("phony") != -1)
             deps += QString(" ") + "FORCE";
@@ -2462,7 +2463,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         //qmake it
         if(!subtarget->profile.isEmpty()) {
             QString out = subtarget->makefile;
-            QString in = fileFixify(in_directory + subtarget->profile, out_directory, QString(), FileFixifyAbsolute);
+            QString in = fileFixify(in_directory + subtarget->profile, FileFixifyAbsolute);
             if(out.startsWith(in_directory))
                 out = out.mid(in_directory.length());
             t << mkfile << ": " << "\n\t";
@@ -2825,9 +2826,6 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
         return cacheVal;
 
     //do the fixin'
-    QString pwd = qmake_getpwd();
-    if (!pwd.endsWith('/'))
-        pwd += '/';
     QString orig_file = ret;
     if(ret.startsWith(QLatin1Char('~'))) {
         if(ret.startsWith(QLatin1String("~/")))
@@ -2836,12 +2834,16 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
             warn_msg(WarnLogic, "Unable to expand ~ in %s", ret.toLatin1().constData());
     }
     if(fix == FileFixifyAbsolute || (fix == FileFixifyDefault && project->isActiveConfig("no_fixpath"))) {
-        if(fix == FileFixifyAbsolute && QDir::isRelativePath(ret)) //already absolute
+        if(fix == FileFixifyAbsolute && QDir::isRelativePath(ret)) { //already absolute
+            QString pwd = qmake_getpwd();
+            if (!pwd.endsWith(QLatin1Char('/')))
+                pwd += QLatin1Char('/');
             ret.prepend(pwd);
+        }
         ret = Option::fixPathToTargetOS(ret, false, canon);
     } else { //fix it..
         QString out_dir = QDir(Option::output_dir).absoluteFilePath(out_d);
-        QString in_dir  = QDir(pwd).absoluteFilePath(in_d);
+        QString in_dir  = QDir(qmake_getpwd()).absoluteFilePath(in_d);
         {
             QFileInfo in_fi(fileInfo(in_dir));
             if(in_fi.exists())
@@ -2895,6 +2897,7 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
                         //prepend
                         for(int o = 0; o < i; o++)
                             dot_prefix += ".." + Option::dir_sep;
+                        break;
                     }
                 }
                 ret.prepend(dot_prefix);
@@ -2907,7 +2910,7 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
         ret = ".";
     debug_msg(3, "Fixed[%d,%d] %s :: to :: %s [%s::%s] [%s::%s]", fix, canon, orig_file.toLatin1().constData(),
               ret.toLatin1().constData(), in_d.toLatin1().constData(), out_d.toLatin1().constData(),
-              pwd.toLatin1().constData(), Option::output_dir.toLatin1().constData());
+              qmake_getpwd().toLatin1().constData(), Option::output_dir.toLatin1().constData());
     cache->insert(cacheKey, ret);
     return ret;
 }

@@ -592,6 +592,7 @@ public:
     QString elidedText(Qt::TextElideMode mode, const QFixed &width, int flags = 0) const;
 
     void shapeLine(const QScriptLine &line);
+    QFixed leadingSpaceWidth(const QScriptLine &line);
 
 private:
     void setBoundary(int strPos) const;

@@ -42,9 +42,9 @@
 #include <QFileInfo>
 #include <QStringList>
 #include <QtGlobal>
-#include "private/qdeclarativejsast_p.h"
-#include "private/qdeclarativejsastfwd_p.h"
-#include "private/qdeclarativejsengine_p.h"
+#include "declarativeparser/qdeclarativejsast_p.h"
+#include "declarativeparser/qdeclarativejsastfwd_p.h"
+#include "declarativeparser/qdeclarativejsengine_p.h"
 
 #include "node.h"
 #include "qmlvisitor.h"

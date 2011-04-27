@@ -27,7 +27,11 @@
 
 /*!
 \page qml-extending.html
-\title Extending QML in C++
+\ingroup qml-features
+\contentspage QML Features
+\previouspage {Presenting Data with Views}
+\nextpage {Using QML Bindings in C++ Applications}
+\title Extending QML Functionalities using C++
 
 The QML syntax declaratively describes how to construct an in-memory object
 tree.  In Qt, QML is mainly used to describe a visual scene graph, but it is
@@ -51,7 +55,7 @@ to either instantiating an object instance, or assigning a property a value.
 QML relies heavily on Qt's meta object system and can only instantiate classes
 that derive from QObject. For visual element types, this will usually mean a subclass
 of QDeclarativeItem; for models used with the view elements, a subclass of QAbstractItemModel;
-and for abitrary objects with properties, a direct subclass of QObject.
+and for arbitrary objects with properties, a direct subclass of QObject.
 
 The QML engine has no intrinsic knowledge of any class types.  Instead the
 programmer must register the C++ types with their corresponding QML names.
@@ -82,7 +86,7 @@ Types can be registered by libraries, application code, or by plugins
 
 Once registered, all \l {Qt's Property System}{properties} of the
 supported types are available in QML.  QML has intrinsic support for
-properties of the types listed in the \l{Adding Properties}
+properties of the types listed in the \l{QML Basic Types}
 document, which includes the following:
 
 \list
@@ -429,28 +433,28 @@ pointers to invalid objects.  QML makes the following guarentees:
 
 \list
 \o An object assigned to a QObject (or QObject-derived) pointer property will be
-valid at the time of assignment.  
+valid at the time of assignment.
 
-Following assignment, it is the responsibility of the class to subsequently guard 
+Following assignment, it is the responsibility of the class to subsequently guard
 this pointer, either through a class specific method or the generic QPointer class.
 
-\o An object assigned to a QVariant will be valid at the time of assignment.  
+\o An object assigned to a QVariant will be valid at the time of assignment.
 
-When assigning an object to a QVariant property, QML will always use a QMetaType::QObjectStar 
-typed QVariant.  It is the responsibility of the class to guard the pointer.  A 
-general rule when writing a class that uses QVariant properties is to check the 
-type of the QVariant when it is set and if the type is not handled by your class, 
+When assigning an object to a QVariant property, QML will always use a QMetaType::QObjectStar
+typed QVariant.  It is the responsibility of the class to guard the pointer.  A
+general rule when writing a class that uses QVariant properties is to check the
+type of the QVariant when it is set and if the type is not handled by your class,
 reset it to an invalid variant.
 
-\o An object assigned to a QObject (or QObject-derived) list property will be 
-valid at the time of assignment.  
+\o An object assigned to a QObject (or QObject-derived) list property will be
+valid at the time of assignment.
 
-Following assignment, it is the responsibility of the class to subsequently guard 
+Following assignment, it is the responsibility of the class to subsequently guard
 this pointer, either through a class specific method or the generic QPointer class.
 \endlist
 
 Elements should assume that any QML assigned object can be deleted at any time, and
-respond accordingly.  If documented as such an element need not continue to work in 
+respond accordingly.  If documented as such an element need not continue to work in
 this situation, but it must not crash.
 
 \section1 Signal Support
@@ -477,7 +481,7 @@ but different parameters cannot be distinguished.
 Signal parameters become accessible by name to the assigned script.  An
 unnamed parameter cannot be accessed, so care should be taken to name all the
 signal parameters in the C++ class declaration.  The intrinsic types
-listed in \l {Adding Types}, as well registered object types are permitted as
+listed in \l{Adding Types}, as well registered object types are permitted as
 signal parameter types.  Using other types is not an error, but the parameter
 value will not be accessible from script.
 
@@ -498,7 +502,7 @@ on<Property-name>Changed, regardless of the name used for the NOTIFY
 signal in C++. We recommend using <property-name>Changed() for the
 NOTIFY signal in C++.
 
-See also \l {Writing QML Components: Properties, Methods and Signals}
+See also \l {Importing Reusable Components}
 
 \section1 Methods
 
@@ -522,7 +526,7 @@ The \c {invite()} method is similarly available if it is declared as a slot.
 \snippet examples/declarative/cppextensions/referenceexamples/valuesource/example.qml 0
 \snippet examples/declarative/cppextensions/referenceexamples/valuesource/example.qml 1
 
-The QML snippet shown above applies a property value source to the \c announcment property.
+The QML snippet shown above applies a property value source to the \c announcement property.
 A property value source generates a value for a property that changes over time.
 
 Property value sources are most commonly used to do animation.  Rather than
@@ -562,7 +566,7 @@ assignment fails does the engine call the \l {QDeclarativePropertyValueSource::}
 the type to also be used in contexts other than just as a value source.
 
 \l {Extending QML -  Property Value Source Example} shows the complete code used
-implement the \c HappyBirthdaySong property value source.
+to implement the \c HappyBirthdaySong property value source.
 
 \section1 Property Binding
 
@@ -701,478 +705,4 @@ public:
     }
 };
 \endcode
-
-*/
-
-/*!
-\page qml-extending-types.html
-\title Writing QML Components: Properties, Methods and Signals
-
-One of the key concepts in QML is the ability to define your own QML components that suit
-the purposes of your application. The standard \l {QML Elements} provide the essential components
-for creating a QML application; beyond these, you can write your own custom components that can
-be created and reused, without the use of C++.
-
-Components are the building blocks of a QML project. When writing a QML application, whether
-large or small, it is best to separate QML code into smaller components that perform specific
-sets of operations, instead of creating mammoth QML files with large, combined functionality
-that is more difficult to manage and may contain duplicated code.
-
-
-\section1 Defining New Components
-
-A component is a reusable type with a well-defined interface, built entirely in QML.
-Any snippet of QML code can become a component, by placing the code in a file "<Name>.qml" where
-<Name> is the new component name, beginning with an uppercase letter. These QML files automatically
-become available as new QML element types to other QML components and applications in the same directory.
-
-For example, one of the simplest and most common components you can build in QML is a
-button-type component. Below, we implement this component as a \l Rectangle with a clickable
-\l MouseArea, in a file named \c Button.qml:
-
-\snippet doc/src/snippets/declarative/qml-extending-types/components/Button.qml 0
-
-Now this component can be reused by another file within the same directory. Since the file is
-named \c Button.qml, the component is referred to as \c Button:
-
-\table
-\row
-\o \snippet doc/src/snippets/declarative/qml-extending-types/components/application.qml 0
-\o \image qml-extending-types.png
-\endtable
-
-The root object in \c Button.qml defines the attributes that are available to users of the
-\c Button component. In this case, the root object is a \l Rectangle, so any properties, methods
-and signals of \l Rectangle are made available, allowing \c application.qml to
-customize the \c width, \c height, \c radius and \c color properties of \c Button objects.
-
-
-If \c Button.qml was not in the same directory, \c application.qml would need to load it as a
-\l {Modules}{module} from a specific filesystem path or \l{QDeclarativeExtensionPlugin}{plugin}.
-Also, note the letter case of the component file name is significant on some (notably UNIX)
-filesystems. It is recommended the file name case matches the case of the QML component name
-exactly - for example, \c Box.qml and not \c BoX.qml - regardless of the platform to which the
-QML component will be deployed.
-
-To write a useful component, it is generally necessary to provide it with custom attributes that store and
-communicate specific data. This is achieved by adding the following attributes to your components:
-
-\list
-\o \bold Properties that can be accessed externally to modify an object (for example, \l Item has
-   \l {Item::}{width} and \l {Item::}{height} properties) and used in \l {Property Binding}
-\o \bold Methods of JavaScript code can be invoked internally or externally (for example,
-   \l Animation has a \l {Animation::}{start()} method)
-\o \bold Signals to notify other objects when an event has occurred (for example, MouseArea has a
-   \c clicked signal)
-\endlist
-
-The following sections show how these attributes can be added to QML components.
-
-
-\section1 Adding Properties
-
-A property is a value of a QML component that can be read and modified by other objects. For
-example, a \l Rectangle component has \l {Item::}{width}, \l {Item::}{height} and \l
-{Rectangle::}{color} properties. Significantly, properties be used with \l {Property Binding}, where
-a property value is automatically updated using the value of another property.
-
-The syntax for defining a new property is:
-
-\code
-[default] property <type> <name>[: defaultValue]
-\endcode
-
-A \c property declaration can appear anywhere within a QML component definition, but it is customary
-to place it at the top. A component cannot declare more than one property with the same name. (It is
-possible to have a property name that is the same as an existing property in a type, but this is not
-recommended as the existing property becomes hidden and inaccessible.)
-
-Below is an example. The \c ImageViewer component has defined a \c string type property named
-\c currentImage, and its initial value is "default-image.png". This property is used to set the image
-displayed in the child \l Image object. Another file, \c application.qml, can create
-an \c ImageViewer object and read or modify the \c currentImage value:
-
-\table
-\row
-\o \snippet doc/src/snippets/declarative/qml-extending-types/properties/ImageViewer.qml 0
-\o \snippet doc/src/snippets/declarative/qml-extending-types/properties/application.qml 0
-\endtable
-
-It is optional for a property to have a default value. The default value is a convenient shortcut, and is
-behaviorally identical to doing it in two steps, like this:
-
-\qml
-Item {
-    // Use default value
-    property int myProperty: 10
-
-    // Longer, but behaviorally identical
-    property int myProperty
-    myProperty: 10
-}
-\endqml
-
-
-\section2 Supported property types
-
-All QML properties are typed. The examples above show properties with \c int and \c string types;
-notice that the type of the property must be declared. The type is used to determine the property
-behavior, and how the property is defined in C++.
-
-A number of property types are supported by default. These are listed in the table below,
-with their default values and the corresponding C++ type:
-
-\table
-\header \o QML Type Name \o Default value \o C++ Type Name
-\row \o \l int \o 0 \o int
-\row \o \l bool \o \c false \o bool
-\row \o \l double \o 0.0 \o double
-\row \o \l real \o 0.0 \o double
-\row \o \l string \o "" (empty string) \o QString
-\row \o \l url \o "" (empty url) \o QUrl
-\row \o \l color \o #000000 (black) \o QColor
-\row \o \l date \o \c undefined \o QDateTime
-\row \o \l variant \o \c undefined \o QVariant
-\endtable
-
-QML object types can also be used as property types. This includes
-\l {Defining new QML elements}{custom QML types} implemented in C++. Such properties are
-defined like this:
-
-\qml
-Item {
-    property Item itemProperty
-    property QtObject objectProperty
-    property MyCustomType customProperty
-}
-\endqml
-
-Such object-type properties default to an \c undefined value.
-
-It is also possible to store a copy of a JavaScript object using the \c variant
-property type. This creates some restrictions on how the property should be used;
-see the \l {variant}{variant type documentation} for details.
-
-\l{list}{List properties} are created with the \c list<Type> syntax, and default to an empty
-list:
-
-\qml
-Item {
-    property list<Item> listOfItems
-}
-\endqml
-
-Note that list properties cannot be modified like ordinary JavaScript
-arrays. See the \l {list}{list type documentation} for details.
-
-
-\section2 Property change signals
-
-Adding a \c property to an item automatically adds a \e {value changed}
-signal handler to the item. To connect to this signal, use a \l {Signal Handlers}{signal handler}
-named with the \c on<Property>Changed syntax, using upper case for the first letter of the
-property name.
-
-For example, the following \c onMyNumberChanged signal handler is automatically called whenever the
-\c myNumber property changes:
-
-\snippet doc/src/snippets/declarative/qml-extending-types/properties/property-signals.qml 0
-
-
-\section2 Default properties
-
-The optional \c default attribute for a property marks it as the \e {default property}
-for a type. This allows other items to specify the default property's value
-as child elements. For example, the \l Item element's default property is its
-\l{Item::children}{children} property. This allows the children of an \l Item
-to be set like this:
-
-\qml
-Item {
-    Rectangle {}
-    Rectangle {}
-}
-\endqml
-
-If the \l{Item::children}{children} property was not the default property for
-\l Item, its value would have to be set like this instead:
-
-\qml
-Item {
-    children: [
-        Rectangle {},
-        Rectangle {}
-    ]
-}
-\endqml
-
-See the \l{declarative/ui-components/tabwidget}{TabWidget} example for a
-demonstration of using default properties.
-
-Specifying a default property overrides any existing default property (for
-example, any default property inherited from a parent item). Using the
-\c default attribute twice in the same type block is an error.
-
-
-\section2 Property aliases
-
-Property aliases are a more advanced form of property declaration.  Unlike a
-property definition, which allocates a new, unique storage space for the
-property, a property alias connects the newly declared property (called the
-aliasing property) as a direct reference to an existing property (the aliased property).  Read
-operations on the aliasing property act as read operations on the aliased
-property, and write operations on the aliasing property as write operations on
-the aliased property.
-
-A property alias declaration looks a lot like an ordinary property definition:
-\code
-    [default] property alias <name>: <alias reference>
-\endcode
-
-As the aliasing property has the same type as the aliased property, an explicit
-type is omitted, and the special "alias" keyword is used.  Instead of a default
-value, a property alias includes a compulsory alias reference.  The alias
-reference is used to locate the aliased property.  While similar to a property
-binding, the alias reference syntax is highly restricted.
-
-An alias reference takes one of the following forms:
-\code
-    <id>.<property>
-    <id>
-\endcode
-
-where <id> must refer to an object id within the same component as the type
-declaring the alias, and, optionally, <property> refers to a property on that object.
-
-For example, below is a \c Button.qml component with a \c buttonText aliased property which is
-connected to the child Text object's \c text property:
-
-\snippet doc/src/snippets/declarative/qml-extending-types/properties/alias.qml 0
-
-The following code would create a \c Button with a defined text string for the
-child \l Text object:
-
-\qml
-Button { buttonText: "This is a button" }
-\endqml
-
-Here, modifying \c buttonText directly modifies the \c textItem.text value; it does not
-change some other value that then updates \c textItem.text.
-
-In this case, the use of aliased properties is essential. If \c buttonText was not an alias,
-changing its value would not actually change the displayed text at all, as
-\l {Property Binding}{property bindings} are not bi-directional: the \c buttonText value would
-change when \c textItem.text changes, but not the other way around.
-
-Aliased properties are also useful for allowing external objects to directly modify and
-access child objects in a component. For example, here is a modified version of the \c ImageViewer
-component shown \l {Adding Properties}{earlier} on this page. The \c currentImage property has
-been changed to an alias to the child \l Image object:
-
-\table
-\row
-\o \snippet doc/src/snippets/declarative/qml-extending-types/properties/alias/ImageViewer.qml 0
-\o \snippet doc/src/snippets/declarative/qml-extending-types/properties/alias/application.qml 0
-\endtable
-
-Instead of being limited to setting the \l Image source, \c application.qml can now directly
-access and modify the child \l Image object and its properties.
-
-Obviously, exposing child objects in this manner should be done with care, as it allows external
-objects to modify them freely. However, this use of aliased properties can be quite useful in
-particular situations, such as for the \l {declarative/ui-components/tabwidget}{TabWidget}
-example, where new tab items are actually parented to a child object that displays the current tab.
-
-
-\section3 Considerations for property aliases
-
-Aliases are only activated once the component specifying them is completed.  The
-most obvious consequence of this is that the component itself cannot generally
-use the aliased property directly during creation.  For example, this will not work:
-
-\code
-    // Does NOT work
-    property alias buttonText: textItem.text
-    buttonText: "Some text" // buttonText is not yet defined when this value is set
-\endcode
-
-A second, much less significant, consequence of the delayed activation of
-aliases is that an alias reference cannot refer to another aliasing property
-declared within the same component.  This will not work:
-
-\code
-    // Does NOT work
-    id: root
-    property alias buttonText: textItem.text
-    property alias buttonText2: root.buttonText
-\endcode
-
-At the time the component is created, the \c buttonText value has not yet been assigned,
-so \c root.buttonText would refer to an undefined value. (From outside the component,
-however, aliasing properties appear as regular Qt properties and consequently can be
-used in alias references.)
-
-It is possible for an aliased property to have the same name as an existing property. For example,
-the following component has a \c color alias property, named the same as the built-in
-\l {Rectangle::color} property:
-
-\snippet doc/src/snippets/declarative/qml-extending-types/properties/alias-override.qml 0
-
-Any objects that use this component and refer to its \c color property will be
-referring to the alias rather than the ordinary \l {Rectangle::color} property. Internally,
-however, the rectangle can correctly set this property to "red" and refer to the actual defined
-property rather than the alias.
-
-
-\section1 Adding Methods
-
-A QML component can define methods of JavaScript code. These methods can be invoked
-either internally or by other objects.
-
-The syntax for defining a method is:
-
-\code
-function <name>([<parameter name>[, ...]]) { <body> }
-\endcode
-
-This declaration may appear anywhere within a type body, but it is customary to
-include it at the top.  Attempting to declare two methods or signals with the
-same name in the same type block is an error.  However, a new method may reuse
-the name of an existing method on the type.  (This should be done with caution,
-as the existing method may be hidden and become inaccessible.)
-
-Unlike \l{Adding Signals}{signals}, method parameter types do not have to be declared as they
-default to the \c variant type. The body of the method is written in JavaScript and may access
-the parameters by name.
-
-Here is an example of a component with a \c say() method that accepts a single \c text argument:
-
-\snippet doc/src/snippets/declarative/qml-extending-types/methods/app.qml 0
-
-A method can be connected to a signal so that it is automatically invoked whenever the signal
-is emitted. See \l {Connecting signals to methods and other signals} below.
-
-Also see \l {Integrating JavaScript} for more information on using JavaScript with QML.
-
-
-\section1 Adding Signals
-
-Signals provide a way to notify other objects when an event has occurred. For example, the MouseArea
-\c clicked signal notifies other objects that the mouse has been clicked within the area.
-
-The syntax for defining a new signal is:
-
-\code
-signal <name>[([<type> <parameter name>[, ...]])]
-\endcode
-
-This declaration may appear anywhere within a type body, but it is customary to
-include it at the top.  Attempting to declare two signals or methods with the
-same name in the same type block is an error.  However, a new signal may reuse
-the name of an existing signal on the type. (This should be done with caution,
-as the existing signal may be hidden and become inaccessible.)
-
-Here are three examples of signal declarations:
-
-\code
-Item {
-    signal clicked
-    signal hovered()
-    signal performAction(string action, variant actionArgument)
-}
-\endcode
-
-If the signal has no parameters, the "()" brackets are optional. If parameters are used, the
-parameter types must be declared, as for the \c string and \c variant arguments for the \c
-performAction signal above; the allowed parameter types are the same as those listed in the \l
-{Adding Properties} section on this page.
-
-Adding a signal to an item automatically adds a \l {Signal Handlers}{signal handler} as well.
-The signal hander is named \c on<SignalName>, with the first letter of the signal being upper
-cased. The above example item would now have the following signal handlers:
-
-\list
-\o onClicked
-\o onHovered
-\o onPerformAction
-\endlist
-
-To emit a signal, simply invoke it in the same way as a method. Below left, when the \l MouseArea is
-clicked, it emits the parent \c buttonClicked signal by invoking \c rect.buttonClicked(). The
-signal is received by \c application.qml through an \c onButtonClicked signal handler:
-
-\table
-\row
-\o \snippet doc/src/snippets/declarative/qml-extending-types/signals/basic.qml 0
-\o \snippet doc/src/snippets/declarative/qml-extending-types/signals/no-parameters.qml 0
-\endtable
-
-If the signal has parameters, they are accessible by parameter name in the signal handler.
-In the example below, \c buttonClicked is emitted with \c xPos and \c yPos parameters instead:
-
-\table
-\row
-\o \snippet doc/src/snippets/declarative/qml-extending-types/signals/Button.qml 0
-\o \snippet doc/src/snippets/declarative/qml-extending-types/signals/parameters.qml 0
-\endtable
-
-
-\section2 Connecting signals to methods and other signals
-
-Signal objects have a \c connect() method that can be used to a connect a signal to a method or
-another signal. When a signal is connected to a method, the method is automatically invoked
-whenever the signal is emitted. (In Qt terminology, the method is a \e slot that is connected
-to the \e signal; all methods defined in QML are created as Qt slots.) This enables a signal
-to be received by a method instead of a \l {Signal Handlers}{signal handler}.
-
-For example, the \c application.qml above could be rewritten as:
-
-\snippet doc/src/snippets/declarative/qml-extending-types/signals/connectslots.qml 0
-
-The \c myMethod() method will be called whenever the \c buttonClicked signal is received.
-
-In many cases it is sufficient to receive signals through signal handlers rather than using
-the \c connect() function; the above example does not provide any improvements over using a
-simple \c onButtonClicked handler. However, if you are \l{Dynamic Object Management in QML}{creating objects dynamically},
-or \l {Integrating JavaScript}{integrating JavaScript code}, then you will find the
-\c connect() method useful. For example, the component below creates three \c Button
-objects dynamically, and connects the \c buttonClicked signal of each object to the
-\c myMethod() function:
-
-\snippet doc/src/snippets/declarative/qml-extending-types/signals/connectdynamic.qml 0
-
-In the same way, you could connect a signal to methods defined in a dynamically
-created object, or \l {Receiving QML Signals in JavaScript}{connect a signal to a JavaScript method}.
-
-There is also a corresponding \c disconnect() method for removing connected signals. The following
-code removes the connection created in \c application.qml above:
-
-\qml
-// application.qml
-Item {
-    // ...
-
-    function removeSignal() {
-        button.clicked.disconnect(item.myMethod)
-    }
-}
-\endqml
-
-
-\section3 Forwarding signals
-
-The \c connect() method can also connect a signal to other signals. This has the effect
-of "forwarding" a signal: it is automatically emitted whenever the relevant signal is emitted. For
-example, the MouseArea \c onClicked handler in \c Button.qml above could have been replaced with
-a call to \c connect():
-
-\qml
-MouseArea {
-    anchors.fill: parent
-    Component.onCompleted: clicked.connect(item.buttonClicked)
-}
-\endqml
-
-Whenever the \l MouseArea \c clicked signal is emitted, the \c rect.buttonClicked signal will
-automatically be emitted as well.
 */

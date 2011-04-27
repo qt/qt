@@ -1,0 +1,12 @@
+Source: qtbubblelevel
+Section: user/games
+Priority: extra
+Maintainer: Forum Nokia <FN.Documentation@nokia.com>
+Build-Depends: debhelper (>= 5), libqt4-dev, libqtm-sensors
+Standards-Version: 3.7.3
+
+Package: qtbubblelevel
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Qt Bubble Level example
+ QtQuick example

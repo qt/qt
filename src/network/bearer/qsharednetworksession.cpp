@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,6 +59,11 @@ inline QSharedNetworkSessionManager* sharedNetworkSessionManager()
     return rv;
 }
 
+static void doDeleteLater(QObject* obj)
+{
+    obj->deleteLater();
+}
+
 QSharedPointer<QNetworkSession> QSharedNetworkSessionManager::getSession(QNetworkConfiguration config)
 {
     QSharedNetworkSessionManager *m(sharedNetworkSessionManager());
@@ -69,7 +74,7 @@ QSharedPointer<QNetworkSession> QSharedNetworkSessionManager::getSession(QNetwor
             return p;
     }
     //otherwise make one
-    QSharedPointer<QNetworkSession> session(new QNetworkSession(config));
+    QSharedPointer<QNetworkSession> session(new QNetworkSession(config), doDeleteLater);
     m->sessions[config] = session;
     return session;
 }

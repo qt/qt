@@ -304,6 +304,9 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , hasAlienChildren(0)
       , window_event(0)
       , qd_hd(0)
+#elif defined(Q_OS_SYMBIAN)
+      , symbianScreenNumber(0)
+      , fixNativeOrientationCalled(false)
 #endif
 {
     if (!qApp) {
@@ -595,8 +598,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     \brief The QWidget class is the base class of all user interface objects.
 
     \ingroup basicwidgets
-
-
+    
     The widget is the atom of the user interface: it receives mouse, keyboard
     and other events from the window system, and paints a representation of
     itself on the screen. Every widget is rectangular, and they are sorted in a
@@ -1284,6 +1286,10 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
         // programmer specified desktop widget
         xinfo = desktopWidget->d_func()->xinfo;
     }
+#elif defined(Q_OS_SYMBIAN)
+    if (desktopWidget) {
+        symbianScreenNumber = qt_widget_private(desktopWidget)->symbianScreenNumber;
+    }
 #else
     Q_UNUSED(desktopWidget);
 #endif
@@ -1320,8 +1326,8 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     //give potential windows a bigger "pre-initial" size; create_sys() will give them a new size later
 #ifdef Q_OS_SYMBIAN
     if (isGLWidget) {
-        // Don't waste GPU mem for unnecessary large egl surface
-        data.crect = QRect(0,0,2,2);
+        // Don't waste GPU mem for unnecessary large egl surface until resized by application
+        data.crect = QRect(0,0,1,1);
     } else {
         data.crect = parentWidget ? QRect(0,0,100,30) : QRect(0,0,360,640);
     }
@@ -10860,6 +10866,9 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         }
         QT_TRAP_THROWING(appUi->SetOrientationL(s60orientation));
         S60->orientationSet = true;
+        QSymbianControl *window = static_cast<QSymbianControl *>(internalWinId());
+        if (window)
+            window->ensureFixNativeOrientation();
 #endif
         break;
     }

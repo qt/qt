@@ -57,16 +57,17 @@ QT_BEGIN_NAMESPACE
     {                                                                   \
         delete this_##NAME.pointer;                                     \
         this_##NAME.pointer = 0;                                        \
-        this_##NAME.destroyed = true;                                   \
     }                                                                   \
     static TYPE *NAME()                                                 \
     {                                                                   \
-        if (!this_##NAME.pointer && !this_##NAME.destroyed) {           \
+        if (!this_##NAME.pointer) {                                     \
             TYPE *x = new TYPE;                                         \
             if (!this_##NAME.pointer.testAndSetOrdered(0, x))           \
                 delete x;                                               \
-            else                                                        \
+            else {                                                      \
                 qAddPostRoutine(NAME##_cleanup);                        \
+                this_##NAME.pointer->updateConfigurations();            \
+            }                                                           \
         }                                                               \
         return this_##NAME.pointer;                                     \
     }
@@ -75,15 +76,7 @@ Q_GLOBAL_STATIC_QAPP_DESTRUCTION(QNetworkConfigurationManagerPrivate, connManage
 
 QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 {
-    static bool initialized = false;
-
-    QNetworkConfigurationManagerPrivate *m = connManager();
-    if (!initialized) {
-        initialized = true;
-        m->updateConfigurations();
-    }
-
-    return m;
+    return connManager();
 }
 
 /*!
@@ -203,6 +196,9 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 
 /*!
     Constructs a QNetworkConfigurationManager with the given \a parent.
+
+    Note that to ensure a valid list of current configurations immediately available, updating
+    is done during construction which causes some delay.
 */
 QNetworkConfigurationManager::QNetworkConfigurationManager( QObject* parent )
     : QObject(parent)

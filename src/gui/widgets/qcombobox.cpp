@@ -398,7 +398,7 @@ void QComboBoxPrivateContainer::leaveEvent(QEvent *)
 #ifdef Q_WS_MAC
     QStyleOptionComboBox opt = comboStyleOption();
     if (combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo))
-        view->setCurrentIndex(QModelIndex());
+          view->clearSelection();
 #endif
 }
 
@@ -671,8 +671,8 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
             if (vector.manhattanLength() > 9 && blockMouseReleaseTimer.isActive())
                 blockMouseReleaseTimer.stop();
             QModelIndex indexUnderMouse = view->indexAt(m->pos());
-            if (indexUnderMouse.isValid() && indexUnderMouse != view->currentIndex()
-                    && !QComboBoxDelegate::isSeparator(indexUnderMouse)) {
+            if (indexUnderMouse.isValid()
+                     && !QComboBoxDelegate::isSeparator(indexUnderMouse)) {
                 view->setCurrentIndex(indexUnderMouse);
             }
         }
@@ -704,11 +704,13 @@ void QComboBoxPrivateContainer::hideEvent(QHideEvent *)
 {
     emit resetButton();
     combo->update();
+#ifndef QT_NO_GRAPHICSVIEW
     // QGraphicsScenePrivate::removePopup closes the combo box popup, it hides it non-explicitly.
     // Hiding/showing the QComboBox after this will unexpectedly show the popup as well.
     // Re-hiding the popup container makes sure it is explicitly hidden.
     if (QGraphicsProxyWidget *proxy = graphicsProxyWidget())
         proxy->hide();
+#endif
 }
 
 void QComboBoxPrivateContainer::mousePressEvent(QMouseEvent *e)
@@ -944,7 +946,10 @@ QComboBox::QComboBox(bool rw, QWidget *parent, const char *name)
     to set and get item data (e.g., setItemData() and itemText()). You
     can also set a new model and view (with setModel() and setView()).
     For the text and icon in the combobox label, the data in the model
-    that has the Qt::DisplayRole and Qt::DecorationRole is used.
+    that has the Qt::DisplayRole and Qt::DecorationRole is used.  Note
+    that you cannot alter the \l{QAbstractItemView::}{SelectionMode}
+    of the view(), e.g., by using
+    \l{QAbstractItemView::}{setSelectionMode()}.
 
     \image qstyle-comboboxes.png Comboboxes in the different built-in styles.
 
@@ -2453,12 +2458,7 @@ void QComboBox::showPopup()
         // available screen geometry.This may override the vertical position, but it is more
         // important to show as much as possible of the popup.
         const int height = !boundToScreen ? listRect.height() : qMin(listRect.height(), screen.height());
-#ifdef Q_WS_S60
-        //popup needs to be stretched with screen minimum dimension
-        listRect.setHeight(qMin(screen.height(), screen.width()));
-#else
         listRect.setHeight(height);
-#endif
 
         if (boundToScreen) {
             if (listRect.top() < screen.top())

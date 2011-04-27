@@ -312,9 +312,18 @@ init_context:
             q_X509_STORE_add_cert(ctx->cert_store, (X509 *)caCertificate.handle());
         }
     }
+
+    bool addExpiredCerts = true;
+#if defined(Q_OS_MAC) && (MAC_OS_X_VERSION_MAX_ALLOWED == MAC_OS_X_VERSION_10_5)
+    //On Leopard SSL does not work if we add the expired certificates.
+    if (QSysInfo::MacintoshVersion == QSysInfo::MV_10_5)
+       addExpiredCerts = false;
+#endif
     // now add the expired certs
-    foreach (const QSslCertificate &caCertificate, expiredCerts) {
-        q_X509_STORE_add_cert(ctx->cert_store, (X509 *)caCertificate.handle());
+    if (addExpiredCerts) {
+        foreach (const QSslCertificate &caCertificate, expiredCerts) {
+            q_X509_STORE_add_cert(ctx->cert_store, (X509 *)caCertificate.handle());
+        }
     }
 
     // Register a custom callback to get all verification errors.
@@ -1184,6 +1193,13 @@ bool QSslSocketBackendPrivate::startHandshake()
     X509 *x509 = q_SSL_get_peer_certificate(ssl);
     configuration.peerCertificate = QSslCertificatePrivate::QSslCertificate_from_X509(x509);
     q_X509_free(x509);
+    if (QSslCertificatePrivate::isBlacklisted(configuration.peerCertificate)) {
+        q->setErrorString(QSslSocket::tr("The peer certificate is blacklisted"));
+        q->setSocketError(QAbstractSocket::SslHandshakeFailedError);
+        emit q->error(QAbstractSocket::SslHandshakeFailedError);
+        plainSocket->disconnectFromHost();
+        return false;
+    }
 
     // Start translating errors.
     QList<QSslError> errors;

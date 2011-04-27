@@ -76,7 +76,7 @@ public:
     \since 4.7
     \brief The Behavior element allows you to specify a default animation for a property change.
 
-    A Behavior defines the default animation to be applied whenever a 
+    A Behavior defines the default animation to be applied whenever a
     particular property value changes.
 
     For example, the following Behavior defines a NumberAnimation to be run
@@ -94,7 +94,7 @@ public:
     state change. For general advice on using Behaviors to animate state changes, see
     \l{Using QML Behaviors with States}.
 
-    \sa {QML Animation}, {declarative/animation/behaviors}{Behavior example}, QtDeclarative
+    \sa {QML Animation and Transitions}, {declarative/animation/behaviors}{Behavior example}, QtDeclarative
 */
 
 
@@ -206,7 +206,7 @@ void QDeclarativeBehavior::write(const QVariant &value)
     d->animation->qtAnimation()->start();
     d->blockRunningChanged = false;
     if (!after.contains(d->property))
-        QDeclarativePropertyPrivate::write(d->property, value, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);    
+        QDeclarativePropertyPrivate::write(d->property, value, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
 }
 
 void QDeclarativeBehavior::setTarget(const QDeclarativeProperty &property)

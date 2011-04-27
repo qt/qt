@@ -123,7 +123,9 @@ private slots:
     void testLineBreakingAllSpaces();
     void lineWidthFromBOM();
     void textWidthVsWIdth();
-
+    void textWidthWithStackedTextEngine();
+    void textWidthWithLineSeparator();
+    void textWithSurrogates_qtbug15679();
 
 private:
     QFont testFont;
@@ -1388,6 +1390,51 @@ void tst_QTextLayout::textWidthVsWIdth()
     }
 }
 
+void tst_QTextLayout::textWidthWithStackedTextEngine()
+{
+    QString text = QString::fromUtf8("คลิก ถัดไป เพื่อดำเนินการต่อ");
+    QTextLayout layout(text);
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    layout.endLayout();
+    QFontMetricsF fm(layout.font());
+    QCOMPARE(line.naturalTextWidth(), fm.width(text));
+}
+
+void tst_QTextLayout::textWidthWithLineSeparator()
+{
+    QString s1("Save Project"), s2("Save Project\ntest");
+    s2.replace('\n', QChar::LineSeparator);
+
+    QTextLayout layout1(s1), layout2(s2);
+    layout1.beginLayout();
+    layout2.beginLayout();
+
+    QTextLine line1 = layout1.createLine();
+    QTextLine line2 = layout2.createLine();
+    line1.setLineWidth(0x1000);
+    line2.setLineWidth(0x1000);
+    QCOMPARE(line1.naturalTextWidth(), line2.naturalTextWidth());
+}
+
+void tst_QTextLayout::textWithSurrogates_qtbug15679()
+{
+    QString str = QString::fromUtf8("🀀a🀀");
+    QTextLayout layout(str);
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    layout.endLayout();
+
+    qreal x[6];
+    for (int i = 0; i < 6; i++)
+        x[i] = line.cursorToX(i);
+
+    // If the first and third character are using the same
+    // font, they must have the same advance (since they
+    // are surrogate pairs, we need to add two for each
+    // character)
+    QCOMPARE(x[2] - x[0], x[5] - x[3]);
+}
 
 QTEST_MAIN(tst_QTextLayout)
 #include "tst_qtextlayout.moc"

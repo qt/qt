@@ -43,13 +43,13 @@
 #include <private/qgl_p.h>
 #include <private/qglpixelbuffer_p.h>
 #include <private/qglframebufferobject_p.h>
-#include <private/qwindowsurface_gl_p.h>
 #ifdef Q_WS_X11
 #include <private/qpixmapdata_x11gl_p.h>
 #endif
 
 #if !defined(QT_OPENGL_ES_1)
 #include <private/qpixmapdata_gl_p.h>
+#include <private/qwindowsurface_gl_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE

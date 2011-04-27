@@ -227,7 +227,7 @@ public:
     void _q_sourceColumnsRemoved(const QModelIndex &source_parent,
                                  int start, int end);
 
-    void clear_mapping();
+    void _q_clearMapping();
 
     void sort();
     bool update_source_sort_column();
@@ -281,7 +281,7 @@ typedef QHash<QModelIndex, QSortFilterProxyModelPrivate::Mapping *> IndexMap;
 void QSortFilterProxyModelPrivate::_q_sourceModelDestroyed()
 {
     QAbstractProxyModelPrivate::_q_sourceModelDestroyed();
-    clear_mapping();
+    _q_clearMapping();
 }
 
 void QSortFilterProxyModelPrivate::remove_from_mapping(const QModelIndex &source_parent)
@@ -293,7 +293,7 @@ void QSortFilterProxyModelPrivate::remove_from_mapping(const QModelIndex &source
     }
 }
 
-void QSortFilterProxyModelPrivate::clear_mapping()
+void QSortFilterProxyModelPrivate::_q_clearMapping()
 {
     // store the persistent indexes
     QModelIndexPairList source_indexes = store_persistent_indexes();
@@ -1223,7 +1223,7 @@ void QSortFilterProxyModelPrivate::_q_sourceReset()
 {
     Q_Q(QSortFilterProxyModel);
     invalidatePersistentIndexes();
-    clear_mapping();
+    _q_clearMapping();
     // All internal structures are deleted in clear()
     q->endResetModel();
     update_source_sort_column();
@@ -1519,6 +1519,7 @@ QSortFilterProxyModel::QSortFilterProxyModel(QObject *parent)
     d->filter_column = 0;
     d->filter_role = Qt::DisplayRole;
     d->dynamic_sortfilter = false;
+    connect(this, SIGNAL(modelReset()), this, SLOT(_q_clearMapping()));
 }
 
 /*!
@@ -1620,7 +1621,7 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     connect(d->model, SIGNAL(modelAboutToBeReset()), this, SLOT(_q_sourceAboutToBeReset()));
     connect(d->model, SIGNAL(modelReset()), this, SLOT(_q_sourceReset()));
 
-    d->clear_mapping();
+    d->_q_clearMapping();
     endResetModel();
     if (d->update_source_sort_column() && d->dynamic_sortfilter)
         d->sort();
@@ -2311,7 +2312,7 @@ void QSortFilterProxyModel::clear()
 {
     Q_D(QSortFilterProxyModel);
     emit layoutAboutToBeChanged();
-    d->clear_mapping();
+    d->_q_clearMapping();
     emit layoutChanged();
 }
 
@@ -2326,7 +2327,7 @@ void QSortFilterProxyModel::invalidate()
 {
     Q_D(QSortFilterProxyModel);
     emit layoutAboutToBeChanged();
-    d->clear_mapping();
+    d->_q_clearMapping();
     emit layoutChanged();
 }
 

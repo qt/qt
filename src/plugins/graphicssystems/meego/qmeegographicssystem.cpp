@@ -59,9 +59,15 @@
 #include "qmeegographicssystem.h"
 #include "qmeegoextensions.h"
 
+#include <QTimer>
+
 bool QMeeGoGraphicsSystem::surfaceWasCreated = false;
 
 QHash <Qt::HANDLE, QPixmap*> QMeeGoGraphicsSystem::liveTexturePixmaps;
+
+QList<QMeeGoSwitchCallback> QMeeGoGraphicsSystem::switchCallbacks;
+
+QMeeGoGraphicsSystem::SwitchPolicy QMeeGoGraphicsSystem::switchPolicy = QMeeGoGraphicsSystem::AutomaticSwitch;
 
 QMeeGoGraphicsSystem::QMeeGoGraphicsSystem()
 {
@@ -74,6 +80,115 @@ QMeeGoGraphicsSystem::~QMeeGoGraphicsSystem()
     qt_destroy_gl_share_widget();
 }
 
+class QMeeGoGraphicsSystemSwitchHandler : public QObject
+{
+    Q_OBJECT
+public:
+    QMeeGoGraphicsSystemSwitchHandler();
+
+    void addWidget(QWidget *widget);
+    bool eventFilter(QObject *, QEvent *);
+
+    void handleMapNotify();
+
+private slots:
+    void removeWidget(QObject *object);
+    void switchToRaster();
+    void switchToMeeGo();
+
+private:
+    int visibleWidgets() const;
+
+private:
+    QList<QWidget *> m_widgets;
+};
+
+typedef bool(*QX11FilterFunction)(XEvent *event);
+Q_GUI_EXPORT void qt_installX11EventFilter(QX11FilterFunction func);
+
+static bool x11EventFilter(XEvent *event);
+
+QMeeGoGraphicsSystemSwitchHandler::QMeeGoGraphicsSystemSwitchHandler()
+{
+    qt_installX11EventFilter(x11EventFilter);
+}
+
+void QMeeGoGraphicsSystemSwitchHandler::addWidget(QWidget *widget)
+{
+    if (widget != qt_gl_share_widget() && !m_widgets.contains(widget)) {
+        widget->installEventFilter(this);
+        connect(widget, SIGNAL(destroyed(QObject *)), this, SLOT(removeWidget(QObject *)));
+        m_widgets << widget;
+    }
+}
+
+void QMeeGoGraphicsSystemSwitchHandler::handleMapNotify()
+{
+    if (m_widgets.isEmpty() && QMeeGoGraphicsSystem::switchPolicy == QMeeGoGraphicsSystem::AutomaticSwitch)
+        QTimer::singleShot(0, this, SLOT(switchToMeeGo()));
+}
+
+void QMeeGoGraphicsSystemSwitchHandler::removeWidget(QObject *object)
+{
+    m_widgets.removeOne(static_cast<QWidget *>(object));
+    if (m_widgets.isEmpty() && QMeeGoGraphicsSystem::switchPolicy == QMeeGoGraphicsSystem::AutomaticSwitch)
+        QTimer::singleShot(0, this, SLOT(switchToRaster()));
+}
+
+void QMeeGoGraphicsSystemSwitchHandler::switchToRaster()
+{
+    QMeeGoGraphicsSystem::switchToRaster();
+}
+
+void QMeeGoGraphicsSystemSwitchHandler::switchToMeeGo()
+{
+    QMeeGoGraphicsSystem::switchToMeeGo();
+}
+
+int QMeeGoGraphicsSystemSwitchHandler::visibleWidgets() const
+{
+    int count = 0;
+    for (int i = 0; i < m_widgets.size(); ++i)
+        count += m_widgets.at(i)->isVisible() && !(m_widgets.at(i)->windowState() & Qt::WindowMinimized);
+    return count;
+}
+
+bool QMeeGoGraphicsSystemSwitchHandler::eventFilter(QObject *object, QEvent *event)
+{
+    if (event->type() == QEvent::WindowStateChange
+        && QMeeGoGraphicsSystem::switchPolicy == QMeeGoGraphicsSystem::AutomaticSwitch)
+    {
+        QWindowStateChangeEvent *change = static_cast<QWindowStateChangeEvent *>(event);
+        QWidget *widget = static_cast<QWidget *>(object);
+
+        Qt::WindowStates current = widget->windowState();
+        Qt::WindowStates old = change->oldState();
+
+        // did minimized flag change?
+        if ((current ^ old) & Qt::WindowMinimized) {
+            if (current & Qt::WindowMinimized) {
+                if (visibleWidgets() == 0)
+                    QMeeGoGraphicsSystem::switchToRaster();
+            } else {
+                if (visibleWidgets() > 0)
+                    QMeeGoGraphicsSystem::switchToMeeGo();
+            }
+        }
+    }
+
+    // resume processing of event
+    return false;
+}
+
+Q_GLOBAL_STATIC(QMeeGoGraphicsSystemSwitchHandler, switch_handler)
+
+bool x11EventFilter(XEvent *event)
+{
+    if (event->type == MapNotify)
+        switch_handler()->handleMapNotify();
+    return false;
+}
+
 QWindowSurface* QMeeGoGraphicsSystem::createWindowSurface(QWidget *widget) const
 {
     QGLWidget *shareWidget = qt_gl_share_widget();
@@ -82,6 +197,9 @@ QWindowSurface* QMeeGoGraphicsSystem::createWindowSurface(QWidget *widget) const
         return new QRasterWindowSurface(widget);
 
     QGLShareContextScope ctx(shareWidget->context());
+
+    if (QApplicationPrivate::instance()->graphics_system_name == QLatin1String("runtime"))
+        switch_handler()->addWidget(widget);
 
     QMeeGoGraphicsSystem::surfaceWasCreated = true;
     QWindowSurface *surface = new QGLWindowSurface(widget);
@@ -171,7 +289,7 @@ QPixmapData *QMeeGoGraphicsSystem::pixmapDataFromEGLSharedImage(Qt::HANDLE handl
         return QMeeGoGraphicsSystem::wrapPixmapData(pmd);
     } else {
         QRasterPixmapData *pmd = new QRasterPixmapData(QPixmapData::PixmapType);
-        pmd->fromImage(softImage, Qt::NoOpaqueDetection);
+        pmd->fromImage(softImage, Qt::NoFormatConversion);
 
         // Make sure that the image was not converted in any way
         if (pmd->buffer()->data_ptr()->data !=
@@ -203,18 +321,7 @@ QPixmapData *QMeeGoGraphicsSystem::pixmapDataWithGLTexture(int w, int h)
 
 bool QMeeGoGraphicsSystem::meeGoRunning()
 {
-    if (! QApplicationPrivate::instance()) {
-        qWarning("Application not running just yet... hard to know what system running!");
-        return false;
-    }
-
-    QString name = QApplicationPrivate::instance()->graphics_system_name;
-    if (name == "runtime") {
-        QRuntimeGraphicsSystem *rsystem = (QRuntimeGraphicsSystem *) QApplicationPrivate::instance()->graphics_system;
-        name = rsystem->graphicsSystemName();
-    }
-
-    return (name == "meego");
+    return runningGraphicsSystemName() == "meego";
 }
 
 QPixmapData* QMeeGoGraphicsSystem::pixmapDataWithNewLiveTexture(int w, int h, QImage::Format format)
@@ -257,6 +364,69 @@ void QMeeGoGraphicsSystem::destroyFenceSync(void *fenceSync)
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
     QMeeGoExtensions::ensureInitialized();
     QMeeGoExtensions::eglDestroySyncKHR(QEgl::display(), fenceSync);
+}
+
+QString QMeeGoGraphicsSystem::runningGraphicsSystemName()
+{
+    if (!QApplicationPrivate::instance()) {
+        qWarning("Querying graphics system but application not running yet!");
+        return QString();
+    }
+
+    QString name = QApplicationPrivate::instance()->graphics_system_name;
+    if (name == QLatin1String("runtime")) {
+        QRuntimeGraphicsSystem *rsystem = (QRuntimeGraphicsSystem *) QApplicationPrivate::instance()->graphics_system;
+        name = rsystem->graphicsSystemName();
+    }
+
+    return name;
+}
+
+void QMeeGoGraphicsSystem::switchToMeeGo()
+{
+    if (switchPolicy == NoSwitch || meeGoRunning())
+        return;
+
+    if (QApplicationPrivate::instance()->graphics_system_name != QLatin1String("runtime"))
+        qWarning("Can't switch to meego - switching only supported with 'runtime' graphics system.");
+    else {
+        triggerSwitchCallbacks(0, "meego");
+
+        QApplication *app = static_cast<QApplication *>(QCoreApplication::instance());
+        app->setGraphicsSystem(QLatin1String("meego"));
+
+        triggerSwitchCallbacks(1, "meego");
+    }
+}
+
+void QMeeGoGraphicsSystem::switchToRaster()
+{
+    if (switchPolicy == NoSwitch || runningGraphicsSystemName() == QLatin1String("raster"))
+        return;
+
+    if (QApplicationPrivate::instance()->graphics_system_name != QLatin1String("runtime"))
+        qWarning("Can't switch to raster - switching only supported with 'runtime' graphics system.");
+    else {
+        triggerSwitchCallbacks(0, "raster");
+
+        QApplication *app = static_cast<QApplication *>(QCoreApplication::instance());
+        app->setGraphicsSystem(QLatin1String("raster"));
+
+        QMeeGoLivePixmapData::invalidateSurfaces();
+
+        triggerSwitchCallbacks(1, "raster");
+    }
+}
+
+void QMeeGoGraphicsSystem::registerSwitchCallback(QMeeGoSwitchCallback callback)
+{
+    switchCallbacks << callback;
+}
+
+void QMeeGoGraphicsSystem::triggerSwitchCallbacks(int type, const char *name)
+{
+    for (int i = 0; i < switchCallbacks.size(); ++i)
+        switchCallbacks.at(i)(type, name);
 }
 
 /* C API */
@@ -335,3 +505,30 @@ void qt_meego_destroy_fence_sync(void* fs)
 {
     return QMeeGoGraphicsSystem::destroyFenceSync(fs);
 }
+
+void qt_meego_invalidate_live_surfaces(void)
+{
+    return QMeeGoLivePixmapData::invalidateSurfaces();
+}
+
+void qt_meego_switch_to_raster(void)
+{
+    QMeeGoGraphicsSystem::switchToRaster();
+}
+
+void qt_meego_switch_to_meego(void)
+{
+    QMeeGoGraphicsSystem::switchToMeeGo();
+}
+
+void qt_meego_register_switch_callback(QMeeGoSwitchCallback callback)
+{
+    QMeeGoGraphicsSystem::registerSwitchCallback(callback);
+}
+
+void qt_meego_set_switch_policy(int policy)
+{
+    QMeeGoGraphicsSystem::switchPolicy = QMeeGoGraphicsSystem::SwitchPolicy(policy);
+}
+
+#include "qmeegographicssystem.moc"

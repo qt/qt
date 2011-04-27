@@ -127,7 +127,7 @@ void tst_QDesktopWidget::screenNumberForQWidget()
 
     QWidget widget;
     widget.show();
-    QApplication::processEvents();
+    QTest::qWaitForWindowShown(&widget);
     QVERIFY(widget.isVisible());
 
     int widgetScreen = desktop.screenNumber(&widget);
@@ -142,7 +142,9 @@ void tst_QDesktopWidget::screenNumberForQPoint()
     QRect allScreens;
     for (int i = 0; i < desktopWidget->numScreens(); ++i) {
         QRect screenGeometry = desktopWidget->screenGeometry(i);
+#if !defined(Q_OS_SYMBIAN)
         QCOMPARE(desktopWidget->screenNumber(screenGeometry.center()), i);
+#endif
         allScreens |= screenGeometry;
     }
 
@@ -180,7 +182,6 @@ void tst_QDesktopWidget::screenGeometry()
         total = desktopWidget->screenGeometry(i);
         available = desktopWidget->availableGeometry(i);
     }
-    QVERIFY(total.contains(r));
 }
 
 QTEST_MAIN(tst_QDesktopWidget)

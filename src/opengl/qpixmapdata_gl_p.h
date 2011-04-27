@@ -59,12 +59,26 @@
 #include "private/qpixmapdata_p.h"
 #include "private/qglpaintdevice_p.h"
 
+#ifdef Q_OS_SYMBIAN
+#include "private/qvolatileimage_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QPaintEngine;
 class QGLFramebufferObject;
 class QGLFramebufferObjectFormat;
 class QGLPixmapData;
+
+#ifdef QGL_USE_TEXTURE_POOL
+void qt_gl_register_pixmap(QGLPixmapData *pd);
+void qt_gl_unregister_pixmap(QGLPixmapData *pd);
+void qt_gl_hibernate_pixmaps();
+#endif
+
+#ifdef Q_OS_SYMBIAN
+class QNativeImageHandleProvider;
+#endif
 
 class QGLFramebufferObjectPool
 {
@@ -107,6 +121,8 @@ public:
     // Re-implemented from QPixmapData:
     void resize(int width, int height);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
+    void fromImageReader(QImageReader *imageReader,
+                          Qt::ImageConversionFlags flags);
     bool fromFile(const QString &filename, const char *format,
                   Qt::ImageConversionFlags flags);
     bool fromData(const uchar *buffer, uint len, const char *format,
@@ -126,6 +142,32 @@ public:
     bool isValidContext(const QGLContext *ctx) const;
     GLuint bind(bool copyBack = true) const;
     QGLTexture *texture() const;
+
+#ifdef QGL_USE_TEXTURE_POOL
+    void destroyTexture();
+    // Detach this image from the image pool.
+    void detachTextureFromPool();
+    // Release the GL resources associated with this pixmap and copy
+    // the pixmap's contents out of the GPU back into main memory.
+    // The GL resource will be automatically recreated the next time
+    // ensureCreated() is called.  Does nothing if the pixmap cannot be
+    // hibernated for some reason (e.g. texture is shared with another
+    // process via a SgImage).
+    void hibernate();
+    // Called when the QGLTexturePool wants to reclaim this pixmap's
+    // texture objects to reuse storage.
+    void reclaimTexture();
+    void forceToImage();
+#endif
+
+#ifdef Q_OS_SYMBIAN
+    QImage::Format idealFormat(QImage &image, Qt::ImageConversionFlags flags);
+    void* toNativeType(NativeType type);
+    void fromNativeType(void* pixmap, NativeType type);
+    bool initFromNativeImageHandle(void *handle, const QString &type);
+    void createFromNativeImageHandleProvider();
+    void releaseNativeImageHandle();
+#endif
 
 private:
     bool isValid() const;
@@ -149,10 +191,19 @@ private:
 
     QImage fillImage(const QColor &color) const;
 
+    void createPixmapForImage(QImage &image, Qt::ImageConversionFlags flags, bool inPlace);
+
     mutable QGLFramebufferObject *m_renderFbo;
     mutable QPaintEngine *m_engine;
     mutable QGLContext *m_ctx;
+#ifdef Q_OS_SYMBIAN
+    mutable QVolatileImage m_source;
+    mutable QNativeImageHandleProvider *nativeImageHandleProvider;
+    void *nativeImageHandle;
+    QString nativeImageType;
+#else
     mutable QImage m_source;
+#endif
     mutable QGLTexture m_texture;
 
     // the texture is not in sync with the source image
@@ -166,6 +217,23 @@ private:
     mutable bool m_hasAlpha;
 
     mutable QGLPixmapGLPaintDevice m_glDevice;
+
+#ifdef QGL_USE_TEXTURE_POOL
+    QGLPixmapData *nextLRU;
+    QGLPixmapData *prevLRU;
+    mutable bool inLRU;
+    mutable bool failedToAlloc;
+    mutable bool inTexturePool;
+
+    QGLPixmapData *next;
+    QGLPixmapData *prev;
+
+    friend class QGLTexturePool;
+
+    friend void qt_gl_register_pixmap(QGLPixmapData *pd);
+    friend void qt_gl_unregister_pixmap(QGLPixmapData *pd);
+    friend void qt_gl_hibernate_pixmaps();
+#endif
 
     friend class QGLPixmapGLPaintDevice;
     friend class QMeeGoPixmapData;

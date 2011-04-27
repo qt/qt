@@ -1190,7 +1190,7 @@ QWidget *QDesignerResource::createWidget(const QString &widgetName, QWidget *par
             parentWidget->setProperty("_q_widgetOrder", qVariantFromValue(list));
             QList<QWidget *> zOrder = qVariantValue<QWidgetList>(parentWidget->property("_q_zOrder"));
             zOrder.append(w);
-            parentWidget->setProperty("_q_zOrder", qVariantFromValue(list));
+            parentWidget->setProperty("_q_zOrder", qVariantFromValue(zOrder));
         }
     } else {
         core()->metaDataBase()->add(w);

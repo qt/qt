@@ -41,6 +41,7 @@
 
 #include <qfileinfo.h>
 #include <qregexp.h>
+#include <qdebug.h>
 
 #include "quoter.h"
 
@@ -65,7 +66,7 @@ static void replaceMultipleNewlines(QString &s)
 }
 
 // This is equivalent to  line.split( QRegExp("\n(?!\n|$)") ) but much faster
-static QStringList splitLines(const QString &line)
+QStringList Quoter::splitLines(const QString &line)
 {
     QStringList result;
     int i = line.size();

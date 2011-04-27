@@ -64,23 +64,6 @@ QT_BEGIN_NAMESPACE
 #define SuppressText 0x5012
 #define SuppressBackground 0x513
 
-static inline QFixed leadingSpaceWidth(QTextEngine *eng, const QScriptLine &line)
-{
-    if (!line.hasTrailingSpaces
-        || (eng->option.flags() & QTextOption::IncludeTrailingSpaces)
-        || !(eng->option.alignment() & Qt::AlignRight)
-        || !eng->isRightToLeft())
-        return QFixed();
-
-    int pos = line.length;
-    const HB_CharAttributes *attributes = eng->attributes();
-    if (!attributes)
-        return QFixed();
-    while (pos > 0 && attributes[line.from + pos - 1].whiteSpace)
-        --pos;
-    return eng->width(line.from + pos, line.length - pos);
-}
-
 static QFixed alignLine(QTextEngine *eng, const QScriptLine &line)
 {
     QFixed x = 0;
@@ -91,7 +74,7 @@ static QFixed alignLine(QTextEngine *eng, const QScriptLine &line)
         if (align & Qt::AlignJustify && eng->isRightToLeft())
             align = Qt::AlignRight;
         if (align & Qt::AlignRight)
-            x = line.width - (line.textAdvance + leadingSpaceWidth(eng, line));
+            x = line.width - (line.textAdvance + eng->leadingSpaceWidth(line));
         else if (align & Qt::AlignHCenter)
             x = (line.width - line.textAdvance)/2;
     }
@@ -1682,6 +1665,7 @@ namespace {
         int glyphCount;
         int maxGlyphs;
         int currentPosition;
+        glyph_t previousGlyph;
 
         QFixed minw;
         QFixed softHyphenWidth;
@@ -1709,6 +1693,15 @@ namespace {
             return glyphs.glyphs[logClusters[currentPosition - 1]];
         }
 
+        inline void saveCurrentGlyph()
+        {
+            previousGlyph = 0;
+            if (currentPosition > 0 &&
+                logClusters[currentPosition - 1] < glyphs.numGlyphs) {
+                previousGlyph = currentGlyph(); // needed to calculate right bearing later
+            }
+        }
+
         inline void adjustRightBearing(glyph_t glyph)
         {
             qreal rb;
@@ -1721,6 +1714,12 @@ namespace {
             if (currentPosition <= 0)
                 return;
             adjustRightBearing(currentGlyph());
+        }
+
+        inline void adjustPreviousRightBearing()
+        {
+            if (previousGlyph > 0)
+                adjustRightBearing(previousGlyph);
         }
 
         inline void resetRightBearing()
@@ -1798,22 +1797,7 @@ void QTextLine::layout_helper(int maxGlyphs)
     lbh.manualWrap = (wrapMode == QTextOption::ManualWrap || wrapMode == QTextOption::NoWrap);
 
     int item = -1;
-    int newItem = -1;
-    int left = 0;
-    int right = eng->layoutData->items.size()-1;
-    while(left <= right) {
-        int middle = ((right-left)/2)+left;
-        if (line.from > eng->layoutData->items[middle].position)
-            left = middle+1;
-        else if(line.from < eng->layoutData->items[middle].position)
-            right = middle-1;
-        else {
-            newItem = middle;
-            break;
-        }
-    }
-    if (newItem == -1)
-        newItem = right;
+    int newItem = eng->findItem(line.from);
 
     LB_DEBUG("from: %d: item=%d, total %d, width available %f", line.from, newItem, eng->layoutData->items.size(), line.width.toReal());
 
@@ -1825,6 +1809,7 @@ void QTextLine::layout_helper(int maxGlyphs)
     lbh.currentPosition = line.from;
     int end = 0;
     lbh.logClusters = eng->layoutData->logClustersPtr;
+    lbh.previousGlyph = 0;
 
     while (newItem < eng->layoutData->items.size()) {
         lbh.resetRightBearing();
@@ -1885,6 +1870,7 @@ void QTextLine::layout_helper(int maxGlyphs)
                                current, lbh.logClusters, lbh.glyphs);
             } else {
                 lbh.tmpData.length++;
+                lbh.adjustPreviousRightBearing();
             }
             line += lbh.tmpData;
             goto found;
@@ -1915,9 +1901,7 @@ void QTextLine::layout_helper(int maxGlyphs)
         } else {
             lbh.whiteSpaceOrObject = false;
             bool sb_or_ws = false;
-            glyph_t previousGlyph = 0;
-            if (lbh.currentPosition > 0 && lbh.logClusters[lbh.currentPosition - 1] <lbh.glyphs.numGlyphs)
-                previousGlyph = lbh.currentGlyph(); // needed to calculate right bearing later
+            lbh.saveCurrentGlyph();
             do {
                 addNextCluster(lbh.currentPosition, end, lbh.tmpData, lbh.glyphCount,
                                current, lbh.logClusters, lbh.glyphs);
@@ -1942,7 +1926,7 @@ void QTextLine::layout_helper(int maxGlyphs)
                 //  b) if we are so short of available width that the
                 //     soft hyphen is the first breakable position, then
                 //     we don't want to show it. However we initially
-                //     have to take the width for it into accoun so that
+                //     have to take the width for it into account so that
                 //     the text document layout sees the overflow and
                 //     switch to break-anywhere mode, in which we
                 //     want the soft-hyphen to slip into the next line
@@ -1970,8 +1954,9 @@ void QTextLine::layout_helper(int maxGlyphs)
                     // we are too wide, fix right bearing
                     if (rightBearing <= 0)
                         lbh.rightBearing = rightBearing; // take from cache
-                    else if (previousGlyph > 0)
-                        lbh.adjustRightBearing(previousGlyph);
+                    else
+                        lbh.adjustPreviousRightBearing();
+
                     if (!breakany) {
                         line.textWidth += lbh.softHyphenWidth;
                     }
@@ -1979,6 +1964,7 @@ void QTextLine::layout_helper(int maxGlyphs)
                     goto found;
                 }
             }
+            lbh.saveCurrentGlyph();
         }
         if (lbh.currentPosition == end)
             newItem = item + 1;
