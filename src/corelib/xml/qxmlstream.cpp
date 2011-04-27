@@ -646,6 +646,11 @@ QXmlStreamReader::TokenType QXmlStreamReader::tokenType() const
   parser has reached the end element, the current element becomes the parent
   element.
 
+  You can traverse a document by repeatedly calling this function while
+  ensuring that the stream reader is not at the end of the document:
+
+  \snippet doc/src/snippets/xml/streamreader/traverse.cpp traverse document
+
   This is a convenience function for when you're only concerned with parsing
   XML elements. The \l{QXmlStream Bookmarks Example} makes extensive use of
   this function.
