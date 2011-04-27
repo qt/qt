@@ -59,7 +59,7 @@ class QPacket;
 class QPacketAutoSend;
 class QPacketProtocolPrivate;
 
-class Q_DECLARATIVE_EXPORT QPacketProtocol : public QObject
+class Q_DECLARATIVE_PRIVATE_EXPORT QPacketProtocol : public QObject
 {
 Q_OBJECT
 public:
@@ -89,7 +89,7 @@ private:
 };
 
 
-class Q_DECLARATIVE_EXPORT QPacket : public QDataStream
+class Q_DECLARATIVE_PRIVATE_EXPORT QPacket : public QDataStream
 {
 public:
     QPacket();

@@ -210,4 +210,4 @@
   #include <QtDeclarative> to use this function.
 
   Returns the QML type id.
-  */
+*/

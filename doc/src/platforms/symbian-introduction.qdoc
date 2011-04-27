@@ -152,9 +152,9 @@
                                 when application \c .sis needs to be separately signed before
                                 including it into smart installer \c .sis.
     \row \o \c unsigned_installer_sis \o Create unsigned \l{Smart Installer}{smart installer}
-                                         \c .sis file for project.
-                                         Note: The application \c .sis contained in smart installer
-                                         \c .sis will also be unsigned.
+                                      \c .sis file for project.
+                                      Note: The application \c .sis contained in smart installer
+                                      \c .sis will also be unsigned.
     \row \o \c stub_sis      \o Create a stub sis to allow upgradability of projects
                                 that are deployed in ROM
     \endtable
