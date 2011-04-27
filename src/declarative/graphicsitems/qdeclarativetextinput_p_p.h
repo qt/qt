@@ -76,7 +76,8 @@ public:
                  mouseSelectionMode(QDeclarativeTextInput::SelectCharacters), inputMethodHints(Qt::ImhNone),
                  hscroll(0), oldScroll(0), oldValidity(false), focused(false), focusOnPress(true),
                  showInputPanelOnFocus(true), clickCausedFocus(false), cursorVisible(false),
-                 autoScroll(true), selectByMouse(false), canPaste(false), hAlignImplicit(true)
+                 autoScroll(true), selectByMouse(false), canPaste(false), hAlignImplicit(true),
+                 selectPressed(false)
     {
 #ifdef Q_OS_SYMBIAN
         if (QSysInfo::symbianVersion() == QSysInfo::SV_SF_1 || QSysInfo::symbianVersion() == QSysInfo::SV_SF_3) {
@@ -142,6 +143,7 @@ public:
     bool selectByMouse:1;
     bool canPaste:1;
     bool hAlignImplicit:1;
+    bool selectPressed:1;
 
     static inline QDeclarativeTextInputPrivate *get(QDeclarativeTextInput *t) {
         return t->d_func();
