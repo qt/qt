@@ -72,12 +72,12 @@ SchemaType::Ptr XsdSimpleType::wxsSuperType() const
 
 void XsdSimpleType::setContext(const NamedSchemaComponent::Ptr &component)
 {
-    m_context = component;
+    m_context = component.data();
 }
 
 NamedSchemaComponent::Ptr XsdSimpleType::context() const
 {
-    return m_context;
+    return NamedSchemaComponent::Ptr(m_context);
 }
 
 void XsdSimpleType::setPrimitiveType(const AnySimpleType::Ptr &type)

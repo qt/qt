@@ -57,12 +57,12 @@ XsdElement::Scope::Variety XsdElement::Scope::variety() const
 
 void XsdElement::Scope::setParent(const NamedSchemaComponent::Ptr &parent)
 {
-    m_parent = parent;
+    m_parent = parent.data();
 }
 
 NamedSchemaComponent::Ptr XsdElement::Scope::parent() const
 {
-    return m_parent;
+    return NamedSchemaComponent::Ptr(m_parent);
 }
 
 void XsdElement::ValueConstraint::setVariety(Variety variety)
@@ -233,10 +233,10 @@ XsdElement::List XsdElement::substitutionGroupAffiliations() const
 
 void XsdElement::addSubstitutionGroup(const XsdElement::Ptr &element)
 {
-    m_substitutionGroups.insert(element);
+    m_substitutionGroups.insert(element.data());
 }
 
-XsdElement::List XsdElement::substitutionGroups() const
+XsdElement::WeakList XsdElement::substitutionGroups() const
 {
     return m_substitutionGroups.toList();
 }

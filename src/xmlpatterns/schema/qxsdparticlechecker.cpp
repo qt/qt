@@ -309,12 +309,12 @@ static bool hasDuplicatedElementsInternal(const XsdParticle::Ptr &particle, cons
     const XsdTerm::Ptr term = particle->term();
     if (term->isElement()) {
         const XsdElement::Ptr mainElement(term);
-        XsdElement::List substGroups = mainElement->substitutionGroups();
+        XsdElement::WeakList substGroups = mainElement->substitutionGroups();
         if (substGroups.isEmpty())
-            substGroups << mainElement;
+            substGroups << mainElement.data();
 
         for (int i = 0; i < substGroups.count(); ++i) {
-            const XsdElement::Ptr element = substGroups.at(i);
+            const XsdElement::Ptr element(substGroups.at(i));
             if (hash.contains(element->name(namePool))) {
                 if (element->type()->name(namePool) != hash.value(element->name(namePool))->type()->name(namePool)) {
                     conflictingElement = element;

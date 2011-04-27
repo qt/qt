@@ -85,7 +85,7 @@ namespace QPatternist
         public:
             typedef QExplicitlySharedDataPointer<XsdElement> Ptr;
             typedef QList<XsdElement::Ptr> List;
-
+            typedef QList<XsdElement *> WeakList;
 
             /**
              * Describes the <a href="http://www.w3.org/TR/xmlschema11-1/#ed-value_constraint">constraint type</a> of the element.
@@ -138,7 +138,7 @@ namespace QPatternist
 
                 private:
                     Variety                   m_variety;
-                    NamedSchemaComponent::Ptr m_parent;
+                    NamedSchemaComponent      *m_parent;
             };
 
             /**
@@ -379,7 +379,7 @@ namespace QPatternist
             /**
              * Returns the substitution groups of the element.
              */
-            XsdElement::List substitutionGroups() const;
+            XsdElement::WeakList substitutionGroups() const;
 
         private:
             SchemaType::Ptr                   m_type;
@@ -392,7 +392,7 @@ namespace QPatternist
             SchemaType::DerivationConstraints m_substitutionGroupExclusions;
             XsdIdentityConstraint::List       m_identityConstraints;
             XsdElement::List                  m_substitutionGroupAffiliations;
-            QSet<XsdElement::Ptr>             m_substitutionGroups;
+            QSet<XsdElement *>                m_substitutionGroups;
     };
 }
 
