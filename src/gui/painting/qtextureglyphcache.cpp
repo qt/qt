@@ -178,7 +178,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
 QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g) const
 {
 #if defined(Q_WS_X11)
-    if (m_transform.type() > QTransform::TxTranslate) {
+    if (m_transform.type() > QTransform::TxTranslate && m_current_fontengine->type() == QFontEngine::Freetype) {
         QFontEngineFT::GlyphFormat format = QFontEngineFT::Format_None;
         QImage::Format imageFormat = QImage::Format_Invalid;
         switch (m_type) {
