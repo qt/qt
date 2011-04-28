@@ -47,7 +47,11 @@ int main(int argc, char* argv[])
     Q_INIT_RESOURCE(schema);
     QApplication app(argc, argv);
     MainWindow* const window = new MainWindow;
+#ifdef Q_OS_SYMBIAN
+    window->showMaximized();
+#else
     window->show();
+#endif
     return app.exec();
 }
 //! [0]

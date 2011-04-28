@@ -49,6 +49,10 @@ Window::Window(QWidget *parent)
     : QWidget(parent)
 {
     setupUi(this);
+
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
+    this->layout()->setSizeConstraint(QLayout::SetDefaultConstraint);
+#endif
 }
 
 void Window::updateBackground(int background)

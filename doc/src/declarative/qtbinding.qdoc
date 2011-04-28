@@ -465,6 +465,10 @@ below right calls this function, passing a QVariantList and a QVariantMap, which
 converted to JavaScript array and object values, repectively:
 
 \table
+\header
+\o Type
+\o String format
+\o Example
 \row
 \o \snippet doc/src/snippets/declarative/qtbinding/variantlistmap/MyItem.qml 0
 \o \snippet doc/src/snippets/declarative/qtbinding/variantlistmap/main.cpp 0

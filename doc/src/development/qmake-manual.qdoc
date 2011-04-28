@@ -1719,6 +1719,9 @@
     executable. If you need to install executable files, you can unset the
     files' executable flags.
 
+    Note that \c qmake will skip files that are executable. If you need to install
+    executable files, you can unset the files' executable flags.
+
     \target LEXIMPLS
     \section1 LEXIMPLS
 
@@ -1808,6 +1811,8 @@
     information for building a project.  The value of this variable is
     typically handled by \l{qmake Manual#qmake}{\c qmake} or
     \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    \bold{Note:} On the Symbian platform, this variable is ignored.
 
     \bold{Note:} On the Symbian platform, this variable is ignored.
 
