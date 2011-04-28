@@ -1904,27 +1904,42 @@ private:
 
 void tst_QPixmap::drawPixmapWhilePainterOpen()
 {
-    int size = 100;
+    const int delay = 1000;
+    const int size = 100;
+    const QColor colors[] = { Qt::red, Qt::blue, Qt::green };
+
     QPixmap pix(size, size);
-    pix.fill(Qt::red);
+    pix.fill(colors[0]);
 
     PixmapWidget w(pix);
     w.show();
     QTest::qWaitForWindowShown(&w);
-    QTest::qWait(1000);
+    QTest::qWait(delay);
 
     QPainter p(&pix);
-    p.fillRect(0, 0, size, size, Qt::blue);
+    p.fillRect(0, 0, size, size, colors[1]);
     w.update();
-    QTest::qWait(1000);
+    QTest::qWait(delay);
 
-    p.fillRect(0, 0, size, size, Qt::green);
+    p.fillRect(0, 0, size, size, colors[2]);
     w.update();
-    QTest::qWait(1000);
+    QTest::qWait(delay);
 
     QPixmap actual = QPixmap::grabWindow(w.effectiveWinId(), 0, 0, size, size);
 
-    QVERIFY(lenientCompare(actual, pix));
+    // If we captured some bogus content with grabWindow(), the comparison makes no sense
+    // because it cannot prove the feature is broken.
+    QPixmap guard(size, size);
+    bool matchesColors = false;
+    for (size_t i = 0; i < sizeof(colors) / sizeof(const QColor); ++i) {
+        guard.fill(colors[i]);
+        matchesColors |= lenientCompare(actual, guard);
+    }
+    if (!matchesColors) {
+        QSKIP("Skipping verification due to grabWindow() issue", SkipSingle);
+    } else {
+        QVERIFY(lenientCompare(actual, pix));
+    }
 }
 
 QTEST_MAIN(tst_QPixmap)
