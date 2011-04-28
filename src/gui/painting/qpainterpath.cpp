@@ -1904,7 +1904,7 @@ static bool qt_isect_curve_horizontal(const QBezier &bezier, qreal y, qreal x1, 
     if (y >= bounds.top() && y < bounds.bottom()
         && bounds.right() >= x1 && bounds.left() < x2) {
         const qreal lower_bound = qreal(.01);
-        if (depth == 32 || bounds.width() < lower_bound && bounds.height() < lower_bound)
+        if (depth == 32 || (bounds.width() < lower_bound && bounds.height() < lower_bound))
             return true;
 
         QBezier first_half, second_half;
@@ -1923,7 +1923,7 @@ static bool qt_isect_curve_vertical(const QBezier &bezier, qreal x, qreal y1, qr
     if (x >= bounds.left() && x < bounds.right()
         && bounds.bottom() >= y1 && bounds.top() < y2) {
         const qreal lower_bound = qreal(.01);
-        if (depth == 32 || bounds.width() < lower_bound && bounds.height() < lower_bound)
+        if (depth == 32 || (bounds.width() < lower_bound && bounds.height() < lower_bound))
             return true;
 
         QBezier first_half, second_half;

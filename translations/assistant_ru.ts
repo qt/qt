@@ -372,14 +372,14 @@ Reason:
                            вместо стандартного
 -showUrl ссылка            Отобразить документ по ссылке.
 -enableRemoteControl       Включение удалённого управления Assistant.
--show виджет               Отображение указанного прикрепляемого виджета,
-                           который может быть &quot;contents&quot;, &quot;index&quot;,
+-show панель               Отображение указанной панели,
+                           которая может быть &quot;contents&quot;, &quot;index&quot;,
                            &quot;bookmarks&quot; или &quot;search&quot;.
--activate виджет           Включение указанного прикрепляемого виджета,
-                           который может быть &quot;contents&quot;, &quot;index&quot;,
+-activate панель           Включение указанной панели,
+                           которая может быть &quot;contents&quot;, &quot;index&quot;,
                            &quot;bookmarks&quot; или &quot;search&quot;.
--hide виджет               Скрытие указанного прикрепляемого виджета,
-                           который может быть &quot;contents&quot;, &quot;index&quot;,
+-hide панель               Скрытие указанной панели,
+                           которая может быть &quot;contents&quot;, &quot;index&quot;,
                            &quot;bookmarks&quot; или &quot;search&quot;.
 -register файлСправки      Регистрация указанного файла справки (.qch)
                            в данном файле коллекции.

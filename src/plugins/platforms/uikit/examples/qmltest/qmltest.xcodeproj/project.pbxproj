@@ -10,6 +10,14 @@
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		288765A50DF7441C002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765A40DF7441C002DB57D /* CoreGraphics.framework */; };
+		D316594E1338B29E00760B02 /* libQtXml_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D31659431338B21000760B02 /* libQtXml_debug.a */; };
+		D316594F1338B29E00760B02 /* libQtXmlPatterns_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D31659441338B21000760B02 /* libQtXmlPatterns_debug.a */; };
+		D35784241345D8C90046D202 /* libQtOpenGL_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D35784231345D8C90046D202 /* libQtOpenGL_debug.a */; };
+		D35784261345D9940046D202 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D35784251345D9940046D202 /* OpenGLES.framework */; };
+		D35784281345D9E00046D202 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D35784271345D9E00046D202 /* QuartzCore.framework */; };
+		D3578436134A09990046D202 /* libQtOpenGL.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3578435134A09990046D202 /* libQtOpenGL.a */; };
+		D3578439134A0AAE0046D202 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D35784251345D9940046D202 /* OpenGLES.framework */; };
+		D357843A134A0AB10046D202 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D35784271345D9E00046D202 /* QuartzCore.framework */; };
 		D3CAA7C813264AAD008BB877 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = D3CAA7C713264AAD008BB877 /* main.mm */; };
 		D3CAA7E613264EA6008BB877 /* moc_qmlapplicationviewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D3CAA7E313264EA6008BB877 /* moc_qmlapplicationviewer.cpp */; };
 		D3CAA7E713264EA6008BB877 /* qmlapplicationviewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D3CAA7E413264EA6008BB877 /* qmlapplicationviewer.cpp */; };
@@ -50,6 +58,12 @@
 		288765A40DF7441C002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		32CA4F630368D1EE00C91783 /* qmltest_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = qmltest_Prefix.pch; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* qmltest-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "qmltest-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
+		D31659431338B21000760B02 /* libQtXml_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtXml_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtXml_debug.a"; sourceTree = SOURCE_ROOT; };
+		D31659441338B21000760B02 /* libQtXmlPatterns_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtXmlPatterns_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtXmlPatterns_debug.a"; sourceTree = SOURCE_ROOT; };
+		D35784231345D8C90046D202 /* libQtOpenGL_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtOpenGL_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtOpenGL_debug.a"; sourceTree = "<group>"; };
+		D35784251345D9940046D202 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
+		D35784271345D9E00046D202 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		D3578435134A09990046D202 /* libQtOpenGL.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtOpenGL.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtOpenGL.a"; sourceTree = "<group>"; };
 		D3CAA7C713264AAD008BB877 /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		D3CAA7E313264EA6008BB877 /* moc_qmlapplicationviewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = moc_qmlapplicationviewer.cpp; path = qmlapplicationviewer/moc_qmlapplicationviewer.cpp; sourceTree = "<group>"; };
 		D3CAA7E413264EA6008BB877 /* qmlapplicationviewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = qmlapplicationviewer.cpp; path = qmlapplicationviewer/qmlapplicationviewer.cpp; sourceTree = "<group>"; };
@@ -81,9 +95,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D35784281345D9E00046D202 /* QuartzCore.framework in Frameworks */,
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
 				288765A50DF7441C002DB57D /* CoreGraphics.framework in Frameworks */,
+				D35784261345D9940046D202 /* OpenGLES.framework in Frameworks */,
 				D3CAA7FA13264F8A008BB877 /* libz.1.2.3.dylib in Frameworks */,
 				D3CAA81B13265056008BB877 /* libQtCore_debug.a in Frameworks */,
 				D3CAA81C13265056008BB877 /* libQtDeclarative_debug.a in Frameworks */,
@@ -92,6 +108,9 @@
 				D3CAA81F13265056008BB877 /* libQtSql_debug.a in Frameworks */,
 				D3CAA8211326507D008BB877 /* libquikit_debug.a in Frameworks */,
 				D3CAA82813265220008BB877 /* libQtNetwork_debug.a in Frameworks */,
+				D316594E1338B29E00760B02 /* libQtXml_debug.a in Frameworks */,
+				D316594F1338B29E00760B02 /* libQtXmlPatterns_debug.a in Frameworks */,
+				D35784241345D8C90046D202 /* libQtOpenGL_debug.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -99,6 +118,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D357843A134A0AB10046D202 /* QuartzCore.framework in Frameworks */,
+				D3578439134A0AAE0046D202 /* OpenGLES.framework in Frameworks */,
 				D3CAA7F013264F52008BB877 /* Foundation.framework in Frameworks */,
 				D3CAA7F113264F52008BB877 /* UIKit.framework in Frameworks */,
 				D3CAA7F213264F52008BB877 /* CoreGraphics.framework in Frameworks */,
@@ -112,6 +133,7 @@
 				D3D817B8132A2CFD00CDE422 /* libQtXml.a in Frameworks */,
 				D3D817B9132A2CFD00CDE422 /* libQtXmlPatterns.a in Frameworks */,
 				D3D817BB132A2D0E00CDE422 /* libquikit.a in Frameworks */,
+				D3578436134A09990046D202 /* libQtOpenGL.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -166,6 +188,8 @@
 				1DF5F4DF0D08C38300B7A737 /* UIKit.framework */,
 				1D30AB110D05D00D00671497 /* Foundation.framework */,
 				288765A40DF7441C002DB57D /* CoreGraphics.framework */,
+				D35784251345D9940046D202 /* OpenGLES.framework */,
+				D35784271345D9E00046D202 /* QuartzCore.framework */,
 				D3CAA7F913264F8A008BB877 /* libz.1.2.3.dylib */,
 			);
 			name = Frameworks;
@@ -189,6 +213,7 @@
 				D3D817AB132A2CFD00CDE422 /* libQtDeclarative.a */,
 				D3D817AC132A2CFD00CDE422 /* libQtGui.a */,
 				D3D817AD132A2CFD00CDE422 /* libQtNetwork.a */,
+				D3578435134A09990046D202 /* libQtOpenGL.a */,
 				D3D817AE132A2CFD00CDE422 /* libQtScript.a */,
 				D3D817AF132A2CFD00CDE422 /* libQtSql.a */,
 				D3D817B0132A2CFD00CDE422 /* libQtXml.a */,
@@ -205,8 +230,11 @@
 				D3CAA81713265056008BB877 /* libQtDeclarative_debug.a */,
 				D3CAA81813265056008BB877 /* libQtGui_debug.a */,
 				D3CAA82713265220008BB877 /* libQtNetwork_debug.a */,
+				D35784231345D8C90046D202 /* libQtOpenGL_debug.a */,
 				D3CAA81913265056008BB877 /* libQtScript_debug.a */,
 				D3CAA81A13265056008BB877 /* libQtSql_debug.a */,
+				D31659431338B21000760B02 /* libQtXml_debug.a */,
+				D31659441338B21000760B02 /* libQtXmlPatterns_debug.a */,
 			);
 			name = Simulator;
 			sourceTree = "<group>";

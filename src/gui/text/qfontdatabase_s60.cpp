@@ -529,7 +529,7 @@ static bool registerScreenDeviceFont(int screenDeviceFontIndex,
         qFromBigEndian<quint32>(ulCodePageRange + 4)
     };
     const QList<QFontDatabase::WritingSystem> writingSystems =
-        determineWritingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
+        qt_determine_writing_systems_from_truetype_bits(unicodeRange, codePageRange);
     foreach (const QFontDatabase::WritingSystem system, writingSystems)
         family->writingSystems[system] = QtFontFamily::Supported;
     return true;

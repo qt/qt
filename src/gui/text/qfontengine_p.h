@@ -185,9 +185,6 @@ public:
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
                                  QPainterPath *path, QTextItem::RenderFlags flags);
 
-    /* Creates a QFont object to represent this particular QFontEngine */
-    virtual QFont createExplicitFont() const;
-
     void getGlyphPositions(const QGlyphLayout &glyphs, const QTransform &matrix, QTextItem::RenderFlags flags,
                            QVarLengthArray<glyph_t> &glyphs_out, QVarLengthArray<QFixedPoint> &positions);
 
@@ -276,7 +273,6 @@ public:
     int glyphFormat;
 
 protected:
-    QFont createExplicitFontWithName(const QString &familyName) const;
     static const QVector<QRgb> &grayPalette();
     QFixed lastRightBearing(const QGlyphLayout &glyphs, bool round = false);
 
@@ -431,6 +427,7 @@ public:
 protected:
     friend class QPSPrintEnginePrivate;
     friend class QPSPrintEngineFontMulti;
+    friend class QRawFont;
     virtual void loadEngine(int at) = 0;
     QVector<QFontEngine *> engines;
 };

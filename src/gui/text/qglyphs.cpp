@@ -39,6 +39,10 @@
 **
 ****************************************************************************/
 
+#include "qglobal.h"
+
+#if !defined(QT_NO_RAWFONT)
+
 #include "qglyphs.h"
 #include "qglyphs_p.h"
 
@@ -69,8 +73,14 @@ QT_BEGIN_NAMESPACE
     It is the user's responsibility to ensure that the selected font actually contains the
     provided glyph indexes.
 
-    QTextLayout::glyphs() can be used to convert unicode encoded text into a list of QGlyphs
-    objects, and QPainter::drawGlyphs() can be used to draw the glyphs.
+    QTextLayout::glyphs() or QTextFragment::glyphs() can be used to convert unicode encoded text
+    into a list of QGlyphs objects, and QPainter::drawGlyphs() can be used to draw the glyphs.
+
+    \note Please note that QRawFont is considered local to the thread in which it is constructed,
+    which in turn means that a new QRawFont will have to be created and set on the QGlyphs if it is
+    moved to a different thread. If the QGlyphs contains a reference to a QRawFont from a different
+    thread than the current, it will not be possible to draw the glyphs using a QPainter, as the
+    QRawFont is considered invalid and inaccessible in this case.
 */
 
 
@@ -124,6 +134,9 @@ bool QGlyphs::operator==(const QGlyphs &other) const
     return ((d == other.d)
             || (d->glyphIndexes == other.d->glyphIndexes
                 && d->glyphPositions == other.d->glyphPositions
+                && d->overline == other.d->overline
+                && d->underline == other.d->underline
+                && d->strikeOut == other.d->strikeOut
                 && d->font == other.d->font));
 }
 
@@ -171,18 +184,17 @@ QGlyphs &QGlyphs::operator+=(const QGlyphs &other)
 
     \sa setFont()
 */
-QFont QGlyphs::font() const
+QRawFont QGlyphs::font() const
 {
     return d->font;
 }
 
 /*!
-    Sets the font in which to look up the glyph indexes to \a font. This must be an explicitly
-    resolvable font which defines glyphs for the specified glyph indexes.
+    Sets the font in which to look up the glyph indexes to \a font.
 
     \sa font(), setGlyphIndexes()
 */
-void QGlyphs::setFont(const QFont &font)
+void QGlyphs::setFont(const QRawFont &font)
 {
     detach();
     d->font = font;
@@ -234,7 +246,78 @@ void QGlyphs::clear()
     detach();
     d->glyphPositions = QVector<QPointF>();
     d->glyphIndexes = QVector<quint32>();
-    d->font = QFont();
+    d->font = QRawFont();
+    d->strikeOut = false;
+    d->overline = false;
+    d->underline = false;
+}
+
+/*!
+   Returns true if this QGlyphs should be painted with an overline decoration.
+
+   \sa setOverline()
+*/
+bool QGlyphs::overline() const
+{
+    return d->overline;
+}
+
+/*!
+  Indicates that this QGlyphs should be painted with an overline decoration if \a overline is true.
+  Otherwise the QGlyphs should be painted with no overline decoration.
+
+  \sa overline()
+*/
+void QGlyphs::setOverline(bool overline)
+{
+    detach();
+    d->overline = overline;
+}
+
+/*!
+   Returns true if this QGlyphs should be painted with an underline decoration.
+
+   \sa setUnderline()
+*/
+bool QGlyphs::underline() const
+{
+    return d->underline;
+}
+
+/*!
+  Indicates that this QGlyphs should be painted with an underline decoration if \a underline is
+  true. Otherwise the QGlyphs should be painted with no underline decoration.
+
+  \sa underline()
+*/
+void QGlyphs::setUnderline(bool underline)
+{
+    detach();
+    d->underline = underline;
+}
+
+/*!
+   Returns true if this QGlyphs should be painted with a strike out decoration.
+
+   \sa setStrikeOut()
+*/
+bool QGlyphs::strikeOut() const
+{
+    return d->strikeOut;
+}
+
+/*!
+  Indicates that this QGlyphs should be painted with an strike out decoration if \a strikeOut is
+  true. Otherwise the QGlyphs should be painted with no strike out decoration.
+
+  \sa strikeOut()
+*/
+void QGlyphs::setStrikeOut(bool strikeOut)
+{
+    detach();
+    d->strikeOut = strikeOut;
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_RAWFONT

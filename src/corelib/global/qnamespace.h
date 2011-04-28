@@ -525,8 +525,8 @@ public:
 #endif
 
         WA_X11DoNotAcceptFocus = 132,
-
-        WA_MacNoShadow = 133,
+        WA_SymbianNoSystemRotation = 133,
+        WA_MacNoShadow = 134,
 
         // Add new attributes before this line
         WA_AttributeCount

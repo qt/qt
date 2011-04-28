@@ -45,6 +45,7 @@
 # need to be *appended* to this list.
 
 language_list = {
+    0 : [ "AnyLanguage",          "  " ],
     1 : [ "C",                    "  " ],
     2 : [ "Abkhazian",            "ab" ],
     3 : [ "Afan",                 "om" ],
@@ -511,6 +512,19 @@ country_list = {
     246 : [ "LatinAmericaAndTheCaribbean",              "419" ]
 }
 
+script_list = {
+    0   : [ "AnyScript",         "" ],
+    1   : [ "Arabic",            "Arab" ],
+    2   : [ "Cyrillic",          "Cyrl" ],
+    3   : [ "Deseret",           "Dsrt" ],
+    4   : [ "Gurmukhi",          "Guru" ],
+    5   : [ "Simplified Han",    "Hans" ],
+    6   : [ "Traditional Han",   "Hant" ],
+    7   : [ "Latin",             "Latn" ],
+    8   : [ "Mongolian",         "Mong" ],
+    9   : [ "Tifinagh",          "Tfng" ]
+}
+
 def countryCodeToId(code):
     for country_id in country_list:
         if country_list[country_id][1] == code:
@@ -521,4 +535,10 @@ def languageCodeToId(code):
     for language_id in language_list:
         if language_list[language_id][1] == code:
             return language_id
+    return -1
+
+def scriptCodeToId(code):
+    for script_id in script_list:
+        if script_list[script_id][1] == code:
+            return script_id
     return -1

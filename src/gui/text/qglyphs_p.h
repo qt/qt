@@ -53,8 +53,12 @@
 // We mean it.
 //
 
-#include <qfont.h>
 #include "qglyphs.h"
+#include "qrawfont.h"
+
+#include <qfont.h>
+
+#if !defined(QT_NO_RAWFONT)
 
 QT_BEGIN_HEADER
 
@@ -64,17 +68,30 @@ class QGlyphsPrivate: public QSharedData
 {
 public:
     QGlyphsPrivate()
+        : overline(false)
+        , underline(false)
+        , strikeOut(false)
     {
     }
 
     QGlyphsPrivate(const QGlyphsPrivate &other)
-      : QSharedData(other), glyphIndexes(other.glyphIndexes), glyphPositions(other.glyphPositions), font(other.font)
+      : QSharedData(other)
+      , glyphIndexes(other.glyphIndexes)
+      , glyphPositions(other.glyphPositions)
+      , font(other.font)
+      , overline(other.overline)
+      , underline(other.underline)
+      , strikeOut(other.strikeOut)
     {
     }
 
     QVector<quint32> glyphIndexes;
     QVector<QPointF> glyphPositions;
-    QFont font;
+    QRawFont font;
+
+    uint overline  : 1;
+    uint underline : 1;
+    uint strikeOut : 1;
 };
 
 QT_END_NAMESPACE
@@ -82,3 +99,5 @@ QT_END_NAMESPACE
 QT_END_HEADER
 
 #endif // QGLYPHS_P_H
+
+#endif // QT_NO_RAWFONT

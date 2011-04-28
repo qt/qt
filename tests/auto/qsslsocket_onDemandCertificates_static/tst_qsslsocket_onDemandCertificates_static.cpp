@@ -218,6 +218,18 @@ void tst_QSslSocket_onDemandCertificates_static::onDemandRootCertLoadingStaticMe
     this->socket = socket3;
     socket3->connectToHostEncrypted(host, 443);
     QVERIFY(!socket3->waitForEncrypted());
+
+    QSslSocket::setDefaultCaCertificates(QSslSocket::systemCaCertificates());
+
+    // setting empty default configuration -> should not work
+    QSslConfiguration conf;
+    QSslConfiguration originalDefaultConf = QSslConfiguration::defaultConfiguration();
+    QSslConfiguration::setDefaultConfiguration(conf);
+    QSslSocketPtr socket4 = newSocket();
+    this->socket = socket4;
+    socket4->connectToHostEncrypted(host, 443);
+    QVERIFY(!socket4->waitForEncrypted(4000));
+    QSslConfiguration::setDefaultConfiguration(originalDefaultConf); // restore old behaviour for run with proxies etc.
 }
 
 #endif // QT_NO_OPENSSL

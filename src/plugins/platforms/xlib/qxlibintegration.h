@@ -47,6 +47,7 @@
 
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
+#include <QtGui/QPlatformNativeInterface>
 
 #include "qxlibstatic.h"
 
@@ -59,6 +60,7 @@ class QXlibIntegration : public QPlatformIntegration
 public:
     QXlibIntegration(bool useOpenGL = false);
 
+    bool hasCapability(Capability cap) const;
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
@@ -70,14 +72,17 @@ public:
     QPlatformFontDatabase *fontDatabase() const;
     QPlatformClipboard *clipboard() const;
 
-    bool hasOpenGL() const;
+    QPlatformNativeInterface *nativeInterface() const;
 
 private:
+    bool hasOpenGL() const;
+
     bool mUseOpenGL;
     QXlibScreen *mPrimaryScreen;
     QList<QPlatformScreen *> mScreens;
     QPlatformFontDatabase *mFontDb;
     QPlatformClipboard *mClipboard;
+    QPlatformNativeInterface *mNativeInterface;
 };
 
 QT_END_NAMESPACE

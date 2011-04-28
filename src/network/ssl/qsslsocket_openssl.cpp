@@ -418,7 +418,8 @@ init_context:
         if (tlsHostName.isEmpty())
             tlsHostName = hostName;
         QByteArray ace = QUrl::toAce(tlsHostName);
-        if (!ace.isEmpty()) {
+        // only send the SNI header if the URL is valid and not an IP
+        if (!ace.isEmpty() && !QHostAddress().setAddress(tlsHostName)) {
             if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.constData()))
                 qWarning("could not set SSL_CTRL_SET_TLSEXT_HOSTNAME, Server Name Indication disabled");
         }
@@ -1237,16 +1238,18 @@ bool QSslSocketBackendPrivate::startHandshake()
     X509 *x509 = q_SSL_get_peer_certificate(ssl);
     configuration.peerCertificate = QSslCertificatePrivate::QSslCertificate_from_X509(x509);
     q_X509_free(x509);
-    if (QSslCertificatePrivate::isBlacklisted(configuration.peerCertificate)) {
-        q->setErrorString(QSslSocket::tr("The peer certificate is blacklisted"));
-        q->setSocketError(QAbstractSocket::SslHandshakeFailedError);
-        emit q->error(QAbstractSocket::SslHandshakeFailedError);
-        plainSocket->disconnectFromHost();
-        return false;
-    }
 
     // Start translating errors.
     QList<QSslError> errors;
+
+    if (QSslCertificatePrivate::isBlacklisted(configuration.peerCertificate)) {
+        QSslError error(QSslError::CertificateBlacklisted, configuration.peerCertificate);
+        errors << error;
+        emit q->peerVerifyError(error);
+        if (q->state() != QAbstractSocket::ConnectedState)
+            return false;
+    }
+
     bool doVerifyPeer = configuration.peerVerifyMode == QSslSocket::VerifyPeer
                         || (configuration.peerVerifyMode == QSslSocket::AutoVerifyPeer
                             && mode == QSslSocket::SslClientMode);

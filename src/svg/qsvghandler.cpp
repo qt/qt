@@ -584,7 +584,7 @@ static qreal toDouble(const QChar *&str)
         ++str;
     }
     bool exponent = false;
-    if (*str == QLatin1Char('e') && pos < maxLen) {
+    if ((*str == QLatin1Char('e') || *str == QLatin1Char('E')) && pos < maxLen) {
         exponent = true;
         temp[pos++] = 'e';
         ++str;

@@ -158,12 +158,12 @@ QT_BEGIN_NAMESPACE
     concurrent QNativeSocketEngine. This is safe, because WSAStartup and
     WSACleanup are reference counted.
 */
-QNativeSocketEnginePrivate::QNativeSocketEnginePrivate()
+QNativeSocketEnginePrivate::QNativeSocketEnginePrivate() :
+    socketDescriptor(-1),
+    readNotifier(0),
+    writeNotifier(0),
+    exceptNotifier(0)
 {
-    socketDescriptor = -1;
-    readNotifier = 0;
-    writeNotifier = 0;
-    exceptNotifier = 0;
 }
 
 /*! \internal
@@ -387,7 +387,6 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
 
 
     // Make sure we receive out-of-band data
-    // On Symbian OS this works only with native IP stack, not with WinSock
     if (socketType == QAbstractSocket::TcpSocket
         && !setOption(ReceiveOutOfBandData, 1)) {
         qWarning("QNativeSocketEngine::initialize unable to inline out-of-band data");

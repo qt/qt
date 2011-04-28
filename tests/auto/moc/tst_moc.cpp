@@ -497,7 +497,7 @@ private slots:
     void revisions();
     void warnings_data();
     void warnings();
-
+    void privateClass();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -517,6 +517,7 @@ private:
 
 private:
     QString qtIncludePath;
+    class PrivateClass;
 };
 
 void tst_Moc::initTestCase()
@@ -1647,6 +1648,25 @@ void tst_Moc::warnings()
     QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardError()).trimmed(), expectedStdErr);
 
     }
+
+class tst_Moc::PrivateClass : public QObject {
+    Q_PROPERTY(int someProperty READ someSlot WRITE someSlot2)
+Q_OBJECT
+Q_SIGNALS:
+    void someSignal();
+public Q_SLOTS:
+    int someSlot() { return 1; }
+    void someSlot2(int) {}
+public:
+    Q_INVOKABLE PrivateClass()  {}
+};
+
+void tst_Moc::privateClass()
+{
+    QVERIFY(PrivateClass::staticMetaObject.indexOfConstructor("PrivateClass()") == 0);
+    QVERIFY(PrivateClass::staticMetaObject.indexOfSignal("someSignal()") > 0);
+}
+
 
 QTEST_APPLESS_MAIN(tst_Moc)
 #include "tst_moc.moc"

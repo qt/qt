@@ -301,4 +301,18 @@ EXPORTS
 	_ZNK12QAudioFormat12channelCountEv @ 300 NONAME
 	_ZNK16QAudioDeviceInfo20supportedSampleRatesEv @ 301 NONAME
 	_ZNK16QAudioDeviceInfo22supportedChannelCountsEv @ 302 NONAME
+	_ZN11QAudioInput18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 303 NONAME
+	_ZN11QAudioInput25staticMetaObjectExtraDataE @ 304 NONAME DATA 8
+	_ZN12QAudioOutput18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 305 NONAME
+	_ZN12QAudioOutput25staticMetaObjectExtraDataE @ 306 NONAME DATA 8
+	_ZN18QAudioEnginePlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 307 NONAME
+	_ZN18QAudioEnginePlugin25staticMetaObjectExtraDataE @ 308 NONAME DATA 8
+	_ZN19QAbstractAudioInput18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 309 NONAME
+	_ZN19QAbstractAudioInput25staticMetaObjectExtraDataE @ 310 NONAME DATA 8
+	_ZN20QAbstractAudioOutput18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 311 NONAME
+	_ZN20QAbstractAudioOutput25staticMetaObjectExtraDataE @ 312 NONAME DATA 8
+	_ZN21QAbstractVideoSurface18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 313 NONAME
+	_ZN21QAbstractVideoSurface25staticMetaObjectExtraDataE @ 314 NONAME DATA 8
+	_ZN24QAbstractAudioDeviceInfo18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 315 NONAME
+	_ZN24QAbstractAudioDeviceInfo25staticMetaObjectExtraDataE @ 316 NONAME DATA 8
 
