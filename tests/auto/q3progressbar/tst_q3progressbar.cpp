@@ -106,7 +106,7 @@ void tst_Q3ProgressBar::setProgress()
 {
     MyCustomProgressBar * m_progressBar = new MyCustomProgressBar();
     m_progressBar->show();
-    QApplication::processEvents();
+    QTest::qWaitForWindowShown(m_progressBar);
 
     //case with total steps = 0
     m_progressBar->setTotalSteps(0);
