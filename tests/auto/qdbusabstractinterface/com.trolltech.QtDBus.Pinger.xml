@@ -24,7 +24,7 @@
     </method>
     <method name="multiOutMethod">
        <arg type="s" direction="out"/>
-       <arg type="i" direction="out"/
+       <arg type="i" direction="out"/>
     </method>
   </interface>
 </node>

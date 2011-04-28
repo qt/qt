@@ -62,7 +62,7 @@ private:
     void generateEnums(int index);
     void generateProperties();
     void generateMetacall();
-    void generateStaticMetacall(const QByteArray &prefix);
+    void generateStaticMetacall();
     void generateSignal(FunctionDef *def, int index);
 
     // used by binary QMetaObject generator

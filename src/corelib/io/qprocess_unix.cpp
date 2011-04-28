@@ -488,8 +488,8 @@ static char **_q_dupEnvironment(const QHash<QByteArray, QByteArray> &environment
     }
 
     if (needToAddLibraryPath)
-        envp[(*envc)++] = ::strdup(QByteArray(libraryPath) + '=' +
-                                 envLibraryPath);
+        envp[(*envc)++] = ::strdup(QByteArray(QByteArray(libraryPath) + '=' +
+                                 envLibraryPath).constData());
     return envp;
 }
 

@@ -60,17 +60,18 @@ class MyQmlAttachedObject : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int value READ value CONSTANT)
-    Q_PROPERTY(int value2 READ value2 WRITE setValue2)
+    Q_PROPERTY(int value2 READ value2 WRITE setValue2 NOTIFY value2Changed)
 public:
     MyQmlAttachedObject(QObject *parent) : QObject(parent), m_value2(0) {}
 
     int value() const { return 19; }
     int value2() const { return m_value2; }
-    void setValue2(int v) { m_value2 = v; }
+    void setValue2(int v) { if (m_value2 == v) return; m_value2 = v; emit value2Changed(); }
 
     void emitMySignal() { emit mySignal(); }
 
 signals:
+    void value2Changed();
     void mySignal();
 
 private:

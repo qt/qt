@@ -275,6 +275,8 @@ private slots:
     void variantInVariant();
 
     void colorInteger();
+
+    void forwardDeclare();
 };
 
 Q_DECLARE_METATYPE(QDate)
@@ -2660,7 +2662,10 @@ void tst_QVariant::qvariant_cast_QObject_data() {
 
     QTest::addColumn<QVariant>("data");
     QTest::addColumn<bool>("success");
-    QTest::newRow("from QObject") << QVariant(QMetaType::QObjectStar, new QObject(this)) << true;
+    QObject *obj = new QObject(this);
+    obj->setObjectName(QString::fromLatin1("Hello"));
+    QTest::newRow("from QObject") << QVariant(QMetaType::QObjectStar, &obj) << true;
+    QTest::newRow("from QObject2") << QVariant::fromValue(obj) << true;
     QTest::newRow("from String") << QVariant(QLatin1String("1, 2, 3")) << false;
     QTest::newRow("from int") << QVariant((int) 123) << false;
 }
@@ -2672,6 +2677,9 @@ void tst_QVariant::qvariant_cast_QObject() {
 
     QObject *o = qvariant_cast<QObject *>(data);
     QCOMPARE(o != 0, success);
+    if (success) {
+        QCOMPARE(o->objectName(), QString::fromLatin1("Hello"));
+    }
 }
 
 Q_DECLARE_METATYPE(qint8);
@@ -3432,6 +3440,17 @@ void tst_QVariant::colorInteger()
     QCOMPARE(v.type(), QVariant::Color);
     QCOMPARE(v.value<QColor>(), QColor(Qt::yellow));
 }
+
+class Forward;
+Q_DECLARE_METATYPE(Forward*);
+
+void tst_QVariant::forwardDeclare()
+{
+    Forward *f = 0;
+    QVariant v = QVariant::fromValue(f);
+    QCOMPARE(qvariant_cast<Forward*>(v), f);
+}
+
 
 QTEST_MAIN(tst_QVariant)
 #include "tst_qvariant.moc"

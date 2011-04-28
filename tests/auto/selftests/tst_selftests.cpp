@@ -515,8 +515,6 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
         }
 
         bool ok;
-#if QT_VERSION >= 0x040700
-        // Qt 4.7 uses floating point
         double total = sTotal.toDouble(&ok);
         if (!ok) {
             if (error) *error = sTotal + " is not a valid number";
@@ -527,18 +525,6 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
             if (error) *error = sIterations + " is not a valid number";
             return out;
         }
-#else
-        qlonglong total = sTotal.toLongLong(&ok);
-        if (!ok) {
-            if (error) *error = sTotal + " is not a valid integer";
-            return out;
-        }
-        qlonglong iterations = sIterations.toLongLong(&ok);
-        if (!ok) {
-            if (error) *error = sIterations + " is not a valid integer";
-            return out;
-        }
-#endif
 
         out.unit = unit;
         out.total = total;

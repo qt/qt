@@ -64,13 +64,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// We have to define this as on some sem.h will have it
-union qt_semun {
-    int val;                    /* value for SETVAL */
-    struct semid_ds *buf;       /* buffer for IPC_STAT, IPC_SET */
-    unsigned short *array;      /* array for GETALL, SETALL */
-};
-
 QSystemSemaphorePrivate::QSystemSemaphorePrivate() :
         semaphore(-1), createdFile(false),
         createdSemaphore(false), unix_key(-1), error(QSystemSemaphore::NoError)

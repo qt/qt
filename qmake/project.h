@@ -144,6 +144,7 @@ public:
                                 QMap<QString, QStringList> &place);
 
     QStringList expand(const QString &v);
+    QString expand(const QString &v, const QString &file, int line);
     QStringList expand(const QString &func, const QList<QStringList> &args);
     bool test(const QString &v);
     bool test(const QString &func, const QList<QStringList> &args);

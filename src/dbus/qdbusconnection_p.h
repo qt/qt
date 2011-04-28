@@ -216,7 +216,7 @@ public:
 
     inline void serverConnection(const QDBusConnection &connection)
         { emit newServerConnection(connection); }
-    
+
 private:
     void checkThread();
     bool handleError(const QDBusErrorInternal &error);

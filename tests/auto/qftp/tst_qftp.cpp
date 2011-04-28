@@ -50,6 +50,10 @@
 #include <time.h>
 #include <stdlib.h>
 #include <QNetworkProxy>
+#include <QNetworkConfiguration>
+#include <qnetworkconfigmanager.h>
+#include <QNetworkSession>
+#include <QtNetwork/private/qnetworksession_p.h>
 
 #include "../network-settings.h"
 
@@ -62,7 +66,9 @@
 #define SRCDIR ""
 #endif
 
-
+#ifndef QT_NO_BEARERMANAGEMENT
+Q_DECLARE_METATYPE(QNetworkConfiguration)
+#endif
 
 class tst_QFtp : public QObject
 {
@@ -148,6 +154,10 @@ private:
     void renameCleanup( const QString &host, const QString &user, const QString &password, const QString &fileToDelete );
 
     QFtp *ftp;
+#ifndef QT_NO_BEARERMANAGEMENT
+    QSharedPointer<QNetworkSession> networkSessionExplicit;
+    QSharedPointer<QNetworkSession> networkSessionImplicit;
+#endif
 
     QList<int> ids; // helper to make sure that all expected signals are emitted
     int current_id;
@@ -186,9 +196,9 @@ private:
 const int bytesTotal_init = -10;
 const int bytesDone_init = -10;
 
-tst_QFtp::tst_QFtp()
+tst_QFtp::tst_QFtp() :
+    ftp(0)
 {
-    Q_SET_DEFAULT_IAP
 }
 
 tst_QFtp::~tst_QFtp()
@@ -199,33 +209,62 @@ void tst_QFtp::initTestCase_data()
 {
     QTest::addColumn<bool>("setProxy");
     QTest::addColumn<int>("proxyType");
+    QTest::addColumn<bool>("setSession");
 
-    QTest::newRow("WithoutProxy") << false << 0;
-    QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
+    QTest::newRow("WithoutProxy") << false << 0 << false;
+    QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy) << false;
     //### doesn't work well yet.
     //QTest::newRow("WithHttpProxy") << true << int(QNetworkProxy::HttpProxy);
+
+#ifndef QT_NO_BEARERMANAGEMENT
+    QTest::newRow("WithoutProxyWithSession") << false << 0 << true;
+    QTest::newRow("WithSocks5ProxyAndSession") << true << int(QNetworkProxy::Socks5Proxy) << true;
+#endif
 }
 
 void tst_QFtp::initTestCase()
 {
+#ifndef QT_NO_BEARERMANAGEMENT
+    QNetworkConfigurationManager manager;
+    networkSessionImplicit = QSharedPointer<QNetworkSession>(new QNetworkSession(manager.defaultConfiguration()));
+    networkSessionImplicit->open();
+    QVERIFY(networkSessionImplicit->waitForOpened(60000)); //there may be user prompt on 1st connect
+#endif
 }
 
 void tst_QFtp::cleanupTestCase()
 {
+#ifndef QT_NO_BEARERMANAGEMENT
+    networkSessionExplicit.clear();
+    networkSessionImplicit.clear();
+#endif
 }
 
 void tst_QFtp::init()
 {
     QFETCH_GLOBAL(bool, setProxy);
+    QFETCH_GLOBAL(int, proxyType);
+    QFETCH_GLOBAL(bool, setSession);
     if (setProxy) {
-        QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080));
         } else if (proxyType == QNetworkProxy::HttpProxy) {
             QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::HttpProxy, QtNetworkSettings::serverName(), 3128));
         }
     }
+#ifndef QT_NO_BEARERMANAGEMENT
+    if (setSession) {
+        networkSessionExplicit = networkSessionImplicit;
+        if (!networkSessionExplicit->isOpen()) {
+            networkSessionExplicit->open();
+            QVERIFY(networkSessionExplicit->waitForOpened(30000));
+        }
+    } else {
+        networkSessionExplicit.clear();
+    }
+#endif
 
+    delete ftp;
     ftp = 0;
 
     ids.clear();
@@ -270,6 +309,12 @@ void tst_QFtp::cleanup()
     if (setProxy) {
         QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
     }
+
+    delete ftp;
+    ftp = 0;
+#ifndef QT_NO_BEARERMANAGEMENT
+    networkSessionExplicit.clear();
+#endif
 }
 
 void tst_QFtp::connectToHost_data()
@@ -1538,7 +1583,6 @@ void tst_QFtp::proxy()
     }
 }
 
-
 void tst_QFtp::binaryAscii()
 {
     QString file = "asciifile%1.txt";
@@ -1899,6 +1943,11 @@ void tst_QFtp::dataTransferProgress( qint64 done, qint64 total )
 QFtp *tst_QFtp::newFtp()
 {
     QFtp *nFtp = new QFtp( this );
+#ifndef QT_NO_BEARERMANAGEMENT
+    if (networkSessionExplicit) {
+        nFtp->setProperty("_q_networksession", QVariant::fromValue(networkSessionExplicit));
+    }
+#endif
     connect( nFtp, SIGNAL(commandStarted(int)),
              SLOT(commandStarted(int)) );
     connect( nFtp, SIGNAL(commandFinished(int,bool)),
