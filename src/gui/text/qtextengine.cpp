@@ -1274,6 +1274,10 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
             actualFontEngine = static_cast<QFontEngineMulti *>(font)->engine(engineIdx);
         }
 
+        si.ascent = qMax(actualFontEngine->ascent(), si.ascent);
+        si.descent = qMax(actualFontEngine->descent(), si.descent);
+        si.leading = qMax(actualFontEngine->leading(), si.leading);
+
         shaper_item.font = actualFontEngine->harfbuzzFont();
         shaper_item.face = actualFontEngine->harfbuzzFace();
 
@@ -1598,6 +1602,8 @@ bool QTextEngine::isRightToLeft() const
     default:
         break;
     }
+    if (!layoutData)
+        itemize();
     // this places the cursor in the right position depending on the keyboard layout
     if (layoutData->string.isEmpty())
         return QApplication::keyboardInputDirection() == Qt::RightToLeft;
@@ -2777,12 +2783,14 @@ QFixed QTextEngine::alignLine(const QScriptLine &line)
     // if width is QFIXED_MAX that means we used setNumColumns() and that implicitly makes this line left aligned.
     if (!line.justified && line.width != QFIXED_MAX) {
         int align = option.alignment();
+        if (align & Qt::AlignLeft)
+            x -= leadingSpaceWidth(line);
         if (align & Qt::AlignJustify && isRightToLeft())
             align = Qt::AlignRight;
         if (align & Qt::AlignRight)
             x = line.width - (line.textAdvance + leadingSpaceWidth(line));
         else if (align & Qt::AlignHCenter)
-            x = (line.width - line.textAdvance)/2;
+            x = (line.width - (line.textAdvance + leadingSpaceWidth(line)))/2;
     }
     return x;
 }
