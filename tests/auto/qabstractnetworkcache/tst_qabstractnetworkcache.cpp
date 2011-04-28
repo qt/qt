@@ -45,6 +45,12 @@
 #include "../../shared/util.h"
 #include "../network-settings.h"
 
+#ifndef QT_NO_BEARERMANAGEMENT
+#include <QtNetwork/qnetworkconfigmanager.h>
+#include <QtNetwork/qnetworkconfiguration.h>
+#include <QtNetwork/qnetworksession.h>
+#endif
+
 #define TESTFILE QString("http://%1/qtest/cgi-bin/").arg(QtNetworkSettings::serverName())
 
 class tst_QAbstractNetworkCache : public QObject
@@ -56,6 +62,7 @@ public:
     virtual ~tst_QAbstractNetworkCache();
 
 private slots:
+    void initTestCase();
     void expires_data();
     void expires();
     void expiresSynchronous_data();
@@ -81,6 +88,12 @@ private slots:
 private:
     void check();
     void checkSynchronous();
+
+#ifndef QT_NO_BEARERMANAGEMENT
+    QNetworkConfigurationManager *netConfMan;
+    QNetworkConfiguration networkConfiguration;
+    QScopedPointer<QNetworkSession> networkSession;
+#endif
 };
 
 class NetworkDiskCache : public QNetworkDiskCache
@@ -123,6 +136,19 @@ static bool AlwaysTrue = true;
 static bool AlwaysFalse = false;
 
 Q_DECLARE_METATYPE(QNetworkRequest::CacheLoadControl)
+
+void tst_QAbstractNetworkCache::initTestCase()
+{
+#ifndef QT_NO_BEARERMANAGEMENT
+    netConfMan = new QNetworkConfigurationManager(this);
+    networkConfiguration = netConfMan->defaultConfiguration();
+    networkSession.reset(new QNetworkSession(networkConfiguration));
+    if (!networkSession->isOpen()) {
+        networkSession->open();
+        QVERIFY(networkSession->waitForOpened(30000));
+    }
+#endif
+}
 
 void tst_QAbstractNetworkCache::expires_data()
 {

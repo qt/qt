@@ -86,6 +86,10 @@
 <context>
     <name>DataModel</name>
     <message>
+        <source>The translation file &apos;%1&apos; will not be loaded because it is empty.</source>
+        <translation>Файл перекладу &apos;%1&apos; не буде завантажено, бо він порожній.</translation>
+    </message>
+    <message>
         <source>&lt;qt&gt;Duplicate messages found in &apos;%1&apos;:</source>
         <translation>&lt;qt&gt;Повідомлення-дублікати знайдено в &apos;%1&apos;:</translation>
     </message>

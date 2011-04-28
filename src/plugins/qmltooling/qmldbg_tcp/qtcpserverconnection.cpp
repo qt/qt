@@ -97,7 +97,8 @@ void QTcpServerConnection::send(const QByteArray &message)
 {
     Q_D(QTcpServerConnection);
 
-    if (!isConnected())
+    if (!isConnected()
+            || !d->protocol || !d->socket)
         return;
 
     QPacket pack;
@@ -111,9 +112,10 @@ void QTcpServerConnection::disconnect()
 {
     Q_D(QTcpServerConnection);
 
-    delete d->protocol;
+    // protocol might still be processing packages at this point
+    d->protocol->deleteLater();
     d->protocol = 0;
-    delete d->socket;
+    d->socket->deleteLater();
     d->socket = 0;
 }
 
@@ -143,6 +145,9 @@ void QTcpServerConnection::listen()
 void QTcpServerConnection::readyRead()
 {
     Q_D(QTcpServerConnection);
+    if (!d->protocol)
+        return;
+
     QPacket packet = d->protocol->read();
 
     QByteArray content = packet.data();

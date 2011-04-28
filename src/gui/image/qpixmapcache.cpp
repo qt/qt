@@ -91,9 +91,7 @@ QT_BEGIN_NAMESPACE
     \sa QCache, QPixmap
 */
 
-#if defined(Q_OS_SYMBIAN)
-static int cache_limit = 1024; // 1048 KB cache limit for symbian
-#elif defined(Q_WS_QWS) || defined(Q_WS_WINCE)
+#if defined(Q_WS_QWS) || defined(Q_WS_WINCE)
 static int cache_limit = 2048; // 2048 KB cache limit for embedded
 #else
 static int cache_limit = 10240; // 10 MB cache limit for desktop
