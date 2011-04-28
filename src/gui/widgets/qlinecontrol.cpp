@@ -254,12 +254,20 @@ void QLineControl::setSelection(int start, int length)
         m_selstart = start;
         m_selend = qMin(start + length, (int)m_text.length());
         m_cursor = m_selend;
-    } else {
+    } else if (length < 0){
         if (start == m_selend && start + length == m_selstart)
             return;
         m_selstart = qMax(start + length, 0);
         m_selend = start;
         m_cursor = m_selstart;
+    } else if (m_selstart != m_selend) {
+        m_selstart = 0;
+        m_selend = 0;
+        m_cursor = start;
+    } else {
+        m_cursor = start;
+        emitCursorPositionChanged();
+        return;
     }
     emit selectionChanged();
     emitCursorPositionChanged();
@@ -435,7 +443,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
         removeSelectedText();
     }
     if (!event->commitString().isEmpty()) {
-        insert(event->commitString());
+        internalInsert(event->commitString());
         cursorPositionChanged = true;
     }
 

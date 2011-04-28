@@ -458,6 +458,16 @@ void tst_QDeclarativePathView::dataModel()
     model.removeItem(model.count()-1);
     QCOMPARE(pathview->currentIndex(), model.count()-1);
 
+    // QTBUG-18825
+    // Confirm that the target offset is adjusted when removing items
+    pathview->setCurrentIndex(model.count()-1);
+    QTRY_COMPARE(pathview->offset(), 1.);
+    pathview->setCurrentIndex(model.count()-5);
+    model.removeItem(model.count()-1);
+    model.removeItem(model.count()-1);
+    model.removeItem(model.count()-1);
+    QTRY_COMPARE(pathview->offset(), 2.);
+
     delete canvas;
 }
 

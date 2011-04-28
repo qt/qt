@@ -144,4 +144,10 @@ EXPORTS
 	_ZThn8_N16QGraphicsSvgItem5paintEP8QPainterPK24QStyleOptionGraphicsItemP7QWidget @ 143 NONAME
 	_ZThn8_NK16QGraphicsSvgItem12boundingRectEv @ 144 NONAME
 	_ZThn8_NK16QGraphicsSvgItem4typeEv @ 145 NONAME
+	_ZN10QSvgWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 146 NONAME
+	_ZN10QSvgWidget25staticMetaObjectExtraDataE @ 147 NONAME DATA 8
+	_ZN12QSvgRenderer18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 148 NONAME
+	_ZN12QSvgRenderer25staticMetaObjectExtraDataE @ 149 NONAME DATA 8
+	_ZN16QGraphicsSvgItem18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 150 NONAME
+	_ZN16QGraphicsSvgItem25staticMetaObjectExtraDataE @ 151 NONAME DATA 8
 
