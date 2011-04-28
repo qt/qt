@@ -424,7 +424,8 @@ void QDeclarativePixmapReader::processJobs()
                     replies.remove(reply);
                     reply->close();
                 }
-                delete job;
+                // deleteLater, since not owned by this thread
+                job->deleteLater();
             }
             cancelled.clear();
         }

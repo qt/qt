@@ -225,9 +225,35 @@ QDeclarativeBoundSignalParameters::QDeclarativeBoundSignalParameters(const QMeta
             QMetaPropertyBuilder prop = mob.addProperty(name, "QObject*");
             prop.setWritable(false);
         } else {
+            QByteArray propType = type;
+            if (t >= QVariant::UserType || t == QVariant::Invalid) {
+                //copy of QDeclarativeObjectScriptClass::enumType()
+                QByteArray scope;
+                QByteArray name;
+                int scopeIdx = propType.lastIndexOf("::");
+                if (scopeIdx != -1) {
+                    scope = propType.left(scopeIdx);
+                    name = propType.mid(scopeIdx + 2);
+                } else {
+                    name = propType;
+                }
+                const QMetaObject *meta;
+                if (scope == "Qt")
+                    meta = &QObject::staticQtMetaObject;
+                else
+                    meta = parent->parent()->metaObject();   //### assumes parent->parent()
+                for (int i = meta->enumeratorCount() - 1; i >= 0; --i) {
+                    QMetaEnum m = meta->enumerator(i);
+                    if ((m.name() == name) && (scope.isEmpty() || (m.scope() == scope))) {
+                        t = QVariant::Int;
+                        propType = "int";
+                        break;
+                    }
+                }
+            }
             if (QDeclarativeMetaType::canCopy(t)) {
                 types[ii] = t;
-                QMetaPropertyBuilder prop = mob.addProperty(name, type);
+                QMetaPropertyBuilder prop = mob.addProperty(name, propType);
                 prop.setWritable(false);
             } else {
                 types[ii] = 0x80000000 | t;

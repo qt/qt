@@ -195,6 +195,10 @@ public:
         head->root = new_root;
     }
 
+    inline bool isValid(uint n) const {
+        return n > 0 && n != head->freelist;
+    }
+
     union {
         Header *head;
         Fragment *fragments;
@@ -854,6 +858,7 @@ public:
         return data.fragment(index);
     }
     inline uint position(uint node, uint field = 0) const { return data.position(node, field); }
+    inline bool isValid(uint n) const { return data.isValid(n); }
     inline uint next(uint n) const { return data.next(n); }
     inline uint previous(uint n) const { return data.previous(n); }
     inline uint size(uint node, uint field = 0) const { return data.size(node, field); }

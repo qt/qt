@@ -68,7 +68,8 @@ class QDeclarativePinchAreaPrivate : public QDeclarativeItemPrivate
 public:
     QDeclarativePinchAreaPrivate()
       : absorb(true), stealMouse(false), inPinch(false)
-      , pinchRejected(false), pinch(0), pinchStartDist(0), pinchStartScale(1.0)
+      , pinchRejected(false), pinchActivated(false)
+      , pinch(0), pinchStartDist(0), pinchStartScale(1.0)
       , pinchLastScale(1.0), pinchStartRotation(0.0), pinchStartAngle(0.0)
       , pinchLastAngle(0.0), pinchRotation(0.0)
     {
@@ -88,6 +89,7 @@ public:
     bool stealMouse : 1;
     bool inPinch : 1;
     bool pinchRejected : 1;
+    bool pinchActivated : 1;
     QDeclarativePinch *pinch;
     QPointF sceneStartPoint1;
     QPointF sceneStartPoint2;
@@ -105,6 +107,7 @@ public:
     QPointF sceneLastCenter;
     QPointF pinchStartPos;
     QList<QTouchEvent::TouchPoint> touchPoints;
+    int id1;
 };
 
 QT_END_NAMESPACE

@@ -86,6 +86,10 @@
 <context>
     <name>DataModel</name>
     <message>
+        <source>The translation file &apos;%1&apos; will not be loaded because it is empty.</source>
+        <translation>Невозможно загрузить файл перевода &quot;%1&quot;, так как он пуст.</translation>
+    </message>
+    <message>
         <source>&lt;qt&gt;Duplicate messages found in &apos;%1&apos;:</source>
         <translation>&lt;qt&gt;В &apos;%1&apos; обнаружены повторяющиеся сообщения:</translation>
     </message>
@@ -1268,7 +1272,7 @@ lupdate - это один из инструментов Qt Linguist. Он изв
     </message>
     <message>
         <source>Phrases and guesses</source>
-        <translation>Фразы и похожие переводы</translation>
+        <translation>Похожие переводы</translation>
     </message>
     <message>
         <source>Sources and Forms</source>
@@ -1633,7 +1637,7 @@ All files (*)</source>
     </message>
     <message>
         <source>&amp;Phrases</source>
-        <translation>Фра&amp;зы</translation>
+        <translation>&amp;Глоссарии</translation>
     </message>
     <message>
         <source>&amp;Close Phrase Book</source>
@@ -1657,7 +1661,7 @@ All files (*)</source>
     </message>
     <message>
         <source>Vie&amp;ws</source>
-        <translation>Вид&amp;ы</translation>
+        <translation>&amp;Панели</translation>
     </message>
     <message>
         <source>&amp;Toolbars</source>
@@ -1977,7 +1981,7 @@ All files (*)</source>
     </message>
     <message>
         <source>&amp;Display guesses</source>
-        <translation>&amp;Предлагать похожие</translation>
+        <translation>П&amp;охожие переводы</translation>
     </message>
     <message>
         <source>Set whether or not to display translation guesses.</source>

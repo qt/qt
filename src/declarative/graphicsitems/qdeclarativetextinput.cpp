@@ -555,8 +555,10 @@ QRect QDeclarativeTextInput::cursorRectangle() const
 {
     Q_D(const QDeclarativeTextInput);
     QRect r = d->control->cursorRect();
-    r.setHeight(r.height()-1); // Make consistent with TextEdit (QLineControl inexplicably adds 1)
-    r.moveLeft(r.x() - d->hscroll);
+    // Scroll and make consistent with TextEdit
+    // QLineControl inexplicably adds 1 to the height and horizontal padding
+    // for unicode direction markers.
+    r.adjust(5 - d->hscroll, 0, -4 - d->hscroll, -1);
     return r;
 }
 
@@ -860,6 +862,20 @@ bool QDeclarativeTextInput::hasAcceptableInput() const
     state.
 */
 
+void QDeclarativeTextInputPrivate::updateInputMethodHints()
+{
+    Q_Q(QDeclarativeTextInput);
+    Qt::InputMethodHints hints = inputMethodHints;
+    uint echo = control->echoMode();
+    if (echo == QDeclarativeTextInput::Password || echo == QDeclarativeTextInput::NoEcho)
+        hints |= Qt::ImhHiddenText;
+    else if (echo == QDeclarativeTextInput::PasswordEchoOnEdit)
+        hints &= ~Qt::ImhHiddenText;
+    if (echo != QDeclarativeTextInput::Normal)
+        hints |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    q->setInputMethodHints(hints);
+}
+
 /*!
     \qmlproperty enumeration TextInput::echoMode
 
@@ -882,19 +898,25 @@ void QDeclarativeTextInput::setEchoMode(QDeclarativeTextInput::EchoMode echo)
     Q_D(QDeclarativeTextInput);
     if (echoMode() == echo)
         return;
-    Qt::InputMethodHints imHints = inputMethodHints();
-    if (echo == Password || echo == NoEcho)
-        imHints |= Qt::ImhHiddenText;
-    else
-        imHints &= ~Qt::ImhHiddenText;
-    if (echo != Normal)
-        imHints |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
-    else
-        imHints &= ~(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
-    setInputMethodHints(imHints);
     d->control->setEchoMode((uint)echo);
+    d->updateInputMethodHints();
     q_textChanged();
     emit echoModeChanged(echoMode());
+}
+
+Qt::InputMethodHints QDeclarativeTextInput::imHints() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return d->inputMethodHints;
+}
+
+void QDeclarativeTextInput::setIMHints(Qt::InputMethodHints hints)
+{
+    Q_D(QDeclarativeTextInput);
+    if (d->inputMethodHints == hints)
+        return;
+    d->inputMethodHints = hints;
+    d->updateInputMethodHints();
 }
 
 /*!
@@ -927,6 +949,8 @@ void QDeclarativeTextInput::setCursorDelegate(QDeclarativeComponent* c)
         //note that the components are owned by something else
         disconnect(d->control, SIGNAL(cursorPositionChanged(int,int)),
                 this, SLOT(moveCursor()));
+        disconnect(d->control, SIGNAL(updateMicroFocus()),
+                this, SLOT(moveCursor()));
         delete d->cursorItem;
     }else{
         d->startCreatingCursor();
@@ -939,7 +963,9 @@ void QDeclarativeTextInputPrivate::startCreatingCursor()
 {
     Q_Q(QDeclarativeTextInput);
     q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
-            q, SLOT(moveCursor()));
+               q, SLOT(moveCursor()), Qt::UniqueConnection);
+    q->connect(control, SIGNAL(updateMicroFocus()),
+            q, SLOT(moveCursor()), Qt::UniqueConnection);
     if(cursorComponent->isReady()){
         q->createCursor();
     }else if(cursorComponent->isLoading()){
@@ -1142,9 +1168,10 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
     if (d->selectByMouse) {
         setKeepMouseGrab(false);
+        d->selectPressed = true;
         d->pressPos = event->pos();
     }
-    bool mark = event->modifiers() & Qt::ShiftModifier;
+    bool mark = (event->modifiers() & Qt::ShiftModifier) && d->selectByMouse;
     int cursor = d->xToPos(event->pos().x());
     d->control->moveCursor(cursor, mark);
     event->setAccepted(true);
@@ -1155,7 +1182,7 @@ void QDeclarativeTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QDeclarativeTextInput);
     if (d->sendMouseEventToInputContext(event, QEvent::MouseMove))
         return;
-    if (d->selectByMouse) {
+    if (d->selectPressed) {
         if (qAbs(int(event->pos().x() - d->pressPos.x())) > QApplication::startDragDistance())
             setKeepMouseGrab(true);
         moveCursorSelection(d->xToPos(event->pos().x()), d->mouseSelectionMode);
@@ -1174,8 +1201,10 @@ void QDeclarativeTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QDeclarativeTextInput);
     if (d->sendMouseEventToInputContext(event, QEvent::MouseButtonRelease))
         return;
-    if (d->selectByMouse)
+    if (d->selectPressed) {
+        d->selectPressed = false;
         setKeepMouseGrab(false);
+    }
     if (!d->showInputPanelOnFocus) { // input panel on click
         if (d->focusOnPress && !isReadOnly() && boundingRect().contains(event->pos())) {
             if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
@@ -1231,8 +1260,10 @@ bool QDeclarativeTextInputPrivate::sendMouseEventToInputContext(
 
 bool QDeclarativeTextInput::sceneEvent(QEvent *event)
 {
+    Q_D(QDeclarativeTextInput);
     bool rv = QDeclarativeItem::sceneEvent(event);
     if (event->type() == QEvent::UngrabMouse) {
+        d->selectPressed = false;
         setKeepMouseGrab(false);
     }
     return rv;

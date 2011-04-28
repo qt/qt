@@ -1345,10 +1345,10 @@ QMakeProject::read(uchar cmd)
             }
 
             if(QDir::isRelativePath(qmakespec)) {
-                if (QFile::exists(qmakespec+"/qmake.conf")) {
-                    Option::mkfile::qmakespec = QFileInfo(Option::mkfile::qmakespec).absoluteFilePath();
-                } else if (QFile::exists(Option::output_dir+"/"+qmakespec+"/qmake.conf")) {
+                if (QFile::exists(Option::output_dir+"/"+qmakespec+"/qmake.conf")) {
                     qmakespec = Option::mkfile::qmakespec = QFileInfo(Option::output_dir+"/"+qmakespec).absoluteFilePath();
+                } else if (QFile::exists(qmakespec+"/qmake.conf")) {
+                    Option::mkfile::qmakespec = QFileInfo(Option::mkfile::qmakespec).absoluteFilePath();
                 } else {
                     bool found_mkspec = false;
                     for(QStringList::ConstIterator it = mkspec_roots.begin(); it != mkspec_roots.end(); ++it) {
@@ -2773,6 +2773,20 @@ QMakeProject::expand(const QString &str)
     return QStringList();
 }
 
+QString
+QMakeProject::expand(const QString &str, const QString &file, int line)
+{
+    bool ok;
+    parser_info pi = parser;
+    parser.file = file;
+    parser.line_no = line;
+    parser.from_file = false;
+    QMap<QString, QStringList> tmp = vars;
+    const QStringList ret = doVariableReplaceExpand(str, tmp, &ok);
+    parser = pi;
+    return ok ? ret.join(QString(Option::field_sep)) : QString();
+}
+
 QStringList
 QMakeProject::expand(const QString &func, const QList<QStringList> &args)
 {
@@ -3028,17 +3042,17 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
         if(!Option::user_template.isEmpty()) {
             var = ".BUILTIN.USER." + var;
             place[var] =  QStringList(Option::user_template);
-        } else if(!place[var].isEmpty()) {
-            QString orig_template = place["TEMPLATE"].first(), real_template;
+        } else {
+            QString orig_template, real_template;
+            if(!place[var].isEmpty())
+                orig_template = place[var].first();
+            real_template = orig_template.isEmpty() ? "app" : orig_template;
             if(!Option::user_template_prefix.isEmpty() && !orig_template.startsWith(Option::user_template_prefix))
-                real_template = Option::user_template_prefix + orig_template;
-            if(!real_template.isEmpty()) {
+                real_template.prepend(Option::user_template_prefix);
+            if(real_template != orig_template) {
                 var = ".BUILTIN." + var;
                 place[var] = QStringList(real_template);
             }
-        } else {
-            var = ".BUILTIN." + var;
-            place[var] =  QStringList("app");
         }
     } else if(var.startsWith(QLatin1String("QMAKE_HOST."))) {
         QString ret, type = var.mid(11);

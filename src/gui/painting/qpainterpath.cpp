@@ -1863,39 +1863,39 @@ static bool qt_painterpath_isect_line_rect(qreal x1, qreal y1, qreal x2, qreal y
     return false;
 }
 
-static bool qt_isect_curve_horizontal(const QBezier &bezier, qreal y, qreal x1, qreal x2)
+static bool qt_isect_curve_horizontal(const QBezier &bezier, qreal y, qreal x1, qreal x2, int depth = 0)
 {
     QRectF bounds = bezier.bounds();
 
     if (y >= bounds.top() && y < bounds.bottom()
         && bounds.right() >= x1 && bounds.left() < x2) {
         const qreal lower_bound = qreal(.01);
-        if (bounds.width() < lower_bound && bounds.height() < lower_bound)
+        if (depth == 32 || bounds.width() < lower_bound && bounds.height() < lower_bound)
             return true;
 
         QBezier first_half, second_half;
         bezier.split(&first_half, &second_half);
-        if (qt_isect_curve_horizontal(first_half, y, x1, x2)
-            || qt_isect_curve_horizontal(second_half, y, x1, x2))
+        if (qt_isect_curve_horizontal(first_half, y, x1, x2, depth + 1)
+            || qt_isect_curve_horizontal(second_half, y, x1, x2, depth + 1))
             return true;
     }
     return false;
 }
 
-static bool qt_isect_curve_vertical(const QBezier &bezier, qreal x, qreal y1, qreal y2)
+static bool qt_isect_curve_vertical(const QBezier &bezier, qreal x, qreal y1, qreal y2, int depth = 0)
 {
     QRectF bounds = bezier.bounds();
 
     if (x >= bounds.left() && x < bounds.right()
         && bounds.bottom() >= y1 && bounds.top() < y2) {
         const qreal lower_bound = qreal(.01);
-        if (bounds.width() < lower_bound && bounds.height() < lower_bound)
+        if (depth == 32 || bounds.width() < lower_bound && bounds.height() < lower_bound)
             return true;
 
         QBezier first_half, second_half;
         bezier.split(&first_half, &second_half);
-        if (qt_isect_curve_vertical(first_half, x, y1, y2)
-            || qt_isect_curve_vertical(second_half, x, y1, y2))
+        if (qt_isect_curve_vertical(first_half, x, y1, y2, depth + 1)
+            || qt_isect_curve_vertical(second_half, x, y1, y2, depth + 1))
             return true;
     }
      return false;

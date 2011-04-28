@@ -12182,5 +12182,7 @@ EXPORTS
 	_ZNK14QVolatileImage9constBitsEv @ 12181 NONAME
 	_ZN15QGraphicsSystem22releaseCachedResourcesEv @ 12182 NONAME
 	_Z32qt_s60_setPartialScreenInputModeb @ 12183 NONAME
-	_ZNK14QVolatileImage14paintingActiveEv @ 12184 NONAME
+	_Z29qt_draw_decoration_for_glyphsP8QPainterPKjPK11QFixedPointiP11QFontEngineRK5QFontRK15QTextCharFormat @ 12184 NONAME
+	_ZNK10QTextBlock7isValidEv @ 12185 NONAME
+	_ZNK14QVolatileImage14paintingActiveEv @ 12186 NONAME
 

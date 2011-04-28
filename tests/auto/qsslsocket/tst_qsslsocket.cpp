@@ -183,6 +183,7 @@ private slots:
     void ignoreSslErrorsListWithSlot();
     void readFromClosedSocket();
     void writeBigChunk();
+    void blacklist();
     void setEmptyDefaultConfiguration();
 
     static void exitLoop()
@@ -868,8 +869,13 @@ class SslServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    SslServer() : socket(0) { }
+    SslServer(const QString &keyFile = SRCDIR "certs/fluke.key", const QString &certFile = SRCDIR "certs/fluke.cert")
+        : socket(0),
+          m_keyFile(keyFile),
+          m_certFile(certFile) { }
     QSslSocket *socket;
+    QString m_keyFile;
+    QString m_certFile;
 
 protected:
     void incomingConnection(int socketDescriptor)
@@ -877,13 +883,13 @@ protected:
         socket = new QSslSocket(this);
         connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(ignoreErrorSlot()));
 
-        QFile file(SRCDIR "certs/fluke.key");
+        QFile file(m_keyFile);
         QVERIFY(file.open(QIODevice::ReadOnly));
         QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
         QVERIFY(!key.isNull());
         socket->setPrivateKey(key);
 
-        QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
+        QList<QSslCertificate> localCert = QSslCertificate::fromPath(m_certFile);
         QVERIFY(!localCert.isEmpty());
         QVERIFY(localCert.first().handle());
         socket->setLocalCertificate(localCert.first());
@@ -1835,6 +1841,37 @@ void tst_QSslSocket::writeBigChunk()
     QVERIFY(socket->bytesToWrite() == 0);
 
     socket->close();
+}
+
+void tst_QSslSocket::blacklist()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    SslServer server(SRCDIR "certs/fake-login.live.com.key", SRCDIR "certs/fake-login.live.com.pem");
+    QSslSocket *receiver = new QSslSocket(this);
+    connect(receiver, SIGNAL(readyRead()), SLOT(exitLoop()));
+
+    // connect two sockets to each other:
+    QVERIFY(server.listen(QHostAddress::LocalHost));
+    receiver->connectToHost("127.0.0.1", server.serverPort());
+    QVERIFY(receiver->waitForConnected(5000));
+    QVERIFY(server.waitForNewConnection(0));
+
+    QSslSocket *sender = server.socket;
+    QVERIFY(sender);
+    QVERIFY(sender->state() == QAbstractSocket::ConnectedState);
+    receiver->setObjectName("receiver");
+    sender->setObjectName("sender");
+    receiver->ignoreSslErrors();
+    receiver->startClientEncryption();
+
+    connect(receiver, SIGNAL(error(QAbstractSocket::SocketError)), SLOT(exitLoop()));
+    connect(receiver, SIGNAL(encrypted()), SLOT(exitLoop()));
+    enterLoop(1);
+    QCOMPARE(receiver->error(), QAbstractSocket::SslHandshakeFailedError);
+    QCOMPARE(receiver->errorString(), QString("The peer certificate is blacklisted"));
 }
 
 void tst_QSslSocket::setEmptyDefaultConfiguration()

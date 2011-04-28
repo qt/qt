@@ -654,6 +654,9 @@ void VcxprojGenerator::initResourceFiles()
 
                 dep_cmd = Option::fixPathToLocalOS(dep_cmd, true, false);
                 if(canExecute(dep_cmd)) {
+                    dep_cmd.prepend(QLatin1String("cd ")
+                                    + escapeFilePath(Option::fixPathToLocalOS(Option::output_dir, false))
+                                    + QLatin1String(" && "));
                     if(FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), "r")) {
                         QString indeps;
                         while(!feof(proc)) {
@@ -664,7 +667,8 @@ void VcxprojGenerator::initResourceFiles()
                         }
                         QT_PCLOSE(proc);
                         if(!indeps.isEmpty())
-                            deps += fileFixify(indeps.replace('\n', ' ').simplified().split(' '));
+                            deps += fileFixify(indeps.replace('\n', ' ').simplified().split(' '),
+                                               QString(), Option::output_dir);
                     }
                 }
             }

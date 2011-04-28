@@ -1482,6 +1482,9 @@ QByteArray QImageReader::imageFormat(QIODevice *device)
     configure script or check the appropriate option in the graphical
     installer.
 
+    Note that the QApplication instance must be created before this function is
+    called.
+
     \sa setFormat(), QImageWriter::supportedImageFormats(), QImageIOPlugin
 */
 QList<QByteArray> QImageReader::supportedImageFormats()
