@@ -5202,6 +5202,7 @@ void tst_QScriptEngine::dateConversionJSQt()
         QString qtUTCDateStr = qtDate.toUTC().toString(Qt::ISODate);
         QString jsUTCDateStr = jsDate.property("toISOString").call(jsDate).toString();
         jsUTCDateStr.chop(5); // get rid of milliseconds (".000Z")
+        jsUTCDateStr.append("Z"); // append the timezone specifier again
         if (qtUTCDateStr != jsUTCDateStr)
             QFAIL(qPrintable(jsDate.toString()));
         secs += 2*60*60;
@@ -5216,6 +5217,7 @@ void tst_QScriptEngine::dateConversionQtJS()
         QScriptValue jsDate = eng.newDate(qtDate);
         QString jsUTCDateStr = jsDate.property("toISOString").call(jsDate).toString();
         jsUTCDateStr.chop(5); // get rid of milliseconds (".000Z")
+        jsUTCDateStr.append("Z"); // append the timezone specifier again
         QString qtUTCDateStr = qtDate.toUTC().toString(Qt::ISODate);
         if (jsUTCDateStr != qtUTCDateStr)
             QFAIL(qPrintable(qtDate.toString()));
