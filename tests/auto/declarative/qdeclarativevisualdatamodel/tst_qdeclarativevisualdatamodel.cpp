@@ -190,6 +190,11 @@ void tst_qdeclarativevisualdatamodel::rootIndex()
     QMetaObject::invokeMethod(obj, "setRootToParent");
     QVERIFY(qvariant_cast<QModelIndex>(obj->rootIndex()) == QModelIndex());
 
+    QMetaObject::invokeMethod(obj, "setRoot");
+    QVERIFY(qvariant_cast<QModelIndex>(obj->rootIndex()) == model.index(0,0));
+    model.clear(); // will emit modelReset()
+    QVERIFY(qvariant_cast<QModelIndex>(obj->rootIndex()) == QModelIndex());
+
     delete obj;
 }
 

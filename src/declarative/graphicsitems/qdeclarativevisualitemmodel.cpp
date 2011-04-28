@@ -1398,7 +1398,12 @@ void QDeclarativeVisualDataModel::_q_layoutChanged()
 
 void QDeclarativeVisualDataModel::_q_modelReset()
 {
+    Q_D(QDeclarativeVisualDataModel);
+    d->m_root = QModelIndex();
     emit modelReset();
+    emit rootIndexChanged();
+    if (d->m_abstractItemModel && d->m_abstractItemModel->canFetchMore(d->m_root))
+        d->m_abstractItemModel->fetchMore(d->m_root);
 }
 
 void QDeclarativeVisualDataModel::_q_createdPackage(int index, QDeclarativePackage *package)
