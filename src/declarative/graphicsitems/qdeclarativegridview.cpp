@@ -584,6 +584,26 @@ void QDeclarativeGridViewPrivate::refill(qreal from, qreal to, bool doBuffer)
             --i;
         modelIndex = visibleItems.at(i)->index + 1;
     }
+
+    if (visibleItems.count() && (fillFrom > rowPos + rowSize()*2
+        || fillTo < rowPosAt(visibleIndex) - rowSize())) {
+        // We've jumped more than a page.  Estimate which items are now
+        // visible and fill from there.
+        int count = (fillFrom - (rowPos + rowSize())) / (rowSize()) * columns;
+        for (int i = 0; i < visibleItems.count(); ++i)
+            releaseItem(visibleItems.at(i));
+        visibleItems.clear();
+        modelIndex += count;
+        if (modelIndex >= model->count())
+            modelIndex = model->count() - 1;
+        else if (modelIndex < 0)
+            modelIndex = 0;
+        modelIndex = modelIndex / columns * columns;
+        visibleIndex = modelIndex;
+        colPos = colPosAt(visibleIndex);
+        rowPos = rowPosAt(visibleIndex);
+    }
+
     int colNum = colPos / colSize();
 
     FxGridItem *item = 0;
@@ -2230,7 +2250,7 @@ qreal QDeclarativeGridView::maxXExtent() const
     qreal extent;
     qreal highlightStart;
     qreal highlightEnd;
-    qreal lastItemPosition;
+    qreal lastItemPosition = 0;
     if (d->isRightToLeftTopToBottom()){
         highlightStart = d->highlightRangeStartValid ? d->highlightRangeEnd : d->size();
         highlightEnd = d->highlightRangeEndValid ? d->highlightRangeStart : d->size();

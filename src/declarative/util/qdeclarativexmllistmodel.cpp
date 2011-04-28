@@ -144,6 +144,7 @@ struct XmlQueryJob
     QList<void*> roleQueryErrorId; // the ptr to send back if there is an error
     QStringList keyRoleQueries;
     QStringList keyRoleResultsCache;
+    QString prefix;
 };
 
 class QDeclarativeXmlQuery : public QObject
@@ -172,6 +173,12 @@ public:
     }
 
     int doQuery(QString query, QString namespaces, QByteArray data, QList<QDeclarativeXmlListModelRole *>* roleObjects, QStringList keyRoleResultsCache) {
+        {
+            QMutexLocker m1(&m_mutex);
+            m_queryIds.ref();
+            if (m_queryIds <= 0)
+                m_queryIds = 1;
+        }
 
         XmlQueryJob job;
         job.queryId = m_queryIds;
@@ -194,9 +201,6 @@ public:
         {
             QMutexLocker ml(&m_mutex);
             m_jobs.insert(m_queryIds, job);
-            m_queryIds++;
-            if (m_queryIds <= 0)
-              m_queryIds = 1;
         }
 
         QMetaObject::invokeMethod(this, "processQuery", Qt::QueuedConnection, Q_ARG(int, job.queryId));
@@ -214,20 +218,15 @@ private slots:
             job = m_jobs.value(queryId);
         }
 
-        QDeclarativeXmlQueryResult r;
-        doQueryJob(&job);
-        doSubQueryJob(&job);
-        r.queryId = job.queryId;
-        r.size = m_size;
-        r.data = m_modelData;
-        r.inserted = m_insertedItemRanges;
-        r.removed = m_removedItemRanges;
-        r.keyRoleResultsCache = job.keyRoleResultsCache;
+        QDeclarativeXmlQueryResult result;
+        result.queryId = job.queryId;
+        doQueryJob(&job, &result);
+        doSubQueryJob(&job, &result);
 
         {
             QMutexLocker ml(&m_mutex);
             if (m_jobs.contains(queryId)) {
-                emit queryCompleted(r);
+                emit queryCompleted(result);
                 m_jobs.remove(queryId);
             }
         }
@@ -241,8 +240,8 @@ protected:
 
 
 private:
-    void doQueryJob(XmlQueryJob* job);
-    void doSubQueryJob(XmlQueryJob* job);
+    void doQueryJob(XmlQueryJob *job, QDeclarativeXmlQueryResult *currentResult);
+    void doSubQueryJob(XmlQueryJob *job, QDeclarativeXmlQueryResult *currentResult);
     void getValuesOfKeyRoles(const XmlQueryJob& currentJob, QStringList *values, QXmlQuery *query) const;
     void addIndexToRangeList(QList<QDeclarativeXmlListRange> *ranges, int index) const;
 
@@ -250,17 +249,12 @@ private:
     QMutex m_mutex;
     QThread m_thread;
     QMap<int, XmlQueryJob> m_jobs;
-    int m_queryIds;
-    QString m_prefix;
-    int m_size;
-    QList<QList<QVariant> > m_modelData;
-    QList<QDeclarativeXmlListRange> m_insertedItemRanges;
-    QList<QDeclarativeXmlListRange> m_removedItemRanges;
+    QAtomicInt m_queryIds;
 };
 
 Q_GLOBAL_STATIC(QDeclarativeXmlQuery, globalXmlQuery)
 
-void QDeclarativeXmlQuery::doQueryJob(XmlQueryJob* currentJob)
+void QDeclarativeXmlQuery::doQueryJob(XmlQueryJob *currentJob, QDeclarativeXmlQueryResult *currentResult)
 {
     Q_ASSERT(currentJob->queryId != -1);
 
@@ -295,10 +289,8 @@ void QDeclarativeXmlQuery::doQueryJob(XmlQueryJob* currentJob)
     }
 
     currentJob->data = xml;
-    m_prefix = namespaces + prefix + QLatin1Char('/');
-    m_size = 0;
-    if (count > 0)
-        m_size = count;
+    currentJob->prefix = namespaces + prefix + QLatin1Char('/');
+    currentResult->size = (count > 0 ? count : 0);
 }
 
 void QDeclarativeXmlQuery::getValuesOfKeyRoles(const XmlQueryJob& currentJob, QStringList *values, QXmlQuery *query) const
@@ -306,9 +298,9 @@ void QDeclarativeXmlQuery::getValuesOfKeyRoles(const XmlQueryJob& currentJob, QS
     const QStringList &keysQueries = currentJob.keyRoleQueries;
     QString keysQuery;
     if (keysQueries.count() == 1)
-        keysQuery = m_prefix + keysQueries[0];
+        keysQuery = currentJob.prefix + keysQueries[0];
     else if (keysQueries.count() > 1)
-        keysQuery = m_prefix + QLatin1String("concat(") + keysQueries.join(QLatin1String(",")) + QLatin1String(")");
+        keysQuery = currentJob.prefix + QLatin1String("concat(") + keysQueries.join(QLatin1String(",")) + QLatin1String(")");
 
     if (!keysQuery.isEmpty()) {
         query->setQuery(keysQuery);
@@ -331,10 +323,9 @@ void QDeclarativeXmlQuery::addIndexToRangeList(QList<QDeclarativeXmlListRange> *
         ranges->append(qMakePair(index, 1));
 }
 
-void QDeclarativeXmlQuery::doSubQueryJob(XmlQueryJob* currentJob)
+void QDeclarativeXmlQuery::doSubQueryJob(XmlQueryJob *currentJob, QDeclarativeXmlQueryResult *currentResult)
 {
     Q_ASSERT(currentJob->queryId != -1);
-    m_modelData.clear();
 
     QBuffer b(&currentJob->data);
     b.open(QIODevice::ReadOnly);
@@ -347,16 +338,14 @@ void QDeclarativeXmlQuery::doSubQueryJob(XmlQueryJob* currentJob)
 
     // See if any values of key roles have been inserted or removed.
 
-    m_insertedItemRanges.clear();
-    m_removedItemRanges.clear();
     if (currentJob->keyRoleResultsCache.isEmpty()) {
-        m_insertedItemRanges << qMakePair(0, m_size);
+        currentResult->inserted << qMakePair(0, currentResult->size);
     } else {
         if (keyRoleResults != currentJob->keyRoleResultsCache) {
             QStringList temp;
             for (int i=0; i<currentJob->keyRoleResultsCache.count(); i++) {
                 if (!keyRoleResults.contains(currentJob->keyRoleResultsCache[i]))
-                    addIndexToRangeList(&m_removedItemRanges, i);
+                    addIndexToRangeList(&currentResult->removed, i);
                 else 
                     temp << currentJob->keyRoleResultsCache[i];
             }
@@ -364,12 +353,12 @@ void QDeclarativeXmlQuery::doSubQueryJob(XmlQueryJob* currentJob)
             for (int i=0; i<keyRoleResults.count(); i++) {
                 if (temp.count() == i || keyRoleResults[i] != temp[i]) {
                     temp.insert(i, keyRoleResults[i]);
-                    addIndexToRangeList(&m_insertedItemRanges, i);
+                    addIndexToRangeList(&currentResult->inserted, i);
                 }
             }
         }
     }
-    currentJob->keyRoleResultsCache = keyRoleResults;
+    currentResult->keyRoleResultsCache = keyRoleResults;
 
     // Get the new values for each role.
     //### we might be able to condense even further (query for everything in one go)
@@ -377,7 +366,7 @@ void QDeclarativeXmlQuery::doSubQueryJob(XmlQueryJob* currentJob)
     for (int i = 0; i < queries.size(); ++i) {
         QList<QVariant> resultList;
         if (!queries[i].isEmpty()) {
-            subquery.setQuery(m_prefix + QLatin1String("(let $v := string(") + queries[i] + QLatin1String(") return if ($v) then ") + queries[i] + QLatin1String(" else \"\")"));
+            subquery.setQuery(currentJob->prefix + QLatin1String("(let $v := string(") + queries[i] + QLatin1String(") return if ($v) then ") + queries[i] + QLatin1String(" else \"\")"));
             if (subquery.isValid()) {
                 QXmlResultItems resultItems;
                 subquery.evaluateTo(&resultItems);
@@ -391,9 +380,9 @@ void QDeclarativeXmlQuery::doSubQueryJob(XmlQueryJob* currentJob)
             }
         }
         //### should warn here if things have gone wrong.
-        while (resultList.count() < m_size)
+        while (resultList.count() < currentResult->size)
             resultList << QVariant();
-        m_modelData << resultList;
+        currentResult->data << resultList;
         b.seek(0);
     }
 

@@ -72,6 +72,9 @@ bool QHttpSocketEngine::initialize(QAbstractSocket::SocketType type, QAbstractSo
     setProtocol(protocol);
     setSocketType(type);
     d->socket = new QTcpSocket(this);
+#ifndef QT_NO_BEARERMANAGEMENT
+    d->socket->setProperty("_q_networkSession", property("_q_networkSession"));
+#endif
 
     // Explicitly disable proxying on the proxy socket itself to avoid
     // unwanted recursion.
@@ -706,11 +709,10 @@ void QHttpSocketEngine::slotSocketError(QAbstractSocket::SocketError error)
 
     d->state = None;
     setError(error, d->socket->errorString());
-    if (error == QAbstractSocket::RemoteHostClosedError) {
-        emitReadNotification();
-    } else {
+    if (error != QAbstractSocket::RemoteHostClosedError)
         qDebug() << "QHttpSocketEngine::slotSocketError: got weird error =" << error;
-    }
+    //read notification needs to always be emitted, otherwise the higher layer doesn't get the disconnected signal
+    emitReadNotification();
 }
 
 void QHttpSocketEngine::slotSocketStateChanged(QAbstractSocket::SocketState state)

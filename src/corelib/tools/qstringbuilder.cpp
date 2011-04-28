@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qstringbuilder.h"
+#include <QtCore/qtextcodec.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -146,7 +147,9 @@ QT_BEGIN_NAMESPACE
     Converts the \c QLatin1Literal into a \c QString object.
 */
 
-/*! \internal */
+/*! \internal
+   Note: The len contains the ending \0
+ */
 void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out)
 {
 #ifndef QT_NO_TEXTCODEC
@@ -165,5 +168,26 @@ void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out
             *out++ = QLatin1Char(a[i]);
     }
 }
+
+/*! \internal */
+void QAbstractConcatenable::convertToAscii(const QChar* a, int len, char*& out) 
+{
+#ifndef QT_NO_TEXTCODEC
+    if (QString::codecForCStrings) {
+        QByteArray tmp = QString::codecForCStrings->fromUnicode(a, len);
+        memcpy(out, tmp.constData(), tmp.size());
+        out += tmp.length();
+        return;
+    }
+#endif
+    if (len == -1) {
+        while (a->unicode())
+            convertToLatin1(*a++, out);
+    } else {
+        for (int i = 0; i < len; ++i)
+            convertToLatin1(a[i], out);
+    }
+}
+
 
 QT_END_NAMESPACE

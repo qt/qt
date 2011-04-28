@@ -886,8 +886,14 @@ bool QHttpNetworkReplyPrivate::expectContent()
         return false;
     if (request.operation() == QHttpNetworkRequest::Head)
         return !shouldEmitSignals();
-    if (contentLength() == 0)
+    qint64 expectedContentLength = contentLength();
+    if (expectedContentLength == 0)
         return false;
+    if (expectedContentLength == -1 && bodyLength == 0) {
+        // The content-length header was stripped, but its value was 0.
+        // This would be the case for an explicitly zero-length compressed response.
+        return false;
+    }
     return true;
 }
 

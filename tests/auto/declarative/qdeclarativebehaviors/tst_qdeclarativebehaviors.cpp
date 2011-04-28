@@ -81,6 +81,7 @@ private slots:
     void groupedPropertyCrash();
     void runningTrue();
     void sameValue();
+    void delayedRegistration();
 };
 
 void tst_qdeclarativebehaviors::simpleBehavior()
@@ -410,6 +411,23 @@ void tst_qdeclarativebehaviors::sameValue()
     //even though we set 0 twice in a row.
     target->setProperty("x", 0);
     QTRY_VERIFY(target->x() != qreal(0) && target->x() != qreal(100));
+}
+
+//QTBUG-18362
+void tst_qdeclarativebehaviors::delayedRegistration()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/delayedRegistration.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeItem *innerRect = rect->property("myItem").value<QDeclarativeItem*>();
+    QVERIFY(innerRect != 0);
+
+    QCOMPARE(innerRect->property("x").toInt(), int(0));
+
+    QTRY_COMPARE(innerRect->property("x").toInt(), int(100));
 }
 
 QTEST_MAIN(tst_qdeclarativebehaviors)

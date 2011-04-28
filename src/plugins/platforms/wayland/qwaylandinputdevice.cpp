@@ -83,6 +83,14 @@ QWaylandInputDevice::QWaylandInputDevice(struct wl_display *display,
 #endif
 }
 
+void QWaylandInputDevice::handleWindowDestroyed(QWaylandWindow *window)
+{
+    if (window == mPointerFocus)
+        mPointerFocus = 0;
+    if (window == mKeyboardFocus)
+        mKeyboardFocus = 0;
+}
+
 void QWaylandInputDevice::inputHandleMotion(void *data,
 					    struct wl_input_device *input_device,
 					    uint32_t time,

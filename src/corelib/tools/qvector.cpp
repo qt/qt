@@ -274,6 +274,15 @@ int QVectorData::grow(int sizeofTypedData, int size, int sizeofT, bool excessive
     \sa operator=()
 */
 
+/*! \fn QVector::QVector(std::initializer_list<T> args)
+    \since 4.8
+
+    Construct a vector from a std::initilizer_list.
+
+    This constructor is only enabled if the compiler supports C++0x
+*/
+
+
 /*! \fn QVector::~QVector()
 
     Destroys the vector.
