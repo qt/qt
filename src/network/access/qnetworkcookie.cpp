@@ -737,7 +737,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
         // 4 digit Year
         if (isNum
             && year == -1
-            && dateString.length() >= at + 3) {
+            && dateString.length() > at + 3) {
             if (isNumber(dateString[at + 1])
                 && isNumber(dateString[at + 2])
                 && isNumber(dateString[at + 3])) {

@@ -222,6 +222,8 @@ private slots:
     void task262677remove();
     void QTBUG10404_compareRef();
     void QTBUG9281_arg_locale();
+
+    void toUpperLower_icu();
 };
 
 typedef QList<int> IntList;
@@ -1603,6 +1605,11 @@ void tst_QString::toUpper()
     QCOMPARE( lower.toUpper(), upper);
 
 
+#ifdef QT_USE_ICU
+    // test doesn't work with ICU support, since QChar is unaware of any locale
+    QEXPECT_FAIL("", "test doesn't work with ICU support, since QChar is unaware of any locale", Continue);
+    QVERIFY(false);
+#else
     for (int i = 0; i < 65536; ++i) {
         QString str(1, QChar(i));
         QString upper = str.toUpper();
@@ -1610,6 +1617,7 @@ void tst_QString::toUpper()
         if (upper.length() == 1)
             QVERIFY(upper == QString(1, QChar(i).toUpper()));
     }
+#endif
 }
 
 void tst_QString::toLower()
@@ -1641,6 +1649,11 @@ void tst_QString::toLower()
     upper += QChar(QChar::lowSurrogate(0x10400));
     QCOMPARE( upper.toLower(), lower);
 
+#ifdef QT_USE_ICU
+    // test doesn't work with ICU support, since QChar is unaware of any locale
+    QEXPECT_FAIL("", "test doesn't work with ICU support, since QChar is unaware of any locale", Continue);
+    QVERIFY(false);
+#else
     for (int i = 0; i < 65536; ++i) {
         QString str(1, QChar(i));
         QString lower = str.toLower();
@@ -1648,6 +1661,7 @@ void tst_QString::toLower()
         if (lower.length() == 1)
             QVERIFY(str.toLower() == QString(1, QChar(i).toLower()));
     }
+#endif
 }
 
 void tst_QString::trimmed()
@@ -4352,6 +4366,8 @@ void tst_QString::localeAwareCompare()
 
 #elif defined (Q_WS_MAC)
     QSKIP("Setting the locale is not supported on OS X (you can set the C locale, but that won't affect CFStringCompare which is used to compare strings)", SkipAll);
+#elif defined(QT_USE_ICU)
+    QLocale::setDefault(QLocale(locale));
 #else
     if (!locale.isEmpty()) {
         const char *newLocale = setlocale(LC_ALL, locale.toLatin1());
@@ -4361,6 +4377,11 @@ void tst_QString::localeAwareCompare()
             return;
         }
     }
+#endif
+
+#ifdef QT_USE_ICU
+    // ### for c1, ICU disagrees with libc on how to compare
+    QEXPECT_FAIL("c1", "ICU disagrees with test", Abort);
 #endif
 
     int testres = QString::localeAwareCompare(s1, s2);
@@ -5065,6 +5086,40 @@ void tst_QString::QTBUG9281_arg_locale()
     QLocale::setDefault(QLocale::C);
 }
 
+void tst_QString::toUpperLower_icu()
+{
+#ifndef QT_USE_ICU
+    QSKIP("Qt was built without ICU support", SkipAll);
+#endif
+
+    QString s = QString::fromLatin1("i");
+
+    QCOMPARE(s.toUpper(), QString::fromLatin1("I"));
+    QCOMPARE(s.toLower(), QString::fromLatin1("i"));
+
+    QLocale::setDefault(QLocale(QLocale::Turkish, QLocale::Turkey));
+
+    // turkish locale has a capital I with a dot (U+0130, utf8 c4b0)
+
+    QCOMPARE(s.toUpper(), QString::fromUtf8("\xc4\xb0"));
+    QCOMPARE(QString::fromUtf8("\xc4\xb0").toLower(), s);
+
+    // nothing should happen here
+    QCOMPARE(s.toLower(), s);
+    QCOMPARE(QString::fromLatin1("I").toUpper(), QString::fromLatin1("I"));
+
+    // U+0131, utf8 c4b1 is the lower-case i without a dot
+    QString sup = QString::fromUtf8("\xc4\xb1");
+
+    QCOMPARE(sup.toUpper(), QString::fromLatin1("I"));
+    QCOMPARE(QString::fromLatin1("I").toLower(), sup);
+
+    // nothing should happen here
+    QCOMPARE(sup.toLower(), sup);
+    QCOMPARE(QString::fromLatin1("i").toLower(), QString::fromLatin1("i"));
+
+    // the cleanup function will restore the default locale
+}
 
 
 QTEST_APPLESS_MAIN(tst_QString)

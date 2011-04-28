@@ -1525,6 +1525,8 @@ void QDeclarativePathView::itemsRemoved(int modelIndex, int count)
     } else {
         d->regenerate();
         d->updateCurrent();
+        if (!d->flicking && !d->moving && d->haveHighlightRange && d->highlightRangeMode == QDeclarativePathView::StrictlyEnforceRange)
+            d->snapToCurrent();
     }
     if (changedOffset)
         emit offsetChanged();

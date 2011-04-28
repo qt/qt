@@ -1,4 +1,4 @@
-contains(TEMPLATE, "vc.*")|contains(TEMPLATE_PREFIX, "vc") {
+contains(TEMPLATE, "vc.*") {
     EOC = $$escape_expand(\\n\\t)
 
     # The VCPROJ generator will replace the \r\h with the coded \r\n: &#x0d;&#x0a;

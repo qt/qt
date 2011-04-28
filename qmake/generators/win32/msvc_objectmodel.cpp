@@ -2219,6 +2219,9 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
 							             Option::fixPathToLocalOS(inFile, true, false),
                                                                      out);
             if(Project->canExecute(dep_cmd)) {
+                dep_cmd.prepend(QLatin1String("cd ")
+                                + Project->escapeFilePath(Option::fixPathToLocalOS(Option::output_dir, false))
+                                + QLatin1String(" && "));
                 if(FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), "r")) {
                     QString indeps;
                     while(!feof(proc)) {
@@ -2233,7 +2236,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
                         for (int i = 0; i < extradeps.count(); ++i) {
                             QString dd = extradeps.at(i).simplified();
                             if (!dd.isEmpty())
-                                deps += Project->fileFixify(dd);
+                                deps += Project->fileFixify(dd, QString(), Option::output_dir);
                         }
                     }
                 }

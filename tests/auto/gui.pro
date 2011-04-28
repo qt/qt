@@ -115,9 +115,6 @@ SUBDIRS=\
     qmovie \
     qvolatileimage \
     qnetworkaccessmanager_and_qprogressdialog \
-    qnetworkcachemetadata \
-    qnetworkdiskcache \
-    qnetworkreply \
     qpaintengine \
     qpainterpath \
     qpainterpathstroker \
@@ -171,7 +168,6 @@ SUBDIRS=\
     qtabbar \
     qtableview \
     qtablewidget \
-    qtcpserver \
     qtcpsocket \
     qtessellator \
     qtextblock \
@@ -198,7 +194,6 @@ SUBDIRS=\
     qtreeview \
     qtreewidget \
     qtreewidgetitemiterator \
-    qudpsocket \
     qundogroup \
     qundostack \
     qvectornd \

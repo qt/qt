@@ -360,6 +360,25 @@ QUuid VcprojGenerator::increaseUUID(const QUuid &id)
     return result;
 }
 
+QStringList VcprojGenerator::collectSubDirs(QMakeProject *proj)
+{
+    QStringList subdirs;
+    QStringList tmp_proj_subdirs = proj->variables()["SUBDIRS"];
+    for(int x = 0; x < tmp_proj_subdirs.size(); ++x) {
+        QString tmpdir = tmp_proj_subdirs.at(x);
+        if(!proj->isEmpty(tmpdir + ".file")) {
+            if(!proj->isEmpty(tmpdir + ".subdir"))
+                warn_msg(WarnLogic, "Cannot assign both file and subdir for subdir %s",
+                         tmpdir.toLatin1().constData());
+            tmpdir = proj->first(tmpdir + ".file");
+        } else if(!proj->isEmpty(tmpdir + ".subdir")) {
+            tmpdir = proj->first(tmpdir + ".subdir");
+        }
+        subdirs += tmpdir;
+    }
+    return subdirs;
+}
+
 void VcprojGenerator::writeSubDirs(QTextStream &t)
 {
     // Check if all requirements are fulfilled
@@ -394,7 +413,6 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     QHash<QString, VcsolutionDepend*> solution_depends;
     QList<VcsolutionDepend*> solution_cleanup;
 
-    QStringList subdirs = project->values("SUBDIRS");
     QString oldpwd = qmake_getpwd();
 
     // Make sure that all temp projects are configured
@@ -403,16 +421,9 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     QStringList old_after_vars = Option::after_user_vars;
     Option::after_user_vars.append("CONFIG+=release");
 
+    QStringList subdirs = collectSubDirs(project);
     for(int i = 0; i < subdirs.size(); ++i) {
         QString tmp = subdirs.at(i);
-        if(!project->isEmpty(tmp + ".file")) {
-            if(!project->isEmpty(tmp + ".subdir"))
-                warn_msg(WarnLogic, "Cannot assign both file and subdir for subdir %s",
-                         tmp.toLatin1().constData());
-            tmp = project->first(tmp + ".file");
-        } else if(!project->isEmpty(tmp + ".subdir")) {
-            tmp = project->first(tmp + ".subdir");
-        }
         QFileInfo fi(fileInfo(Option::fixPathToLocalOS(tmp, true)));
         if(fi.exists()) {
             if(fi.isDir()) {
@@ -436,19 +447,8 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                         continue;
                     }
                     if(tmp_proj.first("TEMPLATE") == "vcsubdirs") {
-                        QStringList tmp_proj_subdirs = tmp_proj.variables()["SUBDIRS"];
-                        for(int x = 0; x < tmp_proj_subdirs.size(); ++x) {
-                            QString tmpdir = tmp_proj_subdirs.at(x);
-                            if(!tmp_proj.isEmpty(tmpdir + ".file")) {
-                                if(!tmp_proj.isEmpty(tmpdir + ".subdir"))
-                                    warn_msg(WarnLogic, "Cannot assign both file and subdir for subdir %s",
-                                            tmpdir.toLatin1().constData());
-                                tmpdir = tmp_proj.first(tmpdir + ".file");
-                            } else if(!tmp_proj.isEmpty(tmpdir + ".subdir")) {
-                                tmpdir = tmp_proj.first(tmpdir + ".subdir");
-                            }
+                        foreach(const QString &tmpdir, collectSubDirs(&tmp_proj))
                             subdirs += fileFixify(tmpdir);
-                        }
                     } else if(tmp_proj.first("TEMPLATE") == "vcapp" || tmp_proj.first("TEMPLATE") == "vclib") {
                         // Initialize a 'fake' project to get the correct variables
                         // and to be able to extract all the dependencies
@@ -1319,6 +1319,9 @@ void VcprojGenerator::initResourceFiles()
 
                 dep_cmd = Option::fixPathToLocalOS(dep_cmd, true, false);
                 if(canExecute(dep_cmd)) {
+                    dep_cmd.prepend(QLatin1String("cd ")
+                                    + escapeFilePath(Option::fixPathToLocalOS(Option::output_dir, false))
+                                    + QLatin1String(" && "));
                     if(FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), "r")) {
                         QString indeps;
                         while(!feof(proc)) {
@@ -1329,7 +1332,8 @@ void VcprojGenerator::initResourceFiles()
                         }
                         QT_PCLOSE(proc);
                         if(!indeps.isEmpty())
-                            deps += fileFixify(indeps.replace('\n', ' ').simplified().split(' '));
+                            deps += fileFixify(indeps.replace('\n', ' ').simplified().split(' '),
+                                               QString(), Option::output_dir);
                     }
                 }
             }

@@ -50,7 +50,6 @@
 
 
 #include <qdatastream.h>
-#include <private/qnativesocketengine_p.h>
 
 #include <qhostaddress.h>
 #include <qdatetime.h>
@@ -63,6 +62,20 @@
 
 #include <stddef.h>
 
+#ifdef Q_OS_SYMBIAN
+#include <QNetworkConfigurationManager>
+#include <QNetworkConfiguration>
+#include <QNetworkSession>
+#include <QScopedPointer>
+#define PLATFORMSOCKETENGINE QSymbianSocketEngine
+#define PLATFORMSOCKETENGINESTRING "QSymbianSocketEngine"
+#include <private/qsymbiansocketengine_p.h>
+#include <private/qcore_symbian_p.h>
+#else
+#define PLATFORMSOCKETENGINE QNativeSocketEngine
+#define PLATFORMSOCKETENGINESTRING "QNativeSocketEngine"
+#include <private/qnativesocketengine_p.h>
+#endif
 
 #include <qstringlist.h>
 
@@ -70,13 +83,13 @@
 
 //TESTED_FILES=network/qnativesocketengine.cpp network/qnativesocketengine_p.h network/qnativesocketengine_unix.cpp
 
-class tst_QNativeSocketEngine : public QObject
+class tst_PlatformSocketEngine : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QNativeSocketEngine();
-    virtual ~tst_QNativeSocketEngine();
+    tst_PlatformSocketEngine();
+    virtual ~tst_PlatformSocketEngine();
 
 
 public slots:
@@ -92,35 +105,35 @@ private slots:
     void udpLoopbackPerformance();
     void tcpLoopbackPerformance();
     void readWriteBufferSize();
-    void tooManySockets();
     void bind();
     void networkError();
     void setSocketDescriptor();
     void invalidSend();
     void receiveUrgentData();
+    void tooManySockets();
 };
 
-tst_QNativeSocketEngine::tst_QNativeSocketEngine()
+tst_PlatformSocketEngine::tst_PlatformSocketEngine()
 {
     Q_SET_DEFAULT_IAP
 }
 
-tst_QNativeSocketEngine::~tst_QNativeSocketEngine()
+tst_PlatformSocketEngine::~tst_PlatformSocketEngine()
 {
 }
 
-void tst_QNativeSocketEngine::init()
+void tst_PlatformSocketEngine::init()
 {
 }
 
-void tst_QNativeSocketEngine::cleanup()
+void tst_PlatformSocketEngine::cleanup()
 {
 }
 
 //---------------------------------------------------------------------------
-void tst_QNativeSocketEngine::construction()
+void tst_PlatformSocketEngine::construction()
 {
-    QNativeSocketEngine socketDevice;
+    PLATFORMSOCKETENGINE socketDevice;
 
     QVERIFY(!socketDevice.isValid());
 
@@ -137,17 +150,17 @@ void tst_QNativeSocketEngine::construction()
     QVERIFY(socketDevice.peerPort() == 0);
     QVERIFY(socketDevice.error() == QAbstractSocket::UnknownSocketError);
 
-    QTest::ignoreMessage(QtWarningMsg, "QNativeSocketEngine::bytesAvailable() was called in QAbstractSocket::UnconnectedState");
+    QTest::ignoreMessage(QtWarningMsg, PLATFORMSOCKETENGINESTRING "::bytesAvailable() was called in QAbstractSocket::UnconnectedState");
     QVERIFY(socketDevice.bytesAvailable() == 0);
 
-    QTest::ignoreMessage(QtWarningMsg, "QNativeSocketEngine::hasPendingDatagrams() was called in QAbstractSocket::UnconnectedState");
+    QTest::ignoreMessage(QtWarningMsg, PLATFORMSOCKETENGINESTRING "::hasPendingDatagrams() was called in QAbstractSocket::UnconnectedState");
     QVERIFY(!socketDevice.hasPendingDatagrams());
 }
 
 //---------------------------------------------------------------------------
-void tst_QNativeSocketEngine::simpleConnectToIMAP()
+void tst_PlatformSocketEngine::simpleConnectToIMAP()
 {
-    QNativeSocketEngine socketDevice;
+    PLATFORMSOCKETENGINE socketDevice;
 
     // Initialize device
     QVERIFY(socketDevice.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
@@ -202,12 +215,9 @@ void tst_QNativeSocketEngine::simpleConnectToIMAP()
 }
 
 //---------------------------------------------------------------------------
-void tst_QNativeSocketEngine::udpLoopbackTest()
+void tst_PlatformSocketEngine::udpLoopbackTest()
 {
-#ifdef SYMBIAN_WINSOCK_CONNECTIVITY
-    QSKIP("Not working on Emulator without WinPCAP", SkipAll);
-#endif
-    QNativeSocketEngine udpSocket;
+    PLATFORMSOCKETENGINE udpSocket;
 
     // Initialize device #1
     QVERIFY(udpSocket.initialize(QAbstractSocket::UdpSocket));
@@ -224,7 +234,7 @@ void tst_QNativeSocketEngine::udpLoopbackTest()
     QVERIFY(port != 0);
 
     // Initialize device #2
-    QNativeSocketEngine udpSocket2;
+    PLATFORMSOCKETENGINE udpSocket2;
     QVERIFY(udpSocket2.initialize(QAbstractSocket::UdpSocket));
 
     // Connect device #2 to #1
@@ -253,12 +263,9 @@ void tst_QNativeSocketEngine::udpLoopbackTest()
 }
 
 //---------------------------------------------------------------------------
-void tst_QNativeSocketEngine::udpIPv6LoopbackTest()
+void tst_PlatformSocketEngine::udpIPv6LoopbackTest()
 {
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Symbian: IPv6 is not yet supported", SkipAll);
-#endif
-    QNativeSocketEngine udpSocket;
+    PLATFORMSOCKETENGINE udpSocket;
 
     // Initialize device #1
     bool init = udpSocket.initialize(QAbstractSocket::UdpSocket, QAbstractSocket::IPv6Protocol);
@@ -275,7 +282,7 @@ void tst_QNativeSocketEngine::udpIPv6LoopbackTest()
         QVERIFY(port != 0);
 
         // Initialize device #2
-        QNativeSocketEngine udpSocket2;
+        PLATFORMSOCKETENGINE udpSocket2;
         QVERIFY(udpSocket2.initialize(QAbstractSocket::UdpSocket, QAbstractSocket::IPv6Protocol));
 
         // Connect device #2 to #1
@@ -305,12 +312,26 @@ void tst_QNativeSocketEngine::udpIPv6LoopbackTest()
 }
 
 //---------------------------------------------------------------------------
-void tst_QNativeSocketEngine::broadcastTest()
+void tst_PlatformSocketEngine::broadcastTest()
 {
+#ifdef Q_OS_SYMBIAN
+    //broadcast isn't supported on loopback connections, but is on WLAN
+#ifndef QT_NO_BEARERMANAGEMENT
+    QScopedPointer<QNetworkConfigurationManager> netConfMan(new QNetworkConfigurationManager());
+    QNetworkConfiguration networkConfiguration(netConfMan->defaultConfiguration());
+    QScopedPointer<QNetworkSession> networkSession(new QNetworkSession(networkConfiguration));
+    if (!networkSession->isOpen()) {
+        networkSession->open();
+        bool ok = networkSession->waitForOpened(30000);
+        qDebug() << networkSession->isOpen() << networkSession->error() << networkSession->errorString();
+        QVERIFY(ok);
+    }
+#endif
+#endif
 #ifdef Q_OS_AIX
     QSKIP("Broadcast does not work on darko", SkipAll);
 #endif
-    QNativeSocketEngine broadcastSocket;
+    PLATFORMSOCKETENGINE broadcastSocket;
 
     // Initialize a regular Udp socket
     QVERIFY(broadcastSocket.initialize(QAbstractSocket::UdpSocket));
@@ -324,10 +345,18 @@ void tst_QNativeSocketEngine::broadcastTest()
     // Broadcast an inappropriate troll message
     QByteArray trollMessage
         = "MOOT wtf is a MOOT? talk english not your sutpiD ENGLISH.";
-    QVERIFY(broadcastSocket.writeDatagram(trollMessage.data(),
+    qint64 written = broadcastSocket.writeDatagram(trollMessage.data(),
                                          trollMessage.size(),
                                          QHostAddress::Broadcast,
-                                         port) == trollMessage.size());
+                                         port);
+
+#ifdef Q_OS_SYMBIAN
+    //On symbian, broadcasts return 0 bytes written if none of the interfaces support it.
+    //Notably the loopback interfaces do not. (though they do support multicast!?)
+    if (written == 0)
+        QEXPECT_FAIL("", "No active interface supports broadcast", Abort);
+#endif
+    QCOMPARE((int)written, trollMessage.size());
 
     // Wait until we receive it ourselves
 #if defined(Q_OS_FREEBSD)
@@ -346,9 +375,9 @@ void tst_QNativeSocketEngine::broadcastTest()
 }
 
 //---------------------------------------------------------------------------
-void tst_QNativeSocketEngine::serverTest()
+void tst_PlatformSocketEngine::serverTest()
 {
-    QNativeSocketEngine server;
+    PLATFORMSOCKETENGINE server;
 
     // Initialize a Tcp socket
     QVERIFY(server.initialize(QAbstractSocket::TcpSocket));
@@ -363,7 +392,7 @@ void tst_QNativeSocketEngine::serverTest()
     QVERIFY(server.state() == QAbstractSocket::ListeningState);
 
     // Initialize a Tcp socket
-    QNativeSocketEngine client;
+    PLATFORMSOCKETENGINE client;
     QVERIFY(client.initialize(QAbstractSocket::TcpSocket));
     if (!client.connectToHost(QHostAddress("127.0.0.1"), port)) {
         QVERIFY(client.state() == QAbstractSocket::ConnectingState);
@@ -377,7 +406,7 @@ void tst_QNativeSocketEngine::serverTest()
 
     // A socket device is initialized on the server side, passing the
     // socket descriptor from accept(). It's pre-connected.
-    QNativeSocketEngine serverSocket;
+    PLATFORMSOCKETENGINE serverSocket;
     QVERIFY(serverSocket.initialize(socketDescriptor));
     QVERIFY(serverSocket.state() == QAbstractSocket::ConnectedState);
 
@@ -400,12 +429,12 @@ void tst_QNativeSocketEngine::serverTest()
 }
 
 //---------------------------------------------------------------------------
-void tst_QNativeSocketEngine::udpLoopbackPerformance()
+void tst_PlatformSocketEngine::udpLoopbackPerformance()
 {
 #ifdef SYMBIAN_WINSOCK_CONNECTIVITY
     QSKIP("Not working on Emulator without WinPCAP", SkipAll);
 #endif
-    QNativeSocketEngine udpSocket;
+    PLATFORMSOCKETENGINE udpSocket;
 
     // Initialize device #1
     QVERIFY(udpSocket.initialize(QAbstractSocket::UdpSocket));
@@ -422,7 +451,7 @@ void tst_QNativeSocketEngine::udpLoopbackPerformance()
     QVERIFY(port != 0);
 
     // Initialize device #2
-    QNativeSocketEngine udpSocket2;
+    PLATFORMSOCKETENGINE udpSocket2;
     QVERIFY(udpSocket2.initialize(QAbstractSocket::UdpSocket));
 
     // Connect device #2 to #1
@@ -454,9 +483,9 @@ void tst_QNativeSocketEngine::udpLoopbackPerformance()
 }
 
 //---------------------------------------------------------------------------
-void tst_QNativeSocketEngine::tcpLoopbackPerformance()
+void tst_PlatformSocketEngine::tcpLoopbackPerformance()
 {
-    QNativeSocketEngine server;
+    PLATFORMSOCKETENGINE server;
 
     // Initialize a Tcp socket
     QVERIFY(server.initialize(QAbstractSocket::TcpSocket));
@@ -471,7 +500,7 @@ void tst_QNativeSocketEngine::tcpLoopbackPerformance()
     QVERIFY(server.state() == QAbstractSocket::ListeningState);
 
     // Initialize a Tcp socket
-    QNativeSocketEngine client;
+    PLATFORMSOCKETENGINE client;
     QVERIFY(client.initialize(QAbstractSocket::TcpSocket));
 
     // Connect to our server
@@ -481,17 +510,21 @@ void tst_QNativeSocketEngine::tcpLoopbackPerformance()
         QVERIFY(client.state() == QAbstractSocket::ConnectedState);
     }
 
-    // The server accepts the connectio
+    // The server accepts the connection
     int socketDescriptor = server.accept();
     QVERIFY(socketDescriptor > 0);
 
     // A socket device is initialized on the server side, passing the
     // socket descriptor from accept(). It's pre-connected.
-    QNativeSocketEngine serverSocket;
+    PLATFORMSOCKETENGINE serverSocket;
     QVERIFY(serverSocket.initialize(socketDescriptor));
     QVERIFY(serverSocket.state() == QAbstractSocket::ConnectedState);
 
+#if defined (Q_OS_SYMBIAN) && defined (__WINS__)
+    const int messageSize = 1024 * 16;
+#else
     const int messageSize = 1024 * 256;
+#endif
     QByteArray message1(messageSize, '@');
     QByteArray answer(messageSize, '@');
 
@@ -517,9 +550,9 @@ void tst_QNativeSocketEngine::tcpLoopbackPerformance()
 }
 
 //---------------------------------------------------------------------------
-void tst_QNativeSocketEngine::readWriteBufferSize()
+void tst_PlatformSocketEngine::readWriteBufferSize()
 {
-    QNativeSocketEngine device;
+    PLATFORMSOCKETENGINE device;
 
     QVERIFY(device.initialize(QAbstractSocket::TcpSocket));
 
@@ -539,15 +572,15 @@ void tst_QNativeSocketEngine::readWriteBufferSize()
 }
 
 //---------------------------------------------------------------------------
-void tst_QNativeSocketEngine::tooManySockets()
+void tst_PlatformSocketEngine::tooManySockets()
 {
 #if defined Q_OS_WIN
     QSKIP("Certain windows machines suffocate and spend too much time in this test.", SkipAll);
 #endif
-    QList<QNativeSocketEngine *> sockets;
-    QNativeSocketEngine *socketLayer = 0;
+    QList<PLATFORMSOCKETENGINE *> sockets;
+    PLATFORMSOCKETENGINE *socketLayer = 0;
     for (;;) {
-        socketLayer = new QNativeSocketEngine;
+        socketLayer = new PLATFORMSOCKETENGINE;
         sockets.append(socketLayer);
 
         if (!socketLayer->initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol))
@@ -560,20 +593,20 @@ void tst_QNativeSocketEngine::tooManySockets()
 }
 
 //---------------------------------------------------------------------------
-void tst_QNativeSocketEngine::bind()
+void tst_PlatformSocketEngine::bind()
 {
 #if !defined Q_OS_WIN && !defined Q_OS_SYMBIAN
-    QNativeSocketEngine binder;
+    PLATFORMSOCKETENGINE binder;
     QVERIFY(binder.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
     QVERIFY(!binder.bind(QHostAddress::Any, 82));
     QVERIFY(binder.error() == QAbstractSocket::SocketAccessError);
 #endif
 
-    QNativeSocketEngine binder2;
+    PLATFORMSOCKETENGINE binder2;
     QVERIFY(binder2.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
     QVERIFY(binder2.bind(QHostAddress::Any, 31180));
 
-    QNativeSocketEngine binder3;
+    PLATFORMSOCKETENGINE binder3;
     QVERIFY(binder3.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
     QVERIFY(!binder3.bind(QHostAddress::Any, 31180));
 
@@ -586,9 +619,9 @@ void tst_QNativeSocketEngine::bind()
 }
 
 //---------------------------------------------------------------------------
-void tst_QNativeSocketEngine::networkError()
+void tst_PlatformSocketEngine::networkError()
 {
-    QNativeSocketEngine client;
+    PLATFORMSOCKETENGINE client;
 
     QVERIFY(client.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
 
@@ -604,6 +637,12 @@ void tst_QNativeSocketEngine::networkError()
 #ifdef Q_OS_WIN
     // could use shutdown to produce different errors
     ::closesocket(client.socketDescriptor());
+#elif defined(Q_OS_SYMBIAN)
+    RSocket sock;
+    QVERIFY(QSymbianSocketManager::instance().lookupSocket(client.socketDescriptor(), sock));
+    TRequestStatus stat;
+    sock.Shutdown(RSocket::EImmediate, stat);
+    User::WaitForRequest(stat);
 #else
     ::close(client.socketDescriptor());
 #endif
@@ -612,31 +651,31 @@ void tst_QNativeSocketEngine::networkError()
 }
 
 //---------------------------------------------------------------------------
-void tst_QNativeSocketEngine::setSocketDescriptor()
+void tst_PlatformSocketEngine::setSocketDescriptor()
 {
-    QNativeSocketEngine socket1;
+    PLATFORMSOCKETENGINE socket1;
     QVERIFY(socket1.initialize(QAbstractSocket::TcpSocket));
 
-    QNativeSocketEngine socket2;
+    PLATFORMSOCKETENGINE socket2;
     QVERIFY(socket2.initialize(socket1.socketDescriptor()));
 }
 
 //---------------------------------------------------------------------------
-void tst_QNativeSocketEngine::invalidSend()
+void tst_PlatformSocketEngine::invalidSend()
 {
-    QNativeSocketEngine socket;
+    PLATFORMSOCKETENGINE socket;
     QVERIFY(socket.initialize(QAbstractSocket::TcpSocket));
 
-    QTest::ignoreMessage(QtWarningMsg, "QNativeSocketEngine::writeDatagram() was"
+    QTest::ignoreMessage(QtWarningMsg, PLATFORMSOCKETENGINESTRING "::writeDatagram() was"
                                " called by a socket other than QAbstractSocket::UdpSocket");
     QCOMPARE(socket.writeDatagram("hei", 3, QHostAddress::LocalHost, 143),
             (qlonglong) -1);
 }
 
 //---------------------------------------------------------------------------
-void tst_QNativeSocketEngine::receiveUrgentData()
+void tst_PlatformSocketEngine::receiveUrgentData()
 {
-    QNativeSocketEngine server;
+    PLATFORMSOCKETENGINE server;
 
     QVERIFY(server.initialize(QAbstractSocket::TcpSocket));
 
@@ -648,7 +687,7 @@ void tst_QNativeSocketEngine::receiveUrgentData()
     QVERIFY(server.listen());
     QVERIFY(server.state() == QAbstractSocket::ListeningState);
 
-    QNativeSocketEngine client;
+    PLATFORMSOCKETENGINE client;
     QVERIFY(client.initialize(QAbstractSocket::TcpSocket));
 
     if (!client.connectToHost(QHostAddress("127.0.0.1"), port)) {
@@ -660,7 +699,7 @@ void tst_QNativeSocketEngine::receiveUrgentData()
     int socketDescriptor = server.accept();
     QVERIFY(socketDescriptor > 0);
 
-    QNativeSocketEngine serverSocket;
+    PLATFORMSOCKETENGINE serverSocket;
     QVERIFY(serverSocket.initialize(socketDescriptor));
     QVERIFY(serverSocket.state() == QAbstractSocket::ConnectedState);
 
@@ -676,7 +715,18 @@ void tst_QNativeSocketEngine::receiveUrgentData()
 
     // The server sends an urgent message
     msg = 'Q';
+#if defined(Q_OS_SYMBIAN)
+    RSocket sock;
+    QVERIFY(QSymbianSocketManager::instance().lookupSocket(socketDescriptor, sock));
+    TRequestStatus stat;
+    TSockXfrLength len;
+    sock.Send(TPtrC8((TUint8*)&msg,1), KSockWriteUrgent, stat, len);
+    User::WaitForRequest(stat);
+    QVERIFY(stat == KErrNone);
+    QCOMPARE(len(), 1);
+#else
     QCOMPARE(int(::send(socketDescriptor, &msg, sizeof(msg), MSG_OOB)), 1);
+#endif
 
     // The client receives the urgent message
     QVERIFY(client.waitForRead());
@@ -689,7 +739,15 @@ void tst_QNativeSocketEngine::receiveUrgentData()
     // The client sends an urgent message
     msg = 'T';
     int clientDescriptor = client.socketDescriptor();
+#if defined(Q_OS_SYMBIAN)
+    QVERIFY(QSymbianSocketManager::instance().lookupSocket(clientDescriptor, sock));
+    sock.Send(TPtrC8((TUint8*)&msg,1), KSockWriteUrgent, stat, len);
+    User::WaitForRequest(stat);
+    QVERIFY(stat == KErrNone);
+    QCOMPARE(len(), 1);
+#else
     QCOMPARE(int(::send(clientDescriptor, &msg, sizeof(msg), MSG_OOB)), 1);
+#endif
 
     // The server receives the urgent message
     QVERIFY(serverSocket.waitForRead());
@@ -701,5 +759,5 @@ void tst_QNativeSocketEngine::receiveUrgentData()
 
 }
 
-QTEST_MAIN(tst_QNativeSocketEngine)
-#include "tst_qnativesocketengine.moc"
+QTEST_MAIN(tst_PlatformSocketEngine)
+#include "tst_platformsocketengine.moc"
