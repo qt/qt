@@ -122,7 +122,7 @@ struct QFreetypeFace
     static void addBitmapToPath(FT_GlyphSlot slot, const QFixedPoint &point, QPainterPath *path, bool = false);
 
 private:
-    friend class QFontEngineFTRawFont;
+    friend class QFontEngineFT;
     friend class QScopedPointerDeleter<QFreetypeFace>;
     QFreetypeFace() : _lock(QMutex::Recursive) {}
     ~QFreetypeFace() {}
@@ -319,6 +319,10 @@ private:
     };
 
     void setDefaultHintStyle(HintStyle style);
+
+    virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
+    bool initFromFontEngine(const QFontEngineFT *fontEngine);
+
     HintStyle defaultHintStyle() const { return default_hint_style; }
 protected:
 
