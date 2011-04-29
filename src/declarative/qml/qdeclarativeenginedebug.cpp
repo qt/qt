@@ -249,10 +249,16 @@ void QDeclarativeEngineDebugServer::buildObjectDump(QDataStream &message,
         return;
     }
 
-    message << (object->metaObject()->propertyCount() + fakeProperties.count());
+    QList<int> propertyIndexes;
+    for (int ii = 0; ii < object->metaObject()->propertyCount(); ++ii) {
+        if (object->metaObject()->property(ii).isScriptable())
+            propertyIndexes << ii;
+    }
 
-    for (int ii = 0; ii < object->metaObject()->propertyCount(); ++ii) 
-        message << propertyData(object, ii);
+    message << propertyIndexes.size() + fakeProperties.count();
+
+    for (int ii = 0; ii < propertyIndexes.size(); ++ii)
+        message << propertyData(object, propertyIndexes.at(ii));
 
     for (int ii = 0; ii < fakeProperties.count(); ++ii)
         message << fakeProperties[ii];

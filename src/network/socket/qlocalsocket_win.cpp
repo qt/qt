@@ -353,6 +353,11 @@ qint64 QLocalSocket::writeData(const char *data, qint64 maxSize)
 
 void QLocalSocket::abort()
 {
+    Q_D(QLocalSocket);
+    if (d->pipeWriter) {
+        delete d->pipeWriter;
+        d->pipeWriter = 0;
+    }
     close();
 }
 
@@ -574,10 +579,7 @@ bool QLocalSocket::waitForDisconnected(int msecs)
 bool QLocalSocket::isValid() const
 {
     Q_D(const QLocalSocket);
-    if (d->handle == INVALID_HANDLE_VALUE)
-        return false;
-
-    return PeekNamedPipe(d->handle, NULL, 0, NULL, NULL, NULL);
+    return d->handle != INVALID_HANDLE_VALUE;
 }
 
 bool QLocalSocket::waitForReadyRead(int msecs)

@@ -487,6 +487,20 @@ QDBusArgument &QDBusArgument::operator<<(const QDBusSignature &arg)
 
 /*!
     \overload
+    \since 4.8
+    \internal
+    Appends the primitive value \a arg of type \c{UNIX_FILE_DESCRIPTOR} (Unix
+    File Descriptor) to the D-Bus stream.
+*/
+QDBusArgument &QDBusArgument::operator<<(const QDBusUnixFileDescriptor &arg)
+{
+    if (QDBusArgumentPrivate::checkWrite(d))
+        d->marshaller()->append(arg);
+    return *this;
+}
+
+/*!
+    \overload
     Appends the primitive value \a arg of type \c{VARIANT} to the D-Bus stream.
 
     A D-Bus variant type can contain any type, including other
@@ -724,6 +738,20 @@ const QDBusArgument &QDBusArgument::operator>>(QDBusSignature &arg) const
 {
     if (QDBusArgumentPrivate::checkReadAndDetach(d))
         arg = d->demarshaller()->toSignature();
+    return *this;
+}
+
+/*!
+    \overload
+    \since 4.8
+    \internal
+    Extracts one D-Bus primitive argument of type \c{UNIX_FILE_DESCRIPTOR}
+    (Unix file descriptor) from the D-Bus stream.
+*/
+const QDBusArgument &QDBusArgument::operator>>(QDBusUnixFileDescriptor &arg) const
+{
+    if (QDBusArgumentPrivate::checkReadAndDetach(d))
+        arg = d->demarshaller()->toUnixFileDescriptor();
     return *this;
 }
 

@@ -203,7 +203,6 @@ void QEglFSScreen::createAndSetPlatformContext()
     attribList[temp++] = EGL_NONE;
 
     QEGLPlatformContext *platformContext = new QEGLPlatformContext(m_dpy,config,attribList,m_surface,EGL_OPENGL_ES_API);
-    platformContext->makeDefaultSharedContext();
     m_platformContext = platformContext;
 
     EGLint w,h;                    // screen size detection

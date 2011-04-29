@@ -53,7 +53,7 @@ public:
         , opts(QPlatformWindowFormat::DoubleBuffer | QPlatformWindowFormat::DepthBuffer
              | QPlatformWindowFormat::Rgba | QPlatformWindowFormat::DirectRendering
              | QPlatformWindowFormat::StencilBuffer | QPlatformWindowFormat::DeprecatedFunctions
-             | QPlatformWindowFormat::UseDefaultSharedContext | QPlatformWindowFormat::HasWindowSurface)
+             | QPlatformWindowFormat::HasWindowSurface)
         , depthSize(-1)
         , accumSize(-1)
         , stencilSize(-1)
@@ -525,16 +525,6 @@ void QPlatformWindowFormat::setSampleBuffers(bool enable)
     setOption(enable ? QPlatformWindowFormat::SampleBuffers : QPlatformWindowFormat::NoSampleBuffers);
 }
 
-void QPlatformWindowFormat::setUseDefaultSharedContext(bool enable)
-{
-    if (enable) {
-        setOption(QPlatformWindowFormat::UseDefaultSharedContext);
-        d->sharedContext = 0;
-    } else {
-        setOption(QPlatformWindowFormat::NoDefaultSharedContext);
-    }
-}
-
 /*!
     Returns the number of samples per pixel when multisampling is
     enabled. By default, the highest number of samples that is
@@ -613,7 +603,6 @@ QPlatformWindowFormat::WindowApi QPlatformWindowFormat::windowApi() const
 
 void QPlatformWindowFormat::setSharedContext(QPlatformGLContext *context)
 {
-    setUseDefaultSharedContext(false);
     d->sharedContext = context;
 }
 

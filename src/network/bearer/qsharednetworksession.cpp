@@ -59,6 +59,11 @@ inline QSharedNetworkSessionManager* sharedNetworkSessionManager()
     return rv;
 }
 
+static void doDeleteLater(QObject* obj)
+{
+    obj->deleteLater();
+}
+
 QSharedPointer<QNetworkSession> QSharedNetworkSessionManager::getSession(QNetworkConfiguration config)
 {
     QSharedNetworkSessionManager *m(sharedNetworkSessionManager());
@@ -69,7 +74,7 @@ QSharedPointer<QNetworkSession> QSharedNetworkSessionManager::getSession(QNetwor
             return p;
     }
     //otherwise make one
-    QSharedPointer<QNetworkSession> session(new QNetworkSession(config));
+    QSharedPointer<QNetworkSession> session(new QNetworkSession(config), doDeleteLater);
     m->sessions[config] = session;
     return session;
 }

@@ -593,4 +593,32 @@ EXPORTS
 	_ZTIN6Phonon15AudioDataOutputE @ 592 NONAME
 	_ZTVN6Phonon12PulseSupportE @ 593 NONAME
 	_ZTVN6Phonon15AudioDataOutputE @ 594 NONAME
+	_ZN6Phonon10SeekSlider18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 595 NONAME
+	_ZN6Phonon10SeekSlider25staticMetaObjectExtraDataE @ 596 NONAME DATA 8
+	_ZN6Phonon11AudioOutput18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 597 NONAME
+	_ZN6Phonon11AudioOutput25staticMetaObjectExtraDataE @ 598 NONAME DATA 8
+	_ZN6Phonon11MediaObject18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 599 NONAME
+	_ZN6Phonon11MediaObject25staticMetaObjectExtraDataE @ 600 NONAME DATA 8
+	_ZN6Phonon11VideoPlayer18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 601 NONAME
+	_ZN6Phonon11VideoPlayer25staticMetaObjectExtraDataE @ 602 NONAME DATA 8
+	_ZN6Phonon11VideoWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 603 NONAME
+	_ZN6Phonon11VideoWidget25staticMetaObjectExtraDataE @ 604 NONAME DATA 8
+	_ZN6Phonon12EffectWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 605 NONAME
+	_ZN6Phonon12EffectWidget25staticMetaObjectExtraDataE @ 606 NONAME DATA 8
+	_ZN6Phonon12PulseSupport18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 607 NONAME
+	_ZN6Phonon12PulseSupport25staticMetaObjectExtraDataE @ 608 NONAME DATA 8
+	_ZN6Phonon12VolumeSlider18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 609 NONAME
+	_ZN6Phonon12VolumeSlider25staticMetaObjectExtraDataE @ 610 NONAME DATA 8
+	_ZN6Phonon15AudioDataOutput18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 611 NONAME
+	_ZN6Phonon15AudioDataOutput25staticMetaObjectExtraDataE @ 612 NONAME DATA 8
+	_ZN6Phonon15MediaController18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 613 NONAME
+	_ZN6Phonon15MediaController25staticMetaObjectExtraDataE @ 614 NONAME DATA 8
+	_ZN6Phonon17VolumeFaderEffect18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 615 NONAME
+	_ZN6Phonon17VolumeFaderEffect25staticMetaObjectExtraDataE @ 616 NONAME DATA 8
+	_ZN6Phonon19AbstractAudioOutput18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 617 NONAME
+	_ZN6Phonon19AbstractAudioOutput25staticMetaObjectExtraDataE @ 618 NONAME DATA 8
+	_ZN6Phonon19AbstractMediaStream18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 619 NONAME
+	_ZN6Phonon19AbstractMediaStream25staticMetaObjectExtraDataE @ 620 NONAME DATA 8
+	_ZN6Phonon6Effect18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 621 NONAME
+	_ZN6Phonon6Effect25staticMetaObjectExtraDataE @ 622 NONAME DATA 8
 

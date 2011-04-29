@@ -282,8 +282,13 @@ QFontPrivate::~QFontPrivate()
     scFont = 0;
 }
 
-#if !defined(Q_WS_MAC)
 extern QMutex *qt_fontdatabase_mutex();
+
+#if !defined(Q_WS_MAC)
+#define QT_FONT_ENGINE_FROM_DATA(data, script) data->engines[script]
+#else
+#define QT_FONT_ENGINE_FROM_DATA(data, script) data->engine
+#endif
 
 QFontEngine *QFontPrivate::engineForScript(int script) const
 {
@@ -295,27 +300,10 @@ QFontEngine *QFontPrivate::engineForScript(int script) const
         engineData->ref.deref();
         engineData = 0;
     }
-    if (!engineData || !engineData->engines[script])
+    if (!engineData || !QT_FONT_ENGINE_FROM_DATA(engineData, script))
         QFontDatabase::load(this, script);
-    return engineData->engines[script];
+    return QT_FONT_ENGINE_FROM_DATA(engineData, script);
 }
-#else
-QFontEngine *QFontPrivate::engineForScript(int script) const
-{
-    extern QMutex *qt_fontdatabase_mutex();
-    QMutexLocker locker(qt_fontdatabase_mutex());
-    if (script >= QUnicodeTables::Inherited)
-        script = QUnicodeTables::Common;
-    if (engineData && engineData->fontCache != QFontCache::instance()) {
-        // throw out engineData that came from a different thread
-        engineData->ref.deref();
-        engineData = 0;
-    }
-    if (!engineData || !engineData->engine)
-        QFontDatabase::load(this, script);
-    return engineData->engine;
-}
-#endif
 
 void QFontPrivate::alterCharForCapitalization(QChar &c) const {
     switch (capital) {
