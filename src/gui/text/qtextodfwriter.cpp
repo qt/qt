@@ -591,6 +591,7 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, QTextCharFor
         QString value;
         switch (format.verticalAlignment()) {
         case QTextCharFormat::AlignMiddle:
+        case QTextCharFormat::AlignBaseline:
         case QTextCharFormat::AlignNormal: value = QString::fromLatin1("0%"); break;
         case QTextCharFormat::AlignSuperScript: value = QString::fromLatin1("super"); break;
         case QTextCharFormat::AlignSubScript: value = QString::fromLatin1("sub"); break;
