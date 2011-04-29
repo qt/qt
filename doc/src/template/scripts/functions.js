@@ -184,7 +184,7 @@ var blankRE=/^\s*$/;
 function CheckEmptyAndLoadList()
 {
 	/* Start Extracting information for feedback and adding this to the feedback form */
-	var pageUrl = window.location.href;
+	var pageUrl = window.location.pathname;
 	var pageVal = $('title').html();
 	$('#pageType').removeClass('red');
 	$('#feedUrl').remove();
