@@ -255,9 +255,13 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         // fall through intended
     case QEvent::KeyRelease:
         const QKeyEvent *keyEvent = static_cast<const QKeyEvent *>(event);
+        //If proxy exists, always use hints from proxy.
+        QWidget *proxy = focusWidget()->focusProxy();
+        Qt::InputMethodHints currentHints = proxy ? proxy->inputMethodHints() : focusWidget()->inputMethodHints();
+
         switch (keyEvent->key()) {
         case Qt::Key_F20:
-            Q_ASSERT(m_lastImHints == focusWidget()->inputMethodHints());
+            Q_ASSERT(m_lastImHints == currentHints);
             if (m_lastImHints & Qt::ImhHiddenText) {
                 // Special case in Symbian. On editors with secret text, F20 is for some reason
                 // considered to be a backspace.
@@ -287,7 +291,7 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         }
 
         if (keyEvent->type() == QEvent::KeyPress
-            && focusWidget()->inputMethodHints() & Qt::ImhHiddenText
+            && currentHints & Qt::ImhHiddenText
             && !keyEvent->text().isEmpty()) {
             // Send some temporary preedit text in order to make text visible for a moment.
             m_preeditString = keyEvent->text();
@@ -588,9 +592,10 @@ void QCoeFepInputContext::updateHints(bool mustUpdateInputCapabilities)
 {
     QWidget *w = focusWidget();
     if (w) {
-        Qt::InputMethodHints hints = w->inputMethodHints();
+        QWidget *proxy = w->focusProxy();
+        Qt::InputMethodHints hints = proxy ? proxy->inputMethodHints() : w->inputMethodHints();
 
-        // Since splitview support works like an input method hint, yet it is private flag, 
+        // Since splitview support works like an input method hint, yet it is private flag,
         // we need to update its state separately.
         if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0) {
             TInt currentFlags = m_fepState->Flags();

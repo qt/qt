@@ -98,10 +98,10 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
                                    QTextItem::RenderFlags flags, qreal width,
                                    const QTextCharFormat &charFormat);
 // Helper function to calculate left most position, width and flags for decoration drawing
-static void drawDecorationForGlyphs(QPainter *painter, const glyph_t *glyphArray,
-                                    const QFixedPoint *positions, int glyphCount,
-                                    QFontEngine *fontEngine, const QFont &font,
-                                    const QTextCharFormat &charFormat);
+Q_GUI_EXPORT void qt_draw_decoration_for_glyphs(QPainter *painter, const glyph_t *glyphArray,
+                                                const QFixedPoint *positions, int glyphCount,
+                                                QFontEngine *fontEngine, const QFont &font,
+                                                const QTextCharFormat &charFormat);
 
 static inline QGradient::CoordinateMode coordinateMode(const QBrush &brush)
 {
@@ -156,7 +156,8 @@ static bool qt_paintengine_supports_transformations(QPaintEngine::Type type)
 {
     return type == QPaintEngine::OpenGL2
             || type == QPaintEngine::OpenVG
-            || type == QPaintEngine::OpenGL;
+            || type == QPaintEngine::OpenGL
+            || type == QPaintEngine::CoreGraphics;
 }
 
 #ifndef QT_NO_DEBUG
@@ -503,8 +504,12 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
 
     q->save();
     state->matrix = QTransform();
-    state->dirtyFlags |= QPaintEngine::DirtyTransform;
-    updateState(state);
+    if (extended) {
+        extended->transformChanged();
+    } else {
+        state->dirtyFlags |= QPaintEngine::DirtyTransform;
+        updateState(state);
+    }
     engine->drawImage(absPathRect,
                  image,
                  QRectF(0, 0, absPathRect.width(), absPathRect.height()),
@@ -687,11 +692,14 @@ void QPainterPrivate::updateInvMatrix()
     invMatrix = state->matrix.inverted();
 }
 
+extern bool qt_isExtendedRadialGradient(const QBrush &brush);
+
 void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
 {
     bool alpha = false;
     bool linearGradient = false;
     bool radialGradient = false;
+    bool extendedRadialGradient = false;
     bool conicalGradient = false;
     bool patternBrush = false;
     bool xform = false;
@@ -723,6 +731,7 @@ void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
                            (brushStyle == Qt::LinearGradientPattern));
         radialGradient = ((penBrushStyle == Qt::RadialGradientPattern) ||
                            (brushStyle == Qt::RadialGradientPattern));
+        extendedRadialGradient = radialGradient && (qt_isExtendedRadialGradient(penBrush) || qt_isExtendedRadialGradient(s->brush));
         conicalGradient = ((penBrushStyle == Qt::ConicalGradientPattern) ||
                             (brushStyle == Qt::ConicalGradientPattern));
         patternBrush = (((penBrushStyle > Qt::SolidPattern
@@ -806,7 +815,7 @@ void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
         s->emulationSpecifier &= ~QPaintEngine::LinearGradientFill;
 
     // Radial gradient emulation
-    if (radialGradient && !engine->hasFeature(QPaintEngine::RadialGradientFill))
+    if (extendedRadialGradient || (radialGradient && !engine->hasFeature(QPaintEngine::RadialGradientFill)))
         s->emulationSpecifier |= QPaintEngine::RadialGradientFill;
     else
         s->emulationSpecifier &= ~QPaintEngine::RadialGradientFill;
@@ -5809,7 +5818,7 @@ void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
     bool paintEngineSupportsTransformations =
             d->extended != 0
             ? qt_paintengine_supports_transformations(d->extended->type())
-            : false;
+            : qt_paintengine_supports_transformations(d->engine->type());
     for (int i=0; i<count; ++i) {
         QPointF processedPosition = position + glyphPositions.at(i);
         if (!paintEngineSupportsTransformations)
@@ -6060,9 +6069,9 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         }
         d->extended->drawStaticTextItem(item);
 
-        drawDecorationForGlyphs(this, item->glyphs, item->glyphPositions,
-                                item->numGlyphs, item->fontEngine(), staticText_d->font,
-                                QTextCharFormat());
+        qt_draw_decoration_for_glyphs(this, item->glyphs, item->glyphPositions,
+                                      item->numGlyphs, item->fontEngine(), staticText_d->font,
+                                      QTextCharFormat());
     }
     if (currentColor != oldPen.color())
         setPen(oldPen);
@@ -6507,10 +6516,10 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     painter->setBrush(oldBrush);
 }
 
-static void drawDecorationForGlyphs(QPainter *painter, const glyph_t *glyphArray,
-                                    const QFixedPoint *positions, int glyphCount,
-                                    QFontEngine *fontEngine, const QFont &font,
-                                    const QTextCharFormat &charFormat)
+Q_GUI_EXPORT void qt_draw_decoration_for_glyphs(QPainter *painter, const glyph_t *glyphArray,
+                                                const QFixedPoint *positions, int glyphCount,
+                                                QFontEngine *fontEngine, const QFont &font,
+                                                const QTextCharFormat &charFormat)
 {
     if (!(font.underline() || font.strikeOut() || font.overline()))
         return;
