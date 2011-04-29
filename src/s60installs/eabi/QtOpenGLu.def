@@ -766,4 +766,18 @@ EXPORTS
 	_ZThn104_N20QGLTextureGlyphCacheD0Ev @ 765 NONAME
 	_ZThn104_N20QGLTextureGlyphCacheD1Ev @ 766 NONAME
 	_ZThn8_NK16QGLWindowSurface8featuresEv @ 767 NONAME
+	_ZN14QGLSignalProxy18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 768 NONAME
+	_ZN14QGLSignalProxy25staticMetaObjectExtraDataE @ 769 NONAME DATA 8
+	_ZN16QGLShaderProgram18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 770 NONAME
+	_ZN16QGLShaderProgram25staticMetaObjectExtraDataE @ 771 NONAME DATA 8
+	_ZN16QGLWindowSurface18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 772 NONAME
+	_ZN16QGLWindowSurface25staticMetaObjectExtraDataE @ 773 NONAME DATA 8
+	_ZN21QGraphicsShaderEffect18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 774 NONAME
+	_ZN21QGraphicsShaderEffect25staticMetaObjectExtraDataE @ 775 NONAME DATA 8
+	_ZN22QGLEngineShaderManager18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 776 NONAME
+	_ZN22QGLEngineShaderManager25staticMetaObjectExtraDataE @ 777 NONAME DATA 8
+	_ZN9QGLShader18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 778 NONAME
+	_ZN9QGLShader25staticMetaObjectExtraDataE @ 779 NONAME DATA 8
+	_ZN9QGLWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 780 NONAME
+	_ZN9QGLWidget25staticMetaObjectExtraDataE @ 781 NONAME DATA 8
 
