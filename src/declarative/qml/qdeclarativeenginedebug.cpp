@@ -647,7 +647,10 @@ void QDeclarativeEngineDebugServer::resetBinding(int objectId, const QString &pr
                     }
                 }
             }
-        } else {
+        } else if (hasValidSignal(object, propertyName)) {
+            QDeclarativeProperty property(object, propertyName, context);
+            QDeclarativePropertyPrivate::setSignalExpression(property, 0);
+    } else {
             if (QDeclarativePropertyChanges *propertyChanges = qobject_cast<QDeclarativePropertyChanges *>(object)) {
                 propertyChanges->removeProperty(propertyName);
             }
