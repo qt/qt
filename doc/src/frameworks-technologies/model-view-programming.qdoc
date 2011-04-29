@@ -1934,6 +1934,13 @@
     \l{QSortFilterProxyModel::lessThan()}{lessThan()} function to perform custom
     comparisons.
 
+    \section3 Custom data models
+
+    QIdentityProxyModel instances do not sort or filter the structure of the source model,
+    but provide a base class for creating a data proxy. This could be useful on top of a
+    QFileSystemModel for example to provide different colours for the BackgroundRole for
+    different types of files.
+
     \section1 Model subclassing reference
 
     Model subclasses need to provide implementations of many of the virtual functions

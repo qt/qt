@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Stephen Kelly <stephen.kelly@kdab.com>
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -39,50 +39,26 @@
 ****************************************************************************/
 
 //! [0]
-beginInsertRows(parent, 2, 4);
+class DateFormatProxyModel : public QIdentityProxyModel
+{
+  // ...
+
+  void setDateFormatString(const QString &formatString)
+  {
+    m_formatString = formatString;
+  }
+
+  QVariant data(const QModelIndex &index, int role)
+  {
+    if (role != Qt::DisplayRole)
+      return QIdentityProxyModel::data(index, role);
+
+    const QDateTime dateTime = sourceModel()->data(SourceClass::DateRole).toDateTime();
+
+    return dateTime.toString(m_formatString);
+  }
+
+private:
+  QString m_formatString;
+};
 //! [0]
-
-
-//! [1]
-beginInsertRows(parent, 4, 5);
-//! [1]
-
-
-//! [2]
-beginRemoveRows(parent, 2, 3);
-//! [2]
-
-
-//! [3]
-beginInsertColumns(parent, 4, 6);
-//! [3]
-
-
-//! [4]
-beginInsertColumns(parent, 6, 8);
-//! [4]
-
-
-//! [5]
-beginRemoveColumns(parent, 4, 6);
-//! [5]
-
-
-//! [6]
-beginMoveRows(sourceParent, 2, 4, destinationParent, 2);
-//! [6]
-
-
-//! [7]
-beginMoveRows(sourceParent, 2, 4, destinationParent, 6);
-//! [7]
-
-
-//! [8]
-beginMoveRows(parent, 2, 2, parent, 0);
-//! [8]
-
-
-//! [9]
-beginMoveRows(parent, 2, 2, parent, 4);
-//! [9]
