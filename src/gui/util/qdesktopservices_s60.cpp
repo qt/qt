@@ -314,7 +314,7 @@ static bool handleUrl(const QUrl &url)
     if (!url.isValid())
         return false;
 
-    QString urlString(url.toString());
+    QString urlString(url.toEncoded());
     TPtrC urlPtr(qt_QString2TPtrC(urlString));
     TRAPD( err, handleUrlL(urlPtr));
     return err ? false : true;

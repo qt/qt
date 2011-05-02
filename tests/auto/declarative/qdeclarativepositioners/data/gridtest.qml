@@ -1,9 +1,11 @@
-import QtQuick 1.0
+import QtQuick 1.1
 
 Item {
     width: 640
     height: 480
+    property bool testRightToLeft: false
     Grid {
+        layoutDirection: testRightToLeft ? Qt.RightToLeft : Qt.LeftToRight
         objectName: "grid"
         columns: 3
         Rectangle {
@@ -21,7 +23,7 @@ Item {
         Rectangle {
             objectName: "three"
             color: "blue"
-            width: 50
+            width: 30
             height: 20
         }
         Rectangle {

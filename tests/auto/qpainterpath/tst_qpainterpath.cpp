@@ -290,6 +290,11 @@ void tst_QPainterPath::contains_QPointF_data()
     QTest::newRow("horizontal cubic, out left") << path << QPointF(0, 100) << false;
     QTest::newRow("horizontal cubic, out right") << path << QPointF(300, 100) <<false;
     QTest::newRow("horizontal cubic, in mid") << path << QPointF(150, 100) << true;
+
+    path = QPainterPath();
+    path.addEllipse(QRectF(-5000.0, -5000.0, 1500000.0, 1500000.0));
+    QTest::newRow("huge ellipse, qreal=float crash") << path << QPointF(1100000.35, 1098000.2) << true;
+
 }
 
 void tst_QPainterPath::contains_QPointF()
@@ -406,6 +411,10 @@ void tst_QPainterPath::intersects_QRectF_data()
 
     QTest::newRow("horizontal line") << linePath(0, 0, 10, 0) << QRectF(1, -1, 2, 2) << true;
     QTest::newRow("vertical line") << linePath(0, 0, 0, 10) << QRectF(-1, 1, 2, 2) << true;
+
+    path = QPainterPath();
+    path.addEllipse(QRectF(-5000.0, -5000.0, 1500000.0, 1500000.0));
+    QTest::newRow("huge ellipse, qreal=float crash") << path << QRectF(1100000.35, 1098000.2, 1500000.0, 1500000.0) << true;
 }
 
 void tst_QPainterPath::intersects_QRectF()

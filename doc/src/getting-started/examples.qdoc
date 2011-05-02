@@ -36,7 +36,8 @@
 
    You can run the examples from the \l{Examples and Demos Launcher}
    application (except see \l{QML Examples and Demos} {QML Examples}
-   for special instructions for running those examples).
+   for special instructions for running those examples). In addition,
+   Qt Creator can directly run these examples through the Welcome Page.
 
    The examples are listed below by functional area. Each example
    listed in a particular functional area is meant to illustrate how
@@ -56,8 +57,14 @@
    These examples are provided under the terms of the
    \l{New and Modified BSD Licenses}{Modified BSD License}.
 
+   \section1 Qt Quick Example Code
+   The \l{QML Examples and Demos} site has a dedicated page for QML examples.
 
-   \section1 Examples by Functional Area
+   \section1 Qt Mobility Example Code
+   The \l{external: Qt Mobility Examples}{Qt Mobility Examples} page lists
+   examples that show how the Qt Mobility APIs might be used.
+
+   \section1 Qt Examples by Module or Technology
 
    \generatelist{related}
 */
@@ -697,6 +704,7 @@
 /*!
     \page examples-linguist.html
     \ingroup all-examples
+    \ingroup internationalization
     \title Qt Linguist Examples
     \brief Using Qt Linguist to internationalize your Qt application.
 

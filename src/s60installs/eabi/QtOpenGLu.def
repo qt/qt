@@ -714,4 +714,14 @@ EXPORTS
 	_ZN16QGLWindowSurface12swapBehaviorE @ 713 NONAME DATA 4
 	_ZN20QGLTextureGlyphCache10setContextEP10QGLContext @ 714 NONAME
 	_ZN20QGLTextureGlyphCache5clearEv @ 715 NONAME
+	_ZN13QGLPixmapData12forceToImageEv @ 716 NONAME
+	_ZN13QGLPixmapData14destroyTextureEv @ 717 NONAME
+	_ZN13QGLPixmapData14reclaimTextureEv @ 718 NONAME
+	_ZN13QGLPixmapData21detachTextureFromPoolEv @ 719 NONAME
+	_ZN13QGLPixmapData9hibernateEv @ 720 NONAME
+	_ZN17QGLGraphicsSystem22releaseCachedResourcesEv @ 721 NONAME
+	_ZN13QGLPixmapData11idealFormatER6QImage6QFlagsIN2Qt19ImageConversionFlagEE @ 722 NONAME
+	_ZN13QGLPixmapData24releaseNativeImageHandleEv @ 723 NONAME
+	_ZN13QGLPixmapData25initFromNativeImageHandleEPvRK7QString @ 724 NONAME
+	_ZN13QGLPixmapData35createFromNativeImageHandleProviderEv @ 725 NONAME
 

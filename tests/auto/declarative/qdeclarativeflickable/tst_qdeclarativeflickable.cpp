@@ -69,6 +69,7 @@ private slots:
     void maximumFlickVelocity();
     void flickDeceleration();
     void pressDelay();
+    void disabledContent();
     void nestedPressDelay();
     void flickableDirection();
     void qgraphicswidget();
@@ -109,7 +110,7 @@ void tst_qdeclarativeflickable::create()
     QCOMPARE(obj->isInteractive(), true);
     QCOMPARE(obj->boundsBehavior(), QDeclarativeFlickable::DragAndOvershootBounds);
     QCOMPARE(obj->pressDelay(), 0);
-    QCOMPARE(obj->maximumFlickVelocity(), 2000.);
+    QCOMPARE(obj->maximumFlickVelocity(), 2500.);
 
     delete obj;
 }
@@ -246,6 +247,44 @@ void tst_qdeclarativeflickable::pressDelay()
     flickable->setPressDelay(200);
     QCOMPARE(spy.count(),1);
 }
+
+// QT-4677
+void tst_qdeclarativeflickable::disabledContent()
+{
+    QDeclarativeView *canvas = new QDeclarativeView;
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/disabledcontent.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeFlickable *flickable = qobject_cast<QDeclarativeFlickable*>(canvas->rootObject());
+    QVERIFY(flickable != 0);
+
+    QVERIFY(flickable->contentX() == 0);
+    QVERIFY(flickable->contentY() == 0);
+
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(50, 50)));
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(70,70)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(90,90)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(100,100)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+
+    QVERIFY(flickable->contentX() < 0);
+    QVERIFY(flickable->contentY() < 0);
+
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(90, 90)));
+
+    delete canvas;
+}
+
 
 // QTBUG-17361
 void tst_qdeclarativeflickable::nestedPressDelay()

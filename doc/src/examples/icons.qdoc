@@ -147,8 +147,8 @@
     render the other six mode/state combinations, QIcon uses the
     search algorithm described in the table below:
 
-    \table
-    \header \o{2,1} Requested Pixmap \o{8,1} Preferred Alternatives (mode/state)
+    \table 100%
+    \header \o{2,1} Requested Pixmap \o {8,1} Preferred Alternatives (mode/state)
     \header \o Mode \o State \o 1  \o 2 \o 3 \o 4 \o 5 \o 6 \o 7 \o 8
     \row \o{1,2} Normal \o Off \o \bold N0 \o A0 \o N1 \o A1 \o D0 \o S0 \o D1 \o S1
     \row \o On \o N1 \o \bold A1 \o N0 \o A0 \o D1 \o S1 \o D0 \o S0
@@ -278,7 +278,7 @@
     If the application is built in debug mode, the \c Q_ASSERT()
     macro will expand to
 
-    \snippet doc/src/snippets/code/doc_src_examples_icons.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_examples_icons.cpp 0
 
     In release mode, the macro simply disappear. The mode can be set
     in the application's \c .pro file. One way to do so is to add an

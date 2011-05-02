@@ -38,6 +38,9 @@
 **
 ****************************************************************************/
 import MyLibrary 1.0
+import QtQuick 1.0
+
+Item {
 
 //![0]
 ImageViewer {
@@ -47,3 +50,15 @@ ImageViewer {
     }
 }
 //![0]
+
+//![1]
+ImageViewer {
+    signal someOtherSignal(int statusValue)
+
+    Component.onCompleted: {
+        someOtherSignal(ImageViewer.Loading)
+    }
+}
+//![1]
+
+}

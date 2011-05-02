@@ -91,7 +91,7 @@ public:
     QStringList clientPlugins;
     bool gotHello;
 
-    static QDeclarativeDebugServerConnection *loadConnectionPlugin();
+    static QDeclarativeDebugServerConnection *loadConnectionPlugin(const QString &pluginName);
 };
 
 QDeclarativeDebugServerPrivate::QDeclarativeDebugServerPrivate() :
@@ -113,7 +113,8 @@ void QDeclarativeDebugServerPrivate::advertisePlugins()
     connection->send(message);
 }
 
-QDeclarativeDebugServerConnection *QDeclarativeDebugServerPrivate::loadConnectionPlugin()
+QDeclarativeDebugServerConnection *QDeclarativeDebugServerPrivate::loadConnectionPlugin(
+    const QString &pluginName)
 {
     QStringList pluginCandidates;
     const QStringList paths = QCoreApplication::libraryPaths();
@@ -122,7 +123,8 @@ QDeclarativeDebugServerConnection *QDeclarativeDebugServerPrivate::loadConnectio
         if (dir.exists()) {
             QStringList plugins(dir.entryList(QDir::Files));
             foreach (const QString &pluginPath, plugins) {
-                pluginCandidates << dir.absoluteFilePath(pluginPath);
+                if (QFileInfo(pluginPath).fileName().contains(pluginName))
+                    pluginCandidates << dir.absoluteFilePath(pluginPath);
             }
         }
     }
@@ -159,14 +161,14 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
     if (!commandLineTested) {
         commandLineTested = true;
 
-#ifndef QDECLARATIVE_NO_DEBUG_PROTOCOL
         QApplicationPrivate *appD = static_cast<QApplicationPrivate*>(QObjectPrivate::get(qApp));
+#ifndef QDECLARATIVE_NO_DEBUG_PROTOCOL
         // ### remove port definition when protocol is changed
         int port = 0;
         bool block = false;
         bool ok = false;
 
-        // format: qmljsdebugger=port:3768[,block]
+        // format: qmljsdebugger=port:3768[,block] OR qmljsdebugger=ost[,block]
         if (!appD->qmljsDebugArgumentsString().isEmpty()) {
             if (!QDeclarativeEnginePrivate::qml_debugging_enabled) {
                 const QString message =
@@ -177,17 +179,23 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
                 return 0;
             }
 
+            QString pluginName;
             if (appD->qmljsDebugArgumentsString().indexOf(QLatin1String("port:")) == 0) {
                 int separatorIndex = appD->qmljsDebugArgumentsString().indexOf(QLatin1Char(','));
                 port = appD->qmljsDebugArgumentsString().mid(5, separatorIndex - 5).toInt(&ok);
+                pluginName = QLatin1String("qmldbg_tcp");
+            } else if (appD->qmljsDebugArgumentsString().contains("ost")) {
+                pluginName = QLatin1String("qmldbg_ost");
+                ok = true;
             }
+
             block = appD->qmljsDebugArgumentsString().contains(QLatin1String("block"));
 
             if (ok) {
                 server = new QDeclarativeDebugServer();
 
                 QDeclarativeDebugServerConnection *connection
-                        = QDeclarativeDebugServerPrivate::loadConnectionPlugin();
+                        = QDeclarativeDebugServerPrivate::loadConnectionPlugin(pluginName);
                 if (connection) {
                     server->d_func()->connection = connection;
 
@@ -203,6 +211,12 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
                                             "Format is -qmljsdebugger=port:<port>[,block]").arg(
                              appD->qmljsDebugArgumentsString()).toAscii().constData());
             }
+        }
+#else
+        if (!appD->qmljsDebugArgumentsString().isEmpty()) {
+            qWarning(QString::fromAscii("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
+                                        "QtDeclarative is not configured for debugging.").arg(
+                         appD->qmljsDebugArgumentsString()).toAscii().constData());
         }
 #endif
     }

@@ -278,6 +278,7 @@ void QDirIteratorPrivate::checkAndPushDirectory(const QFileInfo &fileInfo)
     current entry will be returned as part of the directory iteration);
     otherwise, false is returned.
 */
+
 bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInfo &fi) const
 {
     Q_ASSERT(!fileName.isEmpty());
@@ -312,6 +313,14 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
             return false;
     }
 #endif
+    // skip symlinks
+    const bool skipSymlinks = (filters & QDir::NoSymLinks);
+    const bool includeSystem = (filters & QDir::System);
+    if(skipSymlinks && fi.isSymLink()) {
+        // The only reason to save this file is if it is a broken link and we are requesting system files.
+        if(!includeSystem || fi.exists())
+            return false;
+    }
 
     // filter hidden
     const bool includeHidden = (filters & QDir::Hidden);
@@ -319,27 +328,20 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
         return false;
 
     // filter system files
-    const bool includeSystem = (filters & QDir::System);
-    if (!includeSystem && ((!fi.isFile() && !fi.isDir() && !fi.isSymLink())
+    if (!includeSystem && (!(fi.isFile() || fi.isDir() || fi.isSymLink())
                     || (!fi.exists() && fi.isSymLink())))
         return false;
 
     // skip directories
     const bool skipDirs = !(filters & (QDir::Dirs | QDir::AllDirs));
-    if (skipDirs && fi.isDir()) {
-        if (!((includeHidden && !dotOrDotDot && fi.isHidden())
-              || (includeSystem && !fi.exists() && fi.isSymLink())))
-            return false;
-    }
+    if (skipDirs && fi.isDir())
+        return false;
 
     // skip files
     const bool skipFiles    = !(filters & QDir::Files);
-    const bool skipSymlinks = (filters & QDir::NoSymLinks);
-    if ((skipFiles && (fi.isFile() || !fi.exists())) || (skipSymlinks && fi.isSymLink())) {
-        if (!((includeHidden && !dotOrDotDot && fi.isHidden())
-            || (includeSystem && !fi.exists() && fi.isSymLink())))
-            return false;
-    }
+    if (skipFiles && fi.isFile())
+        // Basically we need a reason not to exclude this file otherwise we just eliminate it.
+        return false;
 
     // filter permissions
     const bool filterPermissions = ((filters & QDir::PermissionMask)

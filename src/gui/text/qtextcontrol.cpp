@@ -1551,7 +1551,7 @@ void QTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton button, con
                 extendBlockwiseSelection(cursorPos);
             else if (selectedWordOnDoubleClick.hasSelection())
                 extendWordwiseSelection(cursorPos, pos.x());
-            else if (wordSelectionEnabled)
+            else if (!wordSelectionEnabled)
                 setCursorPosition(cursorPos, QTextCursor::KeepAnchor);
         } else {
 
@@ -1607,7 +1607,10 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
     if (!(buttons & Qt::LeftButton))
         return;
 
-    if (!((interactionFlags & Qt::TextSelectableByMouse) || (interactionFlags & Qt::TextEditable)))
+    const bool selectable = interactionFlags & Qt::TextSelectableByMouse;
+    const bool editable = interactionFlags & Qt::TextEditable;
+
+    if (!selectable && !editable)
         return;
 
     if (!(mousePressed
@@ -1623,6 +1626,10 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
             startDrag();
         return;
     }
+
+    if (!selectable)
+        return;
+
     const qreal mouseX = qreal(mousePos.x());
 
     int newCursorPos = q->hitTest(mousePos, Qt::FuzzyHit);
@@ -1638,7 +1645,7 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
         extendBlockwiseSelection(newCursorPos);
     else if (selectedWordOnDoubleClick.hasSelection())
         extendWordwiseSelection(newCursorPos, mouseX);
-    else if (interactionFlags & Qt::TextSelectableByMouse)
+    else
         setCursorPosition(newCursorPos, QTextCursor::KeepAnchor);
 
     if (interactionFlags & Qt::TextEditable) {
@@ -1943,6 +1950,7 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
     if (isGettingInput)
         layout->setPreeditArea(cursor.position() - block.position(), e->preeditString());
     QList<QTextLayout::FormatRange> overrides;
+    const int oldPreeditCursor = preeditCursor;
     preeditCursor = e->preeditString().length();
     hideCursor = false;
     for (int i = 0; i < e->attributes().size(); ++i) {
@@ -1963,6 +1971,8 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
     }
     layout->setAdditionalFormats(overrides);
     cursor.endEditBlock();
+    if (oldPreeditCursor != preeditCursor)
+        emit q->microFocusChanged();
 }
 
 QVariant QTextControl::inputMethodQuery(Qt::InputMethodQuery property) const

@@ -1888,4 +1888,9 @@ EXPORTS
 	??1QDeclarativeRefCount@@UAE@XZ @ 1887 NONAME ; QDeclarativeRefCount::~QDeclarativeRefCount(void)
 	?addref@QDeclarativeRefCount@@QAEXXZ @ 1888 NONAME ; void QDeclarativeRefCount::addref(void)
 	?release@QDeclarativeRefCount@@QAEXXZ @ 1889 NONAME ; void QDeclarativeRefCount::release(void)
+	?resolveLayoutMirror@QDeclarativeItemPrivate@@QAEXXZ @ 1890 NONAME ; void QDeclarativeItemPrivate::resolveLayoutMirror(void)
+	?mirrorChange@QDeclarativeItemPrivate@@UAEXXZ @ 1891 NONAME ; void QDeclarativeItemPrivate::mirrorChange(void)
+	?setLayoutMirror@QDeclarativeItemPrivate@@QAEX_N@Z @ 1892 NONAME ; void QDeclarativeItemPrivate::setLayoutMirror(bool)
+	?setImplicitLayoutMirror@QDeclarativeItemPrivate@@QAEX_N0@Z @ 1893 NONAME ; void QDeclarativeItemPrivate::setImplicitLayoutMirror(bool, bool)
+	?isMirrored@QDeclarativeItemPrivate@@QBE_NXZ @ 1894 NONAME ; bool QDeclarativeItemPrivate::isMirrored(void) const
 

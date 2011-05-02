@@ -89,6 +89,8 @@ private slots:
     void font();
     void color();
     void selection();
+    void isRightToLeft_data();
+    void isRightToLeft();
     void moveCursorSelection_data();
     void moveCursorSelection();
     void moveCursorSelectionSequence_data();
@@ -113,6 +115,7 @@ private slots:
     void cursorVisible();
     void cursorRectangle();
     void navigation();
+    void navigation_RTL();
     void copyAndPaste();
     void canPasteEmpty();
     void canPaste();
@@ -132,6 +135,7 @@ private slots:
     void preeditMicroFocus();
     void inputContextMouseHandler();
     void inputMethodComposing();
+    void cursorRectangleSize();
 
 private:
     void simulateKey(QDeclarativeView *, int key);
@@ -439,6 +443,63 @@ void tst_qdeclarativetextinput::selection()
     delete textinputObject;
 }
 
+void tst_qdeclarativetextinput::isRightToLeft_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<bool>("emptyString");
+    QTest::addColumn<bool>("firstCharacter");
+    QTest::addColumn<bool>("lastCharacter");
+    QTest::addColumn<bool>("middleCharacter");
+    QTest::addColumn<bool>("startString");
+    QTest::addColumn<bool>("midString");
+    QTest::addColumn<bool>("endString");
+
+    const quint16 arabic_str[] = { 0x0638, 0x0643, 0x00646, 0x0647, 0x0633, 0x0638, 0x0643, 0x00646, 0x0647, 0x0633, 0x0647};
+    QTest::newRow("Empty") << "" << false << false << false << false << false << false << false;
+    QTest::newRow("Neutral") << "23244242" << false << false << false << false << false << false << false;
+    QTest::newRow("LTR") << "Hello world" << false << false << false << false << false << false << false;
+    QTest::newRow("RTL") << QString::fromUtf16(arabic_str, 11) << false << true << true << true << true << true << true;
+    QTest::newRow("Bidi RTL + LTR + RTL") << QString::fromUtf16(arabic_str, 11) + QString("Hello world") + QString::fromUtf16(arabic_str, 11) << false << true << true << false << true << true << true;
+    QTest::newRow("Bidi LTR + RTL + LTR") << QString("Hello world") + QString::fromUtf16(arabic_str, 11) + QString("Hello world") << false << false << false << true << false << false << false;
+}
+
+void tst_qdeclarativetextinput::isRightToLeft()
+{
+    QFETCH(QString, text);
+    QFETCH(bool, emptyString);
+    QFETCH(bool, firstCharacter);
+    QFETCH(bool, lastCharacter);
+    QFETCH(bool, middleCharacter);
+    QFETCH(bool, startString);
+    QFETCH(bool, midString);
+    QFETCH(bool, endString);
+
+    QDeclarativeTextInput textInput;
+    textInput.setText(text);
+
+    // first test that the right string is delivered to the QString::isRightToLeft()
+    QCOMPARE(textInput.isRightToLeft(0,0), text.mid(0,0).isRightToLeft());
+    QCOMPARE(textInput.isRightToLeft(0,1), text.mid(0,1).isRightToLeft());
+    QCOMPARE(textInput.isRightToLeft(text.count()-2, text.count()-1), text.mid(text.count()-2, text.count()-1).isRightToLeft());
+    QCOMPARE(textInput.isRightToLeft(text.count()/2, text.count()/2 + 1), text.mid(text.count()/2, text.count()/2 + 1).isRightToLeft());
+    QCOMPARE(textInput.isRightToLeft(0,text.count()/4), text.mid(0,text.count()/4).isRightToLeft());
+    QCOMPARE(textInput.isRightToLeft(text.count()/4,3*text.count()/4), text.mid(text.count()/4,3*text.count()/4).isRightToLeft());
+    if (text.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML TextInput: isRightToLeft(start, end) called with the end property being smaller than the start.");
+    QCOMPARE(textInput.isRightToLeft(3*text.count()/4,text.count()-1), text.mid(3*text.count()/4,text.count()-1).isRightToLeft());
+
+    // then test that the feature actually works
+    QCOMPARE(textInput.isRightToLeft(0,0), emptyString);
+    QCOMPARE(textInput.isRightToLeft(0,1), firstCharacter);
+    QCOMPARE(textInput.isRightToLeft(text.count()-2, text.count()-1), lastCharacter);
+    QCOMPARE(textInput.isRightToLeft(text.count()/2, text.count()/2 + 1), middleCharacter);
+    QCOMPARE(textInput.isRightToLeft(0,text.count()/4), startString);
+    QCOMPARE(textInput.isRightToLeft(text.count()/4,3*text.count()/4), midString);
+    if (text.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML TextInput: isRightToLeft(start, end) called with the end property being smaller than the start.");
+    QCOMPARE(textInput.isRightToLeft(3*text.count()/4,text.count()-1), endString);
+}
+
 void tst_qdeclarativetextinput::moveCursorSelection_data()
 {
     QTest::addColumn<QString>("testStr");
@@ -544,10 +605,8 @@ void tst_qdeclarativetextinput::moveCursorSelection_data()
             << standard[2] << 13 << 6 << QDeclarativeTextInput::SelectWords << 6 << 13 << false;
     QTest::newRow("Hello<(, world!)>|words")
             << standard[2] << 5 << 13 << QDeclarativeTextInput::SelectWords << 5 << 13 << true;
-    // Fails due to an issue with QTextBoundaryFinder and punctuation at the end of strings.
-    // QTBUG-11365
-    // QTest::newRow("world<(!)>|words")
-    //         << standard[2] << 12 << 13 << QDeclarativeTextInput::SelectWords << 12 << 13 << true;
+     QTest::newRow("world<(!)>|words")
+             << standard[2] << 12 << 13 << QDeclarativeTextInput::SelectWords << 12 << 13 << true;
     QTest::newRow("world!<()>)|words")
             << standard[2] << 13 << 13 << QDeclarativeTextInput::SelectWords << 13 << 13 << true;
     QTest::newRow("world<()>!)|words")
@@ -593,16 +652,15 @@ void tst_qdeclarativetextinput::moveCursorSelection_data()
     QTest::newRow(" <s(pac)ey>   text |words")
             << standard[4] << 1 << 4 << QDeclarativeTextInput::SelectWords << 1 << 7 << true;
     QTest::newRow(" spacey   <t(ex)t> |words")
-            << standard[4] << 11 << 13 << QDeclarativeTextInput::SelectWords << 10 << 14 << false; // Should be reversible. QTBUG-11365
+            << standard[4] << 11 << 13 << QDeclarativeTextInput::SelectWords << 10 << 14 << true;
     QTest::newRow("<( )>spacey   text |words|ltr")
             << standard[4] << 0 << 1 << QDeclarativeTextInput::SelectWords << 0 << 1 << false;
     QTest::newRow("<( )spacey>   text |words|rtl")
             << standard[4] << 1 << 0 << QDeclarativeTextInput::SelectWords << 0 << 7 << false;
     QTest::newRow("spacey   <text( )>|words|ltr")
             << standard[4] << 14 << 15 << QDeclarativeTextInput::SelectWords << 10 << 15 << false;
-//    QTBUG-11365
-//    QTest::newRow("spacey   text<( )>|words|rtl")
-//            << standard[4] << 15 << 14 << QDeclarativeTextInput::SelectWords << 14 << 15 << false;
+    QTest::newRow("spacey   text<( )>|words|rtl")
+            << standard[4] << 15 << 14 << QDeclarativeTextInput::SelectWords << 14 << 15 << false;
     QTest::newRow("<()> spacey   text |words")
             << standard[4] << 0 << 0 << QDeclarativeTextInput::SelectWords << 0 << 0 << false;
     QTest::newRow(" spacey   text <()>|words")
@@ -797,23 +855,21 @@ void tst_qdeclarativetextinput::moveCursorSelectionSequence_data()
             << 15 << 12 << 15
             << 10 << 15
             << 15 << 15;
-//    QTBUG-11365
-//    QTest::newRow(" spacey   <te(xt{^ )>}|rtl")
-//            << standard[4]
-//            << 15 << 12 << 14
-//            << 10 << 15
-//            << 14 << 15;
+    QTest::newRow(" spacey   <te(xt{^ )>}|rtl")
+            << standard[4]
+            << 15 << 12 << 14
+            << 10 << 15
+            << 14 << 15;
     QTest::newRow(" spacey   {<te(x^t} )>|ltr")
             << standard[4]
             << 12 << 15 << 13
             << 10 << 15
             << 10 << 14;
-//    QTBUG-11365
-//    QTest::newRow(" spacey   {<te(xt^} )>|ltr")
-//            << standard[4]
-//            << 12 << 15 << 14
-//            << 10 << 15
-//            << 10 << 14;
+    QTest::newRow(" spacey   {<te(xt^} )>|ltr")
+            << standard[4]
+            << 12 << 15 << 14
+            << 10 << 15
+            << 10 << 14;
 }
 
 void tst_qdeclarativetextinput::moveCursorSelectionSequence()
@@ -991,18 +1047,93 @@ void tst_qdeclarativetextinput::horizontalAlignment_RightToLeft()
     QVERIFY(textInputPrivate != 0);
     QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
 
-    // "Right" Align
-    textInput->setHAlign(QDeclarativeTextInput::AlignRight);
+    // implicit alignment should follow the reading direction of RTL text
     QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
+    QCOMPARE(textInput->effectiveHAlign(), textInput->hAlign());
+    QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
+
+    // explicitly left aligned
+    textInput->setHAlign(QDeclarativeTextInput::AlignLeft);
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignLeft);
+    QCOMPARE(textInput->effectiveHAlign(), textInput->hAlign());
     QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
 
-    // Center Align
+    // explicitly right aligned
+    textInput->setHAlign(QDeclarativeTextInput::AlignRight);
+    QCOMPARE(textInput->effectiveHAlign(), textInput->hAlign());
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
+    QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
+
+    // explicitly center aligned
     textInput->setHAlign(QDeclarativeTextInput::AlignHCenter);
+    QCOMPARE(textInput->effectiveHAlign(), textInput->hAlign());
     QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignHCenter);
     QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
     QVERIFY(-textInputPrivate->hscroll + textInputPrivate->width() > canvas->width()/2);
 
+    // reseted alignment should go back to following the text reading direction
+    textInput->resetHAlign();
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
+    QCOMPARE(textInput->effectiveHAlign(), textInput->hAlign());
+    QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
+
+    // mirror the text item
+    QDeclarativeItemPrivate::get(textInput)->setLayoutMirror(true);
+
+    // mirrored implicit alignment should continue to follow the reading direction of the text
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
+    QCOMPARE(textInput->effectiveHAlign(), textInput->hAlign());
+    QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
+
+    // explicitly right aligned behaves as left aligned
+    textInput->setHAlign(QDeclarativeTextInput::AlignRight);
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
+    QCOMPARE(textInput->effectiveHAlign(), QDeclarativeTextInput::AlignLeft);
+    QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
+
+    // mirrored explicitly left aligned behaves as right aligned
+    textInput->setHAlign(QDeclarativeTextInput::AlignLeft);
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignLeft);
+    QCOMPARE(textInput->effectiveHAlign(), QDeclarativeTextInput::AlignRight);
+    QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
+
+    // disable mirroring
+    QDeclarativeItemPrivate::get(textInput)->setLayoutMirror(false);
+    QCOMPARE(textInput->effectiveHAlign(), textInput->hAlign());
+    textInput->resetHAlign();
+
+    // English text should be implicitly left aligned
+    textInput->setText("Hello world!");
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignLeft);
+    QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
+
+#ifndef Q_OS_MAC    // QTBUG-18040
+    // empty text with implicit alignment follows the system locale-based
+    // keyboard input direction from QApplication::keyboardInputDirection
+    textInput->setText("");
+    QCOMPARE(textInput->hAlign(), QApplication::keyboardInputDirection() == Qt::LeftToRight ?
+                                  QDeclarativeTextInput::AlignLeft : QDeclarativeTextInput::AlignRight);
+    if (QApplication::keyboardInputDirection() == Qt::LeftToRight)
+        QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
+    else
+        QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
+    textInput->setHAlign(QDeclarativeTextInput::AlignRight);
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
+    QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
+#endif
+
     delete canvas;
+
+#ifndef Q_OS_MAC    // QTBUG-18040
+    // alignment of TextInput with no text set to it
+    QString componentStr = "import QtQuick 1.0\nTextInput {}";
+    QDeclarativeComponent textComponent(&engine);
+    textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeTextInput *textObject = qobject_cast<QDeclarativeTextInput*>(textComponent.create());
+    QCOMPARE(textObject->hAlign(), QApplication::keyboardInputDirection() == Qt::LeftToRight ?
+                                  QDeclarativeTextInput::AlignLeft : QDeclarativeTextInput::AlignRight);
+    delete textObject;
+#endif
 }
 
 void tst_qdeclarativetextinput::positionAt()
@@ -1314,6 +1445,45 @@ void tst_qdeclarativetextinput::navigation()
     delete canvas;
 }
 
+void tst_qdeclarativetextinput::navigation_RTL()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/navigation.qml");
+    canvas->show();
+    canvas->setFocus();
+
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeTextInput *input = qobject_cast<QDeclarativeTextInput *>(qvariant_cast<QObject *>(canvas->rootObject()->property("myInput")));
+
+    QVERIFY(input != 0);
+    const quint16 arabic_str[] = { 0x0638, 0x0643, 0x00646, 0x0647, 0x0633, 0x0638, 0x0643, 0x00646, 0x0647, 0x0633, 0x0647};
+    input->setText(QString::fromUtf16(arabic_str, 11));
+
+    input->setCursorPosition(0);
+    QTRY_VERIFY(input->hasActiveFocus() == true);
+
+    // move off
+    simulateKey(canvas, Qt::Key_Right);
+    QVERIFY(input->hasActiveFocus() == false);
+
+    // move back
+    simulateKey(canvas, Qt::Key_Left);
+    QVERIFY(input->hasActiveFocus() == true);
+
+    input->setCursorPosition(input->text().length());
+    QVERIFY(input->hasActiveFocus() == true);
+
+    // move off
+    simulateKey(canvas, Qt::Key_Left);
+    QVERIFY(input->hasActiveFocus() == false);
+
+    // move back
+    simulateKey(canvas, Qt::Key_Right);
+    QVERIFY(input->hasActiveFocus() == true);
+
+    delete canvas;
+}
+
 void tst_qdeclarativetextinput::copyAndPaste() {
 #ifndef QT_NO_CLIPBOARD
 
@@ -1459,12 +1629,11 @@ void tst_qdeclarativetextinput::cursorDelegate()
     //Test Delegate gets moved
     for(int i=0; i<= textInputObject->text().length(); i++){
         textInputObject->setCursorPosition(i);
-        //+5 is because the TextInput cursorRectangle is just a 10xHeight area centered on cursor position
-        QCOMPARE(textInputObject->cursorRectangle().x() + 5, qRound(delegateObject->x()));
+        QCOMPARE(textInputObject->cursorRectangle().x(), qRound(delegateObject->x()));
         QCOMPARE(textInputObject->cursorRectangle().y(), qRound(delegateObject->y()));
     }
     textInputObject->setCursorPosition(0);
-    QCOMPARE(textInputObject->cursorRectangle().x()+5, qRound(delegateObject->x()));
+    QCOMPARE(textInputObject->cursorRectangle().x(), qRound(delegateObject->x()));
     QCOMPARE(textInputObject->cursorRectangle().y(), qRound(delegateObject->y()));
     //Test Delegate gets deleted
     textInputObject->setCursorDelegate(0);
@@ -1553,19 +1722,26 @@ void tst_qdeclarativetextinput::cursorRectangle()
 
     QRect r;
 
+    // some tolerance for different fonts.
+#ifdef Q_OS_LINUX
+    const int error = 2;
+#else
+    const int error = 5;
+#endif
+
     for (int i = 0; i <= 5; ++i) {
         input.setCursorPosition(i);
         r = input.cursorRectangle();
         int textWidth = fm.width(text.mid(0, i));
 
-        QVERIFY(r.left() < textWidth);
-        QVERIFY(r.right() > textWidth);
+        QVERIFY(r.left() < textWidth + error);
+        QVERIFY(r.right() > textWidth - error);
         QCOMPARE(input.inputMethodQuery(Qt::ImMicroFocus).toRect(), r);
     }
 
     // Check the cursor rectangle remains within the input bounding rect when auto scrolling.
     QVERIFY(r.left() < input.boundingRect().width());
-    QVERIFY(r.right() >= input.width());
+    QVERIFY(r.right() >= input.width() - error);
 
     for (int i = 6; i < text.length(); ++i) {
         input.setCursorPosition(i);
@@ -1655,13 +1831,23 @@ void tst_qdeclarativetextinput::echoMode()
     QCOMPARE(input->inputMethodHints(), ref);
     QCOMPARE(input->text(), initial);
     QCOMPARE(input->displayText(), QLatin1String("QQQQQQQQ"));
+    QCOMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QLatin1String("QQQQQQQQ"));
     QTest::keyPress(canvas, Qt::Key_A);//Clearing previous entry is part of PasswordEchoOnEdit
     QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
     QCOMPARE(input->text(), QLatin1String("a"));
     QCOMPARE(input->displayText(), QLatin1String("a"));
+    QCOMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QLatin1String("a"));
     input->setFocus(false);
     QVERIFY(input->hasActiveFocus() == false);
     QCOMPARE(input->displayText(), QLatin1String("Q"));
+    QCOMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QLatin1String("Q"));
+    input->setFocus(true);
+    QInputMethodEvent inputEvent;
+    inputEvent.setCommitString(initial);
+    QApplication::sendEvent(canvas, &inputEvent);
+    QCOMPARE(input->text(), initial);
+    QCOMPARE(input->displayText(), initial);
+    QCOMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), initial);
 
     delete canvas;
 }
@@ -2056,18 +2242,25 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
     QCOMPARE(input.positionAt(0), 0);
     QCOMPARE(input.positionAt(input.width()), 5);
 
+    // some tolerance for different fonts.
+#ifdef Q_OS_LINUX
+    const int error = 2;
+#else
+    const int error = 5;
+#endif
+
     // test if the preedit is larger than the text input that the
     // character preceding the cursor is still visible.
     qreal x = input.positionToRectangle(0).x();
     for (int i = 0; i < 3; ++i) {
         ic.sendPreeditText(preeditText, i + 1);
-        QVERIFY(input.cursorRectangle().right() >= fm.width(preeditText.at(i)));
+        QVERIFY(input.cursorRectangle().right() >= fm.width(preeditText.at(i)) - error);
         QVERIFY(input.positionToRectangle(0).x() < x);
         x = input.positionToRectangle(0).x();
     }
     for (int i = 1; i >= 0; --i) {
         ic.sendPreeditText(preeditText, i + 1);
-        QVERIFY(input.cursorRectangle().right() >= fm.width(preeditText.at(i)));
+        QVERIFY(input.cursorRectangle().right() >= fm.width(preeditText.at(i)) - error);
         QVERIFY(input.positionToRectangle(0).x() > x);
         x = input.positionToRectangle(0).x();
     }
@@ -2303,6 +2496,26 @@ void tst_qdeclarativetextinput::inputMethodComposing()
     ic.sendEvent(QInputMethodEvent());
     QCOMPARE(input.isInputMethodComposing(), false);
     QCOMPARE(spy.count(), 2);
+}
+
+void tst_qdeclarativetextinput::cursorRectangleSize()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/positionAt.qml");
+    QVERIFY(canvas->rootObject() != 0);
+    canvas->show();
+    canvas->setFocus();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+
+    QDeclarativeTextInput *textInput = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
+    QVERIFY(textInput != 0);
+    textInput->setFocus(Qt::OtherFocusReason);
+    QRectF cursorRect = textInput->positionToRectangle(textInput->cursorPosition());
+    QRectF microFocusFromScene = canvas->scene()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
+    QRectF microFocusFromApp= QApplication::focusWidget()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
+
+    QCOMPARE(microFocusFromScene.size(), cursorRect.size());
+    QCOMPARE(microFocusFromApp.size(), cursorRect.size());
 }
 
 QTEST_MAIN(tst_qdeclarativetextinput)

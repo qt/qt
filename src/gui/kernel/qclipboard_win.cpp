@@ -52,6 +52,7 @@
 #include "qt_windows.h"
 #include "qdnd_p.h"
 #include <private/qwidget_p.h>
+#include <private/qsystemlibrary_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,6 +71,9 @@ void QtCeFlushClipboard();
 
 #endif
 
+typedef BOOL (WINAPI *PtrIsHungAppWindow)(HWND);
+
+static PtrIsHungAppWindow ptrIsHungAppWindow = 0;
 
 class QClipboardWatcher : public QInternalMimeData {
 public:
@@ -327,9 +331,16 @@ bool QClipboard::event(QEvent *e)
             d->releaseIData();
         propagate = true;
     }
-
     if (propagate && d->nextClipboardViewer) {
-        SendMessage(d->nextClipboardViewer, m->message, m->wParam, m->lParam);
+        if (ptrIsHungAppWindow == 0) {
+            QSystemLibrary library(QLatin1String("User32"));
+            ptrIsHungAppWindow = (PtrIsHungAppWindow)library.resolve("IsHungAppWindow");
+        }
+        if (ptrIsHungAppWindow && ptrIsHungAppWindow(d->nextClipboardViewer)) {
+            qWarning("%s: Cowardly refusing to send clipboard message to hung application...", Q_FUNC_INFO);
+        } else {
+            SendMessage(d->nextClipboardViewer, m->message, m->wParam, m->lParam);
+        }
     }
 
     return true;

@@ -148,11 +148,16 @@ embedded {
 }
 
 symbian {
+    DEFINES += QGL_USE_TEXTURE_POOL QGL_NO_PRESERVED_SWAP
+    SOURCES -= qpixmapdata_gl.cpp
     SOURCES += qgl_symbian.cpp \
+               qpixmapdata_poolgl.cpp \
                qglpixelbuffer_egl.cpp \
-               qgl_egl.cpp
+               qgl_egl.cpp \
+               qgltexturepool.cpp
 
-    HEADERS += qgl_egl_p.h
+    HEADERS += qgl_egl_p.h \
+               qgltexturepool_p.h
 
     symbian:TARGET.UID3 = 0x2002131A
 }

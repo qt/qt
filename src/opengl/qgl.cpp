@@ -69,6 +69,7 @@
 
 #if !defined(QT_OPENGL_ES_1)
 #include "gl2paintengineex/qpaintengineex_opengl2_p.h"
+#include <private/qwindowsurface_gl_p.h>
 #endif
 
 #ifndef QT_OPENGL_ES_2
@@ -86,12 +87,15 @@
 #include <private/qpixmapdata_p.h>
 #include <private/qpixmapdata_gl_p.h>
 #include <private/qglpixelbuffer_p.h>
-#include <private/qwindowsurface_gl_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
 #include "qcolormap.h"
 #include "qfile.h"
 #include "qlibrary.h"
 #include <qmutex.h>
+
+#ifdef QGL_USE_TEXTURE_POOL
+#include <private/qgltexturepool_p.h>
+#endif
 
 
 QT_BEGIN_NAMESPACE
@@ -2022,6 +2026,10 @@ struct DDSFormat {
     the pixmap/image that it stems from, e.g. installing destruction
     hooks in them.
 
+    \omitvalue TemporarilyCachedBindOption Used by paint engines on some
+    platforms to indicate that the pixmap or image texture is possibly
+    cached only temporarily and must be destroyed immediately after the use.
+
     \omitvalue InternalBindOption
 */
 
@@ -2529,8 +2537,18 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #endif
 
     const QImage &constRef = img; // to avoid detach in bits()...
+#ifdef QGL_USE_TEXTURE_POOL
+    QGLTexturePool::instance()->createPermanentTexture(tx_id,
+                                                        target,
+                                                        0, internalFormat,
+                                                        img.width(), img.height(),
+                                                        externalFormat,
+                                                        pixel_type,
+                                                        constRef.bits());
+#else
     glTexImage2D(target, 0, internalFormat, img.width(), img.height(), 0, externalFormat,
                  pixel_type, constRef.bits());
+#endif
 #if defined(QT_OPENGL_ES_2)
     if (genMipmap)
         glGenerateMipmap(target);
@@ -2568,7 +2586,6 @@ QGLTexture *QGLContextPrivate::textureCacheLookup(const qint64 key, GLenum targe
     }
     return 0;
 }
-
 
 /*! \internal */
 QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target, GLint format, QGLContext::BindOptions options)

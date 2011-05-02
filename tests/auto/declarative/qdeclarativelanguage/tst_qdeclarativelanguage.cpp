@@ -134,6 +134,7 @@ private slots:
     void dontDoubleCallClassBegin();
     void reservedWords_data();
     void reservedWords();
+    void inlineAssignmentsOverrideBindings();
 
     void basicRemote_data();
     void basicRemote();
@@ -173,7 +174,7 @@ private:
         QVERIFY(component.errors().isEmpty()); \
     } else { \
         QFile file(QLatin1String(SRCDIR) + QLatin1String("/data/") + QLatin1String(errorfile)); \
-        QVERIFY(file.open(QIODevice::ReadOnly)); \
+        QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text)); \
         QByteArray data = file.readAll(); \
         file.close(); \
         QList<QByteArray> expected = data.split('\n'); \
@@ -1413,9 +1414,18 @@ void tst_qdeclarativelanguage::testType(const QString& qml, const QString& type,
     }
 }
 
+// QTBUG-17276
+void tst_qdeclarativelanguage::inlineAssignmentsOverrideBindings()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("inlineAssignmentsOverrideBindings.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test").toInt(), 11);
+    delete o;
+}
 
 // Import tests (QT-558)
-
 void tst_qdeclarativelanguage::importsBuiltin_data()
 {
     // QT-610
