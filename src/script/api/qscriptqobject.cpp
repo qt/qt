@@ -400,6 +400,10 @@ public:
     bool connect(v8::Handle<v8::Object> receiver, v8::Handle<v8::Object> callback, Qt::ConnectionType type);
     bool disconnect();
 
+    QScriptEnginePrivate *engine() const
+    {
+        return m_signal->engine;
+    }
     v8::Handle<v8::Object> callback() const
     { return m_callback; }
 
@@ -415,7 +419,17 @@ public:
 
     // Slot.
     void onSignal(void **);
-    void deleteNow() { delete this; }
+    void deleteNow()
+    {
+        // This will be called if underlaying qobject instance is destroyed so there is no guarantee
+        // that an isolate was setup correctly (delete can be called outside of public QtScript API).
+        QScriptEnginePrivate *engine = this->engine();
+        QScriptIsolate api(engine, QScriptIsolate::NotNullEngine);
+        Q_ASSERT_X(engine == QScriptQObjectData::get(m_signal->object())->engine(),
+                   Q_FUNC_INFO,
+                   "Mismatch of QScriptEngines detected");
+        delete this;
+    }
 
 private:
     QScriptSignalData *m_signal;
@@ -548,6 +562,8 @@ v8::Handle<v8::Value> QScriptGenericMetaMethodData<T, functionTemplate>::call()
 QScriptConnection::QScriptConnection(QScriptSignalData *signal)
     : m_signal(signal)
 {
+    Q_ASSERT(m_signal);
+    Q_ASSERT(m_signal->engine);
 }
 
 QScriptConnection::~QScriptConnection()
@@ -611,8 +627,11 @@ void QScriptConnection::onSignal(void **argv)
 {
     Q_ASSERT(!m_callback.IsEmpty());
 
-    QScriptEnginePrivate *engine = QScriptQObjectData::get(m_signal->object())->engine();
-    QScriptIsolate api(engine);
+    QScriptEnginePrivate *engine = this->engine();
+    QScriptIsolate api(engine, QScriptIsolate::NotNullEngine);
+    Q_ASSERT_X(engine == QScriptQObjectData::get(m_signal->object())->engine(),
+               Q_FUNC_INFO,
+               "Mismatch of QScriptEngines detected");
     v8::HandleScope handleScope;
 
     const QMetaObject *meta = sender()->metaObject();
