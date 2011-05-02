@@ -66,6 +66,7 @@
           \o \l {Compatibility Issues}
           \o \l {qt.qdocconf}
           \o \l {minimum.qdocconf}
+          \o \l {Generating DITA XML Output}
         \endlist
     \endlist
 
@@ -3999,20 +4000,11 @@
 
     Here are links to the \c .qdocinc files used above:
     \l{signalandslots.qdocinc}, \l{objectmodel.qdocinc},
-    \l{layoutmanagement.qdocinc}. QDoc renders this page as:
-
-            \quotation
-                \raw HTML
-                <h1>Core Features</h1>
-                \endraw
-
-                \input examples/signalandslots.qdocinc
-                \input examples/objectmodel.qdocinc
-                \input examples/layoutmanagement.qdocinc
-            \endquotation
+    \l{layoutmanagement.qdocinc}. QDoc renders this page 
+    \l{corefeatures.html} {as shown here}.
 
     \target 2-argument-form}
-    \section2 \\include filename snippet-identifier
+    \section2 \\include filename snippet-identifier \span {class="newStuff"} {(new)}
 
     It is kind of a pain to make a separate \c .qdocinc file for every
     QDoc include snippet you want to use in multiple places in the
@@ -4046,48 +4038,77 @@
     sent to the QDoc input stream. You can even nest these snippets,
     although it's not clear why you would want to do that.
 
-    \target meta-command
+    \target meta-command 
     \section1 \\meta 
 
-    The \\meta command is the QDoc equivalent to the HTML
-    \c meta tag.
+    The \\meta command is mainly used for including metadata in DITA
+    XML files. It is also used when generating HTML output for specifying
+    the \e maintainer(s) of a C++ class.
 
-    The command accepts two arguments: The first argument (the
-    following word) is equivalent to the HTML meta tag's \e name
-    variable, and the second argument (the rest of the line) is
-    equivalent to the tag's \e contents variable.
+    The command has two arguments: The first argument is the name of the
+    metadata attribute you wish to set, and the second argument is the 
+    value for the attribute. Each argument should be enclosed in curly
+    brackets, as shown in this example:
 
-           \code
-           / *!
-               \meta author Summerfield
+    \code
+    / *!
+        \class QWidget
+        \brief The QWidget class is the base class of all user interface objects.
 
-               \section1 Automatic Dialogs
+        \ingroup basicwidgets
 
-               \abstract
-                   This article shows how to maintain sets of
-                   "attributes" (QVariant values), and how to allow
-                   users to view and edit them using dialogs that are
-                   created dynamically based on the attributes and
-                   their types.
-               \endabstract
+        \meta {technology} {User Interface}
+        \meta {platform} {OS X 10.6}
+        \meta {platform} {Symbian}
+        \meta {platform} {MeeGo}
+        \meta {audience} {user}
+        \meta {audience} {programmer}
+        \meta {audience} {designer}
+    * /
+    \endcode
 
-               The Attributes class described in this article holds a
-               set of QVariants, and can create a dialog to present
-               the QVariants to the user in an appropriate way.
+    When running QDoc to generate HTML, the example above will have no
+    effect on the generated output, but if you run QDoc to generate
+    DITA XML, the example will generate the following:
 
-               ...
-           * /
-           \endcode
+    \code
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE cxxClass PUBLIC "-//NOKIA//DTD DITA C++ API Class Reference Type v0.6.0//EN" "dtd/cxxClass.dtd">
+    <!--qwidget.cpp-->
+    <cxxClass id="id-9a14268e-6b09-4eee-b940-21a00a0961df">
+       <apiName>QWidget</apiName>
+       <shortdesc>the QWidget class is the base class of all user interface objects.</shortdesc>
+       <prolog>
+           <author>Qt Development Frameworks</author>
+           <publisher>Nokia</publisher>
+           <copyright>
+               <copyryear year="2011"/>
+               <copyrholder>Nokia</copyrholder>
+           </copyright>
+           <permissions view="all"/>
+           <metadata>
+               <audience type="designer"/>
+               <audience type="programmer"/>
+               <audience type="user"/>
+               <category>Class reference</category>
+               <prodinfo>
+                   <prodname>Qt Reference Documentation</prodname>
+                   <vrmlist>
+                       <vrm version="4" release="7" modification="3"/>
+                   </vrmlist>
+                   <component>QtGui</component>
+               </prodinfo>
+               <othermeta name="platform" content="MeeGo"/>
+               <othermeta name="platform" content="Symbian"/>
+               <othermeta name="platform" content="OS X 10.6"/>
+               <othermeta name="technology" content="User Interface"/>
+           </metadata>
+       </prolog>
+    \endcode
 
-    QDoc renders this as:
-
-           \code
-           <head>
-                ...
-                <meta name="author" content="Summerfield" />
-                ...
-           </head>
-           \endcode
+    In the example output, several values have been set using defualt
+    values obtained from the QDoc configuration file. See \l
+    {Generating DITA XML Output} for details.
 
     \target omit-command
     \section1 \\omit 
@@ -6932,7 +6953,7 @@
     \page 21-1-minimum-qdocconf.html
     \previouspage qt.qdocconf
     \contentspage Table of Contents
-    \nextpage Table of Contents
+    \nextpage Generating DITA XML Output
 
     \title minimum.qdocconf
 
@@ -6948,6 +6969,65 @@
     \title qt.qdocconf
 
     \quotefile files/qt.qdocconf
+*/
+
+/*!
+    \page 21-3-qt-dita-xml-output.html
+    \previouspage minimum.qdocconf
+    \contentspage Table of Contents
+    \nextpage Table of Contents
+
+    \title Generating DITA XML Output
+
+    QDoc can generate \l {http://dita.xml.org} {DITA XML output}. 
+
+    In your confifiguration file, set your \c {outputformats} variable
+    to \c {DITAXML}, and send the output to an appropriate directory:
+
+    \code
+    outputdir                  = $QTDIR/doc/ditaxml
+    outputformats              = DITAXML
+    \endcode
+
+    And include these macros in your configuration file to prevent
+    QDoc from doing some escaping that doesn't validate in XML:
+
+    \code
+    macro.aacute.DITAXML       = "&aacute;"
+    macro.Aring.DITAXML        = "&Aring;"
+    macro.aring.DITAXML        = "&aring;"
+    macro.Auml.DITAXML         = "&Auml;"
+    macro.br.DITAXML           = " "
+    macro.BR.DITAXML           = " "
+    macro.copyright.DITAXML    = "&copy;"
+    macro.eacute.DITAXML       = "&eacute;"
+    macro.hr.DITAXML           = " "
+    macro.iacute.DITAXML       = "&iacute;"
+    macro.oslash.DITAXML       = "&oslash;"
+    macro.ouml.DITAXML         = "&ouml;"
+    macro.raisedaster.DITAXML  = "<sup>*</sup>"
+    macro.rarrow.DITAXML       = "&rarr;"
+    macro.reg.DITAXML          = "<sup>&reg;</sup>"
+    macro.uuml.DITAXML         = "&uuml;"
+    macro.mdash.DITAXML        = "&mdash;"
+    macro.emptyspan.DITAXML    = " "
+    \endcode
+
+    You can also set default values for some of the tags in the DITA
+    \c {<prolog>} and \c {<metadata>} elements:
+
+    \code
+    dita.metadata.default.author      = Qt Development Frameworks
+    dita.metadata.default.permissions = all
+    dita.metadata.default.publisher   = Nokia
+    dita.metadata.default.copyryear = 2011
+    dita.metadata.default.copyrholder = Nokia
+    dita.metadata.default.audience = programmer
+    \endcode
+
+    See the \l {12-0-qdoc-commands-miscellaneous.html#meta-command}
+    {\\meta} command for more details on DITA metadata.
+
 */
 
 /*!
@@ -6981,7 +7061,7 @@
     information see the \l {Compatibility Issues} {compatibility
     section}.
 
-    See also \l {macro-command} {macro}.
+    See also \l {macro-variable} {macro}.
 
     \target codeindent-variable
     \section1 codeindent 
@@ -7480,23 +7560,27 @@
     \target macro-variable
     \section1 macro 
 
-    The \c macro variable can be used to create your own QDoc
-    commands.
+    The \c macro variable is used to create your own simple QDoc
+    commands. The syntax is \tt {macro.\e{command} = \e{definition}},
+    where the definition is written using QDoc syntax.
 
-    The general syntax is \tt {macro.\e{command} =
-    "\e{definition}}". The definition can be described using QDoc
-    syntax. In addition it is possible to provide an HTML definition
-    by appending .HTML to the variable.
-
-    For example in \l qt.qdocconf:
+    A macro variable can be restricted for use in one type of output
+    generation. By appending \c {.HTML} to the macro name, for
+    example, the macro is only used when generating HTML output. By
+    appending \c {.DITAXML} to the macro name, the macro is only used
+    when generating DITA XML.
 
     \code
         macro.gui              = "\\bold"
         macro.raisedaster.HTML = "<sup>*</sup>"
     \endcode
 
-    makes sure that the \\gui command renders its argument using a
-    bold font, and that \\raisedaster renders a '*'.
+    The first macro defines the \\gui command to render its argument
+    using a bold font. The second macro defines the \\raisedaster
+    command to render a superscript asterisk, but only when generating
+    HTML.
+
+    See also \l {alias-variable} {alias}.
 
     \target naturallanguage-variable
     \section1 naturallanguage 

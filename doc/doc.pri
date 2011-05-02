@@ -13,12 +13,14 @@ win32:!win32-g++* {
     unixstyle = true
 }
 
+COPYWEBKITGUIDE = $$QT_SOURCE_TREE/examples/webkit/webkit-guide
+
 $$unixstyle {
     QDOC = cd $$QT_SOURCE_TREE/tools/qdoc3/test && QT_BUILD_TREE=$$QT_BUILD_TREE QT_SOURCE_TREE=$$QT_SOURCE_TREE $$QT_BUILD_TREE/bin/qdoc3 $$DOCS_GENERATION_DEFINES
-    COPYWEBKITGUIDE = $$QT_SOURCE_TREE/examples/webkit/webkit-guide
 } else {
     QDOC = cd $$QT_SOURCE_TREE/tools/qdoc3/test && set QT_BUILD_TREE=$$QT_BUILD_TREE&& set QT_SOURCE_TREE=$$QT_SOURCE_TREE&& $$QT_BUILD_TREE/bin/qdoc3.exe $$DOCS_GENERATION_DEFINES
     QDOC = $$replace(QDOC, "/", "\\")
+    COPYWEBKITGUIDE = $$replace(COPYWEBKITGUIDE, "/", "\\")
 }
 ADP_DOCS_QDOCCONF_FILE = qt-build-docs-online.qdocconf
 QT_DOCUMENTATION = ($$QDOC qt-api-only.qdocconf assistant.qdocconf designer.qdocconf \
