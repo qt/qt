@@ -314,7 +314,7 @@
     \l{http://qt.nokia.com/products/qsa/}{QSA}, the cross platform
     scripting solution for Qt applications, and to COM clients in general.
 
-    When using the "IJW" method, in priciple the only limitation is the
+    When using the "IJW" method, in principle the only limitation is the
     time required to write the wrapper classes and data type conversion
     functions.
 
