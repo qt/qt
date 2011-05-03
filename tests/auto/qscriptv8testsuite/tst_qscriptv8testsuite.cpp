@@ -153,7 +153,7 @@ void tst_QScriptV8TestSuite::runTestFunction(int testIndex)
         QScriptValue ret = engine.evaluate(contents);
         if (engine.hasUncaughtException()) {
             if (!ret.isError()) {
-                Q_ASSERT(ret.instanceOf(engine.globalObject().property("MjsUnitAssertionError")));
+                QTest::qVerify(ret.instanceOf(engine.globalObject().property("MjsUnitAssertionError")));
                 QString actual = ret.property("actual").toString();
                 QString expected = ret.property("expected").toString();
                 int lineNumber = ret.property("lineNumber").toInt32();
