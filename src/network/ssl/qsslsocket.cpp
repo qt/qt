@@ -828,14 +828,8 @@ void QSslSocket::setReadBufferSize(qint64 size)
     Q_D(QSslSocket);
     d->readBufferMaxSize = size;
 
-    // set the plain socket's buffer size to 1k if we have a limit
-    // see also the same logic in QSslSocketPrivate::createPlainSocket
-    if (d->plainSocket) {
-        if (d->mode == UnencryptedMode)
-            d->plainSocket->setReadBufferSize(size);
-        else
-            d->plainSocket->setReadBufferSize(size ? 1024 : 0);
-    }
+    if (d->plainSocket)
+        d->plainSocket->setReadBufferSize(size);
 }
 
 /*!
@@ -902,6 +896,7 @@ void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
     d->configuration.peerVerifyDepth = configuration.peerVerifyDepth();
     d->configuration.peerVerifyMode = configuration.peerVerifyMode();
     d->configuration.protocol = configuration.protocol();
+    d->allowRootCertOnDemandLoading = false;
 }
 
 /*!
@@ -2048,6 +2043,10 @@ void QSslSocketPrivate::createPlainSocket(QIODevice::OpenMode openMode)
     q->setPeerName(QString());
 
     plainSocket = new QTcpSocket(q);
+#ifndef QT_NO_BEARERMANAGEMENT
+    //copy network session down to the plain socket (if it has been set)
+    plainSocket->setProperty("_q_networksession", q->property("_q_networksession"));
+#endif
     q->connect(plainSocket, SIGNAL(connected()),
                q, SLOT(_q_connectedSlot()),
                Qt::DirectConnection);

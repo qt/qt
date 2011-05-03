@@ -46,6 +46,7 @@
 #include <QtGui/QPlatformWindowFormat>
 
 #include <xcb/xcb.h>
+#include <xcb/sync.h>
 
 #include "qxcbobject.h"
 
@@ -88,11 +89,20 @@ public:
 
     void handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_timestamp_t time, const QPoint &local, const QPoint &global);
 
+    void updateSyncRequestCounter();
+
 private:
+    void setNetWmWindowTypes(Qt::WindowFlags flags);
+
     QXcbScreen *m_screen;
 
     xcb_window_t m_window;
     QPlatformGLContext *m_context;
+
+    xcb_sync_int64_t m_syncValue;
+    xcb_sync_counter_t m_syncCounter;
+
+    bool m_hasReceivedSyncRequest;
 };
 
 #endif

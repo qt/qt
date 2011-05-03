@@ -90,7 +90,7 @@ Rectangle {
                 NumberAnimation on rotation {
                     from: 0
                     to: 360
-                    loops: NumberAnimation.Infinite
+                    loops: 3
                     running: true
                     duration: 2000
                 }

@@ -98,10 +98,10 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
                                    QTextItem::RenderFlags flags, qreal width,
                                    const QTextCharFormat &charFormat);
 // Helper function to calculate left most position, width and flags for decoration drawing
-static void drawDecorationForGlyphs(QPainter *painter, const glyph_t *glyphArray,
-                                    const QFixedPoint *positions, int glyphCount,
-                                    QFontEngine *fontEngine, const QFont &font,
-                                    const QTextCharFormat &charFormat);
+Q_GUI_EXPORT void qt_draw_decoration_for_glyphs(QPainter *painter, const glyph_t *glyphArray,
+                                                const QFixedPoint *positions, int glyphCount,
+                                                QFontEngine *fontEngine, const QFont &font,
+                                                const QTextCharFormat &charFormat);
 
 static inline QGradient::CoordinateMode coordinateMode(const QBrush &brush)
 {
@@ -6069,9 +6069,9 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         }
         d->extended->drawStaticTextItem(item);
 
-        drawDecorationForGlyphs(this, item->glyphs, item->glyphPositions,
-                                item->numGlyphs, item->fontEngine(), staticText_d->font,
-                                QTextCharFormat());
+        qt_draw_decoration_for_glyphs(this, item->glyphs, item->glyphPositions,
+                                      item->numGlyphs, item->fontEngine(), staticText_d->font,
+                                      QTextCharFormat());
     }
     if (currentColor != oldPen.color())
         setPen(oldPen);
@@ -6516,10 +6516,10 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     painter->setBrush(oldBrush);
 }
 
-static void drawDecorationForGlyphs(QPainter *painter, const glyph_t *glyphArray,
-                                    const QFixedPoint *positions, int glyphCount,
-                                    QFontEngine *fontEngine, const QFont &font,
-                                    const QTextCharFormat &charFormat)
+Q_GUI_EXPORT void qt_draw_decoration_for_glyphs(QPainter *painter, const glyph_t *glyphArray,
+                                                const QFixedPoint *positions, int glyphCount,
+                                                QFontEngine *fontEngine, const QFont &font,
+                                                const QTextCharFormat &charFormat)
 {
     if (!(font.underline() || font.strikeOut() || font.overline()))
         return;

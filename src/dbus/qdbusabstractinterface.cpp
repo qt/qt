@@ -58,7 +58,7 @@
 QT_BEGIN_NAMESPACE
 
 static QDBusError checkIfValid(const QString &service, const QString &path,
-                               const QString &interface, bool isDynamic)
+                               const QString &interface, bool isDynamic, bool isPeer)
 {
     // We should be throwing exceptions here... oh well
     QDBusError error;
@@ -69,7 +69,7 @@ static QDBusError checkIfValid(const QString &service, const QString &path,
         // use assertion here because this should never happen, at all
         Q_ASSERT_X(!interface.isEmpty(), "QDBusAbstractInterface", "Interface name cannot be empty");
     }
-    if (!QDBusUtil::checkBusName(service, isDynamic ? QDBusUtil::EmptyNotAllowed : QDBusUtil::EmptyAllowed, &error))
+    if (!QDBusUtil::checkBusName(service, (isDynamic && !isPeer) ? QDBusUtil::EmptyNotAllowed : QDBusUtil::EmptyAllowed, &error))
         return error;
     if (!QDBusUtil::checkObjectPath(path, isDynamic ? QDBusUtil::EmptyNotAllowed : QDBusUtil::EmptyAllowed, &error))
         return error;
@@ -86,7 +86,8 @@ QDBusAbstractInterfacePrivate::QDBusAbstractInterfacePrivate(const QString &serv
                                                              const QDBusConnection& con,
                                                              bool isDynamic)
     : connection(con), service(serv), path(p), interface(iface),
-      lastError(checkIfValid(serv, p, iface, isDynamic)),
+      lastError(checkIfValid(serv, p, iface, isDynamic, (connectionPrivate() &&
+                                                         connectionPrivate()->mode == QDBusConnectionPrivate::PeerMode))),
       isValid(!lastError.isValid())
 {
     if (!isValid)
@@ -107,7 +108,7 @@ bool QDBusAbstractInterfacePrivate::canMakeCalls() const
 {
     // recheck only if we have a wildcard (i.e. empty) service or path
     // if any are empty, set the error message according to QDBusUtil
-    if (service.isEmpty())
+    if (service.isEmpty() && connectionPrivate()->mode != QDBusConnectionPrivate::PeerMode)
         return QDBusUtil::checkBusName(service, QDBusUtil::EmptyNotAllowed, &lastError);
     if (path.isEmpty())
         return QDBusUtil::checkObjectPath(path, QDBusUtil::EmptyNotAllowed, &lastError);

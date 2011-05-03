@@ -84,10 +84,6 @@ errno_t qt_wince__putenv_s(const char*, const char*);
 extern "C" {
 #endif
 
-#define SetWindowLongA      SetWindowLong
-#define GetWindowLongA      GetWindowLong
-#define SendMessageA        SendMessage
-
 #if !defined(NO_ERRNO_H)
 #define NO_ERRNO_H
 #endif

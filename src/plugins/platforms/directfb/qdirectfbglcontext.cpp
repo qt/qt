@@ -70,11 +70,13 @@ QDirectFbGLContext::QDirectFbGLContext(IDirectFBGL *glContext)
 
 void QDirectFbGLContext::makeCurrent()
 {
+    QPlatformGLContext::makeCurrent();
     m_dfbGlContext->Lock(m_dfbGlContext);
 }
 
 void QDirectFbGLContext::doneCurrent()
 {
+    QPlatformGLContext::doneCurrent();
     m_dfbGlContext->Unlock(m_dfbGlContext);
 }
 

@@ -92,7 +92,8 @@ QDeclarativeTextPrivate::QDeclarativeTextPrivate()
   format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap), lineHeight(1),
   lineHeightMode(QDeclarativeText::ProportionalHeight), lineCount(1), truncated(false), maximumLineCount(INT_MAX),
   maximumLineCountValid(false), imageCacheDirty(true), updateOnComponentComplete(true), richText(false), singleline(false),
-  cacheAllTextAsImage(true), internalWidthUpdate(false), requireImplicitWidth(false),  hAlignImplicit(true), rightToLeftText(false), naturalWidth(0), doc(0)
+  cacheAllTextAsImage(true), internalWidthUpdate(false), requireImplicitWidth(false),  hAlignImplicit(true),
+  rightToLeftText(false), layoutTextElided(false), naturalWidth(0), doc(0)
 {
     cacheAllTextAsImage = enableImageCache();
     QGraphicsItemPrivate::acceptedMouseButtons = Qt::LeftButton;
@@ -199,6 +200,7 @@ void QDeclarativeTextPrivate::updateLayout()
         return;
     }
 
+    layoutTextElided = false;
     // Setup instance of QTextLayout for all cases other than richtext
     if (!richText) {
         layout.clearLayout();
@@ -209,10 +211,13 @@ void QDeclarativeTextPrivate::updateLayout()
             singleline = !tmp.contains(QChar::LineSeparator);
             if (singleline && !maximumLineCountValid && elideMode != QDeclarativeText::ElideNone && q->widthValid()) {
                 QFontMetrics fm(font);
-                tmp = fm.elidedText(tmp,(Qt::TextElideMode)elideMode,q->width()); // XXX still worth layout...?
-                if (tmp != text && !truncated) {
-                    truncated = true;
-                    emit q->truncatedChanged();
+                tmp = fm.elidedText(tmp,(Qt::TextElideMode)elideMode,q->width());
+                if (tmp != text) {
+                    layoutTextElided = true;
+                    if (!truncated) {
+                        truncated = true;
+                        emit q->truncatedChanged();
+                    }
                 }
             }
             layout.setText(tmp);
@@ -354,6 +359,12 @@ QRect QDeclarativeTextPrivate::setupTextLayout()
 
     if (requireImplicitWidth && q->widthValid()) {
         // requires an extra layout
+        QString elidedText;
+        if (layoutTextElided) {
+            // We have provided elided text to the layout, but we must calculate unelided width.
+            elidedText = layout.text();
+            layout.setText(text);
+        }
         layout.beginLayout();
         forever {
             QTextLine line = layout.createLine();
@@ -367,6 +378,8 @@ QRect QDeclarativeTextPrivate::setupTextLayout()
             br = br.united(line.naturalTextRect());
         }
         naturalWidth = br.width();
+        if (layoutTextElided)
+            layout.setText(elidedText);
     }
 
     if (maximumLineCountValid) {

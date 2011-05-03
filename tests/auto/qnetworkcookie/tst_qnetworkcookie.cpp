@@ -707,6 +707,7 @@ void tst_QNetworkCookie::parseMultipleCookies_data()
     cookie.setDomain("!@#$%^&*();:."); // the ';' is actually problematic, because it is a separator
     list = QList<QNetworkCookie>();
     QTest::newRow("domain-non-alpha-numeric") << "NonAlphNumDomName=NonAlphNumDomValue; domain=!@#$%^&*()" << list;
+    QTest::newRow("expiration-3digit1") << "a=b; expires=123" << list; // used to ASSERT
 }
 
 void tst_QNetworkCookie::parseMultipleCookies()
