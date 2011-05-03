@@ -234,8 +234,10 @@ void QWakeUpActiveObject::RunL()
 
 QTimerActiveObject::QTimerActiveObject(QEventDispatcherSymbian *dispatcher, SymbianTimerInfo *timerInfo)
     : QActiveObject((timerInfo->interval) ? TIMER_PRIORITY : NULLTIMER_PRIORITY , dispatcher),
-      m_timerInfo(timerInfo)
+      m_timerInfo(timerInfo), m_expectedTimeSinceLastEvent(0)
 {
+    // start the timeout timer to ensure initialisation
+    m_timeoutTimer.start();
 }
 
 QTimerActiveObject::~QTimerActiveObject()
@@ -279,10 +281,23 @@ void QTimerActiveObject::StartTimer()
         m_rTimer.After(iStatus, MAX_SYMBIAN_TIMEOUT_MS * 1000);
         m_timerInfo->msLeft -= MAX_SYMBIAN_TIMEOUT_MS;
     } else {
-        //HighRes gives the 1ms accuracy expected by Qt, the +1 is to ensure that
-        //"Timers will never time out earlier than the specified timeout value"
-        //condition is always met.
-        m_rTimer.HighRes(iStatus, (m_timerInfo->msLeft + 1) * 1000);
+        // this algorithm implements drift correction for repeating timers
+        // calculate how late we are for this event
+        int timeSinceLastEvent = m_timeoutTimer.restart();
+        int overshoot = timeSinceLastEvent - m_expectedTimeSinceLastEvent;
+        if (overshoot > m_timerInfo->msLeft) {
+            // we skipped a whole timeout, restart from here
+            overshoot = 0;
+        }
+        // calculate when the next event should happen
+        int waitTime = m_timerInfo->msLeft - overshoot;
+        m_expectedTimeSinceLastEvent = waitTime;
+        // limit the actual ms wait time to avoid wild corrections
+        // this will cause the real event time to slowly drift back to the expected event time
+        // measurements show that Symbian timers always fire 1 or 2 ms late
+        const int limit = 4;
+        waitTime = qMax(m_timerInfo->msLeft - limit, waitTime);
+        m_rTimer.HighRes(iStatus, waitTime * 1000);
         m_timerInfo->msLeft = 0;
     }
     SetActive();
@@ -329,6 +344,8 @@ void QTimerActiveObject::Start()
         if (!m_rTimer.Handle()) {
             qt_symbian_throwIfError(m_rTimer.CreateLocal());
         }
+        m_timeoutTimer.start();
+        m_expectedTimeSinceLastEvent = 0;
         StartTimer();
     } else {
         iStatus = KRequestPending;

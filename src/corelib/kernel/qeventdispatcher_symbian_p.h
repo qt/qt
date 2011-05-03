@@ -150,6 +150,8 @@ private:
 
 private:
     SymbianTimerInfo *m_timerInfo;
+    QElapsedTimer m_timeoutTimer;
+    int m_expectedTimeSinceLastEvent;
     RTimer m_rTimer;
 };
 
