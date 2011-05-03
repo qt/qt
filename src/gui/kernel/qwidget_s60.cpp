@@ -235,18 +235,20 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     QSize oldSize(q->size());
     QRect oldGeom(data.crect);
 
-    // Lose maximized status if deliberate resize
-    if (w != oldSize.width() || h != oldSize.height())
-        data.window_state &= ~Qt::WindowMaximized;
-
     bool checkExtra = true;
-    if (q->isWindow() && (data.window_state & Qt::WindowFullScreen)) {
-        // Do not modity window size for fullscreen windows, if requested
-        // size is already equal to clientRect.
+    if (q->isWindow() && (data.window_state & (Qt::WindowFullScreen | Qt::WindowMaximized))) {
+        // Do not allow fullscreen/maximized windows to expand beyond client rect
         TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+        w = qMin(w, r.Width());
+        h = qMin(h, r.Height());
+
         if (w == r.Width() && h == r.Height())
             checkExtra = false;
     }
+
+    // Lose maximized status if deliberate resize
+    if (w != oldSize.width() || h != oldSize.height())
+        data.window_state &= ~Qt::WindowMaximized;
 
     if (checkExtra && extra) {  // any size restrictions?
         w = qMin(w,extra->maxw);
