@@ -439,7 +439,7 @@
     </message>
     <message>
         <source>Add Dock Window</source>
-        <translation>Добавить прикрепляемое окно</translation>
+        <translation>Добавить панель</translation>
     </message>
     <message>
         <source>Adjust Size of &apos;%1&apos;</source>
@@ -2699,7 +2699,7 @@ Do you want to replace it?</source>
     </message>
     <message>
         <source>newPrefix</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; The file&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;is outside of the current resource file&apos;s parent directory.&lt;/p&gt;</source>
@@ -3222,7 +3222,7 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <source>Dock views</source>
-        <translation>Прикрепляемые панели</translation>
+        <translation>Панели</translation>
     </message>
     <message>
         <source>File</source>

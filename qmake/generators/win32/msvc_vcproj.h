@@ -131,6 +131,7 @@ protected:
     QList<VcprojGenerator*> mergedProjects;
 
 private:
+    QStringList collectSubDirs(QMakeProject *proj);
     QUuid increaseUUID(const QUuid &id);
     friend class VCFilter;
 };

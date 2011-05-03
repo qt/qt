@@ -44,6 +44,12 @@
 
 #include <time.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+#include <QtNetwork/qnetworkconfigmanager.h>
+#include <QtNetwork/qnetworkconfiguration.h>
+#include <QtNetwork/qnetworksession.h>
+#endif
+
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
 // Current path (C:\private\<UID>) contains only ascii chars
@@ -64,6 +70,7 @@ public:
     QHostAddress serverIpAddress();
 
 private slots:
+    void initTestCase();
     void hostTest();
     void dnsResolution_data();
     void dnsResolution();
@@ -91,6 +98,12 @@ private slots:
 
     // ssl supported test
     void supportsSsl();
+private:
+#ifndef QT_NO_BEARERMANAGEMENT
+    QNetworkConfigurationManager *netConfMan;
+    QNetworkConfiguration networkConfiguration;
+    QScopedPointer<QNetworkSession> networkSession;
+#endif
 };
 
 class Chat
@@ -354,6 +367,19 @@ QHostAddress tst_NetworkSelfTest::serverIpAddress()
     return cachedIpAddress;
 }
 
+void tst_NetworkSelfTest::initTestCase()
+{
+#ifndef QT_NO_BEARERMANAGEMENT
+    netConfMan = new QNetworkConfigurationManager(this);
+    networkConfiguration = netConfMan->defaultConfiguration();
+    networkSession.reset(new QNetworkSession(networkConfiguration));
+    if (!networkSession->isOpen()) {
+        networkSession->open();
+        QVERIFY(networkSession->waitForOpened(30000));
+    }
+#endif
+}
+
 void tst_NetworkSelfTest::hostTest()
 {
     // this is a localhost self-test
@@ -469,7 +495,8 @@ void tst_NetworkSelfTest::fileLineEndingTest()
 
 static QList<Chat> ftpChat(const QByteArray &userSuffix = QByteArray())
 {
-    return QList<Chat>() << Chat::expect("220")
+    QList<Chat> rv;
+    rv << Chat::expect("220")
             << Chat::discardUntil("\r\n")
             << Chat::send("USER anonymous" + userSuffix + "\r\n")
             << Chat::expect("331")
@@ -504,10 +531,15 @@ static QList<Chat> ftpChat(const QByteArray &userSuffix = QByteArray())
 //            << Chat::send("SIZE nonASCII/german_\344\366\374\304\326\334\337\r\n")
 //            << Chat::expect("213 40\r\n")
 
-            << Chat::send("QUIT\r\n")
-            << Chat::expect("221")
-            << Chat::discardUntil("\r\n")
-            << Chat::RemoteDisconnect;
+            << Chat::send("QUIT\r\n");
+#ifdef Q_OS_SYMBIAN
+    if (userSuffix.length() == 0) // received but unacknowledged packets are discarded by TCP RST, so this doesn't work with frox proxy
+#endif
+        rv  << Chat::expect("221")
+            << Chat::discardUntil("\r\n");
+
+    rv << Chat::RemoteDisconnect;
+    return rv;
 }
 
 void tst_NetworkSelfTest::ftpServer()

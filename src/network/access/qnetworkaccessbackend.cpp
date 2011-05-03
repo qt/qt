@@ -46,7 +46,7 @@
 #include "qnetworkreply_p.h"
 #include "QtCore/qhash.h"
 #include "QtCore/qmutex.h"
-#include "QtNetwork/qnetworksession.h"
+#include "QtNetwork/private/qnetworksession_p.h"
 
 #include "qnetworkaccesscachebackend_p.h"
 #include "qabstractnetworkcache.h"
@@ -369,6 +369,8 @@ bool QNetworkAccessBackend::start()
 
     if (manager->networkSession->isOpen() &&
         manager->networkSession->state() == QNetworkSession::Connected) {
+        //copy network session down to the backend
+        setProperty("_q_networksession", QVariant::fromValue(manager->networkSession));
         open();
         return true;
     }

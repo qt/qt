@@ -59,7 +59,7 @@
 #include "QtCore/qtimer.h"
 #include "private/qringbuffer_p.h"
 #include "private/qiodevice_p.h"
-#include "private/qnativesocketengine_p.h"
+#include "private/qabstractsocketengine_p.h"
 #include "qnetworkproxy.h"
 
 QT_BEGIN_NAMESPACE

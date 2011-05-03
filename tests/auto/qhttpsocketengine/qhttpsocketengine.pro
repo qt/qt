@@ -2,7 +2,7 @@ load(qttest_p4)
 SOURCES  += tst_qhttpsocketengine.cpp
 
 
-include(../qnativesocketengine/qsocketengine.pri)
+include(../platformsocketengine/platformsocketengine.pri)
 
 MOC_DIR=tmp
 

@@ -1617,7 +1617,9 @@ public:
         SV_SF_1 = SV_9_4,
         SV_SF_2 = 40,
         SV_SF_3 = 50,
-        SV_SF_4 = 60  // Deprecated
+        SV_SF_4 = 60,  // Deprecated
+        SV_API_5_3 = 70,
+        SV_API_5_4 = 80
     };
     static SymbianVersion symbianVersion();
     enum S60Version {
@@ -1626,9 +1628,10 @@ public:
         SV_S60_3_1 = SV_9_2,
         SV_S60_3_2 = SV_9_3,
         SV_S60_5_0 = SV_9_4,
-        SV_S60_5_1 = SV_SF_2,
+        SV_S60_5_1 = SV_SF_2,  // Deprecated
         SV_S60_5_2 = SV_SF_3,
-        SV_S60_5_3 = 70
+        SV_S60_5_3 = SV_API_5_3,
+        SV_S60_5_4 = SV_API_5_4
     };
     static S60Version s60Version();
 #endif
@@ -2748,6 +2751,12 @@ QT_LICENSED_MODULE(DBus)
 #  if defined (Q_OS_LINUX) || defined (Q_OS_SOLARIS) || defined (Q_OS_FREEBSD) || defined (Q_OS_OPENBSD) || defined (Q_OS_IRIX)
 #    define Q_OF_ELF
 #  endif
+#endif
+
+#if !(defined(Q_WS_WIN) && !defined(Q_WS_WINCE)) \
+    && !(defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)) \
+    && !(defined(Q_WS_X11) && !defined(QT_NO_FREETYPE))
+#  define QT_NO_RAWFONT
 #endif
 
 QT_END_NAMESPACE

@@ -72,7 +72,7 @@ static void initWritingSystems(QtFontFamily *family, ATSFontRef atsFont)
         qFromBigEndian<quint32>(os2Table.data() + 54)
     };
     quint32 codePageRange[2] = { qFromBigEndian<quint32>(os2Table.data() + 78), qFromBigEndian<quint32>(os2Table.data() + 82) };
-    QList<QFontDatabase::WritingSystem> systems = determineWritingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
+    QList<QFontDatabase::WritingSystem> systems = qt_determine_writing_systems_from_truetype_bits(unicodeRange, codePageRange);
 #if 0
     QCFString name;
     ATSFontGetName(atsFont, kATSOptionFlagsDefault, &name);
@@ -242,6 +242,11 @@ static const char *styleHint(const QFontDef &request)
         break;
     }
     return stylehint;
+}
+
+static inline float weightToFloat(unsigned int weight)
+{
+    return (weight - 50) / 100.0;
 }
 
 void QFontDatabase::load(const QFontPrivate *d, int script)
