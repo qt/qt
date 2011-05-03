@@ -752,7 +752,7 @@ void Configure::parseCmdLine()
             } else if ( configCmdLine.at(i) == "es2" ) {
                 dictionary[ "OPENGL_ES_2" ]     = "yes";
             } else if ( configCmdLine.at(i) == "desktop" ) {
-                dictionary[ "OPENGL_ES_2" ]     = "yes";
+                // OPENGL=yes suffices
             } else {
                 cout << "Argument passed to -opengl option is not valid." << endl;
                 dictionary[ "DONE" ] = "error";
@@ -1562,10 +1562,8 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT3SUPPORT" ]          = "no";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "OPENSSL" ]             = "yes";
-        // We accidently enabled IPv6 for Qt Symbian in 4.6.x. However the underlying OpenC does not fully support IPV6.
-        // Therefore for 4.7.1 and following we disable it until OpenC either supports it or we have the native Qt
-        // symbian socket engine.
-        dictionary[ "IPV6" ]                = "no";
+        // On Symbian we now always will have IPv6 with no chance to disable it
+        dictionary[ "IPV6" ]                = "yes";
         dictionary[ "STL" ]                 = "yes";
         dictionary[ "EXCEPTIONS" ]          = "yes";
         dictionary[ "RTTI" ]                = "yes";

@@ -92,6 +92,7 @@
 #include "qgraphicstransform_p.h"
 #include <QDebug>
 #include <QtCore/qmath.h>
+#include <QtCore/qnumeric.h>
 
 #ifndef QT_NO_GRAPHICSVIEW
 QT_BEGIN_NAMESPACE
@@ -467,6 +468,7 @@ void QGraphicsRotation::setOrigin(const QVector3D &point)
     item will be rotated counter-clockwise. Normally the rotation angle will be
     in the range (-360, 360), but you can also provide numbers outside of this
     range (e.g., a angle of 370 degrees gives the same result as 10 degrees).
+    Setting the angle to NaN results in no rotation.
 
     \sa origin
 */
@@ -570,7 +572,7 @@ void QGraphicsRotation::applyTo(QMatrix4x4 *matrix) const
 {
     Q_D(const QGraphicsRotation);
 
-    if (d->angle == 0. || d->axis.isNull())
+    if (d->angle == 0. || d->axis.isNull() || qIsNaN(d->angle))
         return;
 
     matrix->translate(d->origin);

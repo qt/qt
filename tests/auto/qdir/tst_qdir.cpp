@@ -420,6 +420,9 @@ void tst_QDir::isRelativePath_data()
 #endif
     QTest::newRow("data2") << "somedir" << true;
     QTest::newRow("data3") << "/somedir" << false;
+
+    QTest::newRow("resource0") << ":/prefix" << false;
+    QTest::newRow("resource1") << ":/prefix/foo.bar" << false;
 }
 
 void tst_QDir::isRelativePath()
@@ -571,6 +574,12 @@ void tst_QDir::entryList_data()
                                   << int(QDir::AllEntries | QDir::Writable) << int(QDir::Name)
                                   << filterLinks(QString(".,..,directory,linktodirectory.lnk,writable").split(','));
 #endif
+    QTest::newRow("QDir::Files | QDir::Readable") << SRCDIR "entrylist/" << QStringList("*")
+                                  << int(QDir::Files | QDir::Readable) << int(QDir::Name)
+                                  << filterLinks(QString("file,linktofile.lnk,writable").split(','));
+    QTest::newRow("QDir::Dirs | QDir::Readable") << SRCDIR "entrylist/" << QStringList("*")
+                                  << int(QDir::Dirs | QDir::Readable) << int(QDir::Name)
+                                  << filterLinks(QString(".,..,directory,linktodirectory.lnk").split(','));
     QTest::newRow("Namefilters b*") << SRCDIR "entrylist/" << QStringList("d*")
                                   << int(QDir::NoFilter) << int(QDir::Name)
                                   << filterLinks(QString("directory").split(','));
@@ -868,6 +877,8 @@ void tst_QDir::canonicalPath_data()
     QTest::newRow("drive:\\..\\..") << QDir::toNativeSeparators(QDir::rootPath().append("../..")) << QDir::rootPath();
     QTest::newRow("drive:") << QDir().canonicalPath().left(2) << QDir().canonicalPath();
 #endif
+
+    QTest::newRow("resource") << ":/tst_qdir/resources/entryList" << ":/tst_qdir/resources/entryList";
 }
 
 void tst_QDir::canonicalPath()
@@ -1061,6 +1072,9 @@ tst_QDir::cleanPath_data()
     QTest::newRow("data10") << "/:/" << "/:";
 #endif
 #endif
+
+    QTest::newRow("resource0") << ":/prefix/foo.bar" << ":/prefix/foo.bar";
+    QTest::newRow("resource1") << "://prefix/..//prefix/foo.bar" << ":/prefix/foo.bar";
 }
 
 
@@ -1084,6 +1098,7 @@ void tst_QDir::absoluteFilePath_data()
     QTest::newRow("2") << "/" << "passwd" << "/passwd";
     QTest::newRow("3") << "relative" << "path" << QDir::currentPath() + "/relative/path";
     QTest::newRow("4") << "" << "" << QDir::currentPath();
+    QTest::newRow("resource") << ":/prefix" << "foo.bar" << ":/prefix/foo.bar";
 }
 
 void tst_QDir::absoluteFilePath()
@@ -1112,6 +1127,7 @@ void tst_QDir::absolutePath_data()
     QTest::newRow("4") << "c:/machine/share/dir1" << "c:/machine/share/dir1";
     QTest::newRow("5") << "c:\\machine\\share\\dir1" << "c:/machine/share/dir1";
 #endif
+    QTest::newRow("resource") << ":/prefix/foo.bar" << ":/prefix/foo.bar";
 }
 
 void tst_QDir::absolutePath()
@@ -1171,6 +1187,9 @@ void tst_QDir::relativeFilePath_data()
     QTest::newRow("33") << "//anotherHost/foo" << "C:/foo/bar" << "C:/foo/bar";
 # endif
 #endif
+
+    QTest::newRow("resource0") << ":/prefix" << "foo.bar" << "foo.bar";
+    QTest::newRow("resource1") << ":/prefix" << ":/prefix/foo.bar" << "foo.bar";
 }
 
 void tst_QDir::relativeFilePath()
@@ -1193,6 +1212,7 @@ void tst_QDir::filePath_data()
     QTest::newRow("2") << "/" << "passwd" << "/passwd";
     QTest::newRow("3") << "relative" << "path" << "relative/path";
     QTest::newRow("4") << "" << "" << ".";
+    QTest::newRow("resource") << ":/prefix" << "foo.bar" << ":/prefix/foo.bar";
 }
 
 void tst_QDir::filePath()
@@ -1255,6 +1275,8 @@ void tst_QDir::exists2_data()
     QTest::newRow("4") << "/testData" << false;
     QTest::newRow("5") << "tst_qdir.cpp" << true;
     QTest::newRow("6") << "/resources.cpp" << false;
+    QTest::newRow("resource0") << ":/prefix/foo.bar" << false;
+    QTest::newRow("resource1") << ":/tst_qdir/resources/entryList/file1.data" << true;
 }
 
 void tst_QDir::exists2()
@@ -1291,6 +1313,8 @@ void tst_QDir::dirName_data()
     QTest::newRow("bslash1") << "\\winnt\\system32" << "system32";
     QTest::newRow("bslash2") << "c:\\winnt\\system32\\kernel32.dll" << "kernel32.dll";
 #endif
+
+    QTest::newRow("resource") << ":/prefix" << "prefix";
 }
 
 void tst_QDir::dirName()
@@ -1961,6 +1985,8 @@ void tst_QDir::isRelative_data()
     foreach (QFileInfo root, QDir::drives()) {
         QTest::newRow(root.absolutePath().toLocal8Bit()) << root.absolutePath() << false;
     }
+
+    QTest::newRow("resource") << ":/prefix" << false;
 }
 
 void tst_QDir::isRelative()

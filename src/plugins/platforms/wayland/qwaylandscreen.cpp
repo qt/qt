@@ -53,6 +53,7 @@ QWaylandScreen::QWaylandScreen(QWaylandDisplay *waylandDisplay, struct wl_output
     , mFormat(QImage::Format_ARGB32_Premultiplied)
     , mWaylandCursor(new QWaylandCursor(this))
 {
+    moveToThread(waylandDisplay->thread());
 }
 
 QWaylandScreen::~QWaylandScreen()

@@ -72,6 +72,8 @@ public:
     QSqlRecord primaryValues(int index);
     virtual void clearEditBuffer();
     virtual void clearCache();
+    static void clearGenerated(QSqlRecord &rec);
+    static void setGeneratedValue(QSqlRecord &rec, int c, QVariant v);
     QSqlRecord record(const QVector<QVariant> &values) const;
 
     bool exec(const QString &stmt, bool prepStatement,
@@ -100,7 +102,7 @@ public:
 
     struct ModifiedRow
     {
-        ModifiedRow(Op o = None, const QSqlRecord &r = QSqlRecord()): op(o), rec(r) {}
+        ModifiedRow(Op o = None, const QSqlRecord &r = QSqlRecord()): op(o), rec(r) { clearGenerated(rec);}
         ModifiedRow(const ModifiedRow &other): op(other.op), rec(other.rec), primaryValues(other.primaryValues) {}
         Op op;
         QSqlRecord rec;

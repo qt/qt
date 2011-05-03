@@ -104,14 +104,17 @@ public:
         , currentCacheSize(-1)
         {}
 
-    QByteArray generateId(const QUrl &url) const;
+    static QString uniqueFileName(const QUrl &url);
     QString cacheFileName(const QUrl &url) const;
     QString tmpCacheFileName() const;
     bool removeFile(const QString &file);
     void storeItem(QCacheItem *item);
+    void prepareLayout();
+    static quint32 crc32(const char *data, uint len);
 
     mutable QCacheItem lastItem;
     QString cacheDirectory;
+    QString dataDirectory;
     qint64 maximumCacheSize;
     qint64 currentCacheSize;
 

@@ -555,8 +555,10 @@ QRect QDeclarativeTextInput::cursorRectangle() const
 {
     Q_D(const QDeclarativeTextInput);
     QRect r = d->control->cursorRect();
-    r.setHeight(r.height()-1); // Make consistent with TextEdit (QLineControl inexplicably adds 1)
-    r.moveLeft(r.x() - d->hscroll);
+    // Scroll and make consistent with TextEdit
+    // QLineControl inexplicably adds 1 to the height and horizontal padding
+    // for unicode direction markers.
+    r.adjust(5 - d->hscroll, 0, -4 - d->hscroll, -1);
     return r;
 }
 
@@ -860,6 +862,20 @@ bool QDeclarativeTextInput::hasAcceptableInput() const
     state.
 */
 
+void QDeclarativeTextInputPrivate::updateInputMethodHints()
+{
+    Q_Q(QDeclarativeTextInput);
+    Qt::InputMethodHints hints = inputMethodHints;
+    uint echo = control->echoMode();
+    if (echo == QDeclarativeTextInput::Password || echo == QDeclarativeTextInput::NoEcho)
+        hints |= Qt::ImhHiddenText;
+    else if (echo == QDeclarativeTextInput::PasswordEchoOnEdit)
+        hints &= ~Qt::ImhHiddenText;
+    if (echo != QDeclarativeTextInput::Normal)
+        hints |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    q->setInputMethodHints(hints);
+}
+
 /*!
     \qmlproperty enumeration TextInput::echoMode
 
@@ -882,19 +898,25 @@ void QDeclarativeTextInput::setEchoMode(QDeclarativeTextInput::EchoMode echo)
     Q_D(QDeclarativeTextInput);
     if (echoMode() == echo)
         return;
-    Qt::InputMethodHints imHints = inputMethodHints();
-    if (echo == Password || echo == NoEcho)
-        imHints |= Qt::ImhHiddenText;
-    else
-        imHints &= ~Qt::ImhHiddenText;
-    if (echo != Normal)
-        imHints |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
-    else
-        imHints &= ~(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
-    setInputMethodHints(imHints);
     d->control->setEchoMode((uint)echo);
+    d->updateInputMethodHints();
     q_textChanged();
     emit echoModeChanged(echoMode());
+}
+
+Qt::InputMethodHints QDeclarativeTextInput::imHints() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return d->inputMethodHints;
+}
+
+void QDeclarativeTextInput::setIMHints(Qt::InputMethodHints hints)
+{
+    Q_D(QDeclarativeTextInput);
+    if (d->inputMethodHints == hints)
+        return;
+    d->inputMethodHints = hints;
+    d->updateInputMethodHints();
 }
 
 /*!

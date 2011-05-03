@@ -1552,7 +1552,7 @@ void QTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton button, con
                 extendBlockwiseSelection(cursorPos);
             else if (selectedWordOnDoubleClick.hasSelection())
                 extendWordwiseSelection(cursorPos, pos.x());
-            else if (wordSelectionEnabled)
+            else if (!wordSelectionEnabled)
                 setCursorPosition(cursorPos, QTextCursor::KeepAnchor);
         } else {
 
@@ -1951,6 +1951,7 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
     if (isGettingInput)
         layout->setPreeditArea(cursor.position() - block.position(), e->preeditString());
     QList<QTextLayout::FormatRange> overrides;
+    const int oldPreeditCursor = preeditCursor;
     preeditCursor = e->preeditString().length();
     hideCursor = false;
     for (int i = 0; i < e->attributes().size(); ++i) {
@@ -1973,6 +1974,8 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
     cursor.endEditBlock();
     if (cursor.d)
         cursor.d->setX();
+    if (oldPreeditCursor != preeditCursor)
+        emit q->microFocusChanged();
 }
 
 QVariant QTextControl::inputMethodQuery(Qt::InputMethodQuery property) const

@@ -148,6 +148,7 @@ private slots:
     void preeditMicroFocus();
     void inputContextMouseHandler();
     void inputMethodComposing();
+    void cursorRectangleSize();
 
 private:
     void simulateKey(QDeclarativeView *, int key, Qt::KeyboardModifiers modifiers = 0);
@@ -787,6 +788,14 @@ void tst_qdeclarativetextedit::selection()
         QCOMPARE(textEditObject->selectionEnd(), i);
         QVERIFY(textEditObject->selectedText().isNull());
     }
+    //Test cursor follows selection
+    for(int i=0; i<= testStr.size(); i++) {
+        textEditObject->select(i,i);
+        QCOMPARE(textEditObject->cursorPosition(), i);
+        QCOMPARE(textEditObject->selectionStart(), i);
+        QCOMPARE(textEditObject->selectionEnd(), i);
+    }
+
 
     textEditObject->setCursorPosition(0);
     QVERIFY(textEditObject->cursorPosition() == 0);
@@ -811,10 +820,12 @@ void tst_qdeclarativetextedit::selection()
     for(int i=0; i<= testStr.size(); i++) {
         textEditObject->select(0,i);
         QCOMPARE(testStr.mid(0,i), textEditObject->selectedText());
+        QCOMPARE(textEditObject->cursorPosition(), i);
     }
     for(int i=0; i<= testStr.size(); i++) {
         textEditObject->select(i,testStr.size());
         QCOMPARE(testStr.mid(i,testStr.size()-i), textEditObject->selectedText());
+        QCOMPARE(textEditObject->cursorPosition(), testStr.size());
     }
 
     textEditObject->setCursorPosition(0);
@@ -1340,6 +1351,12 @@ void tst_qdeclarativetextedit::mouseSelection()
     else
         QVERIFY(str.isEmpty());
 
+    // Clicking and shift to clicking between the same points should select the same text.
+    textEditObject->setCursorPosition(0);
+    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, Qt::NoModifier, canvas->mapFromScene(QPoint(x1,y)));
+    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, Qt::ShiftModifier, canvas->mapFromScene(QPoint(x2,y)));
+    QCOMPARE(textEditObject->selectedText(), str);
+
     delete canvas;
 }
 
@@ -1436,6 +1453,12 @@ void tst_qdeclarativetextedit::mouseSelectionMode()
         QVERIFY(str != text);
     }
 
+    // Clicking and shift to clicking between the same points should select the same text.
+    textEditObject->setCursorPosition(0);
+    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, Qt::NoModifier, canvas->mapFromScene(QPoint(x1,y)));
+    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, Qt::ShiftModifier, canvas->mapFromScene(QPoint(x2,y)));
+    QCOMPARE(textEditObject->selectedText(), str);
+
     delete canvas;
 }
 
@@ -1526,6 +1549,19 @@ void tst_qdeclarativetextedit::cursorDelegate()
     textEditObject->setCursorPosition(0);
     QCOMPARE(textEditObject->cursorRectangle().x(), qRound(delegateObject->x()));
     QCOMPARE(textEditObject->cursorRectangle().y(), qRound(delegateObject->y()));
+    QVERIFY(textEditObject->cursorRectangle().y() >= 0);
+    QVERIFY(textEditObject->cursorRectangle().y() < textEditObject->cursorRectangle().height());
+    textEditObject->setVAlign(QDeclarativeTextEdit::AlignVCenter);
+    QCOMPARE(textEditObject->cursorRectangle().x(), qRound(delegateObject->x()));
+    QCOMPARE(textEditObject->cursorRectangle().y(), qRound(delegateObject->y()));
+    QVERIFY(textEditObject->cursorRectangle().y() > (textEditObject->height() / 2) - textEditObject->cursorRectangle().height());
+    QVERIFY(textEditObject->cursorRectangle().y() < (textEditObject->height() / 2) + textEditObject->cursorRectangle().height());
+    textEditObject->setVAlign(QDeclarativeTextEdit::AlignBottom);
+    QCOMPARE(textEditObject->cursorRectangle().x(), qRound(delegateObject->x()));
+    QCOMPARE(textEditObject->cursorRectangle().y(), qRound(delegateObject->y()));
+    QVERIFY(textEditObject->cursorRectangle().y() > textEditObject->height() - (textEditObject->cursorRectangle().height() * 2));
+    QVERIFY(textEditObject->cursorRectangle().y() < textEditObject->height());
+
     //Test Delegate gets deleted
     textEditObject->setCursorDelegate(0);
     QVERIFY(!textEditObject->findChild<QDeclarativeItem*>("cursorInstance"));
@@ -2214,6 +2250,8 @@ void tst_qdeclarativetextedit::preeditMicroFocus()
     QTest::qWaitForWindowShown(&view);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
+    QSignalSpy cursorRectangleSpy(&edit, SIGNAL(cursorRectangleChanged()));
+
     QRect currentRect;
     QRect previousRect = edit.inputMethodQuery(Qt::ImMicroFocus).toRect();
 
@@ -2224,8 +2262,9 @@ void tst_qdeclarativetextedit::preeditMicroFocus()
     currentRect = edit.inputMethodQuery(Qt::ImMicroFocus).toRect();
     QCOMPARE(currentRect, previousRect);
 #if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
-    QCOMPARE(ic.updateReceived, true);
+    QCOMPARE(ic.updateReceived, false); // The cursor position hasn't changed.
 #endif
+    QCOMPARE(cursorRectangleSpy.count(), 0);
 
     // Verify that the micro focus rect moves to the left as the cursor position
     // is incremented.
@@ -2237,6 +2276,8 @@ void tst_qdeclarativetextedit::preeditMicroFocus()
 #if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
         QCOMPARE(ic.updateReceived, true);
 #endif
+        QVERIFY(cursorRectangleSpy.count() > 0);
+        cursorRectangleSpy.clear();
         previousRect = currentRect;
     }
 
@@ -2250,6 +2291,7 @@ void tst_qdeclarativetextedit::preeditMicroFocus()
 #if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     QCOMPARE(ic.updateReceived, true);
 #endif
+    QVERIFY(cursorRectangleSpy.count() > 0);
 }
 
 void tst_qdeclarativetextedit::inputContextMouseHandler()
@@ -2409,6 +2451,25 @@ void tst_qdeclarativetextedit::inputMethodComposing()
     QCOMPARE(spy.count(), 2);
 }
 
+void tst_qdeclarativetextedit::cursorRectangleSize()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/CursorRect.qml");
+    QVERIFY(canvas->rootObject() != 0);
+    canvas->show();
+    canvas->setFocus();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+
+    QDeclarativeTextEdit *textEdit = qobject_cast<QDeclarativeTextEdit *>(canvas->rootObject());
+    QVERIFY(textEdit != 0);
+    textEdit->setFocus(Qt::OtherFocusReason);
+    QRectF cursorRect = textEdit->positionToRectangle(textEdit->cursorPosition());
+    QRectF microFocusFromScene = canvas->scene()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
+    QRectF microFocusFromApp= QApplication::focusWidget()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
+
+    QCOMPARE(microFocusFromScene.size(), cursorRect.size());
+    QCOMPARE(microFocusFromApp.size(), cursorRect.size());
+}
 QTEST_MAIN(tst_qdeclarativetextedit)
 
 #include "tst_qdeclarativetextedit.moc"

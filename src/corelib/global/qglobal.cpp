@@ -86,7 +86,6 @@
 # include "private/qcore_symbian_p.h"
 
 _LIT(qt_S60Filter, "Series60v?.*.sis");
-_LIT(qt_symbianFilter, "Symbianv*.sis");
 _LIT(qt_symbianSystemInstallDir, "z:\\system\\install\\");
 #endif
 
@@ -1200,10 +1199,12 @@ bool qSharedBuild()
     \value SV_9_2 Symbian OS v9.2
     \value SV_9_3 Symbian OS v9.3
     \value SV_9_4 Symbian OS v9.4
-    \value SV_SF_1 Symbian^1
+    \value SV_SF_1 S60 5th Edition (Symbian^1)
     \value SV_SF_2 Symbian^2
-    \value SV_SF_3 Symbian^3
-    \value SV_SF_4 Symbian^4
+    \value SV_SF_3 Symbian^3 or Symbian Anna
+    \value SV_SF_4 \e{This enum value is deprecated.}
+    \value SV_API_5_3 Symbian/S60 API version 5.3 release
+    \value SV_API_5_4 Symbian/S60 API version 5.4 release
     \value SV_Unknown An unknown and currently unsupported platform
 
     \sa S60Version, WinVersion, MacVersion
@@ -1220,8 +1221,10 @@ bool qSharedBuild()
     \value SV_S60_3_1 S60 3rd Edition Feature Pack 1
     \value SV_S60_3_2 S60 3rd Edition Feature Pack 2
     \value SV_S60_5_0 S60 5th Edition
-    \value SV_S60_5_1 S60 5th Edition Feature Pack 1
-    \value SV_S60_5_2 S60 5th Edition Feature Pack 2
+    \value SV_S60_5_1 \e{This enum value is deprecated.}
+    \value SV_S60_5_2 Symbian^3 and Symbian Anna
+    \value SV_S60_5_3 Symbian/S60 API version 5.3 release
+    \value SV_S60_5_4 Symbian/S60 API version 5.4 release
     \value SV_S60_Unknown An unknown and currently unsupported platform
     \omitvalue SV_S60_None
 
@@ -1829,12 +1832,10 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
 
 #ifdef Q_OS_SYMBIAN
 static QSysInfo::SymbianVersion cachedSymbianVersion = QSysInfo::SymbianVersion(-1);
+static QSysInfo::S60Version cachedS60Version = QSysInfo::S60Version(-1);
 
-QSysInfo::SymbianVersion QSysInfo::symbianVersion()
+static void symbianInitVersions()
 {
-    if (cachedSymbianVersion != -1)
-        return cachedSymbianVersion;
-
     // Use pure Symbian code, because if done using QDir, there will be a call back
     // to this method, resulting doing this expensive operation twice before the cache kicks in.
     // Pure Symbian code also makes this method ~10x faster, speeding up the application launch.
@@ -1842,21 +1843,8 @@ QSysInfo::SymbianVersion QSysInfo::symbianVersion()
     TFindFile fileFinder(rfs);
     CDir* contents;
 
-    // Check for Symbian4
-    TInt err = fileFinder.FindWildByDir(qt_symbianFilter, qt_symbianSystemInstallDir, contents);
-    if (err == KErrNone) {
-        QScopedPointer<CDir> contentsDeleter(contents);
-        err = contents->Sort(EDescending|ESortByName);
-        if (err == KErrNone && contents->Count() > 0 && (*contents)[0].iName.Length() >= 9) {
-            TInt major = (*contents)[0].iName[8] - '0';
-            if (major == 4) {
-                return cachedSymbianVersion = SV_SF_4;
-            }
-        }
-    }
-
-    // Check for S60 and Symbian3 platforms, which use older .sis naming scheme
-    err = fileFinder.FindWildByDir(qt_S60Filter, qt_symbianSystemInstallDir, contents);
+    // Check for platform version
+    TInt err = fileFinder.FindWildByDir(qt_S60Filter, qt_symbianSystemInstallDir, contents);
     if (err == KErrNone) {
         QScopedPointer<CDir> contentsDeleter(contents);
         err = contents->Sort(EDescending|ESortByName);
@@ -1865,61 +1853,82 @@ QSysInfo::SymbianVersion QSysInfo::symbianVersion()
             TInt minor = (*contents)[0].iName[11] - '0';
             if (major == 3) {
                 if (minor == 1) {
-                    return cachedSymbianVersion = SV_9_2;
+                    cachedS60Version = QSysInfo::SV_S60_3_1;
+                    cachedSymbianVersion = QSysInfo::SV_9_2;
                 } else if (minor == 2) {
-                    return cachedSymbianVersion = SV_9_3;
+                    cachedS60Version = QSysInfo::SV_S60_3_2;
+                    cachedSymbianVersion = QSysInfo::SV_9_3;
                 }
             } else if (major == 5) {
                 if (minor == 0) {
-                    return cachedSymbianVersion = SV_9_4;
-                }
-                else if (minor == 1) {
-                    return cachedSymbianVersion = SV_SF_2;
-                }
-                else if (minor >= 2) {
-                    return cachedSymbianVersion = SV_SF_3;
+                    cachedS60Version = QSysInfo::SV_S60_5_0;
+                    cachedSymbianVersion = QSysInfo::SV_9_4;
+                } else if (minor == 1) {
+                    cachedS60Version = QSysInfo::SV_S60_5_1;
+                    cachedSymbianVersion = QSysInfo::SV_SF_2;
+                } else if (minor == 2) {
+                    cachedS60Version = QSysInfo::SV_S60_5_2;
+                    cachedSymbianVersion = QSysInfo::SV_SF_3;
+                } else if (minor == 3) {
+                    cachedS60Version = QSysInfo::SV_S60_5_3;
+                    cachedSymbianVersion = QSysInfo::SV_API_5_3;
+                } else if (minor >= 4) {
+                    cachedS60Version = QSysInfo::SV_S60_5_4;
+                    cachedSymbianVersion = QSysInfo::SV_API_5_4;
                 }
             }
         }
     }
 
 #  ifdef Q_CC_NOKIAX86
-    // Some emulator environments may not contain the version specific .sis files, so
-    // simply hardcode the version on those environments. Note that can't use
-    // SYMBIAN_VERSION_* defines for S60 3.x/5.0 platforms, as they do not define them
-    // right anyway in case .sis files are not found.
+    if (cachedS60Version == -1) {
+        // Some emulator environments may not contain the version specific .sis files, so
+        // simply hardcode the version on those environments. Note that can't use
+        // S60_VERSION_* defines for S60 3.x/5.0 platforms, as they do not define them
+        // right anyway in case .sis files are not found.
 #   if defined(__SERIES60_31__)
-    return cachedSymbianVersion = SV_9_2;
+        cachedS60Version = QSysInfo::SV_S60_3_1;
+        cachedSymbianVersion = QSysInfo::SV_9_2;
 #   elif defined(__S60_32__)
-    return cachedSymbianVersion = SV_9_3;
+        cachedS60Version = QSysInfo::SV_S60_3_2;
+        cachedSymbianVersion = QSysInfo::SV_9_3;
 #   elif defined(__S60_50__)
-    return cachedSymbianVersion = SV_9_4;
-#   elif defined(SYMBIAN_VERSION_SYMBIAN3)
-    return cachedSymbianVersion = SV_SF_3;
-#   elif defined(SYMBIAN_VERSION_SYMBIAN4)
-    return cachedSymbianVersion = SV_SF_4;
+        cachedS60Version = QSysInfo::SV_S60_5_0;
+        cachedSymbianVersion = QSysInfo::SV_9_4;
+#   elif defined(S60_VERSION_5_2)
+        cachedS60Version = QSysInfo::SV_S60_5_2;
+        cachedSymbianVersion = QSysInfo::SV_SF_3;
+#   elif defined(S60_VERSION_5_3)
+        cachedS60Version = QSysInfo::SV_S60_5_3;
+        cachedSymbianVersion = QSysInfo::SV_API_5_3;
+#   elif defined(S60_VERSION_5_4)
+        cachedS60Version = QSysInfo::SV_S60_5_4;
+        cachedSymbianVersion = QSysInfo::SV_API_5_4;
 #   endif
+    }
 #  endif
-    //If reaching here, it was not possible to determine the version
-    return cachedSymbianVersion = SV_Unknown;
+
+    if (cachedS60Version == -1) {
+        //If reaching here, it was not possible to determine the version
+        cachedS60Version = QSysInfo::SV_S60_Unknown;
+        cachedSymbianVersion = QSysInfo::SV_Unknown;
+    }
+}
+
+QSysInfo::SymbianVersion QSysInfo::symbianVersion()
+{
+    if (cachedSymbianVersion == -1)
+        symbianInitVersions();
+
+    return cachedSymbianVersion;
 }
 
 QSysInfo::S60Version QSysInfo::s60Version()
 {
-    switch (symbianVersion()) {
-    case SV_9_2:
-        return SV_S60_3_1;
-    case SV_9_3:
-        return SV_S60_3_2;
-    case SV_9_4:
-        return SV_S60_5_0;
-    case SV_SF_2:
-        return SV_S60_5_1;
-    case SV_SF_3:
-        return SV_S60_5_2;
-    default:
-        return SV_S60_Unknown;
-    }
+    if (cachedS60Version == -1)
+        symbianInitVersions();
+
+    return cachedS60Version;
 }
 #endif // ifdef Q_OS_SYMBIAN
 
@@ -2867,6 +2876,40 @@ int qrand()
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp qttrid_noop
 
     \sa qtTrId(), {Internationalization with Qt}
+*/
+
+/*!
+    \macro Q_LIKELY(expr)
+    \relates <QtGlobal>
+    \since 4.8
+
+    \brief Hints the compiler that the enclosed condition is likely to evaluate
+    to \c true.
+
+    Use of this macro can help the compiler to optimize the code.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp qlikely
+
+    \sa Q_UNLIKELY()
+*/
+
+/*!
+    \macro Q_UNLIKELY(expr)
+    \relates <QtGlobal>
+    \since 4.8
+
+    \brief Hints the compiler that the enclosed condition is likely to evaluate
+    to \c false.
+
+    Use of this macro can help the compiler to optimize the code.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp qunlikely
+
+    \sa Q_LIKELY()
 */
 
 /*!

@@ -250,4 +250,8 @@ EXPORTS
 	_ZTV21QAbstractXmlNodeModel @ 249 NONAME
 	_ZTV23QAbstractMessageHandler @ 250 NONAME
 	_Zls6QDebugRK15QSourceLocation @ 251 NONAME
+	_ZN20QAbstractUriResolver18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 252 NONAME
+	_ZN20QAbstractUriResolver25staticMetaObjectExtraDataE @ 253 NONAME DATA 8
+	_ZN23QAbstractMessageHandler18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 254 NONAME
+	_ZN23QAbstractMessageHandler25staticMetaObjectExtraDataE @ 255 NONAME DATA 8
 

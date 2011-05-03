@@ -64,6 +64,8 @@ public:
     QPlatformFontDatabase *fontDatabase() const;
 
 private:
+    bool hasOpenGL() const;
+
     QPlatformFontDatabase *mFontDb;
     QWaylandDisplay *mDisplay;
     bool mUseOpenGL;

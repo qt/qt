@@ -70,7 +70,7 @@
     QtUiTools module library. This is done in the \c{textfinder.pro} file
     that contains the following lines:
 
-    \snippet doc/src/snippets/code/doc_src_examples_textfinder.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_examples_textfinder.pro 0
 
     \section1 TextFinder Class Definition
 

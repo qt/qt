@@ -111,8 +111,12 @@ public:
         UnregisterNode,
         UnregisterTree
     };
-
     Q_DECLARE_FLAGS(RegisterOptions, RegisterOption)
+
+    enum ConnectionCapability {
+        UnixFileDescriptorPassing = 0x0001
+    };
+    Q_DECLARE_FLAGS(ConnectionCapabilities, ConnectionCapability)
 
     QDBusConnection(const QString &name);
     QDBusConnection(const QDBusConnection &other);
@@ -124,6 +128,7 @@ public:
     QString baseService() const;
     QDBusError lastError() const;
     QString name() const;
+    ConnectionCapabilities connectionCapabilities() const;
 
     bool send(const QDBusMessage &message) const;
     bool callWithCallback(const QDBusMessage &message, QObject *receiver,
@@ -163,9 +168,13 @@ public:
 
     QDBusConnectionInterface *interface() const;
 
+    void *internalPointer() const;
+
     static QDBusConnection connectToBus(BusType type, const QString &name);
     static QDBusConnection connectToBus(const QString &address, const QString &name);
+    static QDBusConnection connectToPeer(const QString &address, const QString &name);
     static void disconnectFromBus(const QString &name);
+    static void disconnectFromPeer(const QString &name);
 
     static QDBusConnection sessionBus();
     static QDBusConnection systemBus();

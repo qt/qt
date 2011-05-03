@@ -197,6 +197,7 @@ public:
         if (q->isComponentComplete()) {
             clear();
             updateGrid();
+            setPosition(0);
             q->refill();
             updateCurrent(currentIndex);
         }
@@ -583,6 +584,26 @@ void QDeclarativeGridViewPrivate::refill(qreal from, qreal to, bool doBuffer)
             --i;
         modelIndex = visibleItems.at(i)->index + 1;
     }
+
+    if (visibleItems.count() && (fillFrom > rowPos + rowSize()*2
+        || fillTo < rowPosAt(visibleIndex) - rowSize())) {
+        // We've jumped more than a page.  Estimate which items are now
+        // visible and fill from there.
+        int count = (fillFrom - (rowPos + rowSize())) / (rowSize()) * columns;
+        for (int i = 0; i < visibleItems.count(); ++i)
+            releaseItem(visibleItems.at(i));
+        visibleItems.clear();
+        modelIndex += count;
+        if (modelIndex >= model->count())
+            modelIndex = model->count() - 1;
+        else if (modelIndex < 0)
+            modelIndex = 0;
+        modelIndex = modelIndex / columns * columns;
+        visibleIndex = modelIndex;
+        colPos = colPosAt(visibleIndex);
+        rowPos = rowPosAt(visibleIndex);
+    }
+
     int colNum = colPos / colSize();
 
     FxGridItem *item = 0;
@@ -689,7 +710,6 @@ void QDeclarativeGridViewPrivate::updateGrid()
             q->setContentHeight(endPosition() - startPosition());
         else
             q->setContentWidth(lastPosition() - originPosition());
-        setPosition(0);
     }
 }
 
@@ -1115,6 +1135,7 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
     } else {
         QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
     }
+    data.inOvershoot = false;
     fixupMode = Normal;
 }
 
@@ -1196,7 +1217,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             accel = v2 / (2.0f * qAbs(dist));
         } else {
             data.flickTarget = velocity > 0 ? minExtent : maxExtent;
-            overshootDist = overShoot ? overShootDistance(v, vSize) : 0;
+            overshootDist = overShoot ? overShootDistance(vSize) : 0;
         }
         timeline.reset(data.move);
         timeline.accel(data.move, v, accel, maxDistance + overshootDist);
@@ -1246,7 +1267,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 
     \snippet doc/src/snippets/declarative/gridview/ContactModel.qml 0
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage gridview-simple.png
     \enddiv
 
@@ -1262,7 +1283,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     \codeline
     \snippet doc/src/snippets/declarative/gridview/gridview.qml classdocs simple
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage gridview-highlight.png
     \enddiv
 
@@ -2229,7 +2250,7 @@ qreal QDeclarativeGridView::maxXExtent() const
     qreal extent;
     qreal highlightStart;
     qreal highlightEnd;
-    qreal lastItemPosition;
+    qreal lastItemPosition = 0;
     if (d->isRightToLeftTopToBottom()){
         highlightStart = d->highlightRangeStartValid ? d->highlightRangeEnd : d->size();
         highlightEnd = d->highlightRangeEndValid ? d->highlightRangeStart : d->size();

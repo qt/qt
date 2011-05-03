@@ -4736,7 +4736,7 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, QFontEngine *fontEngine,
 //         qDebug() << "new context" << context << font_cache;
         qt_context_cache.insert(context, font_cache);
         if (context->isValid()) {
-            if (context->device()->devType() == QInternal::Widget) {
+            if (context->device() && context->device()->devType() == QInternal::Widget) {
                 QWidget *widget = static_cast<QWidget *>(context->device());
                 connect(widget, SIGNAL(destroyed(QObject*)), SLOT(widgetDestroyed(QObject*)));
             }
@@ -4832,7 +4832,6 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, QFontEngine *fontEngine,
             }
 
             QImage glyph_im(fontEngine->alphaMapForGlyph(glyphs[i]));
-            glyph_im = glyph_im.convertToFormat(QImage::Format_Indexed8);
             glyph_width = glyph_im.width();
             Q_ASSERT(glyph_width >= 0);
             // pad the glyph width to an even number
@@ -4855,15 +4854,21 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, QFontEngine *fontEngine,
 #endif
 
             if (!glyph_im.isNull()) {
-
                 int idx = 0;
                 uchar *tex_data = (uchar *) malloc(glyph_width*glyph_im.height()*2);
                 memset(tex_data, 0, glyph_width*glyph_im.height()*2);
 
+                bool is8BitGray = false;
+#ifdef Q_WS_QPA
+                if (glyph_im.format() == QImage::Format_Indexed8) {
+                    is8BitGray = true;
+                }
+#endif
+                glyph_im = glyph_im.convertToFormat(QImage::Format_Indexed8);
                 for (int y=0; y<glyph_im.height(); ++y) {
                     uchar *s = (uchar *) glyph_im.scanLine(y);
                     for (int x=0; x<glyph_im.width(); ++x) {
-                        uchar alpha = qAlpha(glyph_im.color(*s));
+                        uchar alpha = is8BitGray ? *s : qAlpha(glyph_im.color(*s));
                         tex_data[idx] = alpha;
                         tex_data[idx+1] = alpha;
                         ++s;

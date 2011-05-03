@@ -106,6 +106,7 @@ private slots:
     void property_changes_data();
     void property_changes_worker();
     void property_changes_worker_data();
+    void clear();
 };
 int tst_qdeclarativelistmodel::roleFromName(const QDeclarativeListModel *model, const QString &roleName)
 {
@@ -1089,6 +1090,47 @@ void tst_qdeclarativelistmodel::property_changes_worker()
 void tst_qdeclarativelistmodel::property_changes_worker_data()
 {
     property_changes_data();
+}
+
+void tst_qdeclarativelistmodel::clear()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeListModel model;
+    QDeclarativeEngine::setContextForObject(&model, engine.rootContext());
+    engine.rootContext()->setContextObject(&model);
+
+    QScriptEngine *seng = QDeclarativeEnginePrivate::getScriptEngine(&engine);
+    QScriptValue sv = seng->newObject();
+    QVariant result;
+
+    model.clear();
+    QCOMPARE(model.count(), 0);
+
+    sv.setProperty("propertyA", "value a");
+    sv.setProperty("propertyB", "value b");
+    model.append(sv);
+    QCOMPARE(model.count(), 1);
+
+    model.clear();
+    QCOMPARE(model.count(), 0);
+
+    model.append(sv);
+    model.append(sv);
+    QCOMPARE(model.count(), 2);
+
+    model.clear();
+    QCOMPARE(model.count(), 0);
+
+    // clearing does not remove the roles
+    sv.setProperty("propertyC", "value c");
+    model.append(sv);
+    QList<int> roles = model.roles();
+    model.clear();
+    QCOMPARE(model.count(), 0);
+    QCOMPARE(model.roles(), roles);
+    QCOMPARE(model.toString(roles[0]), QString("propertyA"));
+    QCOMPARE(model.toString(roles[1]), QString("propertyB"));
+    QCOMPARE(model.toString(roles[2]), QString("propertyC"));
 }
 
 QTEST_MAIN(tst_qdeclarativelistmodel)

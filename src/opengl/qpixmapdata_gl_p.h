@@ -76,6 +76,10 @@ void qt_gl_unregister_pixmap(QGLPixmapData *pd);
 void qt_gl_hibernate_pixmaps();
 #endif
 
+#ifdef Q_OS_SYMBIAN
+class QNativeImageHandleProvider;
+#endif
+
 class QGLFramebufferObjectPool
 {
 public:
@@ -160,6 +164,9 @@ public:
     QImage::Format idealFormat(QImage &image, Qt::ImageConversionFlags flags);
     void* toNativeType(NativeType type);
     void fromNativeType(void* pixmap, NativeType type);
+    bool initFromNativeImageHandle(void *handle, const QString &type);
+    void createFromNativeImageHandleProvider();
+    void releaseNativeImageHandle();
 #endif
 
 private:
@@ -191,6 +198,9 @@ private:
     mutable QGLContext *m_ctx;
 #ifdef Q_OS_SYMBIAN
     mutable QVolatileImage m_source;
+    mutable QNativeImageHandleProvider *nativeImageHandleProvider;
+    void *nativeImageHandle;
+    QString nativeImageType;
 #else
     mutable QImage m_source;
 #endif

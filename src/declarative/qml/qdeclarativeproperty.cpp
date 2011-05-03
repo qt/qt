@@ -1029,7 +1029,7 @@ bool QDeclarativePropertyPrivate::writeEnumProperty(const QMetaProperty &prop, i
             else
                 v = QVariant(menum.keyToValue(value.toByteArray()));
         } else if (v.userType() != QVariant::Int && v.userType() != QVariant::UInt) {
-            int enumMetaTypeId = QMetaType::type(QByteArray(menum.scope()) + "::" + menum.name());
+            int enumMetaTypeId = QMetaType::type(QByteArray(menum.scope() + QByteArray("::") + menum.name()));
             if ((enumMetaTypeId == 0) || (v.userType() != enumMetaTypeId) || !v.constData())
                 return false;
             v = QVariant(*reinterpret_cast<const int *>(v.constData()));

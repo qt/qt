@@ -63,9 +63,6 @@ public:
     QVector<QChar> chars;
 };
 
-Q_GUI_EXPORT extern int qt_defaultDpiX();
-Q_GUI_EXPORT extern int qt_defaultDpiY();
-
 namespace {
 class DrawTextItemRecorder: public QPaintEngine
 {
