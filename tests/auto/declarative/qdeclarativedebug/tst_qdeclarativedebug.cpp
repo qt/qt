@@ -664,7 +664,13 @@ void tst_QDeclarativeDebug::queryAvailableEngines()
         QCOMPARE(e.name(), m_engine->objectName());
     }
 
+    // Make query invalid by deleting client
+    q_engines = m_dbg->queryAvailableEngines(this);
+    QCOMPARE(q_engines->state(), QDeclarativeDebugQuery::Waiting);
+    delete m_dbg;
+    QCOMPARE(q_engines->state(), QDeclarativeDebugQuery::Error);
     delete q_engines;
+    m_dbg = new QDeclarativeEngineDebug(m_conn, this);
 }
 
 void tst_QDeclarativeDebug::queryRootContexts()
@@ -672,6 +678,7 @@ void tst_QDeclarativeDebug::queryRootContexts()
     QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);
     int engineId = q_engines->engines()[0].debugId();
+    delete q_engines;
 
     QDeclarativeDebugRootContextQuery *q_context;
     
@@ -703,8 +710,13 @@ void tst_QDeclarativeDebug::queryRootContexts()
     QVERIFY(context.contexts()[0].debugId() >= 0);
     QCOMPARE(context.contexts()[0].name(), QString("tst_QDeclarativeDebug_childContext"));
 
-    delete q_engines;
+    // Make query invalid by deleting client
+    q_context = m_dbg->queryRootContexts(engineId, this);
+    QCOMPARE(q_context->state(), QDeclarativeDebugQuery::Waiting);
+    delete m_dbg;
+    QCOMPARE(q_context->state(), QDeclarativeDebugQuery::Error);
     delete q_context;
+    m_dbg = new QDeclarativeEngineDebug(m_conn, this);
 }
 
 void tst_QDeclarativeDebug::queryObject()
@@ -736,7 +748,14 @@ void tst_QDeclarativeDebug::queryObject()
 
     delete q_engines;
     delete q_context;
+
+    // Make query invalid by deleting client
+    q_obj = recursive ? m_dbg->queryObjectRecursive(rootObject, this) : m_dbg->queryObject(rootObject, this);
+    QCOMPARE(q_obj->state(), QDeclarativeDebugQuery::Waiting);
+    delete m_dbg;
+    QCOMPARE(q_obj->state(), QDeclarativeDebugQuery::Error);
     delete q_obj;
+    m_dbg = new QDeclarativeEngineDebug(m_conn, this);
 
     // check source as defined in main()
     QDeclarativeDebugFileReference source = obj.source();
@@ -811,7 +830,14 @@ void tst_QDeclarativeDebug::queryExpressionResult()
 
     delete q_engines;
     delete q_context;
+
+    // Make query invalid by deleting client
+    q_expr = m_dbg->queryExpressionResult(objectId, expr, this);
+    QCOMPARE(q_expr->state(), QDeclarativeDebugQuery::Waiting);
+    delete m_dbg;
+    QCOMPARE(q_expr->state(), QDeclarativeDebugQuery::Error);
     delete q_expr;
+    m_dbg = new QDeclarativeEngineDebug(m_conn, this);
 }
 
 void tst_QDeclarativeDebug::queryExpressionResult_data()
@@ -1001,7 +1027,7 @@ void tst_QDeclarativeDebug::setBindingForObject()
     // set handler
     //
     rootObject = findRootObject();
-    QCOMPARE(rootObject.children().size(), 3);
+    QCOMPARE(rootObject.children().size(), 4); // Rectangle, Text, MouseArea, QDeclarativeComponentAttached
     QDeclarativeDebugObjectReference mouseAreaObject = rootObject.children().at(2);
     QDeclarativeDebugObjectQuery *q_obj = m_dbg->queryObjectRecursive(mouseAreaObject, this);
     waitForQuery(q_obj);
