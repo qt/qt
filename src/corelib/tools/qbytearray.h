@@ -52,6 +52,17 @@
 #error qbytearray.h must be included before any header file that defines truncate
 #endif
 
+#if defined(Q_CC_GNU) && (__GNUC__ == 4 && __GNUC_MINOR__ == 0)
+//There is a bug in GCC 4.0 that tries to instantiate template of annonymous enum
+#  ifdef QT_USE_FAST_OPERATOR_PLUS
+#    undef QT_USE_FAST_OPERATOR_PLUS
+#  endif
+#  ifdef QT_USE_FAST_CONCATENATION
+#    undef QT_USE_FAST_CONCATENATION
+#  endif
+#endif
+
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -548,6 +559,8 @@ inline bool operator>=(const QByteArray &a1, const char *a2)
 { return qstrcmp(a1, a2) >= 0; }
 inline bool operator>=(const char *a1, const QByteArray &a2)
 { return qstrcmp(a1, a2) >= 0; }
+#ifndef QT_USE_FAST_OPERATOR_PLUS
+# ifndef QT_USE_FAST_CONCATENATION
 inline const QByteArray operator+(const QByteArray &a1, const QByteArray &a2)
 { return QByteArray(a1) += a2; }
 inline const QByteArray operator+(const QByteArray &a1, const char *a2)
@@ -558,6 +571,8 @@ inline const QByteArray operator+(const char *a1, const QByteArray &a2)
 { return QByteArray(a1) += a2; }
 inline const QByteArray operator+(char a1, const QByteArray &a2)
 { return QByteArray(&a1, 1) += a2; }
+# endif // QT_USE_FAST_CONCATENATION
+#endif // QT_USE_FAST_OPERATOR_PLUS
 inline QBool QByteArray::contains(const char *c) const
 { return QBool(indexOf(c) != -1); }
 inline QByteArray &QByteArray::replace(char before, const char *c)
@@ -599,5 +614,9 @@ Q_DECLARE_SHARED(QByteArray)
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#ifdef QT_USE_FAST_CONCATENATION
+#include <QtCore/qstring.h>
+#endif
 
 #endif // QBYTEARRAY_H

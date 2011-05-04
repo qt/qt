@@ -225,6 +225,10 @@ void tst_QGraphicsTransform::rotation()
     rotation.setAngle(90);
     QCOMPARE(transform2D(rotation).map(QPointF(10, 10)), QPointF(10, 10));
     QCOMPARE(transform2D(rotation).map(QPointF(20, 10)), QPointF(10, 20));
+
+    rotation.setOrigin(QVector3D(0, 0, 0));
+    rotation.setAngle(qQNaN());
+    QCOMPARE(transform2D(rotation).map(QPointF(20, 10)), QPointF(20, 10));
 }
 
 Q_DECLARE_METATYPE(Qt::Axis);

@@ -46,12 +46,12 @@
     To declare a property, use the \l {Q_PROPERTY()} {Q_PROPERTY()}
     macro in a class that inherits QObject.
 
-    \snippet doc/src/snippets/code/doc_src_properties.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_properties.cpp 0
 
     Here are some typical examples of property declarations taken from
     class QWidget.
 
-    \snippet doc/src/snippets/code/doc_src_properties.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_properties.cpp 1
 
     A property behaves like a class data member, but it has additional
     features accessible through the \l {Meta-Object System}.
@@ -82,6 +82,10 @@
     \o A \c NOTIFY signal is optional. If defined, it should specify one
     existing signal in that class that is emitted whenever the value
     of the property changes.
+
+    \o A \c REVISION number is optional. If included, it defines the
+    the property and its notifier signal to be used in a particular
+    revision of the API that is exposed to QML.
 
     \o The \c DESIGNABLE attribute indicates whether the property
     should be visible in the property editor of GUI design tool (e.g.,
@@ -131,7 +135,7 @@
     be a user-defined type. In this example, class QDate is considered
     to be a user-defined type.
 
-    \snippet doc/src/snippets/code/doc_src_properties.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_properties.cpp 2
 
     Because QDate is user-defined, you must include the \c{<QDate>}
     header file with the property declaration.
@@ -152,7 +156,7 @@
     the code snippet below, the call to QAbstractButton::setDown() and
     the call to QObject::setProperty() both set property "down".
 
-    \snippet doc/src/snippets/code/doc_src_properties.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_properties.cpp 3
 
     Accessing a property through its \c WRITE accessor is the better
     of the two, because it is faster and gives better diagnostics at
@@ -162,7 +166,7 @@
     can \e discover a class's properties at run time by querying its
     QObject, QMetaObject, and \l {QMetaProperty} {QMetaProperties}.
 
-    \snippet doc/src/snippets/code/doc_src_properties.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_properties.cpp 4
 
     In the above snippet, QMetaObject::property() is used to get \l
     {QMetaProperty} {metadata} about each property defined in some
@@ -189,7 +193,7 @@
     for the \c READ and \c WRITE functions. The declaration of MyClass
     then might look like this:
 
-    \snippet doc/src/snippets/code/doc_src_properties.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_properties.cpp 5
 
     The \c READ function is const and returns the property type. The
     \c WRITE function returns void and has exactly one parameter of
@@ -200,7 +204,7 @@
     QObject that is an instance of MyClass, we have two ways to set
     its priority property:
 
-    \snippet doc/src/snippets/code/doc_src_properties.qdoc 6
+    \snippet doc/src/snippets/code/doc_src_properties.cpp 6
 
     In the example, the enumeration type that is the property type is
     declared in MyClass and registered with the \l{Meta-Object System}
@@ -262,7 +266,7 @@
     Q_CLASSINFO(), that can be used to attach additional
     \e{name}--\e{value} pairs to a class's meta-object, for example:
 
-    \snippet doc/src/snippets/code/doc_src_properties.qdoc 7
+    \snippet doc/src/snippets/code/doc_src_properties.cpp 7
 
     Like other meta-data, class information is accessible at run-time
     through the meta-object; see QMetaObject::classInfo() for details.

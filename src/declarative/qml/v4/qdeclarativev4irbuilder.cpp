@@ -891,18 +891,25 @@ bool QDeclarativeV4IRBuilder::visit(AST::BinaryExpression *ast)
         IR::BasicBlock *iftrue = _function->newBasicBlock();
         IR::BasicBlock *endif = _function->newBasicBlock();
 
-        IR::Temp *r = _block->TEMP(IR::BoolType);
-
         ExprResult left = expression(ast->left);
+        IR::Temp *r = _block->TEMP(left.type());
         _block->MOVE(r, left);
 
-        _block->CJUMP(_block->UNOP(IR::OpNot, r), iftrue, endif);
+        IR::Expr *cond = r;
+        if (r->type != IR::BoolType) {
+            cond = _block->TEMP(IR::BoolType);
+            _block->MOVE(cond, r);
+        }
+
+        _block->CJUMP(_block->UNOP(IR::OpNot, cond), iftrue, endif);
 
         _block = iftrue;
         ExprResult right = expression(ast->right);
         _block->MOVE(r, right);
 
-        r->type = maxType(left.type(), right.type()); // ### not exactly.
+        if (left.type() != right.type())
+            discard();
+
         _expr.code = r;
 
         _block = endif;

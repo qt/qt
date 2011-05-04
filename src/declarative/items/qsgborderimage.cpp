@@ -1,4 +1,4 @@
-// Commit: 39013a4a8238d522ed1d13adb25e702da9e25fc9
+// Commit: 462429f5692f810bdd4e04b916db5f9af428d9e4
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -92,7 +92,7 @@ void QSGBorderImage::load()
     }
 
     if (d->url.isEmpty()) {
-        d->pix.clear();
+        d->pix.clear(this);
         d->status = Null;
         setImplicitWidth(0);
         setImplicitHeight(0);
@@ -132,6 +132,7 @@ void QSGBorderImage::load()
                 options |= QDeclarativePixmap::Asynchronous;
             if (d->cache)
                 options |= QDeclarativePixmap::Cache;
+            d->pix.clear(this);
             d->pix.load(qmlEngine(this), d->url, options);
 
             if (d->pix.isLoading()) {
@@ -220,6 +221,7 @@ void QSGBorderImage::setGridScaledImage(const QSGGridScaledImage& sci)
             options |= QDeclarativePixmap::Asynchronous;
         if (d->cache)
             options |= QDeclarativePixmap::Cache;
+        d->pix.clear(this);
         d->pix.load(qmlEngine(this), d->sciurl, options);
 
         if (d->pix.isLoading()) {
@@ -316,34 +318,33 @@ void QSGBorderImage::doUpdate()
     update();
 }
 
-Node *QSGBorderImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
+QSGNode *QSGBorderImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
     Q_D(QSGBorderImage);
 
-    if (d->pix.texture().isNull() || width() <= 0 || height() <= 0) {
+    if (!d->pix.texture() || width() <= 0 || height() <= 0) {
         delete oldNode;
         return 0;
     }
 
     QSGNinePatchNode *node = static_cast<QSGNinePatchNode *>(oldNode);
-    if (node && d->pixmapChanged) {
-        delete node;
-        node = 0;
-    }
-    d->pixmapChanged = false;
-
-    // XXX Does not support mirror property
 
     if (!node) {
-        // XXX akennedy - Doesn't support all the tiling modes
-        const QSGScaleGrid *border = d->getScaleGrid();
-        QRect inner(border->left(), border->top(), d->pix.width() - border->right() - border->left(),
-                    d->pix.height() - border->bottom() - border->top());
-        node = new QSGNinePatchNode(QRectF(0, 0, width(), height()), d->pix.texture(), inner, d->smooth);
-    } else {
-        node->setRect(QRectF(0, 0, width(), height()));
-        node->setLinearFiltering(d->smooth);
+        node = new QSGNinePatchNode();
     }
+
+    node->setTexture(d->pix.texture());
+
+    const QSGScaleGrid *border = d->getScaleGrid();
+    node->setInnerRect(QRectF(border->left(),
+                              border->top(),
+                              d->pix.width() - border->right() - border->left(),
+                              d->pix.height() - border->bottom() - border->top()));
+    node->setRect(QRectF(0, 0, width(), height()));
+    node->setFiltering(d->smooth ? QSGTexture::Linear : QSGTexture::Nearest);
+    node->setHorzontalTileMode(d->horizontalTileMode);
+    node->setVerticalTileMode(d->verticalTileMode);
+    node->update();
 
     return node;
 }

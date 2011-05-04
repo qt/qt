@@ -1,4 +1,4 @@
-// Commit: ab71df83ba4eb9d749efc0f3a2d4a0fe5486023f
+// Commit: 462429f5692f810bdd4e04b916db5f9af428d9e4
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -131,7 +131,7 @@ QSize QSGImageBase::sourceSize() const
 
     int width = d->sourcesize.width();
     int height = d->sourcesize.height();
-    return QSize(width != -1 ? width : implicitWidth(), height != -1 ? height : implicitHeight());
+    return QSize(width != -1 ? width : d->pix.width(), height != -1 ? height : d->pix.height());
 }
 
 bool QSGImageBase::cache() const
@@ -177,7 +177,7 @@ void QSGImageBase::load()
     Q_D(QSGImageBase);
 
     if (d->url.isEmpty()) {
-        d->pix.clear();
+        d->pix.clear(this);
         d->status = Null;
         d->progress = 0.0;
         setImplicitWidth(0);
@@ -192,6 +192,7 @@ void QSGImageBase::load()
             options |= QDeclarativePixmap::Asynchronous;
         if (d->cache)
             options |= QDeclarativePixmap::Cache;
+        d->pix.clear(this);
         d->pix.load(qmlEngine(this), d->url, d->explicitSourceSize ? sourceSize() : QSize(), options);
 
         if (d->pix.isLoading()) {

@@ -96,8 +96,6 @@ public:
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
 
-    bool hasOpenGL() const;
-
     QPlatformEventLoopIntegration *createEventLoopIntegration() const;
 
     QPlatformFontDatabase *fontDatabase() const;
@@ -106,10 +104,14 @@ public:
 
     static GLuint blitterProgram();
 
+    void setMainGLContext(QEGLPlatformContext *ctx) { mMainGlContext = ctx; }
+    void mainGLContext() const { return mMainGlContext; }
+
 private:
     QList<QPlatformScreen *> mScreens;
     QOpenKODEEventLoopIntegration *mEventLoopIntegration;
     QPlatformFontDatabase *mFontDb;
+    QEGLPlatformContext *mMainGlContext;
 };
 
 QT_END_NAMESPACE

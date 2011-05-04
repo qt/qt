@@ -59,6 +59,10 @@
 #include "private/qpixmapdata_p.h"
 #include "private/qglpaintdevice_p.h"
 
+#ifdef Q_OS_SYMBIAN
+#include "private/qvolatileimage_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QPaintEngine;
@@ -70,6 +74,10 @@ class QGLPixmapData;
 void qt_gl_register_pixmap(QGLPixmapData *pd);
 void qt_gl_unregister_pixmap(QGLPixmapData *pd);
 void qt_gl_hibernate_pixmaps();
+#endif
+
+#ifdef Q_OS_SYMBIAN
+class QNativeImageHandleProvider;
 #endif
 
 class QGLFramebufferObjectPool
@@ -153,8 +161,12 @@ public:
 #endif
 
 #ifdef Q_OS_SYMBIAN
+    QImage::Format idealFormat(QImage &image, Qt::ImageConversionFlags flags);
     void* toNativeType(NativeType type);
     void fromNativeType(void* pixmap, NativeType type);
+    bool initFromNativeImageHandle(void *handle, const QString &type);
+    void createFromNativeImageHandleProvider();
+    void releaseNativeImageHandle();
 #endif
 
 private:
@@ -184,7 +196,14 @@ private:
     mutable QGLFramebufferObject *m_renderFbo;
     mutable QPaintEngine *m_engine;
     mutable QGLContext *m_ctx;
+#ifdef Q_OS_SYMBIAN
+    mutable QVolatileImage m_source;
+    mutable QNativeImageHandleProvider *nativeImageHandleProvider;
+    void *nativeImageHandle;
+    QString nativeImageType;
+#else
     mutable QImage m_source;
+#endif
     mutable QGLTexture m_texture;
 
     // the texture is not in sync with the source image

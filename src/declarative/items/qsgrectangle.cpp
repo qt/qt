@@ -1,4 +1,4 @@
-// Commit: 3d769613d5efc642ebfd8d5fe7c149834132fe65
+// Commit: acc903853d5ac54d646d324b7386c998bc07d464
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -43,8 +43,8 @@
 #include "qsgrectangle_p.h"
 #include "qsgrectangle_p_p.h"
 
-#include "qsgcontext.h"
-#include "adaptationlayer.h"
+#include <private/qsgcontext_p.h>
+#include <private/qsgadaptationlayer_p.h>
 
 #include <QtGui/qpixmapcache.h>
 #include <QtCore/qstringbuilder.h>
@@ -67,7 +67,7 @@ QColor QSGPen::color() const
 void QSGPen::setColor(const QColor &c)
 {
     _color = c;
-    _valid = _color.alpha() ? true : false;
+    _valid = (_color.alpha() && _width >= 1) ? true : false;
     emit penChanged();
 }
 
@@ -82,7 +82,7 @@ void QSGPen::setWidth(int w)
         return;
 
     _width = w;
-    _valid = (_width < 1) ? false : true;
+    _valid = (_color.alpha() && _width >= 1) ? true : false;
     emit penChanged();
 }
 
@@ -238,7 +238,7 @@ void QSGRectangle::setColor(const QColor &c)
     emit colorChanged();
 }
 
-Node *QSGRectangle::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
+QSGNode *QSGRectangle::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data)
 {
     Q_UNUSED(data);
     Q_D(QSGRectangle);
@@ -248,8 +248,8 @@ Node *QSGRectangle::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         return 0;
     }
 
-    RectangleNodeInterface *rectangle = static_cast<RectangleNodeInterface *>(oldNode);
-    if (!rectangle) rectangle = QSGContext::current->createRectangleNode();
+    QSGRectangleNode *rectangle = static_cast<QSGRectangleNode *>(oldNode);
+    if (!rectangle) rectangle = d->sceneGraphContext()->createRectangleNode();
 
     rectangle->setRect(QRectF(0, 0, width(), height()));
     rectangle->setColor(d->color);

@@ -68,8 +68,10 @@ private slots:
     void clickTwice();
     void pressedOrdering();
     void preventStealing();
+    void clickThrough();
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
+    void hoverPosition();
 
 private:
     QSGView *createView();
@@ -533,6 +535,116 @@ void tst_QSGMouseArea::preventStealing()
     delete canvas;
 }
 
+void tst_QSGMouseArea::clickThrough()
+{
+    //With no handlers defined click, doubleClick and PressAndHold should propagate to those with handlers
+    QSGView *canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/clickThrough.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QMouseEvent pressEvent(QEvent::MouseButtonPress, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &pressEvent);
+
+    QMouseEvent releaseEvent(QEvent::MouseButtonRelease, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &releaseEvent);
+
+    QCOMPARE(canvas->rootObject()->property("presses").toInt(), 0);
+    QCOMPARE(canvas->rootObject()->property("clicks").toInt(), 1);
+
+    QApplication::sendEvent(canvas, &pressEvent);
+    QTest::qWait(1000);
+    QApplication::sendEvent(canvas, &releaseEvent);
+
+    QCOMPARE(canvas->rootObject()->property("presses").toInt(), 0);
+    QCOMPARE(canvas->rootObject()->property("clicks").toInt(), 1);
+    QCOMPARE(canvas->rootObject()->property("pressAndHolds").toInt(), 1);
+
+    QApplication::sendEvent(canvas, &pressEvent);
+    QApplication::sendEvent(canvas, &releaseEvent);
+    pressEvent = QMouseEvent(QEvent::MouseButtonDblClick, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+
+    QApplication::sendEvent(canvas, &pressEvent);
+    QApplication::sendEvent(canvas, &releaseEvent);
+
+    QCOMPARE(canvas->rootObject()->property("presses").toInt(), 0);
+    QCOMPARE(canvas->rootObject()->property("clicks").toInt(), 2);
+    QCOMPARE(canvas->rootObject()->property("doubleClicks").toInt(), 1);
+    QCOMPARE(canvas->rootObject()->property("pressAndHolds").toInt(), 1);
+
+    delete canvas;
+
+    //With handlers defined click, doubleClick and PressAndHold should propagate only when explicitly ignored
+    canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/clickThrough2.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    pressEvent = QMouseEvent(QEvent::MouseButtonPress, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &pressEvent);
+
+    releaseEvent = QMouseEvent(QEvent::MouseButtonRelease, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &releaseEvent);
+
+    QCOMPARE(canvas->rootObject()->property("presses").toInt(), 0);
+    QCOMPARE(canvas->rootObject()->property("clicks").toInt(), 0);
+
+    QApplication::sendEvent(canvas, &pressEvent);
+    QTest::qWait(1000);
+    QApplication::sendEvent(canvas, &releaseEvent);
+
+    QCOMPARE(canvas->rootObject()->property("presses").toInt(), 0);
+    QCOMPARE(canvas->rootObject()->property("clicks").toInt(), 0);
+    QCOMPARE(canvas->rootObject()->property("pressAndHolds").toInt(), 0);
+
+    QApplication::sendEvent(canvas, &pressEvent);
+    QApplication::sendEvent(canvas, &releaseEvent);
+
+    pressEvent = QMouseEvent(QEvent::MouseButtonDblClick, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &pressEvent);
+    QApplication::sendEvent(canvas, &releaseEvent);
+
+    QCOMPARE(canvas->rootObject()->property("presses").toInt(), 0);
+    QCOMPARE(canvas->rootObject()->property("clicks").toInt(), 0);
+    QCOMPARE(canvas->rootObject()->property("doubleClicks").toInt(), 0);
+    QCOMPARE(canvas->rootObject()->property("pressAndHolds").toInt(), 0);
+
+    canvas->rootObject()->setProperty("letThrough", QVariant(true));
+
+    pressEvent = QMouseEvent(QEvent::MouseButtonPress, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &pressEvent);
+
+    releaseEvent = QMouseEvent(QEvent::MouseButtonRelease, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &releaseEvent);
+
+    QCOMPARE(canvas->rootObject()->property("presses").toInt(), 0);
+    QCOMPARE(canvas->rootObject()->property("clicks").toInt(), 1);
+
+    QApplication::sendEvent(canvas, &pressEvent);
+    QTest::qWait(1000);
+    QApplication::sendEvent(canvas, &releaseEvent);
+
+    QCOMPARE(canvas->rootObject()->property("presses").toInt(), 0);
+    QCOMPARE(canvas->rootObject()->property("clicks").toInt(), 1);
+    QCOMPARE(canvas->rootObject()->property("pressAndHolds").toInt(), 1);
+
+    QApplication::sendEvent(canvas, &pressEvent);
+    QApplication::sendEvent(canvas, &releaseEvent);
+    pressEvent = QMouseEvent(QEvent::MouseButtonDblClick, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+
+    QApplication::sendEvent(canvas, &pressEvent);
+    QApplication::sendEvent(canvas, &releaseEvent);
+
+    QCOMPARE(canvas->rootObject()->property("presses").toInt(), 0);
+    QCOMPARE(canvas->rootObject()->property("clicks").toInt(), 2);
+    QCOMPARE(canvas->rootObject()->property("doubleClicks").toInt(), 1);
+    QCOMPARE(canvas->rootObject()->property("pressAndHolds").toInt(), 1);
+
+    delete canvas;
+}
+
 void tst_QSGMouseArea::testQtQuick11Attributes()
 {
     QFETCH(QString, code);
@@ -566,6 +678,26 @@ void tst_QSGMouseArea::testQtQuick11Attributes_data()
     QTest::newRow("preventStealing") << "preventStealing: true"
         << "QDeclarativeComponent: Component is not ready"
         << ":1 \"MouseArea.preventStealing\" is not available in QtQuick 1.0.\n";
+}
+
+void tst_QSGMouseArea::hoverPosition()
+{
+    QSGView *canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/hoverPosition.qml"));
+
+    QSGItem *root = canvas->rootObject();
+    QVERIFY(root != 0);
+
+    QCOMPARE(root->property("mouseX").toReal(), qreal(0));
+    QCOMPARE(root->property("mouseY").toReal(), qreal(0));
+
+    QMouseEvent moveEvent(QEvent::MouseMove, QPoint(10, 32), Qt::NoButton, Qt::NoButton, 0);
+    QApplication::sendEvent(canvas, &moveEvent);
+
+    QCOMPARE(root->property("mouseX").toReal(), qreal(10));
+    QCOMPARE(root->property("mouseY").toReal(), qreal(32));
+
+    delete canvas;
 }
 
 QTEST_MAIN(tst_QSGMouseArea)

@@ -198,8 +198,8 @@ void tst_QDateTime::ctor()
     QDateTime dt3(QDate(2004, 1, 2), QTime(1, 2, 3), Qt::UTC);
 
     QVERIFY(dt1 == dt2);
-    QVERIFY(dt1 != dt3);
     if (europeanTimeZone) {
+        QVERIFY(dt1 != dt3);
         QVERIFY(dt1 < dt3);
         QVERIFY(dt1.addSecs(3600).toUTC() == dt3);
     }

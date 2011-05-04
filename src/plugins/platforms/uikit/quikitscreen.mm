@@ -41,6 +41,8 @@
 
 #include "quikitscreen.h"
 
+#include <QtGui/QApplication>
+
 #include <QtDebug>
 
 QT_BEGIN_NAMESPACE
@@ -51,21 +53,22 @@ QUIKitScreen::QUIKitScreen(int screenIndex)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     UIScreen *screen = [[UIScreen screens] objectAtIndex:screenIndex];
-    UIScreenMode *mode = [screen currentMode];
-    CGSize size = [mode size];
-    m_geometry = QRect(0, 0, size.width, size.height);
-    CGRect bounds = [screen bounds]; // in 'points', 1p == 1/160in
-
-//    qreal xDpi = size.width * 160. / bounds.size.width;
-//    qreal yDpi = size.height * 160. / bounds.size.height;
-//    qDebug() << xDpi << yDpi;
+    CGRect bounds = [screen bounds];
+    m_geometry = QRect(0, 0, bounds.size.width, bounds.size.height);
 
     m_format = QImage::Format_ARGB32;
 
     m_depth = 24;
 
     const qreal inch = 25.4;
-    m_physicalSize = QSize(qRound(bounds.size.width * inch / 160.), qRound(bounds.size.height * inch / 160.));
+    qreal dpi = 160.;
+    int dragDistance = 14;
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+        dpi = 132.;
+        dragDistance = 10;
+    }
+    m_physicalSize = QSize(qRound(bounds.size.width * inch / dpi), qRound(bounds.size.height * inch / dpi));
+    qApp->setStartDragDistance(dragDistance);
     [pool release];
 }
 

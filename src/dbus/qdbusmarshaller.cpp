@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qdbusargument_p.h"
+#include "qdbusconnection.h"
 #include "qdbusmetatype_p.h"
 #include "qdbusutil_p.h"
 
@@ -138,6 +139,16 @@ inline void QDBusMarshaller::append(const QDBusSignature &arg)
     qIterAppend(&iterator, ba, DBUS_TYPE_SIGNATURE, &cdata);
 }
 
+inline void QDBusMarshaller::append(const QDBusUnixFileDescriptor &arg)
+{
+    int fd = arg.fileDescriptor();
+    if (!ba && fd == -1) {
+        error(QLatin1String("Invalid file descriptor passed in arguments"));
+    } else {
+        qIterAppend(&iterator, ba, DBUS_TYPE_UNIX_FD, &fd);
+    }
+}
+
 inline void QDBusMarshaller::append(const QByteArray &arg)
 {
     if (ba) {
@@ -188,7 +199,7 @@ inline bool QDBusMarshaller::append(const QDBusVariant &arg)
         return false;
     }
 
-    QDBusMarshaller sub;
+    QDBusMarshaller sub(capabilities);
     open(sub, DBUS_TYPE_VARIANT, signature);
     bool isOk = sub.appendVariantInternal(value);
     // don't call sub.close(): it auto-closes
@@ -203,7 +214,7 @@ inline void QDBusMarshaller::append(const QStringList &arg)
         return;
     }
 
-    QDBusMarshaller sub;
+    QDBusMarshaller sub(capabilities);
     open(sub, DBUS_TYPE_ARRAY, DBUS_TYPE_STRING_AS_STRING);
     QStringList::ConstIterator it = arg.constBegin();
     QStringList::ConstIterator end = arg.constEnd();
@@ -243,7 +254,7 @@ inline QDBusMarshaller *QDBusMarshaller::beginMap(int kid, int vid)
               .arg(QLatin1String(QVariant::typeToName(QVariant::Type(kid)))));
         return this;
     }
-    if (ksignature[1] != 0 || !q_dbus_type_is_basic(*ksignature)) {
+    if (ksignature[1] != 0 || !QDBusUtil::isValidBasicType(*ksignature)) {
         qWarning("QDBusMarshaller: type '%s' (%d) cannot be used as the key type in a D-BUS map.",
                  QVariant::typeToName( QVariant::Type(kid) ), kid);
         error(QString::fromLatin1("Type %1 passed in arguments cannot be used as a key in a map")
@@ -280,6 +291,7 @@ void QDBusMarshaller::open(QDBusMarshaller &sub, int code, const char *signature
     sub.parent = this;
     sub.ba = ba;
     sub.ok = true;
+    sub.capabilities = capabilities;
 
     if (ba)
         switch (code) {
@@ -303,7 +315,7 @@ void QDBusMarshaller::open(QDBusMarshaller &sub, int code, const char *signature
 
 QDBusMarshaller *QDBusMarshaller::beginCommon(int code, const char *signature)
 {
-    QDBusMarshaller *d = new QDBusMarshaller;
+    QDBusMarshaller *d = new QDBusMarshaller(capabilities);
     open(*d, code, signature);
     return d;
 }
@@ -362,7 +374,7 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
         if (!d->message)
             return false;       // can't append this one...
 
-        QDBusDemarshaller demarshaller;
+        QDBusDemarshaller demarshaller(capabilities);
         demarshaller.message = q_dbus_message_ref(d->message);
 
         if (d->direction == Demarshalling) {
@@ -473,6 +485,13 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
         qFatal("QDBusMarshaller::appendVariantInternal got a DICT_ENTRY!");
         return false;
 
+    case DBUS_TYPE_UNIX_FD:
+        if (capabilities & QDBusConnection::UnixFileDescriptorPassing || ba) {
+            append(qvariant_cast<QDBusUnixFileDescriptor>(arg));
+            return true;
+        }
+        // fall through
+
     default:
         qWarning("QDBusMarshaller::appendVariantInternal: Found unknown D-BUS type '%s'",
                  signature);
@@ -492,7 +511,7 @@ bool QDBusMarshaller::appendRegisteredType(const QVariant &arg)
 bool QDBusMarshaller::appendCrossMarshalling(QDBusDemarshaller *demarshaller)
 {
     int code = q_dbus_message_iter_get_arg_type(&demarshaller->iterator);
-    if (q_dbus_type_is_basic(code)) {
+    if (QDBusUtil::isValidBasicType(code)) {
         // easy: just append
         // do exactly like the D-BUS docs suggest
         // (see apidocs for q_dbus_message_iter_get_basic)
@@ -506,7 +525,7 @@ bool QDBusMarshaller::appendCrossMarshalling(QDBusDemarshaller *demarshaller)
 
     if (code == DBUS_TYPE_ARRAY) {
         int element = q_dbus_message_iter_get_element_type(&demarshaller->iterator);
-        if (q_dbus_type_is_fixed(element)) {
+        if (QDBusUtil::isValidFixedType(element) && element != DBUS_TYPE_UNIX_FD) {
             // another optimization: fixed size arrays
             // code is exactly like QDBusDemarshaller::toByteArray
             DBusMessageIter sub;
@@ -528,7 +547,7 @@ bool QDBusMarshaller::appendCrossMarshalling(QDBusDemarshaller *demarshaller)
     // We have to recurse
     QDBusDemarshaller *drecursed = demarshaller->beginCommon();
 
-    QDBusMarshaller mrecursed;  // create on the stack makes it autoclose
+    QDBusMarshaller mrecursed(capabilities);  // create on the stack makes it autoclose
     QByteArray subSignature;
     const char *sig = 0;
     if (code == DBUS_TYPE_VARIANT || code == DBUS_TYPE_ARRAY) {

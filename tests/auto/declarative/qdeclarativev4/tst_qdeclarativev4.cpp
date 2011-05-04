@@ -161,17 +161,31 @@ void tst_qdeclarativev4::unnecessaryReeval()
 
 void tst_qdeclarativev4::logicalOr()
 {
-    QDeclarativeComponent component(&engine, TEST_FILE("logicalOr.qml"));
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("logicalOr.qml"));
 
-    QObject *o = component.create();
-    QVERIFY(o != 0);
+        QObject *o = component.create();
+        QVERIFY(o != 0);
 
-    ResultObject *ro = qobject_cast<ResultObject *>(o);
-    QVERIFY(ro != 0);
+        ResultObject *ro = qobject_cast<ResultObject *>(o);
+        QVERIFY(ro != 0);
 
-    QCOMPARE(ro->result(), 0);
+        QCOMPARE(ro->result(), 0);
+        delete o;
+    }
 
-    delete o;
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("logicalOr.2.qml"));
+
+        QObject *o = component.create();
+        QVERIFY(o != 0);
+
+        ResultObject *ro = qobject_cast<ResultObject *>(o);
+        QVERIFY(ro != 0);
+
+        QCOMPARE(ro->result(), 1);
+        delete o;
+    }
 }
 
 // This would previously use the metaObject of the root element to result the nested access.

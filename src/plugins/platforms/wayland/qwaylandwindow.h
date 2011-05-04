@@ -43,8 +43,8 @@
 #define QWAYLANDWINDOW_H
 
 #include <QtGui/QPlatformWindow>
+#include <QtCore/QWaitCondition>
 
-#include <stdint.h>
 #include "qwaylanddisplay.h"
 
 class QWaylandDisplay;
@@ -70,11 +70,24 @@ public:
     void configure(uint32_t time, uint32_t edges,
                    int32_t x, int32_t y, int32_t width, int32_t height);
 
+    void attach(QWaylandBuffer *buffer);
+    void damage(const QRegion &region);
+
+    void waitForFrameSync();
+
+    struct wl_surface *wl_surface() const { return mSurface; }
+
 protected:
     struct wl_surface *mSurface;
-    virtual void newSurfaceCreated() = 0;
+    virtual void newSurfaceCreated();
     QWaylandDisplay *mDisplay;
+    QWaylandBuffer *mBuffer;
     WId mWindowId;
+    bool mWaitingForFrameSync;
+    QWaitCondition mFrameSyncWait;
+
+private:
+    static void frameCallback(struct wl_surface *surface, void *data, uint32_t time);
 
 
 };

@@ -129,6 +129,7 @@ public:
 
     void convertToReal(QDeclarativeJS::IR::Expr *expr, int reg);    
     void convertToInt(QDeclarativeJS::IR::Expr *expr, int reg);
+    void convertToBool(QDeclarativeJS::IR::Expr *expr, int reg);
     quint8 instructionOpcode(QDeclarativeJS::IR::Binop *e);
 
 protected:

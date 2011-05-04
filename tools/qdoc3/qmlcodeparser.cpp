@@ -43,9 +43,9 @@
   qmlcodeparser.cpp
 */
 
-#include "private/qdeclarativejsast_p.h"
-#include "private/qdeclarativejsastvisitor_p.h"
-#include "private/qdeclarativejsnodepool_p.h"
+#include "declarativeparser/qdeclarativejsast_p.h"
+#include "declarativeparser/qdeclarativejsastvisitor_p.h"
+#include "declarativeparser/qdeclarativejsnodepool_p.h"
 
 #include "qmlcodeparser.h"
 #include "node.h"
@@ -142,7 +142,7 @@ void QmlCodeParser::doneParsingSourceFiles(Tree *tree)
 }
 
 /*!
-  Returns the set of strings reopresenting the topic commands.
+  Returns the set of strings representing the topic commands.
  */
 QSet<QString> QmlCodeParser::topicCommands()
 {

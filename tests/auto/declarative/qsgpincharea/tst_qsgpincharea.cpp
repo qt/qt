@@ -180,7 +180,7 @@ void tst_QSGPinchArea::pinchProperties()
     delete canvas;
 }
 
-QTouchEvent::TouchPoint makeTouchPoint(int id, QPoint p, QGraphicsView *v, QSGItem *i)
+QTouchEvent::TouchPoint makeTouchPoint(int id, QPoint p, QSGView *v, QSGItem *i)
 {
     QTouchEvent::TouchPoint touchPoint(id);
     touchPoint.setPos(i->mapFromScene(p));
@@ -211,22 +211,20 @@ void tst_QSGPinchArea::scale()
     QSGItem *blackRect = canvas->rootObject()->findChild<QSGItem*>("blackrect");
     QVERIFY(blackRect != 0);
 
-    QWidget *vp = canvas->viewport();
-
     QPoint p1(80, 80);
     QPoint p2(100, 100);
 
-    QTest::touchEvent(vp).press(0, p1);
-    QTest::touchEvent(vp).stationary(0).press(1, p2);
+    QTest::touchEvent(canvas).press(0, p1);
+    QTest::touchEvent(canvas).stationary(0).press(1, p2);
     p1 -= QPoint(10,10);
     p2 += QPoint(10,10);
-    QTest::touchEvent(vp).move(0, p1).move(1, p2);
+    QTest::touchEvent(canvas).move(0, p1).move(1, p2);
 
     QCOMPARE(root->property("scale").toReal(), 1.0);
 
     p1 -= QPoint(10,10);
     p2 += QPoint(10,10);
-    QTest::touchEvent(vp).move(0, p1).move(1, p2);
+    QTest::touchEvent(canvas).move(0, p1).move(1, p2);
 
     QCOMPARE(root->property("scale").toReal(), 1.5);
     QCOMPARE(root->property("center").toPointF(), QPointF(40, 40)); // blackrect is at 50,50
@@ -235,11 +233,11 @@ void tst_QSGPinchArea::scale()
     // scale beyond bound
     p1 -= QPoint(50,50);
     p2 += QPoint(50,50);
-    QTest::touchEvent(vp).move(0, p1).move(1, p2);
+    QTest::touchEvent(canvas).move(0, p1).move(1, p2);
 
     QCOMPARE(blackRect->scale(), 2.0);
 
-    QTest::touchEvent(vp).release(0, p1).release(1, p2);
+    QTest::touchEvent(canvas).release(0, p1).release(1, p2);
 
     delete canvas;
 }
@@ -266,22 +264,20 @@ void tst_QSGPinchArea::pan()
     QSGItem *blackRect = canvas->rootObject()->findChild<QSGItem*>("blackrect");
     QVERIFY(blackRect != 0);
 
-    QWidget *vp = canvas->viewport();
-
     QPoint p1(80, 80);
     QPoint p2(100, 100);
 
-    QTest::touchEvent(vp).press(0, p1);
-    QTest::touchEvent(vp).stationary(0).press(1, p2);
+    QTest::touchEvent(canvas).press(0, p1);
+    QTest::touchEvent(canvas).stationary(0).press(1, p2);
     p1 += QPoint(10,10);
     p2 += QPoint(10,10);
-    QTest::touchEvent(vp).move(0, p1).move(1, p2);
+    QTest::touchEvent(canvas).move(0, p1).move(1, p2);
 
     QCOMPARE(root->property("scale").toReal(), 1.0);
 
     p1 += QPoint(10,10);
     p2 += QPoint(10,10);
-    QTest::touchEvent(vp).move(0, p1).move(1, p2);
+    QTest::touchEvent(canvas).move(0, p1).move(1, p2);
 
     QCOMPARE(root->property("center").toPointF(), QPointF(60, 60)); // blackrect is at 50,50
 
@@ -291,12 +287,12 @@ void tst_QSGPinchArea::pan()
     // pan x beyond bound
     p1 += QPoint(100,100);
     p2 += QPoint(100,100);
-    QTest::touchEvent(vp).move(0, p1).move(1, p2);
+    QTest::touchEvent(canvas).move(0, p1).move(1, p2);
 
     QCOMPARE(blackRect->x(), 140.0);
     QCOMPARE(blackRect->y(), 160.0);
 
-    QTest::touchEvent(vp).release(0, p1).release(1, p2);
+    QTest::touchEvent(canvas).release(0, p1).release(1, p2);
 
     delete canvas;
 }
@@ -304,7 +300,7 @@ void tst_QSGPinchArea::pan()
 QSGView *tst_QSGPinchArea::createView()
 {
     QSGView *canvas = new QSGView(0);
-    canvas->viewport()->setAttribute(Qt::WA_AcceptTouchEvents);
+    canvas->setAttribute(Qt::WA_AcceptTouchEvents);
     canvas->setFixedSize(240,320);
 
     return canvas;

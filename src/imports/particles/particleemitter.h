@@ -1,3 +1,44 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the Declarative module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
 #ifndef PARTICLEEMITTER_H
 #define PARTICLEEMITTER_H
 
@@ -13,7 +54,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-
 class ParticleEmitter : public QSGItem
 {
     Q_OBJECT
@@ -26,6 +66,7 @@ class ParticleEmitter : public QSGItem
     Q_PROPERTY(qreal particlesPerSecond READ particlesPerSecond WRITE setParticlesPerSecond NOTIFY particlesPerSecondChanged)
     Q_PROPERTY(int particleDuration READ particleDuration WRITE setParticleDuration NOTIFY particleDurationChanged)
     Q_PROPERTY(int particleDurationVariation READ particleDurationVariation WRITE setParticleDurationVariation NOTIFY particleDurationVariationChanged)
+    Q_PROPERTY(int maxParticles READ maxParticleCount WRITE setMaxParticleCount NOTIFY maxParticleCountChanged)
 
     Q_PROPERTY(qreal particleSize READ particleSize WRITE setParticleSize NOTIFY particleSizeChanged)
     Q_PROPERTY(qreal particleEndSize READ particleEndSize WRITE setParticleEndSize NOTIFY particleEndSizeChanged)
@@ -68,6 +109,7 @@ public:
         return m_particleDurationVariation;
     }
 
+    virtual void componentComplete();
 signals:
     void particlesPerSecondChanged(qreal);
     void particleDurationChanged(int);
@@ -85,14 +127,18 @@ signals:
 
     void particleEndSizeChanged(qreal arg);
 
-void particleSizeVariationChanged(qreal arg);
+    void particleSizeVariationChanged(qreal arg);
 
-void speedChanged(VaryingVector * arg);
+    void speedChanged(VaryingVector * arg);
 
-void accelerationChanged(VaryingVector * arg);
+    void accelerationChanged(VaryingVector * arg);
+
+    void maxParticleCountChanged(int arg);
+    void particleCountChanged();
 
 public slots:
-    void burst(qreal seconds);
+    void pulse(qreal seconds);
+    void burst(int num);
 
     void setEmitting(bool arg);
 
@@ -184,7 +230,11 @@ public slots:
            }
        }
 
+       void setMaxParticleCount(int arg);
+
 public:
+       int particleCount() const;
+
        virtual void reset(){;}
        ParticleExtruder* extruder() const
        {
@@ -216,6 +266,11 @@ public:
            return m_acceleration;
        }
 
+       int maxParticleCount() const
+       {
+           return m_maxParticleCount;
+       }
+
 protected:
        qreal m_particlesPerSecond;
        int m_particleDuration;
@@ -226,17 +281,21 @@ protected:
        ParticleExtruder* m_extruder;
        ParticleExtruder* m_defaultExtruder;
        ParticleExtruder* effectiveExtruder();
+       VaryingVector * m_speed;
+       VaryingVector * m_acceleration;
        qreal m_particleSize;
        qreal m_particleEndSize;
        qreal m_particleSizeVariation;
-       VaryingVector * m_speed;
-       VaryingVector * m_acceleration;
 
        int m_burstLeft;
+       int m_emitLeft;
+       int m_maxParticleCount;
 private:
        VaryingVector m_nullVector;
 };
 
 QT_END_NAMESPACE
+
 QT_END_HEADER
+
 #endif // PARTICLEEMITTER_H

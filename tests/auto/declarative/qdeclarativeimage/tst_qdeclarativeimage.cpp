@@ -91,6 +91,7 @@ private slots:
     void sourceSize_QTBUG_14303();
     void sourceSize_QTBUG_16389();
     void nullPixmapPaint();
+    void resetSourceSize();
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
 
@@ -249,14 +250,22 @@ void tst_qdeclarativeimage::preserveAspectRatio()
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/aspectratio.qml"));
     QDeclarativeImage *image = qobject_cast<QDeclarativeImage*>(canvas->rootObject());
     QVERIFY(image != 0);
+    QCOMPARE(image->property("widthChange").toInt(), 1);
+    QCOMPARE(image->property("heightChange").toInt(), 1);
     image->setWidth(80.0);
+    QCOMPARE(image->property("widthChange").toInt(), 2);
+    QCOMPARE(image->property("heightChange").toInt(), 2);
     QCOMPARE(image->width(), 80.);
     QCOMPARE(image->height(), 80.);
 
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/aspectratio.qml"));
     image = qobject_cast<QDeclarativeImage*>(canvas->rootObject());
-    image->setHeight(60.0);
     QVERIFY(image != 0);
+    QCOMPARE(image->property("widthChange").toInt(), 1);
+    QCOMPARE(image->property("heightChange").toInt(), 1);
+    image->setHeight(60.0);
+    QCOMPARE(image->property("widthChange").toInt(), 2);
+    QCOMPARE(image->property("heightChange").toInt(), 2);
     QCOMPARE(image->height(), 60.);
     QCOMPARE(image->width(), 60.);
     delete canvas;
@@ -699,6 +708,27 @@ void tst_qdeclarativeimage::nullPixmapPaint()
     qInstallMsgHandler(previousMsgHandler);
     QVERIFY(numberOfWarnings == 0);
     delete image;
+}
+
+void tst_qdeclarativeimage::resetSourceSize()
+{
+    QString src = QUrl::fromLocalFile(SRCDIR "/data/heart200.png").toString();
+    QString componentStr = "import QtQuick 1.1\nImage { function reset() { sourceSize = undefined }\nsource: \"" + src + "\"; sourceSize: Qt.size(100,100) }";
+
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->pixmap().width(), 100);
+    QCOMPARE(obj->pixmap().height(), 100);
+    QCOMPARE(obj->sourceSize().height(), 100);
+    QCOMPARE(obj->sourceSize().width(), 100);
+
+    QMetaObject::invokeMethod(obj, "reset");
+    QCOMPARE(obj->pixmap().width(), 200);
+    QCOMPARE(obj->pixmap().height(), 200);
+    QCOMPARE(obj->sourceSize().height(), 200);
+    QCOMPARE(obj->sourceSize().width(), 200);
 }
 
 void tst_qdeclarativeimage::testQtQuick11Attributes()

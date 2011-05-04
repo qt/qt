@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 
 class QTextLayout;
 class QSGTextDocumentWithImageResources;
-class QSGImageTextureProvider;
+class QSGPlainTexture;
 
 class Q_AUTOTEST_EXPORT QSGTextPrivate : public QSGImplicitSizeItemPrivate
 {
@@ -107,7 +107,7 @@ public:
     void invalidateImageCache();
     void checkImageCache();
     QPixmap imageCache;
-    QSGImageTextureProvider *textureProvider;
+    QSGTexture *texture;
 
     bool imageCacheDirty:1;
     bool updateOnComponentComplete:1;
@@ -140,6 +140,13 @@ public:
     static inline QSGTextPrivate *get(QSGText *t) {
         return t->d_func();
     }
+
+    enum NodeType {
+        NodeIsNull,
+        NodeIsTexture,
+        NodeIsText,
+    };
+    NodeType nodeType;
 };
 
 QT_END_NAMESPACE

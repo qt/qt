@@ -13,8 +13,8 @@ HEADERS += \
     $$PWD/qsgcanvas_p.h \
     $$PWD/qsgfocusscope_p.h \
     $$PWD/qsgitemsmodule_p.h \
+    $$PWD/qsgpainteditem.h \
     $$PWD/qsgpainteditem_p.h \
-    $$PWD/qsgpainteditem_p_p.h \
     $$PWD/qsgtext_p.h \
     $$PWD/qsgtext_p_p.h \
     $$PWD/qsgtextnode_p.h \
@@ -97,13 +97,13 @@ SOURCES += \
     $$PWD/qsgimplicitsizeitem.cpp \
 
 SOURCES += \
-    $$PWD/shadereffectitem.cpp \
-    $$PWD/shadereffectnode.cpp \
-    $$PWD/shadereffectsource.cpp \
-    $$PWD/textureitem.cpp \
+    $$PWD/qsgshadereffectitem.cpp \
+    $$PWD/qsgshadereffectmesh.cpp \
+    $$PWD/qsgshadereffectnode.cpp \
+    $$PWD/qsgshadereffectsource.cpp \
 
 HEADERS += \
-    $$PWD/shadereffectitem.h \
-    $$PWD/shadereffectnode.h \
-    $$PWD/shadereffectsource.h \
-    $$PWD/textureitem.h \
+    $$PWD/qsgshadereffectitem_p.h \
+    $$PWD/qsgshadereffectmesh_p.h \
+    $$PWD/qsgshadereffectnode_p.h \
+    $$PWD/qsgshadereffectsource_p.h \

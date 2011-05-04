@@ -414,6 +414,13 @@ void tst_qdeclarativetext::elide()
             delete textObject;
         }
     }
+
+    // QTBUG-18627
+    QUrl qmlfile = QUrl::fromLocalFile(SRCDIR "/data/elideimplicitwidth.qml");
+    QDeclarativeComponent textComponent(&engine, qmlfile);
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(textComponent.create());
+    QVERIFY(item != 0);
+    QVERIFY(item->implicitWidth() > item->width());
 }
 
 void tst_qdeclarativetext::textFormat()
@@ -694,6 +701,24 @@ void tst_qdeclarativetext::verticalAlignment()
         }
     }
 
+    //confirm that bounding rect is correctly positioned.
+    QString componentStr = "import QtQuick 1.0\nText { height: 80; text: \"Hello\" }";
+    QDeclarativeComponent textComponent(&engine);
+    textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeText *textObject = qobject_cast<QDeclarativeText*>(textComponent.create());
+    QVERIFY(textObject != 0);
+    QRectF br = textObject->boundingRect();
+    QVERIFY(br.y() == 0);
+
+    textObject->setVAlign(QDeclarativeText::AlignVCenter);
+    br = textObject->boundingRect();
+    QCOMPARE(qFloor(br.y()), qFloor((80.0 - br.height())/2));
+
+    textObject->setVAlign(QDeclarativeText::AlignBottom);
+    br = textObject->boundingRect();
+    QCOMPARE(qFloor(br.y()), qFloor(80.0 - br.height()));
+
+    delete textObject;
 }
 
 void tst_qdeclarativetext::font()

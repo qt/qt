@@ -581,6 +581,7 @@ void QDeclarativeTextEdit::setVAlign(QDeclarativeTextEdit::VAlignment alignment)
     d->vAlign = alignment;
     d->updateDefaultTextOption();
     updateSize();
+    moveCursorDelegate();
     emit verticalAlignmentChanged(d->vAlign);
 }
 
@@ -869,8 +870,6 @@ void QDeclarativeTextEdit::setCursorDelegate(QDeclarativeComponent* c)
     Q_D(QDeclarativeTextEdit);
     if(d->cursorComponent){
         if(d->cursor){
-            disconnect(d->control, SIGNAL(cursorPositionChanged()),
-                    this, SLOT(moveCursorDelegate()));
             d->control->setCursorWidth(-1);
             dirtyCache(cursorRectangle());
             delete d->cursor;
@@ -896,8 +895,6 @@ void QDeclarativeTextEdit::loadCursorDelegate()
         return;
     d->cursor = qobject_cast<QDeclarativeItem*>(d->cursorComponent->create(qmlContext(this)));
     if(d->cursor){
-        connect(d->control, SIGNAL(cursorPositionChanged()),
-                this, SLOT(moveCursorDelegate()));
         d->control->setCursorWidth(0);
         dirtyCache(cursorRectangle());
         QDeclarative_setParent_noEvent(d->cursor, this);
@@ -1112,7 +1109,7 @@ void QDeclarativeTextEdit::setMouseSelectionMode(SelectionMode mode)
 /*!
     \qmlproperty bool TextEdit::readOnly
 
-    Whether the user an interact with the TextEdit item. If this
+    Whether the user can interact with the TextEdit item. If this
     property is set to true the text cannot be edited by user interaction.
 
     By default this property is false.
@@ -1172,7 +1169,7 @@ Qt::TextInteractionFlags QDeclarativeTextEdit::textInteractionFlags() const
 QRect QDeclarativeTextEdit::cursorRectangle() const
 {
     Q_D(const QDeclarativeTextEdit);
-    return d->control->cursorRect().toRect().translated(0,-d->yoff);
+    return d->control->cursorRect().toRect().translated(0,d->yoff);
 }
 
 
@@ -1557,7 +1554,7 @@ void QDeclarativeTextEditPrivate::init()
     QObject::connect(control, SIGNAL(selectionChanged()), q, SLOT(updateSelectionMarkers()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SLOT(updateSelectionMarkers()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorPositionChanged()));
-    QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorRectangleChanged()));
+    QObject::connect(control, SIGNAL(microFocusChanged()), q, SLOT(moveCursorDelegate()));
     QObject::connect(control, SIGNAL(linkActivated(QString)), q, SIGNAL(linkActivated(QString)));
 #ifndef QT_NO_CLIPBOARD
     QObject::connect(q, SIGNAL(readOnlyChanged(bool)), q, SLOT(q_canPasteChanged()));
@@ -1582,16 +1579,17 @@ void QDeclarativeTextEdit::q_textChanged()
     d->updateDefaultTextOption();
     updateSize();
     updateTotalLines();
-    updateMicroFocus();
     emit textChanged(d->text);
 }
 
 void QDeclarativeTextEdit::moveCursorDelegate()
 {
     Q_D(QDeclarativeTextEdit);
+    updateMicroFocus();
+    emit cursorRectangleChanged();
     if(!d->cursor)
         return;
-    QRectF cursorRect = d->control->cursorRect();
+    QRectF cursorRect = cursorRectangle();
     d->cursor->setX(cursorRect.x());
     d->cursor->setY(cursorRect.y());
 }
@@ -1624,7 +1622,6 @@ void QDeclarativeTextEdit::updateSelectionMarkers()
         d->lastSelectionEnd = d->control->textCursor().selectionEnd();
         emit selectionEndChanged();
     }
-    updateMicroFocus();
 }
 
 QRectF QDeclarativeTextEdit::boundingRect() const

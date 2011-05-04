@@ -46,7 +46,7 @@
 #include <QtGui/qvector2d.h>
 #include <QtCore/qmath.h>
 
-QSGClipNode::QSGClipNode(const QRectF &rect)
+QSGDefaultClipNode::QSGDefaultClipNode(const QRectF &rect)
     : m_rect(rect)
     , m_radius(0)
     , m_dirty_geometry(true)
@@ -56,20 +56,20 @@ QSGClipNode::QSGClipNode(const QRectF &rect)
     setIsRectangular(true);
 }
 
-void QSGClipNode::setRect(const QRectF &rect)
+void QSGDefaultClipNode::setRect(const QRectF &rect)
 {
     m_rect = rect;
     m_dirty_geometry = true;
 }
 
-void QSGClipNode::setRadius(qreal radius)
+void QSGDefaultClipNode::setRadius(qreal radius)
 {
     m_radius = radius;
     m_dirty_geometry = true;
     setIsRectangular(radius == 0);
 }
 
-void QSGClipNode::update()
+void QSGDefaultClipNode::update()
 {
     if (m_dirty_geometry) {
         updateGeometry();
@@ -77,7 +77,7 @@ void QSGClipNode::update()
     }
 }
 
-void QSGClipNode::updateGeometry()
+void QSGDefaultClipNode::updateGeometry()
 {
     QSGGeometry *g = geometry();
 

@@ -106,6 +106,7 @@ class Generator
 #endif
     virtual void generateBody(const Node *node, CodeMarker *marker);
     virtual void generateAlsoList(const Node *node, CodeMarker *marker);
+    virtual void generateMaintainerList(const InnerNode* node, CodeMarker* marker);
     virtual void generateInherits(const ClassNode *classe,
                                   CodeMarker *marker);
     virtual void generateInheritedBy(const ClassNode *classe,
@@ -141,7 +142,6 @@ class Generator
     void unknownAtom(const Atom *atom);
     QMap<QString, QString> &formattingLeftMap();
     QMap<QString, QString> &formattingRightMap();
-
     QMap<QString, QStringList> editionModuleMap;
     QMap<QString, QStringList> editionGroupMap;
 
@@ -149,6 +149,9 @@ class Generator
     static bool matchAhead(const Atom *atom, Atom::Type expectedAtomType);
     static void supplementAlsoList(const Node *node, QList<Text> &alsoList);
     static QString outputPrefix(const QString &nodeType);
+
+    QString getMetadataElement(const InnerNode* inner, const QString& t);
+    QStringList getMetadataElements(const InnerNode* inner, const QString& t);
 
  private:
     void generateReimplementedFrom(const FunctionNode *func,

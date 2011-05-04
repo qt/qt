@@ -42,7 +42,6 @@ contains(QT_CONFIG, private_tests) {
            qdeclarativedebug \
            qdeclarativedebugclient \
            qdeclarativedebugservice \
-           qdeclarativedom \
            qdeclarativeecmascript \
            qdeclarativeflickable \
            qdeclarativeflipable \
@@ -80,12 +79,23 @@ contains(QT_CONFIG, private_tests) {
            qdeclarativexmllistmodel \
            qpacketprotocol \
            qdeclarativev4 \
-           qsgmousearea
+           qsgcanvas \
+           qsgflickable \
+           qsgflipable \
+           qsgfocusscope \
+           qsggridview \
+           qsglistview \
+           qsgloader \
+           qsgmousearea \
+           qsgpathview \
+           qsgpincharea \
+           qsgpositioners \
+           qsgrepeater \
+           qsgtext \
+           qsgtextedit \
+           qsgtextinput \
+           qsgvisualdatamodel
 
-contains(QT_CONFIG, webkit) {
-    SUBDIRS += \
-           qdeclarativewebview
-}
 }
 
 # Tests which should run in Pulse

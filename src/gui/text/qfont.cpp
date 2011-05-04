@@ -282,8 +282,13 @@ QFontPrivate::~QFontPrivate()
     scFont = 0;
 }
 
-#if !defined(Q_WS_MAC)
 extern QMutex *qt_fontdatabase_mutex();
+
+#if !defined(Q_WS_MAC)
+#define QT_FONT_ENGINE_FROM_DATA(data, script) data->engines[script]
+#else
+#define QT_FONT_ENGINE_FROM_DATA(data, script) data->engine
+#endif
 
 QFontEngine *QFontPrivate::engineForScript(int script) const
 {
@@ -295,27 +300,10 @@ QFontEngine *QFontPrivate::engineForScript(int script) const
         engineData->ref.deref();
         engineData = 0;
     }
-    if (!engineData || !engineData->engines[script])
+    if (!engineData || !QT_FONT_ENGINE_FROM_DATA(engineData, script))
         QFontDatabase::load(this, script);
-    return engineData->engines[script];
+    return QT_FONT_ENGINE_FROM_DATA(engineData, script);
 }
-#else
-QFontEngine *QFontPrivate::engineForScript(int script) const
-{
-    extern QMutex *qt_fontdatabase_mutex();
-    QMutexLocker locker(qt_fontdatabase_mutex());
-    if (script >= QUnicodeTables::Inherited)
-        script = QUnicodeTables::Common;
-    if (engineData && engineData->fontCache != QFontCache::instance()) {
-        // throw out engineData that came from a different thread
-        engineData->ref.deref();
-        engineData = 0;
-    }
-    if (!engineData || !engineData->engine)
-        QFontDatabase::load(this, script);
-    return engineData->engine;
-}
-#endif
 
 void QFontPrivate::alterCharForCapitalization(QChar &c) const {
     switch (capital) {
@@ -382,6 +370,9 @@ void QFontPrivate::resolve(uint mask, const QFontPrivate *other)
 
     if (! (mask & QFont::StretchResolved))
         request.stretch = other->request.stretch;
+
+    if (! (mask & QFont::HintingPreferenceResolved))
+        request.hintingPreference = other->request.hintingPreference;
 
     if (! (mask & QFont::UnderlineResolved))
         underline = other->underline;
@@ -914,6 +905,105 @@ void QFont::setFamily(const QString &family)
 int QFont::pointSize() const
 {
     return qRound(d->request.pointSize);
+}
+
+/*!
+    \since 4.8
+
+    \enum QFont::HintingPreference
+
+    This enum describes the different levels of hinting that can be applied
+    to glyphs to improve legibility on displays where it might be warranted
+    by the density of pixels.
+
+    \value PreferDefaultHinting Use the default hinting level for the target platform.
+    \value PreferNoHinting If possible, render text without hinting the outlines
+           of the glyphs. The text layout will be typographically accurate and
+           scalable, using the same metrics as are used e.g. when printing.
+    \value PreferVerticalHinting If possible, render text with no horizontal hinting,
+           but align glyphs to the pixel grid in the vertical direction. The text will appear
+           crisper on displays where the density is too low to give an accurate rendering
+           of the glyphs. But since the horizontal metrics of the glyphs are unhinted, the text's
+           layout will be scalable to higher density devices (such as printers) without impacting
+           details such as line breaks.
+    \value PreferFullHinting If possible, render text with hinting in both horizontal and
+           vertical directions. The text will be altered to optimize legibility on the target
+           device, but since the metrics will depend on the target size of the text, the positions
+           of glyphs, line breaks, and other typographical detail will not scale, meaning that a
+           text layout may look different on devices with different pixel densities.
+
+    Please note that this enum only describes a preference, as the full range of hinting levels
+    are not supported on all of Qt's supported platforms. The following table details the effect
+    of a given hinting preference on a selected set of target platforms.
+
+    \table
+    \header
+    \o
+    \o PreferDefaultHinting
+    \o PreferNoHinting
+    \o PreferVerticalHinting
+    \o PreferFullHinting
+    \row
+    \o Windows Vista (w/o Platform Update) and earlier
+    \o Full hinting
+    \o Full hinting
+    \o Full hinting
+    \o Full hinting
+    \row
+    \o Windows 7 and Windows Vista (w/Platform Update) and DirectWrite enabled in Qt
+    \o Full hinting
+    \o Vertical hinting
+    \o Vertical hinting
+    \o Full hinting
+    \row
+    \o FreeType
+    \o Operating System setting
+    \o No hinting
+    \o Vertical hinting (light)
+    \o Full hinting
+    \row
+    \o Cocoa on Mac OS X
+    \o No hinting
+    \o No hinting
+    \o No hinting
+    \o No hinting
+    \endtable
+
+    \note Please be aware that altering the hinting preference on Windows is available through
+    the DirectWrite font engine. This is available on Windows Vista after installing the platform
+    update, and on Windows 7. In order to use this extension, configure Qt using -directwrite.
+    The target application will then depend on the availability of DirectWrite on the target
+    system.
+
+*/
+
+/*!
+    \since 4.8
+
+    Set the preference for the hinting level of the glyphs to \a hintingPreference. This is a hint
+    to the underlying font rendering system to use a certain level of hinting, and has varying
+    support across platforms. See the table in the documentation for QFont::HintingPreference for
+    more details.
+
+    The default hinting preference is QFont::PreferDefaultHinting.
+*/
+void QFont::setHintingPreference(HintingPreference hintingPreference)
+{
+    detach();
+
+    d->request.hintingPreference = hintingPreference;
+
+    resolve_mask |= QFont::HintingPreferenceResolved;
+}
+
+/*!
+    \since 4.8
+
+    Returns the currently preferred hinting level for glyphs rendered with this font.
+*/
+QFont::HintingPreference QFont::hintingPreference() const
+{
+    return QFont::HintingPreference(d->request.hintingPreference);
 }
 
 /*!

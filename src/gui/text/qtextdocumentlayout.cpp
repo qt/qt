@@ -75,8 +75,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GUI_EXPORT extern int qt_defaultDpi();
-
 // ################ should probably add frameFormatChange notification!
 
 struct QTextLayoutStruct;
@@ -3160,7 +3158,7 @@ QRectF QTextDocumentLayoutPrivate::frameBoundingRectInternal(QTextFrame *frame) 
 QRectF QTextDocumentLayout::blockBoundingRect(const QTextBlock &block) const
 {
     Q_D(const QTextDocumentLayout);
-    if (d->docPrivate->pageSize.isNull())
+    if (d->docPrivate->pageSize.isNull() || !block.isValid())
         return QRectF();
     d->ensureLayoutedByPosition(block.position() + block.length());
     QTextFrame *frame = d->document->frameAt(block.position());

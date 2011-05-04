@@ -278,6 +278,8 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             q->internalWinId()->SetRect(TRect(TPoint(x, y), TSize(w, h)));
             topData()->normalGeometry = data.crect;
         }
+        QSymbianControl *window = static_cast<QSymbianControl *>(q->internalWinId());
+        window->ensureFixNativeOrientation();
     } else {
         data.crect.setRect(x, y, w, h);
 
@@ -809,8 +811,13 @@ void QWidgetPrivate::s60UpdateIsOpaque()
 {
     Q_Q(QWidget);
 
-    if (!q->testAttribute(Qt::WA_WState_Created) || !q->testAttribute(Qt::WA_TranslucentBackground))
+    if (!q->testAttribute(Qt::WA_WState_Created))
         return;
+
+    const bool writeAlpha = extraData()->nativePaintMode == QWExtra::BlitWriteAlpha;
+    if (!q->testAttribute(Qt::WA_TranslucentBackground) && !writeAlpha)
+        return;
+    const bool requireAlphaChannel = !isOpaque || writeAlpha;
 
     createTLExtra();
 
@@ -823,12 +830,11 @@ void QWidgetPrivate::s60UpdateIsOpaque()
         return;
     }
 #endif
-    if (!isOpaque) {
+    if (requireAlphaChannel) {
         const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
         if (window->SetTransparencyAlphaChannel() == KErrNone) {
             window->SetBackgroundColor(TRgb(255, 255, 255, 0));
             extra->topextra->nativeWindowTransparencyEnabled = 1;
-
             if (extra->topextra->backingStore.data() && (
                     QApplicationPrivate::graphics_system_name == QLatin1String("openvg")
                     || QApplicationPrivate::graphics_system_name == QLatin1String("opengl"))) {
@@ -836,6 +842,8 @@ void QWidgetPrivate::s60UpdateIsOpaque()
                 // recreate backing store to get translucent surface (raster surface).
                 extra->topextra->backingStore.create(q);
                 extra->topextra->backingStore.registerWidget(q);
+                // FixNativeOrientation() will not work without an EGL surface.
+                q->setAttribute(Qt::WA_SymbianNoSystemRotation, false);
             }
         }
     } else if (extra->topextra->nativeWindowTransparencyEnabled) {
@@ -1204,17 +1212,10 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         }
 
 #ifdef Q_WS_S60
-        bool decorationsVisible(false);
-        if (!parentWidget()) { // Only top level native windows have control over cba/status pane
-            // Hide window decoration when switching to fullscreen / minimized otherwise show decoration.
-            // The window decoration visibility has to be changed before doing actual window state
-            // change since in that order the availableGeometry will return directly the right size and
-            // we will avoid unnecessary redraws
-            decorationsVisible = !(newstate & (Qt::WindowFullScreen | Qt::WindowMinimized));
-            const bool statusPaneVisibility = decorationsVisible;
-            const bool buttonGroupVisibility = (decorationsVisible || (isFullscreen && cbaRequested));
-            S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
-        }
+        // The window decoration visibility has to be changed before doing actual window state
+        // change since in that order the availableGeometry will return directly the right size and
+        // we will avoid unnecessary redraws
+        bool decorationsVisible = S60->setRecursiveDecorationsVisibility(this, newstate);
 #endif // Q_WS_S60
 
         // Ensure the initial size is valid, since we store it as normalGeometry below.
@@ -1272,6 +1273,12 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
 
     if (newstate & Qt::WindowActive)
         activateWindow();
+
+    if (isWindow()) {
+        // Now that the new state is set, fix the display memory layout, if needed.
+        QSymbianControl *window = static_cast<QSymbianControl *>(effectiveWinId());
+        window->ensureFixNativeOrientation();
+    }
 
     QWindowStateChangeEvent e(oldstate);
     QApplication::sendEvent(this, &e);
@@ -1419,7 +1426,8 @@ void QWidget::activateWindow()
     if (tlw->isVisible()) {
         window()->createWinId();
         QSymbianControl *id = static_cast<QSymbianControl *>(tlw->internalWinId());
-        id->setFocusSafely(true);
+        if (!id->IsFocused())
+            id->setFocusSafely(true);
     }
 }
 

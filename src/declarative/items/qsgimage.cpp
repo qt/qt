@@ -1,4 +1,4 @@
-// Commit: 5ddfe819e93462eff396c24d10c0446c4cd9b0ac
+// Commit: 695a39410c8ce186a2ce78cef51093c55fc32643
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -43,32 +43,12 @@
 #include "qsgimage_p.h"
 #include "qsgimage_p_p.h"
 
-#include "qsgcontext.h"
-#include "adaptationlayer.h"
-#include "textureitem.h"
+#include <private/qsgcontext_p.h>
+#include <private/qsgadaptationlayer_p.h>
 
 #include <QtGui/qpainter.h>
 
 QT_BEGIN_NAMESPACE
-
-QSGImageTextureProvider::QSGImageTextureProvider(QObject *parent)
-    : QSGTextureProvider(parent)
-{
-}
-
-
-void QSGImageTextureProvider::setImage(const QImage &image)
-{
-    tex = QSGContext::current->createTexture(image);
-    emit textureChanged();
-}
-
-
-QSGTextureRef QSGImageTextureProvider::texture()
-{
-    return tex;
-}
-
 
 QSGImagePrivate::QSGImagePrivate()
     : fillMode(QSGImage::Stretch)
@@ -81,15 +61,11 @@ QSGImagePrivate::QSGImagePrivate()
 QSGImage::QSGImage(QSGItem *parent)
     : QSGImageBase(*(new QSGImagePrivate), parent)
 {
-    d_func()->textureProvider = new QSGImageTextureProvider(this);
-    connect(d_func()->textureProvider, SIGNAL(textureChanged()), this, SLOT(update()));
 }
 
 QSGImage::QSGImage(QSGImagePrivate &dd, QSGItem *parent)
     : QSGImageBase(dd, parent)
 {
-    d_func()->textureProvider = new QSGImageTextureProvider(this);
-    connect(d_func()->textureProvider, SIGNAL(textureChanged()), this, SLOT(update()));
 }
 
 QSGImage::~QSGImage()
@@ -145,14 +121,16 @@ void QSGImage::updatePaintedGeometry()
     if (d->fillMode == PreserveAspectFit) {
         if (!d->pix.width() || !d->pix.height())
             return;
-        qreal widthScale = width() / qreal(d->pix.width());
-        qreal heightScale = height() / qreal(d->pix.height());
+        qreal w = widthValid() ? width() : d->pix.width();
+        qreal widthScale = w / qreal(d->pix.width());
+        qreal h = heightValid() ? height() : d->pix.height();
+        qreal heightScale = h / qreal(d->pix.height());
         if (widthScale <= heightScale) {
-            d->paintedWidth = width();
+            d->paintedWidth = w;
             d->paintedHeight = widthScale * qreal(d->pix.height());
         } else if(heightScale < widthScale) {
             d->paintedWidth = heightScale * qreal(d->pix.width());
-            d->paintedHeight = height();
+            d->paintedHeight = h;
         }
         if (widthValid() && !heightValid()) {
             setImplicitHeight(d->paintedHeight);
@@ -192,43 +170,47 @@ QRectF QSGImage::boundingRect() const
     return QRectF(0, 0, qMax(width(), d->paintedWidth), qMax(height(), d->paintedHeight));
 }
 
-QSGTextureProvider *QSGImage::textureProvider() const
+QSGTexture *QSGImage::texture() const
 {
     Q_D(const QSGImage);
-    return d->textureProvider;
+    QSGTexture *t = d->pix.texture();
+    t->setFiltering(QSGItemPrivate::get(this)->smooth ? QSGTexture::Linear : QSGTexture::Nearest);
+    t->setMipmapFiltering(QSGTexture::None);
+    t->setHorizontalWrapMode(QSGTexture::ClampToEdge);
+    t->setVerticalWrapMode(QSGTexture::ClampToEdge);
+    return t;
 }
 
-Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
+QSGNode *QSGImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
     Q_D(QSGImage);
     //XXX Support mirror property
 
-    if (d->pix.texture().isNull() || width() <= 0 || height() <= 0) {
+    if (!d->pix.texture() || width() <= 0 || height() <= 0) {
         delete oldNode;
         return 0;
     }
 
-    TextureNodeInterface *node = static_cast<TextureNodeInterface *>(oldNode);
+    QSGImageNode *node = static_cast<QSGImageNode *>(oldNode);
     if (!node) { 
         d->pixmapChanged = true;
-        node = QSGContext::current->createTextureNode();
-        d->textureProvider->tex = d->pix.texture();
-        node->setTexture(d->textureProvider);
+        node = d->sceneGraphContext()->createImageNode();
+        node->setTexture(d->pix.texture());
     }
 
     if (d->pixmapChanged) {
         // force update the texture in the node to trigger reconstruction of
         // geometry and the likes when a atlas segment has changed.
-        d->textureProvider->tex = d->pix.texture();
+        QSGTexture *t = d->pix.texture();
         node->setTexture(0);
-        node->setTexture(d->textureProvider);
+        node->setTexture(t);
         d->pixmapChanged = false;
     }
 
     QRectF targetRect;
     QRectF sourceRect;
-    QSGTextureProvider::WrapMode hWrap = QSGTextureProvider::ClampToEdge;
-    QSGTextureProvider::WrapMode vWrap = QSGTextureProvider::ClampToEdge;
+    QSGTexture::WrapMode hWrap = QSGTexture::ClampToEdge;
+    QSGTexture::WrapMode vWrap = QSGTexture::ClampToEdge;
 
     switch (d->fillMode) {
     default:
@@ -261,32 +243,32 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
     case Tile:
         targetRect = QRectF(0, 0, width(), height());
         sourceRect = QRectF(0, 0, width(), height());
-        hWrap = QSGTextureProvider::Repeat;
-        vWrap = QSGTextureProvider::Repeat;
+        hWrap = QSGTexture::Repeat;
+        vWrap = QSGTexture::Repeat;
         break;
 
     case TileHorizontally:
         targetRect = QRectF(0, 0, width(), height());
         sourceRect = QRectF(0, 0, width(), d->pix.height());
-        hWrap = QSGTextureProvider::Repeat;
+        hWrap = QSGTexture::Repeat;
         break;
 
     case TileVertically:
         targetRect = QRectF(0, 0, width(), height());
         sourceRect = QRectF(0, 0, d->pix.width(), height());
-        vWrap = QSGTextureProvider::Repeat;
+        vWrap = QSGTexture::Repeat;
         break;
 
     };
 
     QRectF nsrect(sourceRect.x() / d->pix.width(),
-                  sourceRect.y() / d->pix.height(),
+                  1 - sourceRect.y() / d->pix.height(),
                   sourceRect.width() / d->pix.width(),
-                  sourceRect.height() / d->pix.height());
+                  -sourceRect.height() / d->pix.height());
 
-    d->textureProvider->setHorizontalWrapMode(hWrap);
-    d->textureProvider->setVerticalWrapMode(vWrap);
-    d->textureProvider->setFiltering(d->smooth ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
+    node->setHorizontalWrapMode(hWrap);
+    node->setVerticalWrapMode(vWrap);
+    node->setFiltering(d->smooth ? QSGTexture::Linear : QSGTexture::Nearest);
 
     node->setTargetRect(targetRect);
     node->setSourceRect(nsrect);

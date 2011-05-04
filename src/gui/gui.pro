@@ -55,11 +55,9 @@ DEFINES += Q_INTERNAL_QAPP_SRC
 symbian {
     TARGET.UID3=0x2001B2DD
 
-    symbian-abld|symbian-sbsv2 {
-        # ro-section in gui can exceed default allocated space, so move rw-section a little further
-        QMAKE_LFLAGS.ARMCC += --rw-base 0x800000
-        QMAKE_LFLAGS.GCCE += -Tdata 0xC00000
-    }
+    # ro-section in gui can exceed default allocated space, so move rw-section a little further
+    QMAKE_LFLAGS.ARMCC += --rw-base 0x800000
+    QMAKE_LFLAGS.GCCE += -Tdata 0x800000
 }
 
 neon:*-g++* {
@@ -77,6 +75,10 @@ neon:*-g++* {
     neon_compiler.name = compiling[neon] ${QMAKE_FILE_IN}
     silent:neon_compiler.commands = @echo compiling[neon] ${QMAKE_FILE_IN} && $$neon_compiler.commands
     QMAKE_EXTRA_COMPILERS += neon_compiler
+}
+
+win32:!contains(QT_CONFIG, directwrite) {
+    DEFINES += QT_NO_DIRECTWRITE
 }
 
 contains(QMAKE_MAC_XARCH, no) {

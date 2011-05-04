@@ -113,6 +113,8 @@ class QWidgetItemV2;
 
 class QStyle;
 
+class QUnifiedToolbarSurface;
+
 class Q_AUTOTEST_EXPORT QWidgetBackingStoreTracker
 {
 
@@ -321,6 +323,11 @@ struct QWExtra {
          * channels of the pixel.
          */
         ZeroFill,
+
+        /**
+         * Blit backing store, propagating alpha channel into the framebuffer.
+         */
+        BlitWriteAlpha,
 
         Default = Blit
     };
@@ -856,15 +863,15 @@ public:
     bool originalDrawMethod;
     // Do we need to change the methods?
     bool changeMethods;
-    bool hasOwnContext;
-    CGContextRef cgContext;
-    QRegion ut_rg;
-    QPoint ut_pt;
+
+    // Unified toolbar variables
     bool isInUnifiedToolbar;
-    QWindowSurface *unifiedSurface;
+    QUnifiedToolbarSurface *unifiedSurface;
     QPoint toolbar_offset;
+    QWidget *toolbar_ancestor;
+    bool flushRequested;
     bool touchEventsEnabled;
-#endif
+#endif // QT_MAC_USE_COCOA
     void determineWindowClass();
     void transferChildren();
     bool qt_mac_dnd_event(uint, DragRef);
@@ -901,6 +908,7 @@ public:
     static QWidget *mouseGrabber;
     static QWidget *keyboardGrabber;
     int symbianScreenNumber; // only valid for desktop widget and top-levels
+    bool fixNativeOrientationCalled;
     void s60UpdateIsOpaque();
     void reparentChildren();
     void registerTouchWindow();

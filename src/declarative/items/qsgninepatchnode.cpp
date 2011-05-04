@@ -40,117 +40,234 @@
 ****************************************************************************/
 
 #include "qsgninepatchnode_p.h"
-#include "adaptationlayer.h"
+#include <private/qsgadaptationlayer_p.h>
+#include <private/qmath_p.h>
 
-QSGNinePatchNode::QSGNinePatchNode(const QRectF &targetRect, const QSGTextureRef &texture,
-                                 const QRect &innerRect, bool linearFiltering)
-    : m_targetRect(targetRect)
-    , m_innerRect(innerRect)
-    , m_linearFiltering(linearFiltering)
-    , m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 6 * 6, 5 * 5 * 6)
+QSGNinePatchNode::QSGNinePatchNode()
+    : m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 0)
+    , m_horizontalTileMode(QSGBorderImage::Stretch)
+    , m_verticalTileMode(QSGBorderImage::Stretch)
+    , m_dirtyGeometry(false)
 {
-    m_texture = texture;
-    bool alpha = texture->hasAlphaChannel();
-    m_material.setTexture(m_texture, !alpha);
-    m_material.setLinearFiltering(linearFiltering);
-    m_materialO.setTexture(m_texture, !alpha);
-    m_materialO.setLinearFiltering(linearFiltering);
-
     setOpaqueMaterial(&m_material);
     setMaterial(&m_materialO);
     setGeometry(&m_geometry);
     m_geometry.setDrawingMode(GL_TRIANGLES);
+}
 
-    updateGeometry();
+void QSGNinePatchNode::setInnerRect(const QRectF &rect)
+{
+    if (m_innerRect == rect)
+        return;
+    m_innerRect = rect;
+    m_dirtyGeometry = true;
 }
 
 void QSGNinePatchNode::setRect(const QRectF &rect)
 {
     if (m_targetRect == rect)
         return;
-
     m_targetRect = rect;
-    updateGeometry();
+    m_dirtyGeometry = true;
 }
 
-void QSGNinePatchNode::setLinearFiltering(bool linearFiltering)
+void QSGNinePatchNode::setHorzontalTileMode(QSGBorderImage::TileMode mode)
 {
-    if (m_linearFiltering == linearFiltering)
+    if (mode == QSGBorderImage::TileMode(m_horizontalTileMode))
+        return;
+    m_horizontalTileMode = mode;
+    m_dirtyGeometry = true;
+}
+
+
+void QSGNinePatchNode::setVerticalTileMode(QSGBorderImage::TileMode mode)
+{
+    if (mode == QSGBorderImage::TileMode(m_verticalTileMode))
+        return;
+    m_verticalTileMode = mode;
+    m_dirtyGeometry = true;
+}
+
+
+void QSGNinePatchNode::setFiltering(QSGTexture::Filtering filtering)
+{
+    if (m_material.filtering() == filtering)
         return;
 
-    m_material.setLinearFiltering(linearFiltering);
-    m_materialO.setLinearFiltering(linearFiltering);
+    m_material.setFiltering(filtering);
+    m_materialO.setFiltering(filtering);
     markDirty(DirtyMaterial);
 }
 
-void QSGNinePatchNode::updateGeometry()
+QSGTexture::Filtering QSGNinePatchNode::filtering() const
 {
-    QSGGeometry *g = geometry();
+    return m_material.filtering();
+}
 
-    ushort *indices = g->indexDataAsUShort();
-    int count = 0;
-    for (int i = 0; i < 5; ++i) {
-        int i6 = i * 6;
-        for (int j = 0; j < 5; ++j) {
-            indices[count++] = i6 + j + 0;
-            indices[count++] = i6 + j + 6;
-            indices[count++] = i6 + j + 7;
-            indices[count++] = i6 + j + 7;
-            indices[count++] = i6 + j + 1;
-            indices[count++] = i6 + j + 0;
+void QSGNinePatchNode::setTexture(QSGTexture *texture)
+{
+    if (texture == m_material.texture())
+        return;
+    m_material.setTexture(texture);
+    m_materialO.setTexture(texture);
+    markDirty(DirtyMaterial);
+}
+
+QSGTexture *QSGNinePatchNode::texture() const
+{
+    return m_material.texture();
+}
+
+void QSGNinePatchNode::update()
+{
+    if (!m_dirtyGeometry)
+        return;
+
+    // For stretch this algorithm could be simplified to use less vertices
+    // as more vertices could be reused then, but I doubt its where our main
+    // problem will lie. This way, we at least share the algorithm between all
+
+    Q_ASSERT(m_material.texture());
+
+    float tw = m_material.texture()->textureSize().width();
+    float th = m_material.texture()->textureSize().height();
+
+    float rightBorder = tw - m_innerRect.right();
+    float bottomBorder = th - m_innerRect.bottom();
+
+//    qDebug() << m_innerRect << m_targetRect << m_horizontalTileMode << m_verticalTileMode;
+
+    int xChunkCount = 0; // Number of chunks
+    float xChunkSize = 0; // Size of chunk in pixels
+    float xTexSize = m_innerRect.width(); // Size of the texture to stretch/tile
+    float xSize = m_targetRect.width() - m_innerRect.left() - rightBorder; // Size of area to fill with chunks
+
+    if (m_horizontalTileMode == QSGBorderImage::Repeat) {
+        xChunkCount = qCeil(xSize / xTexSize);
+        xChunkSize = xTexSize;
+    } else if (m_horizontalTileMode == QSGBorderImage::Round) {
+        xChunkCount = qCeil(xSize / xTexSize);
+        xChunkSize = xSize / xChunkCount;
+    } else {
+        xChunkCount = 1;
+        xChunkSize = xSize;
+    }
+
+    int yChunkCount = 0;
+    float yChunkSize = 0; // Relative to target rect.
+    float yTexSize = m_innerRect.height(); // Size of the texture to stretch/tile
+    float ySize = m_targetRect.height() - m_innerRect.top() - bottomBorder;
+
+    if (m_verticalTileMode == QSGBorderImage::Repeat) {
+        yChunkCount = qCeil(ySize / yTexSize);
+        yChunkSize = yTexSize;
+    } else if (m_verticalTileMode == QSGBorderImage::Round) {
+        yChunkCount = qCeil(ySize / yTexSize);
+        yChunkSize = ySize / yChunkCount;
+    } else {
+        yChunkCount = 1;
+        yChunkSize = ySize;
+    }
+
+    int xTotalChunkCount = xChunkCount + 2;
+    int yTotalChunkCount = yChunkCount + 2;
+
+    int totalChunkCount = xTotalChunkCount * yTotalChunkCount;
+    int vertexCount = totalChunkCount * 4;
+    int indexCount = totalChunkCount * 6;
+
+    if (vertexCount != m_geometry.vertexCount() || indexCount != m_geometry.indexCount())
+        m_geometry.allocate(vertexCount, indexCount);
+
+    QSGGeometry::TexturedPoint2D *v = m_geometry.vertexDataAsTexturedPoint2D();
+
+
+    // Fill in the vertices.. The loop below is pretty much an exact replica
+    // of the one inside fillRow.
+    float yTexChunk1 = 1 - m_innerRect.top() / th;
+    float yTexChunk2 = 1 - m_innerRect.bottom() / th;
+
+    fillRow(v, 0, 1, xChunkCount, xChunkSize);
+    fillRow(v, m_innerRect.y(), yTexChunk1, xChunkCount, xChunkSize);
+
+    for (int yc=0; yc<yChunkCount; ++yc) {
+        float yy = m_innerRect.y() + yChunkSize * yc;
+        fillRow(v, yy, yTexChunk1, xChunkCount, xChunkSize);
+
+        // Special case the last one
+        if (yc == yChunkCount - 1) {
+            float t = m_verticalTileMode == QSGBorderImage::Repeat
+                    ? yTexChunk1 + (yTexChunk2 - yTexChunk1) * (m_targetRect.height() - bottomBorder - yy) / yChunkSize
+                    : yTexChunk2;
+            fillRow(v, m_targetRect.height() - bottomBorder, t, xChunkCount, xChunkSize);
+        } else {
+            fillRow(v, yy + yChunkSize, yTexChunk2, xChunkCount, xChunkSize);
         }
     }
 
-    struct V
-    {
-        V(float x, float y, float u, float v) : x(x), y(y), u(u), v(v) { }
-        float x, y, u, v;
-    };
+    fillRow(v, m_targetRect.height() - bottomBorder, yTexChunk2, xChunkCount, xChunkSize);
+    fillRow(v, m_targetRect.height(), 0, xChunkCount, xChunkSize);
 
-    V *vertices = (V *)g->vertexData();
-    Q_ASSERT(sizeof(V) == g->stride());
 
-    qreal x[6], y[6], u[6], v[6];
+//    v = m_geometry.vertexDataAsTexturedPoint2D();
+//    for (int i=0; i<m_geometry.vertexCount(); ++i) {
+//        printf("Vertex: %d:  (%.3f, %.3f) - (%.3f, %.3f)\n",
+//               i,
+//               v->x, v->y, v->tx, v->ty);
+//        ++v;
+//    }
 
-    QSizeF pixSize = m_texture->textureSize();
-
-    x[0] = m_targetRect.x();
-    x[1] = m_targetRect.x() + m_innerRect.x();
-    x[2] = x[1] + 0.5;
-    x[3] = m_targetRect.x() + m_targetRect.width() - (pixSize.width() - (m_innerRect.x() + m_innerRect.width()));
-    x[4] = x[3] + 0.5;
-    x[5] = m_targetRect.x() + m_targetRect.width();
-
-    y[0] = m_targetRect.y();
-    y[1] = m_targetRect.y() + m_innerRect.y();
-    y[2] = y[1] + 0.5;
-    y[3] = m_targetRect.y() + m_targetRect.height() - (pixSize.height() - (m_innerRect.y() + m_innerRect.height()));
-    y[4] = y[3] + 0.5;
-    y[5] = m_targetRect.y() + m_targetRect.height();
-
-    QRectF src = m_texture->textureSubRect();
-    qreal pw = src.width() / m_texture->textureSize().width();
-    qreal ph = src.height() / m_texture->textureSize().height();
-
-    u[0] = src.left();
-    u[1] = src.left() + m_innerRect.x() * pw;
-    u[2] = u[1];
-    u[3] = src.left() + (m_innerRect.x() + m_innerRect.width()) * pw;
-    u[4] = u[3];
-    u[5] = src.right();
-
-    v[0] = src.top();
-    v[1] = src.top() + m_innerRect.y() * ph;
-    v[2] = v[1];
-    v[3] = src.top() + (m_innerRect.y() + m_innerRect.height()) * ph;
-    v[4] = v[3];
-    v[5] = src.bottom();
-
-    for (int i = 0; i < 6; ++i) {
-        for (int j = 0; j < 6; ++j)
-            vertices[i * 6 + j] = V(x[j], y[i], u[j], v[i]);
+    quint16 *i = m_geometry.indexDataAsUShort();
+    int row = xTotalChunkCount * 2;
+    for (int r=0; r<yTotalChunkCount; ++r) {
+        int offset = r * row * 2;
+        for (int c=0; c<xTotalChunkCount; ++c) {
+            *i++ = offset + c * 2;
+            *i++ = offset + c * 2 + 1;
+            *i++ = offset + c * 2 + row;
+            *i++ = offset + c * 2 + 1;
+            *i++ = offset + c * 2 + row + 1;
+            *i++ = offset + c * 2 + row;
+        }
     }
 
-    markDirty(Node::DirtyGeometry);
+//    i = m_geometry.indexDataAsUShort();
+//    for (int idx=0; idx<m_geometry.indexCount(); idx+=6) {
+//        printf("%2d: ", idx / 6);
+//        for (int s=0; s<6; ++s)
+//            printf(" %d", i[idx + s]);
+//        printf("\n");
+//    }
+
+    markDirty(QSGNode::DirtyGeometry);
 }
 
+void QSGNinePatchNode::fillRow(QSGGeometry::TexturedPoint2D *&v, float y, float ty, int xChunkCount, float xChunkSize)
+{
+    float tw = m_material.texture()->textureSize().width();
+    float rightBorder = tw - m_innerRect.right();
+    float xTexChunk1 = m_innerRect.left() / tw;
+    float xTexChunk2 = m_innerRect.right() / tw;
+
+    v++->set(0, y, 0, ty);
+    v++->set(m_innerRect.x(), y, xTexChunk1, ty);
+
+    for (int xc=0; xc<xChunkCount; ++xc) {
+        float xx = m_innerRect.x() + xChunkSize * xc;
+        v++->set(xx, y, xTexChunk1, ty);
+
+        // Special case the last one
+        if (xc == xChunkCount - 1) {
+            float t = m_horizontalTileMode == QSGBorderImage::Repeat
+                    ? xTexChunk1 + (xTexChunk2 - xTexChunk1) * (m_targetRect.width() - rightBorder - xx) / xChunkSize
+                    : xTexChunk2;
+            v->set(m_targetRect.width() - rightBorder, y, t, ty);
+        } else {
+            v->set(xx + xChunkSize, y, xTexChunk2, ty);
+        }
+        ++v;
+    }
+
+    v++->set(m_targetRect.width() - rightBorder, y, xTexChunk2, ty);
+    v++->set(m_targetRect.width(), y, 1, ty);
+}

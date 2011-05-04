@@ -56,20 +56,10 @@
 
 #include "qsgimagebase_p_p.h"
 #include "qsgimage_p.h"
-#include "qsgtextureprovider.h"
 
 QT_BEGIN_NAMESPACE
 
 class QSGImagePrivate;
-class QSGImageTextureProvider : public QSGTextureProvider
-{
-public:
-    QSGImageTextureProvider(QObject *parent = 0);
-    void setImage(const QImage &image);
-    QSGTextureRef texture();
-
-    QSGTextureRef tex;
-};
 
 class QSGImagePrivate : public QSGImageBasePrivate
 {
@@ -81,7 +71,6 @@ public:
     QSGImage::FillMode fillMode;
     qreal paintedWidth;
     qreal paintedHeight;
-    QSGImageTextureProvider *textureProvider;
     void setPixmap(const QPixmap &pix);
 
     bool pixmapChanged : 1;

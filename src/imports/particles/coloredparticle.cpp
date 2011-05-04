@@ -1,14 +1,58 @@
-#include <qsgcontext.h>
-#include <adaptationlayer.h>
-#include <node.h>
-#include <texturematerial.h>
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the Declarative module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include <private/qsgcontext_p.h>
+#include <private/qsgadaptationlayer_p.h>
+#include <qsgnode.h>
+#include <qsgtexturematerial.h>
 #include <qsgtexture.h>
 #include <QFile>
 #include "coloredparticle.h"
 #include "particleemitter.h"
+#include <QGLFunctions>
+#include <qsgengine.h>
+
 QT_BEGIN_NAMESPACE
 
-class ParticleTrailsMaterial : public AbstractMaterial
+class ParticleTrailsMaterial : public QSGMaterial
 {
 public:
     ParticleTrailsMaterial()
@@ -17,20 +61,25 @@ public:
         setFlag(Blending, true);
     }
 
-    virtual AbstractMaterialType *type() const { static AbstractMaterialType type; return &type; }
-    virtual AbstractMaterialShader *createShader() const;
-    virtual int compare(const AbstractMaterial *other) const
+    ~ParticleTrailsMaterial()
+    {
+        delete texture;
+    }
+
+    virtual QSGMaterialType *type() const { static QSGMaterialType type; return &type; }
+    virtual QSGMaterialShader *createShader() const;
+    virtual int compare(const QSGMaterial *other) const
     {
         return this - static_cast<const ParticleTrailsMaterial *>(other);
     }
 
-    QSGTextureRef texture;
+    QSGTexture *texture;
 
     qreal timestamp;
 };
 
 
-class ParticleTrailsMaterialData : public AbstractMaterialShader
+class ParticleTrailsMaterialData : public QSGMaterialShader
 {
 public:
     ParticleTrailsMaterialData(const char *vertexFile = 0, const char *fragmentFile = 0)
@@ -48,24 +97,24 @@ public:
     }
 
     void deactivate() {
-        AbstractMaterialShader::deactivate();
+        QSGMaterialShader::deactivate();
 
         for (int i=0; i<8; ++i) {
             m_program.setAttributeArray(i, GL_FLOAT, chunkOfBytes, 1, 0);
         }
     }
 
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *, Renderer::Updates updates)
+    virtual void updateState(const RenderState &state, QSGMaterial *newEffect, QSGMaterial *)
     {
         ParticleTrailsMaterial *m = static_cast<ParticleTrailsMaterial *>(newEffect);
-        renderer->glActiveTexture(GL_TEXTURE0);
+        state.context()->functions()->glActiveTexture(GL_TEXTURE0);
         m->texture->bind();
 
-        m_program.setUniformValue(m_opacity_id, (float) renderer->renderOpacity());
+        m_program.setUniformValue(m_opacity_id, state.opacity());
         m_program.setUniformValue(m_timestamp_id, (float) m->timestamp);
 
-        if (updates & Renderer::UpdateMatrices)
-            m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
+        if (state.isMatrixDirty())
+            m_program.setUniformValue(m_matrix_id, state.combinedMatrix());
     }
 
     virtual void initialize() {
@@ -103,7 +152,7 @@ public:
 float ParticleTrailsMaterialData::chunkOfBytes[1024];
 
 
-AbstractMaterialShader *ParticleTrailsMaterial::createShader() const
+QSGMaterialShader *ParticleTrailsMaterial::createShader() const
 {
     return new ParticleTrailsMaterialData;
 }
@@ -116,10 +165,19 @@ public:
     {
     }
 
-    virtual AbstractMaterialType *type() const { static AbstractMaterialType type; return &type; }
-    virtual AbstractMaterialShader *createShader() const;
+    ~ParticleTrailsMaterialCT()
+    {
+        delete colortable;
+        delete sizetable;
+        delete opacitytable;
+    }
 
-    QSGTextureRef colortable;
+    virtual QSGMaterialType *type() const { static QSGMaterialType type; return &type; }
+    virtual QSGMaterialShader *createShader() const;
+
+    QSGTexture *colortable;
+    QSGTexture *sizetable;
+    QSGTexture *opacitytable;
 };
 
 
@@ -136,69 +194,53 @@ public:
     virtual void initialize() {
         ParticleTrailsMaterialData::initialize();
         m_colortable_id = m_program.uniformLocation("colortable");
+        m_sizetable_id = m_program.uniformLocation("sizetable");
+        m_opacitytable_id = m_program.uniformLocation("opacitytable");
     }
 
-    virtual void updateState(Renderer *renderer, AbstractMaterial *current, AbstractMaterial *old, Renderer::Updates updates)
+    virtual void updateState(const RenderState &state, QSGMaterial *current, QSGMaterial *old)
     {
         // Bind the texture to unit 1 before calling the base class, so that the
         // base class can set active texture back to 0.
         ParticleTrailsMaterialCT *m = static_cast<ParticleTrailsMaterialCT *>(current);
-        renderer->glActiveTexture(GL_TEXTURE1);
+        state.context()->functions()->glActiveTexture(GL_TEXTURE1);
         m->colortable->bind();
         m_program.setUniformValue(m_colortable_id, 1);
 
-        ParticleTrailsMaterialData::updateState(renderer, current, old, updates);
+        state.context()->functions()->glActiveTexture(GL_TEXTURE2);
+        m->sizetable->bind();
+        m_program.setUniformValue(m_sizetable_id, 2);
+
+        state.context()->functions()->glActiveTexture(GL_TEXTURE3);
+        m->opacitytable->bind();
+        m_program.setUniformValue(m_opacitytable_id, 3);
+
+        ParticleTrailsMaterialData::updateState(state, current, old);
     }
 
     int m_colortable_id;
+    int m_sizetable_id;
+    int m_opacitytable_id;
 };
 
 
-AbstractMaterialShader *ParticleTrailsMaterialCT::createShader() const
+QSGMaterialShader *ParticleTrailsMaterialCT::createShader() const
 {
     return new ParticleTrailsMaterialDataCT;
 }
-
-struct Color4ub {
-    uchar r;
-    uchar g;
-    uchar b;
-    uchar a;
-};
-
-struct ColoredParticleVertex {
-    float x;
-    float y;
-    float tx;
-    float ty;
-    float t;
-    float lifeSpan;
-    float size;
-    float endSize;
-    float sx;
-    float sy;
-    float ax;
-    float ay;
-    Color4ub color;
-};
-
-struct ColoredParticleVertices {
-    ColoredParticleVertex v1;
-    ColoredParticleVertex v2;
-    ColoredParticleVertex v3;
-    ColoredParticleVertex v4;
-};
-
 
 ColoredParticle::ColoredParticle(QSGItem* parent)
     : ParticleType(parent)
     , m_do_reset(false)
     , m_color(Qt::white)
     , m_color_variation(0.5)
-    , m_additive(1)
     , m_node(0)
     , m_material(0)
-    , m_alphaVariation(0)
+    , m_alphaVariation(0.0)
+    , m_alpha(1.0)
+    , m_redVariation(0.0)
+    , m_greenVariation(0.0)
+    , m_blueVariation(0.0)
 {
     setFlag(ItemHasContents);
 }
@@ -209,7 +251,7 @@ void ColoredParticle::setImage(const QUrl &image)
         return;
     m_image_name = image;
     emit imageChanged();
-    //m_system->pleaseReset();//XXX
+    reset();
 }
 
 
@@ -219,7 +261,25 @@ void ColoredParticle::setColortable(const QUrl &table)
         return;
     m_colortable_name = table;
     emit colortableChanged();
-    //m_system->pleaseReset();//XXX
+    reset();
+}
+
+void ColoredParticle::setSizetable(const QUrl &table)
+{
+    if (table == m_sizetable_name)
+        return;
+    m_sizetable_name = table;
+    emit sizetableChanged();
+    reset();
+}
+
+void ColoredParticle::setOpacitytable(const QUrl &table)
+{
+    if (table == m_opacitytable_name)
+        return;
+    m_opacitytable_name = table;
+    emit opacitytableChanged();
+    reset();
 }
 
 void ColoredParticle::setColor(const QColor &color)
@@ -240,15 +300,6 @@ void ColoredParticle::setColorVariation(qreal var)
     //m_system->pleaseReset();//XXX
 }
 
-void ColoredParticle::setAdditive(qreal additive)
-{
-    if (m_additive == additive)
-        return;
-    m_additive = additive;
-    emit additiveChanged();
-    //m_system->pleaseReset();//XXX
-}
-
 void ColoredParticle::setCount(int c)
 {
     ParticleType::setCount(c);
@@ -257,6 +308,7 @@ void ColoredParticle::setCount(int c)
 
 void ColoredParticle::reset()
 {
+    ParticleType::reset();
      m_pleaseReset = true;
 }
 
@@ -275,10 +327,8 @@ static QSGGeometry::AttributeSet ColoredParticle_AttributeSet =
     ColoredParticle_Attributes
 };
 
-GeometryNode* ColoredParticle::buildParticleNode()
+QSGGeometryNode* ColoredParticle::buildParticleNode()
 {
-    QSGContext *sg = QSGContext::current;
-
     if (m_count * 4 > 0xffff) {
         printf("ColoredParticle: Too many particles... \n");
         return 0;
@@ -349,21 +399,35 @@ GeometryNode* ColoredParticle::buildParticleNode()
         m_material = 0;
     }
 
-    if (!m_colortable_name.isEmpty()) {
-        QImage table(m_colortable_name.toLocalFile());
-        if (!table.isNull()) {
-            m_material = new ParticleTrailsMaterialCT();
-            static_cast<ParticleTrailsMaterialCT *>(m_material)->colortable = sg->createTexture(table);
-        }
+    QImage colortable(m_colortable_name.toLocalFile());
+    QImage sizetable(m_sizetable_name.toLocalFile());
+    QImage opacitytable(m_opacitytable_name.toLocalFile());
+    if(!colortable.isNull() || !sizetable.isNull() || !opacitytable.isNull()){
+        //using tabled shaders
+        m_material = new ParticleTrailsMaterialCT();
+        if(colortable.isNull())
+            colortable = QImage(":resources/identitytable.png");
+        if(sizetable.isNull())
+            sizetable = QImage(":resources/identitytable.png");
+        if(opacitytable.isNull())
+            opacitytable = QImage(":resources/defaultFadeInOut.png");
+        Q_ASSERT(!colortable.isNull());
+        Q_ASSERT(!sizetable.isNull());
+        Q_ASSERT(!opacitytable.isNull());
+        ParticleTrailsMaterialCT* ct_material = static_cast<ParticleTrailsMaterialCT *>(m_material);
+        ct_material->colortable = sceneGraphEngine()->createTextureFromImage(colortable);
+        ct_material->sizetable = sceneGraphEngine()->createTextureFromImage(sizetable);
+        ct_material->opacitytable = sceneGraphEngine()->createTextureFromImage(opacitytable);
     }
 
     if (!m_material)
         m_material = new ParticleTrailsMaterial();
 
 
-    m_material->texture = sg->createTexture(image);
+    m_material->texture = sceneGraphEngine()->createTextureFromImage(image);
+    m_material->texture->setFiltering(QSGTexture::Linear);
 
-    m_node = new GeometryNode();
+    m_node = new QSGGeometryNode();
     m_node->setGeometry(g);
     m_node->setMaterial(m_material);
 
@@ -372,7 +436,7 @@ GeometryNode* ColoredParticle::buildParticleNode()
     return m_node;
 }
 
-Node *ColoredParticle::updatePaintNode(Node *, UpdatePaintNodeData *)
+QSGNode *ColoredParticle::updatePaintNode(QSGNode *, UpdatePaintNodeData *)
 {
     if(m_pleaseReset){
         if(m_node)
@@ -385,11 +449,11 @@ Node *ColoredParticle::updatePaintNode(Node *, UpdatePaintNodeData *)
         m_pleaseReset = false;
     }
 
-    if(m_system->isRunning())
+    if(m_system && m_system->isRunning())
         prepareNextFrame();
     if (m_node){
         update();
-        m_node->markDirty(Node::DirtyMaterial);
+        m_node->markDirty(QSGNode::DirtyMaterial);
     }
 
     return m_node;
@@ -408,6 +472,13 @@ void ColoredParticle::prepareNextFrame()
     m_material->timestamp = time;
 }
 
+void ColoredParticle::reloadColor(const Color4ub &c, ParticleData* d)
+{
+    ColoredParticleVertices *particles = (ColoredParticleVertices *) m_node->geometry()->vertexData();
+    int pos = particleTypeIndex(d);
+    ColoredParticleVertices &p = particles[pos];
+    p.v1.color = p.v2.color = p.v3.color = p.v4.color = c;
+}
 
 void ColoredParticle::vertexCopy(ColoredParticleVertex &b,const ParticleVertex& a)
 {
@@ -432,7 +503,6 @@ void ColoredParticle::reload(ParticleData *d)
 
     int pos = particleTypeIndex(d);
 
-
     ColoredParticleVertices &p = particles[pos];
 
     //Perhaps we could be more efficient?
@@ -450,10 +520,13 @@ void ColoredParticle::load(ParticleData *d)
     //Color initialization
     // Particle color
     Color4ub color;
-    color.r = m_color.red() * (1 - m_color_variation) + rand() % 256 * m_color_variation;
-    color.g = m_color.green() * (1 - m_color_variation) + rand() % 256 * m_color_variation;
-    color.b = m_color.blue() * (1 - m_color_variation) + rand() % 256 * m_color_variation;
-    color.a = (1 - m_additive) * m_color.alpha() * (1 - m_alphaVariation) + rand() % 256 * m_alphaVariation;
+    qreal redVariation = m_color_variation + m_redVariation;
+    qreal greenVariation = m_color_variation + m_greenVariation;
+    qreal blueVariation = m_color_variation + m_blueVariation;
+    color.r = m_color.red() * (1 - redVariation) + rand() % 256 * redVariation;
+    color.g = m_color.green() * (1 - greenVariation) + rand() % 256 * greenVariation;
+    color.b = m_color.blue() * (1 - blueVariation) + rand() % 256 * blueVariation;
+    color.a = m_alpha * m_color.alpha() * (1 - m_alphaVariation) + rand() % 256 * m_alphaVariation;
     ColoredParticleVertices *particles = (ColoredParticleVertices *) m_node->geometry()->vertexData();
     ColoredParticleVertices &p = particles[particleTypeIndex(d)];
     p.v1.color = p.v2.color = p.v3.color = p.v4.color = color;

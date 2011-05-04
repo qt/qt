@@ -43,12 +43,22 @@
 #include "qetcprovider.h"
 
 #include <QDeclarativeEngine>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
+class QEtcDummyObject : public QObject
+{
+public:
+    QEtcDummyObject() {}
+};
+
 void EtcProviderPlugin::registerTypes(const char *uri)
 {
-    Q_UNUSED(uri)
+    //### this is required or "import Qt.labs.etcprovider 1.0" will give errors
+    //### this plugin should eventually be replaced by a non-import type plugin
+    //    (once it is available)
+    qmlRegisterType<QEtcDummyObject>(uri,1,0,"EtcObject");
 }
 
 void EtcProviderPlugin::initializeEngine(QDeclarativeEngine *engine, const char *uri)

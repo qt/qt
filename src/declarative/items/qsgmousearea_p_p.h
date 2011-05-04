@@ -61,6 +61,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QSGMouseEvent;
+class QSGMouseArea;
 class QSGMouseAreaPrivate : public QSGItemPrivate
 {
     Q_DECLARE_PUBLIC(QSGMouseArea)
@@ -71,9 +73,17 @@ public:
     void init();
 
     void saveEvent(QGraphicsSceneMouseEvent *event);
+    enum PropagateType{
+        Click,
+        DoubleClick,
+        PressAndHold
+    };
+    void propagate(QSGMouseEvent* event, PropagateType);
+    bool propagateHelper(QSGMouseEvent*, QSGItem*,const QPointF &, PropagateType);
 
     bool isPressAndHoldConnected();
     bool isDoubleClickConnected();
+    bool isClickConnected();
 
     bool absorb : 1;
     bool hovered : 1;

@@ -140,9 +140,9 @@ void tst_QMetaObjectBuilder::mocVersionCheck()
     // whenenver moc changes.  Once QMetaObjectBuilder has been
     // updated, this test can be changed to check for the next version.
     int version = int(QObject::staticMetaObject.d.data[0]);
-    QVERIFY(version == 4 || version == 5);
+    QVERIFY(version == 4 || version == 5 || version == 6);
     version = int(staticMetaObject.d.data[0]);
-    QVERIFY(version == 4 || version == 5);
+    QVERIFY(version == 4 || version == 5 || version == 6);
 }
 
 void tst_QMetaObjectBuilder::create()
@@ -940,9 +940,9 @@ void tst_QMetaObjectBuilder::relatedMetaObject()
     QVERIFY(checkForSideEffects(builder, QMetaObjectBuilder::RelatedMetaObjects));
 }
 
-static int smetacall(QMetaObject::Call, int, void **)
+static void smetacall(QObject *, QMetaObject::Call, int, void **)
 {
-    return 0;
+    return;
 }
 
 void tst_QMetaObjectBuilder::staticMetacall()

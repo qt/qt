@@ -2227,7 +2227,7 @@ QVariant QDeclarativeEnginePrivate::scriptValueToVariant(const QScriptValue &val
 
   The newly added \a path will be first in the importPathList().
 
-  \sa setImportPathList(), \l {QML Modules}
+  \sa setImportPathList(), {QML Modules}
 */
 void QDeclarativeEngine::addImportPath(const QString& path)
 {

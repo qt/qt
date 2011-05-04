@@ -198,7 +198,7 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
-    virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
+    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
 
 private:
     Q_DISABLE_COPY(QSGText)

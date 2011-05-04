@@ -1,4 +1,4 @@
-// Commit: 649e65519bef38948a818f282e3022d034dc80a5
+// Commit: a5c3c11e3e2204da6c8be9af98b38929366fafb8
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -43,11 +43,12 @@
 #include "qsgtext_p.h"
 #include "qsgtext_p_p.h"
 
-#include "distancefieldglyphcache_p.h"
-#include "qsgcontext.h"
-#include "adaptationlayer.h"
+#include <private/qsgdistancefieldglyphcache_p.h>
+#include <private/qsgcontext_p.h>
+#include <private/qsgadaptationlayer_p.h>
 #include "qsgtextnode_p.h"
 #include "qsgimage_p_p.h"
+#include <private/qsgtexture_p.h>
 
 #include <QtDeclarative/qdeclarativeinfo.h>
 #include <QtGui/qgraphicssceneevent.h>
@@ -100,10 +101,12 @@ QSGTextPrivate::QSGTextPrivate()
   vAlign(QSGText::AlignTop), elideMode(QSGText::ElideNone),
   format(QSGText::AutoText), wrapMode(QSGText::NoWrap), lineHeight(1),
   lineHeightMode(QSGText::ProportionalHeight), lineCount(1), maximumLineCount(INT_MAX),
-  maximumLineCountValid(false), imageCacheDirty(true), updateOnComponentComplete(true),
+  maximumLineCountValid(false),
+  texture(0),
+  imageCacheDirty(true), updateOnComponentComplete(true),
   richText(false), singleline(false), cacheAllTextAsImage(true), internalWidthUpdate(false),
   requireImplicitWidth(false), truncated(false), hAlignImplicit(true), rightToLeftText(false),
-  naturalWidth(0), doc(0)
+  naturalWidth(0), doc(0), nodeType(NodeIsNull)
 {
     cacheAllTextAsImage = enableImageCache();
 }
@@ -113,8 +116,6 @@ void QSGTextPrivate::init()
     Q_Q(QSGText);
     q->setAcceptedMouseButtons(Qt::LeftButton);
     q->setFlag(QSGItem::ItemHasContents);
-    textureProvider = new QSGImageTextureProvider(q);
-    QObject::connect(textureProvider, SIGNAL(textureChanged()), q, SLOT(update()));
 }
 
 QSGTextDocumentWithImageResources::QSGTextDocumentWithImageResources(QSGText *parent)
@@ -559,7 +560,7 @@ void QSGTextPrivate::invalidateImageCache()
 {
     Q_Q(QSGText);
 
-    if(cacheAllTextAsImage || (!DistanceFieldGlyphCache::distanceFieldEnabled() && style != QSGText::Normal)){//If actually using the image cache
+    if(cacheAllTextAsImage || (!QSGDistanceFieldGlyphCache::distanceFieldEnabled() && style != QSGText::Normal)){//If actually using the image cache
         if (imageCacheDirty)
             return;
 
@@ -700,8 +701,8 @@ void QSGText::setFont(const QFont &font)
     d->sourceFont = font;
     QFont oldFont = d->font;
     d->font = font;
-    if (DistanceFieldGlyphCache::distanceFieldEnabled())
-        qt_disableFontHinting(d->font);
+    if (QSGDistanceFieldGlyphCache::distanceFieldEnabled())
+        d->font.setHintingPreference(QFont::PreferNoHinting);
 
     if (d->font.pointSizeF() != -1) {
         // 0.5pt resolution
@@ -1014,10 +1015,10 @@ QRectF QSGText::boundingRect() const
     case AlignTop:
         break;
     case AlignBottom:
-        rect.setY(h - rect.height());
+        rect.moveTop(h - rect.height());
         break;
     case AlignVCenter:
-        rect.setY((h - rect.height()) / 2);
+        rect.moveTop((h - rect.height()) / 2);
         break;
     }
 
@@ -1044,7 +1045,7 @@ void QSGText::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeomet
     QSGItem::geometryChanged(newGeometry, oldGeometry);
 }
 
-Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
+QSGNode *QSGText::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data)
 {
     Q_UNUSED(data);
     Q_D(QSGText);
@@ -1058,7 +1059,7 @@ Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     QRectF bounds = boundingRect();
 
     // XXX todo - some styled text can be done by the QSGTextNode
-    if (richTextAsImage || d->cacheAllTextAsImage || (!DistanceFieldGlyphCache::distanceFieldEnabled() && d->style != Normal)) {
+    if (richTextAsImage || d->cacheAllTextAsImage || (!QSGDistanceFieldGlyphCache::distanceFieldEnabled() && d->style != Normal)) {
         bool wasDirty = d->imageCacheDirty;
 
         d->checkImageCache();
@@ -1068,34 +1069,39 @@ Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
             return 0;
         }
 
-        TextureNodeInterface *node = 0;
-        if (!oldNode || oldNode->subType() != Node::TextureNodeInterfaceSubType) {
+        QSGImageNode *node = 0;
+        if (!oldNode || d->nodeType != QSGTextPrivate::NodeIsTexture) {
             delete oldNode;
-            node = QSGContext::current->createTextureNode();
-            node->setTexture(d->textureProvider);
+            node = QSGItemPrivate::get(this)->sceneGraphContext()->createImageNode();
+            d->texture = new QSGPlainTexture();
             wasDirty = true;
+            d->nodeType = QSGTextPrivate::NodeIsTexture;
         } else {
-            node = static_cast<TextureNodeInterface *>(oldNode);
+            node = static_cast<QSGImageNode *>(oldNode);
+            Q_ASSERT(d->texture);
         }
 
         if (wasDirty) {
-            d->textureProvider->setImage(d->imageCache.toImage());
+            qobject_cast<QSGPlainTexture *>(d->texture)->setImage(d->imageCache.toImage());
+            node->setTexture(0);
+            node->setTexture(d->texture);
         }
 
         node->setTargetRect(QRectF(bounds.x(), bounds.y(), d->imageCache.width(), d->imageCache.height()));
         node->setSourceRect(QRectF(0, 0, 1, 1));
-        d->textureProvider->setHorizontalWrapMode(QSGTextureProvider::ClampToEdge);
-        d->textureProvider->setVerticalWrapMode(QSGTextureProvider::ClampToEdge);
-        d->textureProvider->setFiltering(d->smooth ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
+        node->setHorizontalWrapMode(QSGTexture::ClampToEdge);
+        node->setVerticalWrapMode(QSGTexture::ClampToEdge);
+        node->setFiltering(QSGTexture::Linear); // Nonsmooth text just ugly, so don't do that..
         node->update();
 
         return node;
 
     } else {
         QSGTextNode *node = 0;
-        if (!oldNode || oldNode->subType() != Node::TextNodeSubType) {
+        if (!oldNode || d->nodeType != QSGTextPrivate::NodeIsText) {
             delete oldNode;
-            node = new QSGTextNode(QSGContext::current);
+            node = new QSGTextNode(QSGItemPrivate::get(this)->sceneGraphContext());
+            d->nodeType = QSGTextPrivate::NodeIsText;
         } else {
             node = static_cast<QSGTextNode *>(oldNode);
         }

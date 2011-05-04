@@ -89,17 +89,25 @@ enum TSupportRelease {
     ES60_5_0      = 0x0004,
     ES60_5_1      = 0x0008,
     ES60_5_2      = 0x0010,
+    ES60_5_3      = 0x0020,
     ES60_3_X      = ES60_3_1 | ES60_3_2,
     // Releases before Symbian Foundation
     ES60_PreSF    = ES60_3_1 | ES60_3_2 | ES60_5_0,
+    // Releases before the S60 5.2
+    ES60_Pre52    = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1,
+    // Releases before S60 5.3
+    ES60_Pre53    = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1 | ES60_5_2,
     // Add all new releases here
-    ES60_All = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1 | ES60_5_2
+    ES60_All = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1 | ES60_5_2 | ES60_5_3
 };
 
 typedef struct {
-    const TAknsItemID &skinID;
-    TDrawType drawType;
-    int supportInfo;
+    const TAknsItemID &skinID; // Determines default theme graphics ID.
+    TDrawType drawType; // Determines which native drawing routine is used to draw this item.
+    int supportInfo;    // Defines the S60 versions that use the default graphics.
+    // These two, define new graphics that are used in releases other than partMapEntry.supportInfo defined releases.
+    // In general, these are given in numeric form to allow style compilation in earlier 
+    // native releases that do not contain the new graphics.
     int newMajorSkinId;
     int newMinorSkinId;
 } partMapEntry;
@@ -158,7 +166,6 @@ public:
     static bool disabledPartGraphic(QS60StyleEnums::SkinParts &part);
     static bool disabledFrameGraphic(QS60StylePrivate::SkinFrameElements &frame);
     static QPixmap generateMissingThemeGraphic(QS60StyleEnums::SkinParts &part, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
-    static QSize naviPaneSize();
     static TAknsItemID partSpecificThemeId(int part);
 
     static QVariant themeDefinition(QS60StyleEnums::ThemeDefinitions definition, QS60StyleEnums::SkinParts part);
@@ -189,12 +196,14 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QgnGrafScrollArrowLeft */        {KAknsIIDQgnGrafScrollArrowLeft,     EDrawGulIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafScrollArrowRight */       {KAknsIIDQgnGrafScrollArrowRight,    EDrawGulIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafScrollArrowUp */          {KAknsIIDQgnGrafScrollArrowUp,       EDrawGulIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabActiveL */             {KAknsIIDQgnGrafTabActiveL,             EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabActiveM */             {KAknsIIDQgnGrafTabActiveM,             EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabActiveR */             {KAknsIIDQgnGrafTabActiveR,             EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabPassiveL */            {KAknsIIDQgnGrafTabPassiveL,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabPassiveM */            {KAknsIIDQgnGrafTabPassiveM,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabPassiveR */            {KAknsIIDQgnGrafTabPassiveR,            EDrawIcon,   ES60_All,    -1,-1},
+
+    // In S60 5.3 there is a new tab graphic
+    /* SP_QgnGrafTabActiveL */             {KAknsIIDQgnGrafTabActiveL,             EDrawIcon,   ES60_Pre53,    EAknsMajorSkin, 0x2219}, //KAknsIIDQtgFrTabActiveNormalL
+    /* SP_QgnGrafTabActiveM */             {KAknsIIDQgnGrafTabActiveM,             EDrawIcon,   ES60_Pre53,    EAknsMajorSkin, 0x221b}, //KAknsIIDQtgFrTabActiveNormalC
+    /* SP_QgnGrafTabActiveR */             {KAknsIIDQgnGrafTabActiveR,             EDrawIcon,   ES60_Pre53,    EAknsMajorSkin, 0x221a}, //KAknsIIDQtgFrTabActiveNormalR
+    /* SP_QgnGrafTabPassiveL */            {KAknsIIDQgnGrafTabPassiveL,            EDrawIcon,   ES60_Pre53,    EAknsMajorSkin, 0x2221}, //KAknsIIDQtgFrTabPassiveNormalL
+    /* SP_QgnGrafTabPassiveM */            {KAknsIIDQgnGrafTabPassiveM,            EDrawIcon,   ES60_Pre53,    EAknsMajorSkin, 0x2223}, //KAknsIIDQtgFrTabPassiveNormalC
+    /* SP_QgnGrafTabPassiveR */            {KAknsIIDQgnGrafTabPassiveR,            EDrawIcon,   ES60_Pre53,    EAknsMajorSkin, 0x2222}, //KAknsIIDQtgFrTabPassiveNormalR
 
     // In 3.1 there is no slider groove.
     /* SP_QgnGrafNsliderEndLeft */         {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x19cf /* KAknsIIDQgnGrafNsliderEndLeft */},
@@ -639,13 +648,14 @@ QPixmap QS60StyleModeSpecifics::fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask
 
     QPixmap pixmap;
     QScopedPointer<QPixmapData> pd(QPixmapData::create(0, 0, QPixmapData::PixmapType));
-    bool nativeMaskSupported = (pd->toNativeType(QPixmapData::VolatileImage) != 0);
-    if (mask && nativeMaskSupported) {
-        // Efficient path, less copying and conversion.
+    if (mask) {
+        // Try the efficient path with less copying and conversion.
         QVolatileImage img(icon, mask);
         pd->fromNativeType(&img, QPixmapData::VolatileImage);
-        pixmap = QPixmap(pd.take());
-    } else {
+        if (!pd->isNull())
+            pixmap = QPixmap(pd.take());
+    }
+    if (pixmap.isNull()) {
         // Potentially more expensive path.
         pd->fromNativeType(icon, QPixmapData::FbsBitmap);
         pixmap = QPixmap(pd.take());
@@ -776,16 +786,8 @@ QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
 {
     CCoeControl *control = targetWidget->effectiveWinId();
     TPoint pos(0,0);
-    if (control) {
-        // FIXME properly: S60 3.1 has a bug that CCoeControl::PositionRelativeToScreen sometimes
-        // freezes the device, possibly in cases where we run out of memory.
-        // We use CCoeControl::Position instead in S60 3.1, which returns same values
-        // in most cases.
-        if (QSysInfo::s60Version() == QSysInfo::SV_S60_3_1)
-            pos = control->Position();
-        else
-            pos = control->PositionRelativeToScreen();
-    }
+    if (control)
+        pos = control->PositionRelativeToScreen();
     return QPoint(pos.iX, pos.iY);
 }
 
@@ -1140,7 +1142,8 @@ bool QS60StyleModeSpecifics::checkSupport(const int supportedRelease)
              (currentRelease == QSysInfo::SV_S60_3_2 && supportedRelease & ES60_3_2) ||
              (currentRelease == QSysInfo::SV_S60_5_0 && supportedRelease & ES60_5_0) ||
              (currentRelease == QSysInfo::SV_S60_5_1 && supportedRelease & ES60_5_1) ||
-             (currentRelease == QSysInfo::SV_S60_5_2 && supportedRelease & ES60_5_2));
+             (currentRelease == QSysInfo::SV_S60_5_2 && supportedRelease & ES60_5_2) ||
+             (currentRelease == QSysInfo::SV_S60_5_3 && supportedRelease & ES60_5_3) );
 }
 
 TAknsItemID QS60StyleModeSpecifics::partSpecificThemeId(int part)
@@ -1390,7 +1393,7 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size, Skin
     return result;
 }
 
-QPixmap QS60StylePrivate::backgroundTexture()
+QPixmap QS60StylePrivate::backgroundTexture(bool skipCreation)
 {
     bool createNewBackground = false;
     TRect applicationRect = (static_cast<CEikAppUi*>(S60->appUi())->ApplicationRect());
@@ -1401,27 +1404,32 @@ QPixmap QS60StylePrivate::backgroundTexture()
         if (m_background->width() != applicationRect.Width() ||
             m_background->height() != applicationRect.Height()) {
             delete m_background;
+            m_background = 0;
             createNewBackground = true;
         }
     }
 
-    if (createNewBackground) {
+    if (createNewBackground && !skipCreation) {
         QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen,
             QSize(applicationRect.Width(), applicationRect.Height()), 0, SkinElementFlags());
         m_background = new QPixmap(background);
-    }
-    return *m_background;
-}
 
-// Generates 1*1 red pixmap as a placeholder for real texture.
-// The actual theme texture is drawn in qt_s60_fill_background().
-QPixmap QS60StylePrivate::placeHolderTexture()
-{
-    if (!m_placeHolderTexture) {
-        m_placeHolderTexture = new QPixmap(1,1);
-        m_placeHolderTexture->fill(Qt::red);
+        // Notify all widgets that palette is updated with the actual background texture.
+        QPalette pal = QApplication::palette();
+        pal.setBrush(QPalette::Window, *m_background);
+        QApplication::setPalette(pal);
+        setThemePaletteHash(&pal);
+        storeThemePalette(&pal);
+        foreach (QWidget *widget, QApplication::allWidgets()){
+            QEvent e(QEvent::PaletteChange);
+            QApplication::sendEvent(widget, &e);
+            setThemePalette(widget);
+            widget->ensurePolished();
+        }
     }
-    return *m_placeHolderTexture;
+    if (!m_background)
+        return QPixmap();
+    return *m_background;
 }
 
 QSize QS60StylePrivate::screenSize()
@@ -1459,23 +1467,6 @@ void QS60StylePrivate::handleSkinChange()
     stopAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim); //todo: once we have more animations, we could say "stop all running ones"
     startAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim); //and "re-start all previously running ones"
 #endif
-}
-
-QSize QS60StylePrivate::naviPaneSize()
-{
-    return QS60StyleModeSpecifics::naviPaneSize();
-}
-
-QSize QS60StyleModeSpecifics::naviPaneSize()
-{
-    CAknNavigationControlContainer* naviContainer;
-    if (S60->statusPane()) {
-        TRAPD(err, naviContainer = static_cast<CAknNavigationControlContainer*>
-            (S60->statusPane()->ControlL(TUid::Uid(EEikStatusPaneUidNavi))));
-        if (err==KErrNone)
-            return QSize(naviContainer->Size().iWidth, naviContainer->Size().iHeight);
-    }
-    return QSize(0,0);
 }
 
 int QS60StylePrivate::currentAnimationFrame(QS60StyleEnums::SkinParts part)

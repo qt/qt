@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -44,6 +44,7 @@
 
 #include <QtCore/QSize>
 
+#include <wayland-client.h>
 #include <wayland-client-protocol.h>
 
 class QWaylandBuffer {

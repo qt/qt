@@ -72,7 +72,7 @@ struct QFontDef
         : pointSize(-1.0), pixelSize(-1),
           styleStrategy(QFont::PreferDefault), styleHint(QFont::AnyStyle),
           weight(50), fixedPitch(false), style(QFont::StyleNormal), stretch(100),
-          ignorePitch(true)
+          ignorePitch(true), hintingPreference(QFont::PreferDefaultHinting)
 #ifdef Q_WS_MAC
           ,fixedPitchComputed(false)
 #endif
@@ -97,8 +97,9 @@ struct QFontDef
     uint stretch    : 12; // 0-400
 
     uint ignorePitch : 1;
+    uint hintingPreference : 2;
     uint fixedPitchComputed : 1; // for Mac OS X only
-    int reserved   : 16; // for future extensions
+    int reserved   : 14; // for future extensions
 
     bool exactMatch(const QFontDef &other) const;
     bool operator==(const QFontDef &other) const
@@ -111,6 +112,7 @@ struct QFontDef
                     && styleStrategy == other.styleStrategy
                     && ignorePitch == other.ignorePitch && fixedPitch == other.fixedPitch
                     && family == other.family
+                    && hintingPreference == other.hintingPreference
 #ifdef Q_WS_X11
                     && addStyle == other.addStyle
 #endif
@@ -125,6 +127,7 @@ struct QFontDef
         if (styleHint != other.styleHint) return styleHint < other.styleHint;
         if (styleStrategy != other.styleStrategy) return styleStrategy < other.styleStrategy;
         if (family != other.family) return family < other.family;
+        if (hintingPreference != other.hintingPreference) return hintingPreference < other.hintingPreference;
 
 #ifdef Q_WS_X11
         if (addStyle != other.addStyle) return addStyle < other.addStyle;
@@ -277,6 +280,10 @@ public:
     bool fast;
     int timer_id;
 };
+
+Q_GUI_EXPORT int qt_defaultDpiX();
+Q_GUI_EXPORT int qt_defaultDpiY();
+Q_GUI_EXPORT int qt_defaultDpi();
 
 QT_END_NAMESPACE
 

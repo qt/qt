@@ -192,6 +192,7 @@ static qreal progressForValue(const QEasingCurve &curve, qreal value)
 }
 
 
+#ifndef QT_NO_ANIMATION
 class QScrollTimer : public QAbstractAnimation
 {
 public:
@@ -230,6 +231,7 @@ private:
     bool ignoreUpdate;
     int skip;
 };
+#endif // QT_NO_ANIMATION
 
 /*!
     \class QScroller
@@ -277,9 +279,11 @@ private:
     \sa QScrollEvent, QScrollPrepareEvent, QScrollerProperties
 */
 
+typedef QMap<QObject *, QScroller *> ScrollerHash;
+typedef QSet<QScroller *> ScrollerSet;
 
-QMap<QObject *, QScroller *> QScrollerPrivate::allScrollers;
-QSet<QScroller *> QScrollerPrivate::activeScrollers;
+Q_GLOBAL_STATIC(ScrollerHash, qt_allScrollers)
+Q_GLOBAL_STATIC(ScrollerSet, qt_activeScrollers)
 
 /*!
     Returns \c true if a QScroller object was already created for \a target; \c false otherwise.
@@ -288,7 +292,7 @@ QSet<QScroller *> QScrollerPrivate::activeScrollers;
 */
 bool QScroller::hasScroller(QObject *target)
 {
-    return (QScrollerPrivate::allScrollers.value(target));
+    return (qt_allScrollers()->value(target));
 }
 
 /*!
@@ -306,11 +310,11 @@ QScroller *QScroller::scroller(QObject *target)
         return 0;
     }
 
-    if (QScrollerPrivate::allScrollers.contains(target))
-        return QScrollerPrivate::allScrollers.value(target);
+    if (qt_allScrollers()->contains(target))
+        return qt_allScrollers()->value(target);
 
     QScroller *s = new QScroller(target);
-    QScrollerPrivate::allScrollers.insert(target, s);
+    qt_allScrollers()->insert(target, s);
     return s;
 }
 
@@ -330,7 +334,7 @@ const QScroller *QScroller::scroller(const QObject *target)
 */
 QList<QScroller *> QScroller::activeScrollers()
 {
-    return QScrollerPrivate::activeScrollers.toList();
+    return qt_activeScrollers()->toList();
 }
 
 /*!
@@ -376,6 +380,7 @@ void QScroller::setScrollerProperties(const QScrollerProperties &sp)
     }
 }
 
+#ifndef QT_NO_GESTURES
 
 /*!
     Registers a custom scroll gesture recognizer, grabs it for the \a
@@ -426,11 +431,12 @@ Qt::GestureType QScroller::grabGesture(QObject *target, ScrollerGestureType scro
         widget->grabGesture(sp->recognizerType);
         if (scrollGestureType == TouchGesture)
             widget->setAttribute(Qt::WA_AcceptTouchEvents);
-
+#ifndef QT_NO_GRAPHICSVIEW
     } else if (QGraphicsObject *go = qobject_cast<QGraphicsObject*>(target)) {
         if (scrollGestureType == TouchGesture)
             go->setAcceptTouchEvents(true);
         go->grabGesture(sp->recognizerType);
+#endif // QT_NO_GRAPHICSVIEW
     }
     return sp->recognizerType;
 }
@@ -469,15 +475,18 @@ void QScroller::ungrabGesture(QObject *target)
     if (target->isWidgetType()) {
         QWidget *widget = static_cast<QWidget *>(target);
         widget->ungrabGesture(sp->recognizerType);
-
+#ifndef QT_NO_GRAPHICSVIEW
     } else if (QGraphicsObject *go = qobject_cast<QGraphicsObject*>(target)) {
         go->ungrabGesture(sp->recognizerType);
+#endif
     }
 
     QGestureRecognizer::unregisterRecognizer(sp->recognizerType);
     // do not delete the recognizer. The QGestureManager is doing this.
     sp->recognizer = 0;
 }
+
+#endif // QT_NO_GESTURES
 
 /*!
     \internal
@@ -496,11 +505,13 @@ QScroller::QScroller(QObject *target)
 QScroller::~QScroller()
 {
     Q_D(QScroller);
+#ifndef QT_NO_GESTURES
     QGestureRecognizer::unregisterRecognizer(d->recognizerType);
     // do not delete the recognizer. The QGestureManager is doing this.
     d->recognizer = 0;
-    QScrollerPrivate::allScrollers.remove(d->target);
-    QScrollerPrivate::activeScrollers.remove(this);
+#endif
+    qt_allScrollers()->remove(d->target);
+    qt_activeScrollers()->remove(this);
 
     delete d_ptr;
 }
@@ -562,6 +573,7 @@ QPointF QScroller::pixelPerMeter() const
     Q_D(const QScroller);
     QPointF ppm = d->pixelPerMeter;
 
+#ifndef QT_NO_GRAPHICSVIEW
     if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(d->target)) {
         QTransform viewtr;
         //TODO: the first view isn't really correct - maybe use an additional field in the prepare event?
@@ -576,6 +588,7 @@ QPointF QScroller::pixelPerMeter() const
             ppm.ry() /= QLineF(p0, py).length();
         }
     }
+#endif // QT_NO_GRAPHICSVIEW
     return ppm;
 }
 
@@ -869,8 +882,10 @@ void QScroller::setSnapPositionsY(qreal first, qreal interval)
 
 QScrollerPrivate::QScrollerPrivate(QScroller *q, QObject *_target)
     : target(_target)
+#ifndef QT_NO_GESTURES
     , recognizer(0)
     , recognizerType(Qt::CustomGesture)
+#endif
     , state(QScroller::Inactive)
     , firstScroll(true)
     , pressTimestamp(0)
@@ -879,7 +894,9 @@ QScrollerPrivate::QScrollerPrivate(QScroller *q, QObject *_target)
     , snapIntervalX(0.0)
     , snapFirstY(-1.0)
     , snapIntervalY(0.0)
+#ifndef QT_NO_ANIMATION
     , scrollTimer(new QScrollTimer(this))
+#endif
     , q_ptr(q)
 {
     connect(target, SIGNAL(destroyed(QObject*)), this, SLOT(targetDestroyed()));
@@ -919,7 +936,9 @@ const char *QScrollerPrivate::inputName(QScroller::Input input)
 
 void QScrollerPrivate::targetDestroyed()
 {
+#ifndef QT_NO_ANIMATION
     scrollTimer->stop();
+#endif
     delete q_ptr;
 }
 
@@ -945,7 +964,9 @@ void QScrollerPrivate::timerTick()
         }
     }
 
+#ifndef QT_NO_ANIMATION
     scrollTimer->stop();
+#endif
 }
 
 /*!
@@ -1436,11 +1457,13 @@ bool QScrollerPrivate::prepareScrolling(const QPointF &position)
 
         if (QWidget *w = qobject_cast<QWidget *>(target))
             setDpiFromWidget(w);
+#ifndef QT_NO_GRAPHICSVIEW
         if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(target)) {
             //TODO: the first view isn't really correct - maybe use an additional field in the prepare event?
             if (go->scene() && !go->scene()->views().isEmpty())
                 setDpiFromWidget(go->scene()->views().first());
         }
+#endif
 
         if (state == QScroller::Scrolling) {
             recalcScrollingSegments();
@@ -1690,7 +1713,9 @@ void QScrollerPrivate::setState(QScroller::State newstate)
 
     switch (newstate) {
     case QScroller::Inactive:
+#ifndef QT_NO_ANIMATION
         scrollTimer->stop();
+#endif
 
         // send the last scroll event (but only after the current state change was finished)
         if (!firstScroll)
@@ -1700,7 +1725,9 @@ void QScrollerPrivate::setState(QScroller::State newstate)
         break;
 
     case QScroller::Pressed:
+#ifndef QT_NO_ANIMATION
         scrollTimer->stop();
+#endif
 
         oldVelocity = releaseVelocity;
         releaseVelocity = QPointF(0, 0);
@@ -1708,12 +1735,16 @@ void QScrollerPrivate::setState(QScroller::State newstate)
 
     case QScroller::Dragging:
         dragDistance = QPointF(0, 0);
+#ifndef QT_NO_ANIMATION
         if (state == QScroller::Pressed)
             scrollTimer->start();
+#endif
         break;
 
     case QScroller::Scrolling:
+#ifndef QT_NO_ANIMATION
         scrollTimer->start();
+#endif
         break;
     }
 
@@ -1725,9 +1756,9 @@ void QScrollerPrivate::setState(QScroller::State newstate)
         firstScroll = true;
     }
     if (state == QScroller::Dragging || state == QScroller::Scrolling)
-        activeScrollers.insert(q);
+        qt_activeScrollers()->insert(q);
     else
-        activeScrollers.remove(q);
+        qt_activeScrollers()->remove(q);
     emit q->stateChanged(state);
 }
 

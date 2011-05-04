@@ -1,3 +1,44 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the Declarative module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
 #ifndef PARTICLESYSTEM_H
 #define PARTICLESYSTEM_H
 
@@ -5,6 +46,7 @@
 #include <QTime>
 #include <QVector>
 #include <QHash>
+#include <QPointer>
 
 QT_BEGIN_HEADER
 
@@ -31,6 +73,7 @@ class ParticleSystem : public QSGItem
     Q_OBJECT
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
     Q_PROPERTY(int startTime READ startTime WRITE setStartTime NOTIFY startTimeChanged)
+    Q_PROPERTY(bool overwrite READ overwrite WRITE setOverwrite NOTIFY overwriteChanged)//XXX: Should just be an implementation detail, but I can't decide which way
 
 public:
     explicit ParticleSystem(QSGItem *parent = 0);
@@ -55,6 +98,8 @@ void runningChanged(bool arg);
 void startTimeChanged(int arg);
 
 
+void overwriteChanged(bool arg);
+
 public slots:
 void reset();
 void setRunning(bool arg);
@@ -63,6 +108,14 @@ void setRunning(bool arg);
 void setStartTime(int arg)
 {
     m_startTime = arg;
+}
+
+void setOverwrite(bool arg)
+{
+    if (m_overwrite != arg) {
+    m_overwrite = arg;
+emit overwriteChanged(arg);
+}
 }
 
 protected:
@@ -85,16 +138,22 @@ public://but only really for related class usage. Perhaps we should all be frien
     void registerParticleType(ParticleType* p);
     void registerParticleEmitter(ParticleEmitter* e);
     void registerParticleAffector(ParticleAffector* a);
+    bool overwrite() const
+    {
+        return m_overwrite;
+    }
+
+    int m_particle_count;
 private:
     void initializeSystem();
-    int m_particle_count;
     bool m_running;
-    QList<ParticleEmitter*> m_emitters;
-    QList<ParticleAffector*> m_affectors;
-    QList<ParticleType*> m_particles;
-    QList<ParticleType*> m_syncList;
+    QList<QPointer<ParticleEmitter> > m_emitters;
+    QList<QPointer<ParticleAffector> > m_affectors;
+    QList<QPointer<ParticleType> > m_particles;
+    QList<QPointer<ParticleType> > m_syncList;
     int m_startTime;
     int m_nextGroupId;
+    bool m_overwrite;
 };
 
 //TODO: Clean up all this into ParticleData
@@ -110,6 +169,7 @@ struct ParticleVertex {
     float sy;
     float ax;
     float ay;
+    //TODO: Need opacity over life control. More variable size over life?
 };
 
 class ParticleData{
@@ -147,9 +207,13 @@ public:
     int systemIndex;
 
     void debugDump();
+    bool stillAlive();
 };
 
 QT_END_NAMESPACE
-#endif // PARTICLESYSTEM_H
+
 QT_END_HEADER
+
+#endif // PARTICLESYSTEM_H
+
 

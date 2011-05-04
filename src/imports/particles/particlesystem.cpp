@@ -1,10 +1,52 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the Declarative module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
 #include "particlesystem.h"
-#include <node.h>
+#include <qsgnode.h>
 #include "particleemitter.h"
 #include "particleaffector.h"
 #include "particle.h"
 #include <cmath>
 #include <QDebug>
+
 QT_BEGIN_NAMESPACE
 
 ParticleData::ParticleData()
@@ -25,30 +67,30 @@ ParticleData::ParticleData()
 }
 
 ParticleSystem::ParticleSystem(QSGItem *parent) :
-    QSGItem(parent), m_running(true) , m_startTime(0)
+    QSGItem(parent), m_particle_count(0), m_running(true) , m_startTime(0), m_overwrite(true)
 {
     m_groupIds = QHash<QString, int>();
 }
 
 void ParticleSystem::registerParticleType(ParticleType* p)
 {
-    m_particles << p;//###Set or uniqueness checking?
+    m_particles << QPointer<ParticleType>(p);//###Set or uniqueness checking?
     reset();
 }
 
 void ParticleSystem::registerParticleEmitter(ParticleEmitter* e)
 {
-    m_emitters << e;//###How to get them out?
-    connect(e, SIGNAL(particlesPerSecondChanged(qreal)),
+    m_emitters << QPointer<ParticleEmitter>(e);//###How to get them out?
+    connect(e, SIGNAL(particleCountChanged()),
             this, SLOT(countChanged()));
-    connect(e, SIGNAL(particleDurationChanged(int)),
+    connect(e, SIGNAL(particleChanged(QString)),
             this, SLOT(countChanged()));
     reset();
 }
 
 void ParticleSystem::registerParticleAffector(ParticleAffector* a)
 {
-    m_affectors << a;
+    m_affectors << QPointer<ParticleAffector>(a);
     //reset();//TODO: Slim down the huge batch of resets at the start
 }
 
@@ -112,7 +154,7 @@ void ParticleSystem::initializeSystem()
             m_groupIds.insert(e->particle(), id);
             m_groupData.insert(id, gd);
         }
-        m_groupData[m_groupIds[e->particle()]]->size += ceil(e->particlesPerSecond()*((e->particleDuration()+e->particleDurationVariation())/1000.0));
+        m_groupData[m_groupIds[e->particle()]]->size += e->particleCount();
     }
 
     for(QHash<int, GroupData*>::iterator iter = m_groupData.begin(); iter != m_groupData.end(); iter++){
@@ -148,6 +190,12 @@ void ParticleSystem::initializeSystem()
 
 void ParticleSystem::reset()
 {
+    //Clear guarded pointers which have been deleted
+    int cleared = 0;
+    cleared += m_emitters.removeAll(0);
+    cleared += m_particles.removeAll(0);
+    cleared += m_affectors.removeAll(0);
+    //qDebug() << "Reset" << m_emitters.count() << m_particles.count() << "Cleared" << cleared;
     foreach(ParticleType* p, m_particles)
         p->reset();
     foreach(ParticleEmitter* e, m_emitters)
@@ -166,9 +214,13 @@ ParticleData* ParticleSystem::newDatum(int groupId)
     if( m_groupData[groupId]->nextIdx >= m_groupData[groupId]->size)
         m_groupData[groupId]->nextIdx = 0;
 
+    Q_ASSERT(nextIdx < m_data.size());
     ParticleData* ret;
-    if(m_data[nextIdx]){//Recycle, it's faster. //###Reset?
+    if(m_data[nextIdx]){//Recycle, it's faster.
         ret = m_data[nextIdx];
+        if(!m_overwrite && ret->stillAlive()){
+            return 0;//Artificial longevity (or too fast emission) means this guy hasn't died. To maintain count, don't emit a new one
+        }//###Reset?
     }else{
         ret = new ParticleData;
         m_data[nextIdx] = ret;
@@ -191,10 +243,11 @@ void ParticleSystem::emitParticle(ParticleData* pd)
     }
 
     foreach(ParticleAffector *a, m_affectors)
-        if(a->m_needsReset)
+        if(a && a->m_needsReset)
             a->reset(pd->systemIndex);
     foreach(ParticleType* p, m_groupData[pd->group]->types)
-        p->load(pd);
+        if(p)
+            p->load(pd);
 }
 
 
@@ -216,12 +269,15 @@ uint ParticleSystem::systemSync(ParticleType* p)
         dt = time - dt;
         m_needsReset.clear();
         foreach(ParticleEmitter* emitter, m_emitters)
-            emitter->emitWindow(m_timeInt);
+            if(emitter)
+                emitter->emitWindow(m_timeInt);
         foreach(ParticleAffector* a, m_affectors)
-            a->affectSystem(dt);
+            if(a)
+                a->affectSystem(dt);
         foreach(ParticleData* d, m_needsReset)
             foreach(ParticleType* p, m_groupData[d->group]->types)
-                p->reload(d);
+                if(p && d)
+                    p->reload(d);
     }
     m_syncList << p;
     return m_timeInt;
@@ -322,6 +378,15 @@ void ParticleData::debugDump()
              << "Pos: " << pv.x << "," << pv.y
              << "Vel: " << pv.sx << "," << pv.sy
              << "Acc: " << pv.ax << "," << pv.ay
-             << "Time: " << pv.t;// << "," << (system->m_timeInt / 1000.0);
+             << "Size: " << pv.size << "," << pv.endSize
+             << "Time: " << pv.t << "," <<pv.lifeSpan;
 }
+
+bool ParticleData::stillAlive()
+{
+    if(!system)
+        return false;
+    return (pv.t + pv.lifeSpan) > (system->m_timeInt/1000.0);
+}
+
 QT_END_NAMESPACE

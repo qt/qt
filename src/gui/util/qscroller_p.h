@@ -69,10 +69,13 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_GESTURES
 class QFlickGestureRecognizer;
+#endif
 
+#ifndef QT_NO_ANIMATION
 class QScrollTimer;
-
+#endif
 class QScrollerPrivate : public QObject
 {
     Q_OBJECT
@@ -145,15 +148,13 @@ public slots:
     void targetDestroyed();
 
 public:
-    // static
-    static QMap<QObject *, QScroller *> allScrollers;
-    static QSet<QScroller *> activeScrollers;
-
     // non static
     QObject *target;
     QScrollerProperties properties;
+#ifndef QT_NO_GESTURES
     QFlickGestureRecognizer *recognizer;
     Qt::GestureType recognizerType;
+#endif
 
     // scroller state:
 
@@ -194,7 +195,9 @@ public:
     QElapsedTimer monotonicTimer;
 
     QPointF releaseVelocity; // the starting velocity of the scrolling state
+#ifndef QT_NO_ANIMATION
     QScrollTimer *scrollTimer;
+#endif
 
     QScroller *q_ptr;
 };

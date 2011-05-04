@@ -72,10 +72,10 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
     Contexts allow data to be exposed to the QML components instantiated by the
     QML engine.
 
-    Each QDeclarativeContext contains a set of properties, distinct from its QObject 
-    properties, that allow data to be explicitly bound to a context by name.  The 
-    context properties are defined and updated by calling 
-    QDeclarativeContext::setContextProperty().  The following example shows a Qt model 
+    Each QDeclarativeContext contains a set of properties, distinct from its QObject
+    properties, that allow data to be explicitly bound to a context by name.  The
+    context properties are defined and updated by calling
+    QDeclarativeContext::setContextProperty().  The following example shows a Qt model
     being bound to a context and then accessed from a QML file.
 
     \code
@@ -97,8 +97,8 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
     To simplify binding and maintaining larger data sets, a context object can be set
     on a QDeclarativeContext.  All the properties of the context object are available
     by name in the context, as though they were all individually added through calls
-    to QDeclarativeContext::setContextProperty().  Changes to the property's values are 
-    detected through the property's notify signal.  Setting a context object is both 
+    to QDeclarativeContext::setContextProperty().  Changes to the property's values are
+    detected through the property's notify signal.  Setting a context object is both
     faster and easier than manually adding and maintaing context property values.
 
     The following example has the same effect as the previous one, but it uses a context
@@ -121,7 +121,7 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
     component.create(context);
     \endcode
 
-    All properties added explicitly by QDeclarativeContext::setContextProperty() take 
+    All properties added explicitly by QDeclarativeContext::setContextProperty() take
     precedence over the context object's properties.
 
     \section2 The Context Hierarchy
@@ -147,8 +147,8 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
     context2->setContextProperty("b", 15);
     \endcode
 
-    While QML objects instantiated in a context are not strictly owned by that 
-    context, their bindings are.  If a context is destroyed, the property bindings of 
+    While QML objects instantiated in a context are not strictly owned by that
+    context, their bindings are.  If a context is destroyed, the property bindings of
     outstanding QML objects will stop evaluating.
 
     \warning Setting the context object or adding new context properties after an object
@@ -156,7 +156,7 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
     to reevaluate). Thus whenever possible you should complete "setup" of the context
     before using it to create any objects.
 
-    \sa {Using QML in C++ Applications}
+    \sa {Using QML Bindings in C++ Applications}
 */
 
 /*! \internal */
@@ -223,7 +223,7 @@ QDeclarativeContext::~QDeclarativeContext()
 /*!
     Returns whether the context is valid.
 
-    To be valid, a context must have a engine, and it's contextObject(), if any, 
+    To be valid, a context must have a engine, and it's contextObject(), if any,
     must not have been deleted.
 */
 bool QDeclarativeContext::isValid() const
@@ -384,7 +384,7 @@ QVariant QDeclarativeContext::contextProperty(const QString &name) const
         if (data->contextObject) {
             QObject *obj = data->contextObject;
             QDeclarativePropertyCache::Data local;
-            QDeclarativePropertyCache::Data *property = 
+            QDeclarativePropertyCache::Data *property =
                 QDeclarativePropertyCache::property(data->engine, obj, name, local);
 
             if (property) value = obj->metaObject()->property(property->coreIndex).read(obj);
@@ -461,7 +461,7 @@ QUrl QDeclarativeContext::baseUrl() const
 {
     Q_D(const QDeclarativeContext);
     const QDeclarativeContextData* data = d->data;
-    while (data && data->url.isEmpty()) 
+    while (data && data->url.isEmpty())
         data = data->parent;
 
     if (data)
@@ -575,7 +575,7 @@ void QDeclarativeContextData::clearContext()
 
 void QDeclarativeContextData::destroy()
 {
-    if (linkedContext) 
+    if (linkedContext)
         linkedContext->destroy();
 
     if (engine) invalidate();
@@ -632,9 +632,9 @@ void QDeclarativeContextData::setParent(QDeclarativeContextData *p, bool parentT
     }
 }
 
-/* 
-Refreshes all expressions that could possibly depend on this context.  Refreshing flushes all 
-context-tree dependent caches in the expressions, and should occur every time the context tree 
+/*
+Refreshes all expressions that could possibly depend on this context.  Refreshing flushes all
+context-tree dependent caches in the expressions, and should occur every time the context tree
  *structure* (not values) changes.
 */
 void QDeclarativeContextData::refreshExpressions()
@@ -662,7 +662,7 @@ void QDeclarativeContextData::addObject(QObject *o)
     data->outerContext = this;
 
     data->nextContextObject = contextObjects;
-    if (data->nextContextObject) 
+    if (data->nextContextObject)
         data->nextContextObject->prevContextObject = &data->nextContextObject;
     data->prevContextObject = &contextObjects;
     contextObjects = data;
@@ -692,7 +692,7 @@ QString QDeclarativeContextData::findObjectId(const QObject *obj) const
     for (int i=0; i<idValueCount; i++) {
         if (idValues[i] == obj)
             return propertyNames->findId(i);
-    }    
+    }
 
     if (linkedContext)
         return linkedContext->findObjectId(obj);
@@ -701,7 +701,7 @@ QString QDeclarativeContextData::findObjectId(const QObject *obj) const
 
 QDeclarativeContext *QDeclarativeContextData::asQDeclarativeContext()
 {
-    if (!publicContext) 
+    if (!publicContext)
         publicContext = new QDeclarativeContext(this);
     return publicContext;
 }

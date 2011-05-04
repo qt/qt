@@ -66,9 +66,27 @@ public:
         const Attribute *attributes;
     };
 
-    struct Point2D { float x, y; };
-    struct TexturedPoint2D { float x, y; float tx, ty; };
-    struct ColoredPoint2D { float x, y; unsigned char r, g, b, a; };
+    struct Point2D {
+        float x, y;
+        void set(float nx, float ny) {
+            x = nx; y = ny;
+        }
+    };
+    struct TexturedPoint2D {
+        float x, y;
+        float tx, ty;
+        void set(float nx, float ny, float ntx, float nty) {
+            x = nx; y = ny; tx = ntx; ty = nty;
+        }
+    };
+    struct ColoredPoint2D {
+        float x, y;
+        unsigned char r, g, b, a;
+        void set(float nx, float ny, uchar nr, uchar ng, uchar nb, uchar na) {
+            x = nx; y = ny;
+            r = nr; g = ng, b = nb; a = na;
+        }
+    };
 
     static const AttributeSet &defaultAttributes_Point2D();
     static const AttributeSet &defaultAttributes_TexturedPoint2D();
@@ -78,7 +96,7 @@ public:
                 int vertexCount,
                 int indexCount = 0,
                 int indexType = GL_UNSIGNED_SHORT);
-    ~QSGGeometry();
+    virtual ~QSGGeometry();
 
     void setDrawingMode(GLenum mode);
     inline GLenum drawingMode() const { return m_drawing_mode; }

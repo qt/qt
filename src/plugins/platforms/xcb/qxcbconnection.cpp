@@ -47,6 +47,7 @@
 #include <QtAlgorithms>
 #include <QSocketNotifier>
 #include <QtGui/private/qapplication_p.h>
+#include <QAbstractEventDispatcher>
 
 #include <QtCore/QDebug>
 
@@ -104,6 +105,8 @@ QXcbConnection::QXcbConnection(const char *displayName)
 #endif //XCB_USE_XLIB
     m_setup = xcb_get_setup(xcb_connection());
 
+    initializeAllAtoms();
+
     xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
 
     int screenNumber = 0;
@@ -112,16 +115,19 @@ QXcbConnection::QXcbConnection(const char *displayName)
         xcb_screen_next(&it);
     }
 
-    QSocketNotifier *socket = new QSocketNotifier(xcb_get_file_descriptor(xcb_connection()), QSocketNotifier::Read, this);
-    connect(socket, SIGNAL(activated(int)), this, SLOT(eventDispatcher()));
-
     m_keyboard = new QXcbKeyboard(this);
-
-    initializeAllAtoms();
 
 #ifdef XCB_USE_DRI2
     initializeDri2();
 #endif
+
+    QSocketNotifier *notifier = new QSocketNotifier(xcb_get_file_descriptor(xcb_connection()), QSocketNotifier::Read, this);
+    connect(notifier, SIGNAL(activated(int)), this, SLOT(processXcbEvents()));
+
+    QAbstractEventDispatcher *dispatcher = QAbstractEventDispatcher::instance(qApp->thread());
+    connect(dispatcher, SIGNAL(aboutToBlock()), this, SLOT(processXcbEvents()));
+
+    sync();
 }
 
 QXcbConnection::~QXcbConnection()
@@ -148,8 +154,11 @@ QXcbWindow *platformWindowFromId(xcb_window_t id)
 #define HANDLE_PLATFORM_WINDOW_EVENT(event_t, window, handler) \
 { \
     event_t *e = (event_t *)event; \
-    if (QXcbWindow *platformWindow = platformWindowFromId(e->window)) \
-        platformWindow->handler(e); \
+    if (QXcbWindow *platformWindow = platformWindowFromId(e->window)) { \
+        QObjectPrivate *d = QObjectPrivate::get(platformWindow->widget()); \
+        if (!d->wasDeleted) \
+            platformWindow->handler(e); \
+    } \
 } \
 break;
 
@@ -166,9 +175,9 @@ break;
 void printXcbEvent(const char *message, xcb_generic_event_t *event)
 {
 #ifdef XCB_EVENT_DEBUG
-#define PRINT_XCB_EVENT(event) \
-    case event: \
-        printf("%s: %d - %s\n", message, event, #event); \
+#define PRINT_XCB_EVENT(ev) \
+    case ev: \
+        printf("%s: %d - %s - sequence: %d\n", message, int(ev), #ev, event->sequence); \
         break;
 
     switch (event->response_type & ~0x80) {
@@ -205,7 +214,7 @@ void printXcbEvent(const char *message, xcb_generic_event_t *event)
     PRINT_XCB_EVENT(XCB_CLIENT_MESSAGE);
     PRINT_XCB_EVENT(XCB_MAPPING_NOTIFY);
     default:
-        printf("%s: %d - %s\n", message, event->response_type, "unknown");
+        printf("%s: unknown event - response_type: %d - sequence: %d\n", message, int(event->response_type & ~0x80), int(event->sequence));
     }
 #else
     Q_UNUSED(message);
@@ -213,11 +222,216 @@ void printXcbEvent(const char *message, xcb_generic_event_t *event)
 #endif
 }
 
-void QXcbConnection::eventDispatcher()
+const char *xcb_errors[] =
+{
+    "Success",
+    "BadRequest",
+    "BadValue",
+    "BadWindow",
+    "BadPixmap",
+    "BadAtom",
+    "BadCursor",
+    "BadFont",
+    "BadMatch",
+    "BadDrawable",
+    "BadAccess",
+    "BadAlloc",
+    "BadColor",
+    "BadGC",
+    "BadIDChoice",
+    "BadName",
+    "BadLength",
+    "BadImplementation",
+    "Unknown"
+};
+
+const char *xcb_protocol_request_codes[] =
+{
+    "Null",
+    "CreateWindow",
+    "ChangeWindowAttributes",
+    "GetWindowAttributes",
+    "DestroyWindow",
+    "DestroySubwindows",
+    "ChangeSaveSet",
+    "ReparentWindow",
+    "MapWindow",
+    "MapSubwindows",
+    "UnmapWindow",
+    "UnmapSubwindows",
+    "ConfigureWindow",
+    "CirculateWindow",
+    "GetGeometry",
+    "QueryTree",
+    "InternAtom",
+    "GetAtomName",
+    "ChangeProperty",
+    "DeleteProperty",
+    "GetProperty",
+    "ListProperties",
+    "SetSelectionOwner",
+    "GetSelectionOwner",
+    "ConvertSelection",
+    "SendEvent",
+    "GrabPointer",
+    "UngrabPointer",
+    "GrabButton",
+    "UngrabButton",
+    "ChangeActivePointerGrab",
+    "GrabKeyboard",
+    "UngrabKeyboard",
+    "GrabKey",
+    "UngrabKey",
+    "AllowEvents",
+    "GrabServer",
+    "UngrabServer",
+    "QueryPointer",
+    "GetMotionEvents",
+    "TranslateCoords",
+    "WarpPointer",
+    "SetInputFocus",
+    "GetInputFocus",
+    "QueryKeymap",
+    "OpenFont",
+    "CloseFont",
+    "QueryFont",
+    "QueryTextExtents",
+    "ListFonts",
+    "ListFontsWithInfo",
+    "SetFontPath",
+    "GetFontPath",
+    "CreatePixmap",
+    "FreePixmap",
+    "CreateGC",
+    "ChangeGC",
+    "CopyGC",
+    "SetDashes",
+    "SetClipRectangles",
+    "FreeGC",
+    "ClearArea",
+    "CopyArea",
+    "CopyPlane",
+    "PolyPoint",
+    "PolyLine",
+    "PolySegment",
+    "PolyRectangle",
+    "PolyArc",
+    "FillPoly",
+    "PolyFillRectangle",
+    "PolyFillArc",
+    "PutImage",
+    "GetImage",
+    "PolyText8",
+    "PolyText16",
+    "ImageText8",
+    "ImageText16",
+    "CreateColormap",
+    "FreeColormap",
+    "CopyColormapAndFree",
+    "InstallColormap",
+    "UninstallColormap",
+    "ListInstalledColormaps",
+    "AllocColor",
+    "AllocNamedColor",
+    "AllocColorCells",
+    "AllocColorPlanes",
+    "FreeColors",
+    "StoreColors",
+    "StoreNamedColor",
+    "QueryColors",
+    "LookupColor",
+    "CreateCursor",
+    "CreateGlyphCursor",
+    "FreeCursor",
+    "RecolorCursor",
+    "QueryBestSize",
+    "QueryExtension",
+    "ListExtensions",
+    "ChangeKeyboardMapping",
+    "GetKeyboardMapping",
+    "ChangeKeyboardControl",
+    "GetKeyboardControl",
+    "Bell",
+    "ChangePointerControl",
+    "GetPointerControl",
+    "SetScreenSaver",
+    "GetScreenSaver",
+    "ChangeHosts",
+    "ListHosts",
+    "SetAccessControl",
+    "SetCloseDownMode",
+    "KillClient",
+    "RotateProperties",
+    "ForceScreenSaver",
+    "SetPointerMapping",
+    "GetPointerMapping",
+    "SetModifierMapping",
+    "GetModifierMapping",
+    "Unknown"
+};
+
+#ifdef Q_XCB_DEBUG
+void QXcbConnection::log(const char *file, int line, int sequence)
+{
+    CallInfo info;
+    info.sequence = sequence;
+    info.file = file;
+    info.line = line;
+    m_callLog << info;
+}
+#endif
+
+void QXcbConnection::handleXcbError(xcb_generic_error_t *error)
+{
+    uint clamped_error_code = qMin<uint>(error->error_code, (sizeof(xcb_errors) / sizeof(xcb_errors[0])) - 1);
+    uint clamped_major_code = qMin<uint>(error->major_code, (sizeof(xcb_protocol_request_codes) / sizeof(xcb_protocol_request_codes[0])) - 1);
+
+    printf("XCB error: %d (%s), sequence: %d, resource id: %d, major code: %d (%s), minor code: %d\n",
+           int(error->error_code), xcb_errors[clamped_error_code],
+           int(error->sequence), int(error->resource_id),
+           int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
+           int(error->minor_code));
+#ifdef Q_XCB_DEBUG
+    int i = 0;
+    for (; i < m_callLog.size(); ++i) {
+        if (m_callLog.at(i).sequence == error->sequence) {
+            printf("Caused by: %s:%d\n", qPrintable(m_callLog.at(i).file), m_callLog.at(i).line);
+            break;
+        } else if (m_callLog.at(i).sequence > error->sequence) {
+            printf("Caused some time before: %s:%d\n", qPrintable(m_callLog.at(i).file), m_callLog.at(i).line);
+            if (i > 0)
+                printf("and after: %s:%d\n", qPrintable(m_callLog.at(i-1).file), m_callLog.at(i-1).line);
+            break;
+        }
+    }
+    if (i == m_callLog.size() && !m_callLog.isEmpty())
+        printf("Caused some time after: %s:%d\n", qPrintable(m_callLog.first().file), m_callLog.first().line);
+#endif
+}
+
+void QXcbConnection::processXcbEvents()
 {
     while (xcb_generic_event_t *event = xcb_poll_for_event(xcb_connection())) {
         bool handled = true;
-        switch (event->response_type & ~0x80) {
+
+        uint response_type = event->response_type & ~0x80;
+
+        if (!response_type) {
+            handleXcbError((xcb_generic_error_t *)event);
+            continue;
+        }
+
+#ifdef Q_XCB_DEBUG
+        {
+            int i = 0;
+            for (; i < m_callLog.size(); ++i)
+                if (m_callLog.at(i).sequence >= event->sequence)
+                    break;
+            m_callLog.remove(0, i);
+        }
+#endif
+
+        switch (response_type) {
         case XCB_EXPOSE:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
         case XCB_BUTTON_PRESS:
@@ -247,13 +461,15 @@ void QXcbConnection::eventDispatcher()
             break;
         default:
             handled = false;
-            return;
+            break;
         }
         if (handled)
             printXcbEvent("Handled XCB event", event);
         else
             printXcbEvent("Unhandled XCB event", event);
     }
+
+    xcb_flush(xcb_connection());
 }
 
 static const char * xcb_atomnames = {
@@ -445,6 +661,13 @@ void QXcbConnection::initializeAllAtoms() {
 
     for (i = 0; i < QXcbAtom::NAtoms; ++i)
         m_allAtoms[i] = xcb_intern_atom_reply(xcb_connection(), cookies[i], 0)->atom;
+}
+
+void QXcbConnection::sync()
+{
+    // from xcb_aux_sync
+    xcb_get_input_focus_cookie_t cookie = Q_XCB_CALL(xcb_get_input_focus(xcb_connection()));
+    free(xcb_get_input_focus_reply(xcb_connection(), cookie, 0));
 }
 
 #if defined(XCB_USE_EGL)

@@ -85,6 +85,10 @@
 <context>
     <name>DataModel</name>
     <message>
+        <source>The translation file &apos;%1&apos; will not be loaded because it is empty.</source>
+        <translation>Die Übersetzungsdatei &apos;%1&apos; ist leer und wird daher nicht geladen.</translation>
+    </message>
+    <message>
         <source>&lt;qt&gt;Duplicate messages found in &apos;%1&apos;:</source>
         <translation>&lt;qt&gt;Mehrfach vorhandene Meldungen in &apos;%1&apos;:</translation>
     </message>
@@ -724,7 +728,8 @@ Options:
     <message>
         <source>Updating &apos;%1&apos;...
 </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Bringe &apos;%1&apos; auf aktuellen Stand...
+</translation>
     </message>
     <message>
         <source>Stripping non plural forms in &apos;%1&apos;...

@@ -42,32 +42,53 @@
 #ifndef QSGNINEPATCHNODE_H
 #define QSGNINEPATCHNODE_H
 
-#include "node.h"
-#include "texturematerial.h"
+#include "qsgnode.h"
+#include "qsgtexturematerial.h"
+#include "qsgborderimage_p.h"
 
 class TextureReference;
 
-class QSGNinePatchNode : public GeometryNode
+class QSGNinePatchNode : public QSGGeometryNode
 {
 public:
-    QSGNinePatchNode(const QRectF &targetRect, const QSGTextureRef &texture, const QRect &innerRect, 
-                     bool linearFiltering = false);
+    QSGNinePatchNode();
+
+    void setTexture(QSGTexture *texture);
+    QSGTexture *texture() const;
 
     void setRect(const QRectF &rect);
     QRectF rect() const { return m_targetRect; }
 
-    bool linearFiltering() const { return m_linearFiltering; }
-    void setLinearFiltering(bool);
+    void setInnerRect(const QRectF &rect);
+    QRectF innerRect() const { return m_innerRect; }
+
+    void setFiltering(QSGTexture::Filtering filtering);
+    QSGTexture::Filtering filtering() const;
+
+    void setHorzontalTileMode(QSGBorderImage::TileMode mode);
+    QSGBorderImage::TileMode horizontalTileMode() const {
+        return (QSGBorderImage::TileMode) m_horizontalTileMode;
+    }
+
+    void setVerticalTileMode(QSGBorderImage::TileMode mode);
+    QSGBorderImage::TileMode verticalTileMode() const {
+        return (QSGBorderImage::TileMode) m_verticalTileMode;
+    }
+
+    void update();
 
 private:
-    void updateGeometry();
+    void fillRow(QSGGeometry::TexturedPoint2D *&v, float y, float ty, int xChunkCount, float xChunkSize);
     QRectF m_targetRect;
-    QRect m_innerRect;
-    bool m_linearFiltering;
-    TextureMaterial m_material;
-    TextureMaterialWithOpacity m_materialO;
-    QSGTextureRef m_texture;
+    QRectF m_innerRect;
+    QSGTextureMaterial m_material;
+    QSGTextureMaterialWithOpacity m_materialO;
     QSGGeometry m_geometry;
-};                                                         
+
+    uint m_horizontalTileMode : 2;
+    uint m_verticalTileMode : 2;
+
+    uint m_dirtyGeometry : 1;
+};
 
 #endif // QSGNINEPATCHNODE_H

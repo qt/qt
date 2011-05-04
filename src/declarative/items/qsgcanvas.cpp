@@ -45,7 +45,8 @@
 #include "qsgitem.h"
 #include "qsgitem_p.h"
 
-#include "renderer.h"
+#include <private/qsgrenderer_p.h>
+#include <private/qsgflashnode_p.h>
 
 #include <QtGui/qpainter.h>
 #include <QtGui/qgraphicssceneevent.h>
@@ -237,7 +238,6 @@ void QSGCanvas::showEvent(QShowEvent *e)
         if (!d->animationDriver)
             d->animationDriver = new QSGThreadedRendererAnimationDriver(d, this);
         d->animationDriver->install();
-        d->animationDriverInstalled = true;
         d->mutex.lock();
         d->thread->start();
         d->wait.wait(&d->mutex);
@@ -251,7 +251,6 @@ void QSGCanvas::showEvent(QShowEvent *e)
         }
 
         d->animationDriver->install();
-        d->animationDriverInstalled = true;
     }
 }
 
@@ -270,7 +269,6 @@ void QSGCanvas::hideEvent(QHideEvent *e)
     }
 
     d->animationDriver->uninstall();
-    d->animationDriverInstalled = false;
 
     QGLWidget::hideEvent(e);
 }
@@ -296,6 +294,8 @@ void QSGCanvasPrivate::initializeSceneGraph()
     if (!QSGItemPrivate::get(rootItem)->itemNode()->parent()) {
         context->rootNode()->appendChildNode(QSGItemPrivate::get(rootItem)->itemNode());
     }
+
+    emit q_func()->sceneGraphInitialized();
 }
 
 void QSGCanvasPrivate::polishItems()
@@ -325,7 +325,6 @@ void QSGCanvasPrivate::renderSceneGraph()
     context->renderer()->setProjectMatrixToDeviceRect();
 
     context->renderNextFrame();
-
 
 #ifdef FRAME_TIMING
     sceneGraphRenderTime = frameTimer.elapsed();
@@ -466,7 +465,6 @@ QSGCanvasPrivate::QSGCanvasPrivate()
     , idle(false)
     , needsRepaint(true)
     , renderThreadAwakened(false)
-    , animationDriverInstalled(false)
     , thread(new MyThread(this))
     , animationDriver(0)
 {
@@ -882,7 +880,7 @@ void QSGCanvasPrivate::dirtyItem(QSGItem *)
     q->maybeUpdate();
 }
 
-void QSGCanvasPrivate::cleanup(Node *n)
+void QSGCanvasPrivate::cleanup(QSGNode *n)
 {
     Q_Q(QSGCanvas);
 
@@ -934,11 +932,16 @@ QSGCanvas::~QSGCanvas()
 {
     Q_D(QSGCanvas);
 
-    if (d->animationDriver && d->animationDriverInstalled)
-        d->animationDriver->uninstall();
+    // ### should we change ~QSGItem to handle this better?
+    // manually cleanup for the root item (item destructor only handles these when an item is parented)
+    QSGItemPrivate *rootItemPrivate = QSGItemPrivate::get(d->rootItem);
+    rootItemPrivate->removeFromDirtyList();
+    rootItemPrivate->canvas = 0;
 
     delete d->rootItem; d->rootItem = 0;
     d->cleanupNodes();
+
+    delete d->context;
 }
 
 QSGItem *QSGCanvas::rootItem() const
@@ -1193,10 +1196,10 @@ void QSGCanvasPrivate::sendHoverEvent(QEvent::Type type, QSGItem *item,
     //create copy of event
     QGraphicsSceneHoverEvent hoverEvent(type);
     hoverEvent.setWidget(event->widget());
-    event->setPos(transform.map(event->scenePos()));
+    hoverEvent.setPos(transform.map(event->scenePos()));
     hoverEvent.setScenePos(event->scenePos());
     hoverEvent.setScreenPos(event->screenPos());
-    event->setLastPos(transform.map(event->lastScenePos()));
+    hoverEvent.setLastPos(transform.map(event->lastScenePos()));
     hoverEvent.setLastScenePos(event->lastScenePos());
     hoverEvent.setLastScreenPos(event->lastScreenPos());
     hoverEvent.setModifiers(event->modifiers());
@@ -1593,7 +1596,7 @@ void QSGCanvasPrivate::updateDirtyNodes()
         itemPriv->removeFromDirtyList();
 
 #ifdef DIRTY_DEBUG
-        qWarning() << "   Node:" << item << qPrintable(itemPriv->dirtyToString());
+        qWarning() << "   QSGNode:" << item << qPrintable(itemPriv->dirtyToString());
 #endif
         updateDirtyNode(item);
     }
@@ -1601,6 +1604,10 @@ void QSGCanvasPrivate::updateDirtyNodes()
 
 void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
 {
+#ifdef QML_RUNTIME_TESTING
+    bool didFlash = false;
+#endif
+
     QSGItemPrivate *itemPriv = QSGItemPrivate::get(item);
     quint32 dirty = itemPriv->dirtyAttributes;
     itemPriv->dirtyAttributes = 0;
@@ -1614,6 +1621,11 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
         if (itemPriv->x != 0. || itemPriv->y != 0.) 
             matrix.translate(itemPriv->x, itemPriv->y);
 
+        if (dirty & QSGItemPrivate::ComplexTransformUpdateMask) {
+            for (int ii = itemPriv->transforms.count() - 1; ii >= 0; --ii)
+                itemPriv->transforms.at(ii)->applyTo(&matrix);
+        }
+
         if (itemPriv->scale != 1. || itemPriv->rotation != 0.) {
             QPointF origin = itemPriv->computeTransformOrigin();
             matrix.translate(origin.x(), origin.y());
@@ -1622,11 +1634,6 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
             if (itemPriv->rotation != 0.)
                 matrix.rotate(itemPriv->rotation, 0, 0, 1);
             matrix.translate(-origin.x(), -origin.y());
-        }
-
-        if (dirty & QSGItemPrivate::ComplexTransformUpdateMask) {
-            for (int ii = 0; ii < itemPriv->transforms.count(); ++ii)
-                itemPriv->transforms.at(ii)->applyTo(&matrix);
         }
 
         itemPriv->itemNode()->setMatrix(matrix);
@@ -1638,12 +1645,12 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
                                   ((itemPriv->effectRefCount == 0) != (itemPriv->rootNode == 0));
 
     if (clipEffectivelyChanged) {
-        Node *parent = itemPriv->opacityNode ? (Node *) itemPriv->opacityNode : (Node *)itemPriv->itemNode();
-        Node *child = itemPriv->rootNode ? (Node *)itemPriv->rootNode : (Node *)itemPriv->groupNode;
+        QSGNode *parent = itemPriv->opacityNode ? (QSGNode *) itemPriv->opacityNode : (QSGNode *)itemPriv->itemNode();
+        QSGNode *child = itemPriv->rootNode ? (QSGNode *)itemPriv->rootNode : (QSGNode *)itemPriv->groupNode;
 
         if (item->clip()) {
             Q_ASSERT(itemPriv->clipNode == 0);
-            itemPriv->clipNode = new QSGClipNode(QRectF(0, 0, itemPriv->width, itemPriv->height));
+            itemPriv->clipNode = new QSGDefaultClipNode(QRectF(0, 0, itemPriv->width, itemPriv->height));
 
             if (child)
                 parent->removeChildNode(child);
@@ -1669,16 +1676,16 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
     }
 
     if (effectRefEffectivelyChanged) {
-        Node *parent = itemPriv->clipNode;
+        QSGNode *parent = itemPriv->clipNode;
         if (!parent)
             parent = itemPriv->opacityNode;
         if (!parent)
             parent = itemPriv->itemNode();
-        Node *child = itemPriv->groupNode;
+        QSGNode *child = itemPriv->groupNode;
 
         if (itemPriv->effectRefCount) {
             Q_ASSERT(itemPriv->rootNode == 0);
-            itemPriv->rootNode = new RootNode;
+            itemPriv->rootNode = new QSGRootNode;
 
             if (child)
                 parent->removeChildNode(child);
@@ -1698,7 +1705,7 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
     }
 
     if (dirty & QSGItemPrivate::ChildrenUpdateMask) {
-        Node *groupNode = itemPriv->groupNode;
+        QSGNode *groupNode = itemPriv->groupNode;
         if (groupNode) {
             for (int count = groupNode->childCount(); count; --count)
                 groupNode->removeChildNode(groupNode->childAtIndex(0));
@@ -1743,10 +1750,10 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
                       ? itemPriv->opacity : qreal(0);
 
         if (opacity != 1 && !itemPriv->opacityNode) {
-            itemPriv->opacityNode = new OpacityNode;
+            itemPriv->opacityNode = new QSGOpacityNode;
 
-            Node *parent = itemPriv->itemNode();
-            Node *child = itemPriv->clipNode;
+            QSGNode *parent = itemPriv->itemNode();
+            QSGNode *child = itemPriv->clipNode;
             if (!child)
                 child = itemPriv->rootNode;
             if (!child)
@@ -1785,7 +1792,7 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
 
 #ifndef QT_NO_DEBUG
     // Check consistency.
-    const Node *nodeChain[] = {
+    const QSGNode *nodeChain[] = {
         itemPriv->itemNodeInstance,
         itemPriv->opacityNode,
         itemPriv->clipNode,
@@ -1803,8 +1810,8 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
         int ic = ip + 1;
         while (ic < 5 && nodeChain[ic] == 0)
             ++ic;
-        const Node *parent = nodeChain[ip];
-        const Node *child = nodeChain[ic];
+        const QSGNode *parent = nodeChain[ip];
+        const QSGNode *child = nodeChain[ic];
         if (child == 0) {
             Q_ASSERT(parent == itemPriv->groupNode || parent->childCount() == 0);
         } else {
@@ -1816,6 +1823,19 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
             Q_ASSERT(containsChild);
         }
         ip = ic;
+    }
+#endif
+
+#ifdef QML_RUNTIME_TESTING
+    if (itemPriv->sceneGraphContext()->isFlashModeEnabled()) {
+        QSGFlashNode *flash = new QSGFlashNode();
+        flash->setRect(item->boundingRect());
+        itemPriv->childContainerNode()->appendChildNode(flash);
+        didFlash = true;
+    }
+    Q_Q(QSGCanvas);
+    if (didFlash) {
+        q->maybeUpdate();
     }
 #endif
 
@@ -1843,5 +1863,28 @@ void QSGCanvas::maybeUpdate()
     }
 }
 
+/*!
+    \fn void QSGEngine::sceneGraphInitialized();
+
+    This signal is emitted when the scene graph has been initialized.
+
+    This signal will be emitted from the scene graph rendering thread.
+ */
+
+/*!
+    Returns the QSGEngine used for this scene.
+
+    The engine will only be available once the scene graph has been
+    initialized. Register for the sceneGraphEngine() signal to get
+    notification about this.
+ */
+
+QSGEngine *QSGCanvas::sceneGraphEngine() const
+{
+    Q_D(const QSGCanvas);
+    if (d->context->isReady())
+        return d->context->engine();
+    return 0;
+}
 
 QT_END_NAMESPACE

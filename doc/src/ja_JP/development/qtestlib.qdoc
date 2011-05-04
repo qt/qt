@@ -71,7 +71,7 @@
 
     次に、テスト関数を実装します。実装は以下のようになります:
 
-    \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 8
+    \snippet doc/src/snippets/code/doc_src_qtestlib.cpp 8
 
     \l QVERIFY() マクロは、引数として渡される式を評価します。
     式が真と評価されるとテスト関数の実行が継続されます。
@@ -131,7 +131,7 @@
     これまでは、テストデータをテスト関数にハードコードしていました。
     この場合、テストデータを追加した関数は以下のようになります:
 
-    \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 11
+    \snippet doc/src/snippets/code/doc_src_qtestlib.cpp 11
 
     関数が繰り返しを行うコードによって分散するのを防ぐために、
     QTestLib はテストデータのテスト関数への追加をサポートします。

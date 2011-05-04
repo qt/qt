@@ -1,30 +1,73 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the Declarative module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
 #include "spriteimage.h"
 #include "spritestate.h"
 #include "spriteengine.h"
-#include <qsgcontext.h>
-#include <adaptationlayer.h>
-#include <node.h>
-#include <texturematerial.h>
+#include <private/qsgcontext_p.h>
+#include <private/qsgadaptationlayer_p.h>
+#include <qsgnode.h>
+#include <qsgengine.h>
+#include <qsgtexturematerial.h>
 #include <qsgtexture.h>
 #include <QFile>
 #include <cmath>
 #include <qmath.h>
 #include <QDebug>
+
 QT_BEGIN_NAMESPACE
 
-class SpriteMaterial : public AbstractMaterial
+class SpriteMaterial : public QSGMaterial
 {
 public:
     SpriteMaterial();
     virtual ~SpriteMaterial();
-    virtual AbstractMaterialType *type() const { static AbstractMaterialType type; return &type; }
-    virtual AbstractMaterialShader *createShader() const;
-    virtual int compare(const AbstractMaterial *other) const
+    virtual QSGMaterialType *type() const { static QSGMaterialType type; return &type; }
+    virtual QSGMaterialShader *createShader() const;
+    virtual int compare(const QSGMaterial *other) const
     {
         return this - static_cast<const SpriteMaterial *>(other);
     }
 
-    QSGTextureRef texture;
+    QSGTexture *texture;
 
     qreal timestamp;
     qreal timelength;
@@ -47,9 +90,10 @@ SpriteMaterial::SpriteMaterial()
 
 SpriteMaterial::~SpriteMaterial()
 {
+    delete texture;
 }
 
-class SpriteMaterialData : public AbstractMaterialShader
+class SpriteMaterialData : public QSGMaterialShader
 {
 public:
     SpriteMaterialData(const char *vertexFile = 0, const char *fragmentFile = 0)
@@ -67,27 +111,27 @@ public:
     }
 
     void deactivate() {
-        AbstractMaterialShader::deactivate();
+        QSGMaterialShader::deactivate();
 
         for (int i=0; i<8; ++i) {
             m_program.setAttributeArray(i, GL_FLOAT, chunkOfBytes, 1, 0);
         }
     }
 
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *, Renderer::Updates updates)
+    virtual void updateState(const RenderState &state, QSGMaterial *newEffect, QSGMaterial *)
     {
         SpriteMaterial *m = static_cast<SpriteMaterial *>(newEffect);
         m->texture->bind();
 
-        m_program.setUniformValue(m_opacity_id, (float) renderer->renderOpacity());
+        m_program.setUniformValue(m_opacity_id, state.opacity());
         m_program.setUniformValue(m_timestamp_id, (float) m->timestamp);
         m_program.setUniformValue(m_framecount_id, (float) m->framecount);
         m_program.setUniformValue(m_animcount_id, (float) m->animcount);
         m_program.setUniformValue(m_width_id, (float) m->width);
         m_program.setUniformValue(m_height_id, (float) m->height);
 
-        if (updates & Renderer::UpdateMatrices)
-            m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
+        if (state.isMatrixDirty())
+            m_program.setUniformValue(m_matrix_id, state.combinedMatrix());
     }
 
     virtual void initialize() {
@@ -129,7 +173,7 @@ public:
 };
 float SpriteMaterialData::chunkOfBytes[1024];
 
-AbstractMaterialShader *SpriteMaterial::createShader() const
+QSGMaterialShader *SpriteMaterial::createShader() const
 {
     return new SpriteMaterialData;
 }
@@ -192,10 +236,8 @@ static QSGGeometry::AttributeSet SpriteImage_AttributeSet =
     SpriteImage_Attributes
 };
 
-GeometryNode* SpriteImage::buildNode()
+QSGGeometryNode* SpriteImage::buildNode()
 {
-    QSGContext *sg = QSGContext::current;
-
     if (!m_spriteEngine) {
         qWarning() << "SpriteImage: No sprite engine...";
         return 0;
@@ -211,7 +253,7 @@ GeometryNode* SpriteImage::buildNode()
     QImage image = m_spriteEngine->assembledImage();
     if(image.isNull())
         return 0;
-    m_material->texture = sg->createTexture(image);
+    m_material->texture = sceneGraphEngine()->createTextureFromImage(image);
     m_material->texture->setFiltering(QSGTexture::Linear);
     m_material->framecount = m_spriteEngine->maxFrames();
 
@@ -250,7 +292,7 @@ GeometryNode* SpriteImage::buildNode()
 
 
     m_timestamp.start();
-    m_node = new GeometryNode();
+    m_node = new QSGGeometryNode();
     m_node->setGeometry(g);
     m_node->setMaterial(m_material);
     return m_node;
@@ -261,7 +303,7 @@ void SpriteImage::reset()
     m_pleaseReset = true;
 }
 
-Node *SpriteImage::updatePaintNode(Node *, UpdatePaintNodeData *)
+QSGNode *SpriteImage::updatePaintNode(QSGNode *, UpdatePaintNodeData *)
 {
     if(m_pleaseReset){
         delete m_node;
@@ -277,7 +319,7 @@ Node *SpriteImage::updatePaintNode(Node *, UpdatePaintNodeData *)
     if(m_running){
         update();
         if (m_node)
-            m_node->markDirty(Node::DirtyMaterial);
+            m_node->markDirty(QSGNode::DirtyMaterial);
     }
 
     return m_node;

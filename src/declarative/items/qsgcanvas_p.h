@@ -55,9 +55,9 @@
 
 #include "qsgitem.h"
 #include "qsgcanvas.h"
-#include "qdeclarativeguard_p.h"
+#include <private/qdeclarativeguard_p.h>
 
-#include "qsgcontext.h"
+#include <private/qsgcontext_p.h>
 
 #include <QtCore/qthread.h>
 #include <QtCore/qmutex.h>
@@ -140,8 +140,7 @@ public:
     void updateInputMethodData();
 
     void dirtyItem(QSGItem *);
-    void cleanup(Node *);
-    void maybeUpdate();
+    void cleanup(QSGNode *);
 
     void initializeSceneGraph();
     void polishItems();
@@ -152,7 +151,7 @@ public:
     QSGItem::UpdatePaintNodeData updatePaintNodeData;
 
     QSGItem *dirtyItemList;
-    QList<Node *> cleanupNodeList;
+    QList<QSGNode *> cleanupNodeList;
 
     QSet<QSGItem *> itemsToPolish;
 
@@ -171,7 +170,6 @@ public:
     uint idle : 1;              // Set to true when render thread sees no change and enters a wait()
     uint needsRepaint : 1;      // Set by callback from render if scene needs repainting.
     uint renderThreadAwakened : 1;
-    uint animationDriverInstalled : 1;  // Avoid a warning when uninstalling on destruction
 
     struct MyThread : public QThread {
         MyThread(QSGCanvasPrivate *r) : renderer(r) {}

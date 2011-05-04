@@ -264,11 +264,11 @@ void QSGGeometry::updateRectGeometry(QSGGeometry *g, const QRectF &rect)
     v[0].x = rect.left();
     v[0].y = rect.top();
 
-    v[1].x = rect.right();
-    v[1].y = rect.top();
+    v[1].x = rect.left();
+    v[1].y = rect.bottom();
 
-    v[2].x = rect.left();
-    v[2].y = rect.bottom();
+    v[2].x = rect.right();
+    v[2].y = rect.top();
 
     v[3].x = rect.right();
     v[3].y = rect.bottom();
@@ -291,15 +291,15 @@ void QSGGeometry::updateTexturedRectGeometry(QSGGeometry *g, const QRectF &rect,
     v[0].tx = textureRect.left();
     v[0].ty = textureRect.top();
 
-    v[1].x = rect.right();
-    v[1].y = rect.top();
-    v[1].tx = textureRect.right();
-    v[1].ty = textureRect.top();
+    v[1].x = rect.left();
+    v[1].y = rect.bottom();
+    v[1].tx = textureRect.left();
+    v[1].ty = textureRect.bottom();
 
-    v[2].x = rect.left();
-    v[2].y = rect.bottom();
-    v[2].tx = textureRect.left();
-    v[2].ty = textureRect.bottom();
+    v[2].x = rect.right();
+    v[2].y = rect.top();
+    v[2].tx = textureRect.right();
+    v[2].ty = textureRect.top();
 
     v[3].x = rect.right();
     v[3].y = rect.bottom();

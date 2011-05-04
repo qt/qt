@@ -1,4 +1,4 @@
-// Commit: 5c783d0a9a912816813945387903857a314040b5
+// Commit: c44be8c0b27756a2025ebad1945632f3f7e4bebc
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -270,7 +270,10 @@ void QSGItemKeyFilter::keyReleased(QKeyEvent *event, bool post)
 
 void QSGItemKeyFilter::inputMethodEvent(QInputMethodEvent *event, bool post)
 {
-    if (m_next) m_next->inputMethodEvent(event, post);
+    if (m_next)
+        m_next->inputMethodEvent(event, post);
+    else
+        event->ignore();
 }
 
 QVariant QSGItemKeyFilter::inputMethodQuery(Qt::InputMethodQuery query) const
@@ -750,7 +753,7 @@ void QSGKeysAttached::inputMethodEvent(QInputMethodEvent *event, bool post)
         }
         d->inIM = false;
     }
-    if (!event->isAccepted()) QSGItemKeyFilter::inputMethodEvent(event, post);
+    QSGItemKeyFilter::inputMethodEvent(event, post);
 }
 
 QVariant QSGKeysAttached::inputMethodQuery(Qt::InputMethodQuery query) const
@@ -1072,6 +1075,11 @@ QSGItem *QSGItem::parentItem() const
     return d->parentItem;
 }
 
+QSGEngine *QSGItem::sceneGraphEngine() const
+{
+    return canvas()->sceneGraphEngine();
+}
+
 QSGCanvas *QSGItem::canvas() const 
 { 
     Q_D(const QSGItem);
@@ -1149,6 +1157,7 @@ void QSGItemPrivate::initCanvas(InitializationState *state, QSGCanvas *c)
     Q_Q(QSGItem);
 
     if (canvas) {
+        removeFromDirtyList();
         QSGCanvasPrivate *c = QSGCanvasPrivate::get(canvas);
         if (polishScheduled)
             c->itemsToPolish.remove(q);
@@ -1229,19 +1238,19 @@ void QSGItemPrivate::itemToParentTransform(QTransform &t) const
     if (x || y)
         t.translate(x, y);
 
+    if (!transforms.isEmpty()) {
+        QMatrix4x4 m(t);
+        for (int ii = transforms.count() - 1; ii >= 0; --ii)
+            transforms.at(ii)->applyTo(&m);
+        t = m.toTransform();
+    }
+
     if (scale != 1. || rotation != 0.) {
         QPointF tp = computeTransformOrigin();
         t.translate(tp.x(), tp.y());
         t.scale(scale, scale);
         t.rotate(rotation);
         t.translate(-tp.x(), -tp.y());
-    }
-
-    if (!transforms.isEmpty()) {
-        QMatrix4x4 m(t);
-        for (int ii = 0; ii < transforms.count(); ++ii)
-            transforms.at(ii)->applyTo(&m);
-        t = m.toTransform();
     }
 }
 
@@ -1303,7 +1312,7 @@ void QSGItemPrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObjec
     const QMetaObject *mo = o->metaObject();
     while (mo && mo != &QSGItem::staticMetaObject) {
         if (mo == &QDeclarativeItem::staticMetaObject) 
-            qWarning("Cannot add a QtQuick 1.0 item into a QtQuick 2.0 scene!");
+            qWarning("Cannot add a QtQuick 1.0 item (%s) into a QtQuick 2.0 scene!", o->metaObject()->className());
         mo = mo->d.superdata;
     }
 
@@ -1586,15 +1595,15 @@ void QSGItem::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeomet
     result in race conditions and potential crashes.
  */
 
-Node *QSGItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
+QSGNode *QSGItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
     delete oldNode;
     return 0;
 }
 
-TransformNode *QSGItemPrivate::createTransformNode()
+QSGTransformNode *QSGItemPrivate::createTransformNode()
 {
-    return new TransformNode;
+    return new QSGTransformNode;
 }
 
 void QSGItem::updatePolish()

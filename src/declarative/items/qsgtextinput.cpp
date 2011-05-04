@@ -1,4 +1,4 @@
-// Commit: c422ed3b861ab92276c91a6672b313f037de6ff6
+// Commit: b94176e69efc3948696c6774d5a228fc753b5b29
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -223,10 +223,10 @@ bool QSGTextInputPrivate::setHAlign(QSGTextInput::HAlignment alignment, bool for
     if ((hAlign != alignment || forceAlign) && alignment <= QSGTextInput::AlignHCenter) { // justify not supported
         QSGTextInput::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
         hAlign = alignment;
-        return true;
         emit q->horizontalAlignmentChanged(alignment);
         if (oldEffectiveHAlign != q->effectiveHAlign())
             emit q->effectiveHorizontalAlignmentChanged();
+        return true;
     }
     return false;
 }
@@ -327,8 +327,10 @@ QRect QSGTextInput::cursorRectangle() const
 {
     Q_D(const QSGTextInput);
     QRect r = d->control->cursorRect();
-    r.setHeight(r.height()-1); // Make consistent with TextEdit (QLineControl inexplicably adds 1)
-    r.moveLeft(r.x() - d->hscroll);
+    // Scroll and make consistent with TextEdit
+    // QLineControl inexplicably adds 1 to the height and horizontal padding
+    // for unicode direction markers.
+    r.adjust(5 - d->hscroll, 0, -4 - d->hscroll, -1);
     return r;
 }
 
@@ -596,16 +598,13 @@ void QSGTextInput::keyPressEvent(QKeyEvent* ev)
 void QSGTextInput::inputMethodEvent(QInputMethodEvent *ev)
 {
     Q_D(QSGTextInput);
-    ev->ignore();
     const bool wasComposing = d->control->preeditAreaText().length() > 0;
-    if (!ev->isAccepted()) {
-        if (d->control->isReadOnly()) {
-            ev->ignore();
-        } else {
-            d->control->processInputMethodEvent(ev);
-            updateSize();
-            d->updateHorizontalScroll();
-        }
+    if (d->control->isReadOnly()) {
+        ev->ignore();
+    } else {
+        d->control->processInputMethodEvent(ev);
+        updateSize();
+        d->updateHorizontalScroll();
     }
     if (!ev->isAccepted())
         QSGPaintedItem::inputMethodEvent(ev);
@@ -1246,6 +1245,7 @@ void QSGTextInput::updateSize(bool needsRedraw)
     int h = height();
     setImplicitHeight(d->control->height()-1); // -1 to counter QLineControl's +1 which is not consistent with Text.
     setImplicitWidth(d->calculateTextWidth());
+    setContentsSize(QSize(width(), height()));
     if(w==width() && h==height() && needsRedraw)
         update();
 }

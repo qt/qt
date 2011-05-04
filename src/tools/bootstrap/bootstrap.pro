@@ -77,6 +77,7 @@ SOURCES += \
            ../../corelib/tools/qhash.cpp \
            ../../corelib/tools/qlist.cpp \
            ../../corelib/tools/qlocale.cpp \
+           ../../corelib/tools/qlocale_tools.cpp \
            ../../corelib/tools/qmap.cpp \
            ../../corelib/tools/qregexp.cpp \
            ../../corelib/tools/qstring.cpp \
@@ -96,6 +97,11 @@ win32:SOURCES += ../../corelib/io/qfilesystemengine_win.cpp \
                  ../../corelib/io/qfilesystemiterator_win.cpp \
                  ../../corelib/io/qfsfileengine_win.cpp \
                  ../../corelib/plugin/qsystemlibrary.cpp \
+
+mac: OBJECTIVE_SOURCES += ../../corelib/tools/qlocale_mac.mm
+else:symbian:SOURCES += ../../corelib/tools/qlocale_symbian.cpp
+else:unix:SOURCES += ../../corelib/tools/qlocale_unix.cpp
+else:win32:SOURCES += ../../corelib/tools/qlocale_win.cpp
 
 macx: {
    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.4 #enables weak linking for 10.4 (exported)

@@ -42,7 +42,7 @@
 #include <QtCore>
 #include <QtGui>
 
-#include <private/distancefieldfontatlas_p.h>
+#include <private/qsgdistancefieldglyphcache_p.h>
 
 static void usage()
 {
@@ -77,7 +77,7 @@ void printProgress(int p)
 class DistFieldGenTask : public QRunnable
 {
 public:
-    DistFieldGenTask(DistanceFieldFontAtlas *atlas, int c, int nbGlyph, QMap<int, QImage> *outList)
+    DistFieldGenTask(QSGDistanceFieldGlyphCache *atlas, int c, int nbGlyph, QMap<int, QImage> *outList)
         : QRunnable()
         , m_atlas(atlas)
         , m_char(c)
@@ -94,7 +94,7 @@ public:
     }
 
     static QMutex m_mutex;
-    DistanceFieldFontAtlas *m_atlas;
+    QSGDistanceFieldGlyphCache *m_atlas;
     int m_char;
     int m_nbGlyph;
     QMap<int, QImage> *m_outList;
@@ -104,7 +104,7 @@ QMutex DistFieldGenTask::m_mutex;
 
 static void generateDistanceFieldForFont(const QFont &font, const QString &destinationDir, bool multithread)
 {
-    DistanceFieldFontAtlas *atlas = DistanceFieldFontAtlas::get(font);
+    QSGDistanceFieldGlyphCache *atlas = QSGDistanceFieldGlyphCache::get(QGLContext::currentContext(), font);
     QFontDatabase db;
     QString fontString = font.family() + QLatin1String(" ") + db.styleString(font);
     qWarning("> Generating distance-field for font '%s' (%d glyphs)", fontString.toLatin1().constData(), atlas->glyphCount());
@@ -125,39 +125,120 @@ static void generateDistanceFieldForFont(const QFont &font, const QString &desti
         QThreadPool::globalInstance()->waitForDone();
 
     // Combine dist fields in one image
-    QImage output(atlas->atlasSize(), QImage::Format_ARGB32_Premultiplied);
+    int size = qCeil(qSqrt(qreal(atlas->glyphCount()))) * 64;
+    QImage output(size, size, QImage::Format_ARGB32_Premultiplied);
     output.fill(Qt::transparent);
-    int i = 0;
     QPainter p(&output);
-    foreach (const QImage &df, distfields.values()) {
-        DistanceFieldFontAtlas::TexCoord c = atlas->glyphTexCoord(i);
-        p.drawImage(qRound(c.x * atlas->atlasSize().width()), qRound(c.y * atlas->atlasSize().height()), df);
-        ++i;
+    int x, y = 0;
+    for (QMap<int, QImage>::const_iterator i = distfields.constBegin(); i != distfields.constEnd(); ++i) {
+        p.drawImage(x, y, i.value());
+        x += 64;
+        if (x >= size) {
+            x = 0;
+            y += 64;
+        }
     }
     p.end();
     printProgress(100);
     printf("\n");
 
     // Save output
-    QString destDir = destinationDir;
-    if (destDir.isEmpty()) {
-        destDir = atlas->distanceFieldDir();
-        QDir dir;
-        dir.mkpath(destDir);
-    } else {
-        QFileInfo dfi(destDir);
-        if (!dfi.isDir()) {
-            qWarning("Error: '%s' is not a directory.", destDir.toLatin1().constData());
-            qWarning(" ");
-            exit(1);
-        }
-        destDir = dfi.canonicalFilePath();
+    QFileInfo dfi(destinationDir);
+    if (!dfi.isDir()) {
+        qWarning("Error: '%s' is not a directory.", destinationDir.toLatin1().constData());
+        qWarning(" ");
+        exit(1);
     }
 
-    QString out = QString(QLatin1String("%1/%2")).arg(destDir).arg(atlas->distanceFieldFileName());
+    QString filename = font.family();
+    filename.remove(QLatin1String(" "));
+    QString italic = font.italic() ? QLatin1String("i") : QLatin1String("");
+    QString bold = font.weight() > QFont::Normal ? QLatin1String("b") : QLatin1String("");
+    filename = filename + bold + italic;
+    QString out = QString(QLatin1String("%1/%2.png")).arg(destinationDir).arg(filename);
     output.save(out);
     qWarning("  Distance-field saved to '%s'\n", out.toLatin1().constData());
 }
+
+class MyWidget : public QGLWidget
+{
+    Q_OBJECT
+public:
+    MyWidget()
+        : QGLWidget()
+    { }
+
+    ~MyWidget() { }
+
+    void showEvent(QShowEvent *e)
+    {
+        QStringList args = QApplication::arguments();
+
+        bool noMultithread = args.contains(QLatin1String("--no-multithread"));
+        bool forceAllStyles = args.contains(QLatin1String("--force-all-styles"));
+
+        QString fontFile;
+        QString destDir;
+        for (int i = 0; i < args.count(); ++i) {
+            QString a = args.at(i);
+            if (!a.startsWith('-') && QFileInfo(a).exists())
+                fontFile = a;
+            if (a == QLatin1String("-d"))
+                destDir = args.at(++i);
+        }
+        if (destDir.isEmpty()) {
+            destDir = QFileInfo(fontFile).canonicalPath();
+        }
+
+        QStringList customStyles;
+        if (args.contains(QLatin1String("-styles"))) {
+            int index = args.indexOf(QLatin1String("-styles"));
+            QString styles = args.at(index + 1);
+            customStyles = styles.split(QLatin1String(","));
+        }
+
+        // Load the font
+        int fontID = QFontDatabase::addApplicationFont(fontFile);
+        if (fontID == -1) {
+            qWarning("Error: Invalid font file.");
+            qWarning(" ");
+            exit(1);
+        }
+
+        QStringList allStyles = QStringList() << QLatin1String("Normal")
+                                              << QLatin1String("Bold")
+                                              << QLatin1String("Italic")
+                                              << QLatin1String("Bold Italic");
+
+        // Generate distance-fields for all families and all styles provided by the font file
+        QFontDatabase fontDatabase;
+        QStringList families = QFontDatabase::applicationFontFamilies(fontID);
+        int famCount = families.count();
+        for (int i = 0; i < famCount; ++i) {
+            QStringList styles;
+            if (forceAllStyles)
+                styles = allStyles;
+            else if (customStyles.count() > 0)
+                styles = customStyles;
+            else
+                styles = fontDatabase.styles(families.at(i));
+
+            int styleCount = styles.count();
+            for (int j = 0; j < styleCount; ++j) {
+                QFont font;
+                if (forceAllStyles || customStyles.count() > 0) {
+                    int weight = styles.at(j).contains(QLatin1String("Bold")) ? QFont::Bold : QFont::Normal;
+                    font = QFont(families.at(i), 10, weight, styles.at(j).contains(QLatin1String("Italic")));
+                } else {
+                    font = fontDatabase.font(families.at(i), styles.at(j), 10); // point size is ignored
+                }
+                generateDistanceFieldForFont(font, destDir, !noMultithread);
+            }
+        }
+
+        exit(0);
+    }
+};
 
 int main(int argc, char *argv[])
 {
@@ -171,64 +252,11 @@ int main(int argc, char *argv[])
             || args.contains(QLatin1String("-h")))
         usage();
 
-    bool noMultithread = args.contains(QLatin1String("--no-multithread"));
-    bool forceAllStyles = args.contains(QLatin1String("--force-all-styles"));
 
-    QString fontFile;
-    QString destDir;
-    for (int i = 0; i < args.count(); ++i) {
-        QString a = args.at(i);
-        if (!a.startsWith('-') && QFileInfo(a).exists())
-            fontFile = a;
-        if (a == QLatin1String("-d"))
-            destDir = args.at(++i);
-    }
+   MyWidget w;
+   w.show();
 
-    QStringList customStyles;
-    if (args.contains(QLatin1String("-styles"))) {
-        int index = args.indexOf(QLatin1String("-styles"));
-        QString styles = args.at(index + 1);
-        customStyles = styles.split(QLatin1String(","));
-    }
-
-    // Load the font
-    int fontID = QFontDatabase::addApplicationFont(fontFile);
-    if (fontID == -1) {
-        qWarning("Error: Invalid font file.");
-        qWarning(" ");
-        exit(1);
-    }
-
-    QStringList allStyles = QStringList() << QLatin1String("Normal")
-                                          << QLatin1String("Bold")
-                                          << QLatin1String("Italic")
-                                          << QLatin1String("Bold Italic");
-
-    // Generate distance-fields for all families and all styles provided by the font file
-    QFontDatabase fontDatabase;
-    QStringList families = QFontDatabase::applicationFontFamilies(fontID);
-    int famCount = families.count();
-    for (int i = 0; i < famCount; ++i) {
-        QStringList styles;
-        if (forceAllStyles)
-            styles = allStyles;
-        else if (customStyles.count() > 0)
-            styles = customStyles;
-        else
-            styles = fontDatabase.styles(families.at(i));
-
-        int styleCount = styles.count();
-        for (int j = 0; j < styleCount; ++j) {
-            QFont font;
-            if (forceAllStyles || customStyles.count() > 0) {
-                int weight = styles.at(j).contains(QLatin1String("Bold")) ? QFont::Bold : QFont::Normal;
-                font = QFont(families.at(i), 10, weight, styles.at(j).contains(QLatin1String("Italic")));
-            } else {
-                font = fontDatabase.font(families.at(i), styles.at(j), 10); // point size is ignored
-            }
-            generateDistanceFieldForFont(font, destDir, !noMultithread);
-        }
-    }
-
-    return 0;
+   return app.exec();
 }
+
+#include "main.moc"
