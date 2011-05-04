@@ -101,6 +101,8 @@ private slots:
 
     void testToFillPolygons();
 
+    void testNaNandInfinites();
+
     void closing();
 
     void operators_data();
@@ -1157,6 +1159,50 @@ void tst_QPainterPath::testToFillPolygons()
     const QList<QPolygonF> polygons = path.toFillPolygons();
     QCOMPARE(polygons.size(), 2);
     QCOMPARE(polygons.first().count(QPointF(70, 50)), 0);
+}
+
+void tst_QPainterPath::testNaNandInfinites()
+{
+    QPainterPath path1;
+    QPainterPath path2 = path1;
+
+    QPointF p1 = QPointF(qSNaN(), 1);
+    QPointF p2 = QPointF(qQNaN(), 1);
+    QPointF p3 = QPointF(qQNaN(), 1);
+    QPointF pInf = QPointF(qInf(), 1);
+
+    // all these operations with NaN/Inf should be ignored
+    // can't test operator>> reliably, as we can't create a path with NaN to << later
+
+    path1.moveTo(p1);
+    path1.moveTo(qSNaN(), qQNaN());
+    path1.moveTo(pInf);
+
+    path1.lineTo(p1);
+    path1.lineTo(qSNaN(), qQNaN());
+    path1.lineTo(pInf);
+
+    path1.cubicTo(p1, p2, p3);
+    path1.cubicTo(p1, QPointF(1, 1), QPointF(2, 2));
+    path1.cubicTo(pInf, QPointF(10, 10), QPointF(5, 1));
+
+    path1.quadTo(p1, p2);
+    path1.quadTo(QPointF(1, 1), p3);
+    path1.quadTo(QPointF(1, 1), pInf);
+
+    path1.arcTo(QRectF(p1, p2), 5, 5);
+    path1.arcTo(QRectF(pInf, QPointF(1, 1)), 5, 5);
+
+    path1.addRect(QRectF(p1, p2));
+    path1.addRect(QRectF(pInf, QPointF(1, 1)));
+
+    path1.addEllipse(QRectF(p1, p2));
+    path1.addEllipse(QRectF(pInf, QPointF(1, 1)));
+
+    QCOMPARE(path1, path2);
+
+    path1.lineTo(QPointF(1, 1));
+    QVERIFY(path1 != path2);
 }
 
 void tst_QPainterPath::connectPathDuplicatePoint()
