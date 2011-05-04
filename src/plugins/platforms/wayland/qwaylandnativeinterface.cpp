@@ -39,32 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDEGLINTEGRATION_H
-#define QWAYLANDEGLINTEGRATION_H
+#include "qwaylandnativeinterface.h"
 
-#include "gl_integration/qwaylandglintegration.h"
+#include "qwaylanddisplay.h"
+#include "qwaylandwindow.h"
+#include <QtGui/private/qapplication_p.h>
 
-#include "qwaylandeglinclude.h"
-
-class QWaylandWindow;
-class QWidget;
-
-class QWaylandEglIntegration : public QWaylandGLIntegration
+void *QWaylandNativeInterface::nativeResourceForWidget(const QByteArray &resourceString, QWidget *widget)
 {
-public:
-    QWaylandEglIntegration(struct wl_display *waylandDisplay);
-    ~QWaylandEglIntegration();
+    QByteArray lowerCaseResource = resourceString.toLower();
 
-    void initialize();
+    if (lowerCaseResource == "display")
+	return qPlatformScreenForWidget(widget)->display()->wl_display();
+    if (lowerCaseResource == "surface") {
+	return ((QWaylandWindow *) widget->platformWindow())->wl_surface();
+    }
 
-    QWaylandWindow *createEglWindow(QWidget *window);
+    return NULL;
+}
 
-    EGLDisplay eglDisplay() const;
-    struct wl_egl_display *nativeDisplay() const;
-private:
-    struct wl_display *mWaylandDisplay;
 
-    EGLDisplay mEglDisplay;
-};
+QWaylandScreen * QWaylandNativeInterface::qPlatformScreenForWidget(QWidget *widget)
+{
+    QWaylandScreen *screen;
 
-#endif // QWAYLANDEGLINTEGRATION_H
+    if (widget) {
+        screen = static_cast<QWaylandScreen *>(QPlatformScreen::platformScreenForWidget(widget));
+    } else {
+        screen = static_cast<QWaylandScreen *>(QApplicationPrivate::platformIntegration()->screens()[0]);
+    }
+    return screen;
+}

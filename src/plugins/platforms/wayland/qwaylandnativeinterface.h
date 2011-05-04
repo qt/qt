@@ -39,32 +39,22 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDEGLINTEGRATION_H
-#define QWAYLANDEGLINTEGRATION_H
+#ifndef QWAYLANDNATIVEINTERFACE_H
+#define QWAYLANDNATIVEINTERFACE_H
 
-#include "gl_integration/qwaylandglintegration.h"
+#include "qwaylandscreen.h"
 
-#include "qwaylandeglinclude.h"
+#include <QtGui/QPlatformNativeInterface>
 
-class QWaylandWindow;
-class QWidget;
-
-class QWaylandEglIntegration : public QWaylandGLIntegration
+class QWaylandNativeInterface : public QPlatformNativeInterface
 {
 public:
-    QWaylandEglIntegration(struct wl_display *waylandDisplay);
-    ~QWaylandEglIntegration();
+    void *nativeResourceForWidget(const QByteArray &resourceString,
+				  QWidget *widget);
 
-    void initialize();
-
-    QWaylandWindow *createEglWindow(QWidget *window);
-
-    EGLDisplay eglDisplay() const;
-    struct wl_egl_display *nativeDisplay() const;
 private:
-    struct wl_display *mWaylandDisplay;
-
-    EGLDisplay mEglDisplay;
+    static QWaylandScreen *qPlatformScreenForWidget(QWidget *widget);
 };
 
-#endif // QWAYLANDEGLINTEGRATION_H
+
+#endif // QWAYLANDNATIVEINTERFACE_H
