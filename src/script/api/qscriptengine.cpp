@@ -2540,7 +2540,7 @@ bool qScriptConnect(QObject *sender, const char *signal,
                          function.engine(), SLOT(_q_removeConnectedObject(QObject*)));
     }
 
-    QString signalName(signal);
+    QString signalName(QString::fromLatin1(signal));
     signalName.remove(0, 1);
 
     v8::Handle<v8::Object> signalData =  v8Sender->Get(QScriptConverter::toString(signalName))->ToObject();
@@ -2576,7 +2576,7 @@ bool qScriptDisconnect(QObject *sender, const char *signal,
         return false;
     }
 
-    QString signalName(signal);
+    QString signalName(QString::fromLatin1(signal));
     signalName.remove(0, 1);
 
     v8::Handle<v8::Object> signalData =  v8Sender->Get(QScriptConverter::toString(signalName))->ToObject();
