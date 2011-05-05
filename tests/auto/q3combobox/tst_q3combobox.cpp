@@ -1004,6 +1004,10 @@ void tst_Q3ComboBox::wheelEvent()
 
 void tst_Q3ComboBox::task231724_clear()
 {
+#ifdef Q_WS_MACX
+    return; // On Mac, we don't use a ListBox for the popup
+#endif
+
     Q3ComboBox box;
     
     for ( int i = 0; i <50; i++ ) {

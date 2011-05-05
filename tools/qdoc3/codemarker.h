@@ -165,10 +165,11 @@ class CodeMarker
     static const Node *nodeForString(const QString& string);
     static QString stringForNode(const Node *node);
 
+    QString typified(const QString &string);
+
  protected:
     virtual QString sortName(const Node *node);
     QString protect(const QString &string);
-    QString typified(const QString &string);
     QString taggedNode(const Node* node);
 #ifdef QDOC_QML
     QString taggedQmlNode(const Node* node);
