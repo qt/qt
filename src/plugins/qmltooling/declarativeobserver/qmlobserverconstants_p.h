@@ -39,45 +39,52 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#ifndef QMLOBSERVERCONSTANTS_H
+#define QMLOBSERVERCONSTANTS_H
 
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
+#include <QtDeclarative/private/qdeclarativeglobal_p.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
+QT_MODULE(Declarative)
 
+namespace Constants {
 
-public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
-
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
-
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
-
-    void listen();
-    void waitForConnection();
-
-private Q_SLOTS:
-    void readyRead();
-    void newConnection();
-
-private:
-    QTcpServerConnectionPrivate *d_ptr;
+enum DesignTool {
+    NoTool = 0,
+    SelectionToolMode = 1,
+    MarqueeSelectionToolMode = 2,
+    MoveToolMode = 3,
+    ResizeToolMode = 4,
+    ColorPickerMode = 5,
+    ZoomMode = 6
 };
+
+enum ToolFlags {
+    NoToolFlags = 0,
+    UseCursorPos = 1
+};
+
+static const int DragStartTime = 50;
+
+static const int DragStartDistance = 20;
+
+static const double ZoomSnapDelta = 0.04;
+
+static const int EditorItemDataKey = 1000;
+
+enum GraphicsItemTypes {
+    EditorItemType = 0xEAAA,
+    ResizeHandleItemType = 0xEAEA
+};
+
+
+} // namespace Constants
 
 QT_END_NAMESPACE
 
-#endif // QTCPSERVERCONNECTION_H
+QT_END_HEADER
+
+#endif // QMLOBSERVERCONSTANTS_H

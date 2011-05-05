@@ -39,45 +39,43 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#include "qdeclarativeobserverplugin.h"
 
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
+#include "qdeclarativeviewobserver_p.h"
+
+#include <QtCore/qplugin.h>
+#include <QtDeclarative/private/qdeclarativeobserverservice_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
+QDeclarativeObserverPlugin::QDeclarativeObserverPlugin() :
+    m_observer(0)
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
+}
 
+QDeclarativeObserverPlugin::~QDeclarativeObserverPlugin()
+{
+    delete m_observer;
+}
 
-public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
+void QDeclarativeObserverPlugin::activate()
+{
+    QDeclarativeObserverService *service = QDeclarativeObserverService::instance();
+    QList<QDeclarativeView*> views = service->views();
+    if (views.isEmpty())
+        return;
 
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
+    // TODO: Support multiple views
+    QDeclarativeView *view = service->views().at(0);
+    m_observer = new QDeclarativeViewObserver(view, view);
+}
 
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
+void QDeclarativeObserverPlugin::deactivate()
+{
+    delete m_observer;
+}
 
-    void listen();
-    void waitForConnection();
-
-private Q_SLOTS:
-    void readyRead();
-    void newConnection();
-
-private:
-    QTcpServerConnectionPrivate *d_ptr;
-};
+Q_EXPORT_PLUGIN2(declarativeobserver, QDeclarativeObserverPlugin)
 
 QT_END_NAMESPACE
 
-#endif // QTCPSERVERCONNECTION_H

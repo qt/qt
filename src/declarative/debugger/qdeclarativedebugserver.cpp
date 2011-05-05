@@ -242,6 +242,17 @@ void QDeclarativeDebugServer::receiveMessage(const QByteArray &message)
         int version;
         in >> version >> d->clientPlugins;
 
+        // Send the hello answer immediately, since it needs to arrive before
+        // the plugins below start sending messages.
+        QByteArray helloAnswer;
+        {
+            QDataStream out(&helloAnswer, QIODevice::WriteOnly);
+            out << QString(QLatin1String("QDeclarativeDebugClient")) << 0 << protocolVersion << d->plugins.keys();
+        }
+        d->connection->send(helloAnswer);
+
+        d->gotHello = true;
+
         QHash<QString, QDeclarativeDebugService*>::Iterator iter = d->plugins.begin();
         for (; iter != d->plugins.end(); ++iter) {
             QDeclarativeDebugService::Status newStatus = QDeclarativeDebugService::Unavailable;
@@ -251,14 +262,6 @@ void QDeclarativeDebugServer::receiveMessage(const QByteArray &message)
             iter.value()->statusChanged(newStatus);
         }
 
-        QByteArray helloAnswer;
-        {
-            QDataStream out(&helloAnswer, QIODevice::WriteOnly);
-            out << QString(QLatin1String("QDeclarativeDebugClient")) << 0 << protocolVersion << d->plugins.keys();
-        }
-        d->connection->send(helloAnswer);
-
-        d->gotHello = true;
         qWarning("QDeclarativeDebugServer: Connection established");
     } else {
 

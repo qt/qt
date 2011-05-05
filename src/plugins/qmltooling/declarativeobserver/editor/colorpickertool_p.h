@@ -39,45 +39,61 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#ifndef COLORPICKERTOOL_H
+#define COLORPICKERTOOL_H
 
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
+#include "abstractliveedittool_p.h"
+
+#include <QtGui/QColor>
+
+QT_FORWARD_DECLARE_CLASS(QPoint)
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
+QT_MODULE(Declarative)
+
+class ColorPickerTool : public AbstractLiveEditTool
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
-
-
 public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
+    explicit ColorPickerTool(QDeclarativeViewObserver *view);
 
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
+    virtual ~ColorPickerTool();
 
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *event);
 
-    void listen();
-    void waitForConnection();
+    void hoverMoveEvent(QMouseEvent *event);
 
-private Q_SLOTS:
-    void readyRead();
-    void newConnection();
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *keyEvent);
+
+    void wheelEvent(QWheelEvent *event);
+
+    void itemsAboutToRemoved(const QList<QGraphicsItem*> &itemList);
+
+    void clear();
+
+signals:
+    void selectedColorChanged(const QColor &color);
+
+protected:
+
+    void selectedItemsChanged(const QList<QGraphicsItem*> &itemList);
 
 private:
-    QTcpServerConnectionPrivate *d_ptr;
+    void pickColor(const QPoint &pos);
+
+private:
+    QColor m_selectedColor;
 };
 
 QT_END_NAMESPACE
 
-#endif // QTCPSERVERCONNECTION_H
+QT_END_HEADER
+
+#endif // COLORPICKERTOOL_H

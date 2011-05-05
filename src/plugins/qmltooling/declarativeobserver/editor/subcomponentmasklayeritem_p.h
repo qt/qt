@@ -39,45 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#ifndef SUBCOMPONENTMASKLAYERITEM_H
+#define SUBCOMPONENTMASKLAYERITEM_H
 
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
+#include <QtGui/QGraphicsPolygonItem>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
+QT_MODULE(Declarative)
+
+class QDeclarativeViewObserver;
+
+class SubcomponentMaskLayerItem : public QGraphicsPolygonItem
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
-
-
 public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
-
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
-
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
-
-    void listen();
-    void waitForConnection();
-
-private Q_SLOTS:
-    void readyRead();
-    void newConnection();
+    explicit SubcomponentMaskLayerItem(QDeclarativeViewObserver *observer,
+                                       QGraphicsItem *parentItem = 0);
+    int type() const;
+    void setCurrentItem(QGraphicsItem *item);
+    void setBoundingBox(const QRectF &boundingBox);
+    QGraphicsItem *currentItem() const;
+    QRectF itemRect() const;
 
 private:
-    QTcpServerConnectionPrivate *d_ptr;
+    QDeclarativeViewObserver *m_observer;
+    QGraphicsItem *m_currentItem;
+    QGraphicsRectItem *m_borderRect;
+    QRectF m_itemPolyRect;
 };
 
 QT_END_NAMESPACE
 
-#endif // QTCPSERVERCONNECTION_H
+QT_END_HEADER
+
+#endif // SUBCOMPONENTMASKLAYERITEM_H

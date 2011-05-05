@@ -39,45 +39,52 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#ifndef LIVESELECTIONINDICATOR_H
+#define LIVESELECTIONINDICATOR_H
 
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
+#include <QtCore/QWeakPointer>
+#include <QtCore/QHash>
+
+QT_BEGIN_NAMESPACE
+class QGraphicsObject;
+class QGraphicsPolygonItem;
+class QGraphicsItem;
+class QPolygonF;
+QT_END_NAMESPACE
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
+QT_MODULE(Declarative)
+
+class QDeclarativeViewObserver;
+
+class LiveSelectionIndicator
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
-
-
 public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
+    LiveSelectionIndicator(QDeclarativeViewObserver* editorView, QGraphicsObject *layerItem);
+    ~LiveSelectionIndicator();
 
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
+    void show();
+    void hide();
 
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
+    void clear();
 
-    void listen();
-    void waitForConnection();
-
-private Q_SLOTS:
-    void readyRead();
-    void newConnection();
+    void setItems(const QList<QWeakPointer<QGraphicsObject> > &itemList);
 
 private:
-    QTcpServerConnectionPrivate *d_ptr;
+    QPolygonF addBoundingRectToPolygon(QGraphicsItem *item, QPolygonF &polygon);
+
+private:
+    QHash<QGraphicsItem*, QGraphicsPolygonItem *> m_indicatorShapeHash;
+    QWeakPointer<QGraphicsObject> m_layerItem;
+    QDeclarativeViewObserver *m_view;
+
 };
 
 QT_END_NAMESPACE
 
-#endif // QTCPSERVERCONNECTION_H
+QT_END_HEADER
+
+#endif // LIVESELECTIONINDICATOR_H

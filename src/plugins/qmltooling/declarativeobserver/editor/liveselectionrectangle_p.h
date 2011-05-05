@@ -39,45 +39,45 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#ifndef LIVESELECTIONRECTANGLE_H
+#define LIVESELECTIONRECTANGLE_H
 
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
+#include <QtCore/QWeakPointer>
+
+QT_FORWARD_DECLARE_CLASS(QGraphicsObject)
+QT_FORWARD_DECLARE_CLASS(QGraphicsRectItem)
+QT_FORWARD_DECLARE_CLASS(QPointF)
+QT_FORWARD_DECLARE_CLASS(QRectF)
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
+QT_MODULE(Declarative)
+
+class LiveSelectionRectangle
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
-
-
 public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
+    LiveSelectionRectangle(QGraphicsObject *layerItem);
+    ~LiveSelectionRectangle();
 
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
+    void show();
+    void hide();
 
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
+    void clear();
 
-    void listen();
-    void waitForConnection();
+    void setRect(const QPointF &firstPoint,
+                 const QPointF &secondPoint);
 
-private Q_SLOTS:
-    void readyRead();
-    void newConnection();
+    QRectF rect() const;
 
 private:
-    QTcpServerConnectionPrivate *d_ptr;
+    QGraphicsRectItem *m_controlShape;
+    QWeakPointer<QGraphicsObject> m_layerItem;
 };
 
 QT_END_NAMESPACE
 
-#endif // QTCPSERVERCONNECTION_H
+QT_END_HEADER
+
+#endif // LIVESELECTIONRECTANGLE_H

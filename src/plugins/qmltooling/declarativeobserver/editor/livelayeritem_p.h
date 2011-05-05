@@ -39,45 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#ifndef LIVELAYERITEM_H
+#define LIVELAYERITEM_H
 
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
+#include <QtGui/QGraphicsObject>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
+QT_MODULE(Declarative)
+
+class LiveLayerItem : public QGraphicsObject
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
-
-
 public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
+    LiveLayerItem(QGraphicsScene *scene);
+    ~LiveLayerItem();
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                QWidget *widget = 0);
+    QRectF boundingRect() const;
+    int type() const;
 
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
+    QList<QGraphicsItem*> findAllChildItems() const;
 
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
-
-    void listen();
-    void waitForConnection();
-
-private Q_SLOTS:
-    void readyRead();
-    void newConnection();
-
-private:
-    QTcpServerConnectionPrivate *d_ptr;
+protected:
+    QList<QGraphicsItem*> findAllChildItems(const QGraphicsItem *item) const;
 };
 
 QT_END_NAMESPACE
 
-#endif // QTCPSERVERCONNECTION_H
+QT_END_HEADER
+
+#endif // LIVELAYERITEM_H

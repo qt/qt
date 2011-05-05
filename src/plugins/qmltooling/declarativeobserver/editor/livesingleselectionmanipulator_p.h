@@ -39,45 +39,57 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#ifndef LIVESINGLESELECTIONMANIPULATOR_H
+#define LIVESINGLESELECTIONMANIPULATOR_H
 
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
+#include <QtCore/QPointF>
+#include <QtCore/QList>
+
+QT_FORWARD_DECLARE_CLASS(QGraphicsItem)
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
+QT_MODULE(Declarative)
+
+class QDeclarativeViewObserver;
+
+class LiveSingleSelectionManipulator
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
-
-
 public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
+    LiveSingleSelectionManipulator(QDeclarativeViewObserver *editorView);
 
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
+    enum SelectionType {
+        ReplaceSelection,
+        AddToSelection,
+        RemoveFromSelection,
+        InvertSelection
+    };
 
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
+    void begin(const QPointF& beginPoint);
+    void update(const QPointF& updatePoint);
+    void end(const QPointF& updatePoint);
 
-    void listen();
-    void waitForConnection();
+    void select(SelectionType selectionType, const QList<QGraphicsItem*> &items,
+                bool selectOnlyContentItems);
+    void select(SelectionType selectionType, bool selectOnlyContentItems);
 
-private Q_SLOTS:
-    void readyRead();
-    void newConnection();
+    void clear();
+
+    QPointF beginPoint() const;
+
+    bool isActive() const;
 
 private:
-    QTcpServerConnectionPrivate *d_ptr;
+    QList<QGraphicsItem*> m_oldSelectionList;
+    QPointF m_beginPoint;
+    QDeclarativeViewObserver *m_editorView;
+    bool m_isActive;
 };
 
 QT_END_NAMESPACE
 
-#endif // QTCPSERVERCONNECTION_H
+QT_END_HEADER
+
+#endif // LIVESINGLESELECTIONMANIPULATOR_H

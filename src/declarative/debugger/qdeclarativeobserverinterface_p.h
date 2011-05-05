@@ -39,45 +39,31 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#ifndef QDECLARATIVEOBSERVERINTERFACE_H
+#define QDECLARATIVEOBSERVERINTERFACE_H
 
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
+#include <QtDeclarative/private/qdeclarativeglobal_p.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
+QT_MODULE(Declarative)
+
+class Q_DECLARATIVE_EXPORT QDeclarativeObserverInterface
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
-
-
 public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
+    QDeclarativeObserverInterface() {}
+    virtual ~QDeclarativeObserverInterface() {}
 
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
-
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
-
-    void listen();
-    void waitForConnection();
-
-private Q_SLOTS:
-    void readyRead();
-    void newConnection();
-
-private:
-    QTcpServerConnectionPrivate *d_ptr;
+    virtual void activate() = 0;
+    virtual void deactivate() = 0;
 };
+
+Q_DECLARE_INTERFACE(QDeclarativeObserverInterface, "com.trolltech.Qt.QDeclarativeObserverInterface/1.0")
 
 QT_END_NAMESPACE
 
-#endif // QTCPSERVERCONNECTION_H
+QT_END_HEADER
+
+#endif // QDECLARATIVEOBSERVERINTERFACE_H

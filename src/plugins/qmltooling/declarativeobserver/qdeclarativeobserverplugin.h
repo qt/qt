@@ -39,45 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#ifndef QDECLARATIVEOBSERVERPLUGIN_H
+#define QDECLARATIVEOBSERVERPLUGIN_H
 
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
+#include <QtCore/QPointer>
+#include <QtDeclarative/private/qdeclarativeobserverinterface_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
+class QDeclarativeViewObserver;
+
+class QDeclarativeObserverPlugin : public QObject, public QDeclarativeObserverInterface
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
-
+    Q_DISABLE_COPY(QDeclarativeObserverPlugin)
+    Q_INTERFACES(QDeclarativeObserverInterface)
 
 public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
+    QDeclarativeObserverPlugin();
+    ~QDeclarativeObserverPlugin();
 
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
-
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
-
-    void listen();
-    void waitForConnection();
-
-private Q_SLOTS:
-    void readyRead();
-    void newConnection();
+    void activate();
+    void deactivate();
 
 private:
-    QTcpServerConnectionPrivate *d_ptr;
+    QPointer<QDeclarativeViewObserver> m_observer;
 };
 
 QT_END_NAMESPACE
 
-#endif // QTCPSERVERCONNECTION_H
+#endif // QDECLARATIVEOBSERVERPLUGIN_H
