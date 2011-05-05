@@ -70,6 +70,9 @@ private slots:
     void property_qobject();
     void property_qmlobject();
 
+    void setproperty_js();
+    void setproperty_qmlobject();
+
     void function_js();
     void function_cpp();
     void function_qobject();
@@ -108,12 +111,13 @@ inline QUrl TEST_FILE(const QString &filename)
 class TestObject : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int x READ x)
+    Q_PROPERTY(int x READ x WRITE setX)
 
 public:
     TestObject(QObject *parent = 0);
 
     int x();
+    void setX(int x) { m_x = x; }
 
     void emitMySignal() { emit mySignal(); }
     void emitMySignalWithArgs(int n) { emit mySignalWithArgs(n); }
@@ -316,6 +320,49 @@ void tst_script::property_qmlobject()
     QScriptValueList args;
     args << v;
     QScriptValue prog = engine->evaluate(PROPERTY_PROGRAM).call(engine->globalObject(), args);
+    prog.call();
+
+    QBENCHMARK {
+        prog.call();
+    }
+}
+
+#define SETPROPERTY_PROGRAM \
+    "(function(testObject) { return (function() { " \
+    "    for (var ii = 0; ii < 10000; ++ii) { " \
+    "        testObject.x = ii; " \
+    "    } " \
+    "}); })"
+
+void tst_script::setproperty_js()
+{
+    QScriptEngine engine;
+
+    QScriptValue v = engine.newObject();
+    v.setProperty(QLatin1String("x"), 0);
+
+    QScriptValueList args;
+    args << v;
+    QScriptValue prog = engine.evaluate(SETPROPERTY_PROGRAM).call(engine.globalObject(), args);
+    prog.call();
+
+    QBENCHMARK {
+        prog.call();
+    }
+}
+
+void tst_script::setproperty_qmlobject()
+{
+    QDeclarativeEngine qmlengine;
+
+    QScriptEngine *engine = QDeclarativeEnginePrivate::getScriptEngine(&qmlengine);
+    TestObject to;
+
+    QScriptValue v = QDeclarativeEnginePrivate::get(&qmlengine)->objectClass->newQObject(&to);
+
+    QScriptValueList args;
+    args << v;
+    QScriptValue prog = engine->evaluate(SETPROPERTY_PROGRAM).call(engine->globalObject(), args);
     prog.call();
 
     QBENCHMARK {
