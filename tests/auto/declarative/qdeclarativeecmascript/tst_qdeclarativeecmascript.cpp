@@ -2149,16 +2149,12 @@ public:
     ~CppOwnershipReturnValue() { delete value; }
 
     Q_INVOKABLE QObject *create() {
-        Q_ASSERT(value == 0);
-
         value = new QObject;
         QDeclarativeEngine::setObjectOwnership(value, QDeclarativeEngine::CppOwnership);
         return value;
     }
 
     Q_INVOKABLE MyQmlObject *createQmlObject() {
-        Q_ASSERT(value == 0);
-
         MyQmlObject *rv = new MyQmlObject;
         value = rv;
         return rv;
