@@ -79,6 +79,8 @@ for your platform from the following list.
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 1
 
     Type \c{./configure -help} to get a list of all available options.
+    The \l{Configuration Options for Qt} page gives a brief overview
+    of these.
 
     To create the library and compile all the demos, examples, tools,
     and tutorials, type:
@@ -218,7 +220,8 @@ for your platform from the following list.
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 8
 
-    Type \c{configure -help} to get a list of all available options.
+    Type \c{configure -help} to get a list of all available options. The
+    \l{Configuration Options for Qt} page gives a brief overview of these.
 
     If you have multiple compilers installed, and want to build the Qt library
     using a specific compiler, you must specify a \c qmake specification.
@@ -433,7 +436,9 @@ in the \l{Qt for Windows CE Requirements} document.
 
     If you want to configure Qt for another platform or with other
     options, type \c{configure -help} to get a list of all available
-    options. See the \c README file for the list of supported platforms.
+    options. The \l{Configuration Options for Qt} page gives a brief
+    overview of these. See the \c README file for the list of supported
+    platforms.
 
 \section1 Step 4: Build Qt Library
 
@@ -626,6 +631,10 @@ Binary Package} document.
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 31
     (to build the tools using MinGW, and the libraries using SBSv2)
 
+    Type \c{./configure -help} to get a list of all available options.
+    The \l{Configuration Options for Qt} page gives a brief overview
+    of these.
+
     SBSv2 (also known as \l{http://developer.symbian.org/wiki/index.php/Introduction_to_RAPTOR} {Raptor})
     is a next-generation Symbian build system. SBSv2 is not officially supported
     by any of the S60 SDKs currently available from Forum Nokia.
@@ -740,6 +749,9 @@ to build the libraries using RVCT or
 
 to build the libraries using GCCE.
 
+Type \c{./configure -help} to get a list of all available options.
+The \l{Configuration Options for Qt} page gives a brief overview
+of these.
 
 \section1 Step 5: Build Qt
 

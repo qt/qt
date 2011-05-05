@@ -74,6 +74,9 @@
 
     \snippet doc/src/snippets/code/doc_src_emb-install.qdoc embedded help
 
+    The \l{Configuration Options for Qt} page gives a brief overview
+    of these.
+
     Note that by default, \l{Qt for Embedded Linux} is configured for
     installation in the \c{/usr/local/Trolltech/QtEmbedded-%VERSION%}
     directory, but this can be changed by using the \c{-prefix}
