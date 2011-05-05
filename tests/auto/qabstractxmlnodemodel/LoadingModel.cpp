@@ -53,7 +53,6 @@ LoadingModel::LoadingModel(const Node::Vector &content,
                            const QXmlNamePool &np) : QSimpleXmlNodeModel(np)
                                                    , m_nodes(content)
 {
-    Q_ASSERT(!content.isEmpty());
     /*
     foreach(const Node *n, content)
         qDebug() << "this:" << n
@@ -354,6 +353,11 @@ QAbstractXmlNodeModel::Ptr LoadingModel::create(const QXmlNamePool &np)
 {
     Loader loader(np);
     loader.load();
+    if (loader.m_result.isEmpty()) {
+        qWarning("%s: attempt to create model with no content", Q_FUNC_INFO);
+        return Ptr(0);
+    }
+
     return Ptr(new LoadingModel(loader.m_result, np));
 }
 #endif //QTEST_XMLPATTERNS
