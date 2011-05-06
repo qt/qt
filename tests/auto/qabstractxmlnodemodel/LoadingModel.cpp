@@ -113,7 +113,10 @@ QXmlNodeModelIndex::DocumentOrder LoadingModel::compareOrder(const QXmlNodeModel
 
 QXmlNodeModelIndex LoadingModel::root(const QXmlNodeModelIndex &) const
 {
-    Q_ASSERT(kind(createIndex(m_nodes.first())) == QXmlNodeModelIndex::Document);
+    if (kind(createIndex(m_nodes.first())) != QXmlNodeModelIndex::Document) {
+        qWarning("%s: first node must be a Document node", Q_FUNC_INFO);
+        return QXmlNodeModelIndex();
+    }
     return createIndex(m_nodes.first());
 }
 
