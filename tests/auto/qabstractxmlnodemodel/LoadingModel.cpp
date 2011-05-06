@@ -77,8 +77,8 @@ const LoadingModel::Node *LoadingModel::toInternal(const QXmlNodeModelIndex &ni)
 
 QXmlNodeModelIndex LoadingModel::createIndex(const Node *const internal) const
 {
-    Q_ASSERT_X(internal, Q_FUNC_INFO,
-               "We shouldn't construct from null pointers.");
+    if (!internal)
+        qFatal("%s: cannot construct a model index from a null pointer", Q_FUNC_INFO);
     return QAbstractXmlNodeModel::createIndex(const_cast<Node *>(internal));
 }
 
@@ -98,8 +98,10 @@ QXmlNodeModelIndex::DocumentOrder LoadingModel::compareOrder(const QXmlNodeModel
 {
     const Node *const in1 = toInternal(n1);
     const Node *const in2 = toInternal(n2);
-    Q_ASSERT(m_nodes.indexOf(in1) != -1);
-    Q_ASSERT(m_nodes.indexOf(in2) != -1);
+    if (m_nodes.indexOf(in1) == -1)
+        qFatal("%s: node n1 is not in internal node list", Q_FUNC_INFO);
+    if (m_nodes.indexOf(in2) == -1)
+        qFatal("%s: node n2 is not in internal node list", Q_FUNC_INFO);
 
     if(in1 == in2)
         return QXmlNodeModelIndex::Is;
@@ -111,7 +113,10 @@ QXmlNodeModelIndex::DocumentOrder LoadingModel::compareOrder(const QXmlNodeModel
 
 QXmlNodeModelIndex LoadingModel::root(const QXmlNodeModelIndex &) const
 {
-    Q_ASSERT(kind(createIndex(m_nodes.first())) == QXmlNodeModelIndex::Document);
+    if (kind(createIndex(m_nodes.first())) != QXmlNodeModelIndex::Document) {
+        qWarning("%s: first node must be a Document node", Q_FUNC_INFO);
+        return QXmlNodeModelIndex();
+    }
     return createIndex(m_nodes.first());
 }
 
@@ -124,8 +129,11 @@ QVariant LoadingModel::typedValue(const QXmlNodeModelIndex &ni) const
 {
     const Node *const internal = toInternal(ni);
 
-    Q_ASSERT(internal->kind == QXmlNodeModelIndex::Attribute
-             || internal->kind == QXmlNodeModelIndex::Element);
+    if (internal->kind != QXmlNodeModelIndex::Attribute
+        && internal->kind != QXmlNodeModelIndex::Element) {
+        qWarning("%s: node must be an attribute or element", Q_FUNC_INFO);
+        return QVariant();
+    }
 
     return internal->value;
 }
