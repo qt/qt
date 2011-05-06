@@ -3294,13 +3294,18 @@ public:
     static void ignore_invalid_parameter(const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t) {}
     AutoIgnoreInvalidParameter()
     {
-        old = _set_invalid_parameter_handler(ignore_invalid_parameter);
+        oldHandler = _set_invalid_parameter_handler(ignore_invalid_parameter);
+        //also disable the abort/retry/ignore popup
+        oldReportMode = _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
     }
     ~AutoIgnoreInvalidParameter()
     {
-        _set_invalid_parameter_handler(old);
+        //restore previous settings
+        _set_invalid_parameter_handler(oldHandler);
+        _CrtSetReportMode(_CRT_ASSERT, oldReportMode);
     }
-    _invalid_parameter_handler old;
+    _invalid_parameter_handler oldHandler;
+    int oldReportMode;
 #endif
 };
 

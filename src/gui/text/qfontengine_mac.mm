@@ -922,27 +922,6 @@ static void addGlyphsToPathHelper(ATSUStyle style, glyph_t *glyphs, QFixedPoint 
     DisposeATSCubicClosePathUPP(closePath);
 }
 
-QFont QFontEngineMac::createExplicitFont() const
-{
-    FMFont fmFont = FMGetFontFromATSFontRef(fontID);
-
-    FMFontFamily fmFamily;
-    FMFontStyle fmStyle;
-    QString familyName;
-    if (!FMGetFontFamilyInstanceFromFont(fmFont, &fmFamily, &fmStyle)) {
-        ATSFontFamilyRef familyRef = FMGetATSFontFamilyRefFromFontFamily(fmFamily);
-        QCFString cfFamilyName;;
-        ATSFontFamilyGetName(familyRef, kATSOptionFlagsDefault, &cfFamilyName);
-        familyName = cfFamilyName;
-    } else {
-        QCFString cfFontName;
-        ATSFontGetName(fontID, kATSOptionFlagsDefault, &cfFontName);
-        familyName = cfFontName;
-    }
-
-    return createExplicitFontWithName(familyName);
-}
-
 void QFontEngineMac::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int numGlyphs, QPainterPath *path,
                                            QTextItem::RenderFlags)
 {

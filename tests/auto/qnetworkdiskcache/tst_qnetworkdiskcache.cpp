@@ -311,9 +311,6 @@ void tst_QNetworkDiskCache::data_data()
 // public QIODevice* data(QUrl const& url)
 void tst_QNetworkDiskCache::data()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP("Due to mmap(...) bug in Open C [Temtrack DEF142242]", SkipAll);
-#endif
     QFETCH(QNetworkCacheMetaData, data);
     SubQNetworkDiskCache cache;
     QUrl url(EXAMPLE_URL);
@@ -384,9 +381,6 @@ void tst_QNetworkDiskCache::setCacheDirectory()
 // public void updateMetaData(QNetworkCacheMetaData const& metaData)
 void tst_QNetworkDiskCache::updateMetaData()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP("Due to mmap(...) bug in Open C [Temtrack DEF142242]", SkipAll);
-#endif
     QUrl url(EXAMPLE_URL);
     SubQNetworkDiskCache cache;
     cache.setupWithOne(url);

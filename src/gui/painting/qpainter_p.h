@@ -184,6 +184,7 @@ struct QPainterDummyState
     QTransform transform;
 };
 
+class QRawFont;
 class QPainterPrivate
 {
     Q_DECLARE_PUBLIC(QPainter)
@@ -229,7 +230,12 @@ public:
     void draw_helper(const QPainterPath &path, DrawOperation operation = StrokeAndFillDraw);
     void drawStretchedGradient(const QPainterPath &path, DrawOperation operation);
     void drawOpaqueBackground(const QPainterPath &path, DrawOperation operation);
-    void drawGlyphs(quint32 *glyphArray, QFixedPoint *positionArray, int glyphCount);
+
+#if !defined(QT_NO_RAWFONT)
+    void drawGlyphs(quint32 *glyphArray, QFixedPoint *positionArray, int glyphCount,
+                    const QRawFont &font, bool overline = false, bool underline = false,
+                    bool strikeOut = false);
+#endif
 
     void updateMatrix();
     void updateInvMatrix();
@@ -259,8 +265,6 @@ public:
 };
 
 Q_GUI_EXPORT void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivate::DrawOperation operation);
-Q_GUI_EXPORT void qt_draw_glyphs(QPainter *painter, const quint32 *glyphArray,
-                                 const QPointF *positionArray, int glyphCount);
 
 QString qt_generate_brush_key(const QBrush &brush);
 

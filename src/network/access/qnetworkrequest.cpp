@@ -524,7 +524,7 @@ void QNetworkRequest::setAttribute(Attribute code, const QVariant &value)
 QSslConfiguration QNetworkRequest::sslConfiguration() const
 {
     if (!d->sslConfiguration)
-        d->sslConfiguration = new QSslConfiguration;
+        d->sslConfiguration = new QSslConfiguration(QSslConfiguration::defaultConfiguration());
     return *d->sslConfiguration;
 }
 

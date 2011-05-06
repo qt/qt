@@ -84,6 +84,7 @@ class Interface: public QObject
     Q_PROPERTY(RegisteredType complexProp READ complexProp WRITE setComplexProp SCRIPTABLE true)
 
     friend class tst_QDBusAbstractInterface;
+    friend class PingerServer;
     QString m_stringProp;
     QDBusVariant m_variantProp;
     RegisteredType m_complexProp;
