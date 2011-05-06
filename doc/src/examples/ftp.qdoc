@@ -131,7 +131,9 @@
 
     \snippet examples/network/qftp/ftpwindow.cpp 5
 
-    QFtp supports canceling the download of files.
+    QFtp supports canceling the download of files. We make sure that
+    any file that is currently being written to is closed and removed,
+    and tidy up by deleting the file object.
 
     \snippet examples/network/qftp/ftpwindow.cpp 6
 

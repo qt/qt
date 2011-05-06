@@ -131,7 +131,7 @@ namespace QPatternist
 
                 private:
                     Variety                   m_variety;
-                    NamedSchemaComponent::Ptr m_parent;
+                    NamedSchemaComponent      *m_parent;
             };
 
 

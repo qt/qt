@@ -453,7 +453,36 @@ bool QProcessPrivate::createChannel(Channel &channel)
     }
 }
 
-static char **_q_dupEnvironment(const QHash<QByteArray, QByteArray> &environment, int *envc)
+QT_BEGIN_INCLUDE_NAMESPACE
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
+# include <crt_externs.h>
+# define environ (*_NSGetEnviron())
+#elif defined(Q_OS_SYMBIAN) || (defined(Q_OS_MAC) && defined(QT_NO_CORESERVICES))
+  static char *qt_empty_environ[] = { 0 };
+#define environ qt_empty_environ
+#else
+  extern char **environ;
+#endif
+QT_END_INCLUDE_NAMESPACE
+
+QProcessEnvironment QProcessEnvironment::systemEnvironment()
+{
+    QProcessEnvironment env;
+    const char *entry;
+    for (int count = 0; (entry = environ[count]); ++count) {
+        const char *equal = strchr(entry, '=');
+        if (!equal)
+            continue;
+
+        QByteArray name(entry, equal - entry);
+        QByteArray value(equal + 1);
+        env.d->hash.insert(QProcessEnvironmentPrivate::Key(name),
+                           QProcessEnvironmentPrivate::Value(value));
+    }
+    return env;
+}
+
+static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Hash &environment, int *envc)
 {
     *envc = 0;
     if (environment.isEmpty())
@@ -469,17 +498,17 @@ static char **_q_dupEnvironment(const QHash<QByteArray, QByteArray> &environment
 #endif
     const QByteArray envLibraryPath = qgetenv(libraryPath);
     bool needToAddLibraryPath = !envLibraryPath.isEmpty() &&
-                                !environment.contains(libraryPath);
+                                !environment.contains(QProcessEnvironmentPrivate::Key(QByteArray(libraryPath)));
 
     char **envp = new char *[environment.count() + 2];
     envp[environment.count()] = 0;
     envp[environment.count() + 1] = 0;
 
-    QHash<QByteArray, QByteArray>::ConstIterator it = environment.constBegin();
-    const QHash<QByteArray, QByteArray>::ConstIterator end = environment.constEnd();
+    QProcessEnvironmentPrivate::Hash::ConstIterator it = environment.constBegin();
+    const QProcessEnvironmentPrivate::Hash::ConstIterator end = environment.constEnd();
     for ( ; it != end; ++it) {
-        QByteArray key = it.key();
-        QByteArray value = it.value();
+        QByteArray key = it.key().key;
+        QByteArray value = it.value().bytes();
         key.reserve(key.length() + 1 + value.length());
         key.append('=');
         key.append(value);

@@ -260,7 +260,8 @@ void QUnifiedTimer::restartAnimationTimer()
     } else if (!driver->isRunning() || isPauseTimerActive) {
         driver->start();
         isPauseTimerActive = false;
-    }
+    } else if (runningLeafAnimations == 0)
+        driver->stop();
 }
 
 void QUnifiedTimer::setTimingInterval(int interval)
