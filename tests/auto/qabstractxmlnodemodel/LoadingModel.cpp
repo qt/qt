@@ -173,10 +173,10 @@ QXmlNodeModelIndex LoadingModel::nextFromSimpleAxis(QAbstractXmlNodeModel::Simpl
             return internal->precedingSibling ? createIndex(internal->precedingSibling) : QXmlNodeModelIndex();
         case NextSibling:
             return internal->followingSibling ? createIndex(internal->followingSibling) : QXmlNodeModelIndex();
+        default:
+            qWarning("%s: unknown axis enum value %d", Q_FUNC_INFO, static_cast<int>(axis));
+            return QXmlNodeModelIndex();
     }
-
-    Q_ASSERT(false);
-    return QXmlNodeModelIndex();
 }
 
 QVector<QXmlNodeModelIndex> LoadingModel::attributes(const QXmlNodeModelIndex &ni) const
