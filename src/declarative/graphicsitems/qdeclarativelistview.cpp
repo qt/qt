@@ -1813,6 +1813,7 @@ void QDeclarativeListView::setDelegate(QDeclarativeComponent *delegate)
         d->ownModel = true;
     }
     if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model)) {
+        int oldCount = dataModel->count();
         dataModel->setDelegate(delegate);
         if (isComponentComplete()) {
             for (int i = 0; i < d->visibleItems.count(); ++i)
@@ -1831,6 +1832,8 @@ void QDeclarativeListView::setDelegate(QDeclarativeComponent *delegate)
             }
             d->updateViewport();
         }
+        if (oldCount != dataModel->count())
+            emit countChanged();
     }
     emit delegateChanged();
 }

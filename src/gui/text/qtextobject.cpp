@@ -891,11 +891,6 @@ QTextBlockUserData::~QTextBlockUserData()
     Returns true if this text block is valid; otherwise returns false.
 */
 
-bool QTextBlock::isValid() const
-{
-    return p != 0 && p->blockMap().isValid(n);
-}
-
 /*!
     \fn QTextBlock &QTextBlock::operator=(const QTextBlock &other)
 
@@ -1493,7 +1488,7 @@ QTextBlock::iterator QTextBlock::end() const
 */
 QTextBlock QTextBlock::next() const
 {
-    if (!isValid())
+    if (!isValid() || !p->blockMap().isValid(n))
         return QTextBlock();
 
     return QTextBlock(p, p->blockMap().next(n));
