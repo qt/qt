@@ -571,6 +571,8 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value FontStyleHint        Corresponds to the QFont::StyleHint property
     \value FontStyleStrategy    Corresponds to the QFont::StyleStrategy property
     \value FontKerning          Specifies whether the font has kerning turned on.
+    \value FontHintingPreference Controls the use of hinting according to values
+                                 of the QFont::HintingPreference enum.
 
     \omitvalue FirstFontProperty
     \omitvalue LastFontProperty
@@ -588,8 +590,13 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 
     List properties
 
-    \value ListStyle
-    \value ListIndent
+    \value ListStyle        Specifies the style used for the items in a list,
+                            described by values of the QTextListFormat::Style enum.
+    \value ListIndent       Specifies the amount of indentation used for a list.
+    \value ListNumberPrefix Defines the text which is prepended to item numbers in
+                            numeric lists.
+    \value ListNumberSuffix Defines the text which is appended to item numbers in
+                            numeric lists.
 
     Table and frame properties
 
@@ -2237,6 +2244,13 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     numbering scheme used for items in the list. Note that lists that use the
     decimal numbering scheme begin counting at 1 rather than 0.
 
+    Style properties can be set to further configure the appearance of list
+    items; for example, the ListNumberPrefix and ListNumberSuffix properties
+    can be used to customize the numbers used in an ordered list so that they
+    appear as (1), (2), (3), etc.:
+
+    \snippet doc/src/snippets/textdocument-listitemstyles/mainwindow.cpp add a styled, ordered list
+
     \sa QTextList
 */
 
@@ -2328,8 +2342,11 @@ QTextListFormat::QTextListFormat(const QTextFormat &fmt)
     \fn void QTextListFormat::setNumberPrefix(const QString &numberPrefix)
     \since 4.8
 
-    Sets the list format's number prefix. This can be used with all
-    sorted list types. It does not have any effect on unsorted list types.
+    Sets the list format's number prefix to the string specified by
+    \a numberPrefix. This can be used with all sorted list types. It does not
+    have any effect on unsorted list types.
+
+    The default prefix is an empty string.
 
     \sa numberPrefix()
 */
@@ -2347,8 +2364,10 @@ QTextListFormat::QTextListFormat(const QTextFormat &fmt)
     \fn void QTextListFormat::setNumberSuffix(const QString &numberSuffix)
     \since 4.8
 
-    Sets the list format's number suffix. This can be used with all
-    sorted list types. It does not have any effect on unsorted list types.
+    Sets the list format's number suffix to the string specified by
+    \a numberSuffix. This can be used with all sorted list types. It does not
+    have any effect on unsorted list types.
+
     The default suffix is ".".
 
     \sa numberSuffix()

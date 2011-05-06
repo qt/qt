@@ -1790,6 +1790,7 @@ QObjectList QObject::queryList(const char *inheritsClass,
 /*!
     \fn T qFindChild(const QObject *obj, const QString &name)
     \relates QObject
+    \overload qFindChildren()
     \obsolete
 
     This function is equivalent to
@@ -1805,6 +1806,7 @@ QObjectList QObject::queryList(const char *inheritsClass,
 /*!
     \fn QList<T> qFindChildren(const QObject *obj, const QString &name)
     \relates QObject
+    \overload qFindChildren()
     \obsolete
 
     This function is equivalent to
@@ -1824,38 +1826,6 @@ QObjectList QObject::queryList(const char *inheritsClass,
 
     This function is equivalent to
     \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a regExp).
-
-    \note This function was provided as a workaround for MSVC 6
-    which did not support member template functions. It is advised
-    to use the other form in new code.
-
-    \sa QObject::findChildren()
-*/
-
-/*!
-    \internal
-    \fn T qFindChild(const QObject *obj, const QString &name = QString(), T dummy = 0)
-    \relates QObject
-    \overload qFindChildren()
-
-    This function is equivalent to
-    \a{obj}->\l{QObject::findChild()}{findChild}<T>(\a name).
-
-    \note This function was provided as a workaround for MSVC 6
-    which did not support member template functions. It is advised
-    to use the other form in new code.
-
-    \sa QObject::findChild()
-*/
-
-/*!
-    \internal
-    \fn QList<T> qFindChildren(const QObject *obj, const QString &name = QString(), T dummy = 0)
-    \relates QObject
-    \overload qFindChildren()
-
-    This function is equivalent to
-    \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a name).
 
     \note This function was provided as a workaround for MSVC 6
     which did not support member template functions. It is advised
@@ -2989,7 +2959,7 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     In the same way 0 can be used for \a receiver in the meaning "any receiving object". In this case
     method shoud also be QMetaMethod(). \a sender parameter should be never 0.
 
-    \see disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method)
+    \sa disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method)
  */
 bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
                          const QObject *receiver, const QMetaMethod &method)

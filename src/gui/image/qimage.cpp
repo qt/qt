@@ -2022,7 +2022,7 @@ void QImage::fill(Qt::GlobalColor color)
 
 
 /*!
-    \fn void QImage::fill(Qt::GlobalColor color)
+    \fn void QImage::fill(const QColor &color)
 
     \overload
 
