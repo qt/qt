@@ -6,6 +6,8 @@ QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 DEFINES += Q_PLATFORM_WAYLAND
 DEFINES += $$QMAKE_DEFINES_WAYLAND
 
+QT += core-private gui-private opengl-private
+
 SOURCES =   main.cpp \
             qwaylandintegration.cpp \
             qwaylandnativeinterface.cpp \
