@@ -378,7 +378,7 @@ VGImage QVGPixmapData::toVGImage()
         QVGImagePool::instance()->useImage(this);
     }
 
-    if (!source.isNull() && recreate) {
+    if (!source.isNull() && (recreate || source.paintingActive())) {
         source.beginDataAccess();
         vgImageSubData
             (vgImage,

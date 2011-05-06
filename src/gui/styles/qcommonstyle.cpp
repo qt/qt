@@ -916,6 +916,7 @@ static QSizeF viewItemTextLayout(QTextLayout &textLayout, int lineWidth)
     return QSizeF(widthUsed, height);
 }
 
+
 void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewItemV4 *option, const QRect &rect) const
 {
     Q_Q(const QCommonStyle);
@@ -933,7 +934,7 @@ void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewIt
     textLayout.setFont(option->font);
     textLayout.setText(option->text);
 
-    QSizeF textLayoutSize = viewItemTextLayout(textLayout, textRect.width());
+    viewItemTextLayout(textLayout, textRect.width());
 
     QString elidedText;
     qreal height = 0;

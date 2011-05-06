@@ -92,6 +92,7 @@ QString DitaXmlGenerator::ditaTags[] =
         "apiDesc",
         "APIMap",
         "apiName",
+        "apiRelation",
         "audience",
         "author",
         "b",
@@ -284,14 +285,15 @@ void DitaXmlGenerator::writeCharacters(const QString& text)
   with the \a href attribute and the \a text.
  */
 void DitaXmlGenerator::addLink(const QString& href,
-                               const QStringRef& text)
+                               const QStringRef& text,
+                               DitaTag t)
 {
     if (!href.isEmpty()) {
-        writeStartTag(DT_xref);
+        writeStartTag(t);
         // formathtml
         xmlWriter().writeAttribute("href", href);
         writeCharacters(text.toString());
-        writeEndTag(); // </xref>
+        writeEndTag(); // </t>
     }
     else {
         writeCharacters(text.toString());
@@ -767,6 +769,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::Code:
         {
             writeStartTag(DT_codeblock);
+            xmlWriter().writeAttribute("outputclass","cpp");
             QString chars = trimmedTrailing(atom->string()); 
             writeText(chars, marker, relative);
             writeEndTag(); // </codeblock>
@@ -774,6 +777,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
 	break;
     case Atom::Qml:
         writeStartTag(DT_codeblock);
+        xmlWriter().writeAttribute("outputclass","qml");
         writeText(trimmedTrailing(atom->string()), marker, relative);
         writeEndTag(); // </codeblock>
 	break;
@@ -1718,7 +1722,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
          */
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
-        writeProlog(inner,marker);
+        writeProlog(inner);
             
         writeStartTag(DT_cxxClassDetail);
         writeStartTag(DT_cxxClassDefinition);
@@ -1838,7 +1842,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
-        writeProlog(inner,marker);
+        writeProlog(inner);
     
         writeStartTag(DT_cxxClassDetail);
         writeStartTag(DT_cxxClassDefinition);
@@ -1974,7 +1978,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
          */
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
-        writeProlog(inner,marker);
+        writeProlog(inner);
 
         writeStartTag(DT_cxxClassDetail);
         enterApiDesc(QString(),title);
@@ -2093,7 +2097,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
-        writeProlog(inner,marker);
+        writeProlog(inner);
 
         writeStartTag(DT_cxxClassDetail);
         enterApiDesc(QString(),title);
@@ -2195,7 +2199,7 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode* fake, CodeMarker* marker
 
     generateHeader(fake, fullTitle);
     generateBrief(fake, marker); // <shortdesc>
-    writeProlog(fake, marker);
+    writeProlog(fake);
 
     writeStartTag(DT_body);
     enterSection(QString(),QString());
@@ -4712,7 +4716,7 @@ void DitaXmlGenerator::writeLocation(const Node* n)
   Write the <cxxFunction> elements.
  */
 void DitaXmlGenerator::writeFunctions(const Section& s, 
-                                      const Node* n, 
+                                      const InnerNode* parent, 
                                       CodeMarker* marker,
                                       const QString& attribute)
 {
@@ -4775,7 +4779,7 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
                 }
             }
             
-            if (fn->name() == n->name()) {
+            if (fn->name() == parent->name()) {
                 writeStartTag(DT_cxxFunctionConstructor);
                 xmlWriter().writeAttribute("name","constructor");
                 xmlWriter().writeAttribute("value","constructor");
@@ -4789,7 +4793,8 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
             }
             else {
                 writeStartTag(DT_cxxFunctionDeclaredType);
-                writeCharacters(fn->returnType());
+                QString src = marker->typified(fn->returnType());
+                replaceTypesWithLinks(fn,parent,marker,src);
                 writeEndTag(); // <cxxFunctionDeclaredType>
             }
 
@@ -4825,7 +4830,7 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
                     writeEndTag(); // </cxxFunctionReimplemented>
                 }
             }
-            writeParameters(fn);
+            writeParameters(fn,parent,marker);
             writeLocation(fn);
             writeEndTag(); // <cxxFunctionDefinition>
 
@@ -4846,10 +4851,51 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
     }
 }
 
+static const QString typeTag("type");
+static const QChar charLangle = '<';
+static const QChar charAt = '@';
+
+/*!
+  This function replaces class and enum names with <apiRelation>
+  elements, i.e. links.
+ */
+void DitaXmlGenerator::replaceTypesWithLinks(const Node* n,
+                                             const InnerNode* parent,
+                                             CodeMarker* marker,
+                                             QString& src)
+{
+    QStringRef arg;
+    QStringRef par1;
+    int srcSize = src.size();
+    QString text;
+    for (int i=0; i<srcSize;) {
+        if (src.at(i) == charLangle && src.at(i+1) == charAt) {
+            if (!text.isEmpty()) {
+                writeCharacters(text);
+                text.clear();
+            }
+            i += 2;
+            if (parseArg(src, typeTag, &i, srcSize, &arg, &par1)) {
+                const Node* tn = marker->resolveTarget(arg.toString(), myTree, parent, n);
+                addLink(linkForNode(tn,parent),arg,DT_apiRelation);
+            }
+        }
+        else {
+            text += src.at(i++);
+        }
+    }
+    if (!text.isEmpty()) {
+        writeCharacters(text);
+        text.clear();
+    }
+}
+
 /*!
   This function writes the <cxxFunctionParameters> element.
  */
-void DitaXmlGenerator::writeParameters(const FunctionNode* fn)
+void DitaXmlGenerator::writeParameters(const FunctionNode* fn,
+                                       const InnerNode* parent,
+                                       CodeMarker* marker)
 {
     const QList<Parameter>& parameters = fn->parameters();
     if (!parameters.isEmpty()) {
@@ -4858,7 +4904,9 @@ void DitaXmlGenerator::writeParameters(const FunctionNode* fn)
         while (p != parameters.end()) {
             writeStartTag(DT_cxxFunctionParameter);
             writeStartTag(DT_cxxFunctionParameterDeclaredType);
-            writeCharacters((*p).leftType());
+            QString src = marker->typified((*p).leftType());
+            replaceTypesWithLinks(fn,parent,marker,src);
+            //writeCharacters((*p).leftType());
             if (!(*p).rightType().isEmpty())
                 writeCharacters((*p).rightType());
             writeEndTag(); // <cxxFunctionParameterDeclaredType>
@@ -5664,29 +5712,29 @@ QString DitaXmlGenerator::metadataDefault(DitaTag t) const
   \list
     \o <audience> *
     \o <author> *
-    \o <brand>
+    \o <brand> not used
     \o <category> *
     \o <compomnent> *
     \o <copyrholder> *
     \o <copyright> *
-    \o <created>
+    \o <created> not used
     \o <copyryear> *
-    \o <critdates>
-    \o <keyword>
-    \o <keywords>
+    \o <critdates> not used
+    \o <keyword> not used
+    \o <keywords> not used
     \o <metadata> *
-    \o <othermeta>
+    \o <othermeta> *
     \o <permissions> *
-    \o <platform>
+    \o <platform> not used
     \o <prodinfo> *
     \o <prodname> *
     \o <prolog> *
     \o <publisher> *
-    \o <resourceid>
-    \o <revised>
-    \o <source>
-    \o <tm>
-    \o <unknown>
+    \o <resourceid> not used
+    \o <revised> not used
+    \o <source> not used
+    \o <tm> not used
+    \o <unknown> not used
     \o <vrm> *
     \o <vrmlist> *
   \endlist
@@ -5695,7 +5743,7 @@ QString DitaXmlGenerator::metadataDefault(DitaTag t) const
   
  */
 void
-DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
+DitaXmlGenerator::writeProlog(const InnerNode* inner)
 {
     if (!inner)
         return;
