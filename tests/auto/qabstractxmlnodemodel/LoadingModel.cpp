@@ -77,8 +77,8 @@ const LoadingModel::Node *LoadingModel::toInternal(const QXmlNodeModelIndex &ni)
 
 QXmlNodeModelIndex LoadingModel::createIndex(const Node *const internal) const
 {
-    Q_ASSERT_X(internal, Q_FUNC_INFO,
-               "We shouldn't construct from null pointers.");
+    if (!internal)
+        qFatal("%s: cannot construct a model index from a null pointer", Q_FUNC_INFO);
     return QAbstractXmlNodeModel::createIndex(const_cast<Node *>(internal));
 }
 
