@@ -393,6 +393,7 @@ public:
     static QBasicAtomicInt lockCount;
     static QBasicAtomicInt sentinel;
     static QMutex mutex;
+    static int errorCount;
     void start()
     {
         t.start();
@@ -402,13 +403,13 @@ public:
     {
         while (t.elapsed() < one_minute) {
             mutex.lock();
-            Q_ASSERT(!sentinel.ref());
-            Q_ASSERT(sentinel.deref());
+            if (sentinel.ref()) ++errorCount;
+            if (!sentinel.deref()) ++errorCount;
             lockCount.ref();
             mutex.unlock();
             if (mutex.tryLock()) {
-                Q_ASSERT(!sentinel.ref());
-                Q_ASSERT(sentinel.deref());
+                if (sentinel.ref()) ++errorCount;
+                if (!sentinel.deref()) ++errorCount;
                 lockCount.ref();
                 mutex.unlock();
             }
@@ -418,6 +419,7 @@ public:
 QMutex StressTestThread::mutex;
 QBasicAtomicInt StressTestThread::lockCount = Q_BASIC_ATOMIC_INITIALIZER(0);
 QBasicAtomicInt StressTestThread::sentinel = Q_BASIC_ATOMIC_INITIALIZER(-1);
+int StressTestThread::errorCount = 0;
 
 void tst_QMutex::stressTest()
 {
@@ -427,6 +429,7 @@ void tst_QMutex::stressTest()
     QVERIFY(threads[0].wait(one_minute + 10000));
     for (int i = 1; i < threadCount; ++i)
         QVERIFY(threads[i].wait(10000));
+    QCOMPARE(StressTestThread::errorCount, 0);
     qDebug("locked %d times", int(StressTestThread::lockCount));
 }
 
