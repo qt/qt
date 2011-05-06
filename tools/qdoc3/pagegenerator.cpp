@@ -70,12 +70,6 @@ PageGenerator::~PageGenerator()
 	endSubPage();
 }
 
-static QRegExp linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
-static QRegExp funcTag("(<@func target=\"([^\"]*)\">)(.*)(</@func>)");
-static QRegExp typeTag("(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)");
-static QRegExp spanTag("</@(?:comment|preprocessor|string|char)>");
-static QRegExp unknownTag("</?@[^>]*>");
-
 bool PageGenerator::parseArg(const QString& src,
                              const QString& tag,
                              int* pos,
