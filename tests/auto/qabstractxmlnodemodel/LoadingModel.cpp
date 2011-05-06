@@ -98,8 +98,10 @@ QXmlNodeModelIndex::DocumentOrder LoadingModel::compareOrder(const QXmlNodeModel
 {
     const Node *const in1 = toInternal(n1);
     const Node *const in2 = toInternal(n2);
-    Q_ASSERT(m_nodes.indexOf(in1) != -1);
-    Q_ASSERT(m_nodes.indexOf(in2) != -1);
+    if (m_nodes.indexOf(in1) == -1)
+        qFatal("%s: node n1 is not in internal node list", Q_FUNC_INFO);
+    if (m_nodes.indexOf(in2) == -1)
+        qFatal("%s: node n2 is not in internal node list", Q_FUNC_INFO);
 
     if(in1 == in2)
         return QXmlNodeModelIndex::Is;
