@@ -129,8 +129,11 @@ QVariant LoadingModel::typedValue(const QXmlNodeModelIndex &ni) const
 {
     const Node *const internal = toInternal(ni);
 
-    Q_ASSERT(internal->kind == QXmlNodeModelIndex::Attribute
-             || internal->kind == QXmlNodeModelIndex::Element);
+    if (internal->kind != QXmlNodeModelIndex::Attribute
+        && internal->kind != QXmlNodeModelIndex::Element) {
+        qWarning("%s: node must be an attribute or element", Q_FUNC_INFO);
+        return QVariant();
+    }
 
     return internal->value;
 }
