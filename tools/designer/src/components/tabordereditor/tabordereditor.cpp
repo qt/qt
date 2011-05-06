@@ -208,7 +208,7 @@ bool TabOrderEditor::skipWidget(QWidget *w) const
         if (index != -1) {
             bool ok = false;
             Qt::FocusPolicy q = (Qt::FocusPolicy) Utils::valueOf(sheet->property(index), &ok);
-            return !ok || q == Qt::NoFocus;
+            return !ok || !(q & Qt::TabFocus);
         }
     }
 

@@ -86,7 +86,7 @@ namespace QPatternist
         virtual const SourceLocationReflection *actualReflection() const;
 
     private:
-        const DynamicContext::Ptr m_context;
+        DynamicContext *m_context;
     };
 }
 
