@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QFile>
 #include <QStack>
 
@@ -337,7 +336,7 @@ void Loader::load()
             /* Fallthrough. */
             case QXmlStreamReader::Invalid:
             {
-                qWarning(qPrintable(reader.errorString()));
+                qWarning("%s", qPrintable(reader.errorString()));
                 m_result.clear();
                 return;
             }
@@ -346,7 +345,7 @@ void Loader::load()
 
     if(reader.hasError())
     {
-        qWarning(qPrintable(reader.errorString()));
+        qWarning("%s", qPrintable(reader.errorString()));
         m_result.clear();
     }
 }
