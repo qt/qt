@@ -144,6 +144,7 @@ private slots:
     void rgbSwapped();
 
     void deepCopyWhenPaintingActive();
+    void scaled_QTBUG19157();
 };
 
 tst_QImage::tst_QImage()
@@ -1900,6 +1901,13 @@ void tst_QImage::deepCopyWhenPaintingActive()
     painter.drawEllipse(image.rect());
 
     QVERIFY(copy != image);
+}
+
+void tst_QImage::scaled_QTBUG19157()
+{
+    QImage foo(5000, 1, QImage::Format_RGB32);
+    foo = foo.scaled(1024, 1024, Qt::KeepAspectRatio);
+    QVERIFY(!foo.isNull());
 }
 
 QTEST_MAIN(tst_QImage)
