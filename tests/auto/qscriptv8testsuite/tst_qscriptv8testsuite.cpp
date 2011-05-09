@@ -95,9 +95,11 @@ protected:
 static QScriptValue qscript_fail(QScriptContext *ctx, QScriptEngine *eng)
 {
     QScriptValue realFail = ctx->callee().data();
-    Q_ASSERT(realFail.isFunction());
+    if (!realFail.isFunction())
+        qFatal("%s: realFail must be a function", Q_FUNC_INFO);
     QScriptValue ret = realFail.call(ctx->thisObject(), ctx->argumentsObject());
-    Q_ASSERT(eng->hasUncaughtException());
+    if (!eng->hasUncaughtException())
+        qFatal("%s: realFail function did not throw an exception", Q_FUNC_INFO);
     ret.setProperty("expected", ctx->argument(0));
     ret.setProperty("actual", ctx->argument(1));
     ret.setProperty("message", ctx->argument(2));
