@@ -967,6 +967,7 @@ void tst_QXmlQuery::evaluateToReceiver()
     QString produced;
     QTextStream stream(&produced, QIODevice::WriteOnly);
     PushBaseliner push(stream, query.namePool());
+    QVERIFY(push.isValid());
     query.evaluateTo(&push);
 
     const QString baselineName(inputFile(QLatin1String(SRCDIR "pushBaselines/") + inputQuery.left(inputQuery.length() - 2) + QString::fromLatin1("ref")));
@@ -1685,6 +1686,7 @@ void tst_QXmlQuery::constCorrectness() const
         QString dummyString;
         QTextStream dummyStream(&dummyString);
         PushBaseliner dummy(dummyStream, query.namePool());
+        QVERIFY(dummy.isValid());
         query.evaluateTo(&dummy);
     }
 }
