@@ -85,8 +85,8 @@ void MainWindow::backgroundButtonGroupClicked(QAbstractButton *button)
 {
     QList<QAbstractButton *> buttons = backgroundButtonGroup->buttons();
     foreach (QAbstractButton *myButton, buttons) {
-    if (myButton != button)
-        button->setChecked(false);
+        if (myButton != button)
+            myButton->setChecked(false);
     }
     QString text = button->text();
     if (text == tr("Blue Grid"))
