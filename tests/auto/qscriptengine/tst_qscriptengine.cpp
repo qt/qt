@@ -5701,7 +5701,10 @@ void tst_QScriptEngine::collectGarbageAfterNativeArguments()
 
 static QScriptValue constructQObjectFromThisObject(QScriptContext *ctx, QScriptEngine *eng)
 {
-    Q_ASSERT(ctx->isCalledAsConstructor());
+    if (!ctx->isCalledAsConstructor()) {
+        qWarning("%s: ctx->isCalledAsConstructor() returned false", Q_FUNC_INFO);
+        return QScriptValue();
+    }
     return eng->newQObject(ctx->thisObject(), new QObject, QScriptEngine::ScriptOwnership);
 }
 

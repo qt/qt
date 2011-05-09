@@ -545,6 +545,17 @@ static void squashTags(QString dataTag, const QVector<bool>& results, QList<QStr
     }
 }
 
+static QString streamStatusString(QDataStream::Status s)
+{
+    switch (s) {
+    case QDataStream::ReadPastEnd:
+        return QString("ReadPastEnd");
+    case QDataStream::ReadCorruptData:
+        return QString("ReadCorruptData");
+    default:
+        return QString("Unknown (%1)").arg(static_cast<int>(s));
+    }
+}
 
 QHash<QString, QString> TestGenerator::generateTest()
 {
@@ -596,7 +607,10 @@ QHash<QString, QString> TestGenerator::generateTest()
     m_tempFile.seek(0);
     QDataStream in(&m_tempFile);
     in >> dataTags;
-    Q_ASSERT(in.status() == in.Ok);
+    if (in.status() != in.Ok)
+        qFatal("%s: stream has bad status %s after reading dataTags",
+               Q_FUNC_INFO,
+               qPrintable(streamStatusString(in.status())));
 
     while(!in.atEnd())
     {
@@ -720,10 +734,13 @@ QHash<QString, QString> TestGenerator::generateTest()
         castUInt32List.append(QPair<QString, quint32>(dataTag, castUInt32Res));
         castUInt16List.append(QPair<QString, quint16>(dataTag, castUInt16Res));
 
-        Q_ASSERT(in.status() == in.Ok);
+        if (in.status() != in.Ok)
+            qFatal("%s: stream has bad status %s after reading data items",
+                   Q_FUNC_INFO,
+                   qPrintable(streamStatusString(in.status())));
     }
-
-    Q_ASSERT(in.atEnd());
+    if (!in.atEnd())
+        qFatal("%s: stream has more data after reading all data items", Q_FUNC_INFO);
 
     // Generate.
     QHash<QString, QString> result;
