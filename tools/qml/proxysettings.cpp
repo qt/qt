@@ -54,17 +54,17 @@ ProxySettings::ProxySettings (QWidget * parent)
 
 #if !defined Q_WS_MAEMO_5
     // the onscreen keyboard can't cope with masks
-    proxyServerEdit->setInputMask ("000.000.000.000;_");
+    proxyServerEdit->setInputMask(QLatin1String("000.000.000.000;_"));
 #endif
     QIntValidator *validator = new QIntValidator (0, 9999, this);
-    proxyPortEdit->setValidator (validator);
+    proxyPortEdit->setValidator(validator);
 
     QSettings settings;
-    proxyCheckBox->setChecked (settings.value ("http_proxy/use", 0).toBool ());
-    proxyServerEdit->insert (settings.value ("http_proxy/hostname", "").toString ());
-    proxyPortEdit->insert (settings.value ("http_proxy/port", "80").toString ());
-    usernameEdit->insert (settings.value ("http_proxy/username", "").toString ());
-    passwordEdit->insert (settings.value ("http_proxy/password", "").toString ());
+    proxyCheckBox->setChecked(settings.value(QLatin1String("http_proxy/use"), 0).toBool());
+    proxyServerEdit->insert(settings.value(QLatin1String("http_proxy/hostname")).toString());
+    proxyPortEdit->insert(settings.value(QLatin1String("http_proxy/port"), QLatin1String("80")).toString ());
+    usernameEdit->insert(settings.value(QLatin1String("http_proxy/username")).toString ());
+    passwordEdit->insert(settings.value(QLatin1String("http_proxy/password")).toString ());
 }
 
 ProxySettings::~ProxySettings()
@@ -75,11 +75,11 @@ void ProxySettings::accept ()
 {
     QSettings settings;
 
-    settings.setValue ("http_proxy/use", proxyCheckBox->isChecked ());
-    settings.setValue ("http_proxy/hostname", proxyServerEdit->text ());
-    settings.setValue ("http_proxy/port", proxyPortEdit->text ());
-    settings.setValue ("http_proxy/username", usernameEdit->text ());
-    settings.setValue ("http_proxy/password", passwordEdit->text ());
+    settings.setValue(QLatin1String("http_proxy/use"), proxyCheckBox->isChecked());
+    settings.setValue(QLatin1String("http_proxy/hostname"), proxyServerEdit->text());
+    settings.setValue(QLatin1String("http_proxy/port"), proxyPortEdit->text());
+    settings.setValue(QLatin1String("http_proxy/username"), usernameEdit->text());
+    settings.setValue(QLatin1String("http_proxy/password"), passwordEdit->text());
 
     QDialog::accept ();
 }
@@ -89,13 +89,13 @@ QNetworkProxy ProxySettings::httpProxy ()
     QSettings settings;
     QNetworkProxy proxy;
 
-    bool proxyInUse = settings.value ("http_proxy/use", 0).toBool ();
+    bool proxyInUse = settings.value(QLatin1String("http_proxy/use"), 0).toBool();
     if (proxyInUse) {
         proxy.setType (QNetworkProxy::HttpProxy);
-        proxy.setHostName (settings.value ("http_proxy/hostname", "").toString ());// "192.168.220.5"
-        proxy.setPort (settings.value ("http_proxy/port", 80).toInt ());  // 8080
-        proxy.setUser (settings.value ("http_proxy/username", "").toString ());
-        proxy.setPassword (settings.value ("http_proxy/password", "").toString ());
+        proxy.setHostName (settings.value(QLatin1String("http_proxy/hostname")).toString());// "192.168.220.5"
+        proxy.setPort (settings.value(QLatin1String("http_proxy/port"), 80).toInt());  // 8080
+        proxy.setUser (settings.value(QLatin1String("http_proxy/username")).toString());
+        proxy.setPassword (settings.value(QLatin1String("http_proxy/password")).toString());
         //QNetworkProxy::setApplicationProxy (proxy);
     }
     else {
@@ -107,7 +107,7 @@ QNetworkProxy ProxySettings::httpProxy ()
 bool ProxySettings::httpProxyInUse()
 {
     QSettings settings;
-    return settings.value ("http_proxy/use", 0).toBool ();
+    return settings.value(QLatin1String("http_proxy/use"), 0).toBool();
 }
 
 QT_END_NAMESPACE
