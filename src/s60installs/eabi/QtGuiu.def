@@ -12799,4 +12799,5 @@ EXPORTS
 	_ZNK10QZipWriter6deviceEv @ 12798 NONAME
 	_ZNK10QZipWriter6existsEv @ 12799 NONAME
 	_ZNK10QZipWriter6statusEv @ 12800 NONAME
+	_Z43qt_s60_setPartialScreenAutomaticTranslationb @ 12801 NONAME
 

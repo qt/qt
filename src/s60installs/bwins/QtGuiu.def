@@ -13953,4 +13953,5 @@ EXPORTS
 	?staticMetaObjectExtraData@QWorkspace@@0UQMetaObjectExtraData@@B @ 13952 NONAME ; struct QMetaObjectExtraData const QWorkspace::staticMetaObjectExtraData
 	?staticMetaObjectExtraData@QSessionManager@@0UQMetaObjectExtraData@@B @ 13953 NONAME ; struct QMetaObjectExtraData const QSessionManager::staticMetaObjectExtraData
 	?qt_static_metacall@QGraphicsItemAnimation@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13954 NONAME ; void QGraphicsItemAnimation::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_s60_setPartialScreenAutomaticTranslation@@YAX_N@Z @ 13955 NONAME ; void qt_s60_setPartialScreenAutomaticTranslation(bool)
 
