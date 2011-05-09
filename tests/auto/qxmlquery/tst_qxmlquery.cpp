@@ -3080,6 +3080,7 @@ void tst_QXmlQuery::setNetworkAccessManager() const
     {
         NetworkOverrider networkOverrider(QUrl(QLatin1String("tag:example.com:DOESNOTEXIST")),
                                           QUrl(inputFileAsURI(QLatin1String(XMLPATTERNSDIR "/queries/simpleDocument.xml"))));
+        QVERIFY(networkOverrider.isValid());
 
         QXmlQuery query;
         query.setNetworkAccessManager(&networkOverrider);
@@ -3096,6 +3097,7 @@ void tst_QXmlQuery::setNetworkAccessManager() const
     {
         NetworkOverrider networkOverrider(QUrl(QLatin1String("tag:example.com:DOESNOTEXIST")),
                                           QUrl(inputFileAsURI(QLatin1String(XMLPATTERNSDIR "/queries/concat.xq"))));
+        QVERIFY(networkOverrider.isValid());
 
         QXmlQuery query;
         query.setNetworkAccessManager(&networkOverrider);
