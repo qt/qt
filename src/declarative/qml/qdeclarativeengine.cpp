@@ -1326,6 +1326,8 @@ Example (where \c parentItem is the id of an existing QML item):
 In the case of an error, a QtScript Error object is thrown. This object has an additional property,
 \c qmlErrors, which is an array of the errors encountered.
 Each object in this array has the members \c lineNumber, \c columnNumber, \c fileName and \c message.
+For example, if the above snippet had misspelled color as 'colro' then the array would contain an object like the following:
+{ "lineNumber" : 1, "columnNumber" : 32, "fileName" : "dynamicSnippet1", "message" : "Cannot assign to non-existent property \"colro\""}.
 
 Note that this function returns immediately, and therefore may not work if
 the \a qml string loads new components (that is, external QML files that have not yet been loaded).
