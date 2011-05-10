@@ -84,13 +84,14 @@ QXmlNodeModelIndex LoadingModel::createIndex(const Node *const internal) const
 
 QUrl LoadingModel::documentUri(const QXmlNodeModelIndex &) const
 {
-    Q_ASSERT(false);
+    qFatal("%s: This method should not be called during the test", Q_FUNC_INFO);
     return QUrl();
 }
 
 QXmlNodeModelIndex::NodeKind LoadingModel::kind(const QXmlNodeModelIndex &ni) const
 {
-    Q_ASSERT(!ni.isNull());
+    if (ni.isNull())
+        qFatal("%s: node model index should not be null", Q_FUNC_INFO);
     return toInternal(ni)->kind;
 }
 
@@ -332,13 +333,11 @@ void Loader::load()
                 break;
             }
             case QXmlStreamReader::DTD:
-            /* Fallthrough. */
+                qFatal("%s: QXmlStreamReader::DTD token is not supported", Q_FUNC_INFO);
+                break;
             case QXmlStreamReader::EntityReference:
-            {
-                Q_ASSERT_X(false, Q_FUNC_INFO,
-                           "We don't support this.");
-                /* Fallthrough. */
-            }
+                qFatal("%s: QXmlStreamReader::EntityReference token is not supported", Q_FUNC_INFO);
+                break;
             case QXmlStreamReader::NoToken:
             /* Fallthrough. */
             case QXmlStreamReader::Invalid:
