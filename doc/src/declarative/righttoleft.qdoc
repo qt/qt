@@ -106,7 +106,7 @@ Applying mirroring in this manner does not change the actual value of the releva
 direction of positioners and model views that takes the mirroring into account. Similarly the \l Text,
 \l TextInput and \l TextEdit elements have gained the read-only property \c effectiveHorizontalAlignment
 for querying the effective visual alignment of text. For anchors, the read only
-\l {Item::anchors}{anchors.mirrored} property reflects whether anchors have been mirrored.
+\l {Item::anchors.top}{anchors.mirrored} property reflects whether anchors have been mirrored.
 
 Note that application layouts and animations that are defined using \l {Item::}{x} property values (as
 opposed to anchors or positioner elements) are not affected by the \l LayoutMirroring attached property.
