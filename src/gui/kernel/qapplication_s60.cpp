@@ -1509,6 +1509,10 @@ void QSymbianControl::HandleResourceChange(int resourceType)
 #ifdef Q_WS_S60
     case KEikDynamicLayoutVariantSwitch:
     {
+#ifdef QT_SOFTKEYS_ENABLED
+        // Update needed just in case softkeys contain icons
+        QSoftKeyManager::updateSoftKeys();
+#endif
         handleClientAreaChange();
         // Send resize event to trigger desktopwidget workAreaResized signal
         if (qt_desktopWidget) {
