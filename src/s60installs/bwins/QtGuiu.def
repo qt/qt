@@ -12982,4 +12982,5 @@ EXPORTS
 	?releaseCachedResources@QGraphicsSystem@@UAEXXZ @ 12981 NONAME ; void QGraphicsSystem::releaseCachedResources(void)
 	?qt_s60_setPartialScreenInputMode@@YAX_N@Z @ 12982 NONAME ; void qt_s60_setPartialScreenInputMode(bool)
 	?paintingActive@QVolatileImage@@QBE_NXZ @ 12983 NONAME ; bool QVolatileImage::paintingActive(void) const
+	?qt_draw_decoration_for_glyphs@@YAXPAVQPainter@@PBIPBUQFixedPoint@@HPAVQFontEngine@@ABVQFont@@ABVQTextCharFormat@@@Z @ 12984 NONAME ; void qt_draw_decoration_for_glyphs(class QPainter *, unsigned int const *, struct QFixedPoint const *, int, class QFontEngine *, class QFont const &, class QTextCharFormat const &)
 
