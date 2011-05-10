@@ -458,4 +458,7 @@ EXPORTS
 	?staticMetaObject@QSqlDriver@@2UQMetaObject@@B @ 457 NONAME ; struct QMetaObject const QSqlDriver::staticMetaObject
 	?staticMetaObject@QSqlQueryModel@@2UQMetaObject@@B @ 458 NONAME ; struct QMetaObject const QSqlQueryModel::staticMetaObject
 	?staticMetaObject@QSQLiteDriver@@2UQMetaObject@@B @ 459 NONAME ; struct QMetaObject const QSQLiteDriver::staticMetaObject
+	??4QSqlRelation@@QAEAAV0@ABV0@@Z @ 460 NONAME ; class QSqlRelation & QSqlRelation::operator=(class QSqlRelation const &)
+	??0QSqlDriverFactoryInterface@@QAE@XZ @ 461 NONAME ; QSqlDriverFactoryInterface::QSqlDriverFactoryInterface(void)
+	??0QSqlRelation@@QAE@ABV0@@Z @ 462 NONAME ; QSqlRelation::QSqlRelation(class QSqlRelation const &)
 

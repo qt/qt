@@ -570,4 +570,8 @@ EXPORTS
 	?setOutputDevice@PulseSupport@Phonon@@QAE_NVQString@@H@Z @ 569 NONAME ; bool Phonon::PulseSupport::setOutputDevice(class QString, int)
 	?qt_metacast@AudioDataOutput@Phonon@@UAEPAXPBD@Z @ 570 NONAME ; void * Phonon::AudioDataOutput::qt_metacast(char const *)
 	?clearStreamCache@PulseSupport@Phonon@@QAEXVQString@@@Z @ 571 NONAME ; void Phonon::PulseSupport::clearStreamCache(class QString)
+	??_EEffectParameter@Phonon@@QAE@I@Z @ 572 NONAME ; Phonon::EffectParameter::~EffectParameter(unsigned int)
+	??_EPath@Phonon@@QAE@I@Z @ 573 NONAME ; Phonon::Path::~Path(unsigned int)
+	??_EMediaSource@Phonon@@QAE@I@Z @ 574 NONAME ; Phonon::MediaSource::~MediaSource(unsigned int)
+	??_EObjectDescriptionData@Phonon@@QAE@I@Z @ 575 NONAME ; Phonon::ObjectDescriptionData::~ObjectDescriptionData(unsigned int)
 

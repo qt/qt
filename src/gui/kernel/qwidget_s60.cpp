@@ -825,7 +825,8 @@ void QWidgetPrivate::s60UpdateIsOpaque()
     RWindow *const window = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
 
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
-    if (QApplicationPrivate::instance()->useTranslucentEGLSurfaces) {
+    if (QApplicationPrivate::instance()->useTranslucentEGLSurfaces
+            && !extra->topextra->forcedToRaster) {
         window->SetSurfaceTransparency(!isOpaque);
         extra->topextra->nativeWindowTransparencyEnabled = !isOpaque;
         return;
@@ -1009,6 +1010,7 @@ void QWidgetPrivate::createTLSysExtra()
 {
     extra->topextra->inExpose = 0;
     extra->topextra->nativeWindowTransparencyEnabled = 0;
+    extra->topextra->forcedToRaster = 0;
 }
 
 void QWidgetPrivate::deleteTLSysExtra()
