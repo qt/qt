@@ -12180,8 +12180,19 @@ EXPORTS
 	_ZNK14QVolatileImage7toImageEv @ 12179 NONAME
 	_ZNK14QVolatileImage9byteCountEv @ 12180 NONAME
 	_ZNK14QVolatileImage9constBitsEv @ 12181 NONAME
-	_ZN15QGraphicsSystem22releaseCachedResourcesEv @ 12182 NONAME
+	_ZN15QGraphicsSystem22releaseCachedResourcesEv @ 12182 NONAME ABSENT
 	_Z32qt_s60_setPartialScreenInputModeb @ 12183 NONAME
 	_Z29qt_draw_decoration_for_glyphsP8QPainterPKjPK11QFixedPointiP11QFontEngineRK5QFontRK15QTextCharFormat @ 12184 NONAME
 	_ZNK14QVolatileImage14paintingActiveEv @ 12185 NONAME
+	_ZN11QTextEngine17leadingSpaceWidthERK11QScriptLine @ 12186 NONAME
+	_ZN15QGraphicsLayout28instantInvalidatePropagationEv @ 12187 NONAME
+	_ZN15QGraphicsLayout31setInstantInvalidatePropagationEb @ 12188 NONAME
+	_ZN15QGraphicsSystem17platformExtensionEv @ 12189 NONAME
+	_ZN24QSymbianGraphicsSystemEx10hasBCM2727Ev @ 12190 NONAME
+	_ZN24QSymbianGraphicsSystemEx13forceToRasterEP7QWidget @ 12191 NONAME
+	_ZN24QSymbianGraphicsSystemEx22releaseAllGpuResourcesEv @ 12192 NONAME
+	_ZN24QSymbianGraphicsSystemEx25releaseCachedGpuResourcesEv @ 12193 NONAME
+	_ZTI17QGraphicsSystemEx @ 12194 NONAME
+	_ZTI24QSymbianGraphicsSystemEx @ 12195 NONAME
+	_ZTV24QSymbianGraphicsSystemEx @ 12196 NONAME
 

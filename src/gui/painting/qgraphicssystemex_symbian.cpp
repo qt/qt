@@ -39,66 +39,49 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_p.h"
+#include "qgraphicssystemex_symbian_p.h"
+#include "private/qwidget_p.h"
+#include "private/qbackingstore_p.h"
+#include "private/qapplication_p.h"
+#include "qwidget_p.h"
 
-#ifdef Q_WS_X11
-# include <private/qpixmap_x11_p.h>
-#endif
-#if defined(Q_WS_WIN)
-# include <private/qpixmap_raster_p.h>
-#endif
-#ifdef Q_WS_MAC
-# include <private/qpixmap_mac_p.h>
-#endif
-#ifdef Q_OS_SYMBIAN
-# include <private/qpixmap_s60_p.h>
-# include <private/qgraphicssystemex_symbian_p.h>
-#else
-# include <private/qgraphicssystemex_p.h>
-#endif
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
-QGraphicsSystem::~QGraphicsSystem()
+void QSymbianGraphicsSystemEx::releaseCachedGpuResources()
 {
+    // Do nothing here
+    // This is implemented in graphics system specific plugin
 }
 
-QPixmapData *QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixelType type)
+void QSymbianGraphicsSystemEx::releaseAllGpuResources()
 {
-#ifdef Q_WS_QWS
-    Q_UNUSED(type);
-#endif
-#if defined(Q_WS_X11)
-    return new QX11PixmapData(type);
-#elif defined(Q_WS_WIN)
-    return new QRasterPixmapData(type);
-#elif defined(Q_WS_MAC)
-    return new QMacPixmapData(type);
-#elif defined(Q_OS_SYMBIAN)
-    return new QS60PixmapData(type);    
-#elif !defined(Q_WS_QWS)
-#error QGraphicsSystem::createDefaultPixmapData() not implemented
-#endif
-    return 0;
+    releaseCachedGpuResources();
+
+    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+        if (QTLWExtra *topExtra = qt_widget_private(widget)->maybeTopData())
+            topExtra->backingStore.destroy();
+    }
 }
 
-QPixmapData *QGraphicsSystem::createPixmapData(QPixmapData *origin)
+bool QSymbianGraphicsSystemEx::hasBCM2727()
 {
-    return createPixmapData(origin->pixelType());
+    return !QApplicationPrivate::instance()->useTranslucentEGLSurfaces;
 }
 
-#ifdef Q_OS_SYMBIAN
-Q_GLOBAL_STATIC(QSymbianGraphicsSystemEx, symbianPlatformExtension)
-#endif
-
-QGraphicsSystemEx* QGraphicsSystem::platformExtension()
+void QSymbianGraphicsSystemEx::forceToRaster(QWidget *window)
 {
-#ifdef Q_OS_SYMBIAN
-    // this is used on raster graphics systems. HW accelerated
-    // graphics systems will overwrite this function.
-    return symbianPlatformExtension();
-#endif
-    return 0;
+    if (window && window->isWindow()) {
+        qt_widget_private(window)->createTLExtra();
+        if (QTLWExtra *topExtra = qt_widget_private(window)->maybeTopData()) {
+            topExtra->forcedToRaster = 1;
+            if (topExtra->backingStore.data()) {
+                topExtra->backingStore.create(window);
+                topExtra->backingStore.registerWidget(window);
+            }
+        }
+    }
 }
 
 QT_END_NAMESPACE

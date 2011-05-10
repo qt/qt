@@ -39,66 +39,35 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_p.h"
+#ifndef QSYMBIANGRAPHICSSYSTEMEX_P_H
+#define QSYMBIANGRAPHICSSYSTEMEX_P_H
 
-#ifdef Q_WS_X11
-# include <private/qpixmap_x11_p.h>
-#endif
-#if defined(Q_WS_WIN)
-# include <private/qpixmap_raster_p.h>
-#endif
-#ifdef Q_WS_MAC
-# include <private/qpixmap_mac_p.h>
-#endif
-#ifdef Q_OS_SYMBIAN
-# include <private/qpixmap_s60_p.h>
-# include <private/qgraphicssystemex_symbian_p.h>
-#else
-# include <private/qgraphicssystemex_p.h>
-#endif
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "private/qgraphicssystemex_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QGraphicsSystem::~QGraphicsSystem()
-{
-}
+class QWidget;
 
-QPixmapData *QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixelType type)
+class Q_GUI_EXPORT QSymbianGraphicsSystemEx : public QGraphicsSystemEx
 {
-#ifdef Q_WS_QWS
-    Q_UNUSED(type);
-#endif
-#if defined(Q_WS_X11)
-    return new QX11PixmapData(type);
-#elif defined(Q_WS_WIN)
-    return new QRasterPixmapData(type);
-#elif defined(Q_WS_MAC)
-    return new QMacPixmapData(type);
-#elif defined(Q_OS_SYMBIAN)
-    return new QS60PixmapData(type);    
-#elif !defined(Q_WS_QWS)
-#error QGraphicsSystem::createDefaultPixmapData() not implemented
-#endif
-    return 0;
-}
-
-QPixmapData *QGraphicsSystem::createPixmapData(QPixmapData *origin)
-{
-    return createPixmapData(origin->pixelType());
-}
-
-#ifdef Q_OS_SYMBIAN
-Q_GLOBAL_STATIC(QSymbianGraphicsSystemEx, symbianPlatformExtension)
-#endif
-
-QGraphicsSystemEx* QGraphicsSystem::platformExtension()
-{
-#ifdef Q_OS_SYMBIAN
-    // this is used on raster graphics systems. HW accelerated
-    // graphics systems will overwrite this function.
-    return symbianPlatformExtension();
-#endif
-    return 0;
-}
+public:
+    virtual void releaseCachedGpuResources();
+    virtual void releaseAllGpuResources();
+    virtual bool hasBCM2727();
+    virtual void forceToRaster(QWidget *window);
+};
 
 QT_END_NAMESPACE
+
+#endif

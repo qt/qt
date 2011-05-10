@@ -719,9 +719,12 @@ EXPORTS
 	_ZN13QGLPixmapData14reclaimTextureEv @ 718 NONAME
 	_ZN13QGLPixmapData21detachTextureFromPoolEv @ 719 NONAME
 	_ZN13QGLPixmapData9hibernateEv @ 720 NONAME
-	_ZN17QGLGraphicsSystem22releaseCachedResourcesEv @ 721 NONAME
+	_ZN17QGLGraphicsSystem22releaseCachedResourcesEv @ 721 NONAME ABSENT
 	_ZN13QGLPixmapData11idealFormatER6QImage6QFlagsIN2Qt19ImageConversionFlagEE @ 722 NONAME
 	_ZN13QGLPixmapData24releaseNativeImageHandleEv @ 723 NONAME
 	_ZN13QGLPixmapData25initFromNativeImageHandleEPvRK7QString @ 724 NONAME
 	_ZN13QGLPixmapData35createFromNativeImageHandleProviderEv @ 725 NONAME
+	_ZN17QGLGraphicsSystem17platformExtensionEv @ 726 NONAME
+	_ZN17QGLGraphicsSystem25releaseCachedGpuResourcesEv @ 727 NONAME
+	_ZThn4_N17QGLGraphicsSystem25releaseCachedGpuResourcesEv @ 728 NONAME
 
