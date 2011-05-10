@@ -6,6 +6,9 @@ SUBDIRS +=  domtraversal \
             simpleselector \
             imageanalyzer \
             framecapture \
+            simplewebplugin \
+            webplugin \
+            webftpclient
 
 contains(QT_CONFIG, openssl):SUBDIRS += googlechat
 
