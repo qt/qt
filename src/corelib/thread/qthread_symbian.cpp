@@ -113,6 +113,8 @@ QThreadData *QThreadData::current()
             }
             data->deref();
         }
+        data->isAdopted = true;
+        data->threadId = QThread::currentThreadId();
         if (!QCoreApplicationPrivate::theMainThread)
             QCoreApplicationPrivate::theMainThread = data->thread;
     }
@@ -256,6 +258,13 @@ QCAddAdoptedThread* QCAddAdoptedThread::adoptedThreadAdder = 0;
 
 void QCAdoptedThreadMonitor::RunL()
 {
+    if (data->isAdopted) {
+        QThread *thread = data->thread;
+        Q_ASSERT(thread);
+        QThreadPrivate *thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
+        Q_ASSERT(!thread_p->finished);
+        thread_p->finish(thread);
+    }
     data->deref();
     QCAddAdoptedThread::threadDied();
     delete this;
@@ -312,12 +321,15 @@ void *QThreadPrivate::start(void *arg)
     // attribute of the thread again once the app gains control in run()
     User::SetCritical(User::EProcessCritical);
 
+    data->threadId = QThread::currentThreadId();
     set_thread_data(data);
 
     {
         QMutexLocker locker(&thr->d_func()->mutex);
         data->quitNow = thr->d_func()->exited;
     }
+
+    CTrapCleanup *cleanup = CTrapCleanup::New();
 
     // ### TODO: allow the user to create a custom event dispatcher
     createEventDispatcher(data);
@@ -326,6 +338,8 @@ void *QThreadPrivate::start(void *arg)
     thr->run();
 
     QThreadPrivate::finish(arg);
+
+    delete cleanup;
 
     return 0;
 }

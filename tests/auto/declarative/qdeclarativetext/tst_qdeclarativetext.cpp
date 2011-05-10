@@ -390,6 +390,13 @@ void tst_qdeclarativetext::elide()
             QCOMPARE(textObject->width(), 100.);
         }
     }
+
+    // QTBUG-18627
+    QUrl qmlfile = QUrl::fromLocalFile(SRCDIR "/data/elideimplicitwidth.qml");
+    QDeclarativeComponent textComponent(&engine, qmlfile);
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(textComponent.create());
+    QVERIFY(item != 0);
+    QVERIFY(item->implicitWidth() > item->width());
 }
 
 void tst_qdeclarativetext::textFormat()

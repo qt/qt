@@ -140,12 +140,12 @@ SchemaType::Ptr XsdComplexType::wxsSuperType() const
 
 void XsdComplexType::setContext(const NamedSchemaComponent::Ptr &component)
 {
-    m_context = component;
+    m_context = component.data();
 }
 
 NamedSchemaComponent::Ptr XsdComplexType::context() const
 {
-    return m_context;
+    return NamedSchemaComponent::Ptr(m_context);
 }
 
 void XsdComplexType::setContentType(const ContentType::Ptr &type)

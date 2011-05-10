@@ -124,6 +124,8 @@ QThreadData *QThreadData::current()
             }
             threadData->deref();
         }
+        threadData->isAdopted = true;
+        threadData->threadId = (Qt::HANDLE)GetCurrentThreadId();
 
         if (!QCoreApplicationPrivate::theMainThread) {
             QCoreApplicationPrivate::theMainThread = threadData->thread;
@@ -231,7 +233,17 @@ void qt_adopted_thread_watcher_function(void *)
         } else {
 //             printf("(qt) - qt_adopted_thread_watcher_function... called\n");
             const int qthreadIndex = handleIndex - 1;
-            QThreadData::get2(qt_adopted_qthreads.at(qthreadIndex))->deref();
+
+            QThreadData *data = QThreadData::get2(qt_adopted_qthreads.at(qthreadIndex));
+            if (data->isAdopted) {
+                QThread *thread = data->thread;
+                Q_ASSERT(thread);
+                QThreadPrivate *thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
+                Q_ASSERT(!thread_p->finished);
+                thread_p->finish(thread);
+            }
+            data->deref();
+
 #if !defined(Q_OS_WINCE) || (defined(_WIN32_WCE) && (_WIN32_WCE>=0x600))
             CloseHandle(qt_adopted_thread_handles.at(handleIndex));
 #endif
@@ -288,13 +300,14 @@ void QThreadPrivate::createEventDispatcher(QThreadData *data)
 
 #ifndef QT_NO_THREAD
 
-unsigned int __stdcall QThreadPrivate::start(void *arg)
+unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(void *arg)
 {
     QThread *thr = reinterpret_cast<QThread *>(arg);
     QThreadData *data = QThreadData::get2(thr);
 
     qt_create_tls();
     TlsSetValue(qt_current_thread_data_tls_index, data);
+    data->threadId = (Qt::HANDLE)GetCurrentThreadId();
 
     QThread::setTerminationEnabled(false);
 

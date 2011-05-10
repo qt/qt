@@ -135,7 +135,7 @@ private slots:
     void disconnectByMetaMethod();
     void disconnectNotSignalMetaMethod();
     void autoConnectionBehavior();
-
+    void baseDestroyed();
 protected:
 };
 
@@ -3923,6 +3923,35 @@ void tst_QObject::autoConnectionBehavior()
 
     delete sender;
     delete receiver;
+}
+
+class BaseDestroyed : public QObject
+{ Q_OBJECT
+    QList<QString> fooList;
+    bool destroyed;
+public:
+    BaseDestroyed() : destroyed(false)
+    { fooList << "a" << "b"; }
+    ~BaseDestroyed()
+    {
+        QVERIFY(!destroyed);
+        destroyed = true;
+    }
+
+public slots:
+    void slotUseList()
+    {
+        QVERIFY(!destroyed);
+        fooList << "c" << "d";
+    }
+};
+
+void tst_QObject::baseDestroyed()
+{
+    BaseDestroyed d;
+    connect(&d, SIGNAL(destroyed()), &d, SLOT(slotUseList()));
+    //When d goes out of scope, slotUseList should not be called as the BaseDestroyed has
+    // already been destroyed while ~QObject emit destroyed
 }
 
 QTEST_MAIN(tst_QObject)

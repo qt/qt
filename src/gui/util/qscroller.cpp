@@ -279,9 +279,11 @@ private:
     \sa QScrollEvent, QScrollPrepareEvent, QScrollerProperties
 */
 
+typedef QMap<QObject *, QScroller *> ScrollerHash;
+typedef QSet<QScroller *> ScrollerSet;
 
-QMap<QObject *, QScroller *> QScrollerPrivate::allScrollers;
-QSet<QScroller *> QScrollerPrivate::activeScrollers;
+Q_GLOBAL_STATIC(ScrollerHash, qt_allScrollers)
+Q_GLOBAL_STATIC(ScrollerSet, qt_activeScrollers)
 
 /*!
     Returns \c true if a QScroller object was already created for \a target; \c false otherwise.
@@ -290,7 +292,7 @@ QSet<QScroller *> QScrollerPrivate::activeScrollers;
 */
 bool QScroller::hasScroller(QObject *target)
 {
-    return (QScrollerPrivate::allScrollers.value(target));
+    return (qt_allScrollers()->value(target));
 }
 
 /*!
@@ -308,11 +310,11 @@ QScroller *QScroller::scroller(QObject *target)
         return 0;
     }
 
-    if (QScrollerPrivate::allScrollers.contains(target))
-        return QScrollerPrivate::allScrollers.value(target);
+    if (qt_allScrollers()->contains(target))
+        return qt_allScrollers()->value(target);
 
     QScroller *s = new QScroller(target);
-    QScrollerPrivate::allScrollers.insert(target, s);
+    qt_allScrollers()->insert(target, s);
     return s;
 }
 
@@ -332,7 +334,7 @@ const QScroller *QScroller::scroller(const QObject *target)
 */
 QList<QScroller *> QScroller::activeScrollers()
 {
-    return QScrollerPrivate::activeScrollers.toList();
+    return qt_activeScrollers()->toList();
 }
 
 /*!
@@ -508,8 +510,8 @@ QScroller::~QScroller()
     // do not delete the recognizer. The QGestureManager is doing this.
     d->recognizer = 0;
 #endif
-    QScrollerPrivate::allScrollers.remove(d->target);
-    QScrollerPrivate::activeScrollers.remove(this);
+    qt_allScrollers()->remove(d->target);
+    qt_activeScrollers()->remove(this);
 
     delete d_ptr;
 }
@@ -1754,9 +1756,9 @@ void QScrollerPrivate::setState(QScroller::State newstate)
         firstScroll = true;
     }
     if (state == QScroller::Dragging || state == QScroller::Scrolling)
-        activeScrollers.insert(q);
+        qt_activeScrollers()->insert(q);
     else
-        activeScrollers.remove(q);
+        qt_activeScrollers()->remove(q);
     emit q->stateChanged(state);
 }
 
@@ -1775,10 +1777,7 @@ void QScrollerPrivate::setState(QScroller::State newstate)
 */
 void QScrollerPrivate::setContentPositionHelperDragging(const QPointF &deltaPos)
 {
-    Q_Q(QScroller);
-    QPointF ppm = q->pixelPerMeter();
     const QScrollerPropertiesPrivate *sp = properties.d.data();
-    QPointF v = q->velocity();
 
     if (sp->overshootDragResistanceFactor)
         overshootPosition /= sp->overshootDragResistanceFactor;

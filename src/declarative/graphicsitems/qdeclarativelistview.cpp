@@ -744,6 +744,28 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         if (visibleItems.at(i)->index != -1)
             modelIndex = visibleItems.at(i)->index + 1;
     }
+
+    if (visibleItems.count() && (fillFrom > itemEnd+averageSize+spacing
+        || fillTo < visiblePos - averageSize - spacing)) {
+        // We've jumped more than a page.  Estimate which items are now
+        // visible and fill from there.
+        int count = (fillFrom - itemEnd) / (averageSize + spacing);
+        for (int i = 0; i < visibleItems.count(); ++i)
+            releaseItem(visibleItems.at(i));
+        visibleItems.clear();
+        modelIndex += count;
+        if (modelIndex >= model->count()) {
+            count -= modelIndex - model->count() + 1;
+            modelIndex = model->count() - 1;
+        } else if (modelIndex < 0) {
+            count -= modelIndex;
+            modelIndex = 0;
+        }
+        visibleIndex = modelIndex;
+        visiblePos = itemEnd + count * (averageSize + spacing) + 1;
+        itemEnd = visiblePos-1;
+    }
+
     bool changed = false;
     FxListItem *item = 0;
     qreal pos = itemEnd + 1;
@@ -2119,9 +2141,11 @@ void QDeclarativeListView::setOrientation(QDeclarativeListView::Orientation orie
         if (d->orient == QDeclarativeListView::Vertical) {
             setContentWidth(-1);
             setFlickableDirection(VerticalFlick);
+            setContentX(0);
         } else {
             setContentHeight(-1);
             setFlickableDirection(HorizontalFlick);
+            setContentY(0);
         }
         d->regenerate();
         emit orientationChanged();
@@ -2278,10 +2302,18 @@ void QDeclarativeListView::setCacheBuffer(int b)
     depending on the "size" property of the model item. The \c sectionHeading
     delegate component provides the light blue bar that marks the beginning of
     each section.
+
        
     \snippet examples/declarative/modelviews/listview/sections.qml 0
 
     \image qml-listview-sections-example.png
+
+    \note Adding sections to a ListView does not automatically re-order the
+    list items by the section criteria.
+    If the model is not ordered by section, then it is possible that
+    the sections created will not be unique; each boundary between
+    differing sections will result in a section header being created
+    even if that section exists elsewhere.
 
     \sa {declarative/modelviews/listview}{ListView examples}
 */
@@ -2768,7 +2800,7 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
         return;
 
     if (d->model && d->model->count() && d->interactive) {
-        if ((!d->isRightToLeft() && event->key() == Qt::Key_Left)
+        if ((d->orient == QDeclarativeListView::Horizontal && !d->isRightToLeft() && event->key() == Qt::Key_Left)
                     || (d->orient == QDeclarativeListView::Horizontal && d->isRightToLeft() && event->key() == Qt::Key_Right)
                     || (d->orient == QDeclarativeListView::Vertical && event->key() == Qt::Key_Up)) {
             if (currentIndex() > 0 || (d->wrap && !event->isAutoRepeat())) {
@@ -2779,7 +2811,7 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
                 event->accept();
                 return;
             }
-        } else if ((!d->isRightToLeft() && event->key() == Qt::Key_Right)
+        } else if ((d->orient == QDeclarativeListView::Horizontal && !d->isRightToLeft() && event->key() == Qt::Key_Right)
                     || (d->orient == QDeclarativeListView::Horizontal && d->isRightToLeft() && event->key() == Qt::Key_Left)
                     || (d->orient == QDeclarativeListView::Vertical && event->key() == Qt::Key_Down)) {
             if (currentIndex() < d->model->count() - 1 || (d->wrap && !event->isAutoRepeat())) {

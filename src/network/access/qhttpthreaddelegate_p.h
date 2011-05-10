@@ -68,6 +68,8 @@
 #include "private/qnoncontiguousbytedevice_p.h"
 #include "qnetworkaccessauthenticationmanager_p.h"
 
+#ifndef QT_NO_HTTP
+
 QT_BEGIN_NAMESPACE
 
 class QAuthenticator;
@@ -110,6 +112,9 @@ public:
     qint64 incomingContentLength;
     QNetworkReply::NetworkError incomingErrorCode;
     QString incomingErrorDetail;
+#ifndef QT_NO_BEARERMANAGEMENT
+    QSharedPointer<QNetworkSession> networkSession;
+#endif
 
 protected:
     // The zerocopy download buffer, if used:
@@ -281,5 +286,7 @@ signals:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_HTTP
 
 #endif // QHTTPTHREADDELEGATE_H

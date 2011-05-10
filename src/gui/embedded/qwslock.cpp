@@ -60,19 +60,12 @@
 #endif
 #include <unistd.h>
 
+#include <private/qcore_unix_p.h>
+
 QT_BEGIN_NAMESPACE
 
 #ifdef QT_NO_SEMAPHORE
 #error QWSLock currently requires semaphores
-#endif
-
-#ifndef Q_OS_BSD4
-union semun {
-    int val;
-    struct semid_ds *buf;
-    unsigned short *array;
-    struct seminfo  *__buf;
-};
 #endif
 
 QWSLock::QWSLock()
@@ -85,7 +78,7 @@ QWSLock::QWSLock()
     }
     QWSSignalHandler::instance()->addSemaphore(semId);
 
-    semun semval;
+    qt_semun semval;
     semval.val = 1;
 
     if (semctl(semId, BackingStore, SETVAL, semval) == -1) {

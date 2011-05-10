@@ -52,33 +52,13 @@
 #include "qdbusconnection_p.h"
 #include "qdbusinterface_p.h"
 #include "qdbusutil_p.h"
+#include "qdbusconnectionmanager_p.h"
 
 #include "qdbusthreaddebug_p.h"
 
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
-
-class QDBusConnectionManager
-{
-public:
-    QDBusConnectionManager() {}
-    ~QDBusConnectionManager();
-
-    QDBusConnectionPrivate *connection(const QString &name) const;
-    void removeConnection(const QString &name);
-    void setConnection(const QString &name, QDBusConnectionPrivate *c);
-
-    QDBusConnectionPrivate *sender() const;
-    void setSender(const QDBusConnectionPrivate *s);
-
-    mutable QMutex mutex;
-private:
-    QHash<QString, QDBusConnectionPrivate *> connectionHash;
-
-    mutable QMutex senderMutex;
-    QString senderName; // internal; will probably change
-};
 
 Q_GLOBAL_STATIC(QDBusConnectionManager, _q_manager)
 
@@ -124,6 +104,11 @@ QDBusConnectionManager::~QDBusConnectionManager()
             d->closeConnection();
     }
     connectionHash.clear();
+}
+
+QDBusConnectionManager* QDBusConnectionManager::instance()
+{
+    return _q_manager();
 }
 
 Q_DBUS_EXPORT void qDBusBindToApplication();
@@ -371,7 +356,7 @@ QDBusConnection QDBusConnection::connectToBus(BusType type, const QString &name)
 }
 
 /*!
-    Opens a peer-to-peer connection on address \a address and associate with it the
+    Opens a connection to a private bus on address \a address and associate with it the
     connection name \a name. Returns a QDBusConnection object associated with that connection.
 */
 QDBusConnection QDBusConnection::connectToBus(const QString &address,
@@ -379,7 +364,7 @@ QDBusConnection QDBusConnection::connectToBus(const QString &address,
 {
 //    Q_ASSERT_X(QCoreApplication::instance(), "QDBusConnection::addConnection",
 //               "Cannot create connection without a Q[Core]Application instance");
-    if (!qdbus_loadLibDBus()){
+    if (!qdbus_loadLibDBus()) {
         QDBusConnectionPrivate *d = 0;
         return QDBusConnection(d);
     }
@@ -411,9 +396,43 @@ QDBusConnection QDBusConnection::connectToBus(const QString &address,
 
     return retval;
 }
+/*!
+    \since 4.8
+
+    Opens a peer-to-peer connection on address \a address and associate with it the
+    connection name \a name. Returns a QDBusConnection object associated with that connection.
+*/
+QDBusConnection QDBusConnection::connectToPeer(const QString &address,
+                                               const QString &name)
+{
+//    Q_ASSERT_X(QCoreApplication::instance(), "QDBusConnection::addConnection",
+//               "Cannot create connection without a Q[Core]Application instance");
+    if (!qdbus_loadLibDBus()) {
+        QDBusConnectionPrivate *d = 0;
+        return QDBusConnection(d);
+    }
+
+    QMutexLocker locker(&_q_manager()->mutex);
+
+    QDBusConnectionPrivate *d = _q_manager()->connection(name);
+    if (d || name.isEmpty())
+        return QDBusConnection(d);
+
+    d = new QDBusConnectionPrivate;
+    // setPeer does the error handling for us
+    QDBusErrorInternal error;
+    DBusConnection *c = q_dbus_connection_open_private(address.toUtf8().constData(), error);
+
+    d->setPeer(c, error);
+    _q_manager()->setConnection(name, d);
+
+    QDBusConnection retval(d);
+
+    return retval;
+}
 
 /*!
-    Closes the connection of name \a name.
+    Closes the bus connection of name \a name.
 
     Note that if there are still QDBusConnection objects associated
     with the same connection, the connection will not be closed until
@@ -424,6 +443,30 @@ void QDBusConnection::disconnectFromBus(const QString &name)
 {
     if (_q_manager()) {
         QMutexLocker locker(&_q_manager()->mutex);
+        QDBusConnectionPrivate *d = _q_manager()->connection(name);
+        if (d && d->mode != QDBusConnectionPrivate::ClientMode)
+            return;
+        _q_manager()->removeConnection(name);
+    }
+}
+
+/*!
+    \since 4.8
+
+    Closes the peer connection of name \a name.
+
+    Note that if there are still QDBusConnection objects associated
+    with the same connection, the connection will not be closed until
+    all references are dropped. However, no further references can be
+    created using the QDBusConnection constructor.
+*/
+void QDBusConnection::disconnectFromPeer(const QString &name)
+{
+    if (_q_manager()) {
+        QMutexLocker locker(&_q_manager()->mutex);
+        QDBusConnectionPrivate *d = _q_manager()->connection(name);
+        if (d && d->mode != QDBusConnectionPrivate::PeerMode)
+            return;
         _q_manager()->removeConnection(name);
     }
 }
@@ -814,7 +857,7 @@ void QDBusConnection::unregisterObject(const QString &path, UnregisterMode mode)
 
     // find the object
     while (node) {
-        if (pathComponents.count() == i) {
+        if (pathComponents.count() == i || !path.compare(QLatin1String("/"))) {
             // found it
             node->obj = 0;
             node->flags = 0;

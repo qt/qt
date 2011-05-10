@@ -651,6 +651,16 @@ void tst_qdeclarativeecmascript::attachedProperties()
     }
 
     {
+        QDeclarativeComponent component(&engine, TEST_FILE("attachedProperty.2.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        QCOMPARE(object->property("a").toInt(), 26);
+        QCOMPARE(object->property("b").toInt(), 26);
+        QCOMPARE(object->property("c").toInt(), 26);
+        QCOMPARE(object->property("d").toInt(), 26);
+    }
+
+    {
         QDeclarativeComponent component(&engine, TEST_FILE("writeAttachedProperty.qml"));
         QObject *object = component.create();
         QVERIFY(object != 0);

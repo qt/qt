@@ -120,6 +120,10 @@ void QHttpNetworkConnectionPrivate::init()
     for (int i = 0; i < channelCount; i++) {
         channels[i].setConnection(this->q_func());
         channels[i].ssl = encrypt;
+#ifndef QT_NO_BEARERMANAGEMENT
+        //push session down to channels
+        channels[i].networkSession = networkSession;
+#endif
         channels[i].init();
     }
 }
@@ -830,6 +834,23 @@ void QHttpNetworkConnectionPrivate::readMoreLater(QHttpNetworkReply *reply)
     }
 }
 
+#ifndef QT_NO_BEARERMANAGEMENT
+QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt, QObject *parent, QSharedPointer<QNetworkSession> networkSession)
+    : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt)), parent)
+{
+    Q_D(QHttpNetworkConnection);
+    d->networkSession = networkSession;
+    d->init();
+}
+
+QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QString &hostName, quint16 port, bool encrypt, QObject *parent, QSharedPointer<QNetworkSession> networkSession)
+     : QObject(*(new QHttpNetworkConnectionPrivate(connectionCount, hostName, port, encrypt)), parent)
+{
+    Q_D(QHttpNetworkConnection);
+    d->networkSession = networkSession;
+    d->init();
+}
+#else
 QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt, QObject *parent)
     : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt)), parent)
 {
@@ -843,6 +864,7 @@ QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QS
     Q_D(QHttpNetworkConnection);
     d->init();
 }
+#endif
 
 QHttpNetworkConnection::~QHttpNetworkConnection()
 {

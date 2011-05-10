@@ -64,6 +64,8 @@
 #include "QtNetwork/qauthenticator.h"
 #include "QtNetwork/qsslconfiguration.h"
 #include "QtNetwork/qnetworkconfigmanager.h"
+#include "QtNetwork/qhttpmultipart.h"
+#include "qhttpmultipart_p.h"
 
 #include "qthread.h"
 
@@ -629,6 +631,46 @@ QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, const
 }
 
 /*!
+    \since 4.8
+
+    \overload
+
+    Sends the contents of the \a multiPart message to the destination
+    specified by \a request.
+
+    This can be used for sending MIME multipart messages over HTTP.
+
+    \sa QHttpMultiPart, QHttpPart, put()
+*/
+QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, QHttpMultiPart *multiPart)
+{
+    QNetworkRequest newRequest = d_func()->prepareMultipart(request, multiPart);
+    QIODevice *device = multiPart->d_func()->device;
+    QNetworkReply *reply = post(newRequest, device);
+    return reply;
+}
+
+/*!
+    \since 4.8
+
+    \overload
+
+    Sends the contents of the \a multiPart message to the destination
+    specified by \a request.
+
+    This can be used for sending MIME multipart messages over HTTP.
+
+    \sa QHttpMultiPart, QHttpPart, post()
+*/
+QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, QHttpMultiPart *multiPart)
+{
+    QNetworkRequest newRequest = d_func()->prepareMultipart(request, multiPart);
+    QIODevice *device = multiPart->d_func()->device;
+    QNetworkReply *reply = put(newRequest, device);
+    return reply;
+}
+
+/*!
     Uploads the contents of \a data to the destination \a request and
     returnes a new QNetworkReply object that will be open for reply.
 
@@ -654,7 +696,8 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, QIODev
 
 /*!
     \overload
-    Sends the contents of the \a data byte array to the destination 
+
+    Sends the contents of the \a data byte array to the destination
     specified by \a request.
 */
 QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, const QByteArray &data)
@@ -818,7 +861,7 @@ QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccess
     device will be uploaded to the server; in that case, data must be open for
     reading and must remain valid until the finished() signal is emitted for this reply.
 
-    \note This feature is currently available for HTTP only.
+    \note This feature is currently available for HTTP(S) only.
 
     \sa get(), post(), put(), deleteResource()
 */
@@ -1125,8 +1168,25 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
 
     initializeSession = false;
 
-    if (!config.isValid()) {
-        networkSession.clear();
+    QSharedPointer<QNetworkSession> newSession;
+    if (config.isValid())
+        newSession = QSharedNetworkSessionManager::getSession(config);
+
+    if (networkSession) {
+        //do nothing if new and old session are the same
+        if (networkSession == newSession)
+            return;
+        //disconnect from old session
+        QObject::disconnect(networkSession.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()));
+        QObject::disconnect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
+        QObject::disconnect(networkSession.data(), SIGNAL(stateChanged(QNetworkSession::State)),
+            q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)));
+    }
+
+    //switch to new session (null if config was invalid)
+    networkSession = newSession;
+
+    if (!networkSession) {
         online = false;
 
         if (networkAccessible == QNetworkAccessManager::NotAccessible)
@@ -1137,8 +1197,7 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
         return;
     }
 
-    networkSession = QSharedNetworkSessionManager::getSession(config);
-
+    //connect to new session
     QObject::connect(networkSession.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()), Qt::QueuedConnection);
     //QueuedConnection is used to avoid deleting the networkSession inside its closed signal
     QObject::connect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()), Qt::QueuedConnection);
@@ -1150,9 +1209,15 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
 
 void QNetworkAccessManagerPrivate::_q_networkSessionClosed()
 {
+    Q_Q(QNetworkAccessManager);
     if (networkSession) {
         networkConfiguration = networkSession->configuration().identifier();
 
+        //disconnect from old session
+        QObject::disconnect(networkSession.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()));
+        QObject::disconnect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
+        QObject::disconnect(networkSession.data(), SIGNAL(stateChanged(QNetworkSession::State)),
+            q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)));
         networkSession.clear();
     }
 }
@@ -1161,8 +1226,12 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
 {
     Q_Q(QNetworkAccessManager);
 
-    if (state == QNetworkSession::Connected)
+    //Do not emit the networkSessionConnected signal here, except for roaming -> connected
+    //transition, otherwise it is emitted twice in a row when opening a connection.
+    if (state == QNetworkSession::Connected && lastSessionState == QNetworkSession::Roaming)
         emit q->networkSessionConnected();
+    lastSessionState = state;
+
     if (online) {
         if (state != QNetworkSession::Connected && state != QNetworkSession::Roaming) {
             online = false;
@@ -1176,6 +1245,54 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
     }
 }
 #endif // QT_NO_BEARERMANAGEMENT
+
+QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkRequest &request, QHttpMultiPart *multiPart)
+{
+    // copy the request, we probably need to add some headers
+    QNetworkRequest newRequest(request);
+
+    // add Content-Type header if not there already
+    if (!request.header(QNetworkRequest::ContentTypeHeader).isValid()) {
+        QByteArray contentType;
+        contentType.reserve(34 + multiPart->d_func()->boundary.count());
+        contentType += "multipart/";
+        switch (multiPart->d_func()->contentType) {
+        case QHttpMultiPart::RelatedType:
+            contentType += "related";
+            break;
+        case QHttpMultiPart::FormDataType:
+            contentType += "form-data";
+            break;
+        case QHttpMultiPart::AlternativeType:
+            contentType += "alternative";
+            break;
+        default:
+            contentType += "mixed";
+            break;
+        }
+        // putting the boundary into quotes, recommended in RFC 2046 section 5.1.1
+        contentType += "; boundary=\"" + multiPart->d_func()->boundary + "\"";
+        newRequest.setHeader(QNetworkRequest::ContentTypeHeader, QVariant(contentType));
+    }
+
+    // add MIME-Version header if not there already (we must include the header
+    // if the message conforms to RFC 2045, see section 4 of that RFC)
+    QByteArray mimeHeader("MIME-Version");
+    if (!request.hasRawHeader(mimeHeader))
+        newRequest.setRawHeader(mimeHeader, QByteArray("1.0"));
+
+    QIODevice *device = multiPart->d_func()->device;
+    if (!device->isReadable()) {
+        if (!device->isOpen()) {
+            if (!device->open(QIODevice::ReadOnly))
+                qWarning("could not open device for reading");
+        } else {
+            qWarning("device is not readable");
+        }
+    }
+
+    return newRequest;
+}
 
 QT_END_NAMESPACE
 

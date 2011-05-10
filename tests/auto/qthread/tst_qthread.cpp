@@ -103,6 +103,7 @@ private slots:
     void adoptedThreadExit();
     void adoptedThreadExec();
     void adoptedThreadFinished();
+    void adoptedThreadExecFinished();
     void adoptMultipleThreads();
     void adoptMultipleThreadsOverlap();
 
@@ -903,6 +904,21 @@ void tst_QThread::adoptedThreadFinished()
     NativeThreadWrapper nativeThread;
     nativeThread.setWaitForStop();
     nativeThread.startAndWait();
+
+    QObject::connect(nativeThread.qthread, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    nativeThread.stop();
+    nativeThread.join();
+
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+}
+
+void tst_QThread::adoptedThreadExecFinished()
+{
+    NativeThreadWrapper nativeThread;
+    nativeThread.setWaitForStop();
+    nativeThread.startAndWait(adoptedThreadExecFunction);
 
     QObject::connect(nativeThread.qthread, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 

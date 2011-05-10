@@ -25,3 +25,5 @@ wince*|symbian {
    catalog.path = .
    DEPLOYMENT += catalog
 }
+
+requires(contains(QT_CONFIG,private_tests))

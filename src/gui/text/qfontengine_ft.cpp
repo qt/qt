@@ -200,9 +200,10 @@ HB_Error QFreetypeFace::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 p
  * Returns the freetype face or 0 in case of an empty file or any other problems
  * (like not being able to open the file)
  */
-QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id)
+QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
+                                      const QByteArray &fontData)
 {
-    if (face_id.filename.isEmpty())
+    if (face_id.filename.isEmpty() && fontData.isEmpty())
         return 0;
 
     QtFreetypeData *freetypeData = qt_getFreetypeData();
@@ -215,21 +216,25 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id)
     } else {
         QScopedPointer<QFreetypeFace> newFreetype(new QFreetypeFace);
         FT_Face face;
-        QFile file(QString::fromUtf8(face_id.filename));
-        if (face_id.filename.startsWith(":qmemoryfonts/")) {
-            // from qfontdatabase.cpp
-            extern QByteArray qt_fontdata_from_index(int);
-            QByteArray idx = face_id.filename;
-            idx.remove(0, 14); // remove ':qmemoryfonts/'
-            bool ok = false;
-            newFreetype->fontData = qt_fontdata_from_index(idx.toInt(&ok));
-            if (!ok)
-                newFreetype->fontData = QByteArray();
-        } else if (!(file.fileEngine()->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::LocalDiskFlag)) {
-            if (!file.open(QIODevice::ReadOnly)) {
-                return 0;
+        if (!face_id.filename.isEmpty()) {
+            QFile file(QString::fromUtf8(face_id.filename));
+            if (face_id.filename.startsWith(":qmemoryfonts/")) {
+                // from qfontdatabase.cpp
+                extern QByteArray qt_fontdata_from_index(int);
+                QByteArray idx = face_id.filename;
+                idx.remove(0, 14); // remove ':qmemoryfonts/'
+                bool ok = false;
+                newFreetype->fontData = qt_fontdata_from_index(idx.toInt(&ok));
+                if (!ok)
+                    newFreetype->fontData = QByteArray();
+            } else if (!(file.fileEngine()->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::LocalDiskFlag)) {
+                if (!file.open(QIODevice::ReadOnly)) {
+                    return 0;
+                }
+                newFreetype->fontData = file.readAll();
             }
-            newFreetype->fontData = file.readAll();
+        } else {
+            newFreetype->fontData = fontData;
         }
         if (!newFreetype->fontData.isEmpty()) {
             if (FT_New_Memory_Face(freetypeData->library, (const FT_Byte *)newFreetype->fontData.constData(), newFreetype->fontData.size(), face_id.index, &face)) {
@@ -651,8 +656,21 @@ void QFontEngineFT::freeGlyphSets()
         freeServerGlyphSet(transformedGlyphSets.at(i).id);
 }
 
-bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format)
+bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
+                         const QByteArray &fontData)
 {
+    return init(faceId, antialias, format, QFreetypeFace::getFace(faceId, fontData));
+}
+
+bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
+                         QFreetypeFace *freetypeFace)
+{
+    freetype = freetypeFace;
+    if (!freetype) {
+        xsize = 0;
+        ysize = 0;
+        return false;
+    }
     defaultFormat = format;
     this->antialias = antialias;
 
@@ -664,12 +682,6 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format)
         glyphFormat = QFontEngineGlyphCache::Raster_RGBMask;
 
     face_id = faceId;
-    freetype = QFreetypeFace::getFace(face_id);
-    if (!freetype) {
-        xsize = 0;
-        ysize = 0;
-        return false;
-    }
 
     symbol = freetype->symbol_map != 0;
     PS_FontInfoRec psrec;
@@ -1511,7 +1523,7 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
                     mtx->lock();
                 }
 
-                if (FcCharSetHasChar(freetype->charset, uc)) {
+                if (freetype->charset != 0 && FcCharSetHasChar(freetype->charset, uc)) {
 #else
                 if (false) {
 #endif
@@ -1546,7 +1558,7 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
                     mtx->lock();
                 }
 
-                if (FcCharSetHasChar(freetype->charset, uc))
+                if (freetype->charset == 0 || FcCharSetHasChar(freetype->charset, uc))
 #endif
                 {
                 redo:
@@ -1955,6 +1967,41 @@ HB_Error QFontEngineFT::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 p
     HB_Error result = freetype->getPointInOutline(glyph, load_flags, point, xpos, ypos, nPoints);
     unlockFace();
     return result;
+}
+
+bool QFontEngineFT::initFromFontEngine(const QFontEngineFT *fe)
+{
+    if (!init(fe->faceId(), fe->antialias, fe->defaultFormat, fe->freetype))
+        return false;
+
+    // Increase the reference of this QFreetypeFace since one more QFontEngineFT
+    // will be using it
+    freetype->ref.ref();
+
+    default_load_flags = fe->default_load_flags;
+    default_hint_style = fe->default_hint_style;
+    antialias = fe->antialias;
+    transform = fe->transform;
+    embolden = fe->embolden;
+    subpixelType = fe->subpixelType;
+    lcdFilterType = fe->lcdFilterType;
+    canUploadGlyphsToServer = fe->canUploadGlyphsToServer;
+    embeddedbitmap = fe->embeddedbitmap;
+
+    return true;
+}
+
+QFontEngine *QFontEngineFT::cloneWithSize(qreal pixelSize) const
+{
+    QFontDef fontDef;
+    fontDef.pixelSize = pixelSize;
+    QFontEngineFT *fe = new QFontEngineFT(fontDef);
+    if (!fe->initFromFontEngine(this)) {
+        delete fe;
+        return 0;
+    } else {
+        return fe;
+    }
 }
 
 QT_END_NAMESPACE

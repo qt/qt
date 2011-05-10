@@ -70,7 +70,7 @@ void QColormap::initialize()
     QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
     QList<QPlatformScreen*> screens = pi->screens();
 
-    screenMap->depth = screens[0]->depth();
+    screenMap->depth = screens.at(0)->depth();
     if (screenMap->depth < 8) {
         screenMap->mode = QColormap::Indexed;
         screenMap->numcolors = 256;

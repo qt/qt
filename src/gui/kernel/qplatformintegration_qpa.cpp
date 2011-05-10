@@ -69,16 +69,6 @@ QPlatformEventLoopIntegration *QPlatformIntegration::createEventLoopIntegration(
 }
 
 /*!
-    Returns whether the given platform integration supports OpenGL.
-
-    Default implementation returns false,
-*/
-bool QPlatformIntegration::hasOpenGL() const
-{
-    return false;
-}
-
-/*!
     Accessor for the platform integrations fontdatabase.
 
     Default implementation returns a default QPlatformFontDatabase.
@@ -224,6 +214,7 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 
 bool QPlatformIntegration::hasCapability(Capability cap) const
 {
+    Q_UNUSED(cap);
     return false;
 }
 

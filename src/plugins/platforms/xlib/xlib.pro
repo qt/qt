@@ -14,7 +14,8 @@ SOURCES = \
         qxlibclipboard.cpp \
         qxlibmime.cpp \
         qxlibstatic.cpp \
-        qxlibdisplay.cpp
+        qxlibdisplay.cpp \
+        qxlibnativeinterface.cpp
 
 HEADERS = \
         qxlibintegration.h \
@@ -26,7 +27,8 @@ HEADERS = \
         qxlibclipboard.h \
         qxlibmime.h \
         qxlibstatic.h \
-        qxlibdisplay.h
+        qxlibdisplay.h \
+        qxlibnativeinterface.h
 
 LIBS += -lX11 -lXext
 
@@ -39,6 +41,7 @@ include (../fontdatabases/genericunix/genericunix.pri)
 contains(QT_CONFIG, opengl) {
     QT += opengl
     !contains(QT_CONFIG, opengles2) {
+        include (../glxconvenience/glxconvenience.pri)
         HEADERS += qglxintegration.h
         SOURCES += qglxintegration.cpp
     } else { # There is no easy way to detect if we'r suppose to use glx or not

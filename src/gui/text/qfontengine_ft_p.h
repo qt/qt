@@ -74,6 +74,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QFontEngineFTRawFont;
+
 /*
  * This struct represents one font file on disk (like Arial.ttf) and is shared between all the font engines
  * that show this font file (at different pixel sizes).
@@ -84,7 +86,8 @@ struct QFreetypeFace
     QFontEngine::Properties properties() const;
     bool getSfntTable(uint tag, uchar *buffer, uint *length) const;
 
-    static QFreetypeFace *getFace(const QFontEngine::FaceId &face_id);
+    static QFreetypeFace *getFace(const QFontEngine::FaceId &face_id,
+                                  const QByteArray &fontData = QByteArray());
     void release(const QFontEngine::FaceId &face_id);
 
     // locks the struct for usage. Any read/write operations require locking.
@@ -119,6 +122,7 @@ struct QFreetypeFace
     static void addBitmapToPath(FT_GlyphSlot slot, const QFixedPoint &point, QPainterPath *path, bool = false);
 
 private:
+    friend class QFontEngineFT;
     friend class QScopedPointerDeleter<QFreetypeFace>;
     QFreetypeFace() : _lock(QMutex::Recursive) {}
     ~QFreetypeFace() {}
@@ -300,7 +304,10 @@ private:
     QFontEngineFT(const QFontDef &fd);
     virtual ~QFontEngineFT();
 
-    bool init(FaceId faceId, bool antiaalias, GlyphFormat defaultFormat = Format_None);
+    bool init(FaceId faceId, bool antiaalias, GlyphFormat defaultFormat = Format_None,
+              const QByteArray &fontData = QByteArray());
+    bool init(FaceId faceId, bool antialias, GlyphFormat format,
+              QFreetypeFace *freetypeFace);
 
     virtual HB_Error getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints);
 
@@ -312,6 +319,11 @@ private:
     };
 
     void setDefaultHintStyle(HintStyle style);
+
+    virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
+    bool initFromFontEngine(const QFontEngineFT *fontEngine);
+
+    HintStyle defaultHintStyle() const { return default_hint_style; }
 protected:
 
     void freeGlyphSets();
@@ -335,6 +347,8 @@ protected:
     bool embeddedbitmap;
 
 private:
+    friend class QFontEngineFTRawFont;
+
     int loadFlags(QGlyphSet *set, GlyphFormat format, int flags, bool &hsubpixel, int &vfactor) const;
 
     GlyphFormat defaultFormat;

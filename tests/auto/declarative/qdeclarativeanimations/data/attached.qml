@@ -17,7 +17,7 @@ Rectangle {
 
             transitions: Transition {
                 PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: true }
-                ScriptAction { script: console.log(ListView.delayRemove ? "on" : "off") }
+                ScriptAction { script: console.log(wrapper.ListView.delayRemove ? "on" : "off") }
             }
 
             Component.onCompleted: {

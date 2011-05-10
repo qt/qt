@@ -77,6 +77,10 @@
 #include <akncontext.h>             // CAknContextPane
 #include <eikspane.h>               // CEikStatusPane
 #include <AknPopupFader.h>          // MAknFadedComponent and TAknPopupFader
+#include <gfxtranseffect/gfxtranseffect.h> // BeginFullScreen
+#ifdef QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H
+#include <akntranseffect.h> // BeginFullScreen
+#endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -85,10 +89,17 @@ QT_BEGIN_NAMESPACE
 // system events seems to start with 0x10
 const TInt KInternalStatusPaneChange = 0x50000000;
 
+// For BeginFullScreen().
+const TUint KQtAppExitFlag = 0x400;
+
 static const int qt_symbian_max_screens = 4;
 
 //this macro exists because EColor16MAP enum value doesn't exist in Symbian OS 9.2
 #define Q_SYMBIAN_ECOLOR16MAP TDisplayMode(13)
+
+class QSymbianTypeFaceExtras;
+typedef QHash<QString, const QSymbianTypeFaceExtras *> QSymbianTypeFaceExtrasHash;
+typedef void (*QThreadLocalReleaseFunc)();
 
 class Q_AUTOTEST_EXPORT QS60ThreadLocalData
 {
@@ -98,6 +109,8 @@ public:
     bool usingCONEinstances;
     RWsSession wsSession;
     CWsScreenDevice *screenDevice;
+    QSymbianTypeFaceExtrasHash fontData;
+    QVector<QThreadLocalReleaseFunc> releaseFuncs;
 };
 
 class QS60Data
@@ -168,6 +181,8 @@ public:
     inline CWsScreenDevice* screenDevice(const QWidget *widget);
     inline CWsScreenDevice* screenDevice(int screenNumber);
     static inline int screenNumberForWidget(const QWidget *widget);
+    inline QSymbianTypeFaceExtrasHash& fontData();
+    inline void addThreadLocalReleaseFunc(QThreadLocalReleaseFunc func);
     static inline CCoeAppUi* appUi();
     static inline CEikMenuBar* menuBar();
 #ifdef Q_WS_S60
@@ -191,7 +206,11 @@ public:
     int screenWidthInTwipsForScreen[qt_symbian_max_screens];
     int screenHeightInTwipsForScreen[qt_symbian_max_screens];
 
-    bool nativeOrientationIsPortrait;
+    int nativeScreenWidthInPixels;
+    int nativeScreenHeightInPixels;
+
+    int beginFullScreenCalled : 1;
+    int endFullScreenCalled : 1;
 };
 
 Q_AUTOTEST_EXPORT QS60Data* qGlobalS60Data();
@@ -237,6 +256,8 @@ public:
     bool isControlActive();
 
     void ensureFixNativeOrientation();
+    QPoint translatePointForFixedNativeOrientation(const TPoint &pointerEventPos) const;
+    TRect translateRectForFixedNativeOrientation(const TRect &controlRect) const;
 
 #ifdef Q_WS_S60
     void FadeBehindPopup(bool fade){ popupFader.FadeBehindPopup( this, this, fade); }
@@ -255,6 +276,9 @@ protected:
     void SizeChanged();
     void PositionChanged();
     void FocusChanged(TDrawNow aDrawNow);
+
+protected:
+    void qwidgetResize_helper(const QSize &newSize);
 
 private:
     void HandlePointerEvent(const TPointerEvent& aPointerEvent);
@@ -295,6 +319,7 @@ private:
 #endif
 
     bool m_inExternalScreenOverride : 1;
+    bool m_lastStatusPaneVisibility : 1;
 };
 
 inline QS60Data::QS60Data()
@@ -327,6 +352,8 @@ inline QS60Data::QS60Data()
 #ifdef Q_OS_SYMBIAN
   ,s60InstalledTrapHandler(0)
 #endif
+  ,beginFullScreenCalled(0),
+  endFullScreenCalled(0)
 {
 }
 
@@ -362,18 +389,15 @@ inline void QS60Data::updateScreenSize()
 
     // Look for a screen mode with rotation 0
     // in order to decide what the native orientation is.
-    int nativeScreenWidthInPixels = 0;
-    int nativeScreenHeightInPixels = 0;
     for (mode = 0; mode < screenModeCount; ++mode) {
         TPixelsAndRotation sizeAndRotation;
         dev->GetScreenModeSizeAndRotation(mode, sizeAndRotation);
         if (sizeAndRotation.iRotation == CFbsBitGc::EGraphicsOrientationNormal) {
-            nativeScreenWidthInPixels = sizeAndRotation.iPixelSize.iWidth;
-            nativeScreenHeightInPixels = sizeAndRotation.iPixelSize.iHeight;
+            S60->nativeScreenWidthInPixels = sizeAndRotation.iPixelSize.iWidth;
+            S60->nativeScreenHeightInPixels = sizeAndRotation.iPixelSize.iHeight;
             break;
         }
     }
-    S60->nativeOrientationIsPortrait = nativeScreenWidthInPixels <= nativeScreenHeightInPixels;
 }
 
 inline RWsSession& QS60Data::wsSession()
@@ -452,6 +476,24 @@ inline int QS60Data::screenNumberForWidget(const QWidget *widget)
     while (w->parentWidget())
         w = w->parentWidget();
     return qt_widget_private(const_cast<QWidget *>(w))->symbianScreenNumber;
+}
+
+inline QSymbianTypeFaceExtrasHash& QS60Data::fontData()
+{
+    if (!tls.hasLocalData()) {
+        tls.setLocalData(new QS60ThreadLocalData);
+    }
+    return tls.localData()->fontData;
+}
+
+inline void QS60Data::addThreadLocalReleaseFunc(QThreadLocalReleaseFunc func)
+{
+    if (!tls.hasLocalData()) {
+        tls.setLocalData(new QS60ThreadLocalData);
+    }
+    QS60ThreadLocalData *data = tls.localData();
+    if (!data->releaseFuncs.contains(func))
+        data->releaseFuncs.append(func);
 }
 
 inline CCoeAppUi* QS60Data::appUi()
@@ -560,6 +602,49 @@ void qt_symbian_setGlobalCursor(const QCursor &cursor);
 void qt_symbian_set_cursor_visible(bool visible);
 bool qt_symbian_is_cursor_visible();
 #endif
+
+static inline bool qt_beginFullScreenEffect()
+{
+#if defined(Q_WS_S60) && defined(QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H)
+    // Only for post-S^3. On earlier versions the system transition effects
+    // may not be able to capture the non-Avkon content, leading to confusing
+    // looking effects, so just skip the whole thing.
+    if (S60->beginFullScreenCalled || QSysInfo::s60Version() <= QSysInfo::SV_S60_5_2)
+        return false;
+    S60->beginFullScreenCalled = true;
+    // For Avkon apps the app-exit effect is triggered from CAknAppUi::PrepareToExit().
+    // That is good for Avkon apps, but in case of Qt the RWindows are destroyed earlier.
+    // Therefore we call BeginFullScreen() ourselves.
+    GfxTransEffect::BeginFullScreen(AknTransEffect::EApplicationExit,
+        TRect(0, 0, 0, 0),
+        AknTransEffect::EParameterType,
+        AknTransEffect::GfxTransParam(S60->uid,
+            AknTransEffect::TParameter::EAvkonCheck | KQtAppExitFlag));
+    return true;
+#else
+    return false;
+#endif
+}
+
+static inline void qt_abortFullScreenEffect()
+{
+#if defined(Q_WS_S60) && defined(QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H)
+    if (!S60->beginFullScreenCalled || QSysInfo::s60Version() <= QSysInfo::SV_S60_5_2)
+        return;
+    GfxTransEffect::AbortFullScreen();
+    S60->beginFullScreenCalled = S60->endFullScreenCalled = false;
+#endif
+}
+
+static inline void qt_endFullScreenEffect()
+{
+#if defined(Q_WS_S60) && defined(QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H)
+    if (S60->endFullScreenCalled || QSysInfo::s60Version() <= QSysInfo::SV_S60_5_2)
+        return;
+    S60->endFullScreenCalled = true;
+    GfxTransEffect::EndFullScreen();
+#endif
+}
 
 QT_END_NAMESPACE
 
