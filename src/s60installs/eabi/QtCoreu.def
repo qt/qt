@@ -3717,17 +3717,4 @@ EXPORTS
 	_ZN23QCoreApplicationPrivate18symbianCommandLineEv @ 3716 NONAME
 	_ZNK11QMetaMethod8revisionEv @ 3717 NONAME
 	_ZNK13QMetaProperty8revisionEv @ 3718 NONAME
-	_ZN5RHeap10Extension_EjRPvS0_ @ 3719 NONAME
-	_ZN5RHeap13DebugFunctionEiPvS0_ @ 3720 NONAME
-	_ZN5RHeap4FreeEPv @ 3721 NONAME
-	_ZN5RHeap5AllocEi @ 3722 NONAME
-	_ZN5RHeap5ResetEv @ 3723 NONAME
-	_ZN5RHeap7ReAllocEPvii @ 3724 NONAME
-	_ZN5RHeap8CompressEv @ 3725 NONAME
-	_ZN8UserHeap15OffsetChunkHeapE6RChunkiiiiiim @ 3726 NONAME
-	_ZN8UserHeap16CreateThreadHeapER24SStdEpocThreadCreateInfoRP5RHeapii @ 3727 NONAME
-	_ZN8UserHeap9ChunkHeapE6RChunkiiiiim @ 3728 NONAME
-	_ZNK5RHeap8AllocLenEPKv @ 3729 NONAME
-	_ZNK5RHeap9AllocSizeERi @ 3730 NONAME
-	_ZNK5RHeap9AvailableERi @ 3731 NONAME
 
