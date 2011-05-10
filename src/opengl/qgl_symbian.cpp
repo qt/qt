@@ -49,6 +49,9 @@
 #include <private/qpaintengine_opengl_p.h>
 #include <private/qwidget_p.h> // to access QWExtra
 #include <private/qnativeimagehandleprovider_p.h>
+#include <private/qapplication_p.h>
+#include <private/qgraphicssystem_p.h>
+#include <private/qgraphicssystemex_symbian_p.h>
 #include "qgl_egl_p.h"
 #include "qpixmapdata_gl_p.h"
 #include "qgltexturepool_p.h"
@@ -180,6 +183,15 @@ bool QGLContext::chooseContext(const QGLContext* shareContext) // almost same as
         d->ownsEglContext = true;
         d->eglContext->setApi(QEgl::OpenGL);
 
+        QGraphicsSystemEx *ex = QApplicationPrivate::graphicsSystem()->platformExtension();
+        QSymbianGraphicsSystemEx *symex = static_cast<QSymbianGraphicsSystemEx*>(ex);
+        if (symex && !symex->hasBCM2727()) {
+            // Most likely we have hw support for multisampling
+            // so let's enable it.
+            d->glFormat.setSampleBuffers(1);
+            d->glFormat.setSamples(4);
+        }
+
 	    // If the device is a widget with WA_TranslucentBackground set, make sure the glFormat
         // has the alpha channel option set:
         if (devType == QInternal::Widget) {
@@ -229,20 +241,20 @@ bool QGLContext::chooseContext(const QGLContext* shareContext) // almost same as
 
         d->eglSurface = QEgl::createSurface(device(), d->eglContext->config());
 
-    eglGetError();  // Clear error state first.
+        eglGetError();  // Clear error state first.
 
 #ifdef QGL_NO_PRESERVED_SWAP
-    eglSurfaceAttrib(QEgl::display(), d->eglSurface,
-            EGL_SWAP_BEHAVIOR, EGL_BUFFER_DESTROYED);
+        eglSurfaceAttrib(QEgl::display(), d->eglSurface,
+                EGL_SWAP_BEHAVIOR, EGL_BUFFER_DESTROYED);
 
-    if (eglGetError() != EGL_SUCCESS)
-        qWarning("QGLContext: could not enable destroyed swap behaviour");
+        if (eglGetError() != EGL_SUCCESS)
+            qWarning("QGLContext: could not enable destroyed swap behaviour");
 #else
-    eglSurfaceAttrib(QEgl::display(), d->eglSurface,
-            EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
+        eglSurfaceAttrib(QEgl::display(), d->eglSurface,
+                EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
 
-    if (eglGetError() != EGL_SUCCESS)
-        qWarning("QGLContext: could not enable preserved swap behaviour");
+        if (eglGetError() != EGL_SUCCESS)
+            qWarning("QGLContext: could not enable preserved swap behaviour");
 #endif
 
         setWindowCreated(true);
