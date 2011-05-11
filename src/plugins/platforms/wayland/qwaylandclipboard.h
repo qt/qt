@@ -39,47 +39,48 @@
 **
 ****************************************************************************/
 
-#ifndef Q_GLX_CONTEXT_H
-#define Q_GLX_CONTEXT_H
+#ifndef QWAYLANDCLIPBOARD_H
+#define QWAYLANDCLIPBOARD_H
 
-#include "qxlibwindow.h"
+#include <QtGui/QPlatformClipboard>
+#include <QtCore/QStringList>
 
-#include <QtGui/QPlatformGLContext>
-#include <QtGui/QPlatformWindowFormat>
+class QWaylandDisplay;
+class QWaylandSelection;
+struct wl_selection_offer;
 
-#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
-#define Status int
-#include <GL/glx.h>
-#undef Status
-
-QT_BEGIN_NAMESPACE
-
-class QGLXContext : public QPlatformGLContext
+class QWaylandClipboard : public QPlatformClipboard
 {
 public:
-    QGLXContext(Window window, QXlibScreen *xd, const QPlatformWindowFormat &format);
-    ~QGLXContext();
+    QWaylandClipboard(QWaylandDisplay *display);
+    ~QWaylandClipboard();
 
-    virtual void makeCurrent();
-    virtual void doneCurrent();
-    virtual void swapBuffers();
-    virtual void* getProcAddress(const QString& procName);
+    const QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard) const;
+    void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard);
+    bool supportsMode(QClipboard::Mode mode) const;
 
-    GLXContext glxContext() const {return m_context;}
+    void unregisterSelection(QWaylandSelection *selection);
 
-    QPlatformWindowFormat platformWindowFormat() const;
+    void createSelectionOffer(uint32_t id);
 
 private:
-    QXlibScreen  *m_screen;
-    Drawable    m_drawable;
-    GLXContext  m_context;
-    QPlatformWindowFormat m_windowFormat;
+    static void offer(void *data,
+                      struct wl_selection_offer *selection_offer,
+                      const char *type);
+    static void keyboardFocus(void *data,
+                              struct wl_selection_offer *selection_offer,
+                              struct wl_input_device *input_device);
+    static const struct wl_selection_offer_listener selectionOfferListener;
 
-    QGLXContext (QXlibScreen *screen, Drawable drawable, GLXContext context);
+    static void syncCallback(void *data);
+    static void forceRoundtrip(struct wl_display *display);
+
+    QWaylandDisplay *mDisplay;
+    QWaylandSelection *mSelection;
+    mutable QMimeData *mMimeDataIn;
+    QList<QWaylandSelection *> mSelections;
+    QStringList mOfferedMimeTypes;
+    struct wl_selection_offer *mOffer;
 };
 
-QT_END_NAMESPACE
-
-#endif //!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
-
-#endif
+#endif // QWAYLANDCLIPBOARD_H

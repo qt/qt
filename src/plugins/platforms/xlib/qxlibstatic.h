@@ -118,6 +118,10 @@ extern "C" {
 }
 #endif
 
+#ifndef QT_NO_XFIXES
+#include <X11/extensions/Xfixes.h>
+#endif // QT_NO_XFIXES
+
 // #define QT_NO_XKB
 #ifndef QT_NO_XKB
 #  include <X11/XKBlib.h>
