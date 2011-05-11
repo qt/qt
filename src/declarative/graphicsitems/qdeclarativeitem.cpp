@@ -2605,6 +2605,17 @@ void QDeclarativeItem::setKeepMouseGrab(bool keep)
     If \a item is a \c null value, this maps the point from the coordinate
     system of the root QML view.
 */
+
+/*!
+    Maps the point (\a x, \a y), which is in \a item's coordinate system, to
+    this item's coordinate system, and returns a script value with \c x and \c y
+    properties matching the mapped cooordinate.
+
+    If \a item is a \c null value, this maps the point from the coordinate
+    system of the root QML view.
+
+    \sa Item::mapFromItem()
+*/
 QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, qreal x, qreal y) const
 {
     QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
@@ -2631,6 +2642,17 @@ QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, qreal x, qr
     If \a item is a \c null value, this maps \a x and \a y to the coordinate
     system of the root QML view.
 */
+
+/*!
+    Maps the point (\a x, \a y), which is in this item's coordinate system, to
+    \a item's coordinate system, and returns a script value with \c x and \c y
+    properties matching the mapped cooordinate.
+
+    If \a item is a \c null value, this maps \a x and \a y to the coordinate
+    system of the root QML view.
+
+    \sa Item::mapToItem()
+*/
 QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, qreal x, qreal y) const
 {
     QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
@@ -2650,8 +2672,17 @@ QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, qreal x, qrea
 /*!
     \qmlmethod Item::forceActiveFocus()
 
-    Force active focus on the item.
-    This method sets focus on the item and makes sure that all the focus scopes higher in the object hierarchy are also given focus.
+    Forces active focus on the item.
+
+    This method sets focus on the item and makes sure that all the focus scopes
+    higher in the object hierarchy are also given the focus.
+*/
+
+/*!
+    Forces active focus on the item.
+
+    This method sets focus on the item and makes sure that all the focus scopes
+    higher in the object hierarchy are also given the focus.
 */
 void QDeclarativeItem::forceActiveFocus()
 {
@@ -2670,7 +2701,12 @@ void QDeclarativeItem::forceActiveFocus()
 
   Returns the visible child item at point (\a x, \a y), which is in this
   item's coordinate system, or \c null if there is no such item.
-  */
+*/
+
+/*!
+  Returns the visible child item at point (\a x, \a y), which is in this
+  item's coordinate system, or 0 if there is no such item.
+*/
 QDeclarativeItem *QDeclarativeItem::childAt(qreal x, qreal y) const
 {
     const QList<QGraphicsItem *> children = childItems();

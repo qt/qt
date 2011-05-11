@@ -1127,12 +1127,19 @@ void QLineEdit::setDragEnabled(bool b)
   behavior applies.
 */
 
+/*!
+    Returns the movement style for the cursor in the line edit.
+*/
 QTextCursor::MoveStyle QLineEdit::cursorMoveStyle() const
 {
     Q_D(const QLineEdit);
     return d->control->cursorMoveStyle();
 }
 
+/*!
+    Sets the movement style for the cursor in the line edit to the given
+    \a style.
+*/
 void QLineEdit::setCursorMoveStyle(QTextCursor::MoveStyle style)
 {
     Q_D(QLineEdit);
