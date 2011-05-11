@@ -3032,6 +3032,16 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
         q->setAttribute(Qt::WA_WState_Hidden);
     q->setAttribute(Qt::WA_WState_ExplicitShowHide, explicitlyHidden);
 
+#ifdef QT_MAC_USE_COCOA
+    // If we add a child to the unified toolbar, we have to redirect the painting.
+    if (parent && parent->d_func() && parent->d_func()->isInUnifiedToolbar) {
+        if (parent->d_func()->unifiedSurface) {
+            QWidget *toolbar = parent->d_func()->toolbar_ancestor;
+            parent->d_func()->unifiedSurface->recursiveRedirect(toolbar, toolbar, toolbar->d_func()->toolbar_offset);
+        }
+    }
+#endif // QT_MAC_USE_COCOA
+
     if (wasCreated) {
         transferChildren();
 #ifndef QT_MAC_USE_COCOA
