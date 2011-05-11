@@ -300,6 +300,7 @@ private:
     void translateAdvancedPointerEvent(const TAdvancedPointerEvent *event);
 #endif
     bool isSplitViewWidget(QWidget *widget);
+    bool hasFocusedAndVisibleChild(QWidget *parentWidget);
 
 public:
     void handleClientAreaChange();
