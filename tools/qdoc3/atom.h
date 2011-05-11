@@ -56,7 +56,7 @@ class Atom
 {
  public:
     enum Type { 
-        AbstractLeft,       // 00
+        AbstractLeft,
         AbstractRight,
         AnnotatedList,
         AutoLink,
@@ -66,19 +66,17 @@ class Atom
         C,
         CaptionLeft,
         CaptionRight,
-        Code,               // 10
+        Code,
         CodeBad,
         CodeNew,
         CodeOld,
         CodeQuoteArgument,
         CodeQuoteCommand,
-        DivLeft,            // 16
-        DivRight,           // 17
-#ifdef QDOC_QML
+        DivLeft,
+        DivRight,
         EndQmlText,
-#endif
         FootnoteLeft,
-        FootnoteRight,      // 20
+        FootnoteRight,
         FormatElse,
         FormatEndif,
         FormatIf,
@@ -88,11 +86,9 @@ class Atom
         GuidLink,
         Image,
         ImageText,
-        InlineImage,        // 30
-#ifdef QDOC_QML
+        InlineImage,
         JavaScript,
         EndJavaScript,
-#endif
         LegaleseLeft,
         LegaleseRight,
         LineBreak,
@@ -100,7 +96,7 @@ class Atom
         LinkNode,
         ListLeft,
         ListItemNumber,
-        ListTagLeft,        // 40
+        ListTagLeft,
         ListTagRight,
         ListItemLeft,
         ListItemRight,
@@ -108,11 +104,9 @@ class Atom
         Nop,
         ParaLeft,
         ParaRight,
-#ifdef QDOC_QML
         Qml,
         QmlText,
-#endif
-        QuotationLeft,      // 50
+        QuotationLeft,
         QuotationRight,
         RawString,
         SectionLeft,
@@ -122,7 +116,7 @@ class Atom
         SidebarLeft,
         SidebarRight,
         SinceList,
-        SnippetCommand,     // 60
+        SnippetCommand,
         SnippetIdentifier,
         SnippetLocation,
         String,
@@ -132,7 +126,7 @@ class Atom
         TableHeaderRight,
         TableRowLeft,
         TableRowRight,
-        TableItemLeft,      // 70
+        TableItemLeft,
         TableItemRight,
         TableOfContents,
         Target,

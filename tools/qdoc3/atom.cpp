@@ -184,9 +184,7 @@ static const struct {
     { "CodeQuoteCommand", Atom::CodeQuoteCommand },
     { "DivLeft", Atom::DivLeft },
     { "DivRight", Atom::DivRight },
-#ifdef QDOC_QML
     { "EndQmlText", Atom::EndQmlText },
-#endif
     { "FootnoteLeft", Atom::FootnoteLeft },
     { "FootnoteRight", Atom::FootnoteRight },
     { "FormatElse", Atom::FormatElse },
@@ -199,6 +197,8 @@ static const struct {
     { "Image", Atom::Image },
     { "ImageText", Atom::ImageText },
     { "InlineImage", Atom::InlineImage },
+    { "JavaScript", Atom::JavaScript },
+    { "EndJavaScript", Atom::EndJavaScript },
     { "LegaleseLeft", Atom::LegaleseLeft },
     { "LegaleseRight", Atom::LegaleseRight },
     { "LineBreak", Atom::LineBreak },
@@ -214,10 +214,8 @@ static const struct {
     { "Nop", Atom::Nop },
     { "ParaLeft", Atom::ParaLeft },
     { "ParaRight", Atom::ParaRight },
-#ifdef QDOC_QML
     { "Qml", Atom::Qml},
     { "QmlText", Atom::QmlText },
-#endif
     { "QuotationLeft", Atom::QuotationLeft },
     { "QuotationRight", Atom::QuotationRight },
     { "RawString", Atom::RawString },
