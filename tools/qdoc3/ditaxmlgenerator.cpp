@@ -62,6 +62,8 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_VERSION                         Doc::alias("version")
 int DitaXmlGenerator::id = 0;
 
+static int debug = 0;
+
 QString DitaXmlGenerator::sinceTitles[] =
     {
         "    New Namespaces",
@@ -1456,10 +1458,14 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             inApiDesc = false;
         }
 #endif        
+        if (debug == 1)
+            qDebug() << "SectionLeft";
         enterSection("details",QString());
         //writeGuidAttribute(Doc::canonicalTitle(Text::sectionHeading(atom).toString()));
         break;
     case Atom::SectionRight:
+        if (debug == 1)
+            qDebug() << "SectionRight";
         leaveSection();
         break;
     case Atom::SectionHeadingLeft:
@@ -1637,7 +1643,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             int numColumns = 1;
             const Node* node = relative;
 
-            Doc::SectioningUnit sectioningUnit = Doc::Section4;
+            Doc::Sections sectionUnit = Doc::Section4;
             QStringList params = atom->string().split(",");
             QString columnText = params.at(0);
             QStringList pieces = columnText.split(" ", QString::SkipEmptyParts);
@@ -1650,13 +1656,13 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
 
             if (params.size() == 2) {
                 numColumns = qMax(columnText.toInt(), numColumns);
-                sectioningUnit = (Doc::SectioningUnit)params.at(1).toInt();
+                sectionUnit = (Doc::Sections)params.at(1).toInt();
             }
 
             if (node)
                 generateTableOfContents(node,
                                         marker,
-                                        sectioningUnit,
+                                        sectionUnit,
                                         numColumns,
                                         relative);
         }
@@ -1743,6 +1749,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         enterSection("h2","Detailed Description");
         generateBody(nsn, marker);
+        generateAlsoList(nsn, marker);
         leaveSection();
         leaveSection(); // </apiDesc>
 
@@ -1877,6 +1884,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateSince(cn, marker);
         enterSection("h2","Detailed Description");
         generateBody(cn, marker);
+        generateAlsoList(cn, marker);
         leaveSection();
         leaveSection(); // </apiDesc>
 
@@ -1995,6 +2003,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateSince(fn, marker);
         enterSection("h2","Detailed Description");
         generateBody(fn, marker);
+        generateAlsoList(fn, marker);
         leaveSection();
         leaveSection(); // </apiDesc>
 
@@ -2115,6 +2124,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateBody(qcn, marker);
         if (cn)
             generateQmlText(cn->doc().body(), cn, marker, qcn->name());
+        generateAlsoList(cn, marker);
         leaveSection();
         leaveSection(); // </apiDesc>
 
@@ -2458,7 +2468,7 @@ void DitaXmlGenerator::generateIncludes(const InnerNode* inner, CodeMarker* mark
  */
 void DitaXmlGenerator::generateTableOfContents(const Node* node,
                                                CodeMarker* marker,
-                                               Doc::SectioningUnit sectioningUnit,
+                                               Doc::Sections sectionUnit,
                                                int numColumns,
                                                const Node* relative)
 
@@ -2492,7 +2502,7 @@ void DitaXmlGenerator::generateTableOfContents(const Node* node,
         Atom *atom = toc.at(i);
 
         int nextLevel = atom->string().toInt();
-        if (nextLevel > (int)sectioningUnit)
+        if (nextLevel > (int)sectionUnit)
             continue;
 
         if (sectionNumber.size() < nextLevel) {
@@ -5481,7 +5491,20 @@ void DitaXmlGenerator::writeApiDesc(const Node* node,
     if (!node->doc().isEmpty()) {
         inDetailedDescription = true;
         enterApiDesc(QString(),title);
+        if ((outFileName() == "qelapsedtimer.xml") && (debug == 0)) {
+            qDebug() << "SECTION NESTING LEVEL 1:" << sectionNestingLevel;
+            debug = 1;
+            const Text& t = node->doc().body();
+            t.dump();
+        }
         generateBody(node, marker);
+        if ((outFileName() == "qelapsedtimer.xml") && (debug == 1))
+            qDebug() << "SECTION NESTING LEVEL 2:" << sectionNestingLevel;
+        generateAlsoList(node, marker);    
+        if ((outFileName() == "qelapsedtimer.xml") && (debug == 1)) {
+            qDebug() << "SECTION NESTING LEVEL 3:" << sectionNestingLevel;
+            debug = 2;
+        }
         leaveSection();
     }
     inDetailedDescription = false;

@@ -19,7 +19,7 @@ qdoc_bootstrapped {
 #CONFIG += debug
 build_all:!build_pass {
     CONFIG -= build_all
-    CONFIG += release
+    CONFIG += debug-and-release
 #    CONFIG += debug
 }
 
