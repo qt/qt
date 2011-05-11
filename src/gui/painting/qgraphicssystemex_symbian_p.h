@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSYSTEM_P_H
-#define QGRAPHICSSYSTEM_P_H
+#ifndef QSYMBIANGRAPHICSSYSTEMEX_P_H
+#define QSYMBIANGRAPHICSSYSTEMEX_P_H
 
 //
 //  W A R N I N G
@@ -53,32 +53,19 @@
 // We mean it.
 //
 
-#include "private/qpixmapdata_p.h"
-#include "private/qwindowsurface_p.h"
-#include "private/qpaintengine_blitter_p.h"
-
-#include <qdebug.h>
+#include "private/qgraphicssystemex_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QPixmapFilter;
-class QBlittable;
-class QGraphicsSystemEx;
+class QWidget;
 
-class Q_GUI_EXPORT QGraphicsSystem
+class Q_GUI_EXPORT QSymbianGraphicsSystemEx : public QGraphicsSystemEx
 {
 public:
-    virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
-    virtual QPixmapData *createPixmapData(QPixmapData *origin);
-    virtual QWindowSurface *createWindowSurface(QWidget *widget) const = 0;
-
-    virtual ~QGraphicsSystem();
-
-    //### Remove this & change qpixmap.cpp & qbitmap.cpp once every platform is gaurenteed
-    //    to have a graphics system.
-    static QPixmapData *createDefaultPixmapData(QPixmapData::PixelType type);
-
-    virtual QGraphicsSystemEx* platformExtension();
+    virtual void releaseCachedGpuResources();
+    virtual void releaseAllGpuResources();
+    virtual bool hasBCM2727();
+    virtual void forceToRaster(QWidget *window);
 };
 
 QT_END_NAMESPACE
