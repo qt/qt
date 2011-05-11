@@ -89,7 +89,7 @@ class QNativeImage;
 // We trigger the rendering of the unified toolbar in QWidget::repaint()
 // and QWidget::update().
 // We keep track of flush requests via "flushRequested" variable. That
-// allow flush() to be a no-op if no repaint occured for a widget.
+// allow flush() to be a no-op if no repaint occurred for a widget.
 // We rely on the needsDisplay: and drawRect: mecanism for drawing our
 // content into the graphics context.
 //
