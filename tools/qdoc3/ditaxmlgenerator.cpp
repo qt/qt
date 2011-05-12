@@ -801,15 +801,18 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
 	break;
     case Atom::DivLeft:
         {
+            bool inStartElement = false;
             attr = atom->string();
             DitaTag t = currentTag();
             if ((t == DT_section) || (t == DT_sectiondiv)) {
                 writeStartTag(DT_sectiondiv);
                 divNestingLevel++;
+                inStartElement = true;
             }
             else if ((t == DT_body) || (t == DT_bodydiv)) {
                 writeStartTag(DT_bodydiv);
                 divNestingLevel++;
+                inStartElement = true;
             }
             if (!attr.isEmpty()) {
                 if (attr.contains('=')) {
@@ -833,7 +836,8 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                     attr = values;
                 }
             }
-            xmlWriter().writeAttribute("outputclass", attr);
+            if (inStartElement)
+                xmlWriter().writeAttribute("outputclass", attr);
         }
         break;
     case Atom::DivRight:
@@ -1481,7 +1485,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             generateLink(atom, relative, marker);
         }
         else {
-            writeCharacters(protectEnc(atom->string()));
+            writeCharacters(atom->string());
         }
         break;
     case Atom::TableLeft:
@@ -3650,7 +3654,7 @@ QString DitaXmlGenerator::protectEnc(const QString& string)
     return protect(string, outputEncoding);
 }
 
-QString DitaXmlGenerator::protect(const QString& string, const QString& outputEncoding)
+QString DitaXmlGenerator::protect(const QString& string, const QString& ) //outputEncoding)
 {
 #define APPEND(x) \
     if (xml.isEmpty()) { \
@@ -3677,6 +3681,7 @@ QString DitaXmlGenerator::protect(const QString& string, const QString& outputEn
         else if (ch == QLatin1Char('"')) {
             APPEND("&quot;");
         }
+#if 0        
         else if ((outputEncoding == "ISO-8859-1" && ch.unicode() > 0x007F) ||
                  (ch == QLatin1Char('*') && i + 1 < n && string.at(i) == QLatin1Char('/')) ||
                  (ch == QLatin1Char('.') && i > 2 && string.at(i - 2) == QLatin1Char('.'))) {
@@ -3685,6 +3690,7 @@ QString DitaXmlGenerator::protect(const QString& string, const QString& outputEn
             xml += QString::number(ch.unicode(), 16);
             xml += QLatin1Char(';');
         }
+#endif
         else {
             if (!xml.isEmpty())
                 xml += ch;
