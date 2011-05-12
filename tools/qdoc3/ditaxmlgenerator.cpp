@@ -62,8 +62,6 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_VERSION                         Doc::alias("version")
 int DitaXmlGenerator::id = 0;
 
-static int debug = 0;
-
 QString DitaXmlGenerator::sinceTitles[] =
     {
         "    New Namespaces",
@@ -1255,9 +1253,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::GuidLink:
         {
-#if 0            
-            qDebug() << "GUID LINK:" << atom->string() << outFileName();
-#endif            
             beginLink(atom->string());
             skipAhead = 1;
         }
@@ -1458,14 +1453,10 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             inApiDesc = false;
         }
 #endif        
-        if (debug == 1)
-            qDebug() << "SectionLeft";
         enterSection("details",QString());
         //writeGuidAttribute(Doc::canonicalTitle(Text::sectionHeading(atom).toString()));
         break;
     case Atom::SectionRight:
-        if (debug == 1)
-            qDebug() << "SectionRight";
         leaveSection();
         break;
     case Atom::SectionHeadingLeft:
@@ -3646,10 +3637,6 @@ QString DitaXmlGenerator::registerRef(const QString& ref)
         }
         else if (prevRef == ref)
             break;
-#if 0        
-        else
-            qDebug() << "PREVREF:" << prevRef;
-#endif        
         clean += "x";
     }
     return clean;
@@ -3818,7 +3805,6 @@ QString DitaXmlGenerator::guidForNode(const Node* node)
                 QString ref = fn->name();
                 if (fn->overloadNumber() != 1) {
                     ref += "-" + QString::number(fn->overloadNumber());
-                    //qDebug() << "guidForNode() overloaded function:" << outFileName() << ref;
                 }
             }
             return fn->guid();
@@ -5491,20 +5477,8 @@ void DitaXmlGenerator::writeApiDesc(const Node* node,
     if (!node->doc().isEmpty()) {
         inDetailedDescription = true;
         enterApiDesc(QString(),title);
-        if ((outFileName() == "qelapsedtimer.xml") && (debug == 0)) {
-            qDebug() << "SECTION NESTING LEVEL 1:" << sectionNestingLevel;
-            debug = 1;
-            const Text& t = node->doc().body();
-            t.dump();
-        }
         generateBody(node, marker);
-        if ((outFileName() == "qelapsedtimer.xml") && (debug == 1))
-            qDebug() << "SECTION NESTING LEVEL 2:" << sectionNestingLevel;
         generateAlsoList(node, marker);    
-        if ((outFileName() == "qelapsedtimer.xml") && (debug == 1)) {
-            qDebug() << "SECTION NESTING LEVEL 3:" << sectionNestingLevel;
-            debug = 2;
-        }
         leaveSection();
     }
     inDetailedDescription = false;
