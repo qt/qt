@@ -630,7 +630,7 @@
     we need to do special bookkeeping in Qt to handle this correctly, which
     unfortunately make mixing in native panels hard. The best way at the moment
     to do this, is to follow the pattern below, where we post the call to the
-    function with native code rather than calling it directly. Then we now that
+    function with native code rather than calling it directly. Then we know that
     Qt has cleanly updated any pending event loop recursions before the native 
     panel is shown:
 

@@ -403,6 +403,33 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
     } else if (value.isFunction() && !value.isRegExp()) {
         // this is handled by the binding creation above
     } else {
+        //### expand optimization for other known types
+        if (lastData->propType == QMetaType::Int && value.isNumber()) {
+            int rawValue = qRound(value.toNumber());
+            int status = -1;
+            int flags = 0;
+            void *a[] = { (void *)&rawValue, 0, &status, &flags };
+            QMetaObject::metacall(obj, QMetaObject::WriteProperty,
+                                  lastData->coreIndex, a);
+            return;
+        } else if (lastData->propType == QMetaType::QReal && value.isNumber()) {
+            qreal rawValue = qreal(value.toNumber());
+            int status = -1;
+            int flags = 0;
+            void *a[] = { (void *)&rawValue, 0, &status, &flags };
+            QMetaObject::metacall(obj, QMetaObject::WriteProperty,
+                                  lastData->coreIndex, a);
+            return;
+        } else if (lastData->propType == QMetaType::QString && value.isString()) {
+            const QString &rawValue = value.toString();
+            int status = -1;
+            int flags = 0;
+            void *a[] = { (void *)&rawValue, 0, &status, &flags };
+            QMetaObject::metacall(obj, QMetaObject::WriteProperty,
+                                  lastData->coreIndex, a);
+            return;
+        }
+
         QVariant v;
         if (lastData->flags & QDeclarativePropertyCache::Data::IsQList)
             v = enginePriv->scriptValueToVariant(value, qMetaTypeId<QList<QObject *> >());

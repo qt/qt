@@ -48,7 +48,7 @@
 #include <QFile>
 #include <QTemporaryFile>
 #include <QTextStream>
-
+#include <qdebug.h>
 #include "config.h"
 #include <stdlib.h>
 
@@ -175,6 +175,7 @@ Config::Config(const QString& programName)
 }
 
 /*!
+  The destructor has nothing special to do.
  */
 Config::~Config()
 {
@@ -199,6 +200,30 @@ void Config::load(const QString& fileName)
 	loc.setEtc(true);
     }
     lastLoc = Location::null;
+}
+
+/*!
+  Writes the qdoc configuration data to the named file.
+  The previous contents of the file are overwritten.
+ */
+void Config::unload(const QString& fileName)
+{
+    
+    QStringMultiMap::ConstIterator v = stringValueMap.begin();
+    while (v != stringValueMap.end()) {
+        qDebug() << v.key() << " = " << v.value();
+#if 0        
+        if (v.key().startsWith(varDot)) {
+            QString subVar = v.key().mid(varDot.length());
+            int dot = subVar.indexOf(QLatin1Char('.'));
+            if (dot != -1)
+                subVar.truncate(dot);
+            t.insert(subVar,v.value());
+        }
+#endif
+        ++v;
+    }
+    qDebug() << "fileName:" << fileName;
 }
 
 /*!
