@@ -483,3 +483,8 @@
     \externalpage http://www.symbiansigned.com
     \title Symbian Signed
 */
+
+/*!
+    \externalpage http://accessibility.linuxfoundation.org/a11yspecs/ia2/docs/html/_accessible_event_i_d_8idl.html
+    \title AccessibleEventID.idl File Reference
+*/
