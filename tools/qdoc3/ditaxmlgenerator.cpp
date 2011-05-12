@@ -801,15 +801,18 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
 	break;
     case Atom::DivLeft:
         {
+            bool inStartElement = false;
             attr = atom->string();
             DitaTag t = currentTag();
             if ((t == DT_section) || (t == DT_sectiondiv)) {
                 writeStartTag(DT_sectiondiv);
                 divNestingLevel++;
+                inStartElement = true;
             }
             else if ((t == DT_body) || (t == DT_bodydiv)) {
                 writeStartTag(DT_bodydiv);
                 divNestingLevel++;
+                inStartElement = true;
             }
             if (!attr.isEmpty()) {
                 if (attr.contains('=')) {
@@ -833,7 +836,8 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                     attr = values;
                 }
             }
-            xmlWriter().writeAttribute("outputclass", attr);
+            if (inStartElement)
+                xmlWriter().writeAttribute("outputclass", attr);
         }
         break;
     case Atom::DivRight:
@@ -3650,7 +3654,7 @@ QString DitaXmlGenerator::protectEnc(const QString& string)
     return protect(string, outputEncoding);
 }
 
-QString DitaXmlGenerator::protect(const QString& string, const QString& outputEncoding)
+QString DitaXmlGenerator::protect(const QString& string, const QString& ) //outputEncoding)
 {
 #define APPEND(x) \
     if (xml.isEmpty()) { \
