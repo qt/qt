@@ -142,7 +142,6 @@ SUBDIRS=\
     qregion \
     qscrollarea \
     qscrollbar \
-    qscroller \
     qsharedpointer_and_qwidget \
     qshortcut \
     qsidebar \

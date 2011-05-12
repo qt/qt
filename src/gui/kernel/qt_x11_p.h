@@ -226,7 +226,6 @@ typedef void (*PtrXRRSelectInput)(Display *, Window, int);
 typedef int (*PtrXRRUpdateConfiguration)(XEvent *);
 typedef int (*PtrXRRRootToScreen)(Display *, Window);
 typedef Bool (*PtrXRRQueryExtension)(Display *, int *, int *);
-typedef XRRScreenSize *(*PtrXRRSizes)(Display *, int, int *);
 #endif // QT_NO_XRANDR
 
 #ifndef QT_NO_XINPUT
@@ -711,7 +710,6 @@ struct QX11Data
     PtrXRRUpdateConfiguration ptrXRRUpdateConfiguration;
     PtrXRRRootToScreen ptrXRRRootToScreen;
     PtrXRRQueryExtension ptrXRRQueryExtension;
-    PtrXRRSizes ptrXRRSizes;
 #endif // QT_NO_XRANDR
 };
 
