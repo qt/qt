@@ -334,7 +334,6 @@ public:
     void removeFromMacToolbar(QToolBar *toolbar);
     void cleanUpMacToolbarItems();
     void fixSizeInUnifiedToolbar(QToolBar *tb) const;
-    bool useHIToolBar;
     bool activateUnifiedToolbarAfterFullScreen;
     void syncUnifiedToolbarVisibility();
     bool blockVisiblityCheck;
