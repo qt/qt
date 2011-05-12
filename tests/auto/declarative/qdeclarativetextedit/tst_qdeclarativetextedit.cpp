@@ -1639,6 +1639,26 @@ void tst_qdeclarativetextedit::cursorDelegate()
         QCOMPARE(textEditObject->cursorRectangle().x(), qRound(delegateObject->x()));
         QCOMPARE(textEditObject->cursorRectangle().y(), qRound(delegateObject->y()));
     }
+    // Clear preedit text;
+    QInputMethodEvent event;
+    QApplication::sendEvent(view, &event);
+
+    // Test delegate gets moved on mouse press.
+    textEditObject->setSelectByMouse(true);
+    textEditObject->setCursorPosition(0);
+    qDebug() << textEditObject->boundingRect() << textEditObject->positionToRectangle(5).center() << view->mapFromScene(textEditObject->positionToRectangle(5).center());
+    QTest::mouseClick(view->viewport(), Qt::LeftButton, 0, view->mapFromScene(textEditObject->positionToRectangle(5).center()));
+    QVERIFY(textEditObject->cursorPosition() != 0);
+    QCOMPARE(textEditObject->cursorRectangle().x(), qRound(delegateObject->x()));
+    QCOMPARE(textEditObject->cursorRectangle().y(), qRound(delegateObject->y()));
+
+    textEditObject->setReadOnly(true);
+    textEditObject->setCursorPosition(0);
+    QTest::mouseClick(view->viewport(), Qt::LeftButton, 0, view->mapFromScene(textEditObject->positionToRectangle(5).center()));
+    QVERIFY(textEditObject->cursorPosition() != 0);
+    QCOMPARE(textEditObject->cursorRectangle().x(), qRound(delegateObject->x()));
+    QCOMPARE(textEditObject->cursorRectangle().y(), qRound(delegateObject->y()));
+
     textEditObject->setCursorPosition(0);
     QCOMPARE(textEditObject->cursorRectangle().x(), qRound(delegateObject->x()));
     QCOMPARE(textEditObject->cursorRectangle().y(), qRound(delegateObject->y()));
