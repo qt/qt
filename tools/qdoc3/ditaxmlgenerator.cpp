@@ -1481,7 +1481,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             generateLink(atom, relative, marker);
         }
         else {
-            writeCharacters(protectEnc(atom->string()));
+            writeCharacters(atom->string());
         }
         break;
     case Atom::TableLeft:
@@ -3677,6 +3677,7 @@ QString DitaXmlGenerator::protect(const QString& string, const QString& outputEn
         else if (ch == QLatin1Char('"')) {
             APPEND("&quot;");
         }
+#if 0        
         else if ((outputEncoding == "ISO-8859-1" && ch.unicode() > 0x007F) ||
                  (ch == QLatin1Char('*') && i + 1 < n && string.at(i) == QLatin1Char('/')) ||
                  (ch == QLatin1Char('.') && i > 2 && string.at(i - 2) == QLatin1Char('.'))) {
@@ -3685,6 +3686,7 @@ QString DitaXmlGenerator::protect(const QString& string, const QString& outputEn
             xml += QString::number(ch.unicode(), 16);
             xml += QLatin1Char(';');
         }
+#endif
         else {
             if (!xml.isEmpty())
                 xml += ch;
