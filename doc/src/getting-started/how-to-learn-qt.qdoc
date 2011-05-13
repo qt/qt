@@ -31,7 +31,7 @@
     \brief Links to guides and resources for learning Qt.
     \nextpage Tutorials
 
-    \section1 Getting Started
+    \section1 Required programming skills
 
     We assume that you already know C++ and will be using it for Qt
     development. See the \l{Qt website} for more information about
@@ -55,7 +55,25 @@
     \inlineimage qtdemo-small.png
     \enddiv
 
-    \section1 Getting an Overview
+    \section1 Tools to install
+    
+    \section1 Examples in action
+    
+    \section1 Qt technology overviews
+    
+    \section1 Tutorials
+    
+    \section1 Getting most of Qt documentation
+    
+    \section1 Get advice and support from Qt Community
+    
+    \section1 Books about Qt
+    
+    \section1 Instructor led courses
+    
+    \section1 Videos
+    
+    \section1 Prove your knowledge
 
     At this point, we recommend looking at the
     \l{All Overviews and HOWTOs}{overviews} and reading those that are
