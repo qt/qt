@@ -4103,6 +4103,7 @@ void tst_QNetworkReply::ioPostToHttpFromMiddleOfQBufferFiveBytes()
 
     QUrl url = "http://" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi";
     QNetworkRequest request(url);
+    request.setRawHeader("Content-Type", "application/octet-stream");
     QNetworkReplyPtr reply = manager.post(request, &uploadBuffer);
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
@@ -4353,6 +4354,7 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
     // create the request
     QUrl url = QUrl(QString("http://127.0.0.1:%1/").arg(server.serverPort()));
     QNetworkRequest request(url);
+    request.setRawHeader("Content-Type", "application/octet-stream");
     QNetworkReplyPtr reply = manager.post(request, &sourceFile);
     QSignalSpy spy(reply, SIGNAL(uploadProgress(qint64,qint64)));
     connect(&server, SIGNAL(newConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
@@ -4964,17 +4966,24 @@ void tst_QNetworkReply::httpProxyCommands()
     QNetworkProxy proxy(QNetworkProxy::HttpProxy, "127.0.0.1", proxyServer.serverPort());
 
     manager.setProxy(proxy);
-    QNetworkReplyPtr reply = manager.get(QNetworkRequest(url));
-    manager.setProxy(QNetworkProxy());
+    QNetworkRequest request(url);
+    request.setRawHeader("User-Agent", "QNetworkReplyAutoTest/1.0");
+    QNetworkReplyPtr reply = manager.get(request);
+    //clearing the proxy here causes the test to fail.
+    //the proxy isn't used until after the bearer has been started
+    //which is correct in general, because system proxy isn't known until that time.
+    //removing this line is safe, as the proxy is also reset by the cleanup() function
+    //manager.setProxy(QNetworkProxy());
 
     // wait for the finished signal
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
-    QTestEventLoop::instance().enterLoop(1);
+    QTestEventLoop::instance().enterLoop(15);
 
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     //qDebug() << reply->error() << reply->errorString();
+    //qDebug() << proxyServer.receivedData;
 
     // we don't really care if the request succeeded
     // especially since it won't succeed in the HTTPS case
@@ -4982,6 +4991,12 @@ void tst_QNetworkReply::httpProxyCommands()
 
     QString receivedHeader = proxyServer.receivedData.left(expectedCommand.length());
     QCOMPARE(receivedHeader, expectedCommand);
+
+    //QTBUG-17223 - make sure the user agent from the request is sent to proxy server even for CONNECT
+    int uapos = proxyServer.receivedData.indexOf("User-Agent");
+    int uaend = proxyServer.receivedData.indexOf("\r\n", uapos);
+    QByteArray uaheader = proxyServer.receivedData.mid(uapos, uaend - uapos);
+    QCOMPARE(uaheader, QByteArray("User-Agent: QNetworkReplyAutoTest/1.0"));
 }
 
 class ProxyChangeHelper : public QObject {

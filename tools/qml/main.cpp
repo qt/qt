@@ -52,7 +52,6 @@
 #include <QAtomicInt>
 #include <QLibraryInfo>
 #include "qdeclarativetester.h"
-#include <private/qdeclarativedebughelper_p.h>
 
 QT_USE_NAMESPACE
 
@@ -538,8 +537,6 @@ int main(int argc, char ** argv)
     if (!gsSpecified)
         QApplication::setGraphicsSystem(QLatin1String("raster"));
 #endif
-
-    QDeclarativeDebugHelper::enableDebugging();
 
     Application app(argc, argv);
     app.setApplicationName(QLatin1String("QtQmlViewer"));
