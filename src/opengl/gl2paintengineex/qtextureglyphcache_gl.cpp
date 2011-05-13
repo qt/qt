@@ -306,7 +306,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
         // time.
 
         for (int i = 0; i < maskHeight; ++i)
-            glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, maskWidth, 1, GL_ALPHA, GL_UNSIGNED_BYTE, mask.scanLine(i));
+            glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, qMin(c.w, maskWidth), 1, GL_ALPHA, GL_UNSIGNED_BYTE, mask.scanLine(i));
     }
 }
 

@@ -277,4 +277,7 @@ EXPORTS
 	?writeEscapedAttribute@QXmlSerializer@@AAEXABVQString@@@Z @ 276 NONAME ; void QXmlSerializer::writeEscapedAttribute(class QString const &)
 	?staticMetaObject@QAbstractMessageHandler@@2UQMetaObject@@B @ 277 NONAME ; struct QMetaObject const QAbstractMessageHandler::staticMetaObject
 	?staticMetaObject@QAbstractUriResolver@@2UQMetaObject@@B @ 278 NONAME ; struct QMetaObject const QAbstractUriResolver::staticMetaObject
+	??_EQXmlQuery@@QAE@I@Z @ 279 NONAME ; QXmlQuery::~QXmlQuery(unsigned int)
+	??4QXmlNodeModelIndex@@QAEAAV0@ABV0@@Z @ 280 NONAME ; class QXmlNodeModelIndex & QXmlNodeModelIndex::operator=(class QXmlNodeModelIndex const &)
+	??_EQXmlItem@@QAE@I@Z @ 281 NONAME ; QXmlItem::~QXmlItem(unsigned int)
 

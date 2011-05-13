@@ -66,7 +66,6 @@
 
 Q_DECLARE_METATYPE(QDeclarativeDebugWatch::State)
 
-
 class tst_QDeclarativeDebug : public QObject
 {
     Q_OBJECT
@@ -117,6 +116,18 @@ private slots:
     void queryObjectTree();
     void setBindingInStates();
 };
+
+class NonScriptProperty : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(int nonScriptProp READ nonScriptProp WRITE setNonScriptProp NOTIFY nonScriptPropChanged SCRIPTABLE false)
+public:
+    int nonScriptProp() const { return 0; }
+    void setNonScriptProp(int) {}
+signals:
+    void nonScriptPropChanged();
+};
+QML_DECLARE_TYPE(NonScriptProperty)
+
 
 QDeclarativeDebugObjectReference tst_QDeclarativeDebug::findRootObject(int context, bool recursive)
 {
@@ -282,6 +293,7 @@ void tst_QDeclarativeDebug::compareProperties(const QDeclarativeDebugPropertyRef
 void tst_QDeclarativeDebug::initTestCase()
 {
     qRegisterMetaType<QDeclarativeDebugWatch::State>();
+    qmlRegisterType<NonScriptProperty>("Test", 1, 0, "NonScriptPropertyElement");
 
     QTest::ignoreMessage(QtWarningMsg, "Qml debugging is enabled. Only use this in a safe environment!");
     QDeclarativeDebugHelper::enableDebugging();
@@ -291,7 +303,8 @@ void tst_QDeclarativeDebug::initTestCase()
 
     QList<QByteArray> qml;
     qml << "import QtQuick 1.0\n"
-            "Item {"
+           "import Test 1.0\n"
+           "Item {"
                 "id: root\n"
                 "width: 10; height: 20; scale: blueRect.scale;"
                 "Rectangle { id: blueRect; width: 500; height: 600; color: \"blue\"; }"
@@ -306,6 +319,8 @@ void tst_QDeclarativeDebug::initTestCase()
                     "var list = varObjList;\n"
                     "list[0] = blueRect;\n"
                     "varObjList = list;\n"
+                "}\n"
+                "NonScriptPropertyElement {\n"
                 "}\n"
             "}";
 
@@ -725,7 +740,7 @@ void tst_QDeclarativeDebug::queryObject()
     // check source as defined in main()
     QDeclarativeDebugFileReference source = obj.source();
     QCOMPARE(source.url(), QUrl::fromLocalFile(""));
-    QCOMPARE(source.lineNumber(), 2);
+    QCOMPARE(source.lineNumber(), 3);
     QCOMPARE(source.columnNumber(), 1);
 
     // generically test all properties, children and childrens' properties

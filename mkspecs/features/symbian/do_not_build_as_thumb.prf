@@ -5,4 +5,9 @@ symbian-abld|symbian-sbsv2 {
     QMAKE_CFLAGS += --arm
     QMAKE_CXXFLAGS -= --thumb
     QMAKE_CXXFLAGS += --arm
+} else:symbian-gcce {
+    QMAKE_CFLAGS -= --thumb
+    QMAKE_CFLAGS += -marm -mthumb-interwork -mapcs
+    QMAKE_CXXFLAGS -= --thumb
+    QMAKE_CXXFLAGS += -marm -mthumb-interwork -mapcs
 }

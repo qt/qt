@@ -61,7 +61,7 @@ public:
     void beginLayout();
     void clearLayout();
 
-    void prepare();
+    void prepare(QPainter *);
     void draw(QPainter *, const QPointF & = QPointF());
 
 private:

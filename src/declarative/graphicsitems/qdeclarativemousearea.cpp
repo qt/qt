@@ -496,6 +496,9 @@ void QDeclarativeMouseArea::mousePressEvent(QGraphicsSceneMouseEvent *event)
             d->pressAndHoldTimer.start(PressAndHoldDelay, this);
         setKeepMouseGrab(d->stealMouse);
         event->setAccepted(setPressed(true));
+
+        if(!event->isAccepted() && d->forwardToList.count())
+           d->forwardEvent(event);
     }
 }
 
@@ -573,6 +576,9 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     me.setX(d->lastPos.x());
     me.setY(d->lastPos.y());
     emit positionChanged(&me);
+
+    if(!event->isAccepted() && d->forwardToList.count())
+        d->forwardEvent(event);
 }
 
 
@@ -594,6 +600,9 @@ void QDeclarativeMouseArea::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         if (s && s->mouseGrabberItem() == this)
             ungrabMouse();
         setKeepMouseGrab(false);
+
+        if(!event->isAccepted() && d->forwardToList.count())
+            d->forwardEvent(event);
     }
     d->doubleClick = false;
 }
@@ -650,6 +659,32 @@ void QDeclarativeMouseArea::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
     else
         setHovered(false);
 }
+
+#ifndef QT_NO_CONTEXTMENU
+void QDeclarativeMouseArea::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+{
+    bool acceptsContextMenuButton;
+#if defined(Q_OS_SYMBIAN)
+    // In Symbian a Long Tap on the screen will trigger. See QSymbianControl::HandleLongTapEventL().
+    acceptsContextMenuButton = acceptedButtons() & Qt::LeftButton;
+#elif defined(Q_WS_WINCE)
+    // ### WinCE can trigger context menu event with a gesture in the left button or a
+    // click with the right button. Since we have no way here to differentiate them when
+    // event happens, accepting either of the them will block the event.
+    acceptsContextMenuButton = acceptedButtons() & (Qt::LeftButton | Qt::RightButton);
+#else
+    acceptsContextMenuButton = acceptedButtons() & Qt::RightButton;
+#endif
+
+    if (isEnabled() && event->reason() == QGraphicsSceneContextMenuEvent::Mouse
+        && acceptsContextMenuButton) {
+        // Do not let the context menu event propagate to items behind.
+        return;
+    }
+
+    QDeclarativeItem::contextMenuEvent(event);
+}
+#endif // QT_NO_CONTEXTMENU
 
 bool QDeclarativeMouseArea::sceneEvent(QEvent *event)
 {
@@ -958,5 +993,12 @@ QDeclarativeDrag *QDeclarativeMouseArea::drag()
     \snippet doc/src/snippets/declarative/mousearea/mouseareadragfilter.qml dragfilter
 
 */
+
+QDeclarativeListProperty<QGraphicsObject> QDeclarativeMouseArea::forwardTo()
+{
+    Q_D(QDeclarativeMouseArea);
+    return d->forwardTo;
+}
+
 
 QT_END_NAMESPACE

@@ -227,6 +227,7 @@ struct QTLWExtra {
 #elif defined(Q_OS_SYMBIAN)
     uint inExpose : 1; // Prevents drawing recursion
     uint nativeWindowTransparencyEnabled : 1; // Tracks native window transparency
+    uint forcedToRaster : 1;
 #endif
 };
 
@@ -759,6 +760,7 @@ public:
 #ifndef QT_NO_IM
     uint inheritsInputMethodHints : 1;
 #endif
+    uint inSetParent : 1;
 
     // *************************** Platform specific ************************************
 #if defined(Q_WS_X11) // <----------------------------------------------------------- X11

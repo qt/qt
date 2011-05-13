@@ -78,7 +78,6 @@ public:
         : layout(0), explicitIconSize(false), toolButtonStyle(Qt::ToolButtonIconOnly)
 #ifdef Q_WS_MAC
             , useHIToolBar(false)
-            , activateUnifiedToolbarAfterFullScreen(false)
 #endif
 #if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
             , hasOldCursor(false) , cursorAdjusted(false)
@@ -90,7 +89,6 @@ public:
     Qt::ToolButtonStyle toolButtonStyle;
 #ifdef Q_WS_MAC
     bool useHIToolBar;
-    bool activateUnifiedToolbarAfterFullScreen;
 #endif
     void init();
     QList<int> hoverSeparator;

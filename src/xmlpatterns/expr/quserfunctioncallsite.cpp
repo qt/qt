@@ -227,7 +227,7 @@ void UserFunctionCallsite::setSource(const UserFunction::Ptr &userFunction,
         /* Note that we pass in cacheSlotOffset + i here instead of varDecls.at(i)->slot since
          * we want independent caches for each callsite. */
         m_operands[i] = Expression::Ptr(new EvaluationCache<false>(m_operands.at(i),
-                                                                   varDecls.at(i),
+                                                                   varDecls.at(i).data(),
                                                                    cacheSlotOffset + i));
     }
 }

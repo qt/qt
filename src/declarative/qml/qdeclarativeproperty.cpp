@@ -1451,6 +1451,7 @@ QByteArray QDeclarativePropertyPrivate::saveValueType(const QMetaObject *metaObj
     QMetaProperty subProp = subObject->property(subIndex);
 
     ValueTypeSerializedData sd;
+    memset(&sd, 0, sizeof(sd));
     sd.isValueType = true;
     sd.core.load(metaObject->property(index));
     sd.valueType.flags = QDeclarativePropertyCache::Data::flagsForProperty(subProp);
@@ -1465,6 +1466,7 @@ QByteArray QDeclarativePropertyPrivate::saveValueType(const QMetaObject *metaObj
 QByteArray QDeclarativePropertyPrivate::saveProperty(const QMetaObject *metaObject, int index)
 {
     SerializedData sd;
+    memset(&sd, 0, sizeof(sd));
     sd.isValueType = false;
     sd.core.load(metaObject->property(index));
 

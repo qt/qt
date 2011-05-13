@@ -988,9 +988,9 @@ static Expression::Ptr pushVariable(const QXmlName name,
      * In some cases the EvaluationCache instance isn't necessary, but in those cases EvaluationCache
      * optimizes itself away. */
     if(type == VariableDeclaration::ExpressionVariable)
-        checked = create(new EvaluationCache<false>(checked, var, parseInfo->allocateCacheSlot()), sourceLocator, parseInfo);
+        checked = create(new EvaluationCache<false>(checked, var.data(), parseInfo->allocateCacheSlot()), sourceLocator, parseInfo);
     else if(type == VariableDeclaration::GlobalVariable)
-        checked = create(new EvaluationCache<true>(checked, var, parseInfo->allocateCacheSlot()), sourceLocator, parseInfo);
+        checked = create(new EvaluationCache<true>(checked, var.data(), parseInfo->allocateCacheSlot()), sourceLocator, parseInfo);
 
     var->setExpression(checked);
 
@@ -1042,7 +1042,7 @@ static Expression::Ptr resolveVariable(const QXmlName &name,
              * mechanism must. */
             case VariableDeclaration::ExpressionVariable:
             {
-                retval = create(new ExpressionVariableReference(var->slot, var), sourceLocator, parseInfo);
+                retval = create(new ExpressionVariableReference(var->slot, var.data()), sourceLocator, parseInfo);
                 break;
             }
             case VariableDeclaration::FunctionArgument:
@@ -1057,7 +1057,7 @@ static Expression::Ptr resolveVariable(const QXmlName &name,
             }
             case VariableDeclaration::TemplateParameter:
             {
-                retval = create(new TemplateParameterReference(var), sourceLocator, parseInfo);
+                retval = create(new TemplateParameterReference(var.data()), sourceLocator, parseInfo);
                 break;
             }
             case VariableDeclaration::ExternalVariable:

@@ -119,6 +119,8 @@ private slots:
     void testQtQuick11Attributes_data();
     void rightToLeft();
     void test_mirroring();
+    void orientationChange();
+    void contentPosJump();
 
 private:
     template <class T> void items();
@@ -387,6 +389,7 @@ void tst_QDeclarativeListView::items()
 
     QTRY_VERIFY(listview->highlightItem() != 0);
     QTRY_COMPARE(listview->count(), model.count());
+    QTRY_COMPARE(canvas->rootObject()->property("count").toInt(), model.count());
     QTRY_COMPARE(contentItem->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
     // current item should be first item
@@ -515,6 +518,7 @@ void tst_QDeclarativeListView::inserted()
 
     model.insertItem(0, "Foo", "1111"); // zero index, and current item
 
+    QCOMPARE(canvas->rootObject()->property("count").toInt(), model.count());
     QTRY_COMPARE(contentItem->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
     name = findItem<QDeclarativeText>(contentItem, "textName", 0);
@@ -581,6 +585,7 @@ void tst_QDeclarativeListView::removed(bool animated)
     QTRY_VERIFY(contentItem != 0);
 
     model.removeItem(1);
+    QCOMPARE(canvas->rootObject()->property("count").toInt(), model.count());
 
     QDeclarativeText *name = findItem<QDeclarativeText>(contentItem, "textName", 1);
     QTRY_VERIFY(name != 0);
@@ -708,6 +713,16 @@ void tst_QDeclarativeListView::removed(bool animated)
 
     QTRY_VERIFY(name = findItem<QDeclarativeText>(contentItem, "textName", model.count()-1));
     QCOMPARE(name->text(), QString("New"));
+
+    // Add some more items so that we don't run out
+    for (int i = 50; i < 100; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    // QTBUG-19198 move to end and remove all visible items one at a time.
+    listview->positionViewAtEnd();
+    for (int i = 0; i < 18; ++i)
+        model.removeItems(model.count() - 1, 1);
+    QTRY_VERIFY(findItems<QDeclarativeItem>(contentItem, "wrapper").count() > 16);
 
     delete canvas;
 }
@@ -2581,6 +2596,107 @@ void tst_QDeclarativeListView::test_mirroring()
 
     delete canvasA;
     delete canvasB;
+}
+
+void tst_QDeclarativeListView::orientationChange()
+{
+    QDeclarativeView *canvas = createView();
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/orientchange.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = qobject_cast<QDeclarativeListView*>(canvas->rootObject());
+    QVERIFY(listview != 0);
+
+    QDeclarativeItem *contentItem = listview->contentItem();
+    QVERIFY(contentItem != 0);
+
+    listview->positionViewAtIndex(50, QDeclarativeListView::Beginning);
+
+    // Confirm items positioned correctly
+    for (int i = 50; i < 54; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
+        QVERIFY(item);
+        QCOMPARE(item->y(), i*80.0);
+    }
+
+    listview->setOrientation(QDeclarativeListView::Horizontal);
+    QCOMPARE(listview->contentY(), 0.);
+
+    // Confirm items positioned correctly
+    for (int i = 0; i < 3; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
+        QVERIFY(item);
+        QCOMPARE(item->x(), i*80.0);
+    }
+
+    listview->positionViewAtIndex(50, QDeclarativeListView::Beginning);
+    listview->setOrientation(QDeclarativeListView::Vertical);
+    QCOMPARE(listview->contentX(), 0.);
+    //
+    // Confirm items positioned correctly
+    for (int i = 0; i < 4; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
+        QVERIFY(item);
+        QCOMPARE(item->y(), i*80.0);
+    }
+
+    delete canvas;
+}
+
+void tst_QDeclarativeListView::contentPosJump()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    for (int i = 0; i < 50; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listviewtest.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+    QTRY_VERIFY(listview != 0);
+
+    QDeclarativeItem *contentItem = listview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    // Confirm items positioned correctly
+    int itemCount = findItems<QDeclarativeItem>(contentItem, "wrapper").count();
+    for (int i = 0; i < model.count() && i < itemCount; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QTRY_VERIFY(item);
+        QTRY_VERIFY(item->y() == i*20);
+    }
+
+    // Test jumping more than a page of items.
+    listview->setContentY(500);
+    itemCount = findItems<QDeclarativeItem>(contentItem, "wrapper").count();
+    for (int i = 25; i < model.count() && i < itemCount; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QTRY_VERIFY(item);
+        QTRY_VERIFY(item->y() == i*20);
+    }
+
+    listview->setContentY(-100);
+    itemCount = findItems<QDeclarativeItem>(contentItem, "wrapper").count();
+    QVERIFY(itemCount < 20);
+    for (int i = 0; i < model.count() && i < itemCount; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QTRY_VERIFY(item);
+        QTRY_VERIFY(item->y() == i*20);
+    }
+
+    delete canvas;
 }
 
 void tst_QDeclarativeListView::qListModelInterface_items()

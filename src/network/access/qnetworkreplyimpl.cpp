@@ -775,6 +775,8 @@ void QNetworkReplyImpl::abort()
     if (d->state != QNetworkReplyImplPrivate::Finished) {
         // emit signals
         d->error(OperationCanceledError, tr("Operation canceled"));
+        if (d->state == QNetworkReplyImplPrivate::WaitingForSession)
+            d->state = QNetworkReplyImplPrivate::Working;
         d->finished();
     }
     d->state = QNetworkReplyImplPrivate::Aborted;
@@ -913,10 +915,6 @@ bool QNetworkReplyImplPrivate::migrateBackend()
     if (state == Finished || state == Aborted)
         return true;
 
-    // Backend does not support resuming download.
-    if (!backend->canResume())
-        return false;
-
     // Request has outgoing data, not migrating.
     if (outgoingData)
         return false;
@@ -924,6 +922,10 @@ bool QNetworkReplyImplPrivate::migrateBackend()
     // Request is serviced from the cache, don't need to migrate.
     if (copyDevice)
         return true;
+
+    // Backend does not support resuming download.
+    if (!backend->canResume())
+        return false;
 
     state = QNetworkReplyImplPrivate::Reconnecting;
 

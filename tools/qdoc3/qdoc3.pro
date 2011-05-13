@@ -95,7 +95,7 @@ include(declarativeparser/parser.pri)
 qtPrepareTool(QDOC, qdoc3)
 qtPrepareTool(QHELPGENERATOR, qhelpgenerator)
 
-$$unixstyle {
+equals(QMAKE_DIR_SEP, /) {
     QDOC = QT_BUILD_TREE=$$QT_BUILD_TREE QT_SOURCE_TREE=$$QT_SOURCE_TREE $$QDOC
 } else {
     QDOC = set QT_BUILD_TREE=$$QT_BUILD_TREE&& set QT_SOURCE_TREE=$$QT_SOURCE_TREE&& $$QDOC

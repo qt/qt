@@ -2681,6 +2681,22 @@ void QTextEngine::resolveAdditionalFormats() const
     specialData->resolvedFormatIndices = indices;
 }
 
+QFixed QTextEngine::leadingSpaceWidth(const QScriptLine &line)
+{
+    if (!line.hasTrailingSpaces
+        || (option.flags() & QTextOption::IncludeTrailingSpaces)
+        || !isRightToLeft())
+        return QFixed();
+
+    int pos = line.length;
+    const HB_CharAttributes *attributes = this->attributes();
+    if (!attributes)
+        return QFixed();
+    while (pos > 0 && attributes[line.from + pos - 1].whiteSpace)
+        --pos;
+    return width(line.from + pos, line.length - pos);
+}
+
 QStackTextEngine::QStackTextEngine(const QString &string, const QFont &f)
     : QTextEngine(string, f),
       _layoutData(string, _memory, MemSize)

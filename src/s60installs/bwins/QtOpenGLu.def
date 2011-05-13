@@ -715,11 +715,13 @@ EXPORTS
 	?detachTextureFromPool@QGLPixmapData@@QAEXXZ @ 714 NONAME ; void QGLPixmapData::detachTextureFromPool(void)
 	?reclaimTexture@QGLPixmapData@@QAEXXZ @ 715 NONAME ; void QGLPixmapData::reclaimTexture(void)
 	?destroyTexture@QGLPixmapData@@QAEXXZ @ 716 NONAME ; void QGLPixmapData::destroyTexture(void)
-	?releaseCachedResources@QGLGraphicsSystem@@UAEXXZ @ 717 NONAME ; void QGLGraphicsSystem::releaseCachedResources(void)
+	?releaseCachedResources@QGLGraphicsSystem@@UAEXXZ @ 717 NONAME ABSENT ; void QGLGraphicsSystem::releaseCachedResources(void)
 	?serialNumber@QGLTextureGlyphCache@@QBEHXZ @ 718 NONAME ; int QGLTextureGlyphCache::serialNumber(void) const
 	?forceToImage@QGLPixmapData@@QAEXXZ @ 719 NONAME ; void QGLPixmapData::forceToImage(void)
 	?idealFormat@QGLPixmapData@@QAE?AW4Format@QImage@@AAV3@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 720 NONAME ; enum QImage::Format QGLPixmapData::idealFormat(class QImage &, class QFlags<enum Qt::ImageConversionFlag>)
 	?releaseNativeImageHandle@QGLPixmapData@@QAEXXZ @ 721 NONAME ; void QGLPixmapData::releaseNativeImageHandle(void)
 	?createFromNativeImageHandleProvider@QGLPixmapData@@QAEXXZ @ 722 NONAME ; void QGLPixmapData::createFromNativeImageHandleProvider(void)
 	?initFromNativeImageHandle@QGLPixmapData@@QAE_NPAXABVQString@@@Z @ 723 NONAME ; bool QGLPixmapData::initFromNativeImageHandle(void *, class QString const &)
+	?platformExtension@QGLGraphicsSystem@@UAEPAVQGraphicsSystemEx@@XZ @ 724 NONAME ; class QGraphicsSystemEx * QGLGraphicsSystem::platformExtension(void)
+	?releaseCachedGpuResources@QGLGraphicsSystem@@UAEXXZ @ 725 NONAME ; void QGLGraphicsSystem::releaseCachedGpuResources(void)
 

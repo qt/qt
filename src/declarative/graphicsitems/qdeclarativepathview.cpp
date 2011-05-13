@@ -1021,9 +1021,12 @@ void QDeclarativePathView::setDelegate(QDeclarativeComponent *delegate)
         d->ownModel = true;
     }
     if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model)) {
+        int oldCount = dataModel->count();
         dataModel->setDelegate(delegate);
         d->modelCount = dataModel->count();
         d->regenerate();
+        if (oldCount != dataModel->count())
+            emit countChanged();
         emit delegateChanged();
     }
 }
@@ -1525,6 +1528,8 @@ void QDeclarativePathView::itemsRemoved(int modelIndex, int count)
     } else {
         d->regenerate();
         d->updateCurrent();
+        if (!d->flicking && !d->moving && d->haveHighlightRange && d->highlightRangeMode == QDeclarativePathView::StrictlyEnforceRange)
+            d->snapToCurrent();
     }
     if (changedOffset)
         emit offsetChanged();
