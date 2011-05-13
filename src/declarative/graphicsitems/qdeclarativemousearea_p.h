@@ -190,6 +190,9 @@ protected:
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
+#ifndef QT_NO_CONTEXTMENU
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
+#endif // QT_NO_CONTEXTMENU
     bool sceneEvent(QEvent *);
     bool sendMouseEvent(QGraphicsSceneMouseEvent *event);
     bool sceneEventFilter(QGraphicsItem *i, QEvent *e);
