@@ -87,6 +87,7 @@ class DitaXmlGenerator : public PageGenerator
         DT_apiDesc,
         DT_APIMap,
         DT_apiName,
+        DT_apiRelation,
         DT_audience,
         DT_author,
         DT_b,
@@ -292,11 +293,15 @@ class DitaXmlGenerator : public PageGenerator
     void writeDerivations(const ClassNode* cn, CodeMarker* marker);
     void writeLocation(const Node* n);
     void writeFunctions(const Section& s, 
-                        const Node* n, 
+                        const InnerNode* parent, 
                         CodeMarker* marker,
                         const QString& attribute = QString());
     void writeNestedClasses(const Section& s, const Node* n);
-    void writeParameters(const FunctionNode* fn);
+    void replaceTypesWithLinks(const Node* n,
+                               const InnerNode* parent,
+                               CodeMarker* marker,
+                               QString& src);
+    void writeParameters(const FunctionNode* fn, const InnerNode* parent, CodeMarker* marker);
     void writeEnumerations(const Section& s, 
                            CodeMarker* marker,
                            const QString& attribute = QString());
@@ -315,7 +320,7 @@ class DitaXmlGenerator : public PageGenerator
     void writePropertyParameter(const QString& tag, const NodeList& nlist);
     void writeRelatedLinks(const FakeNode* fake, CodeMarker* marker);
     void writeLink(const Node* node, const QString& tex, const QString& role);
-    void writeProlog(const InnerNode* inner, CodeMarker* marker);
+    void writeProlog(const InnerNode* inner);
     bool writeMetadataElement(const InnerNode* inner, 
                               DitaXmlGenerator::DitaTag t, 
                               bool force=true);
@@ -438,7 +443,7 @@ class DitaXmlGenerator : public PageGenerator
     virtual void generateInnerNode(const InnerNode* node);
     QXmlStreamWriter& xmlWriter();
     void writeApiDesc(const Node* node, CodeMarker* marker, const QString& title);
-    void addLink(const QString& href, const QStringRef& text);
+    void addLink(const QString& href, const QStringRef& text, DitaTag t = DT_xref);
     void writeDitaMap();
     void writeStartTag(DitaTag t);
     void writeEndTag(DitaTag t=DT_NONE);

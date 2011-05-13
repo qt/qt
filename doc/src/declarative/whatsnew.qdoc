@@ -194,7 +194,7 @@ Text {
 }
 \endcode
 
-\e {import Qt 4.7} continues to work so existing applications wont break even
+\e {import Qt 4.7} continues to work so existing applications won't break even
 if they aren't updated, but it is recommended that all import statements be
 modified to the new form.
 */

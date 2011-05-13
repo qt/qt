@@ -71,6 +71,7 @@ public:
     ~QVolatileImage();
     QVolatileImage &operator=(const QVolatileImage &rhs);
 
+    bool paintingActive() const;
     bool isNull() const;
     QImage::Format format() const;
     int width() const;

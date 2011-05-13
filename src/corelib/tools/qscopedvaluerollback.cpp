@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QScopedValueRollback::QScopedValueRollback(T &var)
 
-    Stores the previous value of var internally, for revert on destruction.
+    Stores the previous value of \a var internally, for revert on destruction.
 */
 
 /*!

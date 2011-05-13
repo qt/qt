@@ -610,6 +610,17 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     if (!d_ptr->destructive_swap_buffers && !d_ptr->did_paint)
         return;
 
+#ifdef Q_OS_SYMBIAN
+    if (window() != widget) {
+        // For performance reasons we don't support
+        // flushing native child widgets on Symbian.
+        // It breaks overlapping native child widget
+        // rendering in some cases but we prefer performance.
+        return;
+    }
+#endif
+
+
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
     Q_ASSERT(parent);
 
@@ -717,7 +728,6 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         } else {
             glFlush();
         }
-
         return;
     }
 
@@ -874,8 +884,22 @@ void QGLWindowSurface::updateGeometry() {
 
     bool hijack(true);
     QWidgetPrivate *wd = window()->d_func();
-    if (wd->extraData() && wd->extraData()->glContext)
-        hijack = false; // we already have gl context for widget
+    if (wd->extraData() && wd->extraData()->glContext) {
+#ifdef Q_OS_SYMBIAN // Symbian needs to recreate the context when native window size changes
+        if (d_ptr->size != geometry().size()) {
+            if (window() != qt_gl_share_widget())
+                --(_qt_gl_share_widget()->widgetRefCount);
+
+            delete wd->extraData()->glContext;
+            wd->extraData()->glContext = 0;
+            d_ptr->ctx = 0;
+        }
+        else
+#endif
+        {
+            hijack = false; // we already have gl context for widget
+        }
+    }
 
     if (hijack)
         hijackWindow(window());
@@ -895,35 +919,6 @@ void QGLWindowSurface::updateGeometry() {
         return;
 
     d_ptr->size = surfSize;
-
-#ifdef Q_OS_SYMBIAN
-    if (!hijack) { // Symbian needs to recreate EGL surface when native window size changes
-        if (ctx->d_func()->eglSurface != EGL_NO_SURFACE) {
-            eglDestroySurface(ctx->d_func()->eglContext->display(),
-                                                    ctx->d_func()->eglSurface);
-        }
-
-        ctx->d_func()->eglSurface = QEgl::createSurface(ctx->device(),
-                                           ctx->d_func()->eglContext->config());
-
-        eglGetError();  // Clear error state.
-        if (!d_ptr->destructive_swap_buffers) {
-            eglSurfaceAttrib(ctx->d_func()->eglContext->display(),
-                                            ctx->d_func()->eglSurface,
-                                            EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
-
-            if (eglGetError() != EGL_SUCCESS)
-                qWarning("QGLWindowSurface: could not enable preserved swap behaviour");
-        } else {
-            eglSurfaceAttrib(ctx->d_func()->eglContext->display(),
-                                            ctx->d_func()->eglSurface,
-                                            EGL_SWAP_BEHAVIOR, EGL_BUFFER_DESTROYED);
-
-            if (eglGetError() != EGL_SUCCESS)
-                qWarning("QGLWindowSurface: could not enable destroyed swap behaviour");
-        }
-    }
-#endif
 
     if (d_ptr->ctx) {
 #ifndef QT_OPENGL_ES_2

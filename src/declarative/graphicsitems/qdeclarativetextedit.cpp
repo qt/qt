@@ -273,7 +273,6 @@ void QDeclarativeTextEdit::setText(const QString &text)
     \o TextEdit.AutoText
     \o TextEdit.PlainText
     \o TextEdit.RichText
-    \o TextEdit.StyledText
     \endlist
 
     The default is TextEdit.AutoText.  If the text format is TextEdit.AutoText the text edit

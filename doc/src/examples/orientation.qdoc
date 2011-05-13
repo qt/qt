@@ -130,7 +130,7 @@
 
     Synchronizing both UIs like this might become unfeasible when there are
     many things that can change. In that case it is better to make use of the
-    \l{An Introduction to Model/View Programming}{Model-View-Controller pattern}
+    \l{Introduction to Model/View Programming}{Model-View-Controller pattern}
     more extensively and share the content between both portrait and landscape
     widgets. Then an interface for displaying and manipulating it can be tailor
     made for both orientations.

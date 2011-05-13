@@ -637,8 +637,8 @@ static QString find_translation(const QLocale & locale,
     \o \c /opt/foolib/foo
     \endlist
 
-    For OSs where file system is case sensitive, QTranslator also tries to load
-    a lower-cased version of the locale name.
+    On operating systems where file system is case sensitive, QTranslator also
+    tries to load a lower-cased version of the locale name.
 */
 bool QTranslator::load(const QLocale & locale,
                        const QString & filename,

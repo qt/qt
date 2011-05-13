@@ -70,13 +70,14 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextInputPrivate : public QDeclarativeImplic
 {
     Q_DECLARE_PUBLIC(QDeclarativeTextInput)
 public:
-    QDeclarativeTextInputPrivate() : control(new QLineControl(QString())),
+    QDeclarativeTextInputPrivate() : control(new QLineControl),
                  color((QRgb)0), style(QDeclarativeText::Normal),
                  styleColor((QRgb)0), hAlign(QDeclarativeTextInput::AlignLeft),
                  mouseSelectionMode(QDeclarativeTextInput::SelectCharacters), inputMethodHints(Qt::ImhNone),
                  hscroll(0), oldScroll(0), oldValidity(false), focused(false), focusOnPress(true),
                  showInputPanelOnFocus(true), clickCausedFocus(false), cursorVisible(false),
-                 autoScroll(true), selectByMouse(false), canPaste(false), hAlignImplicit(true)
+                 autoScroll(true), selectByMouse(false), canPaste(false), hAlignImplicit(true),
+                 selectPressed(false)
     {
 #ifdef Q_OS_SYMBIAN
         if (QSysInfo::symbianVersion() == QSysInfo::SV_SF_1 || QSysInfo::symbianVersion() == QSysInfo::SV_SF_3) {
@@ -88,7 +89,6 @@ public:
 
     ~QDeclarativeTextInputPrivate()
     {
-        delete control;
     }
 
     int xToPos(int x, QTextLine::CursorPosition betweenOrOn = QTextLine::CursorBetweenCharacters) const
@@ -142,6 +142,7 @@ public:
     bool selectByMouse:1;
     bool canPaste:1;
     bool hAlignImplicit:1;
+    bool selectPressed:1;
 
     static inline QDeclarativeTextInputPrivate *get(QDeclarativeTextInput *t) {
         return t->d_func();

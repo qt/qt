@@ -93,104 +93,6 @@ static QRegExp typeTag("(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)");
 static QRegExp spanTag("</@(?:comment|preprocessor|string|char|number|op|type|name|keyword)>");
 static QRegExp unknownTag("</?@[^>]*>");
 
-bool parseArg(const QString &src,
-              const QString &tag,
-              int *pos,
-              int n,
-              QStringRef *contents,
-              QStringRef *par1 = 0,
-              bool debug = false)
-{
-#define SKIP_CHAR(c) \
-    if (debug) \
-        qDebug() << "looking for " << c << " at " << QString(src.data() + i, n - i); \
-    if (i >= n || src[i] != c) { \
-        if (debug) \
-            qDebug() << " char '" << c << "' not found"; \
-        return false; \
-    } \
-    ++i;
-
-
-#define SKIP_SPACE \
-    while (i < n && src[i] == ' ') \
-        ++i;
-
-    int i = *pos;
-    int j = i;
-
-    // assume "<@" has been parsed outside
-    //SKIP_CHAR('<');
-    //SKIP_CHAR('@');
-
-    if (tag != QStringRef(&src, i, tag.length())) {
-        if (0 && debug)
-            qDebug() << "tag " << tag << " not found at " << i;
-        return false;
-    }
-
-    if (debug)
-        qDebug() << "haystack:" << src << "needle:" << tag << "i:" <<i;
-
-    // skip tag
-    i += tag.length();
-
-    // parse stuff like:  linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
-    if (par1) {
-        SKIP_SPACE;
-        // read parameter name
-        j = i;
-        while (i < n && src[i].isLetter())
-            ++i;
-        if (src[i] == '=') {
-            if (debug)
-                qDebug() << "read parameter" << QString(src.data() + j, i - j);
-            SKIP_CHAR('=');
-            SKIP_CHAR('"');
-            // skip parameter name
-            j = i;
-            while (i < n && src[i] != '"')
-                ++i;
-            *par1 = QStringRef(&src, j, i - j);
-            SKIP_CHAR('"');
-            SKIP_SPACE;
-        } else {
-            if (debug)
-                qDebug() << "no optional parameter found";
-        }
-    }
-    SKIP_SPACE;
-    SKIP_CHAR('>');
-
-    // find contents up to closing "</@tag>
-    j = i;
-    for (; true; ++i) {
-        if (i + 4 + tag.length() > n)
-            return false;
-        if (src[i] != '<')
-            continue;
-        if (src[i + 1] != '/')
-            continue;
-        if (src[i + 2] != '@')
-            continue;
-        if (tag != QStringRef(&src, i + 3, tag.length()))
-            continue;
-        if (src[i + 3 + tag.length()] != '>')
-            continue;
-        break;
-    }
-
-    *contents = QStringRef(&src, j, i - j);
-
-    i += tag.length() + 4;
-
-    *pos = i;
-    if (debug)
-        qDebug() << " tag " << tag << " found: pos now: " << i;
-    return true;
-#undef SKIP_CHAR
-}
-
 static void addLink(const QString &linkTarget,
                     const QStringRef &nestedStuff,
                     QString *res)
@@ -2849,7 +2751,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
     static const QString headerTag("headerfile");
     static const QString funcTag("func");
     static const QString linkTag("link");
-    
+
     // replace all <@link> tags: "(<@link node=\"([^\"]+)\">).*(</@link>)"
     bool done = false;
     for (int i = 0, srcSize = src.size(); i < srcSize;) {
@@ -2884,6 +2786,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
         if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
             i += 2;
             if (parseArg(src, funcTag, &i, srcSize, &arg, &par1)) {
+
                 const Node* n = marker->resolveTarget(par1.toString(),
                                                       myTree,
                                                       relative);

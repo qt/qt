@@ -1270,16 +1270,18 @@ bool QTextFormat::operator==(const QTextFormat &rhs) const
 
     \value AlignNormal  Adjacent characters are positioned in the standard
                         way for text in the writing system in use.
-    \value AlignSuperScript Characters are placed above the baseline for
+    \value AlignSuperScript Characters are placed above the base line for
                             normal text.
-    \value AlignSubScript   Characters are placed below the baseline for
+    \value AlignSubScript   Characters are placed below the base line for
                             normal text.
-    \value AlignMiddle The center of the object is vertically aligned with the base line.
-                       Currently, this is only implemented for inline objects.
+    \value AlignMiddle The center of the object is vertically aligned with the
+                       base line. Currently, this is only implemented for
+                       inline objects.
     \value AlignBottom The bottom edge of the object is vertically aligned with
                        the base line.
     \value AlignTop    The top edge of the object is vertically aligned with
                        the base line.
+    \value AlignBaseline The base lines of the characters are aligned.
 */
 
 /*!
@@ -2143,8 +2145,9 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     \fn void QTextBlockFormat::setLineHeight(qreal height, int heightType)
     \since 4.8
 
-    This sets the line height for the paragraph to the value in height
-    which is dependant on heightType, described by the LineHeightTypes enum.
+    Sets the line height for the paragraph to the value given by \a height
+    which is dependent on \a heightType in the way described by the
+    LineHeightTypes enum.
 
     \sa LineHeightTypes, lineHeight(), lineHeightType()
 */
@@ -2154,11 +2157,16 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     \fn qreal QTextBlockFormat::lineHeight(qreal scriptLineHeight, qreal scaling) const
     \since 4.8
 
-    This returns what the height of the lines in the paragraph will be depending
-    on the given height of the script line and the scaling. The value that is returned
-    is also dependant on the given LineHeightType of the paragraph as well as the LineHeight
-    setting that has been set for the paragraph. The scaling is needed for the heights
-    that include a fixed number of pixels, to scale them appropriately for printing.
+    Returns the height of the lines in the paragraph based on the height of the
+    script line given by \a scriptLineHeight and the specified \a scaling
+    factor.
+
+    The value that is returned is also dependent on the given LineHeightType of
+    the paragraph as well as the LineHeight setting that has been set for the
+    paragraph.
+
+    The scaling is needed for heights that include a fixed number of pixels, to
+    scale them appropriately for printing.
 
     \sa LineHeightTypes, setLineHeight(), lineHeightType()
 */

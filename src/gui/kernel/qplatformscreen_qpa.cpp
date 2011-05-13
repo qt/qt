@@ -66,12 +66,15 @@ QWidget *QPlatformScreen::topLevelAt(const QPoint & pos) const
     return 0;
 }
 
-/*! \fn physicalSize() const
-    Reimplement in subclass to return the physical size of the screen. This function is used by
-    QFont to convert point sizes to pixel sizes.
+/*!
+    Reimplement this function in subclass to return the physical size of the
+    screen. This function is used by QFont to convert point sizes to pixel
+    sizes.
 
-    Default implementation takes the pixel size of the screen, considers a dpi of 100 and returns
-    the calculated (and probably wrong) physical size
+    The default implementation takes the pixel size of the screen, considers a
+    resolution of 100 dots per inch, and returns the calculated physical size.
+    A device with a screen that has different resolutions will need to be
+    supported by a suitable reimplementation of this function.
 */
 QSize QPlatformScreen::physicalSize() const
 {
@@ -110,20 +113,20 @@ QPlatformScreen * QPlatformScreen::platformScreenForWidget(const QWidget *widget
     QPlatformScreen is also used by the public api QDesktopWidget for information about the desktop.
  */
 
-/*! \fn geometry() const
+/*! \fn QRect QPlatformScreen::geometry() const = 0
     Reimplement in subclass to return the pixel geometry of the screen
 */
 
-/*! \fn availableGeometry() const
+/*! \fn QRect QPlatformScreen::availableGeometry() const
     Reimplement in subclass to return the pixel geometry of the available space
     This normally is the desktop screen minus the task manager, global menubar etc.
 */
 
-/*! \fn depth() const
+/*! \fn int QPlatformScreen::depth() const = 0
     Reimplement in subclass to return current depth of the screen
 */
 
-/*! \fn format() const
+/*! \fn QImage::Format QPlatformScreen::format() const = 0
     Reimplement in subclass to return the image format which corresponds to the screen format
 */
 

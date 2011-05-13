@@ -205,13 +205,16 @@ int QGLFramebufferObjectFormat::samples() const
 /*!
     \since 4.8
 
-    Enables or disables mipmapping. Mipmapping is disabled by default.
+    Enables mipmapping if \a enabled is true; otherwise disables it.
+
+    Mipmapping is disabled by default.
+
     If mipmapping is enabled, additional memory will be allocated for
     the mipmap levels. The mipmap levels can be updated by binding the
     texture and calling glGenerateMipmap(). Mipmapping cannot be enabled
     for multisampled framebuffer objects.
 
-    \sa mipmap(), texture()
+    \sa mipmap(), QGLFramebufferObject::texture()
 */
 void QGLFramebufferObjectFormat::setMipmap(bool enabled)
 {
