@@ -1481,8 +1481,10 @@ void QSymbianControl::HandleResourceChange(int resourceType)
             }
             if (ic && isSplitViewWidget(widget)) {
                 if (resourceType == KSplitViewCloseEvent) {
+                    S60->partialKeyboardOpen = false;
                     ic->resetSplitViewWidget();
                 } else {
+                    S60->partialKeyboardOpen = true;
                     ic->ensureFocusWidgetVisible(widget);
                 }
             }
