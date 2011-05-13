@@ -119,6 +119,7 @@ private slots:
     void moveCursorSelectionSequence();
     void mouseSelection_data();
     void mouseSelection();
+    void multilineMouseSelection();
     void deferEnableSelectByMouse_data();
     void deferEnableSelectByMouse();
     void deferDisableSelectByMouse_data();
@@ -1360,6 +1361,41 @@ void tst_qdeclarativetextedit::mouseSelection()
     QTest::mouseClick(canvas->viewport(), Qt::LeftButton, Qt::NoModifier, canvas->mapFromScene(QPoint(x1,y)));
     QTest::mouseClick(canvas->viewport(), Qt::LeftButton, Qt::ShiftModifier, canvas->mapFromScene(QPoint(x2,y)));
     QCOMPARE(textEditObject->selectedText(), str);
+
+    delete canvas;
+}
+
+void tst_qdeclarativetextedit::multilineMouseSelection()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/mouseselection_multiline.qml");
+
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QVERIFY(canvas->rootObject() != 0);
+    QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit *>(canvas->rootObject());
+    QVERIFY(textEditObject != 0);
+
+    // press-and-drag from x1,y1 to x2,y1
+    int x1 = 10;
+    int x2 = textEditObject->width() - 10;
+    int y1 = textEditObject->height() / 4;
+    int y2 = textEditObject->height() * 3 / 4;
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x1,y1)));
+    QMouseEvent mv1(QEvent::MouseMove, canvas->mapFromScene(QPoint(x2,y1)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+    QApplication::sendEvent(canvas->viewport(), &mv1);
+    QString str1 = textEditObject->selectedText();
+    QVERIFY(str1.length() > 3); // don't reallly care *what* was selected (and it's too sensitive to platform)
+
+    // drag-and-release from x2,y1 to x2,y2
+    QMouseEvent mv2(QEvent::MouseMove, canvas->mapFromScene(QPoint(x2,y2)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+    QApplication::sendEvent(canvas->viewport(), &mv2);
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x2,y2)));
+    QString str2 = textEditObject->selectedText();
+    QVERIFY(str1 != str2);
+    QVERIFY(str2.length() > 3);
 
     delete canvas;
 }
