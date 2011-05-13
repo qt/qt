@@ -49,6 +49,7 @@
 #include <qdeclarativeguard_p.h>
 
 #include <private/qdeclarativedebugtrace_p.h>
+#include <private/qdeclarativeobserverservice_p.h>
 
 #include <qscriptvalueiterator.h>
 #include <qdebug.h>
@@ -299,6 +300,8 @@ void QDeclarativeViewPrivate::init()
     q->viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
     q->viewport()->setAttribute(Qt::WA_NoSystemBackground);
 #endif
+
+    QDeclarativeObserverService::instance()->addView(q);
 }
 
 /*!
@@ -306,6 +309,7 @@ void QDeclarativeViewPrivate::init()
  */
 QDeclarativeView::~QDeclarativeView()
 {
+    QDeclarativeObserverService::instance()->removeView(this);
 }
 
 /*! \property QDeclarativeView::source
@@ -557,7 +561,6 @@ void QDeclarativeView::continueExecute()
     setRootObject(obj);
     emit statusChanged(status());
 }
-
 
 /*!
   \internal

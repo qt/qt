@@ -589,4 +589,16 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_CONCURRENT
+#else
+
+// On Symbian winscw target QT_NO_QFUTURE and QT_NO_CONCURRENT are both defined.
+// However moc will be run without having them set, so provide a dummy stub at
+// least for the slots to prevent linker errors.
+
+void QFutureWatcherBase::cancel() { }
+void QFutureWatcherBase::setPaused(bool) { }
+void QFutureWatcherBase::pause() { }
+void QFutureWatcherBase::resume() { }
+void QFutureWatcherBase::togglePaused() { }
+
+#endif // QT_NO_QFUTURE

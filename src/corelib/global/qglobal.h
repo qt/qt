@@ -2545,6 +2545,16 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 //Symbian does not support data imports from a DLL
 #define Q_NO_DATA_RELOCATION
 
+// Winscw compiler is unable to compile QtConcurrent.
+#ifdef Q_CC_NOKIAX86
+#ifndef QT_NO_CONCURRENT
+#define QT_NO_CONCURRENT
+#endif
+#ifndef QT_NO_QFUTURE
+#define QT_NO_QFUTURE
+#endif
+#endif
+
 QT_END_NAMESPACE
 // forward declare std::exception
 #ifdef __cplusplus

@@ -57,6 +57,8 @@ public:
         Cancel();
     }
 
+    TInt& AoFlags() { return ((TInt*)&iStatus)[1]; }
+
 private:
     void RunL();
     void DoCancel();
@@ -65,6 +67,7 @@ private:
     RUsbOstComm ost;
     TBuf8<4096> readBuf;
     QByteArray dataBuf;
+    TBool inReadyRead;
 };
 
 QOstDevice::QOstDevice(QObject *parent) :
@@ -116,7 +119,11 @@ void QOstDevicePrivate::RunL()
         ost.ReadMessage(iStatus, readBuf);
         SetActive();
 
-        emit q->readyRead();
+        if (!inReadyRead) {
+            inReadyRead = true;
+            emit q->readyRead();
+            inReadyRead = false;
+        }
     } else {
         q->setErrorString(QString("Error %1 from RUsbOstComm::ReadMessage()").arg(iStatus.Int()));
     }
@@ -177,4 +184,37 @@ qint64 QOstDevice::bytesAvailable() const
 {
     Q_D(const QOstDevice);
     return d->dataBuf.length();
+}
+
+bool QOstDevice::waitForReadyRead(int msecs)
+{
+    Q_D(QOstDevice);
+    if (msecs >= 0) {
+        RTimer timer;
+        TInt err = timer.CreateLocal();
+        if (err) return false;
+        TRequestStatus timeoutStat;
+        timer.After(timeoutStat, msecs*1000);
+        User::WaitForRequest(timeoutStat, d->iStatus);
+        if (timeoutStat != KRequestPending) {
+            // Timed out
+            timer.Close();
+            return false;
+        } else {
+            // We got data, so cancel timer
+            timer.Cancel();
+            User::WaitForRequest(timeoutStat);
+            timer.Close();
+            // And drop through
+        }
+    } else {
+        // Just wait forever for data
+        User::WaitForRequest(d->iStatus);
+    }
+
+    // If we get here we have data
+    TInt err = d->iStatus.Int();
+    d->AoFlags() &= ~3; // This is necessary to clean up the scheduler as you're not supposed to bypass it like this
+    TRAP_IGNORE(d->RunL());
+    return err == KErrNone;
 }

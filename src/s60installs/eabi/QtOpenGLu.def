@@ -760,12 +760,12 @@ EXPORTS
 	_ZNK16QGLWindowSurface8featuresEv @ 759 NONAME
 	_ZNK26QGLFramebufferObjectFormat6mipmapEv @ 760 NONAME
 	_ZTI22QGLContextResourceBase @ 761 NONAME ABSENT
-	_ZTI27QGLContextGroupResourceBase @ 762 NONAME
+	_ZTI27QGLContextGroupResourceBase @ 762 NONAME ABSENT
 	_ZTV22QGLContextResourceBase @ 763 NONAME ABSENT
-	_ZTV27QGLContextGroupResourceBase @ 764 NONAME
-	_ZThn104_N20QGLTextureGlyphCacheD0Ev @ 765 NONAME
-	_ZThn104_N20QGLTextureGlyphCacheD1Ev @ 766 NONAME
-	_ZThn8_NK16QGLWindowSurface8featuresEv @ 767 NONAME
+	_ZTV27QGLContextGroupResourceBase @ 764 NONAME ABSENT
+	_ZThn104_N20QGLTextureGlyphCacheD0Ev @ 765 NONAME ABSENT
+	_ZThn104_N20QGLTextureGlyphCacheD1Ev @ 766 NONAME ABSENT
+	_ZThn8_NK16QGLWindowSurface8featuresEv @ 767 NONAME ABSENT
 	_ZN14QGLSignalProxy18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 768 NONAME
 	_ZN14QGLSignalProxy25staticMetaObjectExtraDataE @ 769 NONAME DATA 8
 	_ZN16QGLShaderProgram18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 770 NONAME
