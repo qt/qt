@@ -733,6 +733,7 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
     if (doBuffer && (bufferMode & BufferBefore))
         fillFrom = bufferFrom;
 
+    bool haveValidItems = false;
     int modelIndex = visibleIndex;
     qreal itemEnd = visiblePos-1;
     if (!visibleItems.isEmpty()) {
@@ -741,11 +742,13 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         int i = visibleItems.count() - 1;
         while (i > 0 && visibleItems.at(i)->index == -1)
             --i;
-        if (visibleItems.at(i)->index != -1)
+        if (visibleItems.at(i)->index != -1) {
+            haveValidItems = true;
             modelIndex = visibleItems.at(i)->index + 1;
+        }
     }
 
-    if (visibleItems.count() && (fillFrom > itemEnd+averageSize+spacing
+    if (haveValidItems && (fillFrom > itemEnd+averageSize+spacing
         || fillTo < visiblePos - averageSize - spacing)) {
         // We've jumped more than a page.  Estimate which items are now
         // visible and fill from there.
@@ -3406,9 +3409,9 @@ void QDeclarativeListView::itemsRemoved(int modelIndex, int count)
         }
     }
 
-    if (removedVisible && !haveVisibleIndex) {
+    if (!haveVisibleIndex) {
         d->timeline.clear();
-        if (d->itemCount == 0) {
+        if (removedVisible && d->itemCount == 0) {
             d->visibleIndex = 0;
             d->visiblePos = d->header ? d->header->size() : 0;
             d->setPosition(0);
