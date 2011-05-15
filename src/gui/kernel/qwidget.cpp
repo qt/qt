@@ -312,6 +312,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , qd_hd(0)
 #elif defined(Q_OS_SYMBIAN)
       , symbianScreenNumber(0)
+      , fixNativeOrientationCalled(false)
 #endif
 {
     if (!qApp) {
@@ -367,9 +368,12 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface()
     Q_Q(QWidget);
 
     QWindowSurface *surface;
+#ifndef QT_NO_PROPERTIES
     if (q->property("_q_DummyWindowSurface").toBool()) {
         surface = new QDummyWindowSurface(q);
-    } else {
+    } else
+#endif
+    {
         if (QApplicationPrivate::graphicsSystem())
             surface = QApplicationPrivate::graphicsSystem()->createWindowSurface(q);
         else
@@ -608,7 +612,6 @@ void QWidget::setAutoFillBackground(bool enabled)
     \brief The QWidget class is the base class of all user interface objects.
 
     \ingroup basicwidgets
-
 
     The widget is the atom of the user interface: it receives mouse, keyboard
     and other events from the window system, and paints a representation of
@@ -1585,6 +1588,7 @@ QWidget::~QWidget()
 
     // delete layout while we still are a valid widget
     delete d->layout;
+    d->layout = 0;
     // Remove myself from focus list
 
     Q_ASSERT(d->focus_next->d_func()->focus_prev == this);
@@ -10967,6 +10971,9 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         }
         QT_TRAP_THROWING(appUi->SetOrientationL(s60orientation));
         S60->orientationSet = true;
+        QSymbianControl *window = static_cast<QSymbianControl *>(internalWinId());
+        if (window)
+            window->ensureFixNativeOrientation();
 #endif
         break;
     }
@@ -11199,6 +11206,7 @@ void QWidget::setAccessibleName(const QString &name)
 {
     Q_D(QWidget);
     d->accessibleName = name;
+    QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
 }
 
 QString QWidget::accessibleName() const
@@ -11220,6 +11228,7 @@ void QWidget::setAccessibleDescription(const QString &description)
 {
     Q_D(QWidget);
     d->accessibleDescription = description;
+    QAccessible::updateAccessibility(this, 0, QAccessible::DescriptionChanged);
 }
 
 QString QWidget::accessibleDescription() const

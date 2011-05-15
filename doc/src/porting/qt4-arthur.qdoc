@@ -119,7 +119,7 @@
     Setting a linear gradient brush is done by creating a QLinearGradient
     object and setting it as a brush.
 
-    \snippet doc/src/snippets/code/doc_src_qt4-arthur.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qt4-arthur.cpp 0
 
     The code shown above produces a pattern as show in the following
     pixmap:
@@ -130,7 +130,7 @@
     focal point. Setting a radial brush is done by creating a QRadialGradient
     object and setting it as a brush.
 
-    \snippet doc/src/snippets/code/doc_src_qt4-arthur.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qt4-arthur.cpp 1
 
     The code shown above produces a pattern as shown in the following
     pixmap:
@@ -141,7 +141,7 @@
     angle. Setting a conical brush is done by creating a
     QConicalGradient object and setting it as a brush.
 
-    \snippet doc/src/snippets/code/doc_src_qt4-arthur.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_qt4-arthur.cpp 2
 
     The code shown above produces a pattern as shown in the following
     pixmap:
@@ -156,7 +156,7 @@
     transparent color, while 255 represents a fully opaque color. For
     example:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-arthur.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_qt4-arthur.cpp 3
 
     The code shown above produces the following output:
 
@@ -180,7 +180,7 @@
     provide the option of turning on anti-aliased edges when drawing
     graphics primitives.
 
-    \snippet doc/src/snippets/code/doc_src_qt4-arthur.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_qt4-arthur.cpp 4
 
     This produces the following output:
 
@@ -221,7 +221,7 @@
     first add a rectangle, which becomes a closed subpath.  We then add
     two bezier curves, and finally draw the entire path.
 
-    \snippet doc/src/snippets/code/doc_src_qt4-arthur.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_qt4-arthur.cpp 5
 
     The code above produces the following output:
 
@@ -236,18 +236,18 @@
     painting to an off-screen pixmap then copying the pixmap to the
     screen. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-arthur.qdoc 6
+    \snippet doc/src/snippets/code/doc_src_qt4-arthur.cpp 6
 
     Since the double-buffering is handled by QWidget internally this
     now becomes:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-arthur.qdoc 7
+    \snippet doc/src/snippets/code/doc_src_qt4-arthur.cpp 7
 
     Double-buffering is turned on by default, but can be turned off for
     individual widgets by setting the widget attribute
     Qt::WA_PaintOnScreen.
 
-    \snippet doc/src/snippets/code/doc_src_qt4-arthur.qdoc 8
+    \snippet doc/src/snippets/code/doc_src_qt4-arthur.cpp 8
 
     \section2 Pen and Brush Transformation
 
@@ -270,7 +270,7 @@
     possible to specify both texture and gradient fills for both
     text and outlines.
 
-    \snippet doc/src/snippets/code/doc_src_qt4-arthur.qdoc 9
+    \snippet doc/src/snippets/code/doc_src_qt4-arthur.cpp 9
 
     The code above produces the following output:
 
@@ -290,7 +290,7 @@
 
     Painting on an image is as simple as drawing on any other paint device.
 
-    \snippet doc/src/snippets/code/doc_src_qt4-arthur.qdoc 10
+    \snippet doc/src/snippets/code/doc_src_qt4-arthur.cpp 10
 
     \section2 SVG Rendering Support
 

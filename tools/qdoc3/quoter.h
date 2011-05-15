@@ -69,6 +69,8 @@ public:
 			const QString& pattern );
     QString quoteSnippet(const Location &docLocation, const QString &identifier);
 
+    static QStringList splitLines(const QString &line);
+
 private:
     QString getLine(int unindent = 0);
     void failedAtEnd( const Location& docLocation, const QString& command );

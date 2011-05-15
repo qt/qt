@@ -377,7 +377,7 @@ bool QFontEngineMacMulti::stringToCMap(const QChar *str, int len, QGlyphLayout *
 }
 
 bool QFontEngineMacMulti::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags,
-                                       unsigned short *logClusters, const HB_CharAttributes *charAttributes) const
+                                       unsigned short *logClusters, const HB_CharAttributes *charAttributes, QScriptItem *) const
 {
     if (*nglyphs < len) {
         *nglyphs = len;
@@ -920,27 +920,6 @@ static void addGlyphsToPathHelper(ATSUStyle style, glyph_t *glyphs, QFixedPoint 
     DisposeATSCubicLineToUPP(lineTo);
     DisposeATSCubicCurveToUPP(cubicTo);
     DisposeATSCubicClosePathUPP(closePath);
-}
-
-QFont QFontEngineMac::createExplicitFont() const
-{
-    FMFont fmFont = FMGetFontFromATSFontRef(fontID);
-
-    FMFontFamily fmFamily;
-    FMFontStyle fmStyle;
-    QString familyName;
-    if (!FMGetFontFamilyInstanceFromFont(fmFont, &fmFamily, &fmStyle)) {
-        ATSFontFamilyRef familyRef = FMGetATSFontFamilyRefFromFontFamily(fmFamily);
-        QCFString cfFamilyName;;
-        ATSFontFamilyGetName(familyRef, kATSOptionFlagsDefault, &cfFamilyName);
-        familyName = cfFamilyName;
-    } else {
-        QCFString cfFontName;
-        ATSFontGetName(fontID, kATSOptionFlagsDefault, &cfFontName);
-        familyName = cfFontName;
-    }
-
-    return createExplicitFontWithName(familyName);
 }
 
 void QFontEngineMac::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int numGlyphs, QPainterPath *path,

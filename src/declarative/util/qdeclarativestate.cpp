@@ -152,14 +152,14 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
 
     Notice the default state is referred to using an empty string ("").
 
-    States are commonly used together with \l {Transitions} to provide
+    States are commonly used together with \l{QML Animation and Transitions}{Transitions} to provide
     animations when state changes occur.
 
     \note Setting the state of an object from within another state of the same object is
     not allowed.
 
     \sa {declarative/animation/states}{states example}, {qmlstates}{States},
-    {qdeclarativeanimation.html#transitions}{QML Transitions}, QtDeclarative
+    {QML Animation and Transitions}{Transitions}, QtDeclarative
 */
 QDeclarativeState::QDeclarativeState(QObject *parent)
 : QObject(*(new QDeclarativeStatePrivate), parent)

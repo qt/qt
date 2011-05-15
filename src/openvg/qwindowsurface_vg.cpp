@@ -78,6 +78,17 @@ QPaintDevice *QVGWindowSurface::paintDevice()
 void QVGWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(offset);
+
+#ifdef Q_OS_SYMBIAN
+    if (window() != widget) {
+        // For performance reasons we don't support
+        // flushing native child widgets on Symbian.
+        // It breaks overlapping native child widget
+        // rendering in some cases but we prefer performance.
+        return;
+    }
+#endif
+
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
     d_ptr->endPaint(parent, region);
 }
@@ -119,9 +130,12 @@ QPaintEngine *QVGWindowSurface::paintEngine() const
     return d_ptr->paintEngine();
 }
 
-bool QVGWindowSurface::hasStaticContentsSupport() const
+QWindowSurface::WindowSurfaceFeatures QVGWindowSurface::features() const
 {
-    d_ptr->supportsStaticContents();
+    WindowSurfaceFeatures features = PartialUpdates | PreservedContents;
+    if (d_ptr->supportsStaticContents())
+        features |= StaticContents;
+    return features;
 }
 
 int QVGWindowSurface::metric(PaintDeviceMetric met) const

@@ -75,43 +75,9 @@ enum {
     fixed_scale = 1 << 16,
     half_point = 1 << 15
 };
+
+// must be multiple of 4 for easier SIMD implementations
 static const int buffer_size = 2048;
-
-struct LinearGradientValues
-{
-    qreal dx;
-    qreal dy;
-    qreal l;
-    qreal off;
-};
-
-struct RadialGradientValues
-{
-    qreal dx;
-    qreal dy;
-    qreal a;
-};
-
-struct Operator;
-typedef uint* (QT_FASTCALL *DestFetchProc)(uint *buffer, QRasterBuffer *rasterBuffer, int x, int y, int length);
-typedef void (QT_FASTCALL *DestStoreProc)(QRasterBuffer *rasterBuffer, int x, int y, const uint *buffer, int length);
-typedef const uint* (QT_FASTCALL *SourceFetchProc)(uint *buffer, const Operator *o, const QSpanData *data, int y, int x, int length);
-
-
-struct Operator
-{
-    QPainter::CompositionMode mode;
-    DestFetchProc dest_fetch;
-    DestStoreProc dest_store;
-    SourceFetchProc src_fetch;
-    CompositionFunctionSolid funcSolid;
-    CompositionFunction func;
-    union {
-        LinearGradientValues linear;
-        RadialGradientValues radial;
-//        TextureValues texture;
-    };
-};
 
 /*
   Destination fetch. This is simple as we don't have to do bounds checks or
@@ -570,8 +536,8 @@ const uint * QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, const 
     int image_width = data->texture.width;
     int image_height = data->texture.height;
 
-    const qreal cx = x + 0.5;
-    const qreal cy = y + 0.5;
+    const qreal cx = x + qreal(0.5);
+    const qreal cy = y + qreal(0.5);
 
     const uint *end = buffer + length;
     uint *b = buffer;
@@ -792,8 +758,8 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
     int image_x2 = data->texture.x2 - 1;
     int image_y2 = data->texture.y2 - 1;
 
-    const qreal cx = x + 0.5;
-    const qreal cy = y + 0.5;
+    const qreal cx = x + qreal(0.5);
+    const qreal cy = y + qreal(0.5);
 
     uint *end = buffer + length;
     uint *b = buffer;
@@ -1188,8 +1154,8 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
 
         while (b < end) {
             const qreal iw = fw == 0 ? 1 : 1 / fw;
-            const qreal px = fx * iw - 0.5;
-            const qreal py = fy * iw - 0.5;
+            const qreal px = fx * iw - qreal(0.5);
+            const qreal py = fy * iw - qreal(0.5);
 
             int x1 = int(px) - (px < 0);
             int x2;
@@ -1346,64 +1312,13 @@ static const SourceFetchProc sourceFetch[NBlendTypes][QImage::NImageFormats] = {
     },
 };
 
-
-static inline uint qt_gradient_pixel(const QGradientData *data, qreal pos)
-{
-    int ipos = int(pos * (GRADIENT_STOPTABLE_SIZE - 1) + 0.5);
-
-  // calculate the actual offset.
-    if (ipos < 0 || ipos >= GRADIENT_STOPTABLE_SIZE) {
-        if (data->spread == QGradient::RepeatSpread) {
-            ipos = ipos % GRADIENT_STOPTABLE_SIZE;
-            ipos = ipos < 0 ? GRADIENT_STOPTABLE_SIZE + ipos : ipos;
-
-        } else if (data->spread == QGradient::ReflectSpread) {
-            const int limit = GRADIENT_STOPTABLE_SIZE * 2 - 1;
-            ipos = ipos % limit;
-            ipos = ipos < 0 ? limit + ipos : ipos;
-            ipos = ipos >= GRADIENT_STOPTABLE_SIZE ? limit - ipos : ipos;
-
-        } else {
-            if (ipos < 0) ipos = 0;
-            else if (ipos >= GRADIENT_STOPTABLE_SIZE) ipos = GRADIENT_STOPTABLE_SIZE-1;
-        }
-    }
-
-    Q_ASSERT(ipos >= 0);
-    Q_ASSERT(ipos < GRADIENT_STOPTABLE_SIZE);
-
-    return data->colorTable[ipos];
-}
-
 #define FIXPT_BITS 8
 #define FIXPT_SIZE (1<<FIXPT_BITS)
 
 static uint qt_gradient_pixel_fixed(const QGradientData *data, int fixed_pos)
 {
     int ipos = (fixed_pos + (FIXPT_SIZE / 2)) >> FIXPT_BITS;
-
-    // calculate the actual offset.
-    if (ipos < 0 || ipos >= GRADIENT_STOPTABLE_SIZE) {
-        if (data->spread == QGradient::RepeatSpread) {
-            ipos = ipos % GRADIENT_STOPTABLE_SIZE;
-            ipos = ipos < 0 ? GRADIENT_STOPTABLE_SIZE + ipos : ipos;
-
-        } else if (data->spread == QGradient::ReflectSpread) {
-            const int limit = GRADIENT_STOPTABLE_SIZE * 2 - 1;
-            ipos = ipos % limit;
-            ipos = ipos < 0 ? limit + ipos : ipos;
-            ipos = ipos >= GRADIENT_STOPTABLE_SIZE ? limit - ipos : ipos;
-
-        } else {
-            if (ipos < 0) ipos = 0;
-            else if (ipos >= GRADIENT_STOPTABLE_SIZE) ipos = GRADIENT_STOPTABLE_SIZE-1;
-        }
-    }
-
-    Q_ASSERT(ipos >= 0);
-    Q_ASSERT(ipos < GRADIENT_STOPTABLE_SIZE);
-
-    return data->colorTable[ipos];
+    return data->colorTable[qt_gradient_clamp(data, ipos)];
 }
 
 static void QT_FASTCALL getLinearGradientValues(LinearGradientValues *v, const QSpanData *data)
@@ -1419,8 +1334,8 @@ static void QT_FASTCALL getLinearGradientValues(LinearGradientValues *v, const Q
     }
 }
 
-static const uint * QT_FASTCALL fetchLinearGradient(uint *buffer, const Operator *op, const QSpanData *data,
-                                                    int y, int x, int length)
+static const uint * QT_FASTCALL qt_fetch_linear_gradient(uint *buffer, const Operator *op, const QSpanData *data,
+                                                         int y, int x, int length)
 {
     const uint *b = buffer;
     qreal t, inc;
@@ -1430,8 +1345,8 @@ static const uint * QT_FASTCALL fetchLinearGradient(uint *buffer, const Operator
     if (op->linear.l == 0) {
         t = inc = 0;
     } else {
-        rx = data->m21 * (y + 0.5) + data->m11 * (x + 0.5) + data->dx;
-        ry = data->m22 * (y + 0.5) + data->m12 * (x + 0.5) + data->dy;
+        rx = data->m21 * (y + qreal(0.5)) + data->m11 * (x + qreal(0.5)) + data->dx;
+        ry = data->m22 * (y + qreal(0.5)) + data->m12 * (x + qreal(0.5)) + data->dy;
         t = op->linear.dx*rx + op->linear.dy*ry + op->linear.off;
         inc = op->linear.dx * data->m11 + op->linear.dy * data->m12;
         affine = !data->m13 && !data->m23;
@@ -1444,7 +1359,7 @@ static const uint * QT_FASTCALL fetchLinearGradient(uint *buffer, const Operator
 
     const uint *end = buffer + length;
     if (affine) {
-        if (inc > -1e-5 && inc < 1e-5) {
+        if (inc > qreal(-1e-5) && inc < qreal(1e-5)) {
             QT_MEMFILL_UINT(buffer, length, qt_gradient_pixel_fixed(&data->gradient, int(t * FIXPT_SIZE)));
         } else {
             if (t+inc*length < qreal(INT_MAX >> (FIXPT_BITS + 1)) &&
@@ -1467,7 +1382,7 @@ static const uint * QT_FASTCALL fetchLinearGradient(uint *buffer, const Operator
             }
         }
     } else { // fall back to float math here as well
-        qreal rw = data->m23 * (y + 0.5) + data->m13 * (x + 0.5) + data->m33;
+        qreal rw = data->m23 * (y + qreal(0.5)) + data->m13 * (x + qreal(0.5)) + data->m33;
         while (buffer < end) {
             qreal x = rx/rw;
             qreal y = ry/rw;
@@ -1487,116 +1402,71 @@ static const uint * QT_FASTCALL fetchLinearGradient(uint *buffer, const Operator
     return b;
 }
 
-static inline qreal determinant(qreal a, qreal b, qreal c)
-{
-    return (b * b) - (4 * a * c);
-}
-
-// function to evaluate real roots
-static inline qreal realRoots(qreal a, qreal b, qreal detSqrt)
-{
-    return (-b + detSqrt)/(2 * a);
-}
-
-static inline qreal qSafeSqrt(qreal x)
-{
-    return x > 0 ? qSqrt(x) : 0;
-}
-
 static void QT_FASTCALL getRadialGradientValues(RadialGradientValues *v, const QSpanData *data)
 {
     v->dx = data->gradient.radial.center.x - data->gradient.radial.focal.x;
     v->dy = data->gradient.radial.center.y - data->gradient.radial.focal.y;
-    v->a = data->gradient.radial.radius*data->gradient.radial.radius - v->dx*v->dx - v->dy*v->dy;
+
+    v->dr = data->gradient.radial.center.radius - data->gradient.radial.focal.radius;
+    v->sqrfr = data->gradient.radial.focal.radius * data->gradient.radial.focal.radius;
+
+    v->a = v->dr * v->dr - v->dx*v->dx - v->dy*v->dy;
+    v->inv2a = 1 / (2 * v->a);
+
+    v->extended = !qFuzzyIsNull(data->gradient.radial.focal.radius) || v->a <= 0;
 }
 
-static const uint * QT_FASTCALL fetchRadialGradient(uint *buffer, const Operator *op, const QSpanData *data,
-                                                    int y, int x, int length)
+class RadialFetchPlain
 {
-    const uint *b = buffer;
-    qreal rx = data->m21 * (y + 0.5)
-               + data->dx + data->m11 * (x + 0.5);
-    qreal ry = data->m22 * (y + 0.5)
-               + data->dy + data->m12 * (x + 0.5);
-    bool affine = !data->m13 && !data->m23;
-    //qreal r  = data->gradient.radial.radius;
+public:
+    static inline void fetch(uint *buffer, uint *end, const Operator *op, const QSpanData *data, qreal det,
+                             qreal delta_det, qreal delta_delta_det, qreal b, qreal delta_b)
+    {
+        if (op->radial.extended) {
+            while (buffer < end) {
+                quint32 result = 0;
+                if (det >= 0) {
+                    qreal w = qSqrt(det) - b;
+                    if (data->gradient.radial.focal.radius + op->radial.dr * w >= 0)
+                        result = qt_gradient_pixel(&data->gradient, w);
+                }
 
-    const uint *end = buffer + length;
-    if (affine) {
-        rx -= data->gradient.radial.focal.x;
-        ry -= data->gradient.radial.focal.y;
+                *buffer = result;
 
-        qreal inv_a = 1 / qreal(2 * op->radial.a);
+                det += delta_det;
+                delta_det += delta_delta_det;
+                b += delta_b;
 
-        const qreal delta_rx = data->m11;
-        const qreal delta_ry = data->m12;
-
-        qreal b = 2*(rx * op->radial.dx + ry * op->radial.dy);
-        qreal delta_b = 2*(delta_rx * op->radial.dx + delta_ry * op->radial.dy);
-        const qreal b_delta_b = 2 * b * delta_b;
-        const qreal delta_b_delta_b = 2 * delta_b * delta_b;
-
-        const qreal bb = b * b;
-        const qreal delta_bb = delta_b * delta_b;
-
-        b *= inv_a;
-        delta_b *= inv_a;
-
-        const qreal rxrxryry = rx * rx + ry * ry;
-        const qreal delta_rxrxryry = delta_rx * delta_rx + delta_ry * delta_ry;
-        const qreal rx_plus_ry = 2*(rx * delta_rx + ry * delta_ry);
-        const qreal delta_rx_plus_ry = 2 * delta_rxrxryry;
-
-        inv_a *= inv_a;
-
-        qreal det = (bb + 4 * op->radial.a * rxrxryry) * inv_a;
-        qreal delta_det = (b_delta_b + delta_bb + 4 * op->radial.a * (rx_plus_ry + delta_rxrxryry)) * inv_a;
-        const qreal delta_delta_det = (delta_b_delta_b + 4 * op->radial.a * delta_rx_plus_ry) * inv_a;
-
-        while (buffer < end) {
-            *buffer = qt_gradient_pixel(&data->gradient, qSafeSqrt(det) - b);
-
-            det += delta_det;
-            delta_det += delta_delta_det;
-            b += delta_b;
-
-            ++buffer;
-        }
-    } else {
-        qreal rw = data->m23 * (y + 0.5)
-                   + data->m33 + data->m13 * (x + 0.5);
-        if (!rw)
-            rw = 1;
-        while (buffer < end) {
-            qreal gx = rx/rw - data->gradient.radial.focal.x;
-            qreal gy = ry/rw - data->gradient.radial.focal.y;
-            qreal b  = 2*(gx*op->radial.dx + gy*op->radial.dy);
-            qreal det = determinant(op->radial.a, b , -(gx*gx + gy*gy));
-            qreal s = realRoots(op->radial.a, b, qSafeSqrt(det));
-
-            *buffer = qt_gradient_pixel(&data->gradient, s);
-
-            rx += data->m11;
-            ry += data->m12;
-            rw += data->m13;
-            if (!rw) {
-                rw += data->m13;
+                ++buffer;
             }
-            ++buffer;
+        } else {
+            while (buffer < end) {
+                *buffer++ = qt_gradient_pixel(&data->gradient, qSqrt(det) - b);
+
+                det += delta_det;
+                delta_det += delta_delta_det;
+                b += delta_b;
+            }
         }
     }
+};
 
-    return b;
+const uint * QT_FASTCALL qt_fetch_radial_gradient_plain(uint *buffer, const Operator *op, const QSpanData *data,
+                                                        int y, int x, int length)
+{
+    return qt_fetch_radial_gradient_template<RadialFetchPlain>(buffer, op, data, y, x, length);
 }
 
-static const uint * QT_FASTCALL fetchConicalGradient(uint *buffer, const Operator *, const QSpanData *data,
-                                                     int y, int x, int length)
+static SourceFetchProc qt_fetch_radial_gradient = qt_fetch_radial_gradient_plain;
+
+static const uint * QT_FASTCALL qt_fetch_conical_gradient(uint *buffer, const Operator *, const QSpanData *data,
+                                                          int y, int x, int length)
 {
     const uint *b = buffer;
-    qreal rx = data->m21 * (y + 0.5)
-               + data->dx + data->m11 * (x + 0.5);
-    qreal ry = data->m22 * (y + 0.5)
-               + data->dy + data->m12 * (x + 0.5);
+    qreal rx = data->m21 * (y + qreal(0.5))
+               + data->dx + data->m11 * (x + qreal(0.5));
+    qreal ry = data->m22 * (y + qreal(0.5))
+               + data->dy + data->m12 * (x + qreal(0.5));
     bool affine = !data->m13 && !data->m23;
 
     const uint *end = buffer + length;
@@ -1613,8 +1483,8 @@ static const uint * QT_FASTCALL fetchConicalGradient(uint *buffer, const Operato
             ++buffer;
         }
     } else {
-        qreal rw = data->m23 * (y + 0.5)
-                   + data->m33 + data->m13 * (x + 0.5);
+        qreal rw = data->m23 * (y + qreal(0.5))
+                   + data->m33 + data->m13 * (x + qreal(0.5));
         if (!rw)
             rw = 1;
         while (buffer < end) {
@@ -2819,7 +2689,7 @@ static inline int soft_light_op(int dst, int src, int da, int sa)
 #   ifdef Q_CC_RVCT // needed to avoid compiler crash in RVCT 2.2
         return (dst * sa * 255 + da * (src2 - sa) * (qIntSqrtInt(dst_np * 255) - dst_np) + temp) / 65025;
 #   else
-        return (dst * sa * 255 + da * (src2 - sa) * (int(sqrt(qreal(dst_np * 255))) - dst_np) + temp) / 65025;
+        return (dst * sa * 255 + da * (src2 - sa) * (int(qSqrt(qreal(dst_np * 255))) - dst_np) + temp) / 65025;
 #   endif
     }
 }
@@ -3347,16 +3217,16 @@ static inline Operator getOperator(const QSpanData *data, const QSpan *spans, in
     case QSpanData::LinearGradient:
         solidSource = !data->gradient.alphaColor;
         getLinearGradientValues(&op.linear, data);
-        op.src_fetch = fetchLinearGradient;
+        op.src_fetch = qt_fetch_linear_gradient;
         break;
     case QSpanData::RadialGradient:
         solidSource = !data->gradient.alphaColor;
         getRadialGradientValues(&op.radial, data);
-        op.src_fetch = fetchRadialGradient;
+        op.src_fetch = qt_fetch_radial_gradient;
         break;
     case QSpanData::ConicalGradient:
         solidSource = !data->gradient.alphaColor;
-        op.src_fetch = fetchConicalGradient;
+        op.src_fetch = qt_fetch_conical_gradient;
         break;
     case QSpanData::Texture:
         op.src_fetch = sourceFetch[getBlendType(data)][data->texture.format];
@@ -5928,8 +5798,8 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_argb(int count, const QSpan *s
             uint *target = ((uint *)t) + spans->x;
             uint *image_bits = (uint *)data->texture.imageData;
 
-            const qreal cx = spans->x + 0.5;
-            const qreal cy = spans->y + 0.5;
+            const qreal cx = spans->x + qreal(0.5);
+            const qreal cy = spans->y + qreal(0.5);
 
             int x = int((data->m21 * cy
                          + data->m11 * cx + data->dx) * fixed_scale);
@@ -5976,8 +5846,8 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_argb(int count, const QSpan *s
             uint *target = ((uint *)t) + spans->x;
             uint *image_bits = (uint *)data->texture.imageData;
 
-            const qreal cx = spans->x + 0.5;
-            const qreal cy = spans->y + 0.5;
+            const qreal cx = spans->x + qreal(0.5);
+            const qreal cy = spans->y + qreal(0.5);
 
             qreal x = data->m21 * cy + data->m11 * cx + data->dx;
             qreal y = data->m22 * cy + data->m12 * cx + data->dy;
@@ -6328,8 +6198,8 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_tiled_argb(int count, const QS
             uint *target = ((uint *)t) + spans->x;
             uint *image_bits = (uint *)data->texture.imageData;
 
-            const qreal cx = spans->x + 0.5;
-            const qreal cy = spans->y + 0.5;
+            const qreal cx = spans->x + qreal(0.5);
+            const qreal cy = spans->y + qreal(0.5);
 
             int x = int((data->m21 * cy
                          + data->m11 * cx + data->dx) * fixed_scale);
@@ -6380,8 +6250,8 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_tiled_argb(int count, const QS
             uint *target = ((uint *)t) + spans->x;
             uint *image_bits = (uint *)data->texture.imageData;
 
-            const qreal cx = spans->x + 0.5;
-            const qreal cy = spans->y + 0.5;
+            const qreal cx = spans->x + qreal(0.5);
+            const qreal cy = spans->y + qreal(0.5);
 
             qreal x = data->m21 * cy + data->m11 * cx + data->dx;
             qreal y = data->m22 * cy + data->m12 * cx + data->dy;
@@ -7067,7 +6937,7 @@ static void qt_gradient_quint32(int count, const QSpan *spans, void *userData)
          */
         const int gss = GRADIENT_STOPTABLE_SIZE - 1;
         int yinc = int((linear.dy * data->m22 * gss) * FIXPT_SIZE);
-        int off = int((((linear.dy * (data->m22 * 0.5 + data->dy) + linear.off) * gss) * FIXPT_SIZE));
+        int off = int((((linear.dy * (data->m22 * qreal(0.5) + data->dy) + linear.off) * gss) * FIXPT_SIZE));
 
         while (count--) {
             int y = spans->y;
@@ -7115,7 +6985,7 @@ static void qt_gradient_quint16(int count, const QSpan *spans, void *userData)
          */
         const int gss = GRADIENT_STOPTABLE_SIZE - 1;
         int yinc = int((linear.dy * data->m22 * gss) * FIXPT_SIZE);
-        int off = int((((linear.dy * (data->m22 * 0.5 + data->dy) + linear.off) * gss) * FIXPT_SIZE));
+        int off = int((((linear.dy * (data->m22 * qreal(0.5) + data->dy) + linear.off) * gss) * FIXPT_SIZE));
 
         uint oldColor = data->solid.color;
         while (count--) {
@@ -7194,18 +7064,12 @@ void qt_build_pow_tables() {
 #ifdef Q_WS_MAC
     // decided by testing a few things on an iMac, should probably get this from the
     // system...
-    smoothing = 2.0;
+    smoothing = qreal(2.0);
 #endif
 
 #ifdef Q_WS_WIN
-    int winSmooth;
-    if (SystemParametersInfo(0x200C /* SPI_GETFONTSMOOTHINGCONTRAST */, 0, &winSmooth, 0))
-        smoothing = winSmooth / 1000.0;
-
-    // Safeguard ourselves against corrupt registry values...
-    if (smoothing > 5 || smoothing < 1)
-        smoothing = 1.4;
-
+    extern qreal qt_fontsmoothing_gamma; // qapplication_win.cpp
+    smoothing = qt_fontsmoothing_gamma;
 #endif
 
 #ifdef Q_WS_X11
@@ -7226,7 +7090,7 @@ void qt_build_pow_tables() {
     for (int i=0; i<256; ++i)
         qt_pow_gamma[i] = uint(qRound(qPow(i / qreal(255.), gray_gamma) * 2047));
     for (int i=0; i<2048; ++i)
-        qt_pow_invgamma[i] = uchar(qRound(qPow(i / 2047.0, 1 / gray_gamma) * 255));
+        qt_pow_invgamma[i] = uchar(qRound(qPow(i / qreal(2047.0), 1 / gray_gamma) * 255));
 #endif
 }
 
@@ -7888,6 +7752,11 @@ void qInitDrawhelperAsm()
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse2;
         qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse2;
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse2;
+
+        extern const uint * QT_FASTCALL qt_fetch_radial_gradient_sse2(uint *buffer, const Operator *op, const QSpanData *data,
+                                                                      int y, int x, int length);
+
+        qt_fetch_radial_gradient = qt_fetch_radial_gradient_sse2;
     }
 
 #ifdef QT_HAVE_SSSE3
@@ -7983,6 +7852,11 @@ void qInitDrawhelperAsm()
         qMemRotateFunctions[QImage::Format_RGB16][0] = qt_memrotate90_16_neon;
         qMemRotateFunctions[QImage::Format_RGB16][2] = qt_memrotate270_16_neon;
         qt_memfill32 = qt_memfill32_neon;
+
+        extern const uint * QT_FASTCALL qt_fetch_radial_gradient_neon(uint *buffer, const Operator *op, const QSpanData *data,
+                                                                      int y, int x, int length);
+
+        qt_fetch_radial_gradient = qt_fetch_radial_gradient_neon;
     }
 #endif
 

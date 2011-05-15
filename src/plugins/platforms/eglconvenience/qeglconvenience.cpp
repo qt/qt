@@ -206,12 +206,12 @@ bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes)
     return false;
 }
 
-EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QPlatformWindowFormat &format, bool highestPixelFormat)
+EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QPlatformWindowFormat &format, bool highestPixelFormat, int surfaceType)
 {
     EGLConfig cfg = 0;
     QVector<EGLint> configureAttributes = q_createConfigAttributesFromFormat(format);
     configureAttributes.append(EGL_SURFACE_TYPE); //we only support eglconfigs for windows for now
-    configureAttributes.append(EGL_WINDOW_BIT);
+    configureAttributes.append(surfaceType);
 
     configureAttributes.append(EGL_RENDERABLE_TYPE);
     if (format.windowApi() == QPlatformWindowFormat::OpenVG) {

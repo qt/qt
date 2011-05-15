@@ -72,6 +72,9 @@ bool QHttpSocketEngine::initialize(QAbstractSocket::SocketType type, QAbstractSo
     setProtocol(protocol);
     setSocketType(type);
     d->socket = new QTcpSocket(this);
+#ifndef QT_NO_BEARERMANAGEMENT
+    d->socket->setProperty("_q_networkSession", property("_q_networkSession"));
+#endif
 
     // Explicitly disable proxying on the proxy socket itself to avoid
     // unwanted recursion.
@@ -240,6 +243,7 @@ qint64 QHttpSocketEngine::write(const char *data, qint64 len)
 }
 
 #ifndef QT_NO_UDPSOCKET
+#ifndef QT_NO_NETWORKINTERFACE
 bool QHttpSocketEngine::joinMulticastGroup(const QHostAddress &,
                                            const QNetworkInterface &)
 {
@@ -267,6 +271,7 @@ bool QHttpSocketEngine::setMulticastInterface(const QNetworkInterface &)
              QLatin1String("Operation on socket is not supported"));
     return false;
 }
+#endif // QT_NO_NETWORKINTERFACE
 
 qint64 QHttpSocketEngine::readDatagram(char *, qint64, QHostAddress *,
                                        quint16 *)
@@ -496,7 +501,13 @@ void QHttpSocketEngine::slotSocketConnected()
     data += path;
     data += " HTTP/1.1\r\n";
     data += "Proxy-Connection: keep-alive\r\n"
-            "User-Agent: Mozilla/5.0\r\n"
+            "User-Agent: ";
+    QVariant v = property("_q_user-agent");
+    if (v.isValid())
+        data += v.toByteArray();
+    else
+        data += "Mozilla/5.0";
+    data += "\r\n"
             "Host: " + peerAddress + "\r\n";
     QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(d->authenticator);
     //qDebug() << "slotSocketConnected: priv=" << priv << (priv ? (int)priv->method : -1);
@@ -704,11 +715,10 @@ void QHttpSocketEngine::slotSocketError(QAbstractSocket::SocketError error)
 
     d->state = None;
     setError(error, d->socket->errorString());
-    if (error == QAbstractSocket::RemoteHostClosedError) {
-        emitReadNotification();
-    } else {
+    if (error != QAbstractSocket::RemoteHostClosedError)
         qDebug() << "QHttpSocketEngine::slotSocketError: got weird error =" << error;
-    }
+    //read notification needs to always be emitted, otherwise the higher layer doesn't get the disconnected signal
+    emitReadNotification();
 }
 
 void QHttpSocketEngine::slotSocketStateChanged(QAbstractSocket::SocketState state)

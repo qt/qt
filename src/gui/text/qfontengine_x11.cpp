@@ -1012,10 +1012,29 @@ QFontEngineX11FT::QFontEngineX11FT(FcPattern *pattern, const QFontDef &fd, int s
         }
     }
 
+    if (fd.hintingPreference != QFont::PreferDefaultHinting) {
+        switch (fd.hintingPreference) {
+        case QFont::PreferNoHinting:
+            default_hint_style = HintNone;
+            break;
+        case QFont::PreferVerticalHinting:
+            default_hint_style = HintLight;
+            break;
+        case QFont::PreferFullHinting:
+        default:
+            default_hint_style = HintFull;
+            break;
+        }
+    }
 #ifdef FC_HINT_STYLE
-    {
+    else {
         int hint_style = 0;
-        if (FcPatternGetInteger (pattern, FC_HINT_STYLE, 0, &hint_style) == FcResultNoMatch)
+        // Try to use Xft.hintstyle from XDefaults first if running in GNOME, to match
+        // the behavior of cairo
+        if (X11->fc_hint_style > -1 && X11->desktopEnvironment == DE_GNOME)
+            hint_style = X11->fc_hint_style;
+        else if (FcPatternGetInteger (pattern, FC_HINT_STYLE, 0, &hint_style) == FcResultNoMatch
+                 && X11->fc_hint_style > -1)
             hint_style = X11->fc_hint_style;
 
         switch (hint_style) {
@@ -1175,6 +1194,20 @@ bool QFontEngineX11FT::uploadGlyphToServer(QGlyphSet *set, uint glyphid, Glyph *
 #else
     return false;
 #endif
+}
+
+QFontEngine *QFontEngineX11FT::cloneWithSize(qreal pixelSize) const
+{
+    QFontDef fontDef;
+    fontDef.pixelSize = pixelSize;
+    QFontEngineX11FT *fe = new QFontEngineX11FT(fontDef);
+    if (!fe->initFromFontEngine(this)) {
+        delete fe;
+        return 0;
+    } else {
+        fe->xglyph_format = xglyph_format;
+        return fe;
+    }
 }
 
 #endif // QT_NO_FONTCONFIG

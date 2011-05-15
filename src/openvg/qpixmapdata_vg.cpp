@@ -51,6 +51,7 @@
 #include <QImageReader>
 #include <QtGui/private/qimage_p.h>
 #include <QtGui/private/qnativeimagehandleprovider_p.h>
+#include <QtGui/private/qfont_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -377,7 +378,7 @@ VGImage QVGPixmapData::toVGImage()
         QVGImagePool::instance()->useImage(this);
     }
 
-    if (!source.isNull() && recreate) {
+    if (!source.isNull() && (recreate || source.paintingActive())) {
         source.beginDataAccess();
         vgImageSubData
             (vgImage,
@@ -458,7 +459,7 @@ void QVGPixmapData::hibernate()
     if (skipHibernate)
         return;
 
-    forceToImage();
+    forceToImage(false); // no readback allowed here
     destroyImageAndContext();
 }
 
@@ -469,9 +470,6 @@ void QVGPixmapData::reclaimImages()
     forceToImage();
     destroyImages();
 }
-
-Q_GUI_EXPORT int qt_defaultDpiX();
-Q_GUI_EXPORT int qt_defaultDpiY();
 
 int QVGPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
@@ -502,12 +500,13 @@ int QVGPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 
 // Ensures that the pixmap is backed by some valid data and forces the data to
 // be re-uploaded to the VGImage when toVGImage() is called next time.
-void QVGPixmapData::forceToImage()
+void QVGPixmapData::forceToImage(bool allowReadback)
 {
     if (!isValid())
         return;
 
-    ensureReadback(false);
+    if (allowReadback)
+        ensureReadback(false);
 
     if (source.isNull())
         source = QVolatileImage(w, h, sourceFormat());

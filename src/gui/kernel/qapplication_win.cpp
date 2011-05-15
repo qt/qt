@@ -237,6 +237,7 @@ static void resolveAygLibs()
 #  define FE_FONTSMOOTHINGCLEARTYPE 0x0002
 #endif
 
+Q_GUI_EXPORT qreal qt_fontsmoothing_gamma;
 Q_GUI_EXPORT bool qt_cleartype_enabled;
 Q_GUI_EXPORT bool qt_win_owndc_required; // CS_OWNDC is required if we use the GL graphicssystem as default
 
@@ -653,8 +654,18 @@ static void qt_win_read_cleartype_settings()
     if (SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &result, 0))
         qt_cleartype_enabled = (result == FE_FONTSMOOTHINGCLEARTYPE);
 #endif
-}
 
+    int winSmooth;
+    if (SystemParametersInfo(0x200C /* SPI_GETFONTSMOOTHINGCONTRAST */, 0, &winSmooth, 0)) {
+        qt_fontsmoothing_gamma = winSmooth / qreal(1000.0);
+    } else {
+        qt_fontsmoothing_gamma = 1.0;
+    }
+
+    // Safeguard ourselves against corrupt registry values...
+    if (qt_fontsmoothing_gamma > 5 || qt_fontsmoothing_gamma < 1)
+        qt_fontsmoothing_gamma = qreal(1.4);
+}
 
 static void qt_set_windows_resources()
 {
@@ -2361,8 +2372,13 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
 #ifndef QT_NO_ACCESSIBILITY
         case WM_GETOBJECT:
             {
+                /* On Win64, lParam can be 0x00000000fffffffc or 0xfffffffffffffffc (!),
+                   but MSDN says that lParam should be converted to a DWORD
+                   before its compared against OBJID_CLIENT
+                */
+                const DWORD dwObjId = (DWORD)lParam;
                 // Ignoring all requests while starting up
-                if (QApplication::startingUp() || QApplication::closingDown() || lParam != (LPARAM)OBJID_CLIENT) {
+                if (QApplication::startingUp() || QApplication::closingDown() || dwObjId != OBJID_CLIENT) {
                     result = false;
                     break;
                 }
@@ -3815,16 +3831,32 @@ bool QETWidget::translateConfigEvent(const MSG &msg)
                     QApplication::sendSpontaneousEvent(this, &e);
                     hideChildren(true);
                 }
-            } else if (msg.wParam != SIZE_MINIMIZED && isMinimized()) {
+            } else if (msg.wParam != SIZE_MINIMIZED) {
+                bool window_state_changed = false;
+                Qt::WindowStates oldstate = Qt::WindowStates(dataPtr()->window_state);
+                if (isMinimized()) {
 #ifndef Q_WS_WINCE
-                const QString title = windowTitle();
-                if (!title.isEmpty())
-                    d_func()->setWindowTitle_helper(title);
+                    const QString title = windowTitle();
+                    if (!title.isEmpty())
+                        d_func()->setWindowTitle_helper(title);
 #endif
-                data->window_state &= ~Qt::WindowMinimized;
-                showChildren(true);
-                QShowEvent e;
-                QApplication::sendSpontaneousEvent(this, &e);
+                    data->window_state &= ~Qt::WindowMinimized;
+                    showChildren(true);
+                    QShowEvent e;
+                    QApplication::sendSpontaneousEvent(this, &e);
+                // Capture SIZE_MAXIMIZED and SIZE_RESTORED without preceding WM_SYSCOMMAND
+                // (Aero Snap on Win7)
+                } else if (msg.wParam == SIZE_MAXIMIZED && !isMaximized()) {
+                    data->window_state |= Qt::WindowMaximized;
+                    window_state_changed = true;
+                } else if (msg.wParam == SIZE_RESTORED && isMaximized()) {
+                    data->window_state &= ~(Qt::WindowMaximized);
+                    window_state_changed = true;
+                }
+                if (window_state_changed) {
+                    QWindowStateChangeEvent e(oldstate);
+                    QApplication::sendSpontaneousEvent(this, &e);
+                }
             }
         }
         if (msg.wParam != SIZE_MINIMIZED && oldSize != newSize) {
@@ -3856,7 +3888,7 @@ bool QETWidget::translateConfigEvent(const MSG &msg)
                 QApplication::postEvent(this, e);
             }
         }
-} else if (msg.message == WM_MOVE) {        // move event
+    } else if (msg.message == WM_MOVE) {        // move event
         int a = (int) (short) LOWORD(msg.lParam);
         int b = (int) (short) HIWORD(msg.lParam);
         QPoint oldPos = geometry().topLeft();

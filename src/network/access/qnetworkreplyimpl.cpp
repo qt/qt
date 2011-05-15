@@ -74,7 +74,7 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
 void QNetworkReplyImplPrivate::_q_startOperation()
 {
     // ensure this function is only being called once
-    if (state == Working) {
+    if (state == Working || state == Finished) {
         qDebug("QNetworkReplyImpl::_q_startOperation was called more than once");
         return;
     }
@@ -90,10 +90,10 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         return;
     }
 
+    if (!backend->start()) {
 #ifndef QT_NO_BEARERMANAGEMENT
-    if (!backend->start()) { // ### we should call that method even if bearer is not used
         // backend failed to start because the session state is not Connected.
-        // QNetworkAccessManager will call reply->backend->start() again for us when the session
+        // QNetworkAccessManager will call _q_startOperation again for us when the session
         // state changes.
         state = WaitingForSession;
 
@@ -109,11 +109,20 @@ void QNetworkReplyImplPrivate::_q_startOperation()
                 session->open();
         } else {
             qWarning("Backend is waiting for QNetworkSession to connect, but there is none!");
+            state = Working;
+            error(QNetworkReplyImpl::UnknownNetworkError,
+                  QCoreApplication::translate("QNetworkReply", "Network session error."));
+            finished();
         }
-
+#else
+        qWarning("Backend start failed");
+        state = Working;
+        error(QNetworkReplyImpl::UnknownNetworkError,
+              QCoreApplication::translate("QNetworkReply", "backend start error."));
+        finished();
+#endif
         return;
     }
-#endif
 
     if (backend && backend->isSynchronous()) {
         state = Finished;
@@ -178,9 +187,11 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
     if (preMigrationDownloaded != Q_INT64_C(-1))
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
     pauseNotificationHandling();
+    // emit readyRead before downloadProgress incase this will cause events to be
+    // processed and we get into a recursive call (as in QProgressDialog).
+    emit q->readyRead();
     emit q->downloadProgress(bytesDownloaded,
                              totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
-    emit q->readyRead();
     resumeNotificationHandling();
 }
 
@@ -586,11 +597,13 @@ void QNetworkReplyImplPrivate::appendDownstreamDataSignalEmissions()
     if (preMigrationDownloaded != Q_INT64_C(-1))
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
     pauseNotificationHandling();
-    emit q->downloadProgress(bytesDownloaded,
-                             totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
     // important: At the point of this readyRead(), the data parameter list must be empty,
     // else implicit sharing will trigger memcpy when the user is reading data!
     emit q->readyRead();
+    // emit readyRead before downloadProgress incase this will cause events to be
+    // processed and we get into a recursive call (as in QProgressDialog).
+    emit q->downloadProgress(bytesDownloaded,
+                             totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
 
     resumeNotificationHandling();
     // do we still have room in the buffer?
@@ -691,10 +704,12 @@ void QNetworkReplyImplPrivate::appendDownstreamDataDownloadBuffer(qint64 bytesRe
 
     downloadBufferCurrentSize = bytesReceived;
 
-    emit q->downloadProgress(bytesDownloaded, bytesTotal);
     // Only emit readyRead when actual data is there
+    // emit readyRead before downloadProgress incase this will cause events to be
+    // processed and we get into a recursive call (as in QProgressDialog).
     if (bytesDownloaded > 0)
         emit q->readyRead();
+    emit q->downloadProgress(bytesDownloaded, bytesTotal);
 }
 
 void QNetworkReplyImplPrivate::finished()

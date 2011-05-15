@@ -219,6 +219,7 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, float scre
     png_colorp palette = 0;
     int num_palette;
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, 0, 0, 0);
+    png_set_interlace_handling(png_ptr);
 
     if (color_type == PNG_COLOR_TYPE_GRAY) {
         // Black & White or 8-bit grayscale
@@ -506,8 +507,8 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
     state = ReadingEnd;
     png_read_end(png_ptr, end_info);
 
-    readPngTexts(end_info);
 #ifndef QT_NO_IMAGE_TEXT
+    readPngTexts(end_info);
     for (int i = 0; i < readTexts.size()-1; i+=2)
         outImage->setText(readTexts.at(i), readTexts.at(i+1));
 #endif

@@ -237,24 +237,6 @@ glyph_metrics_t QFontEngine::boundingBox(glyph_t glyph, const QTransform &matrix
     return metrics;
 }
 
-QFont QFontEngine::createExplicitFont() const
-{
-    return createExplicitFontWithName(fontDef.family);
-}
-
-QFont QFontEngine::createExplicitFontWithName(const QString &familyName) const
-{
-    QFont font(familyName);
-    font.setStyleStrategy(QFont::NoFontMerging);
-    font.setWeight(fontDef.weight);
-    font.setItalic(fontDef.style == QFont::StyleItalic);
-    if (fontDef.pointSize < 0)
-        font.setPixelSize(fontDef.pixelSize);
-    else
-        font.setPointSizeF(fontDef.pointSize);
-    return font;
-}
-
 QFixed QFontEngine::xHeight() const
 {
     QGlyphLayoutArray<8> glyphs;

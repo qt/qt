@@ -106,6 +106,7 @@ Q_DECLARE_METATYPE(QList<QNetworkProxy>)
 //TESTED_FILES=
 
 QT_FORWARD_DECLARE_CLASS(QTcpSocket)
+QT_FORWARD_DECLARE_CLASS(SocketPair)
 
 class tst_QTcpSocket : public QObject
 {
@@ -138,6 +139,7 @@ public slots:
     void init();
     void cleanup();
 private slots:
+    void socketsConstructedBeforeEventLoop();
     void constructing();
     void setInvalidSocketDescriptor();
     void setSocketDescriptor();
@@ -221,6 +223,8 @@ protected slots:
     void abortiveClose_abortSlot();
     void remoteCloseErrorSlot();
     void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *auth);
+    void earlySocketBytesSent(qint64 bytes);
+    void earlySocketReadyRead();
 
 private:
     QByteArray expectedReplyIMAP();
@@ -243,6 +247,10 @@ private:
     bool gotClosedSignal;
     int numConnections;
     static int loopLevel;
+
+    SocketPair *earlyConstructedSockets;
+    int earlyBytesWrittenCount;
+    int earlyReadyReadCount;
 };
 
 enum ProxyTests {
@@ -296,8 +304,16 @@ public:
 
 tst_QTcpSocket::tst_QTcpSocket()
 {
-    Q_SET_DEFAULT_IAP
     tmpSocket = 0;
+
+    //This code relates to the socketsConstructedBeforeEventLoop test case
+    earlyConstructedSockets = new SocketPair;
+    QVERIFY(earlyConstructedSockets->create());
+    earlyBytesWrittenCount = 0;
+    earlyReadyReadCount = 0;
+    connect(earlyConstructedSockets->endPoints[0], SIGNAL(readyRead()), this, SLOT(earlySocketReadyRead()));
+    connect(earlyConstructedSockets->endPoints[1], SIGNAL(bytesWritten(qint64)), this, SLOT(earlySocketBytesSent(qint64)));
+    earlyConstructedSockets->endPoints[1]->write("hello work");
 }
 
 tst_QTcpSocket::~tst_QTcpSocket()
@@ -336,7 +352,9 @@ void tst_QTcpSocket::init()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
         QFETCH_GLOBAL(int, proxyType);
-        QString fluke = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first().toString();
+        QList<QHostAddress> addresses = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses();
+        QVERIFY2(addresses.count() > 0, "failed to get ip address for test server");
+        QString fluke = addresses.first().toString();
         QNetworkProxy proxy;
 
         switch (proxyType) {
@@ -397,6 +415,33 @@ void tst_QTcpSocket::proxyAuthenticationRequired(const QNetworkProxy &, QAuthent
 
 //----------------------------------------------------------------------------------
 
+void tst_QTcpSocket::socketsConstructedBeforeEventLoop()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    QFETCH_GLOBAL(bool, ssl);
+    if (setProxy || ssl)
+        return;
+    //This test checks that sockets constructed before QCoreApplication::exec() still emit signals
+    //see construction code in the tst_QTcpSocket constructor
+    enterLoop(3);
+    QCOMPARE(earlyBytesWrittenCount, 1);
+    QCOMPARE(earlyReadyReadCount, 1);
+    earlyConstructedSockets->endPoints[0]->close();
+    earlyConstructedSockets->endPoints[1]->close();
+}
+
+void tst_QTcpSocket::earlySocketBytesSent(qint64 bytes)
+{
+    earlyBytesWrittenCount++;
+}
+
+void tst_QTcpSocket::earlySocketReadyRead()
+{
+    earlyReadyReadCount++;
+}
+
+//----------------------------------------------------------------------------------
+
 void tst_QTcpSocket::constructing()
 {
     QTcpSocket *socket = newSocket();
@@ -431,6 +476,9 @@ void tst_QTcpSocket::setInvalidSocketDescriptor()
 {
     QTcpSocket *socket = newSocket();
     QCOMPARE(socket->socketDescriptor(), -1);
+#ifdef Q_OS_SYMBIAN
+    QTest::ignoreMessage(QtWarningMsg, "QSymbianSocketEngine::initialize - socket descriptor not found");
+#endif
     QVERIFY(!socket->setSocketDescriptor(-5, QTcpSocket::UnconnectedState));
     QCOMPARE(socket->socketDescriptor(), -1);
 
@@ -443,6 +491,9 @@ void tst_QTcpSocket::setInvalidSocketDescriptor()
 
 void tst_QTcpSocket::setSocketDescriptor()
 {
+#ifdef Q_OS_SYMBIAN
+    QSKIP("adopting open c socket handles is not supported", SkipAll);
+#else
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;                 // this test doesn't make sense with proxies
@@ -482,6 +533,7 @@ void tst_QTcpSocket::setSocketDescriptor()
     delete socket;
 #ifdef Q_OS_WIN
     delete dummy;
+#endif
 #endif
 }
 
@@ -605,14 +657,14 @@ void tst_QTcpSocket::timeoutConnect()
 
     // Port 1357 is configured to drop packets on the test server
     socket->connectToHost(address, 1357);
-    QVERIFY(timer.elapsed() < 50);
-    QVERIFY(!socket->waitForConnected(200));
+    QVERIFY(timer.elapsed() < 150);
+    QVERIFY(!socket->waitForConnected(1000)); //200ms is too short when using SOCKS proxy authentication
     QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
     QCOMPARE(int(socket->error()), int(QTcpSocket::SocketTimeoutError));
 
     timer.start();
     socket->connectToHost(address, 1357);
-    QVERIFY(timer.elapsed() < 50);
+    QVERIFY(timer.elapsed() < 150);
     QTimer::singleShot(50, &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
@@ -975,6 +1027,9 @@ void tst_QTcpSocket::disconnectWhileConnecting_data()
 void tst_QTcpSocket::disconnectWhileConnecting()
 {
     QFETCH(QByteArray, data);
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return; //proxy not useful for localhost test case
 
     QTcpServer server;
     QVERIFY(server.listen(QHostAddress::LocalHost));
@@ -1035,7 +1090,7 @@ public:
         : server(0), ok(false), quit(false)
     { }
 
-    ~ReceiverThread() { /*delete server;*/ terminate(); wait();  }
+    ~ReceiverThread() { }
 
     bool listen()
     {
@@ -1045,6 +1100,14 @@ public:
         serverPort = server->serverPort();
         server->moveToThread(this);
         return true;
+    }
+
+    static void cleanup(void *ptr)
+    {
+        ReceiverThread* self = reinterpret_cast<ReceiverThread*>(ptr);
+        self->quit = true;
+        self->wait(30000);
+        delete self;
     }
 
 protected:
@@ -1092,19 +1155,20 @@ void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop_data()
 void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop()
 {
     QFETCH(QByteArray, data);
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return; //proxy not useful for localhost test case
 
-    ReceiverThread thread;
-    QVERIFY(thread.listen());
-    thread.start();
+    QScopedPointer<ReceiverThread, ReceiverThread> thread (new ReceiverThread);
+    QVERIFY(thread->listen());
+    thread->start();
 
     // proceed to the connect-write-disconnect
     QTcpSocket *socket = newSocket();
-    socket->connectToHost("127.0.0.1", thread.serverPort);
+    socket->connectToHost("127.0.0.1", thread->serverPort);
     if (!data.isEmpty())
         socket->write(data);
     if (socket->state() == QAbstractSocket::ConnectedState) {
-        thread.quit = true;
-        thread.wait();
         QSKIP("localhost connections are immediate, test case is invalid", SkipSingle);
     }
 
@@ -1130,9 +1194,9 @@ void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop()
     delete socket;
 
     // check if the other side received everything ok
-    QVERIFY(thread.wait(30000));
-    QVERIFY(thread.ok);
-    QCOMPARE(thread.receivedData, data);
+    QVERIFY(thread->wait(30000));
+    QVERIFY(thread->ok);
+    QCOMPARE(thread->receivedData, data);
 }
 
 //----------------------------------------------------------------------------------
@@ -1194,6 +1258,7 @@ void tst_QTcpSocket::downloadBigFile()
 
     connect(tmpSocket, SIGNAL(connected()), SLOT(exitLoopSlot()));
     connect(tmpSocket, SIGNAL(readyRead()), SLOT(downloadBigFileSlot()));
+    connect(tmpSocket, SIGNAL(disconnected()), SLOT(exitLoopSlot()));
 
     tmpSocket->connectToHost(QtNetworkSettings::serverName(), 80);
 
@@ -1380,7 +1445,7 @@ void tst_QTcpSocket::flush()
 
     connect(socket, SIGNAL(connected()), SLOT(exitLoopSlot()));
     socket->connectToHost(QtNetworkSettings::serverName(), 143);
-    enterLoop(5000);
+    enterLoop(60);
     QVERIFY(socket->isOpen());
 
     socket->write("1 LOGOUT\r\n");
@@ -1413,7 +1478,7 @@ void tst_QTcpSocket::dontCloseOnTimeout()
     QVERIFY(server.listen());
 
     QHostAddress serverAddress = QHostAddress::LocalHost;
-    if (!(server.serverAddress() == QHostAddress::Any))
+    if (!(server.serverAddress() == QHostAddress::Any) && !(server.serverAddress() == QHostAddress::AnyIPv6))
         serverAddress = server.serverAddress();
 
     QTcpSocket *socket = newSocket();
@@ -1633,6 +1698,9 @@ private slots:
 //----------------------------------------------------------------------------------
 void tst_QTcpSocket::remoteCloseError()
 {
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return; //proxy not useful for localhost test case
     RemoteCloseErrorServer server;
     QVERIFY(server.listen(QHostAddress::LocalHost));
 
@@ -1943,6 +2011,9 @@ void tst_QTcpSocket::linuxKernelBugLocalSocket()
 //----------------------------------------------------------------------------------
 void tst_QTcpSocket::abortiveClose()
 {
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return; //proxy not useful for localhost test case
     QTcpServer server;
     QVERIFY(server.listen(QHostAddress::LocalHost));
     connect(&server, SIGNAL(newConnection()), this, SLOT(exitLoopSlot()));
@@ -1981,6 +2052,9 @@ void tst_QTcpSocket::abortiveClose_abortSlot()
 //----------------------------------------------------------------------------------
 void tst_QTcpSocket::localAddressEmptyOnBSD()
 {
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return; //proxy not useful for localhost test case
     QTcpServer server;
     QVERIFY(server.listen(QHostAddress::LocalHost));
 
@@ -2251,6 +2325,9 @@ void tst_QTcpSocket::moveToThread0()
 
 void tst_QTcpSocket::increaseReadBufferSize()
 {
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return; //proxy not useful for localhost test case
     QTcpServer server;
     QTcpSocket *active = newSocket();
     connect(active, SIGNAL(readyRead()), SLOT(exitLoopSlot()));

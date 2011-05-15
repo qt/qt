@@ -199,11 +199,11 @@ QTextBoundaryFinder &QTextBoundaryFinder::operator=(const QTextBoundaryFinder &o
     chars = other.chars;
     length = other.length;
     pos = other.pos;
-    freePrivate = true;
 
     QTextBoundaryFinderPrivate *newD = (QTextBoundaryFinderPrivate *)
-        realloc(d, length*sizeof(HB_CharAttributes));
+        realloc(freePrivate ? d : 0, length*sizeof(HB_CharAttributes));
     Q_CHECK_PTR(newD);
+    freePrivate = true;
     d = newD;
     memcpy(d, other.d, length*sizeof(HB_CharAttributes));
 
@@ -457,33 +457,23 @@ QTextBoundaryFinder::BoundaryReasons QTextBoundaryFinder::boundaryReasons() cons
             return NotAtBoundary;
         return StartWord;
     }
-    if (pos >= length - 1) {
+    if (pos == length) {
         if (d->attributes[length-1].whiteSpace)
             return NotAtBoundary;
         return EndWord;
     }
 
-    BoundaryReasons answer;
-    const bool nextIsSpace = d->attributes[pos + 1].whiteSpace;
+    const bool nextIsSpace = d->attributes[pos].whiteSpace;
     const bool prevIsSpace = d->attributes[pos - 1].whiteSpace;
 
-    if (d->attributes[pos].whiteSpace)
-        answer = EndWord;
-    else if (!prevIsSpace) {
-        answer = StartWord;
-        answer |= EndWord;
-    }
-
-    if (prevIsSpace)
-        answer |= StartWord;
-    if (nextIsSpace)
-        answer |= EndWord;
-    if (answer == 0) {
-        answer = StartWord;
-        answer |= EndWord;
-    }
-
-    return answer;
+    if (prevIsSpace && !nextIsSpace)
+        return StartWord;
+    else if (!prevIsSpace && nextIsSpace)
+        return EndWord;
+    else if (!prevIsSpace && !nextIsSpace)
+        return BoundaryReasons(StartWord | EndWord);
+    else
+        return NotAtBoundary;
 }
 
 QT_END_NAMESPACE

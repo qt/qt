@@ -120,7 +120,7 @@ static inline char *strdup(const char *data)
 #endif
 
 static int qt_qprocess_deadChild_pipe[2];
-static void (*qt_sa_old_sigchld_handler)(int) = 0;
+static struct sigaction qt_sa_old_sigchld_handler;
 static void qt_sa_sigchld_handler(int signum)
 {
     qt_safe_write(qt_qprocess_deadChild_pipe[1], "", 1);
@@ -128,8 +128,10 @@ static void qt_sa_sigchld_handler(int signum)
     fprintf(stderr, "*** SIGCHLD\n");
 #endif
 
-    if (qt_sa_old_sigchld_handler && qt_sa_old_sigchld_handler != SIG_IGN)
-        qt_sa_old_sigchld_handler(signum);
+    // load it as volatile
+    void (*oldAction)(int) = ((volatile struct sigaction *)&qt_sa_old_sigchld_handler)->sa_handler;
+    if (oldAction && oldAction != SIG_IGN)
+        oldAction(signum);
 }
 
 static inline void add_fd(int &nfds, int fd, fd_set *fdset)
@@ -190,14 +192,11 @@ QProcessManager::QProcessManager()
 
     // set up the SIGCHLD handler, which writes a single byte to the dead
     // child pipe every time a child dies.
-    struct sigaction oldAction;
     struct sigaction action;
     memset(&action, 0, sizeof(action));
     action.sa_handler = qt_sa_sigchld_handler;
     action.sa_flags = SA_NOCLDSTOP;
-    ::sigaction(SIGCHLD, &action, &oldAction);
-    if (oldAction.sa_handler != qt_sa_sigchld_handler)
-	qt_sa_old_sigchld_handler = oldAction.sa_handler;
+    ::sigaction(SIGCHLD, &action, &qt_sa_old_sigchld_handler);
 }
 
 QProcessManager::~QProcessManager()
@@ -217,14 +216,10 @@ QProcessManager::~QProcessManager()
     qDeleteAll(children.values());
     children.clear();
 
-    struct sigaction oldAction;
-    struct sigaction action;
-    memset(&action, 0, sizeof(action));
-    action.sa_handler = qt_sa_old_sigchld_handler;
-    action.sa_flags = SA_NOCLDSTOP;
-    ::sigaction(SIGCHLD, &action, &oldAction);
-    if (oldAction.sa_handler != qt_sa_sigchld_handler) {
-        ::sigaction(SIGCHLD, &oldAction, 0);
+    struct sigaction currentAction;
+    ::sigaction(SIGCHLD, 0, &currentAction);
+    if (currentAction.sa_handler == qt_sa_sigchld_handler) {
+        ::sigaction(SIGCHLD, &qt_sa_old_sigchld_handler, 0);
     }
 }
 
@@ -458,7 +453,35 @@ bool QProcessPrivate::createChannel(Channel &channel)
     }
 }
 
-static char **_q_dupEnvironment(const QHash<QByteArray, QByteArray> &environment, int *envc)
+QT_BEGIN_INCLUDE_NAMESPACE
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
+# include <crt_externs.h>
+# define environ (*_NSGetEnviron())
+#else
+  extern char **environ;
+#endif
+QT_END_INCLUDE_NAMESPACE
+
+QProcessEnvironment QProcessEnvironment::systemEnvironment()
+{
+    QProcessEnvironment env;
+#if !defined(Q_OS_MAC) || !defined(QT_NO_CORESERVICES)
+    const char *entry;
+    for (int count = 0; (entry = environ[count]); ++count) {
+        const char *equal = strchr(entry, '=');
+        if (!equal)
+            continue;
+
+        QByteArray name(entry, equal - entry);
+        QByteArray value(equal + 1);
+        env.d->hash.insert(QProcessEnvironmentPrivate::Key(name),
+                           QProcessEnvironmentPrivate::Value(value));
+    }
+#endif
+    return env;
+}
+
+static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Hash &environment, int *envc)
 {
     *envc = 0;
     if (environment.isEmpty())
@@ -474,17 +497,17 @@ static char **_q_dupEnvironment(const QHash<QByteArray, QByteArray> &environment
 #endif
     const QByteArray envLibraryPath = qgetenv(libraryPath);
     bool needToAddLibraryPath = !envLibraryPath.isEmpty() &&
-                                !environment.contains(libraryPath);
+                                !environment.contains(QProcessEnvironmentPrivate::Key(QByteArray(libraryPath)));
 
     char **envp = new char *[environment.count() + 2];
     envp[environment.count()] = 0;
     envp[environment.count() + 1] = 0;
 
-    QHash<QByteArray, QByteArray>::ConstIterator it = environment.constBegin();
-    const QHash<QByteArray, QByteArray>::ConstIterator end = environment.constEnd();
+    QProcessEnvironmentPrivate::Hash::ConstIterator it = environment.constBegin();
+    const QProcessEnvironmentPrivate::Hash::ConstIterator end = environment.constEnd();
     for ( ; it != end; ++it) {
-        QByteArray key = it.key();
-        QByteArray value = it.value();
+        QByteArray key = it.key().key;
+        QByteArray value = it.value().bytes();
         key.reserve(key.length() + 1 + value.length());
         key.append('=');
         key.append(value);
@@ -493,8 +516,8 @@ static char **_q_dupEnvironment(const QHash<QByteArray, QByteArray> &environment
     }
 
     if (needToAddLibraryPath)
-        envp[(*envc)++] = ::strdup(QByteArray(libraryPath) + '=' +
-                                 envLibraryPath);
+        envp[(*envc)++] = ::strdup(QByteArray(QByteArray(libraryPath) + '=' +
+                                 envLibraryPath).constData());
     return envp;
 }
 

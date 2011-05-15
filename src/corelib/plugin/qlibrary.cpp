@@ -52,6 +52,7 @@
 #include <qmap.h>
 #include <qsettings.h>
 #include <qdatetime.h>
+#include <private/qcoreapplication_p.h>
 #ifdef Q_OS_MAC
 #  include <private/qcore_mac_p.h>
 #endif
@@ -408,12 +409,6 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
 typedef QMap<QString, QLibraryPrivate*> LibraryMap;
 
 struct LibraryData {
-    LibraryData() : settings(0) { }
-    ~LibraryData() {
-        delete settings;
-    }
-
-    QSettings *settings;
     LibraryMap libraryMap;
     QSet<QLibraryPrivate*> loadedLibs;
 };
@@ -516,6 +511,8 @@ bool QLibraryPrivate::loadPlugin()
         libraryUnloadCount.ref();
         return true;
     }
+    if (pluginState == IsNotAPlugin)
+        return false;
     if (load()) {
         instance = (QtPluginInstanceFunction)resolve("qt_plugin_instance");
 #if defined(Q_OS_SYMBIAN)
@@ -528,6 +525,9 @@ bool QLibraryPrivate::loadPlugin()
 #endif
         return instance;
     }
+    if (qt_debug_component())
+        qWarning() << "QLibraryPrivate::loadPlugin failed on" << fileName << ":" << errorString;
+    pluginState = IsNotAPlugin;
     return false;
 }
 
@@ -687,7 +687,7 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
                      .arg((QT_VERSION & 0xff00) >> 8)
                      .arg(QLIBRARY_AS_DEBUG ? QLatin1String("debug") : QLatin1String("false"))
                      .arg(fileName);
-#ifdef Q_WS_MAC    
+#ifdef Q_WS_MAC
     // On Mac, add the application arch to the reg key in order to
     // cache plugin information separately for each arch. This prevents
     // Qt from wrongly caching plugin load failures when the archs
@@ -702,15 +702,11 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
     regkey += QLatin1String("-ppc");
 #endif
 #endif // Q_WS_MAC
-    
+
     QStringList reg;
 #ifndef QT_NO_SETTINGS
     if (!settings) {
-        settings = libraryData()->settings;
-        if (!settings) {
-            settings = new QSettings(QSettings::UserScope, QLatin1String("Trolltech"));
-            libraryData()->settings = settings;
-        }
+        settings = QCoreApplicationPrivate::trolltechConf();
     }
     reg = settings->value(regkey).toStringList();
 #endif

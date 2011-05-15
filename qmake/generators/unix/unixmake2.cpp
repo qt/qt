@@ -96,7 +96,8 @@ UnixMakefileGenerator::writeMakefile(QTextStream &t)
     }
 
     if (project->values("TEMPLATE").first() == "app" ||
-        project->values("TEMPLATE").first() == "lib") {
+        project->values("TEMPLATE").first() == "lib" ||
+        project->values("TEMPLATE").first() == "aux") {
         if(Option::mkfile::do_stub_makefile && MakefileGenerator::writeStubMakefile(t))
             return true;
         writeMakeParts(t);
@@ -795,7 +796,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         ddir = project->first("QMAKE_DISTDIR");
 
     QString ddir_c = escapeFilePath(fileFixify((project->isEmpty("OBJECTS_DIR") ? QString(".tmp/") :
-                                                project->first("OBJECTS_DIR")) + ddir));
+                                                project->first("OBJECTS_DIR")) + ddir,
+                                               Option::output_dir, Option::output_dir));
     t << "dist: " << "\n\t"
       << mkdir_p_asstring(ddir_c) << "\n\t"
       << "$(COPY_FILE) --parents $(SOURCES) $(DIST) " << ddir_c << Option::dir_sep << " && ";
@@ -1015,6 +1017,9 @@ void UnixMakefileGenerator::init2()
     project->values("VER_PAT").append(l[2]);
     if(project->isEmpty("QMAKE_FRAMEWORK_VERSION"))
         project->values("QMAKE_FRAMEWORK_VERSION").append(project->values("VER_MAJ").first());
+
+    if (project->values("TEMPLATE").first() == "aux")
+        return;
 
     if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
         if(!project->isEmpty("QMAKE_BUNDLE")) {

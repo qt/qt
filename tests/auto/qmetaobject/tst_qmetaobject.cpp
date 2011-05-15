@@ -175,6 +175,9 @@ private slots:
 
     void metaMethod();
 
+    void indexOfMethod_data();
+    void indexOfMethod();
+
 signals:
     void value6Changed();
     void value7Changed(const QString &);
@@ -1086,6 +1089,32 @@ void tst_QMetaObject::metaMethod()
     QCOMPARE(returnValue, argument);
     QCOMPARE(obj.slotResult, QString("sl13"));
 }
+
+void tst_QMetaObject::indexOfMethod_data()
+{
+    QTest::addColumn<QObject *>("object");
+    QTest::addColumn<QByteArray>("name");
+    QTest::addColumn<bool>("isSignal");
+    QTest::newRow("indexOfMethod_data") << (QObject*)this << QByteArray("indexOfMethod_data()") << false;
+    QTest::newRow("deleteLater") << (QObject*)this << QByteArray("deleteLater()") << false;
+    QTest::newRow("value6changed") << (QObject*)this << QByteArray("value6Changed()") << true;
+    QTest::newRow("value7changed") << (QObject*)this << QByteArray("value7Changed(QString)") << true;
+    QTest::newRow("destroyed") << (QObject*)this << QByteArray("destroyed()") << true;
+    QTest::newRow("destroyed2") << (QObject*)this << QByteArray("destroyed(QObject*)") << true;
+}
+
+void tst_QMetaObject::indexOfMethod()
+{
+    QFETCH(QObject *, object);
+    QFETCH(QByteArray, name);
+    QFETCH(bool, isSignal);
+    int idx = object->metaObject()->indexOfMethod(name);
+    QVERIFY(idx >= 0);
+    QCOMPARE(object->metaObject()->method(idx).signature(), name.constData());
+    QCOMPARE(object->metaObject()->indexOfSlot(name), isSignal ? -1 : idx);
+    QCOMPARE(object->metaObject()->indexOfSignal(name), !isSignal ? -1 : idx);
+}
+
 
 QTEST_MAIN(tst_QMetaObject)
 #include "tst_qmetaobject.moc"

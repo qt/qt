@@ -110,7 +110,7 @@ void tst_qdeclarativeflickable::create()
     QCOMPARE(obj->isInteractive(), true);
     QCOMPARE(obj->boundsBehavior(), QDeclarativeFlickable::DragAndOvershootBounds);
     QCOMPARE(obj->pressDelay(), 0);
-    QCOMPARE(obj->maximumFlickVelocity(), 2000.);
+    QCOMPARE(obj->maximumFlickVelocity(), 2500.);
 
     delete obj;
 }

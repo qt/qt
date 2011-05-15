@@ -1893,7 +1893,8 @@ void tst_QListView::taskQTBUG_435_deselectOnViewportClick()
     QCOMPARE(view.selectionModel()->selectedIndexes().count(), model.rowCount());
 
 
-    QPoint p = view.visualRect(model.index(model.rowCount() - 1)).center() + QPoint(0, 20);
+    const QRect itemRect = view.visualRect(model.index(model.rowCount() - 1));
+    QPoint p = view.visualRect(model.index(model.rowCount() - 1)).center() + QPoint(0, itemRect.height());
     //first the left button
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, p);
     QVERIFY(!view.selectionModel()->hasSelection());

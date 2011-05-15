@@ -179,6 +179,7 @@ private:
     void command_gradient_setConical(QRegExp re);
     void command_gradient_setLinear(QRegExp re);
     void command_gradient_setRadial(QRegExp re);
+    void command_gradient_setRadialExtended(QRegExp re);
     void command_gradient_setLinearPen(QRegExp re);
     void command_gradient_setSpread(QRegExp re);
     void command_gradient_setCoordinateMode(QRegExp re);
@@ -290,6 +291,7 @@ private:
     static const char *brushStyleTable[];
     static const char *penStyleTable[];
     static const char *fontWeightTable[];
+    static const char *fontHintingTable[];
     static const char *clipOperationTable[];
     static const char *spreadMethodTable[];
     static const char *coordinateMethodTable[];

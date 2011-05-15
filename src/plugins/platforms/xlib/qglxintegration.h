@@ -47,10 +47,10 @@
 #include <QtGui/QPlatformGLContext>
 #include <QtGui/QPlatformWindowFormat>
 
-#include <QtCore/QMutex>
-
 #if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
+#define Status int
 #include <GL/glx.h>
+#undef Status
 
 QT_BEGIN_NAMESPACE
 
@@ -69,22 +69,13 @@ public:
 
     QPlatformWindowFormat platformWindowFormat() const;
 
-    static XVisualInfo *findVisualInfo(const QXlibScreen *xd, const QPlatformWindowFormat &format);
 private:
-    static GLXFBConfig findConfig(const QXlibScreen *xd,const QPlatformWindowFormat &format);
-    static QVector<int> buildSpec(const QPlatformWindowFormat &format);
-    static QPlatformWindowFormat platformWindowFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext context);
-    static QPlatformWindowFormat reducePlatformWindowFormat(const QPlatformWindowFormat &format, bool *reduced);
-
-
     QXlibScreen  *m_screen;
     Drawable    m_drawable;
     GLXContext  m_context;
     QPlatformWindowFormat m_windowFormat;
 
     QGLXContext (QXlibScreen *screen, Drawable drawable, GLXContext context);
-    static QMutex m_defaultSharedContextMutex;
-    static void createDefaultSharedContex(QXlibScreen *xd);
 };
 
 QT_END_NAMESPACE

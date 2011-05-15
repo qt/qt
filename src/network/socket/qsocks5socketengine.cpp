@@ -556,6 +556,9 @@ void QSocks5SocketEnginePrivate::initialize(Socks5Mode socks5Mode)
         udpData = new QSocks5UdpAssociateData;
         data = udpData;
         udpData->udpSocket = new QUdpSocket(q);
+#ifndef QT_NO_BEARERMANAGEMENT
+        udpData->udpSocket->setProperty("_q_networksession", q->property("_q_networksession"));
+#endif
         udpData->udpSocket->setProxy(QNetworkProxy::NoProxy);
         QObject::connect(udpData->udpSocket, SIGNAL(readyRead()),
                          q, SLOT(_q_udpSocketReadNotification()),
@@ -567,6 +570,9 @@ void QSocks5SocketEnginePrivate::initialize(Socks5Mode socks5Mode)
     }
 
     data->controlSocket = new QTcpSocket(q);
+#ifndef QT_NO_BEARERMANAGEMENT
+    data->controlSocket->setProperty("_q_networksession", q->property("_q_networksession"));
+#endif
     data->controlSocket->setProxy(QNetworkProxy::NoProxy);
     QObject::connect(data->controlSocket, SIGNAL(connected()), q, SLOT(_q_controlSocketConnected()),
                      Qt::DirectConnection);
@@ -1376,6 +1382,9 @@ bool QSocks5SocketEngine::bind(const QHostAddress &address, quint16 port)
         d->udpData->associatePort = d->localPort;
         d->localPort = 0;
         QUdpSocket dummy;
+#ifndef QT_NO_BEARERMANAGEMENT
+        dummy.setProperty("_q_networksession", property("_q_networksession"));
+#endif
         dummy.setProxy(QNetworkProxy::NoProxy);
         if (!dummy.bind()
             || writeDatagram(0,0, d->data->controlSocket->localAddress(), dummy.localPort()) != 0
@@ -1531,8 +1540,13 @@ qint64 QSocks5SocketEngine::write(const char *data, qint64 len)
             // ### Handle this error.
         }
 
-        d->data->controlSocket->write(sealedBuf);
+        qint64 written = d->data->controlSocket->write(sealedBuf);
+        if (written <= 0) {
+            QSOCKS5_Q_DEBUG << "native write returned" << written;
+            return written;
+        }
         d->data->controlSocket->waitForBytesWritten(0);
+        //NB: returning len rather than written for the OK case, because the "sealing" may increase the length
         return len;
 #ifndef QT_NO_UDPSOCKET
     } else if (d->mode == QSocks5SocketEnginePrivate::UdpAssociateMode) {
@@ -1545,6 +1559,7 @@ qint64 QSocks5SocketEngine::write(const char *data, qint64 len)
 }
 
 #ifndef QT_NO_UDPSOCKET
+#ifndef QT_NO_NETWORKINTERFACE
 bool QSocks5SocketEngine::joinMulticastGroup(const QHostAddress &,
                                              const QNetworkInterface &)
 {
@@ -1573,6 +1588,7 @@ bool QSocks5SocketEngine::setMulticastInterface(const QNetworkInterface &)
              QLatin1String("Operation on socket is not supported"));
     return false;
 }
+#endif // QT_NO_NETWORKINTERFACE
 
 qint64 QSocks5SocketEngine::readDatagram(char *data, qint64 maxlen, QHostAddress *addr,
                                         quint16 *port)

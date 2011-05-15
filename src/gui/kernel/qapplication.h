@@ -79,6 +79,8 @@ template <typename T> class QList;
 class QLocale;
 #if defined(Q_WS_QWS)
 class QDecoration;
+#elif defined(Q_WS_QPA)
+class QPlatformNativeInterface;
 #endif
 #if defined(Q_OS_SYMBIAN)
 class QSymbianEvent;
@@ -252,6 +254,10 @@ public:
     static void qwsSetDecoration(QDecoration *);
     static QDecoration *qwsSetDecoration(const QString &decoration);
 #endif
+#endif
+
+#if defined(Q_WS_QPA)
+    static QPlatformNativeInterface *platformNativeInterface();
 #endif
 
 

@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qdbusargument_p.h"
+#include "qdbusconnection.h"
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
@@ -126,9 +127,16 @@ inline QDBusSignature QDBusDemarshaller::toSignature()
     return QDBusSignature(QString::fromUtf8(qIterGet<char *>(&iterator)));
 }
 
+inline QDBusUnixFileDescriptor QDBusDemarshaller::toUnixFileDescriptor()
+{
+    QDBusUnixFileDescriptor fd;
+    fd.giveFileDescriptor(qIterGet<dbus_int32_t>(&iterator));
+    return fd;
+}
+
 inline QDBusVariant QDBusDemarshaller::toVariant()
 {
-    QDBusDemarshaller sub;
+    QDBusDemarshaller sub(capabilities);
     sub.message = q_dbus_message_ref(message);
     q_dbus_message_iter_recurse(&iterator, &sub.iterator);
     q_dbus_message_iter_next(&iterator);
@@ -172,6 +180,10 @@ QDBusArgument::ElementType QDBusDemarshaller::currentType()
         return QDBusArgument::StructureType;
     case DBUS_TYPE_DICT_ENTRY:
         return QDBusArgument::MapEntryType;
+
+    case DBUS_TYPE_UNIX_FD:
+        return capabilities & QDBusConnection::UnixFileDescriptorPassing ?
+                    QDBusArgument::BasicType : QDBusArgument::UnknownType;
 
     case DBUS_TYPE_INVALID:
         return QDBusArgument::UnknownType;
@@ -231,6 +243,11 @@ QVariant QDBusDemarshaller::toVariantInternal()
     case DBUS_TYPE_STRUCT:
         return QVariant::fromValue(duplicate());
 
+    case DBUS_TYPE_UNIX_FD:
+        if (capabilities & QDBusConnection::UnixFileDescriptorPassing)
+            return qVariantFromValue(toUnixFileDescriptor());
+        // fall through
+
     default:
 //        qWarning("QDBusDemarshaller: Found unknown D-Bus type %d '%c'",
 //                 q_dbus_message_iter_get_arg_type(&iterator),
@@ -249,7 +266,7 @@ QStringList QDBusDemarshaller::toStringList()
 {
     QStringList list;
 
-    QDBusDemarshaller sub;
+    QDBusDemarshaller sub(capabilities);
     q_dbus_message_iter_recurse(&iterator, &sub.iterator);
     q_dbus_message_iter_next(&iterator);
     while (!sub.atEnd())
@@ -297,7 +314,7 @@ inline QDBusDemarshaller *QDBusDemarshaller::beginMapEntry()
 
 QDBusDemarshaller *QDBusDemarshaller::beginCommon()
 {
-    QDBusDemarshaller *d = new QDBusDemarshaller;
+    QDBusDemarshaller *d = new QDBusDemarshaller(capabilities);
     d->parent = this;
     d->message = q_dbus_message_ref(message);
 
@@ -336,7 +353,7 @@ QDBusDemarshaller *QDBusDemarshaller::endCommon()
 
 QDBusArgument QDBusDemarshaller::duplicate()
 {
-    QDBusDemarshaller *d = new QDBusDemarshaller;
+    QDBusDemarshaller *d = new QDBusDemarshaller(capabilities);
     d->iterator = iterator;
     d->message = q_dbus_message_ref(message);
 

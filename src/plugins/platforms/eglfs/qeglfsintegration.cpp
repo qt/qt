@@ -44,11 +44,11 @@
 #include "qeglfswindow.h"
 #include "qeglfswindowsurface.h"
 
+#include "qgenericunixfontdatabase.h"
+
 #include <QtGui/QPlatformWindow>
 #include <QtGui/QPlatformWindowFormat>
 #include <QtOpenGL/private/qpixmapdata_gl_p.h>
-
-#include "qgenericunixfontdatabase.h"
 
 #include <EGL/egl.h>
 

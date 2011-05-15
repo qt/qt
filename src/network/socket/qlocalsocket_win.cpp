@@ -79,6 +79,11 @@ void QLocalSocketPrivate::setErrorString(const QString &function)
         errorString = QLocalSocket::tr("%1: Invalid name").arg(function);
         state = QLocalSocket::UnconnectedState;
         break;
+    case ERROR_ACCESS_DENIED:
+        error = QLocalSocket::SocketAccessError;
+        errorString = QLocalSocket::tr("%1: Access denied").arg(function);
+        state = QLocalSocket::UnconnectedState;
+        break;
     default:
         error = QLocalSocket::UnknownSocketError;
         errorString = QLocalSocket::tr("%1: Unknown error %2").arg(function).arg(windowsError);
@@ -348,6 +353,11 @@ qint64 QLocalSocket::writeData(const char *data, qint64 maxSize)
 
 void QLocalSocket::abort()
 {
+    Q_D(QLocalSocket);
+    if (d->pipeWriter) {
+        delete d->pipeWriter;
+        d->pipeWriter = 0;
+    }
     close();
 }
 
@@ -569,10 +579,7 @@ bool QLocalSocket::waitForDisconnected(int msecs)
 bool QLocalSocket::isValid() const
 {
     Q_D(const QLocalSocket);
-    if (d->handle == INVALID_HANDLE_VALUE)
-        return false;
-
-    return PeekNamedPipe(d->handle, NULL, 0, NULL, NULL, NULL);
+    return d->handle != INVALID_HANDLE_VALUE;
 }
 
 bool QLocalSocket::waitForReadyRead(int msecs)

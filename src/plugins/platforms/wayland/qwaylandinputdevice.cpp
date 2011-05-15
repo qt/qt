@@ -61,7 +61,7 @@
 QWaylandInputDevice::QWaylandInputDevice(struct wl_display *display,
 					 uint32_t id)
     : mDisplay(display)
-    , mInputDevice(wl_input_device_create(display, id))
+    , mInputDevice(wl_input_device_create(display, id, 1))
     , mPointerFocus(NULL)
     , mKeyboardFocus(NULL)
     , mButtons(0)
@@ -83,6 +83,14 @@ QWaylandInputDevice::QWaylandInputDevice(struct wl_display *display,
 #endif
 }
 
+void QWaylandInputDevice::handleWindowDestroyed(QWaylandWindow *window)
+{
+    if (window == mPointerFocus)
+        mPointerFocus = 0;
+    if (window == mKeyboardFocus)
+        mKeyboardFocus = 0;
+}
+
 void QWaylandInputDevice::inputHandleMotion(void *data,
 					    struct wl_input_device *input_device,
 					    uint32_t time,
@@ -92,6 +100,12 @@ void QWaylandInputDevice::inputHandleMotion(void *data,
     Q_UNUSED(input_device);
     QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
     QWaylandWindow *window = inputDevice->mPointerFocus;
+
+    if (window == NULL) {
+	/* We destroyed the pointer focus surface, but the server
+	 * didn't get the message yet. */
+	return;
+    }
 
     inputDevice->mSurfacePos = QPoint(surface_x, surface_y);
     inputDevice->mGlobalPos = QPoint(x, y);
@@ -111,6 +125,12 @@ void QWaylandInputDevice::inputHandleButton(void *data,
     QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
     QWaylandWindow *window = inputDevice->mPointerFocus;
     Qt::MouseButton qt_button;
+
+    if (window == NULL) {
+	/* We destroyed the pointer focus surface, but the server
+	 * didn't get the message yet. */
+	return;
+    }
 
     switch (button) {
     case 272:
@@ -221,6 +241,12 @@ void QWaylandInputDevice::inputHandleKey(void *data,
     QEvent::Type type;
     char s[2];
 
+    if (window == NULL) {
+	/* We destroyed the keyboard focus surface, but the server
+	 * didn't get the message yet. */
+	return;
+    }
+
     code = key + inputDevice->mXkb->min_key_code;
 
     level = 0;
@@ -241,9 +267,6 @@ void QWaylandInputDevice::inputHandleKey(void *data,
     }
 
     sym = translateKey(sym, s, sizeof s);
-
-    qWarning("keycode %d, sym %d, string %d, modifiers 0x%x",
-	     code, sym, s[0], (int) inputDevice->mModifiers);
 
     if (window) {
         QWindowSystemInterface::handleKeyEvent(window->widget(),

@@ -399,7 +399,9 @@ public:
     void setLayoutDirection(Qt::LayoutDirection direction);
     Qt::LayoutDirection layoutDirection() const;
 
+#if !defined(QT_NO_RAWFONT)
     void drawGlyphs(const QPointF &position, const QGlyphs &glyphs);
+#endif
 
     void drawStaticText(const QPointF &topLeftPosition, const QStaticText &staticText);
     inline void drawStaticText(const QPoint &topLeftPosition, const QStaticText &staticText);
@@ -551,6 +553,7 @@ private:
     friend class QPaintEngine;
     friend class QPaintEngineExPrivate;
     friend class QOpenGLPaintEngine;
+    friend class QVGPaintEngine;
     friend class QX11PaintEngine;
     friend class QX11PaintEnginePrivate;
     friend class QWin32PaintEngine;

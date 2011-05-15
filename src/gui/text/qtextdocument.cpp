@@ -60,6 +60,7 @@
 #include <qdir.h>
 #include <qapplication.h>
 #include "qtextcontrol_p.h"
+#include "qfont_p.h"
 #include "private/qtextedit_p.h"
 #include "private/qdataurl_p.h"
 
@@ -582,6 +583,29 @@ void QTextDocument::setDefaultTextOption(const QTextOption &option)
     d->defaultTextOption = option;
     if (d->lout)
         d->lout->documentChanged(0, 0, d->length());
+}
+
+/*!
+    \since 4.8
+
+    The default cursor movement style is used by all QTextCursor objects
+    created from the document. The default is QTextCursor::Logical.
+*/
+QTextCursor::MoveStyle QTextDocument::defaultCursorMoveStyle() const
+{
+    Q_D(const QTextDocument);
+    return d->defaultCursorMoveStyle;
+}
+
+/*!
+    \since 4.8
+
+    Set the default cursor movement style.
+*/
+void QTextDocument::setDefaultCursorMoveStyle(QTextCursor::MoveStyle style)
+{
+    Q_D(QTextDocument);
+    d->defaultCursorMoveStyle = style;
 }
 
 /*!
@@ -1670,8 +1694,6 @@ static void printPage(int index, QPainter *painter, const QTextDocument *doc, co
 
     painter->restore();
 }
-
-Q_GUI_EXPORT extern int qt_defaultDpi();
 
 /*!
     Prints the document to the given \a printer. The QPrinter must be

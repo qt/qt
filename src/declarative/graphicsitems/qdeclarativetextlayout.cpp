@@ -63,9 +63,6 @@ public:
     QVector<QChar> chars;
 };
 
-Q_GUI_EXPORT extern int qt_defaultDpiX();
-Q_GUI_EXPORT extern int qt_defaultDpiY();
-
 namespace {
 class DrawTextItemRecorder: public QPaintEngine
 {
@@ -299,7 +296,7 @@ void QDeclarativeTextLayout::clearLayout()
     QTextLayout::clearLayout();
 }
 
-void QDeclarativeTextLayout::prepare()
+void QDeclarativeTextLayout::prepare(QPainter *painter)
 {
     if (!d || !d->cached) {
 
@@ -308,6 +305,7 @@ void QDeclarativeTextLayout::prepare()
 
         InertTextPainter *itp = inertTextPainter();
         itp->device.begin(d);
+        itp->painter.setPen(painter->pen());
         QTextLayout::draw(&itp->painter, QPointF(0, 0));
 
         glyph_t *glyphPool = d->glyphs.data();
@@ -326,6 +324,12 @@ void QDeclarativeTextLayout::prepare()
     }
 }
 
+// Defined in qpainter.cpp
+extern Q_GUI_EXPORT void qt_draw_decoration_for_glyphs(QPainter *painter, const glyph_t *glyphArray,
+                                                       const QFixedPoint *positions, int glyphCount,
+                                                       QFontEngine *fontEngine, const QFont &font,
+                                                       const QTextCharFormat &charFormat);
+
 void QDeclarativeTextLayout::draw(QPainter *painter, const QPointF &p)
 {
     QPainterPrivate *priv = QPainterPrivate::get(painter);
@@ -340,7 +344,7 @@ void QDeclarativeTextLayout::draw(QPainter *painter, const QPointF &p)
         return;
     }
 
-    prepare();
+    prepare(painter);
 
     int itemCount = d->items.count();
 
@@ -371,6 +375,10 @@ void QDeclarativeTextLayout::draw(QPainter *painter, const QPointF &p)
             currentColor = item.color;
         }
         priv->extended->drawStaticTextItem(&item);
+
+        qt_draw_decoration_for_glyphs(painter, item.glyphs, item.glyphPositions,
+                                      item.numGlyphs, item.fontEngine(), painter->font(),
+                                      QTextCharFormat());
     }
     if (currentColor != oldPen.color())
         painter->setPen(oldPen);

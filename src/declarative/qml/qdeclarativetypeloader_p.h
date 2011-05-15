@@ -79,7 +79,7 @@ public:
         Loading,                 // Prior to data being received and dataReceived() being called
         WaitingForDependencies,  // While there are outstanding addDependency()s
         Complete,                // Finished
-        Error,                   // Error
+        Error                    // Error
     };
 
     enum Type {

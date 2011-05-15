@@ -235,11 +235,22 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     QSize oldSize(q->size());
     QRect oldGeom(data.crect);
 
+    bool checkExtra = true;
+    if (q->isWindow() && (data.window_state & (Qt::WindowFullScreen | Qt::WindowMaximized))) {
+        // Do not allow fullscreen/maximized windows to expand beyond client rect
+        TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+        w = qMin(w, r.Width());
+        h = qMin(h, r.Height());
+
+        if (w == r.Width() && h == r.Height())
+            checkExtra = false;
+    }
+
     // Lose maximized status if deliberate resize
     if (w != oldSize.width() || h != oldSize.height())
         data.window_state &= ~Qt::WindowMaximized;
 
-    if (extra) {                                // any size restrictions?
+    if (checkExtra && extra) {  // any size restrictions?
         w = qMin(w,extra->maxw);
         h = qMin(h,extra->maxh);
         w = qMax(w,extra->minw);
@@ -278,6 +289,8 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             q->internalWinId()->SetRect(TRect(TPoint(x, y), TSize(w, h)));
             topData()->normalGeometry = data.crect;
         }
+        QSymbianControl *window = static_cast<QSymbianControl *>(q->internalWinId());
+        window->ensureFixNativeOrientation();
     } else {
         data.crect.setRect(x, y, w, h);
 
@@ -840,6 +853,8 @@ void QWidgetPrivate::s60UpdateIsOpaque()
                 // recreate backing store to get translucent surface (raster surface).
                 extra->topextra->backingStore.create(q);
                 extra->topextra->backingStore.registerWidget(q);
+                // FixNativeOrientation() will not work without an EGL surface.
+                q->setAttribute(Qt::WA_SymbianNoSystemRotation, false);
             }
         }
     } else if (extra->topextra->nativeWindowTransparencyEnabled) {
@@ -1208,17 +1223,10 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         }
 
 #ifdef Q_WS_S60
-        bool decorationsVisible(false);
-        if (!parentWidget()) { // Only top level native windows have control over cba/status pane
-            // Hide window decoration when switching to fullscreen / minimized otherwise show decoration.
-            // The window decoration visibility has to be changed before doing actual window state
-            // change since in that order the availableGeometry will return directly the right size and
-            // we will avoid unnecessary redraws
-            decorationsVisible = !(newstate & (Qt::WindowFullScreen | Qt::WindowMinimized));
-            const bool statusPaneVisibility = decorationsVisible;
-            const bool buttonGroupVisibility = (decorationsVisible || (isFullscreen && cbaRequested));
-            S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
-        }
+        // The window decoration visibility has to be changed before doing actual window state
+        // change since in that order the availableGeometry will return directly the right size and
+        // we will avoid unnecessary redraws
+        bool decorationsVisible = S60->setRecursiveDecorationsVisibility(this, newstate);
 #endif // Q_WS_S60
 
         // Ensure the initial size is valid, since we store it as normalGeometry below.
@@ -1276,6 +1284,12 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
 
     if (newstate & Qt::WindowActive)
         activateWindow();
+
+    if (isWindow()) {
+        // Now that the new state is set, fix the display memory layout, if needed.
+        QSymbianControl *window = static_cast<QSymbianControl *>(effectiveWinId());
+        window->ensureFixNativeOrientation();
+    }
 
     QWindowStateChangeEvent e(oldstate);
     QApplication::sendEvent(this, &e);
@@ -1423,7 +1437,8 @@ void QWidget::activateWindow()
     if (tlw->isVisible()) {
         window()->createWinId();
         QSymbianControl *id = static_cast<QSymbianControl *>(tlw->internalWinId());
-        id->setFocusSafely(true);
+        if (!id->IsFocused())
+            id->setFocusSafely(true);
     }
 }
 

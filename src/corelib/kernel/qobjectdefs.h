@@ -55,7 +55,7 @@ class QByteArray;
 class QString;
 
 #ifndef Q_MOC_OUTPUT_REVISION
-#define Q_MOC_OUTPUT_REVISION 62
+#define Q_MOC_OUTPUT_REVISION 63
 #endif
 
 // The following macros are our "extensions" to C++
@@ -163,7 +163,10 @@ public: \
     virtual void *qt_metacast(const char *); \
     QT_TR_FUNCTIONS \
     virtual int qt_metacall(QMetaObject::Call, int, void **); \
-private:
+private: \
+    Q_DECL_HIDDEN static const QMetaObjectExtraData staticMetaObjectExtraData; \
+    Q_DECL_HIDDEN static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **);
+
 /* tmake ignore Q_OBJECT */
 #define Q_OBJECT_FAKE Q_OBJECT
 /* tmake ignore Q_GADGET */
@@ -468,7 +471,6 @@ struct Q_CORE_EXPORT QMetaObject
         const uint *data;
         const void *extradata;
     } d;
-
 };
 
 typedef const QMetaObject& (*QMetaObjectAccessor)();
@@ -480,7 +482,10 @@ struct QMetaObjectExtraData
 #else
     const QMetaObject **objects;
 #endif
-    int (*static_metacall)(QMetaObject::Call, int, void **);
+
+    typedef void (*StaticMetacallFunction)(QObject *, QMetaObject::Call, int, void **); //from revision 6
+    //typedef int (*StaticMetaCall)(QMetaObject::Call, int, void **); //used from revison 2 until revison 5
+    StaticMetacallFunction static_metacall;
 };
 
 inline const char *QMetaObject::className() const

@@ -84,6 +84,7 @@ SUBDIRS=\
     qheaderview \
     qicoimageformat \
     qicon \
+    qidentityproxymodel \
     qimageiohandler \
     qimagereader \
     qimagewriter \
@@ -114,9 +115,6 @@ SUBDIRS=\
     qmovie \
     qvolatileimage \
     qnetworkaccessmanager_and_qprogressdialog \
-    qnetworkcachemetadata \
-    qnetworkdiskcache \
-    qnetworkreply \
     qpaintengine \
     qpainterpath \
     qpainterpathstroker \
@@ -139,6 +137,7 @@ SUBDIRS=\
     qpushbutton \
     qquaternion \
     qradiobutton \
+    qrawfont \
     qregexpvalidator \
     qregion \
     qscrollarea \
@@ -169,7 +168,6 @@ SUBDIRS=\
     qtabbar \
     qtableview \
     qtablewidget \
-    qtcpserver \
     qtcpsocket \
     qtessellator \
     qtextblock \
@@ -196,7 +194,6 @@ SUBDIRS=\
     qtreeview \
     qtreewidget \
     qtreewidgetitemiterator \
-    qudpsocket \
     qundogroup \
     qundostack \
     qvectornd \

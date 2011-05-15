@@ -972,7 +972,7 @@ void QCoreGraphicsPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, co
         return;
 
     bool differentSize = (QRectF(0, 0, pm.width(), pm.height()) != sr), doRestore = false;
-    CGRect rect = CGRectMake(qRound(r.x()), qRound(r.y()), qRound(r.width()), qRound(r.height()));
+    CGRect rect = CGRectMake(r.x(), r.y(), r.width(), r.height());
     QCFType<CGImageRef> image;
     bool isBitmap = (pm.depth() == 1);
     if (isBitmap) {
@@ -1544,8 +1544,9 @@ void QCoreGraphicsPaintEnginePrivate::setFillBrush(const QPointF &offset)
                 QPointF center(radialGrad->center());
                 QPointF focal(radialGrad->focalPoint());
                 qreal radius = radialGrad->radius();
+                qreal focalRadius = radialGrad->focalRadius();
                 shading = CGShadingCreateRadial(colorspace, CGPointMake(focal.x(), focal.y()),
-                                                0.0, CGPointMake(center.x(), center.y()), radius, fill_func, false, true);
+                                                focalRadius, CGPointMake(center.x(), center.y()), radius, fill_func, false, true);
             }
 
             CGFunctionRelease(fill_func);

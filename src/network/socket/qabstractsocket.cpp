@@ -367,6 +367,7 @@
 #include "qabstractsocket_p.h"
 
 #include "private/qhostinfo_p.h"
+#include "private/qnetworksession_p.h"
 
 #include <qabstracteventdispatcher.h>
 #include <qhostaddress.h>
@@ -375,6 +376,7 @@
 #include <qpointer.h>
 #include <qtimer.h>
 #include <qelapsedtimer.h>
+#include <qscopedvaluerollback.h>
 
 #ifndef QT_NO_OPENSSL
 #include <QtNetwork/qsslsocket.h>
@@ -550,6 +552,14 @@ bool QAbstractSocketPrivate::initSocketLayer(QAbstractSocket::NetworkLayerProtoc
         q->setErrorString(QAbstractSocket::tr("Operation on socket is not supported"));
         return false;
     }
+#ifndef QT_NO_BEARERMANAGEMENT
+    //copy network session down to the socket engine (if it has been set)
+    socketEngine->setProperty("_q_networksession", q->property("_q_networksession"));
+#endif
+#ifndef QT_NO_NETWORKPROXY
+    //copy user agent to socket engine (if it has been set)
+    socketEngine->setProperty("_q_user-agent", q->property("_q_user-agent"));
+#endif
     if (!socketEngine->initialize(q->socketType(), protocol)) {
 #if defined (QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocketPrivate::initSocketLayer(%s, %s) failed (%s)",
@@ -592,6 +602,7 @@ bool QAbstractSocketPrivate::canReadNotification()
             socketEngine->setReadNotificationEnabled(false);
         }
     }
+    QScopedValueRollback<bool> rsncrollback(readSocketNotifierCalled);
     readSocketNotifierCalled = true;
 
     if (!isBuffered)
@@ -605,7 +616,6 @@ bool QAbstractSocketPrivate::canReadNotification()
 #if defined (QABSTRACTSOCKET_DEBUG)
             qDebug("QAbstractSocketPrivate::canReadNotification() buffer is full");
 #endif
-            readSocketNotifierCalled = false;
             return false;
         }
 
@@ -617,7 +627,6 @@ bool QAbstractSocketPrivate::canReadNotification()
             qDebug("QAbstractSocketPrivate::canReadNotification() disconnecting socket");
 #endif
             q->disconnectFromHost();
-            readSocketNotifierCalled = false;
             return false;
         }
         newBytes = readBuffer.size() - newBytes;
@@ -637,9 +646,9 @@ bool QAbstractSocketPrivate::canReadNotification()
         ;
 
     if (!emittedReadyRead && hasData) {
+        QScopedValueRollback<bool> r(emittedReadyRead);
         emittedReadyRead = true;
         emit q->readyRead();
-        emittedReadyRead = false;
     }
 
     // If we were closed as a result of the readyRead() signal,
@@ -648,7 +657,6 @@ bool QAbstractSocketPrivate::canReadNotification()
 #if defined (QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocketPrivate::canReadNotification() socket is closing - returning");
 #endif
-        readSocketNotifierCalled = false;
         return true;
     }
 
@@ -662,7 +670,6 @@ bool QAbstractSocketPrivate::canReadNotification()
         socketEngine->setReadNotificationEnabled(readSocketNotifierState);
         readSocketNotifierStateSet = false;
     }
-    readSocketNotifierCalled = false;
     return true;
 }
 
@@ -749,11 +756,11 @@ bool QAbstractSocketPrivate::flush()
     if (written < 0) {
         socketError = socketEngine->error();
         q->setErrorString(socketEngine->errorString());
-        emit q->error(socketError);
-        // an unexpected error so close the socket.
 #if defined (QABSTRACTSOCKET_DEBUG)
         qDebug() << "QAbstractSocketPrivate::flush() write error, aborting." << socketEngine->errorString();
 #endif
+        emit q->error(socketError);
+        // an unexpected error so close the socket.
         q->abort();
         return false;
     }
@@ -768,9 +775,9 @@ bool QAbstractSocketPrivate::flush()
     if (written > 0) {
         // Don't emit bytesWritten() recursively.
         if (!emittedBytesWritten) {
+            QScopedValueRollback<bool> r(emittedBytesWritten);
             emittedBytesWritten = true;
             emit q->bytesWritten(written);
-            emittedBytesWritten = false;
         }
     }
 
@@ -1607,6 +1614,10 @@ bool QAbstractSocket::setSocketDescriptor(int socketDescriptor, SocketState sock
         setErrorString(tr("Operation on socket is not supported"));
         return false;
     }
+#ifndef QT_NO_BEARERMANAGEMENT
+    //copy network session down to the socket engine (if it has been set)
+    d->socketEngine->setProperty("_q_networksession", property("_q_networksession"));
+#endif
     bool result = d->socketEngine->initialize(socketDescriptor, socketState);
     if (!result) {
         d->socketError = d->socketEngine->error();
@@ -1780,6 +1791,14 @@ bool QAbstractSocket::waitForConnected(int msecs)
 #endif
         QHostInfo::abortHostLookup(d->hostLookupId);
         d->hostLookupId = -1;
+#ifndef QT_NO_BEARERMANAGEMENT
+        QSharedPointer<QNetworkSession> networkSession;
+        QVariant v(property("_q_networksession"));
+        if (v.isValid()) {
+            networkSession = qvariant_cast< QSharedPointer<QNetworkSession> >(v);
+            d->_q_startConnecting(QHostInfoPrivate::fromName(d->hostName, networkSession));
+        } else
+#endif
         d->_q_startConnecting(QHostInfo::fromName(d->hostName));
     }
     if (state() == UnconnectedState)
@@ -1862,7 +1881,7 @@ bool QAbstractSocket::waitForReadyRead(int msecs)
     }
 
     Q_ASSERT(d->socketEngine);
-    forever {
+    do {
         bool readyToRead = false;
         bool readyToWrite = false;
         if (!d->socketEngine->waitForReadOrWrite(&readyToRead, &readyToWrite, true, !d->writeBuffer.isEmpty(),
@@ -1889,7 +1908,7 @@ bool QAbstractSocket::waitForReadyRead(int msecs)
 
         if (state() != ConnectedState)
             return false;
-    }
+    } while (qt_timeout_value(msecs, stopWatch.elapsed()) > 0);
     return false;
 }
 

@@ -46,6 +46,7 @@
 #include "private/qpaintengine_alpha_p.h"
 
 #include "private/qpicture_p.h"
+#include "private/qfont_p.h"
 #include "QtGui/qpicture.h"
 
 QT_BEGIN_NAMESPACE
@@ -92,9 +93,6 @@ bool QAlphaPaintEngine::begin(QPaintDevice *pdev)
 
     return true;
 }
-
-Q_GUI_EXPORT extern int qt_defaultDpiX();
-Q_GUI_EXPORT extern int qt_defaultDpiY();
 
 bool QAlphaPaintEngine::end()
 {

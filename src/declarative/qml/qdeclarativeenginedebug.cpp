@@ -249,10 +249,16 @@ void QDeclarativeEngineDebugServer::buildObjectDump(QDataStream &message,
         return;
     }
 
-    message << (object->metaObject()->propertyCount() + fakeProperties.count());
+    QList<int> propertyIndexes;
+    for (int ii = 0; ii < object->metaObject()->propertyCount(); ++ii) {
+        if (object->metaObject()->property(ii).isScriptable())
+            propertyIndexes << ii;
+    }
 
-    for (int ii = 0; ii < object->metaObject()->propertyCount(); ++ii) 
-        message << propertyData(object, ii);
+    message << propertyIndexes.size() + fakeProperties.count();
+
+    for (int ii = 0; ii < propertyIndexes.size(); ++ii)
+        message << propertyData(object, propertyIndexes.at(ii));
 
     for (int ii = 0; ii < fakeProperties.count(); ++ii)
         message << fakeProperties[ii];
@@ -518,8 +524,13 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
         QString propertyName;
         QVariant expr;
         bool isLiteralValue;
+        QString filename;
+        int line;
         ds >> objectId >> propertyName >> expr >> isLiteralValue;
-        setBinding(objectId, propertyName, expr, isLiteralValue);
+        if (!ds.atEnd()) { // backward compatibility from 2.1, 2.2
+            ds >> filename >> line;
+        }
+        setBinding(objectId, propertyName, expr, isLiteralValue, filename, line);
     } else if (type == "RESET_BINDING") {
         int objectId;
         QString propertyName;
@@ -537,7 +548,9 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
 void QDeclarativeEngineDebugServer::setBinding(int objectId,
                                                const QString &propertyName,
                                                const QVariant &expression,
-                                               bool isLiteralValue)
+                                               bool isLiteralValue,
+                                               QString filename,
+                                               int line)
 {
     QObject *object = objectForId(objectId);
     QDeclarativeContext *context = qmlContext(object);
@@ -559,6 +572,7 @@ void QDeclarativeEngineDebugServer::setBinding(int objectId,
                             newBinding = new QDeclarativeBinding(expression.toString(), object, context);
                             newBinding->setTarget(property);
                             newBinding->setNotifyOnValueChanged(true);
+                            newBinding->setSourceLocation(filename, line);
                         }
 
                         state->changeBindingInRevertList(object, propertyName, newBinding);
@@ -574,11 +588,12 @@ void QDeclarativeEngineDebugServer::setBinding(int objectId,
                     property.write(expression);
                 } else if (hasValidSignal(object, propertyName)) {
                     QDeclarativeExpression *declarativeExpression = new QDeclarativeExpression(context, object, expression.toString());
-                    QDeclarativeExpression *oldExpression = QDeclarativePropertyPrivate::setSignalExpression(property, declarativeExpression);
-                    declarativeExpression->setSourceLocation(oldExpression->sourceFile(), oldExpression->lineNumber());
+                    QDeclarativePropertyPrivate::setSignalExpression(property, declarativeExpression);
+                    declarativeExpression->setSourceLocation(filename, line);
                 } else if (property.isProperty()) {
                     QDeclarativeBinding *binding = new QDeclarativeBinding(expression.toString(), object, context);
                     binding->setTarget(property);
+                    binding->setSourceLocation(filename, line);
                     binding->setNotifyOnValueChanged(true);
                     QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::setBinding(property, binding);
                     if (oldBinding)
@@ -638,7 +653,10 @@ void QDeclarativeEngineDebugServer::resetBinding(int objectId, const QString &pr
                     }
                 }
             }
-        } else {
+        } else if (hasValidSignal(object, propertyName)) {
+            QDeclarativeProperty property(object, propertyName, context);
+            QDeclarativePropertyPrivate::setSignalExpression(property, 0);
+    } else {
             if (QDeclarativePropertyChanges *propertyChanges = qobject_cast<QDeclarativePropertyChanges *>(object)) {
                 propertyChanges->removeProperty(propertyName);
             }

@@ -239,13 +239,23 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format)
         QSKIP("Blacklisted by baseline server.", SkipSingle);
 
     ImageItem rendered = render(baseline, engine, format);
+    static int consecutiveErrs = 0;
     if (rendered.image.isNull()) {    // Assume an error in the test environment, not Qt
         QWARN("Error: Failed to render image.");
-        QSKIP("Aborted due to errors.", SkipSingle);
+        if (++consecutiveErrs < 3) {
+            QSKIP("Aborted due to errors.", SkipSingle);
+        } else {
+            consecutiveErrs = 0;
+            QSKIP("Too many errors, skipping rest of testfunction.", SkipAll);
+        }
+    } else {
+        consecutiveErrs = 0;
     }
 
+
     if (baseline.status == ImageItem::BaselineNotFound) {
-        proto.submitNewBaseline(rendered, 0);
+        if (!proto.submitNewBaseline(rendered, 0))
+            QWARN("Failed to submit new baseline: " + proto.errorMessage().toLatin1());
         QSKIP("Baseline not found; new baseline created.", SkipSingle);
     }
 

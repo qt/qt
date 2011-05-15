@@ -77,6 +77,7 @@ public:
     bool bind(quint16 port, BindMode mode);
     // ### Qt 5: Merge the bind functions
 
+#ifndef QT_NO_NETWORKINTERFACE
     bool joinMulticastGroup(const QHostAddress &groupAddress);
     bool joinMulticastGroup(const QHostAddress &groupAddress,
                             const QNetworkInterface &iface);
@@ -86,6 +87,7 @@ public:
 
     QNetworkInterface multicastInterface() const;
     void setMulticastInterface(const QNetworkInterface &iface);
+#endif
 
     bool hasPendingDatagrams() const;
     qint64 pendingDatagramSize() const;

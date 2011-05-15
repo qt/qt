@@ -158,12 +158,12 @@ QT_BEGIN_NAMESPACE
     concurrent QNativeSocketEngine. This is safe, because WSAStartup and
     WSACleanup are reference counted.
 */
-QNativeSocketEnginePrivate::QNativeSocketEnginePrivate()
+QNativeSocketEnginePrivate::QNativeSocketEnginePrivate() :
+    socketDescriptor(-1),
+    readNotifier(0),
+    writeNotifier(0),
+    exceptNotifier(0)
 {
-    socketDescriptor = -1;
-    readNotifier = 0;
-    writeNotifier = 0;
-    exceptNotifier = 0;
 }
 
 /*! \internal
@@ -387,7 +387,6 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
 
 
     // Make sure we receive out-of-band data
-    // On Symbian OS this works only with native IP stack, not with WinSock
     if (socketType == QAbstractSocket::TcpSocket
         && !setOption(ReceiveOutOfBandData, 1)) {
         qWarning("QNativeSocketEngine::initialize unable to inline out-of-band data");
@@ -647,6 +646,8 @@ int QNativeSocketEngine::accept()
     return d->nativeAccept();
 }
 
+#ifndef QT_NO_NETWORKINTERFACE
+
 /*!
     \since 4.8
 */
@@ -682,7 +683,6 @@ QNetworkInterface QNativeSocketEngine::multicastInterface() const
     return d->nativeMulticastInterface();
 }
 
-
 /*! \since 4.8 */
 bool QNativeSocketEngine::setMulticastInterface(const QNetworkInterface &iface)
 {
@@ -691,6 +691,8 @@ bool QNativeSocketEngine::setMulticastInterface(const QNetworkInterface &iface)
     Q_CHECK_TYPE(QNativeSocketEngine::setMulticastInterface(), QAbstractSocket::UdpSocket, false);
     return d->nativeSetMulticastInterface(iface);
 }
+
+#endif // QT_NO_NETWORKINTERFACE
 
 /*!
     Returns the number of bytes that are currently available for

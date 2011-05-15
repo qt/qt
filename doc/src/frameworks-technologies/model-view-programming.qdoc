@@ -32,7 +32,7 @@
 
 /*!
     \page model-view-programming.html
-        \ingroup qt-basic-concepts
+    \ingroup qt-basic-concepts
 
     \title Model/View Programming
     \brief A guide to Qt's extensible model/view architecture.
@@ -328,7 +328,7 @@
     contain a pointer to the model that created them, and this prevents
     confusion when working with more than one model.
 
-    \snippet doc/src/snippets/code/doc_src_model-view-programming.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_model-view-programming.cpp 0
 
     Model indexes provide \e temporary references to pieces of information, and
     can be used to retrieve or modify data via the model. Since models may
@@ -355,7 +355,7 @@
     item by specifying its row and column numbers to the model, and we receive
     an index that represents the item:
 
-    \snippet doc/src/snippets/code/doc_src_model-view-programming.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_model-view-programming.cpp 1
 
     Models that provide interfaces to simple, single level data structures like
     lists and tables do not need any other information to be provided but, as
@@ -371,7 +371,7 @@
     index that refers to an item of data by passing the relevant row and
     column numbers to the model.
 
-    \snippet doc/src/snippets/code/doc_src_model-view-programming.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_model-view-programming.cpp 2
 
     Top level items in a model are always referenced by specifying
     \c QModelIndex() as their parent item. This is discussed in the next
@@ -392,7 +392,7 @@
     about the item's parent. Outside the model, the only way to refer to an
     item is through a model index, so a parent model index must also be given:
 
-    \snippet doc/src/snippets/code/doc_src_model-view-programming.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_model-view-programming.cpp 3
 
     \table
     \row \i \inlineimage modelview-treemodel.png
@@ -403,12 +403,12 @@
 
     Items "A" and "C" are represented as top-level siblings in the model:
 
-    \snippet doc/src/snippets/code/doc_src_model-view-programming.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_model-view-programming.cpp 4
 
     Item "A" has a number of children. A model index for item "B" is
     obtained with the following code:
 
-    \snippet doc/src/snippets/code/doc_src_model-view-programming.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_model-view-programming.cpp 5
     \endtable
 
     \section3 Item roles
@@ -423,7 +423,7 @@
     corresponding to the item, and by specifying a role to obtain the type
     of data we want:
 
-    \snippet doc/src/snippets/code/doc_src_model-view-programming.qdoc 6
+    \snippet doc/src/snippets/code/doc_src_model-view-programming.cpp 6
 
     \table
     \row \i \inlineimage modelview-roles.png
@@ -1933,6 +1933,13 @@
     source model. To provide custom sorting behavior, reimplement the
     \l{QSortFilterProxyModel::lessThan()}{lessThan()} function to perform custom
     comparisons.
+
+    \section3 Custom data models
+
+    QIdentityProxyModel instances do not sort or filter the structure of the source model,
+    but provide a base class for creating a data proxy. This could be useful on top of a
+    QFileSystemModel for example to provide different colours for the BackgroundRole for
+    different types of files.
 
     \section1 Model subclassing reference
 

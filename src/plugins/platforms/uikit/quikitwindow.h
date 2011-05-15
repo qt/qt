@@ -43,7 +43,63 @@
 #define QUIKITWINDOW_H
 
 #include <QPlatformWindow>
-#include <UIKit/UIKit.h>
+
+#import <UIKit/UIKit.h>
+#import <OpenGLES/ES1/gl.h>
+#import <OpenGLES/ES1/glext.h>
+#import <OpenGLES/ES2/gl.h>
+#import <OpenGLES/ES2/glext.h>
+#import <OpenGLES/EAGL.h>
+
+@interface EAGLView : UIView <UIKeyInput>
+{
+    QPlatformWindow *mWindow;
+    EAGLContext *mContext;
+
+    GLint mFramebufferWidth;
+    GLint mFramebufferHeight;
+
+    GLuint mFramebuffer, mColorRenderbuffer, mDepthRenderbuffer;
+
+    id delegate;
+    // ------- Text Input ----------
+    UITextAutocapitalizationType autocapitalizationType;
+    UITextAutocorrectionType autocorrectionType;
+    BOOL enablesReturnKeyAutomatically;
+    UIKeyboardAppearance keyboardAppearance;
+    UIKeyboardType keyboardType;
+    UIReturnKeyType returnKeyType;
+    BOOL secureTextEntry;
+}
+
+- (void)setContext:(EAGLContext *)newContext;
+- (void)presentFramebuffer;
+- (void)deleteFramebuffer;
+- (void)createFramebuffer;
+- (void)makeCurrent;
+- (void)setWindow:(QPlatformWindow *)window;
+- (void)sendMouseEventForTouches:(NSSet *)touches withEvent:(UIEvent *)event fakeButtons:(Qt::MouseButtons)buttons;
+
+@property (readonly,getter=fbo) GLint fbo;
+@property (nonatomic, assign) id delegate;
+
+// ------- Text Input ----------
+
+@property(nonatomic) UITextAutocapitalizationType autocapitalizationType;
+@property(nonatomic) UITextAutocorrectionType autocorrectionType;
+@property(nonatomic) BOOL enablesReturnKeyAutomatically;
+@property(nonatomic) UIKeyboardAppearance keyboardAppearance;
+@property(nonatomic) UIKeyboardType keyboardType;
+@property(nonatomic) UIReturnKeyType returnKeyType;
+@property(nonatomic, getter=isSecureTextEntry) BOOL secureTextEntry;
+
+@end
+
+@protocol EAGLViewDelegate
+- (void)eaglView:(EAGLView *)view usesFramebuffer:(GLuint)buffer;
+@end
+
+class EAGLPlatformContext;
 
 QT_BEGIN_NAMESPACE
 
@@ -56,13 +112,18 @@ public:
     ~QUIKitWindow();
 
     UIWindow *nativeWindow() const { return mWindow; }
+    EAGLView *nativeView() const { return mView; }
     void setGeometry(const QRect &rect);
 
     UIWindow *ensureNativeWindow();
 
+    QPlatformGLContext *glContext() const;
+
 private:
     QUIKitScreen *mScreen;
     UIWindow *mWindow;
+    EAGLView *mView;
+    mutable EAGLPlatformContext *mContext;
 };
 
 QT_END_NAMESPACE

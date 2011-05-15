@@ -216,7 +216,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     \section1 Example Usage
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage qml-mousearea-snippet.png
     \enddiv
 
@@ -315,7 +315,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
 
-    \sa onCanceled()
+    \sa onCanceled
 */
 
 /*!
@@ -496,6 +496,9 @@ void QDeclarativeMouseArea::mousePressEvent(QGraphicsSceneMouseEvent *event)
             d->pressAndHoldTimer.start(PressAndHoldDelay, this);
         setKeepMouseGrab(d->stealMouse);
         event->setAccepted(setPressed(true));
+
+        if(!event->isAccepted() && d->forwardToList.count())
+           d->forwardEvent(event);
     }
 }
 
@@ -573,6 +576,9 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     me.setX(d->lastPos.x());
     me.setY(d->lastPos.y());
     emit positionChanged(&me);
+
+    if(!event->isAccepted() && d->forwardToList.count())
+        d->forwardEvent(event);
 }
 
 
@@ -594,6 +600,9 @@ void QDeclarativeMouseArea::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         if (s && s->mouseGrabberItem() == this)
             ungrabMouse();
         setKeepMouseGrab(false);
+
+        if(!event->isAccepted() && d->forwardToList.count())
+            d->forwardEvent(event);
     }
     d->doubleClick = false;
 }
@@ -958,5 +967,12 @@ QDeclarativeDrag *QDeclarativeMouseArea::drag()
     \snippet doc/src/snippets/declarative/mousearea/mouseareadragfilter.qml dragfilter
 
 */
+
+QDeclarativeListProperty<QGraphicsObject> QDeclarativeMouseArea::forwardTo()
+{
+    Q_D(QDeclarativeMouseArea);
+    return d->forwardTo;
+}
+
 
 QT_END_NAMESPACE

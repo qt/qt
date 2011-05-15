@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <GLES/egltypes.h>
+#include <GLES/eglplatform.h>
 #include <wsegl.h>
 #include <pvr2d.h>
 #include <string.h>
@@ -202,7 +202,8 @@ static WSEGLError wseglDeleteDrawable(WSEGLDrawableHandle _drawable)
     PvrQwsDrawable *drawable = (PvrQwsDrawable *)_drawable;
     if (!drawable || drawable->type == PvrQwsScreen)
         return WSEGL_SUCCESS;
-    pvrQwsFreeBuffers(drawable);
+    if (pvrQwsDisplay.numFlipBuffers == 0)
+        pvrQwsFreeBuffers(drawable);
     if (pvrQwsReleaseWindow(drawable))
         pvrQwsDestroyDrawable(drawable);
     return WSEGL_SUCCESS;

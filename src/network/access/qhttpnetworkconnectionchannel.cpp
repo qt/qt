@@ -54,6 +54,10 @@
 #    include <QtNetwork/qsslconfiguration.h>
 #endif
 
+#ifndef QT_NO_BEARERMANAGEMENT
+#include "private/qnetworksession_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // TODO: Put channel specific stuff here so it does not polute qhttpnetworkconnection.cpp
@@ -90,6 +94,11 @@ void QHttpNetworkConnectionChannel::init()
         socket = new QTcpSocket;
 #else
     socket = new QTcpSocket;
+#endif
+#ifndef QT_NO_BEARERMANAGEMENT
+    //push session down to socket
+    if (networkSession)
+        socket->setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
 #ifndef QT_NO_NETWORKPROXY
     // Set by QNAM anyway, but let's be safe here
@@ -570,6 +579,17 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
             connectHost = connection->d_func()->networkProxy.hostName();
             connectPort = connection->d_func()->networkProxy.port();
         }
+        if (socket->proxy().type() == QNetworkProxy::HttpProxy) {
+            // Make user-agent field available to HTTP proxy socket engine (QTBUG-17223)
+            QByteArray value;
+            // ensureConnection is called before any request has been assigned, but can also be called again if reconnecting
+            if (request.url().isEmpty())
+                value = connection->d_func()->predictNextRequest().headerField("user-agent");
+            else
+                value = request.headerField("user-agent");
+            if (!value.isEmpty())
+                socket->setProperty("_q_user-agent", value);
+        }
 #endif
         if (ssl) {
 #ifndef QT_NO_OPENSSL
@@ -833,7 +853,10 @@ void QHttpNetworkConnectionChannel::handleStatus()
 
 bool QHttpNetworkConnectionChannel::resetUploadData()
 {
-    Q_ASSERT(reply);
+    if (!reply) {
+        //this happens if server closes connection while QHttpNetworkConnectionPrivate::_q_startNextRequest is pending
+        return false;
+    }
     QNonContiguousByteDevice* uploadByteDevice = request.uploadByteDevice();
     if (!uploadByteDevice)
         return true;

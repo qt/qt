@@ -50,6 +50,45 @@ import re
 
 findEntry = xpathlite.findEntry
 findEntryInFile = xpathlite._findEntryInFile
+findTagsInFile = xpathlite.findTagsInFile
+
+def parse_number_format(patterns, data):
+    # this is a very limited parsing of the number format for currency only.
+    def skip_repeating_pattern(x):
+        p = x.replace('0', '#').replace(',', '').replace('.', '')
+        seen = False
+        result = ''
+        for c in p:
+            if c == '#':
+                if seen:
+                    continue
+                seen = True
+            else:
+                seen = False
+            result = result + c
+        return result
+    patterns = patterns.split(';')
+    result = []
+    for pattern in patterns:
+        pattern = skip_repeating_pattern(pattern)
+        pattern = pattern.replace('#', "%1")
+        # according to http://www.unicode.org/reports/tr35/#Number_Format_Patterns
+        # there can be doubled or trippled currency sign, however none of the
+        # locales use that.
+        pattern = pattern.replace(u'\xa4', "%2")
+        pattern = pattern.replace("''", "###").replace("'", '').replace("###", "'")
+        pattern = pattern.replace('-', data['minus'])
+        pattern = pattern.replace('+', data['plus'])
+        result.append(pattern)
+    return result
+
+def parse_list_pattern_part_format(pattern):
+    # this is a very limited parsing of the format for list pattern part only.
+    result = ""
+    result = pattern.replace("{0}", "%1")
+    result = result.replace("{1}", "%2")
+    result = result.replace("{2}", "%3")
+    return result
 
 def ordStr(c):
     if len(c) == 1:
@@ -89,8 +128,10 @@ def generateLocaleInfo(path):
     if not country_code:
         return {}
 
-    # we do not support scripts and variants
-    if variant_code or script_code:
+    # we do not support variants
+    # ### actually there is only one locale with variant: en_US_POSIX
+    #     does anybody care about it at all?
+    if variant_code:
         return {}
 
     language_id = enumdata.languageCodeToId(language_code)
@@ -98,6 +139,14 @@ def generateLocaleInfo(path):
         sys.stderr.write("unnknown language code \"" + language_code + "\"\n")
         return {}
     language = enumdata.language_list[language_id][0]
+
+    script_id = enumdata.scriptCodeToId(script_code)
+    if script_code == -1:
+        sys.stderr.write("unnknown script code \"" + script_code + "\"\n")
+        return {}
+    script = "AnyScript"
+    if script_id != -1:
+        script = enumdata.script_list[script_id][0]
 
     country_id = enumdata.countryCodeToId(country_code)
     country = ""
@@ -115,19 +164,46 @@ def generateLocaleInfo(path):
 
     result = {}
     result['language'] = language
+    result['script'] = script
     result['country'] = country
     result['language_code'] = language_code
     result['country_code'] = country_code
     result['script_code'] = script_code
     result['variant_code'] = variant_code
     result['language_id'] = language_id
+    result['script_id'] = script_id
     result['country_id'] = country_id
 
+    supplementalPath = dir_name + "/../supplemental/supplementalData.xml"
+    currencies = findTagsInFile(supplementalPath, "currencyData/region[iso3166=%s]"%country_code);
+    result['currencyIsoCode'] = ''
+    result['currencyDigits'] = 2
+    result['currencyRounding'] = 1
+    if currencies:
+        for e in currencies:
+            if e[0] == 'currency':
+                tender = True
+                t = filter(lambda x: x[0] == 'tender', e[1])
+                if t and t[0][1] == 'false':
+                    tender = False;
+                if tender and not filter(lambda x: x[0] == 'to', e[1]):
+                    result['currencyIsoCode'] = filter(lambda x: x[0] == 'iso4217', e[1])[0][1]
+                    break
+        if result['currencyIsoCode']:
+            t = findTagsInFile(supplementalPath, "currencyData/fractions/info[iso4217=%s]"%result['currencyIsoCode']);
+            if t and t[0][0] == 'info':
+                result['currencyDigits'] = int(filter(lambda x: x[0] == 'digits', t[0][1])[0][1])
+                result['currencyRounding'] = int(filter(lambda x: x[0] == 'rounding', t[0][1])[0][1])
     numbering_system = None
     try:
         numbering_system = findEntry(path, "numbers/defaultNumberingSystem")
     except:
         pass
+    def findEntryDef(path, xpath, value=''):
+        try:
+            return findEntry(path, xpath)
+        except xpathlite.Error:
+            return value
     def get_number_in_system(path, xpath, numbering_system):
         if numbering_system:
             try:
@@ -143,12 +219,53 @@ def generateLocaleInfo(path):
     result['minus'] = get_number_in_system(path, "numbers/symbols/minusSign", numbering_system)
     result['plus'] = get_number_in_system(path, "numbers/symbols/plusSign", numbering_system)
     result['exp'] = get_number_in_system(path, "numbers/symbols/exponential", numbering_system).lower()
+    result['quotationStart'] = findEntry(path, "delimiters/quotationStart")
+    result['quotationEnd'] = findEntry(path, "delimiters/quotationEnd")
+    result['alternateQuotationStart'] = findEntry(path, "delimiters/alternateQuotationStart")
+    result['alternateQuotationEnd'] = findEntry(path, "delimiters/alternateQuotationEnd")
+    result['listPatternPartStart'] = parse_list_pattern_part_format(findEntry(path, "listPatterns/listPattern/listPatternPart[start]"))
+    result['listPatternPartMiddle'] = parse_list_pattern_part_format(findEntry(path, "listPatterns/listPattern/listPatternPart[middle]"))
+    result['listPatternPartEnd'] = parse_list_pattern_part_format(findEntry(path, "listPatterns/listPattern/listPatternPart[end]"))
+    result['listPatternPartTwo'] = parse_list_pattern_part_format(findEntry(path, "listPatterns/listPattern/listPatternPart[2]"))
     result['am'] = findEntry(path, "dates/calendars/calendar[gregorian]/dayPeriods/dayPeriodContext[format]/dayPeriodWidth[wide]/dayPeriod[am]", draft)
     result['pm'] = findEntry(path, "dates/calendars/calendar[gregorian]/dayPeriods/dayPeriodContext[format]/dayPeriodWidth[wide]/dayPeriod[pm]", draft)
     result['longDateFormat'] = convert_date(findEntry(path, "dates/calendars/calendar[gregorian]/dateFormats/dateFormatLength[full]/dateFormat/pattern"))
     result['shortDateFormat'] = convert_date(findEntry(path, "dates/calendars/calendar[gregorian]/dateFormats/dateFormatLength[short]/dateFormat/pattern"))
     result['longTimeFormat'] = convert_date(findEntry(path, "dates/calendars/calendar[gregorian]/timeFormats/timeFormatLength[full]/timeFormat/pattern"))
     result['shortTimeFormat'] = convert_date(findEntry(path, "dates/calendars/calendar[gregorian]/timeFormats/timeFormatLength[short]/timeFormat/pattern"))
+
+    endonym = None
+    if country_code and script_code:
+        endonym = findEntryDef(path, "localeDisplayNames/languages/language[type=%s_%s_%s]" % (language_code, script_code, country_code))
+    if not endonym and script_code:
+        endonym = findEntryDef(path, "localeDisplayNames/languages/language[type=%s_%s]" % (language_code, script_code))
+    if not endonym and country_code:
+        endonym = findEntryDef(path, "localeDisplayNames/languages/language[type=%s_%s]" % (language_code, country_code))
+    if not endonym:
+        endonym = findEntryDef(path, "localeDisplayNames/languages/language[type=%s]" % (language_code))
+    result['language_endonym'] = endonym
+    result['country_endonym'] = findEntryDef(path, "localeDisplayNames/territories/territory[type=%s]" % (country_code))
+
+    currency_format = get_number_in_system(path, "numbers/currencyFormats/currencyFormatLength/currencyFormat/pattern", numbering_system)
+    currency_format = parse_number_format(currency_format, result)
+    result['currencyFormat'] = currency_format[0]
+    result['currencyNegativeFormat'] = ''
+    if len(currency_format) > 1:
+        result['currencyNegativeFormat'] = currency_format[1]
+
+    result['currencySymbol'] = ''
+    result['currencyDisplayName'] = ''
+    if result['currencyIsoCode']:
+        result['currencySymbol'] = findEntryDef(path, "numbers/currencies/currency[%s]/symbol" % result['currencyIsoCode'])
+        display_name_path = "numbers/currencies/currency[%s]/displayName" % result['currencyIsoCode']
+        result['currencyDisplayName'] \
+            = findEntryDef(path, display_name_path) + ";" \
+            + findEntryDef(path, display_name_path + "[count=zero]")  + ";" \
+            + findEntryDef(path, display_name_path + "[count=one]")   + ";" \
+            + findEntryDef(path, display_name_path + "[count=two]")   + ";" \
+            + findEntryDef(path, display_name_path + "[count=few]")   + ";" \
+            + findEntryDef(path, display_name_path + "[count=many]")  + ";" \
+            + findEntryDef(path, display_name_path + "[count=other]") + ";"
 
     standalone_long_month_path = "dates/calendars/calendar[gregorian]/months/monthContext[stand-alone]/monthWidth[wide]/month"
     result['standaloneLongMonths'] \
@@ -300,7 +417,6 @@ def generateLocaleInfo(path):
         + findEntry(path, standalone_narrow_day_path + "[fri]") + ";" \
         + findEntry(path, standalone_narrow_day_path + "[sat]") + ";"
 
-
     return result
 
 def addEscapes(s):
@@ -322,6 +438,98 @@ def usage():
     print "Usage: cldr2qlocalexml.py <path-to-cldr-main>"
     sys.exit()
 
+def integrateWeekData(filePath):
+    if not filePath.endswith(".xml"):
+        return {}
+    monFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=mon]", attribute="territories")[0].split(" ")
+    tueFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=tue]", attribute="territories")[0].split(" ")
+    wedFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=wed]", attribute="territories")[0].split(" ")
+    thuFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=thu]", attribute="territories")[0].split(" ")
+    friFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=fri]", attribute="territories")[0].split(" ")
+    satFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=sat]", attribute="territories")[0].split(" ")
+    sunFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=sun]", attribute="territories")[0].split(" ")
+
+    monWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=mon]", attribute="territories")[0].split(" ")
+    tueWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=tue]", attribute="territories")[0].split(" ")
+    wedWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=wed]", attribute="territories")[0].split(" ")
+    thuWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=thu]", attribute="territories")[0].split(" ")
+    friWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=fri]", attribute="territories")[0].split(" ")
+    satWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=sat]", attribute="territories")[0].split(" ")
+    sunWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=sun]", attribute="territories")[0].split(" ")
+
+    monWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=mon]", attribute="territories")[0].split(" ")
+    tueWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=tue]", attribute="territories")[0].split(" ")
+    wedWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=wed]", attribute="territories")[0].split(" ")
+    thuWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=thu]", attribute="territories")[0].split(" ")
+    friWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=fri]", attribute="territories")[0].split(" ")
+    satWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=sat]", attribute="territories")[0].split(" ")
+    sunWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=sun]", attribute="territories")[0].split(" ")
+
+    firstDayByCountryCode = {}
+    for countryCode in monFirstDayIn:
+        firstDayByCountryCode[countryCode] = "mon"
+    for countryCode in tueFirstDayIn:
+        firstDayByCountryCode[countryCode] = "tue"
+    for countryCode in wedFirstDayIn:
+        firstDayByCountryCode[countryCode] = "wed"
+    for countryCode in thuFirstDayIn:
+        firstDayByCountryCode[countryCode] = "thu"
+    for countryCode in friFirstDayIn:
+        firstDayByCountryCode[countryCode] = "fri"
+    for countryCode in satFirstDayIn:
+        firstDayByCountryCode[countryCode] = "sat"
+    for countryCode in sunFirstDayIn:
+        firstDayByCountryCode[countryCode] = "sun"
+
+    weekendStartByCountryCode = {}
+    for countryCode in monWeekendStart:
+        weekendStartByCountryCode[countryCode] = "mon"
+    for countryCode in tueWeekendStart:
+        weekendStartByCountryCode[countryCode] = "tue"
+    for countryCode in wedWeekendStart:
+        weekendStartByCountryCode[countryCode] = "wed"
+    for countryCode in thuWeekendStart:
+        weekendStartByCountryCode[countryCode] = "thu"
+    for countryCode in friWeekendStart:
+        weekendStartByCountryCode[countryCode] = "fri"
+    for countryCode in satWeekendStart:
+        weekendStartByCountryCode[countryCode] = "sat"
+    for countryCode in sunWeekendStart:
+        weekendStartByCountryCode[countryCode] = "sun"
+
+    weekendEndByCountryCode = {}
+    for countryCode in monWeekendEnd:
+        weekendEndByCountryCode[countryCode] = "mon"
+    for countryCode in tueWeekendEnd:
+        weekendEndByCountryCode[countryCode] = "tue"
+    for countryCode in wedWeekendEnd:
+        weekendEndByCountryCode[countryCode] = "wed"
+    for countryCode in thuWeekendEnd:
+        weekendEndByCountryCode[countryCode] = "thu"
+    for countryCode in friWeekendEnd:
+        weekendEndByCountryCode[countryCode] = "fri"
+    for countryCode in satWeekendEnd:
+        weekendEndByCountryCode[countryCode] = "sat"
+    for countryCode in sunWeekendEnd:
+        weekendEndByCountryCode[countryCode] = "sun"
+
+    for (key,locale) in locale_database.iteritems():
+        countryCode = locale['country_code']
+        if countryCode in firstDayByCountryCode:
+            locale_database[key]['firstDayOfWeek'] = firstDayByCountryCode[countryCode]
+        else:
+            locale_database[key]['firstDayOfWeek'] = firstDayByCountryCode["001"]
+
+        if countryCode in weekendStartByCountryCode:
+            locale_database[key]['weekendStart'] = weekendStartByCountryCode[countryCode]
+        else:
+            locale_database[key]['weekendStart'] = weekendStartByCountryCode["001"]
+
+        if countryCode in weekendEndByCountryCode:
+            locale_database[key]['weekendEnd'] = weekendEndByCountryCode[countryCode]
+        else:
+            locale_database[key]['weekendEnd'] = weekendEndByCountryCode["001"]
+
 if len(sys.argv) != 2:
     usage()
 
@@ -339,12 +547,20 @@ for file in cldr_files:
         sys.stderr.write("skipping file \"" + file + "\"\n")
         continue
 
-    locale_database[(l['language_id'], l['country_id'], l['script_code'], l['variant_code'])] = l
+    locale_database[(l['language_id'], l['script_id'], l['country_id'], l['variant_code'])] = l
 
+integrateWeekData(cldr_dir+"/../supplemental/supplementalData.xml")
 locale_keys = locale_database.keys()
 locale_keys.sort()
 
+cldr_version = 'unknown'
+ldml = open(cldr_dir+"/../dtd/ldml.dtd", "r")
+for line in ldml:
+    if 'version cldrVersion CDATA #FIXED' in line:
+        cldr_version = line.split('"')[1]
+
 print "<localeDatabase>"
+print "    <version>" + cldr_version + "</version>"
 print "    <languageList>"
 for id in enumdata.language_list:
     l = enumdata.language_list[id]
@@ -354,6 +570,16 @@ for id in enumdata.language_list:
     print "            <code>" + l[1] + "</code>"
     print "        </language>"
 print "    </languageList>"
+
+print "    <scriptList>"
+for id in enumdata.script_list:
+    l = enumdata.script_list[id]
+    print "        <script>"
+    print "            <name>" + l[0] + "</name>"
+    print "            <id>" + str(id) + "</id>"
+    print "            <code>" + l[1] + "</code>"
+    print "        </script>"
+print "    </scriptList>"
 
 print "    <countryList>"
 for id in enumdata.country_list:
@@ -473,7 +699,10 @@ print "    <localeList>"
 print \
 "        <locale>\n\
             <language>C</language>\n\
+            <languageEndonym></languageEndonym>\n\
+            <script>AnyScript</script>\n\
             <country>AnyCountry</country>\n\
+            <countryEndonym></countryEndonym>\n\
             <decimal>46</decimal>\n\
             <group>44</group>\n\
             <list>59</list>\n\
@@ -482,8 +711,19 @@ print \
             <minus>45</minus>\n\
             <plus>43</plus>\n\
             <exp>101</exp>\n\
+            <quotationStart>\"</quotationStart>\n\
+            <quotationEnd>\"</quotationEnd>\n\
+            <alternateQuotationStart>\'</alternateQuotationStart>\n\
+            <alternateQuotationEnd>\'</alternateQuotationEnd>\n\
+            <listPatternPartStart>%1, %2</listPatternPartStart>\n\
+            <listPatternPartMiddle>%1, %2</listPatternPartMiddle>\n\
+            <listPatternPartEnd>%1, %2</listPatternPartEnd>\n\
+            <listPatternPartTwo>%1, %2</listPatternPartTwo>\n\
             <am>AM</am>\n\
             <pm>PM</pm>\n\
+            <firstDayOfWeek>mon</firstDayOfWeek>\n\
+            <weekendStart>sat</weekendStart>\n\
+            <weekendEnd>sun</weekendEnd>\n\
             <longDateFormat>EEEE, d MMMM yyyy</longDateFormat>\n\
             <shortDateFormat>d MMM yyyy</shortDateFormat>\n\
             <longTimeFormat>HH:mm:ss z</longTimeFormat>\n\
@@ -500,6 +740,13 @@ print \
             <standaloneLongDays>Sunday;Monday;Tuesday;Wednesday;Thursday;Friday;Saturday;</standaloneLongDays>\n\
             <standaloneShortDays>Sun;Mon;Tue;Wed;Thu;Fri;Sat;</standaloneShortDays>\n\
             <standaloneNarrowDays>S;M;T;W;T;F;S;</standaloneNarrowDays>\n\
+            <currencyIsoCode></currencyIsoCode>\n\
+            <currencySymbol></currencySymbol>\n\
+            <currencyDisplayName>;;;;;;;</currencyDisplayName>\n\
+            <currencyDigits>2</currencyDigits>\n\
+            <currencyRounding>1</currencyRounding>\n\
+            <currencyFormat>%1%2</currencyFormat>\n\
+            <currencyNegativeFormat></currencyNegativeFormat>\n\
         </locale>"
 
 for key in locale_keys:
@@ -507,8 +754,12 @@ for key in locale_keys:
 
     print "        <locale>"
     print "            <language>" + l['language']        + "</language>"
+    print "            <languageEndonym>" + l['language_endonym'].encode('utf-8') + "</languageEndonym>"
+    print "            <script>" + l['script']        + "</script>"
     print "            <country>"  + l['country']         + "</country>"
+    print "            <countryEndonym>"  + l['country_endonym'].encode('utf-8') + "</countryEndonym>"
     print "            <languagecode>" + l['language_code']        + "</languagecode>"
+    print "            <scriptcode>" + l['script_code']        + "</scriptcode>"
     print "            <countrycode>"  + l['country_code']         + "</countrycode>"
     print "            <decimal>"  + ordStr(l['decimal']) + "</decimal>"
     print "            <group>"    + ordStr(l['group'])   + "</group>"
@@ -518,8 +769,19 @@ for key in locale_keys:
     print "            <minus>"    + ordStr(l['minus'])   + "</minus>"
     print "            <plus>"     + ordStr(l['plus'])   + "</plus>"
     print "            <exp>"      + fixOrdStrExp(l['exp'])     + "</exp>"
+    print "            <quotationStart>" + l['quotationStart'].encode('utf-8') + "</quotationStart>"
+    print "            <quotationEnd>" + l['quotationEnd'].encode('utf-8')   + "</quotationEnd>"
+    print "            <alternateQuotationStart>" + l['alternateQuotationStart'].encode('utf-8') + "</alternateQuotationStart>"
+    print "            <alternateQuotationEnd>" + l['alternateQuotationEnd'].encode('utf-8')   + "</alternateQuotationEnd>"
+    print "            <listPatternPartStart>" + l['listPatternPartStart'].encode('utf-8')   + "</listPatternPartStart>"
+    print "            <listPatternPartMiddle>" + l['listPatternPartMiddle'].encode('utf-8')   + "</listPatternPartMiddle>"
+    print "            <listPatternPartEnd>" + l['listPatternPartEnd'].encode('utf-8')   + "</listPatternPartEnd>"
+    print "            <listPatternPartTwo>" + l['listPatternPartTwo'].encode('utf-8')   + "</listPatternPartTwo>"
     print "            <am>"       + l['am'].encode('utf-8') + "</am>"
     print "            <pm>"       + l['pm'].encode('utf-8') + "</pm>"
+    print "            <firstDayOfWeek>"  + l['firstDayOfWeek'].encode('utf-8') + "</firstDayOfWeek>"
+    print "            <weekendStart>"  + l['weekendStart'].encode('utf-8') + "</weekendStart>"
+    print "            <weekendEnd>"  + l['weekendEnd'].encode('utf-8') + "</weekendEnd>"
     print "            <longDateFormat>"  + l['longDateFormat'].encode('utf-8')  + "</longDateFormat>"
     print "            <shortDateFormat>" + l['shortDateFormat'].encode('utf-8') + "</shortDateFormat>"
     print "            <longTimeFormat>"  + l['longTimeFormat'].encode('utf-8')  + "</longTimeFormat>"
@@ -536,6 +798,13 @@ for key in locale_keys:
     print "            <standaloneLongDays>" + l['standaloneLongDays'].encode('utf-8')        + "</standaloneLongDays>"
     print "            <standaloneShortDays>" + l['standaloneShortDays'].encode('utf-8')       + "</standaloneShortDays>"
     print "            <standaloneNarrowDays>" + l['standaloneNarrowDays'].encode('utf-8')       + "</standaloneNarrowDays>"
+    print "            <currencyIsoCode>" + l['currencyIsoCode'].encode('utf-8') + "</currencyIsoCode>"
+    print "            <currencySymbol>" + l['currencySymbol'].encode('utf-8') + "</currencySymbol>"
+    print "            <currencyDisplayName>" + l['currencyDisplayName'].encode('utf-8') + "</currencyDisplayName>"
+    print "            <currencyDigits>" + str(l['currencyDigits']) + "</currencyDigits>"
+    print "            <currencyRounding>" + str(l['currencyRounding']) + "</currencyRounding>"
+    print "            <currencyFormat>" + l['currencyFormat'].encode('utf-8') + "</currencyFormat>"
+    print "            <currencyNegativeFormat>" + l['currencyNegativeFormat'].encode('utf-8') + "</currencyNegativeFormat>"
     print "        </locale>"
 print "    </localeList>"
 print "</localeDatabase>"

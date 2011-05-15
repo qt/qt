@@ -50,6 +50,18 @@
 #include <QTime>
 #include <QPointer>
 
+const QString PI_TestCase(QLS("TestCase"));
+const QString PI_HostName(QLS("HostName"));
+const QString PI_HostAddress(QLS("HostAddress"));
+const QString PI_OSName(QLS("OSName"));
+const QString PI_OSVersion(QLS("OSVersion"));
+const QString PI_QtVersion(QLS("QtVersion"));
+const QString PI_BuildKey(QLS("BuildKey"));
+const QString PI_GitCommit(QLS("GitCommit"));
+const QString PI_QMakeSpec(QLS("QMakeSpec"));
+const QString PI_PulseGitBranch(QLS("PulseGitBranch"));
+const QString PI_PulseTestrBranch(QLS("PulseTestrBranch"));
+
 #ifndef QMAKESPEC
 #define QMAKESPEC "Unknown"
 #endif
@@ -70,60 +82,117 @@ void BaselineProtocol::sysSleep(int ms)
 #endif
 }
 
-PlatformInfo::PlatformInfo(bool useLocal)
-    : QMap<QString, QString>()
+PlatformInfo::PlatformInfo()
+    : QMap<QString, QString>(), replaceDefault(false)
 {
-    if (useLocal) {
-        insert(PI_HostName, QHostInfo::localHostName());
-        insert(PI_QtVersion, QLS(qVersion()));
-        insert(PI_QMakeSpec, QString(QLS(QMAKESPEC)).remove(QRegExp(QLS("^.*mkspecs/"))));
-        insert(PI_BuildKey, QLibraryInfo::buildKey());
+}
+
+PlatformInfo PlatformInfo::localHostInfo()
+{
+    PlatformInfo pi;
+    pi.insert(PI_HostName, QHostInfo::localHostName());
+    pi.insert(PI_QtVersion, QLS(qVersion()));
+    pi.insert(PI_QMakeSpec, QString(QLS(QMAKESPEC)).remove(QRegExp(QLS("^.*mkspecs/"))));
+    pi.insert(PI_BuildKey, QLibraryInfo::buildKey());
 #if defined(Q_OS_LINUX)
-        insert(PI_OSName, QLS("Linux"));
-        QProcess uname;
-        uname.start(QLS("uname"), QStringList() << QLS("-r"));
-        if (uname.waitForFinished(3000))
-            insert(PI_OSVersion, QString::fromLocal8Bit(uname.readAllStandardOutput().constData()).simplified());
+    pi.insert(PI_OSName, QLS("Linux"));
+    QProcess uname;
+    uname.start(QLS("uname"), QStringList() << QLS("-r"));
+    if (uname.waitForFinished(3000))
+        pi.insert(PI_OSVersion, QString::fromLocal8Bit(uname.readAllStandardOutput().constData()).simplified());
 #elif defined(Q_OS_WINCE)
-        insert(PI_OSName, QLS("WinCE"));
-        insert(PI_OSVersion, QString::number(QSysInfo::windowsVersion()));
+    pi.insert(PI_OSName, QLS("WinCE"));
+    pi.insert(PI_OSVersion, QString::number(QSysInfo::windowsVersion()));
 #elif defined(Q_OS_WIN)
-        insert(PI_OSName, QLS("Windows"));
-        insert(PI_OSVersion, QString::number(QSysInfo::windowsVersion()));
+    pi.insert(PI_OSName, QLS("Windows"));
+    pi.insert(PI_OSVersion, QString::number(QSysInfo::windowsVersion()));
 #elif defined(Q_OS_MAC)
-        insert(PI_OSName, QLS("MacOS"));
-        insert(PI_OSVersion, QString::number(qMacVersion()));
+    pi.insert(PI_OSName, QLS("MacOS"));
+    pi.insert(PI_OSVersion, QString::number(qMacVersion()));
 #elif defined(Q_OS_SYMBIAN)
-        insert(PI_OSName, QLS("Symbian"));
-        insert(PI_OSVersion, QString::number(QSysInfo::symbianVersion());
+    pi.insert(PI_OSName, QLS("Symbian"));
+    pi.insert(PI_OSVersion, QString::number(QSysInfo::symbianVersion());
 #else
-        insert(PI_OSName, QLS("Other"));
+    pi.insert(PI_OSName, QLS("Other"));
 #endif
 
-        QProcess git;
-        QString cmd;
-        QStringList args;
+    QProcess git;
+    QString cmd;
+    QStringList args;
 #if defined(Q_OS_WIN)
-        cmd = QLS("cmd.exe");
-        args << QLS("/c") << QLS("git");
+    cmd = QLS("cmd.exe");
+    args << QLS("/c") << QLS("git");
 #else
-        cmd = QLS("git");
+    cmd = QLS("git");
 #endif
-        args << QLS("log") << QLS("--max-count=1") << QLS("--pretty=%H [%an] [%ad] %s");
-        git.start(cmd, args);
-        git.waitForFinished(3000);
-        if (!git.exitCode())
-            insert(PI_GitCommit, QString::fromLocal8Bit(git.readAllStandardOutput().constData()).simplified());
-        else
-            insert(PI_GitCommit, QLS("Unknown"));
-    }
+    args << QLS("log") << QLS("--max-count=1") << QLS("--pretty=%H [%an] [%ad] %s");
+    git.start(cmd, args);
+    git.waitForFinished(3000);
+    if (!git.exitCode())
+        pi.insert(PI_GitCommit, QString::fromLocal8Bit(git.readAllStandardOutput().constData()).simplified());
+    else
+        pi.insert(PI_GitCommit, QLS("Unknown"));
 
     QByteArray gb = qgetenv("PULSE_GIT_BRANCH");
     if (!gb.isEmpty())
-        insert(PI_PulseGitBranch, QString::fromLatin1(gb));
+        pi.insert(PI_PulseGitBranch, QString::fromLatin1(gb));
     QByteArray tb = qgetenv("PULSE_TESTR_BRANCH");
     if (!tb.isEmpty())
-        insert(PI_PulseTestrBranch, QString::fromLatin1(tb));
+        pi.insert(PI_PulseTestrBranch, QString::fromLatin1(tb));
+
+    return pi;
+}
+
+
+PlatformInfo::PlatformInfo(const PlatformInfo &other)
+    : QMap<QString, QString>(other)
+{
+    sigKeys = other.sigKeys;
+    replaceDefault = other.replaceDefault;
+}
+
+
+PlatformInfo &PlatformInfo::operator=(const PlatformInfo &other)
+{
+    QMap<QString, QString>::operator=(other);
+    sigKeys = other.sigKeys;
+    replaceDefault = other.replaceDefault;
+    return *this;
+}
+
+
+void PlatformInfo::addSignificantKeys(const QStringList &keys, bool replaceDefaultKeys)
+{
+    sigKeys = keys;
+    replaceDefault = replaceDefaultKeys;
+}
+
+
+QStringList PlatformInfo::addedKeys() const
+{
+    return sigKeys;
+}
+
+
+bool PlatformInfo::addedKeysReplaceDefault() const
+{
+    return replaceDefault;
+}
+
+
+QDataStream & operator<< (QDataStream &stream, const PlatformInfo &pi)
+{
+    stream << static_cast<const QMap<QString, QString>&>(pi);
+    stream << pi.sigKeys << pi.replaceDefault;
+    return stream;
+}
+
+
+QDataStream & operator>> (QDataStream &stream, PlatformInfo &pi)
+{
+    stream >> static_cast<QMap<QString, QString>&>(pi);
+    stream >> pi.sigKeys >> pi.replaceDefault;
+    return stream;
 }
 
 
@@ -251,7 +320,7 @@ void ImageItem::readImageFromStream(QDataStream &in)
 
 QDataStream & operator<< (QDataStream &stream, const ImageItem &ii)
 {
-    stream << ii.testFunction << ii.itemName << ii.itemChecksum << quint8(ii.status) << ii.imageChecksums;
+    stream << ii.testFunction << ii.itemName << ii.itemChecksum << quint8(ii.status) << ii.imageChecksums << ii.misc;
     ii.writeImageToStream(stream);
     return stream;
 }
@@ -259,7 +328,7 @@ QDataStream & operator<< (QDataStream &stream, const ImageItem &ii)
 QDataStream & operator>> (QDataStream &stream, ImageItem &ii)
 {
     quint8 encStatus;
-    stream >> ii.testFunction >> ii.itemName >> ii.itemChecksum >> encStatus >> ii.imageChecksums;
+    stream >> ii.testFunction >> ii.itemName >> ii.itemChecksum >> encStatus >> ii.imageChecksums >> ii.misc;
     ii.status = ImageItem::ItemStatus(encStatus);
     ii.readImageFromStream(stream);
     return stream;
@@ -293,7 +362,7 @@ bool BaselineProtocol::connect(const QString &testCase, bool *dryrun)
         }
     }
 
-    PlatformInfo pi(true);
+    PlatformInfo pi = PlatformInfo::localHostInfo();
     pi.insert(PI_TestCase, testCase);
     QByteArray block;
     QDataStream ds(&block, QIODevice::ReadWrite);
@@ -305,7 +374,7 @@ bool BaselineProtocol::connect(const QString &testCase, bool *dryrun)
 
     Command cmd = UnknownError;
     if (!receiveBlock(&cmd, &block)) {
-        errMsg += QLS("Failed to get response from server.");
+        errMsg.prepend(QLS("Failed to get response from server. "));
         return false;
     }
 
@@ -355,15 +424,17 @@ bool BaselineProtocol::requestBaselineChecksums(const QString &testFunction, Ima
         it->testFunction = testFunction;
 
     QByteArray block;
-    QDataStream ds(&block, QIODevice::ReadWrite);
+    QDataStream ds(&block, QIODevice::WriteOnly);
     ds << *itemList;
     if (!sendBlock(RequestBaselineChecksums, block))
         return false;
+
     Command cmd;
-    if (!receiveBlock(&cmd, &block))
+    QByteArray rcvBlock;
+    if (!receiveBlock(&cmd, &rcvBlock) || cmd != BaselineProtocol::Ack)
         return false;
-    ds.device()->seek(0);
-    ds >> *itemList;
+    QDataStream rds(&rcvBlock, QIODevice::ReadOnly);
+    rds >> *itemList;
     return true;
 }
 
@@ -453,3 +524,4 @@ QString BaselineProtocol::errorMessage()
         ret += QLS(" Socket state: ") + socket.errorString();
     return ret;
 }
+

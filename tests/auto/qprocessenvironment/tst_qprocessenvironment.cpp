@@ -43,10 +43,6 @@
 #include <QObject>
 #include <QProcessEnvironment>
 
-// Note:
-// in cross-platform tests, ALWAYS use UPPERCASE variable names
-// That's because on Windows, the variables are uppercased
-
 class tst_QProcessEnvironment: public QObject
 {
     Q_OBJECT
@@ -56,6 +52,8 @@ private slots:
     void insert();
     void emptyNull();
     void toStringList();
+    void keys();
+    void insertEnv();
 
     void caseSensitivity();
     void systemEnvironment();
@@ -154,13 +152,65 @@ void tst_QProcessEnvironment::toStringList()
     QVERIFY(result.contains("HELLO=World"));
 }
 
+void tst_QProcessEnvironment::keys()
+{
+    QProcessEnvironment e;
+    QVERIFY(e.isEmpty());
+    QVERIFY(e.keys().isEmpty());
+
+    e.insert("FOO", "bar");
+    QStringList result = e.keys();
+    QCOMPARE(result.length(), 1);
+    QCOMPARE(result.at(0), QString("FOO"));
+
+    e.clear();
+    e.insert("BAZ", "");
+    result = e.keys();
+    QCOMPARE(result.at(0), QString("BAZ"));
+
+    e.insert("FOO", "bar");
+    e.insert("A", "bc");
+    e.insert("HELLO", "World");
+    result = e.keys();
+    QCOMPARE(result.length(), 4);
+
+    // order is not specified, so use contains()
+    QVERIFY(result.contains("FOO"));
+    QVERIFY(result.contains("BAZ"));
+    QVERIFY(result.contains("A"));
+    QVERIFY(result.contains("HELLO"));
+}
+
+void tst_QProcessEnvironment::insertEnv()
+{
+    QProcessEnvironment e;
+    e.insert("FOO", "bar");
+    e.insert("A", "bc");
+    e.insert("Hello", "World");
+
+    QProcessEnvironment e2;
+    e2.insert("FOO2", "bar2");
+    e2.insert("A2", "bc2");
+    e2.insert("Hello", "Another World");
+
+    e.insert(e2);
+    QStringList keys = e.keys();
+    QCOMPARE(keys.length(), 5);
+
+    QCOMPARE(e.value("FOO"), QString("bar"));
+    QCOMPARE(e.value("A"), QString("bc"));
+    QCOMPARE(e.value("Hello"), QString("Another World"));
+    QCOMPARE(e.value("FOO2"), QString("bar2"));
+    QCOMPARE(e.value("A2"), QString("bc2"));
+}
+
 void tst_QProcessEnvironment::caseSensitivity()
 {
     QProcessEnvironment e;
     e.insert("foo", "bar");
 
 #ifdef Q_OS_WIN
-    // on Windows, it's uppercased
+    // Windows is case-insensitive, but case-preserving
     QVERIFY(e.contains("foo"));
     QVERIFY(e.contains("FOO"));
     QVERIFY(e.contains("FoO"));
@@ -169,8 +219,12 @@ void tst_QProcessEnvironment::caseSensitivity()
     QCOMPARE(e.value("FOO"), QString("bar"));
     QCOMPARE(e.value("FoO"), QString("bar"));
 
+    // Per Windows, this overwrites the value, but keeps the name's original capitalization
+    e.insert("Foo", "Bar");
+
     QStringList list = e.toStringList();
-    QCOMPARE(list.at(0), QString("FOO=bar"));
+    QCOMPARE(list.length(), 1);
+    QCOMPARE(list.at(0), QString("foo=Bar"));
 #else
     // otherwise, it's case sensitive
     QVERIFY(e.contains("foo"));
@@ -182,6 +236,7 @@ void tst_QProcessEnvironment::caseSensitivity()
     QCOMPARE(e.value("foo"), QString("bar"));
 
     QStringList list = e.toStringList();
+    QCOMPARE(list.length(), 2);
     QVERIFY(list.contains("foo=bar"));
     QVERIFY(list.contains("FOO=baz"));
 #endif

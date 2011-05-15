@@ -61,21 +61,29 @@ QT_BEGIN_HEADER
 #if defined(Q_WS_MAC)
 # include <OpenGL/gl.h>
 #elif defined(QT_OPENGL_ES_1)
-# include <GLES/gl.h>
-#ifndef GL_DOUBLE
-# define GL_DOUBLE GL_FLOAT
-#endif
-#ifndef GLdouble
+# if defined(Q_OS_MAC)
+#  include <OpenGLES/ES1/gl.h>
+# else
+#  include <GLES/gl.h>
+# endif
+# ifndef GL_DOUBLE
+#  define GL_DOUBLE GL_FLOAT
+# endif
+# ifndef GLdouble
 typedef GLfloat GLdouble;
-#endif
+# endif
 #elif defined(QT_OPENGL_ES_2)
-# include <GLES2/gl2.h>
-#ifndef GL_DOUBLE
-# define GL_DOUBLE GL_FLOAT
-#endif
-#ifndef GLdouble
+# if defined(Q_OS_MAC)
+#  include <OpenGLES/ES2/gl.h>
+# else
+#  include <GLES2/gl2.h>
+# endif
+# ifndef GL_DOUBLE
+#  define GL_DOUBLE GL_FLOAT
+# endif
+# ifndef GLdouble
 typedef GLfloat GLdouble;
-#endif
+# endif
 #else
 # include <GL/gl.h>
 #endif
@@ -393,7 +401,7 @@ protected:
 #if defined(Q_WS_WIN)
     virtual int choosePixelFormat(void* pfd, HDC pdc);
 #endif
-#if defined(Q_WS_X11) && defined(QT_NO_EGL)
+#if defined(Q_WS_X11)
     virtual void* tryVisual(const QGLFormat& f, int bufDepth = 1);
     virtual void* chooseVisual();
 #endif

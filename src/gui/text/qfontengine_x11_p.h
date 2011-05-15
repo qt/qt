@@ -157,8 +157,11 @@ private:
 class Q_GUI_EXPORT QFontEngineX11FT : public QFontEngineFT
 {
 public:
+    explicit QFontEngineX11FT(const QFontDef &fontDef) : QFontEngineFT(fontDef) {}
     explicit QFontEngineX11FT(FcPattern *pattern, const QFontDef &fd, int screen);
     ~QFontEngineX11FT();
+
+    QFontEngine *cloneWithSize(qreal pixelSize) const;
 
 #ifndef QT_NO_XRENDER
     int xglyph_format;

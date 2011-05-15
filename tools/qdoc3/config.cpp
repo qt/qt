@@ -48,7 +48,7 @@
 #include <QFile>
 #include <QTemporaryFile>
 #include <QTextStream>
-
+#include <qdebug.h>
 #include "config.h"
 #include <stdlib.h>
 
@@ -175,6 +175,7 @@ Config::Config(const QString& programName)
 }
 
 /*!
+  The destructor has nothing special to do.
  */
 Config::~Config()
 {
@@ -199,6 +200,30 @@ void Config::load(const QString& fileName)
 	loc.setEtc(true);
     }
     lastLoc = Location::null;
+}
+
+/*!
+  Writes the qdoc configuration data to the named file.
+  The previous contents of the file are overwritten.
+ */
+void Config::unload(const QString& fileName)
+{
+    
+    QStringMultiMap::ConstIterator v = stringValueMap.begin();
+    while (v != stringValueMap.end()) {
+        qDebug() << v.key() << " = " << v.value();
+#if 0        
+        if (v.key().startsWith(varDot)) {
+            QString subVar = v.key().mid(varDot.length());
+            int dot = subVar.indexOf(QLatin1Char('.'));
+            if (dot != -1)
+                subVar.truncate(dot);
+            t.insert(subVar,v.value());
+        }
+#endif
+        ++v;
+    }
+    qDebug() << "fileName:" << fileName;
 }
 
 /*!
@@ -329,13 +354,16 @@ QList<QRegExp> Config::getRegExpList(const QString& var) const
 }
 
 /*!
-  This function is slower than it could be.
+  This function is slower than it could be. What it does is
+  find all the keys that begin with \a var + dot and return
+  the matching keys in a set, stripped of the matching prefix
+  and dot.
  */
 QSet<QString> Config::subVars(const QString& var) const
 {
     QSet<QString> result;
     QString varDot = var + QLatin1Char('.');
-    QMap<QString, QString>::ConstIterator v = stringValueMap.begin();
+    QStringMultiMap::ConstIterator v = stringValueMap.begin();
     while (v != stringValueMap.end()) {
         if (v.key().startsWith(varDot)) {
             QString subVar = v.key().mid(varDot.length());
@@ -347,6 +375,27 @@ QSet<QString> Config::subVars(const QString& var) const
         ++v;
     }
     return result;
+}
+
+/*!
+  Same as subVars(), but in this case we return a string map
+  with the matching keys (stripped of the prefix \a var and
+  mapped to their values. The pairs are inserted into \a t
+ */
+void Config::subVarsAndValues(const QString& var, QStringMultiMap& t) const
+{
+    QString varDot = var + QLatin1Char('.');
+    QStringMultiMap::ConstIterator v = stringValueMap.begin();
+    while (v != stringValueMap.end()) {
+        if (v.key().startsWith(varDot)) {
+            QString subVar = v.key().mid(varDot.length());
+            int dot = subVar.indexOf(QLatin1Char('.'));
+            if (dot != -1)
+                subVar.truncate(dot);
+            t.insert(subVar,v.value());
+        }
+        ++v;
+    }
 }
 
 /*!

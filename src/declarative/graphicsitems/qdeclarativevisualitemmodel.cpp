@@ -839,7 +839,8 @@ void QDeclarativeVisualDataModel::setDelegate(QDeclarativeComponent *delegate)
     QML only operates on list data.  \c rootIndex allows the children of
     any node in a QAbstractItemModel to be provided by this model.
 
-    This property only affects models of type QAbstractItemModel.
+    This property only affects models of type QAbstractItemModel that
+    are hierarchical (e.g, a tree model). 
 
     For example, here is a simple interactive file system browser.
     When a directory name is clicked, the view's \c rootIndex is set to the
@@ -1397,7 +1398,12 @@ void QDeclarativeVisualDataModel::_q_layoutChanged()
 
 void QDeclarativeVisualDataModel::_q_modelReset()
 {
+    Q_D(QDeclarativeVisualDataModel);
+    d->m_root = QModelIndex();
     emit modelReset();
+    emit rootIndexChanged();
+    if (d->m_abstractItemModel && d->m_abstractItemModel->canFetchMore(d->m_root))
+        d->m_abstractItemModel->fetchMore(d->m_root);
 }
 
 void QDeclarativeVisualDataModel::_q_createdPackage(int index, QDeclarativePackage *package)

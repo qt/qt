@@ -185,9 +185,6 @@ public:
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
                                  QPainterPath *path, QTextItem::RenderFlags flags);
 
-    /* Creates a QFont object to represent this particular QFontEngine */
-    virtual QFont createExplicitFont() const;
-
     void getGlyphPositions(const QGlyphLayout &glyphs, const QTransform &matrix, QTextItem::RenderFlags flags,
                            QVarLengthArray<glyph_t> &glyphs_out, QVarLengthArray<QFixedPoint> &positions);
 
@@ -203,7 +200,7 @@ public:
     virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
 
-    virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, const QTransform &matrix, GlyphFormat /*format*/)
+    virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed /*subPixelPosition*/, const QTransform &matrix, GlyphFormat /*format*/)
     {
         return boundingBox(glyph, matrix);
     }
@@ -237,6 +234,8 @@ public:
     virtual Type type() const = 0;
 
     virtual int glyphCount() const;
+
+    virtual QFontEngine *cloneWithSize(qreal /*pixelSize*/) const { return 0; }
 
     HB_Font harfbuzzFont() const;
     HB_Face harfbuzzFace() const;
@@ -276,7 +275,6 @@ public:
     int glyphFormat;
 
 protected:
-    QFont createExplicitFontWithName(const QString &familyName) const;
     static const QVector<QRgb> &grayPalette();
     QFixed lastRightBearing(const QGlyphLayout &glyphs, bool round = false);
 
@@ -431,6 +429,7 @@ public:
 protected:
     friend class QPSPrintEnginePrivate;
     friend class QPSPrintEngineFontMulti;
+    friend class QRawFont;
     virtual void loadEngine(int at) = 0;
     QVector<QFontEngine *> engines;
 };

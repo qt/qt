@@ -113,12 +113,20 @@ void QSoftKeyManagerPrivateS60::ensureCbaVisibilityAndResponsiviness(CEikButtonG
 
 void QSoftKeyManagerPrivateS60::clearSoftkeys(CEikButtonGroupContainer &cba)
 {
+#ifdef SYMBIAN_VERSION_SYMBIAN3
+    QT_TRAP_THROWING(
+        //EAknSoftkeyEmpty is used, because using -1 adds softkeys without actions on Symbian3
+        cba.SetCommandL(0, EAknSoftkeyEmpty, KNullDesC);
+        cba.SetCommandL(2, EAknSoftkeyEmpty, KNullDesC);
+    );
+#else
     QT_TRAP_THROWING(
         //Using -1 instead of EAknSoftkeyEmpty to avoid flickering.
         cba.SetCommandL(0, -1, KNullDesC);
         // TODO: Should we clear also middle SK?
         cba.SetCommandL(2, -1, KNullDesC);
     );
+#endif
     realSoftKeyActions.clear();
 }
 
@@ -270,12 +278,6 @@ bool QSoftKeyManagerPrivateS60::setSoftkeyImage(CEikButtonGroupContainer *cba,
             EikSoftkeyImage::SetImage(cba, *myimage, left); // Takes myimage ownership
             cbaHasImage[position] = true;
             ret = true;
-        } else {
-            // Restore softkey to text based
-            if (cbaHasImage[position]) {
-                EikSoftkeyImage::SetLabel(cba, left);
-                cbaHasImage[position] = false;
-            }
         }
     }
     return ret;
@@ -286,11 +288,20 @@ bool QSoftKeyManagerPrivateS60::setSoftkey(CEikButtonGroupContainer &cba,
 {
     QAction *action = highestPrioritySoftkey(role);
     if (action) {
-        setSoftkeyImage(&cba, *action, position);
+        bool hasImage = setSoftkeyImage(&cba, *action, position);
         QString text = softkeyText(*action);
         TPtrC nativeText = qt_QString2TPtrC(text);
         int command = S60_COMMAND_START + position;
+#ifdef SYMBIAN_VERSION_SYMBIAN3
+        if (softKeyCommandActions.contains(action))
+            command = softKeyCommandActions.value(action);
+#endif
         setNativeSoftkey(cba, position, command, nativeText);
+        if (!hasImage && cbaHasImage[position]) {
+            EikSoftkeyImage::SetLabel(&cba, (position == LSK_POSITION));
+            cbaHasImage[position] = false;
+        }
+
         const bool dimmed = !action->isEnabled() && !QSoftKeyManager::isForceEnabledInSofkeys(action);
         cba.DimCommand(command, dimmed);
         realSoftKeyActions.insert(command, action);
@@ -301,7 +312,18 @@ bool QSoftKeyManagerPrivateS60::setSoftkey(CEikButtonGroupContainer &cba,
 
 bool QSoftKeyManagerPrivateS60::setLeftSoftkey(CEikButtonGroupContainer &cba)
 {
-    return setSoftkey(cba, QAction::PositiveSoftKey, LSK_POSITION);
+    if (!setSoftkey(cba, QAction::PositiveSoftKey, LSK_POSITION)) {
+        if (cbaHasImage[LSK_POSITION]) {
+            // Clear any residual icon if LSK has no action. A real softkey
+            // is needed for SetLabel command to work, so do a temporary dummy
+            setNativeSoftkey(cba, LSK_POSITION, EAknSoftkeyExit, KNullDesC);
+            EikSoftkeyImage::SetLabel(&cba, true);
+            setNativeSoftkey(cba, LSK_POSITION, EAknSoftkeyEmpty, KNullDesC);
+            cbaHasImage[LSK_POSITION] = false;
+        }
+        return false;
+    }
+    return true;
 }
 
 bool QSoftKeyManagerPrivateS60::setMiddleSoftkey(CEikButtonGroupContainer &cba)
@@ -320,16 +342,26 @@ bool QSoftKeyManagerPrivateS60::setRightSoftkey(CEikButtonGroupContainer &cba)
         if (windowType != Qt::Dialog && windowType != Qt::Popup) {
             QString text(QSoftKeyManager::tr("Exit"));
             TPtrC nativeText = qt_QString2TPtrC(text);
+            setNativeSoftkey(cba, RSK_POSITION, EAknSoftkeyExit, nativeText);
             if (cbaHasImage[RSK_POSITION]) {
                 EikSoftkeyImage::SetLabel(&cba, false);
                 cbaHasImage[RSK_POSITION] = false;
             }
-            setNativeSoftkey(cba, RSK_POSITION, EAknSoftkeyExit, nativeText);
             cba.DimCommand(EAknSoftkeyExit, false);
             return true;
+        } else {
+            if (cbaHasImage[RSK_POSITION]) {
+                // Clear any residual icon if RSK has no action. A real softkey
+                // is needed for SetLabel command to work, so do a temporary dummy
+                setNativeSoftkey(cba, RSK_POSITION, EAknSoftkeyExit, KNullDesC);
+                EikSoftkeyImage::SetLabel(&cba, false);
+                setNativeSoftkey(cba, RSK_POSITION, EAknSoftkeyEmpty, KNullDesC);
+                cbaHasImage[RSK_POSITION] = false;
+            }
+            return false;
         }
     }
-    return false;
+    return true;
 }
 
 void QSoftKeyManagerPrivateS60::setSoftkeys(CEikButtonGroupContainer &cba)

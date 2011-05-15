@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+typedef QMultiMap<QString, QString> QStringMultiMap;
+
 class Config
 {
  public:
@@ -61,6 +63,7 @@ class Config
     ~Config();
 
     void load(const QString& fileName);
+    void unload(const QString& fileName);
     void setStringList(const QString& var, const QStringList& values);
 
     const QString& programName() const { return prog; }
@@ -74,6 +77,7 @@ class Config
     QRegExp getRegExp(const QString& var) const;
     QList<QRegExp> getRegExpList(const QString& var) const;
     QSet<QString> subVars(const QString& var) const;
+    void subVarsAndValues(const QString& var, QStringMultiMap& t) const;
     QStringList getAllFiles(const QString& filesVar, 
                             const QString& dirsVar,
                             const QSet<QString> &excludedDirs = QSet<QString>());

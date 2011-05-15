@@ -43,6 +43,7 @@
 #include <QtTest/QSignalSpy>
 #include <private/qdeclarativepincharea_p.h>
 #include <private/qdeclarativerectangle_p.h>
+#include <private/qdeclarativeflickable_p.h>
 #include <QtDeclarative/qdeclarativeview.h>
 #include <QtDeclarative/qdeclarativecontext.h>
 
@@ -58,6 +59,7 @@ private slots:
     void pinchProperties();
     void scale();
     void pan();
+    void flickable();
 
 private:
     QDeclarativeView *createView();
@@ -296,6 +298,77 @@ void tst_QDeclarativePinchArea::pan()
     QCOMPARE(blackRect->x(), 140.0);
     QCOMPARE(blackRect->y(), 160.0);
 
+    QTest::touchEvent(vp).release(0, p1).release(1, p2);
+
+    delete canvas;
+}
+
+void tst_QDeclarativePinchArea::flickable()
+{
+    QDeclarativeView *canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/flickresize.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QTest::qWaitForWindowShown(canvas);
+    QVERIFY(canvas->rootObject() != 0);
+    qApp->processEvents();
+
+    QDeclarativePinchArea *pinchArea = canvas->rootObject()->findChild<QDeclarativePinchArea*>("pincharea");
+    QDeclarativePinch *pinch = pinchArea->pinch();
+    QVERIFY(pinchArea != 0);
+    QVERIFY(pinch != 0);
+
+    QDeclarativeFlickable *root = qobject_cast<QDeclarativeFlickable*>(canvas->rootObject());
+    QVERIFY(root != 0);
+
+    QWidget *vp = canvas->viewport();
+
+    QPoint p1(110, 80);
+    QPoint p2(100, 100);
+
+    // begin by moving one touch point (mouse)
+    QTest::mousePress(vp, Qt::LeftButton, 0, canvas->mapFromScene(p1));
+    QTest::touchEvent(vp).press(0, p1);
+    {
+        p1 -= QPoint(10,10);
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(p1), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+        QTest::touchEvent(vp).move(0, p1);
+    }
+    {
+        p1 -= QPoint(10,10);
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(p1), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(vp, &mv);
+        QTest::touchEvent(vp).move(0, p1);
+    }
+    {
+        p1 -= QPoint(10,10);
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(p1), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(vp, &mv);
+        QTest::touchEvent(vp).move(0, p1);
+    }
+
+    // Flickable has reacted to the gesture
+    QVERIFY(root->isMoving());
+    QVERIFY(root->property("scale").toReal() == 1.0);
+
+    // add another touch point and continue moving
+    QTest::touchEvent(vp).stationary(0).press(1, p2);
+    p1 -= QPoint(10,10);
+    p2 += QPoint(10,10);
+    QTest::touchEvent(vp).move(0, p1).move(1, p2);
+
+    QCOMPARE(root->property("scale").toReal(), 1.0);
+
+    p1 -= QPoint(10,10);
+    p2 += QPoint(10,10);
+    QTest::touchEvent(vp).move(0, p1).move(1, p2);
+
+    // PinchArea has stolen the gesture.
+    QVERIFY(!root->isMoving());
+    QVERIFY(root->property("scale").toReal() > 1.0);
+
+    QTest::mouseRelease(vp, Qt::LeftButton, 0, canvas->mapFromScene(p1));
     QTest::touchEvent(vp).release(0, p1).release(1, p2);
 
     delete canvas;
