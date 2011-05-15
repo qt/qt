@@ -801,15 +801,18 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
 	break;
     case Atom::DivLeft:
         {
+            bool inStartElement = false;
             attr = atom->string();
             DitaTag t = currentTag();
             if ((t == DT_section) || (t == DT_sectiondiv)) {
                 writeStartTag(DT_sectiondiv);
                 divNestingLevel++;
+                inStartElement = true;
             }
             else if ((t == DT_body) || (t == DT_bodydiv)) {
                 writeStartTag(DT_bodydiv);
                 divNestingLevel++;
+                inStartElement = true;
             }
             if (!attr.isEmpty()) {
                 if (attr.contains('=')) {
@@ -833,7 +836,8 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                     attr = values;
                 }
             }
-            xmlWriter().writeAttribute("outputclass", attr);
+            if (inStartElement)
+                xmlWriter().writeAttribute("outputclass", attr);
         }
         break;
     case Atom::DivRight:
@@ -1253,9 +1257,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::GuidLink:
         {
-#if 0            
-            qDebug() << "GUID LINK:" << atom->string() << outFileName();
-#endif            
             beginLink(atom->string());
             skipAhead = 1;
         }
@@ -1484,7 +1485,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             generateLink(atom, relative, marker);
         }
         else {
-            writeCharacters(protectEnc(atom->string()));
+            writeCharacters(atom->string());
         }
         break;
     case Atom::TableLeft:
@@ -1637,7 +1638,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             int numColumns = 1;
             const Node* node = relative;
 
-            Doc::SectioningUnit sectioningUnit = Doc::Section4;
+            Doc::Sections sectionUnit = Doc::Section4;
             QStringList params = atom->string().split(",");
             QString columnText = params.at(0);
             QStringList pieces = columnText.split(" ", QString::SkipEmptyParts);
@@ -1650,13 +1651,13 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
 
             if (params.size() == 2) {
                 numColumns = qMax(columnText.toInt(), numColumns);
-                sectioningUnit = (Doc::SectioningUnit)params.at(1).toInt();
+                sectionUnit = (Doc::Sections)params.at(1).toInt();
             }
 
             if (node)
                 generateTableOfContents(node,
                                         marker,
-                                        sectioningUnit,
+                                        sectionUnit,
                                         numColumns,
                                         relative);
         }
@@ -1743,6 +1744,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         enterSection("h2","Detailed Description");
         generateBody(nsn, marker);
+        generateAlsoList(nsn, marker);
         leaveSection();
         leaveSection(); // </apiDesc>
 
@@ -1877,6 +1879,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateSince(cn, marker);
         enterSection("h2","Detailed Description");
         generateBody(cn, marker);
+        generateAlsoList(cn, marker);
         leaveSection();
         leaveSection(); // </apiDesc>
 
@@ -1995,6 +1998,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateSince(fn, marker);
         enterSection("h2","Detailed Description");
         generateBody(fn, marker);
+        generateAlsoList(fn, marker);
         leaveSection();
         leaveSection(); // </apiDesc>
 
@@ -2115,6 +2119,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateBody(qcn, marker);
         if (cn)
             generateQmlText(cn->doc().body(), cn, marker, qcn->name());
+        generateAlsoList(cn, marker);
         leaveSection();
         leaveSection(); // </apiDesc>
 
@@ -2458,7 +2463,7 @@ void DitaXmlGenerator::generateIncludes(const InnerNode* inner, CodeMarker* mark
  */
 void DitaXmlGenerator::generateTableOfContents(const Node* node,
                                                CodeMarker* marker,
-                                               Doc::SectioningUnit sectioningUnit,
+                                               Doc::Sections sectionUnit,
                                                int numColumns,
                                                const Node* relative)
 
@@ -2492,7 +2497,7 @@ void DitaXmlGenerator::generateTableOfContents(const Node* node,
         Atom *atom = toc.at(i);
 
         int nextLevel = atom->string().toInt();
-        if (nextLevel > (int)sectioningUnit)
+        if (nextLevel > (int)sectionUnit)
             continue;
 
         if (sectionNumber.size() < nextLevel) {
@@ -3636,10 +3641,6 @@ QString DitaXmlGenerator::registerRef(const QString& ref)
         }
         else if (prevRef == ref)
             break;
-#if 0        
-        else
-            qDebug() << "PREVREF:" << prevRef;
-#endif        
         clean += "x";
     }
     return clean;
@@ -3653,7 +3654,7 @@ QString DitaXmlGenerator::protectEnc(const QString& string)
     return protect(string, outputEncoding);
 }
 
-QString DitaXmlGenerator::protect(const QString& string, const QString& outputEncoding)
+QString DitaXmlGenerator::protect(const QString& string, const QString& ) //outputEncoding)
 {
 #define APPEND(x) \
     if (xml.isEmpty()) { \
@@ -3680,6 +3681,7 @@ QString DitaXmlGenerator::protect(const QString& string, const QString& outputEn
         else if (ch == QLatin1Char('"')) {
             APPEND("&quot;");
         }
+#if 0        
         else if ((outputEncoding == "ISO-8859-1" && ch.unicode() > 0x007F) ||
                  (ch == QLatin1Char('*') && i + 1 < n && string.at(i) == QLatin1Char('/')) ||
                  (ch == QLatin1Char('.') && i > 2 && string.at(i - 2) == QLatin1Char('.'))) {
@@ -3688,6 +3690,7 @@ QString DitaXmlGenerator::protect(const QString& string, const QString& outputEn
             xml += QString::number(ch.unicode(), 16);
             xml += QLatin1Char(';');
         }
+#endif
         else {
             if (!xml.isEmpty())
                 xml += ch;
@@ -3808,7 +3811,6 @@ QString DitaXmlGenerator::guidForNode(const Node* node)
                 QString ref = fn->name();
                 if (fn->overloadNumber() != 1) {
                     ref += "-" + QString::number(fn->overloadNumber());
-                    //qDebug() << "guidForNode() overloaded function:" << outFileName() << ref;
                 }
             }
             return fn->guid();
@@ -5482,6 +5484,7 @@ void DitaXmlGenerator::writeApiDesc(const Node* node,
         inDetailedDescription = true;
         enterApiDesc(QString(),title);
         generateBody(node, marker);
+        generateAlsoList(node, marker);    
         leaveSection();
     }
     inDetailedDescription = false;

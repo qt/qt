@@ -696,6 +696,7 @@ void Config::load(Location location, const QString& fileName)
             } while (isMetaKeyChar(c));
 
             QStringList keys = stack.getExpanded(location);
+            //qDebug() << "KEYS:" << keys;
             SKIP_SPACES();
 
             if (keys.count() == 1 && keys.first() == "include") {
