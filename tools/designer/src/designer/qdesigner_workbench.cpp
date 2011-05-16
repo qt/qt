@@ -410,6 +410,9 @@ void QDesignerWorkbench::switchToDockedMode()
 
     switchToNeutralMode();
 
+#ifdef Q_WS_X11
+    QApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, false);
+#endif
 #ifndef Q_WS_MAC
     QDesignerToolWindow *widgetBoxWrapper = widgetBoxToolWindow();
     widgetBoxWrapper->action()->setVisible(true);
@@ -477,6 +480,14 @@ void QDesignerWorkbench::switchToTopLevelMode()
     // The widget box is special, it gets the menubar and gets to be the main widget.
 
     m_core->setTopLevel(widgetBoxWrapper);
+#ifdef Q_WS_X11
+    // For now the appmenu protocol does not make it possible to associate a
+    // menubar with all application windows. This means in top level mode you
+    // can only reach the menubar when the widgetbox window is active. Since
+    // this is quite inconvenient, better not use the native menubar in this
+    // configuration and keep the menubar in the widgetbox window.
+    QApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, true);
+#endif
 #ifndef Q_WS_MAC
     widgetBoxWrapper->setMenuBar(m_globalMenuBar);
     widgetBoxWrapper->action()->setVisible(false);

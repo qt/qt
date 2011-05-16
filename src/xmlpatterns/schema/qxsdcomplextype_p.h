@@ -386,7 +386,7 @@ namespace QPatternist
 
         private:
             SchemaType::Ptr           m_superType;
-            NamedSchemaComponent::Ptr m_context;
+            NamedSchemaComponent      *m_context;
             DerivationMethod          m_derivationMethod;
             bool                      m_isAbstract;
             XsdAttributeUse::List     m_attributeUses;

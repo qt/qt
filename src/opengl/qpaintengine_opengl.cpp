@@ -2119,7 +2119,7 @@ void QOpenGLPaintEnginePrivate::fillPath(const QPainterPath &path)
     updateGLMatrix();
 }
 
-extern bool qt_isExtendedRadialGradient(const QBrush &brush);
+Q_GUI_EXPORT bool qt_isExtendedRadialGradient(const QBrush &brush);
 
 static inline bool needsEmulation(Qt::BrushStyle style)
 {
@@ -5450,7 +5450,7 @@ void QOpenGLPaintEngine::transformChanged()
     updateMatrix(state()->matrix);
 }
 
-extern QPainterPath qt_painterPathFromVectorPath(const QVectorPath &path);
+Q_GUI_EXPORT QPainterPath qt_painterPathFromVectorPath(const QVectorPath &path);
 
 void QOpenGLPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 {

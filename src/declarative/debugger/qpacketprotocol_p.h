@@ -75,6 +75,8 @@ public:
     qint64 packetsAvailable() const;
     QPacket read();
 
+    bool waitForReadyRead(int msecs = 3000);
+
     void clear();
 
     QIODevice * device();

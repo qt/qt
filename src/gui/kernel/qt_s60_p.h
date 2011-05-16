@@ -97,6 +97,10 @@ static const int qt_symbian_max_screens = 4;
 //this macro exists because EColor16MAP enum value doesn't exist in Symbian OS 9.2
 #define Q_SYMBIAN_ECOLOR16MAP TDisplayMode(13)
 
+class QSymbianTypeFaceExtras;
+typedef QHash<QString, const QSymbianTypeFaceExtras *> QSymbianTypeFaceExtrasHash;
+typedef void (*QThreadLocalReleaseFunc)();
+
 class Q_AUTOTEST_EXPORT QS60ThreadLocalData
 {
 public:
@@ -105,6 +109,8 @@ public:
     bool usingCONEinstances;
     RWsSession wsSession;
     CWsScreenDevice *screenDevice;
+    QSymbianTypeFaceExtrasHash fontData;
+    QVector<QThreadLocalReleaseFunc> releaseFuncs;
 };
 
 class QS60Data
@@ -153,6 +159,7 @@ public:
     int menuBeingConstructed : 1;
     int orientationSet : 1;
     int partial_keyboard : 1;
+    int partial_keyboardAutoTranslation : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     QPointer<QWidget> splitViewLastWidget;
 
@@ -175,6 +182,8 @@ public:
     inline CWsScreenDevice* screenDevice(const QWidget *widget);
     inline CWsScreenDevice* screenDevice(int screenNumber);
     static inline int screenNumberForWidget(const QWidget *widget);
+    inline QSymbianTypeFaceExtrasHash& fontData();
+    inline void addThreadLocalReleaseFunc(QThreadLocalReleaseFunc func);
     static inline CCoeAppUi* appUi();
     static inline CEikMenuBar* menuBar();
 #ifdef Q_WS_S60
@@ -291,6 +300,7 @@ private:
     void translateAdvancedPointerEvent(const TAdvancedPointerEvent *event);
 #endif
     bool isSplitViewWidget(QWidget *widget);
+    bool hasFocusedAndVisibleChild(QWidget *parentWidget);
 
 public:
     void handleClientAreaChange();
@@ -340,6 +350,7 @@ inline QS60Data::QS60Data()
   menuBeingConstructed(0),
   orientationSet(0),
   partial_keyboard(0),
+  partial_keyboardAutoTranslation(1),
   s60ApplicationFactory(0)
 #ifdef Q_OS_SYMBIAN
   ,s60InstalledTrapHandler(0)
@@ -468,6 +479,24 @@ inline int QS60Data::screenNumberForWidget(const QWidget *widget)
     while (w->parentWidget())
         w = w->parentWidget();
     return qt_widget_private(const_cast<QWidget *>(w))->symbianScreenNumber;
+}
+
+inline QSymbianTypeFaceExtrasHash& QS60Data::fontData()
+{
+    if (!tls.hasLocalData()) {
+        tls.setLocalData(new QS60ThreadLocalData);
+    }
+    return tls.localData()->fontData;
+}
+
+inline void QS60Data::addThreadLocalReleaseFunc(QThreadLocalReleaseFunc func)
+{
+    if (!tls.hasLocalData()) {
+        tls.setLocalData(new QS60ThreadLocalData);
+    }
+    QS60ThreadLocalData *data = tls.localData();
+    if (!data->releaseFuncs.contains(func))
+        data->releaseFuncs.append(func);
 }
 
 inline CCoeAppUi* QS60Data::appUi()

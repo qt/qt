@@ -280,7 +280,7 @@ public:
 
     inline bool needsEmulation(const QBrush &brush) const
     {
-        extern bool qt_isExtendedRadialGradient(const QBrush &brush);
+        Q_GUI_EXPORT bool qt_isExtendedRadialGradient(const QBrush &brush);
         return qt_isExtendedRadialGradient(brush);
     }
 
@@ -1579,7 +1579,7 @@ void QVGPaintEngine::draw(const QVectorPath &path)
     vgDestroyPath(vgpath);
 }
 
-extern QPainterPath qt_painterPathFromVectorPath(const QVectorPath &path);
+Q_GUI_EXPORT QPainterPath qt_painterPathFromVectorPath(const QVectorPath &path);
 
 void QVGPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 {

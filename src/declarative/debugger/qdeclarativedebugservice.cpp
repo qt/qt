@@ -209,6 +209,16 @@ void QDeclarativeDebugService::sendMessage(const QByteArray &message)
     d->server->sendMessage(this, message);
 }
 
+bool QDeclarativeDebugService::waitForMessage()
+{
+    Q_D(QDeclarativeDebugService);
+
+    if (status() != Enabled)
+        return false;
+
+    return d->server->waitForMessage(this);
+}
+
 void QDeclarativeDebugService::statusChanged(Status)
 {
 }

@@ -5485,6 +5485,13 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
     if (extensions.match("GL_EXT_bgra"))
         glExtensions |= BGRATextureFormat;
 
+    {
+        GLboolean srgbCapableFramebuffers;
+        glGetBooleanv(FRAMEBUFFER_SRGB_CAPABLE_EXT, &srgbCapableFramebuffers);
+        if (srgbCapableFramebuffers)
+            glExtensions |= SRGBFrameBuffer;
+    }
+
     return glExtensions;
 }
 
