@@ -569,12 +569,27 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     exportFlm();
 
     // Parse extra compilers data
+    QStringList rawDefines;
     QStringList defines;
     QStringList incPath;
 
-    defines << varGlue("PRL_EXPORT_DEFINES","-D"," -D"," ")
-            << varGlue("QMAKE_COMPILER_DEFINES", "-D", "-D", " ")
-            << varGlue("DEFINES","-D"," -D","");
+    rawDefines << project->values("PRL_EXPORT_DEFINES")
+               << project->values("QMAKE_COMPILER_DEFINES")
+               << project->values("DEFINES");
+
+    // Remove defines containing doubly-escaped characters (e.g. escaped double-quotation mark
+    // inside a string define) as bld.inf parsing done by sbsv2 toolchain breaks if they are
+    // present.
+    static QString backslashes = QLatin1String("\\\\");
+    QMutableStringListIterator i(rawDefines);
+    while (i.hasNext()) {
+        QString val = i.next();
+        if (val.indexOf(backslashes) != -1)
+            i.remove();
+    }
+
+    defines << valGlue(rawDefines,"-D"," -D","");
+
     for (QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
         QStringList values = it.value();
         for (int i = 0; i < values.size(); ++i) {
