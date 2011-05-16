@@ -12864,4 +12864,4 @@ EXPORTS
 	_ZNK9QLineEdit15cursorMoveStyleEv @ 12863 NONAME
 	_ZTI19QIdentityProxyModel @ 12864 NONAME
 	_ZTV19QIdentityProxyModel @ 12865 NONAME
-
+        _Z43qt_s60_setPartialScreenAutomaticTranslationb @ 12866 NONAME

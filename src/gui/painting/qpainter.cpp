@@ -692,7 +692,7 @@ void QPainterPrivate::updateInvMatrix()
     invMatrix = state->matrix.inverted();
 }
 
-extern bool qt_isExtendedRadialGradient(const QBrush &brush);
+Q_GUI_EXPORT bool qt_isExtendedRadialGradient(const QBrush &brush);
 
 void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
 {

@@ -47,10 +47,10 @@
 #include <QtGui/QPlatformGLContext>
 #include <QtGui/QPlatformWindowFormat>
 
-#include <QtCore/QMutex>
-
 #if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
+#define Status int
 #include <GL/glx.h>
+#undef Status
 
 QT_BEGIN_NAMESPACE
 

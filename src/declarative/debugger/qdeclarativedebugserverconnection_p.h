@@ -62,6 +62,7 @@ public:
     virtual bool isConnected() const = 0;
     virtual void send(const QByteArray &message) = 0;
     virtual void disconnect() = 0;
+    virtual bool waitForMessage() = 0;
 };
 
 Q_DECLARE_INTERFACE(QDeclarativeDebugServerConnection, "com.trolltech.Qt.QDeclarativeDebugServerConnection/1.0")

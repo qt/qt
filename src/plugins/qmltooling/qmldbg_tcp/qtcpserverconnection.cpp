@@ -41,6 +41,7 @@
 
 #include "qtcpserverconnection.h"
 
+#include <QtCore/qplugin.h>
 #include <QtNetwork/qtcpserver.h>
 #include <QtNetwork/qtcpsocket.h>
 
@@ -54,6 +55,7 @@ public:
     QTcpServerConnectionPrivate();
 
     int port;
+    bool block;
     QTcpSocket *socket;
     QPacketProtocol *protocol;
     QTcpServer *tcpServer;
@@ -63,6 +65,7 @@ public:
 
 QTcpServerConnectionPrivate::QTcpServerConnectionPrivate() :
     port(0),
+    block(false),
     socket(0),
     protocol(0),
     tcpServer(0),
@@ -119,10 +122,17 @@ void QTcpServerConnection::disconnect()
     d->socket = 0;
 }
 
+bool QTcpServerConnection::waitForMessage()
+{
+    Q_D(QTcpServerConnection);
+    return d->protocol->waitForReadyRead(-1);
+}
+
 void QTcpServerConnection::setPort(int port, bool block)
 {
     Q_D(QTcpServerConnection);
     d->port = port;
+    d->block = block;
 
     listen();
     if (block)
@@ -169,8 +179,11 @@ void QTcpServerConnection::newConnection()
     d->socket->setParent(this);
     d->protocol = new QPacketProtocol(d->socket, this);
     QObject::connect(d->protocol, SIGNAL(readyRead()), this, SLOT(readyRead()));
-}
 
+    if (d->block) {
+        d->protocol->waitForReadyRead(-1);
+    }
+}
 
 Q_EXPORT_PLUGIN2(tcpserver, QTcpServerConnection)
 
