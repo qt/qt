@@ -47,3 +47,7 @@
 #if defined(Q_CC_MSVC) && _MSC_VER  < 1400
 #define QT_NO_CONCURRENT_TEST
 #endif
+
+#if defined(Q_CC_NOKIAX86)
+#define QT_NO_CONCURRENT_TEST
+#endif

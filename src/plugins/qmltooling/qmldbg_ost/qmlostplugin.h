@@ -68,6 +68,7 @@ public:
     bool isConnected() const;
     void send(const QByteArray &message);
     void disconnect();
+    bool waitForMessage();
 
 private Q_SLOTS:
     void readyRead();

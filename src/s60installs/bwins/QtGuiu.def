@@ -14020,4 +14020,4 @@ EXPORTS
 	?staticMetaObjectExtraData@QIdentityProxyModel@@0UQMetaObjectExtraData@@B @ 14019 NONAME ; struct QMetaObjectExtraData const QIdentityProxyModel::staticMetaObjectExtraData
 	?getStaticMetaObject@QIdentityProxyModel@@SAABUQMetaObject@@XZ @ 14020 NONAME ; struct QMetaObject const & QIdentityProxyModel::getStaticMetaObject(void)
 	?removeRows@QIdentityProxyModel@@UAE_NHHABVQModelIndex@@@Z @ 14021 NONAME ; bool QIdentityProxyModel::removeRows(int, int, class QModelIndex const &)
-
+        ?qt_s60_setPartialScreenAutomaticTranslation@@YAX_N@Z @ 14022 NONAME ; void qt_s60_setPartialScreenAutomaticTranslation(bool)
