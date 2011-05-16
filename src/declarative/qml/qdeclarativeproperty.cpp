@@ -183,6 +183,9 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name)
 /*!
     Creates a QDeclarativeProperty for the property \a name of \a obj
     using the \l{QDeclarativeContext} {context} \a ctxt.
+
+    Creating a QDeclarativeProperty without a context will render some 
+    properties - like attached properties - inaccessible.
 */
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name, QDeclarativeContext *ctxt)
 : d(new QDeclarativePropertyPrivate)
