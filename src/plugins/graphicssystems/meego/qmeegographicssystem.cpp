@@ -124,14 +124,14 @@ void QMeeGoGraphicsSystemSwitchHandler::addWidget(QWidget *widget)
 
 void QMeeGoGraphicsSystemSwitchHandler::handleMapNotify()
 {
-    if (m_widgets.isEmpty() && QMeeGoGraphicsSystem::switchPolicy == QMeeGoGraphicsSystem::AutomaticSwitch)
+    if (QMeeGoGraphicsSystem::switchPolicy == QMeeGoGraphicsSystem::AutomaticSwitch && visibleWidgets() == 0)
         QTimer::singleShot(0, this, SLOT(switchToMeeGo()));
 }
 
 void QMeeGoGraphicsSystemSwitchHandler::removeWidget(QObject *object)
 {
     m_widgets.removeOne(static_cast<QWidget *>(object));
-    if (m_widgets.isEmpty() && QMeeGoGraphicsSystem::switchPolicy == QMeeGoGraphicsSystem::AutomaticSwitch)
+    if (QMeeGoGraphicsSystem::switchPolicy == QMeeGoGraphicsSystem::AutomaticSwitch && visibleWidgets() == 0)
         QTimer::singleShot(0, this, SLOT(switchToRaster()));
 }
 
