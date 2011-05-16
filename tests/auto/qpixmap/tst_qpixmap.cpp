@@ -194,6 +194,9 @@ private slots:
 #if defined(Q_OS_SYMBIAN) && !defined(QT_NO_OPENVG)
     void vgImageReadBack();
 #endif
+
+    void drawPixmapWhilePainterOpen();
+    void scaled_QTBUG19157();
 };
 
 static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
@@ -1880,6 +1883,72 @@ void tst_QPixmap::vgImageReadBack()
     }
 }
 #endif // Symbian & OpenVG
+
+class PixmapWidget : public QWidget
+{
+public:
+    PixmapWidget(QPixmap &pixmap) : QWidget(0), m_pixmap(pixmap)
+    {
+        resize(pixmap.width(), pixmap.height());
+    }
+
+protected:
+    void paintEvent(QPaintEvent *)
+    {
+        QPainter p(this);
+        p.drawPixmap(0, 0, m_pixmap);
+    }
+
+private:
+    QPixmap &m_pixmap;
+};
+
+void tst_QPixmap::drawPixmapWhilePainterOpen()
+{
+    const int delay = 1000;
+    const int size = 100;
+    const QColor colors[] = { Qt::red, Qt::blue, Qt::green };
+
+    QPixmap pix(size, size);
+    pix.fill(colors[0]);
+
+    PixmapWidget w(pix);
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+    QTest::qWait(delay);
+
+    QPainter p(&pix);
+    p.fillRect(0, 0, size, size, colors[1]);
+    w.update();
+    QTest::qWait(delay);
+
+    p.fillRect(0, 0, size, size, colors[2]);
+    w.update();
+    QTest::qWait(delay);
+
+    QPixmap actual = QPixmap::grabWindow(w.effectiveWinId(), 0, 0, size, size);
+
+    // If we captured some bogus content with grabWindow(), the comparison makes no sense
+    // because it cannot prove the feature is broken.
+    QPixmap guard(size, size);
+    bool matchesColors = false;
+    for (size_t i = 0; i < sizeof(colors) / sizeof(const QColor); ++i) {
+        guard.fill(colors[i]);
+        matchesColors |= lenientCompare(actual, guard);
+    }
+    if (!matchesColors) {
+        QSKIP("Skipping verification due to grabWindow() issue", SkipSingle);
+    } else {
+        QVERIFY(lenientCompare(actual, pix));
+    }
+}
+
+void tst_QPixmap::scaled_QTBUG19157()
+{
+    QPixmap foo(5000, 1);
+    foo = foo.scaled(1024, 1024, Qt::KeepAspectRatio);
+    QVERIFY(!foo.isNull());
+}
 
 QTEST_MAIN(tst_QPixmap)
 #include "tst_qpixmap.moc"

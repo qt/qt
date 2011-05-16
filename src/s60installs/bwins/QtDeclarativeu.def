@@ -1893,4 +1893,13 @@ EXPORTS
 	?setLayoutMirror@QDeclarativeItemPrivate@@QAEX_N@Z @ 1892 NONAME ; void QDeclarativeItemPrivate::setLayoutMirror(bool)
 	?setImplicitLayoutMirror@QDeclarativeItemPrivate@@QAEX_N0@Z @ 1893 NONAME ; void QDeclarativeItemPrivate::setImplicitLayoutMirror(bool, bool)
 	?isMirrored@QDeclarativeItemPrivate@@QBE_NXZ @ 1894 NONAME ; bool QDeclarativeItemPrivate::isMirrored(void) const
+	??_EQDeclarativeListReference@@QAE@I@Z @ 1895 NONAME ; QDeclarativeListReference::~QDeclarativeListReference(unsigned int)
+	??_EVariant@QDeclarativeParser@@QAE@I@Z @ 1896 NONAME ; QDeclarativeParser::Variant::~Variant(unsigned int)
+	??_EQDeclarativeProperty@@QAE@I@Z @ 1897 NONAME ; QDeclarativeProperty::~QDeclarativeProperty(unsigned int)
+	??_EQDeclarativeError@@QAE@I@Z @ 1898 NONAME ; QDeclarativeError::~QDeclarativeError(unsigned int)
+	??_EQDeclarativeCustomParserProperty@@QAE@I@Z @ 1899 NONAME ; QDeclarativeCustomParserProperty::~QDeclarativeCustomParserProperty(unsigned int)
+	??0QDeclarativeExtensionInterface@@QAE@XZ @ 1900 NONAME ; QDeclarativeExtensionInterface::QDeclarativeExtensionInterface(void)
+	??_EQDeclarativeScriptString@@QAE@I@Z @ 1901 NONAME ; QDeclarativeScriptString::~QDeclarativeScriptString(unsigned int)
+	??_EQDeclarativeCustomParserNode@@QAE@I@Z @ 1902 NONAME ; QDeclarativeCustomParserNode::~QDeclarativeCustomParserNode(unsigned int)
+	??_EQDeclarativePixmap@@QAE@I@Z @ 1903 NONAME ; QDeclarativePixmap::~QDeclarativePixmap(unsigned int)
 

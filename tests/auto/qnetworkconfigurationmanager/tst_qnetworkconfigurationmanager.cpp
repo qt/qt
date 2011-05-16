@@ -45,7 +45,7 @@
 #include <QtNetwork/qnetworkconfiguration.h>
 #include <QtNetwork/qnetworkconfigmanager.h>
 
-#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD) && !defined (Q_OS_SYMBIAN)
 #include <stdio.h>
 #include <iapconf.h>
 #endif
@@ -62,12 +62,13 @@ public slots:
     void cleanup();
 
 private slots:
+    void usedInThread(); // this test must be first, or it will falsely pass
     void allConfigurations();
     void defaultConfiguration();
     void configurationFromIdentifier();
 
 private:
-#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD) && !defined (Q_OS_SYMBIAN)
     Maemo::IAPConf *iapconf;
     Maemo::IAPConf *iapconf2;
     Maemo::IAPConf *gprsiap;
@@ -79,7 +80,7 @@ private:
 
 void tst_QNetworkConfigurationManager::initTestCase()
 {
-#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD) && !defined (Q_OS_SYMBIAN)
     iapconf = new Maemo::IAPConf("007");
     iapconf->setValue("ipv4_type", "AUTO");
     iapconf->setValue("wlan_wepkey1", "connt");
@@ -153,7 +154,7 @@ void tst_QNetworkConfigurationManager::initTestCase()
 
 void tst_QNetworkConfigurationManager::cleanupTestCase()
 {
-#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD) && !defined (Q_OS_SYMBIAN)
     iapconf->clear();
     delete iapconf;
     iapconf2->clear();
@@ -329,6 +330,47 @@ void tst_QNetworkConfigurationManager::configurationFromIdentifier()
     QVERIFY(!invalid.isValid());
 }
 
+class QNCMTestThread : public QThread
+{
+protected:
+    virtual void run()
+    {
+        QNetworkConfigurationManager manager;
+        preScanConfigs = manager.allConfigurations();
+        QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
+        manager.updateConfigurations(); //initiate scans
+        QTRY_VERIFY(spy.count() == 1); //wait for scan to complete
+        configs = manager.allConfigurations();
+    }
+public:
+    QList<QNetworkConfiguration> configs;
+    QList<QNetworkConfiguration> preScanConfigs;
+};
+
+// regression test for QTBUG-18795
+void tst_QNetworkConfigurationManager::usedInThread()
+{
+#if defined Q_OS_MAC && !defined (QT_NO_COREWLAN)
+    QSKIP("QTBUG-19070 Mac CoreWlan plugin is broken", SkipAll);
+#else
+    QNCMTestThread thread;
+    connect(&thread, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    thread.start();
+    QTestEventLoop::instance().enterLoop(100); //QTRY_VERIFY could take ~90 seconds to time out in the thread
+    QVERIFY(thread.isFinished());
+    qDebug() << "prescan:" << thread.preScanConfigs.count();
+    qDebug() << "postscan:" << thread.configs.count();
+
+    QNetworkConfigurationManager manager;
+    QList<QNetworkConfiguration> preScanConfigs = manager.allConfigurations();
+    QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
+    manager.updateConfigurations(); //initiate scans
+    QTRY_VERIFY(spy.count() == 1); //wait for scan to complete
+    QList<QNetworkConfiguration> configs = manager.allConfigurations();
+    QCOMPARE(thread.configs, configs);
+    QCOMPARE(thread.preScanConfigs, preScanConfigs);
+#endif
+}
 
 QTEST_MAIN(tst_QNetworkConfigurationManager)
 #include "tst_qnetworkconfigurationmanager.moc"

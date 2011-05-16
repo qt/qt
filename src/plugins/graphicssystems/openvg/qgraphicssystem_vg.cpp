@@ -80,9 +80,15 @@ QWindowSurface *QVGGraphicsSystem::createWindowSurface(QWidget *widget) const
     return new QVGWindowSurface(widget);
 }
 
-void QVGGraphicsSystem::releaseCachedResources()
+#ifdef Q_OS_SYMBIAN
+void QVGGraphicsSystem::releaseCachedGpuResources()
 {
     QVGImagePool::instance()->hibernate();
 }
 
+QGraphicsSystemEx *QVGGraphicsSystem::platformExtension()
+{
+    return this;
+}
+#endif
 QT_END_NAMESPACE

@@ -47,7 +47,7 @@
 
 template<bool IsForGlobal>
 EvaluationCache<IsForGlobal>::EvaluationCache(const Expression::Ptr &op,
-                                              const VariableDeclaration::Ptr &varDecl,
+                                              const VariableDeclaration *varDecl,
                                               const VariableSlotID aSlot) : SingleContainer(op)
                                                                           , m_declaration(varDecl)
                                                                           , m_varSlot(aSlot)

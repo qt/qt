@@ -1800,10 +1800,12 @@ glyph_metrics_t QFontEngineFT::boundingBox(glyph_t glyph, const QTransform &matr
     } else {
         glyphSet = &defaultGlyphSet;
     }
+    bool needsDelete = false;
     Glyph * g = glyphSet->getGlyph(glyph);
     if (!g) {
         face = lockFace();
         g = loadGlyphMetrics(glyphSet, glyph);
+        needsDelete = true;
     }
 
     if (g) {
@@ -1812,6 +1814,8 @@ glyph_metrics_t QFontEngineFT::boundingBox(glyph_t glyph, const QTransform &matr
         overall.width = g->width;
         overall.height = g->height;
         overall.xoff = g->advance;
+        if (needsDelete)
+            delete g;
     } else {
         int left  = FLOOR(face->glyph->metrics.horiBearingX);
         int right = CEIL(face->glyph->metrics.horiBearingX + face->glyph->metrics.width);

@@ -398,7 +398,7 @@ void QComboBoxPrivateContainer::leaveEvent(QEvent *)
 #ifdef Q_WS_MAC
     QStyleOptionComboBox opt = comboStyleOption();
     if (combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo))
-        view->setCurrentIndex(QModelIndex());
+          view->clearSelection();
 #endif
 }
 
@@ -671,8 +671,8 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
             if (vector.manhattanLength() > 9 && blockMouseReleaseTimer.isActive())
                 blockMouseReleaseTimer.stop();
             QModelIndex indexUnderMouse = view->indexAt(m->pos());
-            if (indexUnderMouse.isValid() && indexUnderMouse != view->currentIndex()
-                    && !QComboBoxDelegate::isSeparator(indexUnderMouse)) {
+            if (indexUnderMouse.isValid()
+                     && !QComboBoxDelegate::isSeparator(indexUnderMouse)) {
                 view->setCurrentIndex(indexUnderMouse);
             }
         }
@@ -704,11 +704,13 @@ void QComboBoxPrivateContainer::hideEvent(QHideEvent *)
 {
     emit resetButton();
     combo->update();
+#ifndef QT_NO_GRAPHICSVIEW
     // QGraphicsScenePrivate::removePopup closes the combo box popup, it hides it non-explicitly.
     // Hiding/showing the QComboBox after this will unexpectedly show the popup as well.
     // Re-hiding the popup container makes sure it is explicitly hidden.
     if (QGraphicsProxyWidget *proxy = graphicsProxyWidget())
         proxy->hide();
+#endif
 }
 
 void QComboBoxPrivateContainer::mousePressEvent(QMouseEvent *e)

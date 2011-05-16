@@ -52,6 +52,9 @@
 #endif
 #ifdef Q_OS_SYMBIAN
 # include <private/qpixmap_s60_p.h>
+# include <private/qgraphicssystemex_symbian_p.h>
+#else
+# include <private/qgraphicssystemex_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -84,9 +87,18 @@ QPixmapData *QGraphicsSystem::createPixmapData(QPixmapData *origin)
     return createPixmapData(origin->pixelType());
 }
 
-void QGraphicsSystem::releaseCachedResources()
+#ifdef Q_OS_SYMBIAN
+Q_GLOBAL_STATIC(QSymbianGraphicsSystemEx, symbianPlatformExtension)
+#endif
+
+QGraphicsSystemEx* QGraphicsSystem::platformExtension()
 {
-    // Do nothing here
+#ifdef Q_OS_SYMBIAN
+    // this is used on raster graphics systems. HW accelerated
+    // graphics systems will overwrite this function.
+    return symbianPlatformExtension();
+#endif
+    return 0;
 }
 
 QT_END_NAMESPACE

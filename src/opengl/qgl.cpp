@@ -69,6 +69,7 @@
 
 #if !defined(QT_OPENGL_ES_1)
 #include "gl2paintengineex/qpaintengineex_opengl2_p.h"
+#include <private/qwindowsurface_gl_p.h>
 #endif
 
 #ifndef QT_OPENGL_ES_2
@@ -86,7 +87,6 @@
 #include <private/qpixmapdata_p.h>
 #include <private/qpixmapdata_gl_p.h>
 #include <private/qglpixelbuffer_p.h>
-#include <private/qwindowsurface_gl_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
 #include "qcolormap.h"
 #include "qfile.h"

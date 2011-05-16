@@ -77,7 +77,7 @@ namespace QPatternist
     {
     public:
         ExpressionVariableReference(const VariableSlotID slot,
-                                    const VariableDeclaration::Ptr &varDecl);
+                                    const VariableDeclaration *varDecl);
 
         virtual bool evaluateEBV(const DynamicContext::Ptr &context) const;
         virtual Item evaluateSingleton(const DynamicContext::Ptr &context) const;
@@ -90,9 +90,9 @@ namespace QPatternist
         virtual ExpressionVisitorResult::Ptr accept(const ExpressionVisitor::Ptr &visitor) const;
 
         inline const Expression::Ptr &sourceExpression() const;
-        inline const VariableDeclaration::Ptr &variableDeclaration() const;
+        inline const VariableDeclaration *variableDeclaration() const;
     private:
-        const VariableDeclaration::Ptr m_varDecl;
+        const VariableDeclaration *m_varDecl;
     };
 
     inline const Expression::Ptr &ExpressionVariableReference::sourceExpression() const
@@ -100,7 +100,7 @@ namespace QPatternist
         return m_varDecl->expression();
     }
 
-    inline const VariableDeclaration::Ptr &ExpressionVariableReference::variableDeclaration() const
+    inline const VariableDeclaration *ExpressionVariableReference::variableDeclaration() const
     {
         return m_varDecl;
     }

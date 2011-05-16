@@ -641,10 +641,10 @@ CFG_XRANDR=runtime
 CFG_XRENDER=auto
 CFG_MITSHM=auto
 CFG_OPENGL=auto
-CFG_OPENVG=no
+CFG_OPENVG=auto
 CFG_OPENVG_LC_INCLUDES=no
-CFG_OPENVG_SHIVA=no
-CFG_OPENVG_ON_OPENGL=no
+CFG_OPENVG_SHIVA=auto
+CFG_OPENVG_ON_OPENGL=auto
 CFG_EGL=no
 CFG_EGL_GLES_INCLUDES=no
 CFG_SSE=auto
@@ -3244,7 +3244,7 @@ if [ "$PLATFORM_QWS" = "yes" ] && [ "$CFG_OPENGL" = "auto" ]; then
 fi
 
 # mac
-if [ "$PLATFORM_MAC" = "yes" ]; then
+if [ "$PLATFORM_MAC" = "yes" ] && [ "$XPLATFORM_SYMBIAN" = "no" ]; then
     if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
         CFG_OPENGL=desktop
     fi
@@ -5515,7 +5515,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
 fi # X11/QWS
 
 # X11
-if [ "$PLATFORM_X11" = "yes" ]; then
+if [ "$PLATFORM_X11" = "yes" -a "$CFG_GUI" != "no" ]; then
     x11tests="$relpath/config.tests/x11"
     X11TESTS_FLAGS=
 
@@ -5537,8 +5537,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
     fi
 fi
 
-# X11/MINGW OpenGL
-if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
+# X11/MINGW/SYMBIAN OpenGL
+if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" -o "$XPLATFORM_SYMBIAN" = "yes" ]; then
     # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es2 = OpenGL ES 2.x)
     if [ "$CFG_GUI" = "no" ]; then
         if [ "$CFG_OPENGL" = "auto" ]; then
@@ -7120,7 +7120,6 @@ EOF
         canBuildQtConcurrent="no"
 	;;
     symbian-gcce)
-        canBuildWebKit="no"
         canBuildQtConcurrent="no"
         ;;
     symbian-armcc)

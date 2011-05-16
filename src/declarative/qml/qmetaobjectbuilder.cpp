@@ -1448,6 +1448,7 @@ QMetaObject *QMetaObjectBuilder::toMetaObject() const
 {
     int size = buildMetaObject(d, 0, false);
     char *buf = reinterpret_cast<char *>(qMalloc(size));
+    memset(buf, 0, size);
     buildMetaObject(d, buf, false);
     return reinterpret_cast<QMetaObject *>(buf);
 }
@@ -1477,6 +1478,7 @@ QByteArray QMetaObjectBuilder::toRelocatableData(bool *ok) const
     QByteArray data;
     data.resize(size);
     char *buf = data.data();
+    memset(buf, 0, size);
     buildMetaObject(d, buf, true);
     if (ok) *ok = true;
     return data;

@@ -103,6 +103,11 @@ QVolatileImage &QVolatileImage::operator=(const QVolatileImage &rhs)
     return *this;
 }
 
+bool QVolatileImage::paintingActive() const
+{
+    return d->pengine && d->pengine->isActive();
+}
+
 bool QVolatileImage::isNull() const
 {
     return d->image.isNull();

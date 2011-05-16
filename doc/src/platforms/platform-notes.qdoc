@@ -645,28 +645,8 @@
 
     \section1 Supported Devices
 
-    Qt is designed to work on any device which runs one of the following
-    versions of Symbian:
-
-    \table
-    \header \o Symbian Version
-    \row \o S60 3.1
-    \row \o S60 3.2
-    \row \o S60 5.0 (Symbian ^1)
-    \endtable
-
-    Qt has received \l{Tier 1 Platforms}{Tier 1} testing on the following phone models:
-
-    \table
-    \header \o Phone
-    \row    \o Nokia 5800
-    \row    \o Nokia E71
-    \row    \o Nokia E72
-    \row    \o Nokia N78
-    \row    \o Nokia N95
-    \row    \o Nokia N97
-    \row    \o Samsung i8910
-    \endtable
+    See the list of supported devices at
+    http://wiki.forum.nokia.com/index.php/Nokia_Smart_Installer_for_Symbian#Supported_Devices
 
     \section1 Supported Functionality
 
@@ -679,8 +659,6 @@
             \o Planned for future release.
     \row    \o QtDBus
             \o No current plans to support this feature.
-    \row    \o QtOpenGL ES
-            \o Planned for future release.
     \row    \o Printing support
             \o No current plans to support this feature.
     \row    \o Qt3Support
@@ -773,6 +751,12 @@
     platform in use. If available, it is loaded in preference over the MMF
     plugin. If the Helix plugin fails to load, the MMF plugin, if present on
     the device, will be loaded instead.
+
+    \section1 QtOpenGL Support
+
+    Qt 4.7 introduces the QtOpenGL module to Symbian^3. QtOpenGL is supported on
+    devices which support OpenGL ES 2.0. Symbian platforms prior to Symbian^3
+    are not supported.
 
     \section1 UI Performance in devices prior to Symbian^3
 

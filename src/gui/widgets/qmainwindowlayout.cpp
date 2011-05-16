@@ -1695,6 +1695,7 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow, QLayout *parentLay
     , gapIndicator(new QRubberBand(QRubberBand::Rectangle, mainwindow))
 #endif //QT_NO_RUBBERBAND
 #ifdef Q_WS_MAC
+    , activateUnifiedToolbarAfterFullScreen(false)
     , blockVisiblityCheck(false)
 #endif
 {

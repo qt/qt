@@ -1488,7 +1488,7 @@ QTextBlock::iterator QTextBlock::end() const
 */
 QTextBlock QTextBlock::next() const
 {
-    if (!isValid())
+    if (!isValid() || !p->blockMap().isValid(n))
         return QTextBlock();
 
     return QTextBlock(p, p->blockMap().next(n));

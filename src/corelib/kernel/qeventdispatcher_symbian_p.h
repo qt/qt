@@ -63,6 +63,7 @@
 #include <qwaitcondition.h>
 #include <qsocketnotifier.h>
 #include <qdatetime.h>
+#include <qelapsedtimer.h>
 
 #include <e32base.h>
 
@@ -143,6 +144,8 @@ private:
 
 private:
     SymbianTimerInfo *m_timerInfo;
+    QElapsedTimer m_timeoutTimer;
+    int m_expectedTimeSinceLastEvent;
     RTimer m_rTimer;
 };
 
