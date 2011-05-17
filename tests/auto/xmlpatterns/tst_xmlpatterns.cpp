@@ -107,13 +107,13 @@ tst_XmlPatterns::tst_XmlPatterns() : m_generatedTests(0)
                                    , m_dontRun(false)
 {
     Q_SET_DEFAULT_IAP
-
-    Q_ASSERT(m_normalizeTestName.isValid());
-    Q_ASSERT(m_filenameInStderr.isValid());
 }
 
 void tst_XmlPatterns::initTestCase()
 {
+    QVERIFY(m_normalizeTestName.isValid());
+    QVERIFY(m_filenameInStderr.isValid());
+
     QProcess process;
     process.start(m_command);
 
@@ -121,7 +121,7 @@ void tst_XmlPatterns::initTestCase()
     {
         m_dontRun = true;
         QEXPECT_FAIL("", "The command line tool is not in the path, most likely because Qt "
-                         "has been partically built, such as only the sub-src rule. No tests will be run.", Abort);
+                         "has been partially built, such as only the sub-src rule. No tests will be run.", Abort);
         QVERIFY(false);
     }
 

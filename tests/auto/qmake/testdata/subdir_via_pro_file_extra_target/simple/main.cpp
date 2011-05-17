@@ -38,31 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QApplication>
-#include <QByteArray>
-#include <QCopChannel>
-#include <stdio.h>
-#include <QStringList>
 
-int main(int argc, char** argv)
+
+int main(int,char**)
 {
-#ifdef Q_WS_QWS
-    QApplication app(argc, argv);
-    QStringList args = app.arguments();
-    if (args.count() != 3 && args.count() != 4) {
-        fprintf(stdout,qPrintable(QString("Usage: %1 channel message [data]").arg(args.at(0))));
-        fflush(stdout);
-        return 1;
-    }
-    QString channelName = args.at(1);
-    QString msg = args.at(2);
-    QByteArray data;
-    if(args.count()==4)
-	data = QByteArray(args.at(3).toAscii());
-    QCopChannel::send(channelName, msg, data);
-    QCopChannel::flush();
-    fprintf(stdout,"done");
-    fflush(stdout);
-#endif
-    return 0;
 }
