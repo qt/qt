@@ -76,9 +76,6 @@ public:
     tst_QScriptEngineDebugger();
     virtual ~tst_QScriptEngineDebugger();
 
-protected slots:
-    void recordDebuggerStateAndContinue();
-
 private slots:
     void attachAndDetach();
     void action();
@@ -89,9 +86,6 @@ private slots:
     void multithreadedDebugging();
     void autoShowStandardWindow();
     void standardWindowOwnership();
-
-private:
-    QScriptEngineDebugger::DebuggerState m_recordedDebuggerState;
 };
 
 tst_QScriptEngineDebugger::tst_QScriptEngineDebugger()
@@ -100,14 +94,6 @@ tst_QScriptEngineDebugger::tst_QScriptEngineDebugger()
 
 tst_QScriptEngineDebugger::~tst_QScriptEngineDebugger()
 {
-}
-
-void tst_QScriptEngineDebugger::recordDebuggerStateAndContinue()
-{
-    QScriptEngineDebugger *debugger = qobject_cast<QScriptEngineDebugger*>(sender());
-    Q_ASSERT(debugger != 0);
-    m_recordedDebuggerState = debugger->state();
-    debugger->action(QScriptEngineDebugger::ContinueAction)->trigger();
 }
 
 void tst_QScriptEngineDebugger::attachAndDetach()

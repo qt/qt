@@ -4739,7 +4739,8 @@ void tst_QWidget::update()
         QCOMPARE(w.visibleRegion(), expectedVisible);
         QCOMPARE(w.paintedRegion, expectedVisible);
 #ifdef QT_MAC_USE_COCOA
-        QEXPECT_FAIL(0, "Cocoa compositor says to paint this.", Continue);
+        if (QApplicationPrivate::graphics_system_name != QLatin1String("raster"))
+            QEXPECT_FAIL(0, "Cocoa compositor says to paint this.", Continue);
 #endif
         QCOMPARE(child.numPaintEvents, 0);
 
@@ -6337,11 +6338,15 @@ void tst_QWidget::compatibilityChildInsertedEvents()
         expected =
             EventRecorder::EventList()
             << qMakePair(&widget, QEvent::PolishRequest)
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60) || defined(Q_WS_QPA)
-            << qMakePair(&widget, QEvent::UpdateRequest)
-#endif
-            ;
+            << qMakePair(&widget, QEvent::Type(QEvent::User + 1));
+
+#ifndef QT_MAC_USE_CARBON
+#ifdef QT_MAC_USE_COCOA
+        if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
+#endif // QT_MAC_USE_COCOA
+            expected << qMakePair(&widget, QEvent::UpdateRequest);
+#endif // !QT_MAC_USE_CARBON
+
         QCOMPARE(spy.eventList(), expected);
     }
 
@@ -6433,11 +6438,15 @@ void tst_QWidget::compatibilityChildInsertedEvents()
 #endif
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60) || defined(Q_WS_QPA)
-            << qMakePair(&widget, QEvent::UpdateRequest)
-#endif
-            ;
+            << qMakePair(&widget, QEvent::Type(QEvent::User + 2));
+
+#ifndef QT_MAC_USE_CARBON
+#ifdef QT_MAC_USE_COCOA
+        if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
+#endif // QT_MAC_USE_COCOA
+            expected << qMakePair(&widget, QEvent::UpdateRequest);
+#endif // !QT_MAC_USE_CARBON
+
         QCOMPARE(spy.eventList(), expected);
     }
 
@@ -6529,11 +6538,15 @@ void tst_QWidget::compatibilityChildInsertedEvents()
 #endif
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60) || defined(Q_WS_QPA)
-            << qMakePair(&widget, QEvent::UpdateRequest)
-#endif
-            ;
+            << qMakePair(&widget, QEvent::Type(QEvent::User + 2));
+
+#ifndef QT_MAC_USE_CARBON
+#ifdef QT_MAC_USE_COCOA
+        if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
+#endif // QT_MAC_USE_COCOA
+            expected << qMakePair(&widget, QEvent::UpdateRequest);
+#endif // !QT_MAC_USE_CARBON
+
         QCOMPARE(spy.eventList(), expected);
     }
 }
@@ -7221,8 +7234,7 @@ void tst_QWidget::render_systemClip2()
     QFETCH(bool, usePaintEvent);
     QFETCH(QColor, expectedColor);
 
-    Q_ASSERT_X(expectedColor != QColor(Qt::red), Q_FUNC_INFO,
-               "Qt::red is the reference color for the image, pick another color");
+    QVERIFY2(expectedColor != QColor(Qt::red), "Qt::red is the reference color for the image, pick another color");
 
     class MyWidget : public QWidget
     {
@@ -10409,7 +10421,7 @@ void tst_QWidget::taskQTBUG_7532_tabOrderWithFocusProxy()
     w.setFocusProxy(fp);
     QWidget::setTabOrder(&w, fp);
 
-    // No Q_ASSERT, then it's allright.
+    // In debug mode, no assertion failure means it's alright.
 }
 
 void tst_QWidget::movedAndResizedAttributes()

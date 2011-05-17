@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,33 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
 
-#ifdef Q_WS_MAC
-
-#import <Cocoa/Cocoa.h>
-
-#include "qscroller_p.h"
-
-QPointF QScrollerPrivate::realDpi(int screen)
+int main(int,char**)
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSArray *nsscreens = [NSScreen screens];
-
-    if (screen < 0 || screen >= int([nsscreens count]))
-        screen = 0;
-
-    NSScreen *nsscreen = [nsscreens objectAtIndex:screen];
-    CGDirectDisplayID display = [[[nsscreen deviceDescription] objectForKey:@"NSScreenNumber"] intValue];
-
-    CGSize mmsize = CGDisplayScreenSize(display);
-    if (mmsize.width > 0 && mmsize.height > 0) {
-        return QPointF(CGDisplayPixelsWide(display) / mmsize.width,
-                       CGDisplayPixelsHigh(display) / mmsize.height) * qreal(25.4);
-    } else {
-        return QPointF();
-    }
-    [pool release];
 }
-
-#endif

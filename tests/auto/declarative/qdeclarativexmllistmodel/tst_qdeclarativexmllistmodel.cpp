@@ -126,7 +126,10 @@ private:
                 QStringList fields = item.split(",");
                 foreach(const QString &field, fields) {
                     QStringList values = field.split("=");
-                    Q_ASSERT(values.count() == 2);
+                    if (values.count() != 2) {
+                        qWarning() << "makeItemXmlAndData: invalid field:" << field;
+                        continue;
+                    }
                     xml += QString("<%1>%2</%1>").arg(values[0], values[1]);
                     if (!modelData)
                         continue;

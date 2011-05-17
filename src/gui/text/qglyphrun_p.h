@@ -39,75 +39,65 @@
 **
 ****************************************************************************/
 
-#ifndef QFLICKGESTURE_P_H
-#define QFLICKGESTURE_P_H
+#ifndef QGLYPHRUN_P_H
+#define QGLYPHRUN_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of other Qt classes.  This header file may change from version to
-// version without notice, or even be removed.
+// of internal files.  This header file may change from version to version
+// without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include "qevent.h"
-#include "qgesturerecognizer.h"
-#include "private/qgesture_p.h"
-#include "qscroller.h"
-#include "qscopedpointer.h"
+#include "qglyphrun.h"
+#include "qrawfont.h"
 
-#ifndef QT_NO_GESTURES
+#include <qfont.h>
+
+#if !defined(QT_NO_RAWFONT)
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QFlickGesturePrivate;
-class QGraphicsItem;
-
-class Q_GUI_EXPORT QFlickGesture : public QGesture
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QFlickGesture)
-
-public:
-    QFlickGesture(QObject *receiver, Qt::MouseButton button, QObject *parent = 0);
-    ~QFlickGesture();
-
-    friend class QFlickGestureRecognizer;
-};
-
-class PressDelayHandler;
-
-class QFlickGesturePrivate : public QGesturePrivate
-{
-    Q_DECLARE_PUBLIC(QFlickGesture)
-public:
-    QFlickGesturePrivate();
-
-    QPointer<QObject> receiver;
-    QScroller *receiverScroller;
-    Qt::MouseButton button; // NoButton == Touch
-    bool macIgnoreWheel;
-    static PressDelayHandler *pressDelayHandler;
-};
-
-class QFlickGestureRecognizer : public QGestureRecognizer
+class QGlyphRunPrivate: public QSharedData
 {
 public:
-    QFlickGestureRecognizer(Qt::MouseButton button);
+    QGlyphRunPrivate()
+        : overline(false)
+        , underline(false)
+        , strikeOut(false)
+    {
+    }
 
-    QGesture *create(QObject *target);
-    QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
-    void reset(QGesture *state);
+    QGlyphRunPrivate(const QGlyphRunPrivate &other)
+      : QSharedData(other)
+      , glyphIndexes(other.glyphIndexes)
+      , glyphPositions(other.glyphPositions)
+      , rawFont(other.rawFont)
+      , overline(other.overline)
+      , underline(other.underline)
+      , strikeOut(other.strikeOut)
+    {
+    }
 
-private:
-    Qt::MouseButton button; // NoButton == Touch
+    QVector<quint32> glyphIndexes;
+    QVector<QPointF> glyphPositions;
+    QRawFont rawFont;
+
+    uint overline  : 1;
+    uint underline : 1;
+    uint strikeOut : 1;
 };
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_GESTURES
+QT_END_HEADER
 
-#endif // QFLICKGESTURE_P_H
+#endif // QGLYPHS_P_H
+
+#endif // QT_NO_RAWFONT

@@ -2018,15 +2018,12 @@ void qt_init(QApplicationPrivate *priv, int,
                     (PtrXRRRootToScreen) xrandrLib.resolve("XRRRootToScreen");
                 X11->ptrXRRQueryExtension =
                     (PtrXRRQueryExtension) xrandrLib.resolve("XRRQueryExtension");
-                X11->ptrXRRSizes =
-                    (PtrXRRSizes) xrandrLib.resolve("XRRSizes");
             }
 #  else
             X11->ptrXRRSelectInput = XRRSelectInput;
             X11->ptrXRRUpdateConfiguration = XRRUpdateConfiguration;
             X11->ptrXRRRootToScreen = XRRRootToScreen;
             X11->ptrXRRQueryExtension = XRRQueryExtension;
-            X11->ptrXRRSizes = XRRSizes;
 #  endif
 
             if (X11->ptrXRRQueryExtension

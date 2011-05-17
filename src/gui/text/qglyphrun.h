@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGLYPHS_H
-#define QGLYPHS_H
+#ifndef QGLYPHRUN_H
+#define QGLYPHRUN_H
 
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qvector.h>
@@ -55,16 +55,16 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class QGlyphsPrivate;
-class Q_GUI_EXPORT QGlyphs
+class QGlyphRunPrivate;
+class Q_GUI_EXPORT QGlyphRun
 {
 public:
-    QGlyphs();
-    QGlyphs(const QGlyphs &other);
-    ~QGlyphs();
+    QGlyphRun();
+    QGlyphRun(const QGlyphRun &other);
+    ~QGlyphRun();
 
-    QRawFont font() const;
-    void setFont(const QRawFont &font);
+    QRawFont rawFont() const;
+    void setRawFont(const QRawFont &rawFont);
 
     QVector<quint32> glyphIndexes() const;
     void setGlyphIndexes(const QVector<quint32> &glyphIndexes);
@@ -74,9 +74,9 @@ public:
 
     void clear();
 
-    QGlyphs &operator=(const QGlyphs &other);
-    bool operator==(const QGlyphs &other) const;
-    bool operator!=(const QGlyphs &other) const;
+    QGlyphRun &operator=(const QGlyphRun &other);
+    bool operator==(const QGlyphRun &other) const;
+    bool operator!=(const QGlyphRun &other) const;
 
     void setOverline(bool overline);
     bool overline() const;
@@ -88,14 +88,14 @@ public:
     bool strikeOut() const;
 
 private:
-    friend class QGlyphsPrivate;
+    friend class QGlyphRunPrivate;
     friend class QTextLine;
 
-    QGlyphs operator+(const QGlyphs &other) const;
-    QGlyphs &operator+=(const QGlyphs &other);
+    QGlyphRun operator+(const QGlyphRun &other) const;
+    QGlyphRun &operator+=(const QGlyphRun &other);
 
     void detach();
-    QExplicitlySharedDataPointer<QGlyphsPrivate> d;
+    QExplicitlySharedDataPointer<QGlyphRunPrivate> d;
 };
 
 QT_END_NAMESPACE
