@@ -231,8 +231,6 @@ QT_BEGIN_NAMESPACE
     \value WinIdChange                      The window system identifer for this native widget has changed
     \value Gesture                          A gesture was triggered (QGestureEvent)
     \value GestureOverride                  A gesture override was triggered (QGestureEvent)
-    \value ScrollPrepare                    The object needs to fill in its geometry information (QScrollPrepareEvent)
-    \value Scroll                           The object needs to scroll to the supplied position (QScrollEvent)
 
     User events should have values between \c User and \c{MaxUser}:
 
