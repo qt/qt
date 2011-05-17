@@ -39,48 +39,48 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSYSTEM_P_H
-#define QGRAPHICSSYSTEM_P_H
+#include "qgraphicssystemex_symbian_p.h"
+#include "private/qwidget_p.h"
+#include "private/qbackingstore_p.h"
+#include "private/qapplication_p.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "private/qpixmapdata_p.h"
-#include "private/qwindowsurface_p.h"
-#include "private/qpaintengine_blitter_p.h"
-
-#include <qdebug.h>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
-class QPixmapFilter;
-class QBlittable;
-class QGraphicsSystemEx;
-
-class Q_GUI_EXPORT QGraphicsSystem
+void QSymbianGraphicsSystemEx::releaseCachedGpuResources()
 {
-public:
-    virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
-    virtual QPixmapData *createPixmapData(QPixmapData *origin);
-    virtual QWindowSurface *createWindowSurface(QWidget *widget) const = 0;
+    // Do nothing here
+    // This is implemented in graphics system specific plugin
+}
 
-    virtual ~QGraphicsSystem();
+void QSymbianGraphicsSystemEx::releaseAllGpuResources()
+{
+    releaseCachedGpuResources();
 
-    //### Remove this & change qpixmap.cpp & qbitmap.cpp once every platform is gaurenteed
-    //    to have a graphics system.
-    static QPixmapData *createDefaultPixmapData(QPixmapData::PixelType type);
+    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+        if (QTLWExtra *topExtra = qt_widget_private(widget)->maybeTopData())
+            topExtra->backingStore.destroy();
+    }
+}
 
-    virtual QGraphicsSystemEx* platformExtension();
-};
+bool QSymbianGraphicsSystemEx::hasBCM2727()
+{
+    return !QApplicationPrivate::instance()->useTranslucentEGLSurfaces;
+}
+
+void QSymbianGraphicsSystemEx::forceToRaster(QWidget *window)
+{
+    if (window && window->isWindow()) {
+        qt_widget_private(window)->createTLExtra();
+        if (QTLWExtra *topExtra = qt_widget_private(window)->maybeTopData()) {
+            topExtra->forcedToRaster = 1;
+            if (topExtra->backingStore.data()) {
+                topExtra->backingStore.create(window);
+                topExtra->backingStore.registerWidget(window);
+            }
+        }
+    }
+}
 
 QT_END_NAMESPACE
-
-#endif

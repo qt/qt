@@ -389,6 +389,7 @@ void tst_QDeclarativeListView::items()
 
     QTRY_VERIFY(listview->highlightItem() != 0);
     QTRY_COMPARE(listview->count(), model.count());
+    QTRY_COMPARE(canvas->rootObject()->property("count").toInt(), model.count());
     QTRY_COMPARE(contentItem->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
     // current item should be first item
@@ -517,6 +518,7 @@ void tst_QDeclarativeListView::inserted()
 
     model.insertItem(0, "Foo", "1111"); // zero index, and current item
 
+    QCOMPARE(canvas->rootObject()->property("count").toInt(), model.count());
     QTRY_COMPARE(contentItem->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
     name = findItem<QDeclarativeText>(contentItem, "textName", 0);
@@ -583,6 +585,7 @@ void tst_QDeclarativeListView::removed(bool animated)
     QTRY_VERIFY(contentItem != 0);
 
     model.removeItem(1);
+    QCOMPARE(canvas->rootObject()->property("count").toInt(), model.count());
 
     QDeclarativeText *name = findItem<QDeclarativeText>(contentItem, "textName", 1);
     QTRY_VERIFY(name != 0);
@@ -710,6 +713,16 @@ void tst_QDeclarativeListView::removed(bool animated)
 
     QTRY_VERIFY(name = findItem<QDeclarativeText>(contentItem, "textName", model.count()-1));
     QCOMPARE(name->text(), QString("New"));
+
+    // Add some more items so that we don't run out
+    for (int i = 50; i < 100; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    // QTBUG-19198 move to end and remove all visible items one at a time.
+    listview->positionViewAtEnd();
+    for (int i = 0; i < 18; ++i)
+        model.removeItems(model.count() - 1, 1);
+    QTRY_VERIFY(findItems<QDeclarativeItem>(contentItem, "wrapper").count() > 16);
 
     delete canvas;
 }
