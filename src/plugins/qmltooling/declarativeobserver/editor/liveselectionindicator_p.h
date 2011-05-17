@@ -47,7 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 class QGraphicsObject;
-class QGraphicsPolygonItem;
+class QGraphicsRectItem;
 class QGraphicsItem;
 class QPolygonF;
 QT_END_NAMESPACE
@@ -63,7 +63,7 @@ class QDeclarativeViewObserver;
 class LiveSelectionIndicator
 {
 public:
-    LiveSelectionIndicator(QDeclarativeViewObserver* editorView, QGraphicsObject *layerItem);
+    LiveSelectionIndicator(QDeclarativeViewObserver *viewObserver, QGraphicsObject *layerItem);
     ~LiveSelectionIndicator();
 
     void show();
@@ -74,13 +74,9 @@ public:
     void setItems(const QList<QWeakPointer<QGraphicsObject> > &itemList);
 
 private:
-    QPolygonF addBoundingRectToPolygon(QGraphicsItem *item, QPolygonF &polygon);
-
-private:
-    QHash<QGraphicsItem*, QGraphicsPolygonItem *> m_indicatorShapeHash;
+    QHash<QGraphicsItem*, QGraphicsRectItem *> m_indicatorShapeHash;
     QWeakPointer<QGraphicsObject> m_layerItem;
     QDeclarativeViewObserver *m_view;
-
 };
 
 QT_END_NAMESPACE
