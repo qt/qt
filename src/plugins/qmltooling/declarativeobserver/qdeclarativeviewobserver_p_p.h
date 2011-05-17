@@ -117,15 +117,16 @@ public:
     QList<QGraphicsItem*> selectableItems(const QPointF &scenePos) const;
     QList<QGraphicsItem*> selectableItems(const QRectF &sceneRect, Qt::ItemSelectionMode selectionMode) const;
 
-    void setSelectedItemsForTools(QList<QGraphicsItem *> items);
-    void setSelectedItems(QList<QGraphicsItem *> items);
+    void setSelectedItemsForTools(const QList<QGraphicsItem *> &items);
+    void setSelectedItems(const QList<QGraphicsItem *> &items);
     QList<QGraphicsItem *> selectedItems() const;
 
     void changeTool(Constants::DesignTool tool,
                     Constants::ToolFlags flags = Constants::NoToolFlags);
 
     void clearHighlight();
-    void highlight(QList<QGraphicsObject *> item, ContextFlags flags = ContextSensitive);
+    void highlight(const QList<QGraphicsObject *> &item,
+                   ContextFlags flags = ContextSensitive);
     void highlight(QGraphicsObject *item, ContextFlags flags = ContextSensitive);
 
     bool mouseInsideContextItem() const;

@@ -78,7 +78,7 @@ public:
     bool showAppOnTop() const;
 
     void sendDesignModeBehavior(bool inDesignMode);
-    void sendCurrentObjects(QList<QObject*> items);
+    void sendCurrentObjects(const QList<QObject*> &);
     void sendAnimationSpeed(qreal slowDownFactor);
     void sendAnimationPaused(bool paused);
     void sendCurrentTool(Constants::DesignTool toolId);
