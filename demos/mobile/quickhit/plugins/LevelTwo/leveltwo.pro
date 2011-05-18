@@ -64,11 +64,11 @@ BLD_INF_RULES.prj_exports += "gfx/background2.png ../winscw/c/Data/gfx/backgroun
 
 
 myQml.sources = qml/*
-myQml.path = c:/System/quickhitdata/leveltwo
+myQml.path = c:/system/quickhitdata/leveltwo
 myGraphic.sources = gfx/*
-myGraphic.path = c:/System/quickhitdata/leveltwo/gfx
+myGraphic.path = c:/system/quickhitdata/leveltwo/gfx
 mySound.sources = sound/*
-mySound.path = c:/System/quickhitdata/leveltwo/sound
+mySound.path = c:/system/quickhitdata/leveltwo/sound
 # Takes qml, graphics and sounds into Symbian SIS package file (.pkg)
 DEPLOYMENT += myQml myGraphic mySound
 
