@@ -46,14 +46,12 @@
 #include "qxlibwindow.h"
 #include "qxlibscreen.h"
 #include "qxlibdisplay.h"
+#include "qxlibstatic.h"
 
 #if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <GL/glx.h>
-#include "qglxconvenience.h"
-
 #include "qglxintegration.h"
+
+#include "qglxconvenience.h"
 
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
 #include <dlfcn.h>
