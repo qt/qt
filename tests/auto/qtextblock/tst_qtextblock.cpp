@@ -76,7 +76,6 @@ private slots:
     void excludeParagraphSeparatorFragment();
     void backwardsBlockIterator();
     void previousBlock_qtbug18026();
-    void removedBlock_qtbug18500();
 
 private:
     QTextDocument *doc;
@@ -180,17 +179,6 @@ void tst_QTextBlock::previousBlock_qtbug18026()
 {
     QTextBlock last = doc->end().previous();
     QVERIFY(last.isValid());
-}
-
-void tst_QTextBlock::removedBlock_qtbug18500()
-{
-    cursor.insertText("line 1\nline 2\nline 3 \nline 4\n");
-    cursor.setPosition(7);
-    QTextBlock block = cursor.block();
-    cursor.setPosition(21, QTextCursor::KeepAnchor);
-
-    cursor.removeSelectedText();
-    QVERIFY(!block.isValid());
 }
 
 QTEST_MAIN(tst_QTextBlock)

@@ -253,6 +253,8 @@ void tst_QDeclarativePathView::items()
     QDeclarativePathView *pathview = findItem<QDeclarativePathView>(canvas->rootObject(), "view");
     QVERIFY(pathview != 0);
 
+    QCOMPARE(pathview->count(), model.count());
+    QCOMPARE(canvas->rootObject()->property("count").toInt(), model.count());
     QCOMPARE(pathview->childItems().count(), model.count()+1); // assumes all are visible, including highlight
 
     for (int i = 0; i < model.count(); ++i) {
@@ -400,6 +402,7 @@ void tst_QDeclarativePathView::dataModel()
     model.insertItem(4, "orange", "10");
     QTest::qWait(100);
 
+    QCOMPARE(canvas->rootObject()->property("viewCount").toInt(), model.count());
     QTRY_COMPARE(findItems<QDeclarativeItem>(pathview, "wrapper").count(), 14);
 
     QVERIFY(pathview->currentIndex() == 0);
@@ -409,6 +412,7 @@ void tst_QDeclarativePathView::dataModel()
     QCOMPARE(text->text(), model.name(4));
 
     model.removeItem(2);
+    QCOMPARE(canvas->rootObject()->property("viewCount").toInt(), model.count());
     text = findItem<QDeclarativeText>(pathview, "myText", 2);
     QVERIFY(text);
     QCOMPARE(text->text(), model.name(2));

@@ -47,6 +47,7 @@
 #include <QtDeclarative/qdeclarativeview.h>
 #include <QtDeclarative/qdeclarativecontext.h>
 #include <QtDeclarative/qdeclarativeengine.h>
+#include <QtDeclarative/qdeclarativeproperty.h>
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -70,6 +71,9 @@ private slots:
     void preventStealing();
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
+#ifndef QT_NO_CONTEXTMENU
+    void preventContextMenu();
+#endif // QT_NO_CONTEXTMENU
 
 private:
     QDeclarativeView *createView();
@@ -636,6 +640,65 @@ void tst_QDeclarativeMouseArea::testQtQuick11Attributes_data()
         << "QDeclarativeComponent: Component is not ready"
         << ":1 \"MouseArea.preventStealing\" is not available in QtQuick 1.0.\n";
 }
+
+#ifndef QT_NO_CONTEXTMENU
+class ContextMenuEventReceiver : public QDeclarativeItem
+{
+    Q_OBJECT
+    Q_PROPERTY(int eventCount READ eventCount NOTIFY eventCountChanged);
+public:
+    ContextMenuEventReceiver(QDeclarativeItem *parent = 0) : QDeclarativeItem(parent), m_eventCount(0) { }
+    int eventCount() const { return m_eventCount; }
+signals:
+    void eventCountChanged(int);
+protected:
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
+        if (event->reason() == QGraphicsSceneContextMenuEvent::Mouse) {
+            m_eventCount++;
+            emit eventCountChanged(m_eventCount);
+        }
+    }
+private:
+    int m_eventCount;
+};
+
+void tst_QDeclarativeMouseArea::preventContextMenu()
+{
+    // A MouseArea accepting Left, Middle and Right buttons should prevent context menu
+    // events with "Mouse" reason to hit the Item below.
+
+    qmlRegisterType<ContextMenuEventReceiver>("Test", 1, 0, "ContextMenuEventReceiver");
+
+    QDeclarativeView *view = createView();
+    view->setSource(QUrl::fromLocalFile(SRCDIR "/data/preventContextMenu.qml"));
+    view->show();
+    QVERIFY(view->rootObject() != 0);
+
+    QDeclarativeProperty mouseAreaEnabled(view->rootObject(), "mouseAreaEnabled");
+    QVERIFY(mouseAreaEnabled.read().toBool());
+
+    QDeclarativeProperty eventsReceived(view->rootObject(), "eventsReceived");
+    QCOMPARE(eventsReceived.read().toInt(), 0);
+
+    QPoint targetPoint = view->mapFromScene(QPoint(80, 80));
+
+    QContextMenuEvent fakeEvent1(QContextMenuEvent::Mouse, targetPoint);
+    QApplication::sendEvent(view->viewport(), &fakeEvent1);
+    QCOMPARE(eventsReceived.read().toInt(), 0);
+
+    mouseAreaEnabled.write(false);
+    QVERIFY(!mouseAreaEnabled.read().toBool());
+    QContextMenuEvent fakeEvent2(QContextMenuEvent::Mouse, targetPoint);
+    QApplication::sendEvent(view->viewport(), &fakeEvent2);
+    QCOMPARE(eventsReceived.read().toInt(), 1);
+
+    mouseAreaEnabled.write(true);
+    QVERIFY(mouseAreaEnabled.read().toBool());
+    QContextMenuEvent fakeEvent3(QContextMenuEvent::Mouse, targetPoint);
+    QApplication::sendEvent(view->viewport(), &fakeEvent3);
+    QCOMPARE(eventsReceived.read().toInt(), 1);
+}
+#endif // QT_NO_CONTEXTMENU
 
 QTEST_MAIN(tst_QDeclarativeMouseArea)
 

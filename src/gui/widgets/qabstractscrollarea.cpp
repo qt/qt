@@ -53,8 +53,6 @@
 #include "qpainter.h"
 #include "qmargins.h"
 
-#include <QDebug>
-
 #include "qabstractscrollarea_p.h"
 #include <qwidget.h>
 
@@ -63,10 +61,6 @@
 #ifdef Q_WS_MAC
 #include <private/qt_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
-#endif
-#ifdef Q_WS_WIN
-#  include <qlibrary.h>
-#  include <windows.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -301,14 +295,9 @@ void QAbstractScrollAreaPrivate::init()
     q->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layoutChildren();
 #ifndef Q_WS_MAC
-#  ifndef QT_NO_GESTURES
+#ifndef QT_NO_GESTURES
     viewport->grabGesture(Qt::PanGesture);
-#  endif
 #endif
-#ifdef Q_WS_MAEMO_5
-#  ifndef QT_NO_GESTURES
-    // viewport->grabGesture(Qt::TouchFlickGesture);
-#  endif
 #endif
 }
 
@@ -561,11 +550,6 @@ void QAbstractScrollArea::setViewport(QWidget *widget)
 #ifndef Q_WS_MAC
 #ifndef QT_NO_GESTURES
         d->viewport->grabGesture(Qt::PanGesture);
-#endif
-#endif
-#ifdef Q_WS_MAEMO_5
-#ifndef QT_NO_GESTURES
-//        d->viewport->grabGesture(Qt::TouchFlickGesture);
 #endif
 #endif
         d->layoutChildren();
@@ -1002,66 +986,6 @@ bool QAbstractScrollArea::event(QEvent *e)
         return false;
     }
 #endif // QT_NO_GESTURES
-    case QEvent::ScrollPrepare:
-    {
-        QScrollPrepareEvent *se = static_cast<QScrollPrepareEvent *>(e);
-        if (d->canStartScrollingAt(se->startPos().toPoint())) {
-            QScrollBar *hBar = horizontalScrollBar();
-            QScrollBar *vBar = verticalScrollBar();
-
-            se->setViewportSize(QSizeF(viewport()->size()));
-            se->setContentPosRange(QRectF(0, 0, hBar->maximum(), vBar->maximum()));
-            se->setContentPos(QPointF(hBar->value(), vBar->value()));
-            se->accept();
-            return true;
-        }
-        return false;
-    }
-    case QEvent::Scroll:
-    {
-        QScrollEvent *se = static_cast<QScrollEvent *>(e);
-
-        QScrollBar *hBar = horizontalScrollBar();
-        QScrollBar *vBar = verticalScrollBar();
-        hBar->setValue(se->contentPos().x());
-        vBar->setValue(se->contentPos().y());
-
-#ifdef Q_WS_WIN
-        typedef BOOL (*PtrBeginPanningFeedback)(HWND);
-        typedef BOOL (*PtrUpdatePanningFeedback)(HWND, LONG, LONG, BOOL);
-        typedef BOOL (*PtrEndPanningFeedback)(HWND, BOOL);
-
-        static PtrBeginPanningFeedback ptrBeginPanningFeedback = 0;
-        static PtrUpdatePanningFeedback ptrUpdatePanningFeedback = 0;
-        static PtrEndPanningFeedback ptrEndPanningFeedback = 0;
-
-        if (!ptrBeginPanningFeedback)
-            ptrBeginPanningFeedback = (PtrBeginPanningFeedback) QLibrary::resolve(QLatin1String("UxTheme"), "BeginPanningFeedback");
-        if (!ptrUpdatePanningFeedback)
-            ptrUpdatePanningFeedback = (PtrUpdatePanningFeedback) QLibrary::resolve(QLatin1String("UxTheme"), "UpdatePanningFeedback");
-        if (!ptrEndPanningFeedback)
-            ptrEndPanningFeedback = (PtrEndPanningFeedback) QLibrary::resolve(QLatin1String("UxTheme"), "EndPanningFeedback");
-
-        if (ptrBeginPanningFeedback && ptrUpdatePanningFeedback && ptrEndPanningFeedback) {
-            WId wid = window()->winId();
-
-            if (!se->overshootDistance().isNull() && d->overshoot.isNull())
-                ptrBeginPanningFeedback(wid);
-            if (!se->overshootDistance().isNull())
-                ptrUpdatePanningFeedback(wid, -se->overshootDistance().x(), -se->overshootDistance().y(), false);
-            if (se->overshootDistance().isNull() && !d->overshoot.isNull())
-                ptrEndPanningFeedback(wid, true);
-        } else
-#endif
-        {
-            QPoint delta = d->overshoot - se->overshootDistance().toPoint();
-            if (!delta.isNull())
-                viewport()->move(viewport()->pos() + delta);
-        }
-        d->overshoot = se->overshootDistance().toPoint();
-
-        return true;
-    }
     case QEvent::StyleChange:
     case QEvent::LayoutDirectionChange:
     case QEvent::ApplicationLayoutDirectionChange:
@@ -1123,9 +1047,6 @@ bool QAbstractScrollArea::viewportEvent(QEvent *e)
     case QEvent::GestureOverride:
         return event(e);
 #endif
-    case QEvent::ScrollPrepare:
-    case QEvent::Scroll:
-        return event(e);
     default:
         break;
     }
@@ -1380,32 +1301,6 @@ void QAbstractScrollArea::dropEvent(QDropEvent *)
 void QAbstractScrollArea::scrollContentsBy(int, int)
 {
     viewport()->update();
-}
-
-bool QAbstractScrollAreaPrivate::canStartScrollingAt( const QPoint &startPos )
-{
-    Q_Q(QAbstractScrollArea);
-
-#ifndef QT_NO_GRAPHICSVIEW
-    // don't start scrolling when a drag mode has been set.
-    // don't start scrolling on a movable item.
-    if (QGraphicsView *view = qobject_cast<QGraphicsView *>(q)) {
-        if (view->dragMode() != QGraphicsView::NoDrag)
-            return false;
-
-        QGraphicsItem *childItem = view->itemAt(startPos);
-
-        if (childItem && (childItem->flags() & QGraphicsItem::ItemIsMovable))
-            return false;
-    }
-#endif
-
-    // don't start scrolling on a QAbstractSlider
-    if (qobject_cast<QAbstractSlider *>(q->viewport()->childAt(startPos))) {
-        return false;
-    }
-
-    return true;
 }
 
 void QAbstractScrollAreaPrivate::_q_hslide(int x)

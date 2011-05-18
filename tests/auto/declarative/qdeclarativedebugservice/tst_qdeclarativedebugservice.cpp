@@ -87,7 +87,7 @@ void tst_QDeclarativeDebugService::initTestCase()
 
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Connection established");
     bool ok = m_conn->waitForConnected();
-    Q_ASSERT(ok);
+    QVERIFY(ok);
 
     QTRY_VERIFY(QDeclarativeDebugService::hasDebuggingClient());
 }

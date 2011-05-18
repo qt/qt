@@ -39,69 +39,28 @@
 **
 ****************************************************************************/
 
-#ifndef QGLYPHS_H
-#define QGLYPHS_H
+#ifndef QGRAPHICSSYSTEMEX_P_H
+#define QGRAPHICSSYSTEMEX_P_H
 
-#include <QtCore/qsharedpointer.h>
-#include <QtCore/qvector.h>
-#include <QtCore/qpoint.h>
-#include <QtGui/qrawfont.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#if !defined(QT_NO_RAWFONT)
-
-QT_BEGIN_HEADER
+#include <qglobal.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
-
-class QGlyphsPrivate;
-class Q_GUI_EXPORT QGlyphs
+class Q_GUI_EXPORT QGraphicsSystemEx
 {
-public:
-    QGlyphs();
-    QGlyphs(const QGlyphs &other);
-    ~QGlyphs();
-
-    QRawFont font() const;
-    void setFont(const QRawFont &font);
-
-    QVector<quint32> glyphIndexes() const;
-    void setGlyphIndexes(const QVector<quint32> &glyphIndexes);
-
-    QVector<QPointF> positions() const;
-    void setPositions(const QVector<QPointF> &positions);
-
-    void clear();
-
-    QGlyphs &operator=(const QGlyphs &other);
-    bool operator==(const QGlyphs &other) const;
-    bool operator!=(const QGlyphs &other) const;
-
-    void setOverline(bool overline);
-    bool overline() const;
-
-    void setUnderline(bool underline);
-    bool underline() const;
-
-    void setStrikeOut(bool strikeOut);
-    bool strikeOut() const;
-
-private:
-    friend class QGlyphsPrivate;
-    friend class QTextLine;
-
-    QGlyphs operator+(const QGlyphs &other) const;
-    QGlyphs &operator+=(const QGlyphs &other);
-
-    void detach();
-    QExplicitlySharedDataPointer<QGlyphsPrivate> d;
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QT_NO_RAWFONT
-
-#endif // QGLYPHS_H
+#endif

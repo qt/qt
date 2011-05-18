@@ -1021,9 +1021,12 @@ void QDeclarativePathView::setDelegate(QDeclarativeComponent *delegate)
         d->ownModel = true;
     }
     if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model)) {
+        int oldCount = dataModel->count();
         dataModel->setDelegate(delegate);
         d->modelCount = dataModel->count();
         d->regenerate();
+        if (oldCount != dataModel->count())
+            emit countChanged();
         emit delegateChanged();
     }
 }

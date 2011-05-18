@@ -108,7 +108,7 @@ void tst_SuiteTest::runTestSuite() const
 
     /* Run the tests, and serialize the result(as according to XQTSResult.xsd) to standard out. */
     TestSuiteResult *const result = ts->runSuite();
-    Q_ASSERT(result);
+    QVERIFY(result);
 
     QFile out(m_candidateBaseline);
     QVERIFY(out.open(QIODevice::WriteOnly));

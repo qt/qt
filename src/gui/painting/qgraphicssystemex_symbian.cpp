@@ -39,65 +39,48 @@
 **
 ****************************************************************************/
 
-#ifndef QGLYPHS_P_H
-#define QGLYPHS_P_H
+#include "qgraphicssystemex_symbian_p.h"
+#include "private/qwidget_p.h"
+#include "private/qbackingstore_p.h"
+#include "private/qapplication_p.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of internal files.  This header file may change from version to version
-// without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qglyphs.h"
-#include "qrawfont.h"
-
-#include <qfont.h>
-
-#if !defined(QT_NO_RAWFONT)
-
-QT_BEGIN_HEADER
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
-class QGlyphsPrivate: public QSharedData
+void QSymbianGraphicsSystemEx::releaseCachedGpuResources()
 {
-public:
-    QGlyphsPrivate()
-        : overline(false)
-        , underline(false)
-        , strikeOut(false)
-    {
+    // Do nothing here
+    // This is implemented in graphics system specific plugin
+}
+
+void QSymbianGraphicsSystemEx::releaseAllGpuResources()
+{
+    releaseCachedGpuResources();
+
+    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+        if (QTLWExtra *topExtra = qt_widget_private(widget)->maybeTopData())
+            topExtra->backingStore.destroy();
     }
+}
 
-    QGlyphsPrivate(const QGlyphsPrivate &other)
-      : QSharedData(other)
-      , glyphIndexes(other.glyphIndexes)
-      , glyphPositions(other.glyphPositions)
-      , font(other.font)
-      , overline(other.overline)
-      , underline(other.underline)
-      , strikeOut(other.strikeOut)
-    {
+bool QSymbianGraphicsSystemEx::hasBCM2727()
+{
+    return !QApplicationPrivate::instance()->useTranslucentEGLSurfaces;
+}
+
+void QSymbianGraphicsSystemEx::forceToRaster(QWidget *window)
+{
+    if (window && window->isWindow()) {
+        qt_widget_private(window)->createTLExtra();
+        if (QTLWExtra *topExtra = qt_widget_private(window)->maybeTopData()) {
+            topExtra->forcedToRaster = 1;
+            if (topExtra->backingStore.data()) {
+                topExtra->backingStore.create(window);
+                topExtra->backingStore.registerWidget(window);
+            }
+        }
     }
-
-    QVector<quint32> glyphIndexes;
-    QVector<QPointF> glyphPositions;
-    QRawFont font;
-
-    uint overline  : 1;
-    uint underline : 1;
-    uint strikeOut : 1;
-};
+}
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QGLYPHS_P_H
-
-#endif // QT_NO_RAWFONT
