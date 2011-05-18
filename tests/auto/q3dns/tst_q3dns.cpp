@@ -144,7 +144,7 @@ void tst_Q3Dns::literals()
     QCOMPARE((int) ip6literal1.addresses().count(), 0);
 
     Q3Dns ip6literal2("::1", Q3Dns::Aaaa);
-    QCOMPARE(ip6literal2.addresses().first().toString(), QString("0:0:0:0:0:0:0:1"));
+    QCOMPARE(ip6literal2.addresses().first().toString(), QString("::1"));
     QCOMPARE((int) ip6literal2.addresses().count(), 1);
 }
 
