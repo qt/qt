@@ -1597,7 +1597,7 @@ void QFontEngineFT::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlag
     FT_Face face = 0;
     bool design = (default_hint_style == HintNone ||
                    default_hint_style == HintLight ||
-                   (flags & HB_ShaperFlag_UseDesignMetrics));
+                   (flags & HB_ShaperFlag_UseDesignMetrics)) && FT_IS_SCALABLE(freetype->face);
     for (int i = 0; i < glyphs->numGlyphs; i++) {
         Glyph *g = defaultGlyphSet.getGlyph(glyphs->glyphs[i]);
         if (g) {
@@ -1751,6 +1751,7 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
     } else {
         glyphSet = &defaultGlyphSet;
     }
+    bool needsDelete = false;
     Glyph * g = glyphSet->getGlyph(glyph);
     if (!g || g->format != format) {
         face = lockFace();
@@ -1758,6 +1759,7 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
         FT_Matrix_Multiply(&glyphSet->transformationMatrix, &m);
         freetype->matrix = m;
         g = loadGlyph(glyphSet, glyph, subPixelPosition, format);
+        needsDelete = true;
     }
 
     if (g) {
@@ -1766,6 +1768,8 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
         overall.width = g->width;
         overall.height = g->height;
         overall.xoff = g->advance;
+        if (needsDelete)
+            delete g;
     } else {
         int left  = FLOOR(face->glyph->metrics.horiBearingX);
         int right = CEIL(face->glyph->metrics.horiBearingX + face->glyph->metrics.width);

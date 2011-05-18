@@ -467,7 +467,7 @@ QString generateCastDef<qsreal>(const QList<QPair<QString, qsreal> >& list)
                       QString::number(list.count()));
 }
 
-static QString generateCompareDef(const QString& comparisionType, const QList<QString> tags)
+static QString generateCompareDef(const QString& comparisonType, const QList<QString> tags)
 {
     static const QString templ = "\n"\
                                  "void tst_QScriptValueGenerated::%1_initData()\n"\
@@ -501,10 +501,11 @@ static QString generateCompareDef(const QString& comparisionType, const QList<QS
                                  "}\n"\
                                  "\n"\
                                  "DEFINE_TEST_FUNCTION(%1)\n";
-    Q_ASSERT(comparisionType == "strictlyEquals"
-             || comparisionType == "equals"
-             || comparisionType == "lessThan"
-             || comparisionType == "instanceOf");
+    if (comparisonType != "strictlyEquals"
+        && comparisonType != "equals"
+        && comparisonType != "lessThan"
+        && comparisonType != "instanceOf")
+        qFatal("%s: Unknown comparisonType: %s", Q_FUNC_INFO, qPrintable(comparisonType));
     QString result = templ;
 
     QStringList set;
@@ -516,7 +517,7 @@ static QString generateCompareDef(const QString& comparisionType, const QList<QS
         set.append(escape(tmp));
         set.append("\"");
     }
-    return result.arg(comparisionType, set.join(""), QString::number(tags.count()));
+    return result.arg(comparisonType, set.join(""), QString::number(tags.count()));
 }
 
 static QString generateInitDef(const QVector<QString>& allDataTags)
@@ -545,6 +546,17 @@ static void squashTags(QString dataTag, const QVector<bool>& results, QList<QStr
     }
 }
 
+static QString streamStatusString(QDataStream::Status s)
+{
+    switch (s) {
+    case QDataStream::ReadPastEnd:
+        return QString("ReadPastEnd");
+    case QDataStream::ReadCorruptData:
+        return QString("ReadCorruptData");
+    default:
+        return QString("Unknown (%1)").arg(static_cast<int>(s));
+    }
+}
 
 QHash<QString, QString> TestGenerator::generateTest()
 {
@@ -596,7 +608,10 @@ QHash<QString, QString> TestGenerator::generateTest()
     m_tempFile.seek(0);
     QDataStream in(&m_tempFile);
     in >> dataTags;
-    Q_ASSERT(in.status() == in.Ok);
+    if (in.status() != in.Ok)
+        qFatal("%s: stream has bad status %s after reading dataTags",
+               Q_FUNC_INFO,
+               qPrintable(streamStatusString(in.status())));
 
     while(!in.atEnd())
     {
@@ -720,10 +735,13 @@ QHash<QString, QString> TestGenerator::generateTest()
         castUInt32List.append(QPair<QString, quint32>(dataTag, castUInt32Res));
         castUInt16List.append(QPair<QString, quint16>(dataTag, castUInt16Res));
 
-        Q_ASSERT(in.status() == in.Ok);
+        if (in.status() != in.Ok)
+            qFatal("%s: stream has bad status %s after reading data items",
+                   Q_FUNC_INFO,
+                   qPrintable(streamStatusString(in.status())));
     }
-
-    Q_ASSERT(in.atEnd());
+    if (!in.atEnd())
+        qFatal("%s: stream has more data after reading all data items", Q_FUNC_INFO);
 
     // Generate.
     QHash<QString, QString> result;

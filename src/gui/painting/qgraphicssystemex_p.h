@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QSCROLLERPROPERTIES_P_H
-#define QSCROLLERPROPERTIES_P_H
+#ifndef QGRAPHICSSYSTEMEX_P_H
+#define QGRAPHICSSYSTEMEX_P_H
 
 //
 //  W A R N I N G
@@ -53,42 +53,14 @@
 // We mean it.
 //
 
-#include <QPointF>
-#include <QEasingCurve>
-#include <qscrollerproperties.h>
+#include <qglobal.h>
 
 QT_BEGIN_NAMESPACE
 
-class QScrollerPropertiesPrivate
+class Q_GUI_EXPORT QGraphicsSystemEx
 {
-public:
-    static QScrollerPropertiesPrivate *defaults();
-
-    bool operator==(const QScrollerPropertiesPrivate &) const;
-
-    qreal mousePressEventDelay;
-    qreal dragStartDistance;
-    qreal dragVelocitySmoothingFactor;
-    qreal axisLockThreshold;
-    QEasingCurve scrollingCurve;
-    qreal decelerationFactor;
-    qreal minimumVelocity;
-    qreal maximumVelocity;
-    qreal maximumClickThroughVelocity;
-    qreal acceleratingFlickMaximumTime;
-    qreal acceleratingFlickSpeedupFactor;
-    qreal snapPositionRatio;
-    qreal snapTime;
-    qreal overshootDragResistanceFactor;
-    qreal overshootDragDistanceFactor;
-    qreal overshootScrollDistanceFactor;
-    qreal overshootScrollTime;
-    QScrollerProperties::OvershootPolicy hOvershootPolicy;
-    QScrollerProperties::OvershootPolicy vOvershootPolicy;
-    QScrollerProperties::FrameRates frameRate;
 };
 
 QT_END_NAMESPACE
 
-#endif // QSCROLLERPROPERTIES_P_H
-
+#endif

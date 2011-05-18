@@ -369,8 +369,7 @@ QVariant TestClass::extension(Extension extension,
 {
     m_lastExtensionType = extension;
     m_lastExtensionArgument = argument;
-    if (extension == Callable) {
-        Q_ASSERT(m_callableMode != NotCallable);
+    if (extension == Callable && m_callableMode != NotCallable) {
         QScriptContext *ctx = qvariant_cast<QScriptContext*>(argument);
         if (m_callableMode == CallableReturnsSum) {
             qsreal sum = 0;
@@ -398,8 +397,7 @@ QVariant TestClass::extension(Extension extension,
             engine()->newQObject(ctx->thisObject(), engine());
             return QVariant();
         }
-    } else if (extension == HasInstance) {
-        Q_ASSERT(m_hasInstance);
+    } else if (extension == HasInstance && m_hasInstance) {
         QScriptValueList args = qvariant_cast<QScriptValueList>(argument);
         QScriptValue obj = args.at(0);
         QScriptValue value = args.at(1);

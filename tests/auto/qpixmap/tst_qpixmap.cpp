@@ -198,6 +198,7 @@ private slots:
 #endif
 
     void drawPixmapWhilePainterOpen();
+    void scaled_QTBUG19157();
 };
 
 static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
@@ -1698,8 +1699,8 @@ void tst_QPixmap::fromImageReaderAnimatedGif()
     QImageReader referenceReader(path);
     QImageReader pixmapReader(path);
 
-    Q_ASSERT(referenceReader.canRead());
-    Q_ASSERT(referenceReader.imageCount() > 1);
+    QVERIFY(referenceReader.canRead());
+    QVERIFY(referenceReader.imageCount() > 1);
 
     for (int i = 0; i < referenceReader.imageCount(); ++i) {
         QImage refImage = referenceReader.read();
@@ -1956,6 +1957,13 @@ void tst_QPixmap::drawPixmapWhilePainterOpen()
     } else {
         QVERIFY(lenientCompare(actual, pix));
     }
+}
+
+void tst_QPixmap::scaled_QTBUG19157()
+{
+    QPixmap foo(5000, 1);
+    foo = foo.scaled(1024, 1024, Qt::KeepAspectRatio);
+    QVERIFY(!foo.isNull());
 }
 
 QTEST_MAIN(tst_QPixmap)

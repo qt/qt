@@ -185,16 +185,22 @@ QString tst_qmlvisual::toTestScript(const QString &file, Mode mode)
     if (platformsuffix && (mode == UpdatePlatformVisuals || QFile::exists(testdata+QLatin1String(platformsuffix)+QDir::separator()+testname+".qml"))) {
         QString platformdir = testdata + QLatin1String(platformsuffix);
         if (mode == UpdatePlatformVisuals) {
-            Q_ASSERT(QDir().mkpath(platformdir));
+            if (!QDir().mkpath(platformdir)) {
+                qFatal("Cannot make path %s", qPrintable(platformdir));
+            }
             // Copy from base
             QDir dir(testdata,testname+".*");
             dir.setFilter(QDir::Files);
             QFileInfoList list = dir.entryInfoList();
             for (int i = 0; i < list.size(); ++i) {
                 QFile in(list.at(i).filePath());
-                Q_ASSERT(in.open(QIODevice::ReadOnly));
+                if (!in.open(QIODevice::ReadOnly)) {
+                    qFatal("Cannot open file %s: %s", qPrintable(in.fileName()), qPrintable(in.errorString()));
+                }
                 QFile out(platformdir + QDir::separator() + list.at(i).fileName());
-                Q_ASSERT(out.open(QIODevice::WriteOnly));
+                if (!out.open(QIODevice::WriteOnly)) {
+                    qFatal("Cannot open file %s: %s", qPrintable(out.fileName()), qPrintable(out.errorString()));
+                }
                 out.write(in.readAll());
             }
         }
@@ -234,8 +240,6 @@ QStringList tst_qmlvisual::findQmlFiles(const QDir &d)
 
 void action(Mode mode, const QString &file)
 {
-    Q_ASSERT(mode != Test);
-
     QString testdata = tst_qmlvisual::toTestScript(file,mode);
 
     QStringList arguments;

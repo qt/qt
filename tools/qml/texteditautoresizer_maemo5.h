@@ -41,7 +41,7 @@
 
 #include <QtGui/qplaintextedit.h>
 #include <QtGui/qtextedit.h>
-#include <QtGui/qscroller.h>
+#include <QtGui/qabstractkineticscroller.h>
 #include <QtGui/qscrollarea.h>
 #include <QtDebug>
 
@@ -102,11 +102,11 @@ void TextEditAutoResizer::textEditChanged()
         QPoint scrollto = area->widget()->mapFrom(edit, cursor.center());
         QPoint margin(10 + cursor.width(), 2 * cursor.height());
 
-#ifdef Q_WS_MAEMO_5
-        QScroller::scroller(area)->ensureVisible(scrollto, margin.x(), margin.y());
-#else
-        area->ensureVisible(scrollto.x(), scrollto.y(), margin.x(), margin.y());
-#endif
+        if (QAbstractKineticScroller *scroller = area->property("kineticScroller").value<QAbstractKineticScroller *>()) {
+            scroller->ensureVisible(scrollto, margin.x(), margin.y());
+        } else {
+            area->ensureVisible(scrollto.x(), scrollto.y(), margin.x(), margin.y());
+        }
     }
 }
 

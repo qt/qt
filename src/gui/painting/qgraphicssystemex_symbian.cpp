@@ -39,33 +39,48 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
+#include "qgraphicssystemex_symbian_p.h"
+#include "private/qwidget_p.h"
+#include "private/qbackingstore_p.h"
+#include "private/qapplication_p.h"
 
-#ifdef Q_WS_MAC
+#include <QDebug>
 
-#import <Cocoa/Cocoa.h>
+QT_BEGIN_NAMESPACE
 
-#include "qscroller_p.h"
-
-QPointF QScrollerPrivate::realDpi(int screen)
+void QSymbianGraphicsSystemEx::releaseCachedGpuResources()
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSArray *nsscreens = [NSScreen screens];
-
-    if (screen < 0 || screen >= int([nsscreens count]))
-        screen = 0;
-
-    NSScreen *nsscreen = [nsscreens objectAtIndex:screen];
-    CGDirectDisplayID display = [[[nsscreen deviceDescription] objectForKey:@"NSScreenNumber"] intValue];
-
-    CGSize mmsize = CGDisplayScreenSize(display);
-    if (mmsize.width > 0 && mmsize.height > 0) {
-        return QPointF(CGDisplayPixelsWide(display) / mmsize.width,
-                       CGDisplayPixelsHigh(display) / mmsize.height) * qreal(25.4);
-    } else {
-        return QPointF();
-    }
-    [pool release];
+    // Do nothing here
+    // This is implemented in graphics system specific plugin
 }
 
-#endif
+void QSymbianGraphicsSystemEx::releaseAllGpuResources()
+{
+    releaseCachedGpuResources();
+
+    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+        if (QTLWExtra *topExtra = qt_widget_private(widget)->maybeTopData())
+            topExtra->backingStore.destroy();
+    }
+}
+
+bool QSymbianGraphicsSystemEx::hasBCM2727()
+{
+    return !QApplicationPrivate::instance()->useTranslucentEGLSurfaces;
+}
+
+void QSymbianGraphicsSystemEx::forceToRaster(QWidget *window)
+{
+    if (window && window->isWindow()) {
+        qt_widget_private(window)->createTLExtra();
+        if (QTLWExtra *topExtra = qt_widget_private(window)->maybeTopData()) {
+            topExtra->forcedToRaster = 1;
+            if (topExtra->backingStore.data()) {
+                topExtra->backingStore.create(window);
+                topExtra->backingStore.registerWidget(window);
+            }
+        }
+    }
+}
+
+QT_END_NAMESPACE

@@ -39,75 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef QFLICKGESTURE_P_H
-#define QFLICKGESTURE_P_H
+#ifndef QSYMBIANGRAPHICSSYSTEMEX_P_H
+#define QSYMBIANGRAPHICSSYSTEMEX_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of other Qt classes.  This header file may change from version to
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include "qevent.h"
-#include "qgesturerecognizer.h"
-#include "private/qgesture_p.h"
-#include "qscroller.h"
-#include "qscopedpointer.h"
-
-#ifndef QT_NO_GESTURES
+#include "private/qgraphicssystemex_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QFlickGesturePrivate;
-class QGraphicsItem;
+class QWidget;
 
-class Q_GUI_EXPORT QFlickGesture : public QGesture
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QFlickGesture)
-
-public:
-    QFlickGesture(QObject *receiver, Qt::MouseButton button, QObject *parent = 0);
-    ~QFlickGesture();
-
-    friend class QFlickGestureRecognizer;
-};
-
-class PressDelayHandler;
-
-class QFlickGesturePrivate : public QGesturePrivate
-{
-    Q_DECLARE_PUBLIC(QFlickGesture)
-public:
-    QFlickGesturePrivate();
-
-    QPointer<QObject> receiver;
-    QScroller *receiverScroller;
-    Qt::MouseButton button; // NoButton == Touch
-    bool macIgnoreWheel;
-    static PressDelayHandler *pressDelayHandler;
-};
-
-class QFlickGestureRecognizer : public QGestureRecognizer
+class Q_GUI_EXPORT QSymbianGraphicsSystemEx : public QGraphicsSystemEx
 {
 public:
-    QFlickGestureRecognizer(Qt::MouseButton button);
-
-    QGesture *create(QObject *target);
-    QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
-    void reset(QGesture *state);
-
-private:
-    Qt::MouseButton button; // NoButton == Touch
+    virtual void releaseCachedGpuResources();
+    virtual void releaseAllGpuResources();
+    virtual bool hasBCM2727();
+    virtual void forceToRaster(QWidget *window);
 };
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_GESTURES
-
-#endif // QFLICKGESTURE_P_H
+#endif
