@@ -909,7 +909,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph, Glyph
         }
     }
 
-    if (default_hint_style == HintNone)
+    if (default_hint_style == HintNone || set->outline_drawing)
         load_flags |= FT_LOAD_NO_HINTING;
     else
         load_flags |= load_target;
