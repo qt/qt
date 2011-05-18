@@ -65,9 +65,9 @@ public:
                   const QXmlNamePool &namePool) : m_out(out)
                                                 , m_namePool(namePool)
     {
-        Q_ASSERT(m_out.codec());
     }
 
+    bool isValid() const;
     virtual void startElement(const QXmlName&);
     virtual void endElement();
     virtual void attribute(const QXmlName&, const QStringRef&);
@@ -85,6 +85,11 @@ private:
     QTextStream &   m_out;
     const QXmlNamePool m_namePool;
 };
+
+bool PushBaseliner::isValid() const
+{
+    return m_out.codec();
+}
 
 void PushBaseliner::startElement(const QXmlName &name)
 {

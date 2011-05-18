@@ -55,13 +55,13 @@
 #endif
 
 class tst_qdeclarativefontloader : public QObject
-
 {
     Q_OBJECT
 public:
     tst_qdeclarativefontloader();
 
 private slots:
+    void init();
     void noFont();
     void namedFont();
     void localFont();
@@ -70,8 +70,6 @@ private slots:
     void redirWebFont();
     void failWebFont();
     void changeFont();
-
-private slots:
 
 private:
     QDeclarativeEngine engine;
@@ -82,7 +80,11 @@ tst_qdeclarativefontloader::tst_qdeclarativefontloader() :
     server(SERVER_PORT)
 {
     server.serveDirectory(SRCDIR "/data");
-    Q_ASSERT(server.isValid());
+}
+
+void tst_qdeclarativefontloader::init()
+{
+    QVERIFY(server.isValid());
 }
 
 void tst_qdeclarativefontloader::noFont()

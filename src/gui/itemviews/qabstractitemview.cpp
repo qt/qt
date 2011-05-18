@@ -62,9 +62,6 @@
 #include <qaccessible.h>
 #endif
 #include <private/qsoftkeymanager_p.h>
-#ifndef QT_NO_GESTURE
-#  include <qscroller.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -194,40 +191,6 @@ void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index
     }
 }
 
-#ifndef QT_NO_GESTURES
-
-// stores and restores the selection and current item when flicking
-void QAbstractItemViewPrivate::_q_scrollerStateChanged()
-{
-    Q_Q(QAbstractItemView);
-
-    if (QScroller *scroller = QScroller::scroller(viewport)) {
-        switch (scroller->state()) {
-        case QScroller::Pressed:
-            // store the current selection in case we start scrolling
-            if (q->selectionModel()) {
-                oldSelection = q->selectionModel()->selection();
-                oldCurrent = q->selectionModel()->currentIndex();
-            }
-            break;
-
-        case QScroller::Dragging:
-            // restore the old selection if we really start scrolling
-            if (q->selectionModel()) {
-                q->selectionModel()->select(oldSelection, QItemSelectionModel::ClearAndSelect);
-                q->selectionModel()->setCurrentIndex(oldCurrent, QItemSelectionModel::NoUpdate);
-            }
-            // fall through
-
-        default:
-            oldSelection = QItemSelection();
-            oldCurrent = QModelIndex();
-            break;
-        }
-    }
-}
-
-#endif // QT_NO_GESTURES
 
 /*!
     \class QAbstractItemView
@@ -1662,13 +1625,6 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
     case QEvent::WindowDeactivate:
         d->viewport->update();
         break;
-    case QEvent::ScrollPrepare:
-        executeDelayedItemsLayout();
-#ifndef QT_NO_GESTURES
-        connect(QScroller::scroller(d->viewport), SIGNAL(stateChanged(QScroller::State)), this, SLOT(_q_scrollerStateChanged()), Qt::UniqueConnection);
-#endif
-        break;
-
     default:
         break;
     }

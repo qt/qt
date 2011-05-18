@@ -891,11 +891,6 @@ QTextBlockUserData::~QTextBlockUserData()
     Returns true if this text block is valid; otherwise returns false.
 */
 
-bool QTextBlock::isValid() const
-{
-    return p != 0 && p->blockMap().isValid(n);
-}
-
 /*!
     \fn QTextBlock &QTextBlock::operator=(const QTextBlock &other)
 
@@ -1493,7 +1488,7 @@ QTextBlock::iterator QTextBlock::end() const
 */
 QTextBlock QTextBlock::next() const
 {
-    if (!isValid())
+    if (!isValid() || !p->blockMap().isValid(n))
         return QTextBlock();
 
     return QTextBlock(p, p->blockMap().next(n));
@@ -1664,25 +1659,25 @@ QTextBlock::iterator &QTextBlock::iterator::operator--()
     Returns the glyphs of this text fragment. The positions of the glyphs are
     relative to the position of the QTextBlock's layout.
 
-    \sa QGlyphs, QTextBlock::layout(), QTextLayout::position(), QPainter::drawGlyphs()
+    \sa QGlyphRun, QTextBlock::layout(), QTextLayout::position(), QPainter::drawGlyphRun()
 */
 #if !defined(QT_NO_RAWFONT)
-QList<QGlyphs> QTextFragment::glyphs() const
+QList<QGlyphRun> QTextFragment::glyphRuns() const
 {
     if (!p || !n)
-        return QList<QGlyphs>();
+        return QList<QGlyphRun>();
 
     int pos = position();
     int len = length();
     if (len == 0)
-        return QList<QGlyphs>();
+        return QList<QGlyphRun>();
 
     int blockNode = p->blockMap().findNode(pos);
 
     const QTextBlockData *blockData = p->blockMap().fragment(blockNode);
     QTextLayout *layout = blockData->layout;
 
-    QList<QGlyphs> ret;
+    QList<QGlyphRun> ret;
     for (int i=0; i<layout->lineCount(); ++i) {
         QTextLine textLine = layout->lineAt(i);
         ret += textLine.glyphs(pos, len);

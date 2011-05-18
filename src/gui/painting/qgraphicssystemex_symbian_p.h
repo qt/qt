@@ -39,33 +39,35 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
+#ifndef QSYMBIANGRAPHICSSYSTEMEX_P_H
+#define QSYMBIANGRAPHICSSYSTEMEX_P_H
 
-#ifdef Q_WS_MAC
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#import <Cocoa/Cocoa.h>
+#include "private/qgraphicssystemex_p.h"
 
-#include "qscroller_p.h"
+QT_BEGIN_NAMESPACE
 
-QPointF QScrollerPrivate::realDpi(int screen)
+class QWidget;
+
+class Q_GUI_EXPORT QSymbianGraphicsSystemEx : public QGraphicsSystemEx
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSArray *nsscreens = [NSScreen screens];
+public:
+    virtual void releaseCachedGpuResources();
+    virtual void releaseAllGpuResources();
+    virtual bool hasBCM2727();
+    virtual void forceToRaster(QWidget *window);
+};
 
-    if (screen < 0 || screen >= int([nsscreens count]))
-        screen = 0;
-
-    NSScreen *nsscreen = [nsscreens objectAtIndex:screen];
-    CGDirectDisplayID display = [[[nsscreen deviceDescription] objectForKey:@"NSScreenNumber"] intValue];
-
-    CGSize mmsize = CGDisplayScreenSize(display);
-    if (mmsize.width > 0 && mmsize.height > 0) {
-        return QPointF(CGDisplayPixelsWide(display) / mmsize.width,
-                       CGDisplayPixelsHigh(display) / mmsize.height) * qreal(25.4);
-    } else {
-        return QPointF();
-    }
-    [pool release];
-}
+QT_END_NAMESPACE
 
 #endif

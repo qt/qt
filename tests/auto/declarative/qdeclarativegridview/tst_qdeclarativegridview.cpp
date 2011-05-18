@@ -222,6 +222,7 @@ void tst_QDeclarativeGridView::items()
     QTRY_VERIFY(contentItem != 0);
 
     QTRY_COMPARE(gridview->count(), model.count());
+    QTRY_COMPARE(canvas->rootObject()->property("count").toInt(), model.count());
     QTRY_COMPARE(contentItem->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
     for (int i = 0; i < model.count(); ++i) {
@@ -305,6 +306,7 @@ void tst_QDeclarativeGridView::inserted()
     QTRY_VERIFY(contentItem != 0);
 
     model.insertItem(1, "Will", "9876");
+    QCOMPARE(canvas->rootObject()->property("count").toInt(), model.count());
 
     QTRY_COMPARE(contentItem->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
@@ -382,6 +384,7 @@ void tst_QDeclarativeGridView::removed()
     QTRY_VERIFY(contentItem != 0);
 
     model.removeItem(1);
+    QCOMPARE(canvas->rootObject()->property("count").toInt(), model.count());
 
     QDeclarativeText *name = findItem<QDeclarativeText>(contentItem, "textName", 1);
     QTRY_VERIFY(name != 0);

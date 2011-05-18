@@ -104,11 +104,17 @@ QWindowSurface *QGLGraphicsSystem::createWindowSurface(QWidget *widget) const
 
     return new QGLWindowSurface(widget);
 }
-#ifdef QGL_USE_TEXTURE_POOL
-void QGLGraphicsSystem::releaseCachedResources()
+#ifdef Q_OS_SYMBIAN
+void QGLGraphicsSystem::releaseCachedGpuResources()
 {
     QGLTexturePool::instance()->hibernate();
 }
+
+QGraphicsSystemEx* QGLGraphicsSystem::platformExtension()
+{
+    return this;
+}
 #endif
+
 QT_END_NAMESPACE
 

@@ -59,7 +59,8 @@ public:
     void run()
     {
         prepareData();
-        Q_ASSERT(m_tempFile.size());
+        if (!m_tempFile.size())
+            qFatal("%s: prepareData failed to generate any data", Q_FUNC_INFO);
         save(generateTest());
     }
 

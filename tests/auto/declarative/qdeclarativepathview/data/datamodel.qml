@@ -2,6 +2,7 @@ import QtQuick 1.0
 
 PathView {
     id: pathview
+    property int viewCount: count
     objectName: "pathview"
     width: 240; height: 320
     pathItemCount: testObject.pathItemCount

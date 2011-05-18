@@ -39,56 +39,65 @@
 **
 ****************************************************************************/
 
-#ifndef QSCROLLERPROPERTIES_P_H
-#define QSCROLLERPROPERTIES_P_H
+#ifndef QGLYPHRUN_P_H
+#define QGLYPHRUN_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
+// This file is not part of the Qt API.  It exists for the convenience
+// of internal files.  This header file may change from version to version
+// without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QPointF>
-#include <QEasingCurve>
-#include <qscrollerproperties.h>
+#include "qglyphrun.h"
+#include "qrawfont.h"
+
+#include <qfont.h>
+
+#if !defined(QT_NO_RAWFONT)
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QScrollerPropertiesPrivate
+class QGlyphRunPrivate: public QSharedData
 {
 public:
-    static QScrollerPropertiesPrivate *defaults();
+    QGlyphRunPrivate()
+        : overline(false)
+        , underline(false)
+        , strikeOut(false)
+    {
+    }
 
-    bool operator==(const QScrollerPropertiesPrivate &) const;
+    QGlyphRunPrivate(const QGlyphRunPrivate &other)
+      : QSharedData(other)
+      , glyphIndexes(other.glyphIndexes)
+      , glyphPositions(other.glyphPositions)
+      , rawFont(other.rawFont)
+      , overline(other.overline)
+      , underline(other.underline)
+      , strikeOut(other.strikeOut)
+    {
+    }
 
-    qreal mousePressEventDelay;
-    qreal dragStartDistance;
-    qreal dragVelocitySmoothingFactor;
-    qreal axisLockThreshold;
-    QEasingCurve scrollingCurve;
-    qreal decelerationFactor;
-    qreal minimumVelocity;
-    qreal maximumVelocity;
-    qreal maximumClickThroughVelocity;
-    qreal acceleratingFlickMaximumTime;
-    qreal acceleratingFlickSpeedupFactor;
-    qreal snapPositionRatio;
-    qreal snapTime;
-    qreal overshootDragResistanceFactor;
-    qreal overshootDragDistanceFactor;
-    qreal overshootScrollDistanceFactor;
-    qreal overshootScrollTime;
-    QScrollerProperties::OvershootPolicy hOvershootPolicy;
-    QScrollerProperties::OvershootPolicy vOvershootPolicy;
-    QScrollerProperties::FrameRates frameRate;
+    QVector<quint32> glyphIndexes;
+    QVector<QPointF> glyphPositions;
+    QRawFont rawFont;
+
+    uint overline  : 1;
+    uint underline : 1;
+    uint strikeOut : 1;
 };
 
 QT_END_NAMESPACE
 
-#endif // QSCROLLERPROPERTIES_P_H
+QT_END_HEADER
 
+#endif // QGLYPHS_P_H
+
+#endif // QT_NO_RAWFONT

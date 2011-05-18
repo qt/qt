@@ -176,22 +176,27 @@ void QSoftKeyManagerPrivateS60::setNativeSoftkey(CEikButtonGroupContainer &cba,
 QPoint QSoftKeyManagerPrivateS60::softkeyIconPosition(int position, QSize sourceSize, QSize targetSize)
 {
     QPoint iconPosition(0,0);
-    switch( AknLayoutUtils::CbaLocation() )
-        {
-        case AknLayoutUtils::EAknCbaLocationBottom:
-            // RSK must be moved to right, LSK in on correct position by default
-            if (position == RSK_POSITION)
-                iconPosition.setX(targetSize.width() - sourceSize.width());
-            break;
-        case AknLayoutUtils::EAknCbaLocationRight:
-        case AknLayoutUtils::EAknCbaLocationLeft:
-            // Already in correct position
-        default:
-            break;
-        }
 
-    // Align horizontally to center
-    iconPosition.setY((targetSize.height() - sourceSize.height()) >> 1);
+    // Prior to S60 5.3 icons need to be properly positioned to buttons, but starting with 5.3
+    // positioning is done on Avkon side.
+    if (QSysInfo::s60Version() < QSysInfo::SV_S60_5_3) {
+        switch (AknLayoutUtils::CbaLocation())
+            {
+            case AknLayoutUtils::EAknCbaLocationBottom:
+                // RSK must be moved to right, LSK in on correct position by default
+                if (position == RSK_POSITION)
+                    iconPosition.setX(targetSize.width() - sourceSize.width());
+                break;
+            case AknLayoutUtils::EAknCbaLocationRight:
+            case AknLayoutUtils::EAknCbaLocationLeft:
+                // Already in correct position
+            default:
+                break;
+            }
+
+        // Align horizontally to center
+        iconPosition.setY((targetSize.height() - sourceSize.height()) >> 1);
+    }
     return iconPosition;
 }
 
