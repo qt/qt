@@ -1166,12 +1166,20 @@ void QX11Data::xdndHandleDrop(QWidget *, const XEvent * xe, bool passive)
         // some XEMBEDding, so try to find the real QMimeData used
         // based on the timestamp for this drop.
         QMimeData *dropData = 0;
-        int at = findXdndDropTransactionByTime(qt_xdnd_target_current_time);
-        if (at != -1)
+        const int at = findXdndDropTransactionByTime(qt_xdnd_target_current_time);
+        if (at != -1) {
             dropData = QDragManager::dragPrivate(X11->dndDropTransactions.at(at).object)->data;
+            // Can't use the source QMimeData if we need the image conversion code from xdndObtainData
+            if (dropData && dropData->hasImage())
+                dropData = 0;
+        }
         // if we can't find it, then use the data in the drag manager
-        if (!dropData)
-            dropData = (manager->object) ? manager->dragPrivate()->data : manager->dropData;
+        if (!dropData) {
+            if (manager->object && !manager->dragPrivate()->data->hasImage())
+                dropData = manager->dragPrivate()->data;
+            else
+                dropData = manager->dropData;
+        }
 
         // Drop coming from another app? Update keyboard modifiers.
         if (!qt_xdnd_dragging) {
@@ -1855,8 +1863,16 @@ static QVariant xdndObtainData(const char *format, QVariant::Type requestedType)
          && (!(w->windowType() == Qt::Desktop) || w->acceptDrops()))
     {
         QDragPrivate * o = QDragManager::self()->dragPrivate();
-        if (o->data->hasFormat(QLatin1String(format)))
-            result = o->data->data(QLatin1String(format));
+        const QString mimeType = QString::fromLatin1(format);
+        if (o->data->hasFormat(mimeType)) {
+            result = o->data->data(mimeType);
+        } else if (mimeType.startsWith(QLatin1String("image/")) && o->data->hasImage()) {
+            // ### duplicated from QInternalMimeData::renderDataHelper
+            QImage image = qvariant_cast<QImage>(o->data->imageData());
+            QBuffer buf(&result);
+            buf.open(QBuffer::WriteOnly);
+            image.save(&buf, mimeType.mid(mimeType.indexOf(QLatin1Char('/')) + 1).toLatin1().toUpper());
+        }
         return result;
     }
 
