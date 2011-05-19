@@ -2505,8 +2505,8 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
         if(pos == l)
             x += si->width;
     } else {
+        int end = qMin(lineEnd, si->position + l) - si->position;
         if (reverse) {
-            int end = qMin(lineEnd, si->position + l) - si->position;
             int glyph_end = end == l ? si->num_glyphs : logClusters[end];
             for (int i = glyph_end - 1; i >= glyph_pos; i--)
                 x += glyphs.effectiveAdvance(i);
@@ -2516,7 +2516,7 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
             for (int i = glyph_start; i < glyph_pos; i++)
                 x += glyphs.effectiveAdvance(i);
         }
-        x += offsetInLigature(logClusters, glyphs, pos, line.length, glyph_pos);
+        x += offsetInLigature(logClusters, glyphs, pos, end, glyph_pos);
     }
 
     *cursorPos = pos + si->position;
