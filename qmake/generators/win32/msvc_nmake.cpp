@@ -70,7 +70,8 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
     }
 
     if(project->first("TEMPLATE") == "app" ||
-       project->first("TEMPLATE") == "lib") {
+       project->first("TEMPLATE") == "lib" ||
+       project->first("TEMPLATE") == "aux") {
 #if 0
         if(Option::mkfile::do_stub_makefile)
             return MakefileGenerator::writeStubMakefile(t);
@@ -83,6 +84,15 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
         return true;
     }
     return false;
+}
+
+void NmakeMakefileGenerator::writeSubMakeCall(QTextStream &t, const QString &callPrefix,
+                                              const QString &makeArguments, const QString &callPostfix)
+{
+    // Pass MAKEFLAGS as environment variable to sub-make calls.
+    // Unlike other make tools nmake doesn't do this automatically.
+    t << "\n\t@set MAKEFLAGS=$(MAKEFLAGS)";
+    Win32MakefileGenerator::writeSubMakeCall(t, callPrefix, makeArguments, callPostfix);
 }
 
 QString NmakeMakefileGenerator::getPdbTarget()
@@ -332,6 +342,11 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
 
 void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 {
+    if (project->first("TEMPLATE") == "aux") {
+        t << "first:" << endl;
+        return;
+    }
+
     t << "first: all" << endl;
     t << "all: " << fileFixify(Option::output.fileName()) << " " << varGlue("ALL_DEPS"," "," "," ") << "$(DESTDIR_TARGET)" << endl << endl;
     t << "$(DESTDIR_TARGET): " << var("PRE_TARGETDEPS") << " $(OBJECTS) " << var("POST_TARGETDEPS");

@@ -88,6 +88,11 @@ Q_GUI_EXPORT void qt_s60_setPartialScreenInputMode(bool enable)
         ic->update();
 }
 
+Q_GUI_EXPORT void qt_s60_setPartialScreenAutomaticTranslation(bool enable)
+{
+    S60->partial_keyboardAutoTranslation = enable;
+}
+
 QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
     : QInputContext(parent),
       m_fepState(q_check_ptr(new CAknEdwinState)),		// CBase derived object needs check on new
@@ -235,21 +240,6 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         return false;
 
     switch (event->type()) {
-    case QEvent::MouseButtonPress:
-        // Alphanumeric keypad doesn't like it when we click and text is still getting displayed
-        // It ignores the mouse event, so we need to commit and send a selection event (which will get triggered
-        // after the commit)
-        if (!m_preeditString.isEmpty()) {
-            commitCurrentString(true);
-
-            int pos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
-
-            QList<QInputMethodEvent::Attribute> selectAttributes;
-            selectAttributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, pos, 0, QVariant());
-            QInputMethodEvent selectEvent(QLatin1String(""), selectAttributes);
-            sendEvent(selectEvent);
-    }
-        break;
     case QEvent::KeyPress:
         commitTemporaryPreeditString();
         // fall through intended
@@ -328,7 +318,10 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         if (sControl) {
             sControl->setIgnoreFocusChanged(false);
         }
-        return true;
+        //If m_pointerHandler has already been set, it means that fep inline editing is in progress.
+        //When this is happening, do not filter out pointer events.
+        if (!m_pointerHandler)
+            return true;
     }
 
     return false;
@@ -380,18 +373,31 @@ void QCoeFepInputContext::commitTemporaryPreeditString()
     commitCurrentString(false);
 }
 
-void QCoeFepInputContext::mouseHandler( int x, QMouseEvent *event)
+void QCoeFepInputContext::mouseHandler(int x, QMouseEvent *event)
 {
     Q_ASSERT(focusWidget());
 
     if (event->type() == QEvent::MouseButtonPress && event->button() == Qt::LeftButton) {
-        commitCurrentString(true);
-        int pos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
+        QWidget *proxy = focusWidget()->focusProxy();
+        Qt::InputMethodHints currentHints = proxy ? proxy->inputMethodHints() : focusWidget()->inputMethodHints();
 
-        QList<QInputMethodEvent::Attribute> attributes;
-        attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, pos + x, 0, QVariant());
-        QInputMethodEvent event(QLatin1String(""), attributes);
-        sendEvent(event);
+        //If splitview is open and T9 word is tapped, pass the pointer event to pointer handler.
+        //This will open the "suggested words" list. Pass pointer position always as zero, to make
+        //full word replacement in case user makes a selection.
+        if (S60->partial_keyboard && S60->partialKeyboardOpen
+            && m_pointerHandler
+            && !(currentHints & Qt::ImhNoPredictiveText)
+            && (x > 0 && x < m_preeditString.length())) {
+            m_pointerHandler->HandlePointerEventInInlineTextL(TPointerEvent::EButton1Up, 0, 0);
+        } else {
+            commitCurrentString(true);
+            int pos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
+
+            QList<QInputMethodEvent::Attribute> attributes;
+            attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, pos + x, 0, QVariant());
+            QInputMethodEvent event(QLatin1String(""), attributes);
+            sendEvent(event);
+        }
     }
 }
 
@@ -559,12 +565,13 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
             widget->resize(widget->width(), splitViewRect.height() - windowTop);
         }
 
-        if (gv->scene()) {
+        if (gv->scene() && S60->partial_keyboardAutoTranslation) {
             const QRectF microFocusRect = gv->scene()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
             gv->ensureVisible(microFocusRect);
         }
     } else {
-        translateInputWidget();
+        if (S60->partial_keyboardAutoTranslation)
+            translateInputWidget();
     }
 
     if (alwaysResize)

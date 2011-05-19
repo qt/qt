@@ -50,8 +50,8 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QAtomicInt>
+#include <QLibraryInfo>
 #include "qdeclarativetester.h"
-#include <private/qdeclarativedebughelper_p.h>
 
 QT_USE_NAMESPACE
 
@@ -67,7 +67,7 @@ void exitApp(int i)
     // Debugging output is not visible by default on Windows -
     // therefore show modal dialog with errors instead.
     if (!warnings.isEmpty()) {
-        QMessageBox::warning(0, QApplication::tr("Qt QML Viewer"), warnings);
+        QMessageBox::warning(0, QApplication::translate("QDeclarativeViewer", "Qt QML Viewer"), warnings);
     }
 #endif
     exit(i);
@@ -123,7 +123,7 @@ void myMessageOutput(QtMsgType type, const char *msg)
 static QDeclarativeViewer* globalViewer = 0;
 
 // The qml file that is shown if the user didn't specify a QML file
-QString initialFile = "qrc:/startup/startup.qml";
+QString initialFile = QLatin1String("qrc:/startup/startup.qml");
 
 void usage()
 {
@@ -156,7 +156,9 @@ void usage()
     qWarning("  -P <directory> ........................... prepend to the plugin search path");
 #if defined(Q_WS_MAC)
     qWarning("  -no-opengl ............................... don't use a QGLWidget for the viewport");
+    qWarning("  -opengl .................................. use a QGLWidget for the viewport (default)");
 #else
+    qWarning("  -no-opengl ............................... don't use a QGLWidget for the viewport (default)");
     qWarning("  -opengl .................................. use a QGLWidget for the viewport");
 #endif
     qWarning("  -script <path> ........................... set the script to use");
@@ -197,7 +199,7 @@ struct ViewerOptions
           fps(0.0),
           autorecord_from(0),
           autorecord_to(0),
-          dither("none"),
+          dither(QLatin1String("none")),
           runScript(false),
           devkeys(false),
           cache(0),
@@ -334,57 +336,54 @@ static void parseCommandLineOptions(const QStringList &arguments)
     for (int i = 1; i < arguments.count(); ++i) {
         bool lastArg = (i == arguments.count() - 1);
         QString arg = arguments.at(i);
-        if (arg == "-frameless") {
+        if (arg == QLatin1String("-frameless")) {
             opts.frameless = true;
-        } else if (arg == "-maximized") {
+        } else if (arg == QLatin1String("-maximized")) {
             opts.maximized = true;
-        } else if (arg == "-fullscreen") {
+        } else if (arg == QLatin1String("-fullscreen")) {
             opts.fullScreen = true;
-        } else if (arg == "-stayontop") {
+        } else if (arg == QLatin1String("-stayontop")) {
             opts.stayOnTop = true;
-        } else if (arg == "-netcache") {
+        } else if (arg == QLatin1String("-netcache")) {
             if (lastArg) usage();
             opts.cache = arguments.at(++i).toInt();
-        } else if (arg == "-recordrate") {
+        } else if (arg == QLatin1String("-recordrate")) {
             if (lastArg) usage();
             opts.fps = arguments.at(++i).toDouble();
-        } else if (arg == "-recordfile") {
+        } else if (arg == QLatin1String("-recordfile")) {
             if (lastArg) usage();
             opts.recordfile = arguments.at(++i);
-        } else if (arg == "-record") {
+        } else if (arg == QLatin1String("-record")) {
             if (lastArg) usage();
             opts.recordargs << arguments.at(++i);
-        } else if (arg == "-recorddither") {
+        } else if (arg == QLatin1String("-recorddither")) {
             if (lastArg) usage();
             opts.dither = arguments.at(++i);
-        } else if (arg == "-autorecord") {
+        } else if (arg == QLatin1String("-autorecord")) {
             if (lastArg) usage();
             QString range = arguments.at(++i);
-            int dash = range.indexOf('-');
+            int dash = range.indexOf(QLatin1Char('-'));
             if (dash > 0)
                 opts.autorecord_from = range.left(dash).toInt();
             opts.autorecord_to = range.mid(dash+1).toInt();
-        } else if (arg == "-devicekeys") {
+        } else if (arg == QLatin1String("-devicekeys")) {
             opts.devkeys = true;
-        } else if (arg == "-dragthreshold") {
+        } else if (arg == QLatin1String("-dragthreshold")) {
             if (lastArg) usage();
             qApp->setStartDragDistance(arguments.at(++i).toInt());
         } else if (arg == QLatin1String("-v") || arg == QLatin1String("-version")) {
             qWarning("Qt QML Viewer version %s", QT_VERSION_STR);
             exitApp(0);
-        } else if (arg == "-translation") {
+        } else if (arg == QLatin1String("-translation")) {
             if (lastArg) usage();
             opts.translationFile = arguments.at(++i);
-#if defined(Q_WS_MAC)
-        } else if (arg == "-no-opengl") {
+        } else if (arg == QLatin1String("-no-opengl")) {
             opts.useGL = false;
-#else
-        } else if (arg == "-opengl") {
+        } else if (arg == QLatin1String("-opengl")) {
             opts.useGL = true;
-#endif
-        } else if (arg == "-qmlbrowser") {
+        } else if (arg == QLatin1String("-qmlbrowser")) {
             opts.useNativeFileBrowser = false;
-        } else if (arg == "-warnings") {
+        } else if (arg == QLatin1String("-warnings")) {
             if (lastArg) usage();
             QString warningsStr = arguments.at(++i);
             if (warningsStr == QLatin1String("show")) {
@@ -394,8 +393,8 @@ static void parseCommandLineOptions(const QStringList &arguments)
             } else {
                 usage();
             }
-        } else if (arg == "-I" || arg == "-L") {
-            if (arg == "-L")
+        } else if (arg == QLatin1String("-I") || arg == QLatin1String("-L")) {
+            if (arg == QLatin1String("-L"))
                 qWarning("-L option provided for compatibility only, use -I instead");
             if (lastArg) {
                 QDeclarativeEngine tmpEngine;
@@ -404,32 +403,32 @@ static void parseCommandLineOptions(const QStringList &arguments)
                 exitApp(0);
             }
             opts.imports << arguments.at(++i);
-        } else if (arg == "-P") {
+        } else if (arg == QLatin1String("-P")) {
             if (lastArg) usage();
             opts.plugins << arguments.at(++i);
-        } else if (arg == "-script") {
+        } else if (arg == QLatin1String("-script")) {
             if (lastArg) usage();
             opts.script = arguments.at(++i);
-        } else if (arg == "-scriptopts") {
+        } else if (arg == QLatin1String("-scriptopts")) {
             if (lastArg) usage();
             opts.scriptopts = arguments.at(++i);
-        } else if (arg == "-savescript") {
+        } else if (arg == QLatin1String("-savescript")) {
             if (lastArg) usage();
             opts.script = arguments.at(++i);
             opts.runScript = false;
-        } else if (arg == "-playscript") {
+        } else if (arg == QLatin1String("-playscript")) {
             if (lastArg) usage();
             opts.script = arguments.at(++i);
             opts.runScript = true;
-        } else if (arg == "-sizeviewtorootobject") {
+        } else if (arg == QLatin1String("-sizeviewtorootobject")) {
             opts.sizeToView = false;
-        } else if (arg == "-sizerootobjecttoview") {
+        } else if (arg == QLatin1String("-sizerootobjecttoview")) {
             opts.sizeToView = true;
-        } else if (arg == "-experimentalgestures") {
+        } else if (arg == QLatin1String("-experimentalgestures")) {
             opts.experimentalGestures = true;
-        } else if (!arg.startsWith('-')) {
+        } else if (!arg.startsWith(QLatin1Char('-'))) {
             fileNames.append(arg);
-        } else if (true || arg == "-help") {
+        } else if (true || arg == QLatin1String("-help")) {
             usage();
         }
     }
@@ -528,28 +527,38 @@ int main(int argc, char ** argv)
     //### default to using raster graphics backend for now
     bool gsSpecified = false;
     for (int i = 0; i < argc; ++i) {
-        QString arg = argv[i];
-        if (arg == "-graphicssystem") {
+        QString arg = QString::fromAscii(argv[i]);
+        if (arg == QLatin1String("-graphicssystem")) {
             gsSpecified = true;
             break;
         }
     }
 
     if (!gsSpecified)
-        QApplication::setGraphicsSystem("raster");
+        QApplication::setGraphicsSystem(QLatin1String("raster"));
 #endif
 
-    QDeclarativeDebugHelper::enableDebugging();
-
     Application app(argc, argv);
-    app.setApplicationName("QtQmlViewer");
-    app.setOrganizationName("Nokia");
-    app.setOrganizationDomain("nokia.com");
+    app.setApplicationName(QLatin1String("QtQmlViewer"));
+    app.setOrganizationName(QLatin1String("Nokia"));
+    app.setOrganizationDomain(QLatin1String("nokia.com"));
 
     QDeclarativeViewer::registerTypes();
     QDeclarativeTester::registerTypes();
 
     parseCommandLineOptions(app.arguments());
+
+    QTranslator translator;
+    QTranslator qtTranslator;
+    QString sysLocale = QLocale::system().name();
+    if (translator.load(QLatin1String("qmlviewer_") + sysLocale, QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
+        app.installTranslator(&translator);
+        if (qtTranslator.load(QLatin1String("qt_") + sysLocale, QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
+            app.installTranslator(&qtTranslator);
+        } else {
+            app.removeTranslator(&translator);
+        }
+    }
 
     QTranslator qmlTranslator;
     if (!opts.translationFile.isEmpty()) {

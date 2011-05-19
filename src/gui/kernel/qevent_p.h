@@ -186,34 +186,6 @@ public:
 #endif
 };
 
-
-class QScrollPrepareEventPrivate
-{
-public:
-    inline QScrollPrepareEventPrivate()
-        : target(0)
-    {
-    }
-
-    QObject* target;
-    QPointF startPos;
-    QSizeF viewportSize;
-    QRectF contentPosRange;
-    QPointF contentPos;
-};
-
-class QScrollEventPrivate
-{
-public:
-    inline QScrollEventPrivate()
-    {
-    }
-
-    QPointF contentPos;
-    QPointF overshoot;
-    QScrollEvent::ScrollState state;
-};
-
 QT_END_NAMESPACE
 
 #endif // QEVENT_P_H

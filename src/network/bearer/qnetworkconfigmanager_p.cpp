@@ -60,7 +60,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 #endif
 
 QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
-    : QObject(), mutex(QMutex::Recursive), forcedPolling(0), firstUpdate(true)
+    : QObject(), pollTimer(0), mutex(QMutex::Recursive), forcedPolling(0), firstUpdate(true)
 {
     qRegisterMetaType<QNetworkConfiguration>("QNetworkConfiguration");
     qRegisterMetaType<QNetworkConfigurationPrivatePointer>("QNetworkConfigurationPrivatePointer");
@@ -385,8 +385,6 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
                         this, SLOT(configurationRemoved(QNetworkConfigurationPrivatePointer)));
                 connect(engine, SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
                         this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
-
-                QMetaObject::invokeMethod(engine, "initialize");
             }
         }
 
@@ -410,8 +408,19 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
             startPolling();
     }
 
-    if (firstUpdate)
+    if (firstUpdate) {
         firstUpdate = false;
+        QList<QBearerEngine*> enginesToInitialize = sessionEngines; //shallow copy the list in case it is modified when we unlock mutex
+        Qt::ConnectionType connectionType;
+        if (QCoreApplicationPrivate::mainThread() == QThread::currentThread())
+            connectionType = Qt::DirectConnection;
+        else
+            connectionType = Qt::BlockingQueuedConnection;
+        locker.unlock();
+        foreach (QBearerEngine* engine, enginesToInitialize) {
+                QMetaObject::invokeMethod(engine, "initialize", connectionType);
+        }
+    }
 }
 
 void QNetworkConfigurationManagerPrivate::performAsyncConfigurationUpdate()
@@ -442,9 +451,19 @@ void QNetworkConfigurationManagerPrivate::startPolling()
 {
     QMutexLocker locker(&mutex);
 
+    if(!pollTimer) {
+        pollTimer = new QTimer(this);
+        pollTimer->setInterval(10000);
+        pollTimer->setSingleShot(true);
+        connect(pollTimer, SIGNAL(timeout()), this, SLOT(pollEngines()));
+    }
+
+    if(pollTimer->isActive())
+        return;
+
     foreach (QBearerEngine *engine, sessionEngines) {
         if (engine->requiresPolling() && (forcedPolling || engine->configurationsInUse())) {
-            QTimer::singleShot(10000, this, SLOT(pollEngines()));
+            pollTimer->start();
             break;
         }
     }
@@ -469,7 +488,7 @@ void QNetworkConfigurationManagerPrivate::enablePolling()
     ++forcedPolling;
 
     if (forcedPolling == 1)
-        startPolling();
+        QMetaObject::invokeMethod(this, "startPolling");
 }
 
 void QNetworkConfigurationManagerPrivate::disablePolling()

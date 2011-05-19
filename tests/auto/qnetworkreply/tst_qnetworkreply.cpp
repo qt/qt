@@ -622,9 +622,14 @@ public:
     }
 
     QIODevice *prepare(const QNetworkCacheMetaData &)
-    { Q_ASSERT(0 && "Should not have tried to add to the cache"); return 0; }
+    {
+        qFatal("%s: Should not have tried to add to the cache", Q_FUNC_INFO);
+        return 0;
+    }
     void insert(QIODevice *)
-    { Q_ASSERT(0 && "Should not have tried to add to the cache"); }
+    {
+        qFatal("%s: Should not have tried to add to the cache", Q_FUNC_INFO);
+    }
 
     void clear() { cache.clear(); }
 };
@@ -774,7 +779,9 @@ public:
     QTcpSocket* waitForNextConnectionSocket() {
         waitForNewConnection(-1);
         if (doSsl) {
-            Q_ASSERT(sslSocket);
+            if (!sslSocket)
+                qFatal("%s: sslSocket should not be null after calling waitForNewConnection()",
+                       Q_FUNC_INFO);
             return sslSocket;
         } else {
             //qDebug() << "returning nextPendingConnection";
@@ -946,7 +953,8 @@ protected:
         while (dataIndex < wantedSize) {
             const int remainingBytes = wantedSize - measuredSentBytes;
             const int bytesToWrite = qMin(remainingBytes, static_cast<int>(BlockSize));
-            Q_ASSERT(bytesToWrite);
+            if (bytesToWrite <= 0)
+                qFatal("%s: attempt to write %d bytes", Q_FUNC_INFO, bytesToWrite);
             measuredSentBytes += writeNextData(client, bytesToWrite);
 
             while (client->bytesToWrite() > 0) {
@@ -1005,7 +1013,8 @@ public:
 
         // Wait for data to be readyRead
         bool ok = connect(&senderObj, SIGNAL(dataReady()), this, SLOT(slotDataReady()));
-        Q_ASSERT(ok);
+        if (!ok)
+            qFatal("%s: Cannot connect dataReady signal", Q_FUNC_INFO);
     }
 
     void wrapUp()
@@ -1028,9 +1037,9 @@ protected:
     void timerEvent(QTimerEvent *)
     {
         //qDebug() << "RateControlledReader: timerEvent bytesAvailable=" << device->bytesAvailable();
-        if (readBufferSize > 0) {
-            // This asserts passes all the time, except in the final flush.
-            //Q_ASSERT(device->bytesAvailable() <= readBufferSize);
+        if (readBufferSize > 0 && device->bytesAvailable() > readBufferSize) {
+            // This passes all the time, except in the final flush.
+            //qFatal("%s: Too many bytes available", Q_FUNC_INFO);
         }
 
         qint64 bytesRead = 0;
@@ -1189,7 +1198,7 @@ QString tst_QNetworkReply::runSimpleRequest(QNetworkAccessManager::Operation op,
         break;
 
     default:
-        Q_ASSERT_X(false, "tst_QNetworkReply", "Invalid/unknown operation requested");
+        qFatal("%s: Invalid/unknown operation requested", Q_FUNC_INFO);
     }
     reply->setParent(this);
 
@@ -3237,16 +3246,16 @@ void tst_QNetworkReply::ioGetFromHttpWithCache_data()
     QTest::newRow("must-revalidate,200,prefer-network")
             << reply200 << "Reloaded" << content << int(QNetworkRequest::PreferNetwork) << QStringList() << false << true;
     QTest::newRow("must-revalidate,200,prefer-cache")
-            << reply200 << "Not-reloaded" << content << int(QNetworkRequest::PreferCache) << QStringList() << true << false;
+            << reply200 << "Reloaded" << content << int(QNetworkRequest::PreferCache) << QStringList() << false << true;
     QTest::newRow("must-revalidate,200,always-cache")
-            << reply200 << "Not-reloaded" << content << int(QNetworkRequest::AlwaysCache) << QStringList() << true << false;
+            << reply200 << "" << content << int(QNetworkRequest::AlwaysCache) << QStringList() << false << false;
 
     QTest::newRow("must-revalidate,304,prefer-network")
             << reply304 << "Not-reloaded" << content << int(QNetworkRequest::PreferNetwork) << QStringList() << true << true;
     QTest::newRow("must-revalidate,304,prefer-cache")
-            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::PreferCache) << QStringList() << true << false;
+            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::PreferCache) << QStringList() << true << true;
     QTest::newRow("must-revalidate,304,always-cache")
-            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::AlwaysCache) << QStringList() << true << false;
+            << reply304 << "" << content << int(QNetworkRequest::AlwaysCache) << QStringList() << false << false;
 
     //
     // Partial content
@@ -4103,6 +4112,7 @@ void tst_QNetworkReply::ioPostToHttpFromMiddleOfQBufferFiveBytes()
 
     QUrl url = "http://" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi";
     QNetworkRequest request(url);
+    request.setRawHeader("Content-Type", "application/octet-stream");
     QNetworkReplyPtr reply = manager.post(request, &uploadBuffer);
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
@@ -4353,6 +4363,7 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
     // create the request
     QUrl url = QUrl(QString("http://127.0.0.1:%1/").arg(server.serverPort()));
     QNetworkRequest request(url);
+    request.setRawHeader("Content-Type", "application/octet-stream");
     QNetworkReplyPtr reply = manager.post(request, &sourceFile);
     QSignalSpy spy(reply, SIGNAL(uploadProgress(qint64,qint64)));
     connect(&server, SIGNAL(newConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
@@ -4964,17 +4975,24 @@ void tst_QNetworkReply::httpProxyCommands()
     QNetworkProxy proxy(QNetworkProxy::HttpProxy, "127.0.0.1", proxyServer.serverPort());
 
     manager.setProxy(proxy);
-    QNetworkReplyPtr reply = manager.get(QNetworkRequest(url));
-    manager.setProxy(QNetworkProxy());
+    QNetworkRequest request(url);
+    request.setRawHeader("User-Agent", "QNetworkReplyAutoTest/1.0");
+    QNetworkReplyPtr reply = manager.get(request);
+    //clearing the proxy here causes the test to fail.
+    //the proxy isn't used until after the bearer has been started
+    //which is correct in general, because system proxy isn't known until that time.
+    //removing this line is safe, as the proxy is also reset by the cleanup() function
+    //manager.setProxy(QNetworkProxy());
 
     // wait for the finished signal
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
-    QTestEventLoop::instance().enterLoop(1);
+    QTestEventLoop::instance().enterLoop(15);
 
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     //qDebug() << reply->error() << reply->errorString();
+    //qDebug() << proxyServer.receivedData;
 
     // we don't really care if the request succeeded
     // especially since it won't succeed in the HTTPS case
@@ -4982,6 +5000,12 @@ void tst_QNetworkReply::httpProxyCommands()
 
     QString receivedHeader = proxyServer.receivedData.left(expectedCommand.length());
     QCOMPARE(receivedHeader, expectedCommand);
+
+    //QTBUG-17223 - make sure the user agent from the request is sent to proxy server even for CONNECT
+    int uapos = proxyServer.receivedData.indexOf("User-Agent");
+    int uaend = proxyServer.receivedData.indexOf("\r\n", uapos);
+    QByteArray uaheader = proxyServer.receivedData.mid(uapos, uaend - uapos);
+    QCOMPARE(uaheader, QByteArray("User-Agent: QNetworkReplyAutoTest/1.0"));
 }
 
 class ProxyChangeHelper : public QObject {

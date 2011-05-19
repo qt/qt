@@ -45,6 +45,7 @@
 #include "qwaylandscreen.h"
 #include "qwaylandcursor.h"
 #include "qwaylandinputdevice.h"
+#include "qwaylandclipboard.h"
 
 #ifdef QT_WAYLAND_GL_SUPPORT
 #include "gl_integration/qwaylandglintegration.h"
@@ -52,6 +53,7 @@
 
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtGui/QApplication>
+#include <QtGui/private/qapplication_p.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -126,6 +128,7 @@ QWaylandDisplay::QWaylandDisplay(void)
 #ifdef QT_WAYLAND_GL_SUPPORT
     mEglIntegration = QWaylandGLIntegration::createGLIntegration(this);
 #endif
+    blockingReadEvents();
 
     qRegisterMetaType<uint32_t>("uint32_t");
 
@@ -216,9 +219,6 @@ void QWaylandDisplay::outputHandleGeometry(void *data,
                                            int32_t x, int32_t y,
                                            int32_t width, int32_t height)
 {
-    //call back function called from another thread;
-    //but its safe to call createScreen from another thread since
-    //QWaylandScreen does a moveToThread
     QWaylandDisplay *waylandDisplay = static_cast<QWaylandDisplay *>(data);
     QRect outputRect = QRect(x, y, width, height);
     waylandDisplay->createNewScreen(output,outputRect);
@@ -251,20 +251,23 @@ void QWaylandDisplay::displayHandleGlobal(uint32_t id,
                                           uint32_t version)
 {
     Q_UNUSED(version);
-
-    if (interface == "output") {
-        struct wl_output *output = wl_output_create(mDisplay, id);
+    if (interface == "wl_output") {
+        struct wl_output *output = wl_output_create(mDisplay, id, 1);
         wl_output_add_listener(output, &outputListener, this);
-    } else if (interface == "compositor") {
-        mCompositor = wl_compositor_create(mDisplay, id);
-    } else if (interface == "shm") {
-        mShm = wl_shm_create(mDisplay, id);
-    } else if (interface == "shell"){
-        mShell = wl_shell_create(mDisplay, id);
+    } else if (interface == "wl_compositor") {
+        mCompositor = wl_compositor_create(mDisplay, id, 1);
+    } else if (interface == "wl_shm") {
+        mShm = wl_shm_create(mDisplay, id, 1);
+    } else if (interface == "wl_shell"){
+        mShell = wl_shell_create(mDisplay, id, 1);
         wl_shell_add_listener(mShell, &shellListener, this);
-    } else if (interface == "input_device") {
+    } else if (interface == "wl_input_device") {
         QWaylandInputDevice *inputDevice =
             new QWaylandInputDevice(mDisplay, id);
         mInputDevices.append(inputDevice);
+    } else if (interface == "wl_selection_offer") {
+        QPlatformIntegration *plat = QApplicationPrivate::platformIntegration();
+        QWaylandClipboard *clipboard = static_cast<QWaylandClipboard *>(plat->clipboard());
+        clipboard->createSelectionOffer(id);
     }
 }

@@ -44,6 +44,8 @@
 #include "qwaylanddisplay.h"
 #include "qwaylandshmsurface.h"
 #include "qwaylandshmwindow.h"
+#include "qwaylandnativeinterface.h"
+#include "qwaylandclipboard.h"
 
 #include "qgenericunixfontdatabase.h"
 
@@ -62,7 +64,14 @@ QWaylandIntegration::QWaylandIntegration(bool useOpenGL)
     : mFontDb(new QGenericUnixFontDatabase())
     , mDisplay(new QWaylandDisplay())
     , mUseOpenGL(useOpenGL)
+    , mNativeInterface(new QWaylandNativeInterface)
+    , mClipboard(0)
 {
+}
+
+QPlatformNativeInterface * QWaylandIntegration::nativeInterface() const
+{
+    return mNativeInterface;
 }
 
 QList<QPlatformScreen *>
@@ -124,4 +133,11 @@ bool QWaylandIntegration::hasOpenGL() const
 #else
     return false;
 #endif
+}
+
+QPlatformClipboard *QWaylandIntegration::clipboard() const
+{
+    if (!mClipboard)
+        mClipboard = new QWaylandClipboard(mDisplay);
+    return mClipboard;
 }

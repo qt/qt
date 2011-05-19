@@ -235,11 +235,22 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     QSize oldSize(q->size());
     QRect oldGeom(data.crect);
 
+    bool checkExtra = true;
+    if (q->isWindow() && (data.window_state & (Qt::WindowFullScreen | Qt::WindowMaximized))) {
+        // Do not allow fullscreen/maximized windows to expand beyond client rect
+        TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+        w = qMin(w, r.Width());
+        h = qMin(h, r.Height());
+
+        if (w == r.Width() && h == r.Height())
+            checkExtra = false;
+    }
+
     // Lose maximized status if deliberate resize
     if (w != oldSize.width() || h != oldSize.height())
         data.window_state &= ~Qt::WindowMaximized;
 
-    if (extra) {                                // any size restrictions?
+    if (checkExtra && extra) {  // any size restrictions?
         w = qMin(w,extra->maxw);
         h = qMin(h,extra->maxh);
         w = qMax(w,extra->minw);
@@ -567,6 +578,11 @@ void QWidgetPrivate::show_sys()
                     if (isFullscreen) {
                         const bool cbaVisible = S60->buttonGroupContainer() && S60->buttonGroupContainer()->IsVisible();
                         S60->setStatusPaneAndButtonGroupVisibility(false, cbaVisible);
+                        if (cbaVisible) {
+                            // Fix window dimensions as without screen furniture they will have
+                            // defaulted to full screen dimensions initially.
+                            id->handleClientAreaChange();
+                        }
                     }
                 }
             }
@@ -781,7 +797,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     adjustFlags(data.window_flags, q);
     // keep compatibility with previous versions, we need to preserve the created state
     // (but we recreate the winId for the widget being reparented, again for compatibility)
-    if (wasCreated || (!q->isWindow() && parent->testAttribute(Qt::WA_WState_Created)))
+    if (wasCreated || (!q->isWindow() && parent && parent->testAttribute(Qt::WA_WState_Created)))
         createWinId();
     if (q->isWindow() || (!parent || parent->isVisible()) || explicitlyHidden)
         q->setAttribute(Qt::WA_WState_Hidden);
@@ -824,7 +840,8 @@ void QWidgetPrivate::s60UpdateIsOpaque()
     RWindow *const window = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
 
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
-    if (QApplicationPrivate::instance()->useTranslucentEGLSurfaces) {
+    if (QApplicationPrivate::instance()->useTranslucentEGLSurfaces
+            && !extra->topextra->forcedToRaster) {
         window->SetSurfaceTransparency(!isOpaque);
         extra->topextra->nativeWindowTransparencyEnabled = !isOpaque;
         return;
@@ -1008,6 +1025,7 @@ void QWidgetPrivate::createTLSysExtra()
 {
     extra->topextra->inExpose = 0;
     extra->topextra->nativeWindowTransparencyEnabled = 0;
+    extra->topextra->forcedToRaster = 0;
 }
 
 void QWidgetPrivate::deleteTLSysExtra()

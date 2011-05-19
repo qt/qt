@@ -106,7 +106,7 @@ void tst_QScriptValueIterator::iterateForward()
     QFETCH(QStringList, propertyNames);
     QFETCH(QStringList, propertyValues);
     QMap<QString, QString> pmap;
-    Q_ASSERT(propertyNames.size() == propertyValues.size());
+    QVERIFY(propertyNames.size() == propertyValues.size());
 
     QScriptEngine engine;
     QScriptValue object = engine.newObject();
@@ -165,7 +165,7 @@ void tst_QScriptValueIterator::iterateBackward()
     QFETCH(QStringList, propertyNames);
     QFETCH(QStringList, propertyValues);
     QMap<QString, QString> pmap;
-    Q_ASSERT(propertyNames.size() == propertyValues.size());
+    QVERIFY(propertyNames.size() == propertyValues.size());
 
     QScriptEngine engine;
     QScriptValue object = engine.newObject();

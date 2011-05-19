@@ -299,6 +299,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
 #ifndef QT_NO_IM
       , inheritsInputMethodHints(0)
 #endif
+      , inSetParent(0)
 #if defined(Q_WS_X11)
       , picture(0)
 #elif defined(Q_WS_WIN)
@@ -612,7 +613,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     \brief The QWidget class is the base class of all user interface objects.
 
     \ingroup basicwidgets
-    
+
     The widget is the atom of the user interface: it receives mouse, keyboard
     and other events from the window system, and paints a representation of
     itself on the screen. Every widget is rectangular, and they are sorted in a
@@ -1389,16 +1390,6 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     QApplication::postEvent(q, new QEvent(QEvent::PolishRequest));
 
     extraPaintEngine = 0;
-
-#ifdef QT_MAC_USE_COCOA
-    // If we add a child to the unified toolbar, we have to redirect the painting.
-    if (parentWidget && parentWidget->d_func() && parentWidget->d_func()->isInUnifiedToolbar) {
-        if (parentWidget->d_func()->unifiedSurface) {
-            QWidget *toolbar = parentWidget->d_func()->toolbar_ancestor;
-            parentWidget->d_func()->unifiedSurface->recursiveRedirect(toolbar, toolbar, toolbar->d_func()->toolbar_offset);
-        }
-    }
-#endif // QT_MAC_USE_COCOA
 }
 
 
@@ -1588,6 +1579,7 @@ QWidget::~QWidget()
 
     // delete layout while we still are a valid widget
     delete d->layout;
+    d->layout = 0;
     // Remove myself from focus list
 
     Q_ASSERT(d->focus_next->d_func()->focus_prev == this);
@@ -2598,6 +2590,22 @@ WId QWidget::effectiveWinId() const
     if (id || !testAttribute(Qt::WA_WState_Created))
         return id;
     QWidget *realParent = nativeParentWidget();
+    if (!realParent && d_func()->inSetParent) {
+        // In transitional state. This is really just a workaround. The real problem
+        // is that QWidgetPrivate::setParent_sys (platform specific code) first sets
+        // the window id to 0 (setWinId(0)) before it sets the Qt::WA_WState_Created
+        // attribute to false. The correct way is to do it the other way around, and
+        // in that case the Qt::WA_WState_Created logic above will kick in and
+        // return 0 whenever the widget is in a transitional state. However, changing
+        // the original logic for all platforms is far more intrusive and might
+        // break existing applications.
+        // Note: The widget can only be in a transitional state when changing its
+        // parent -- everything else is an internal error -- hence explicitly checking
+        // against 'inSetParent' rather than doing an unconditional return whenever
+        // 'realParent' is 0 (which may cause strange artifacts and headache later).
+        return 0;
+    }
+    // This widget *must* have a native parent widget.
     Q_ASSERT(realParent);
     Q_ASSERT(realParent->internalWinId());
     return realParent->internalWinId();
@@ -10110,6 +10118,7 @@ void QWidget::setParent(QWidget *parent)
 void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
 {
     Q_D(QWidget);
+    d->inSetParent = true;
     bool resized = testAttribute(Qt::WA_Resized);
     bool wasCreated = testAttribute(Qt::WA_WState_Created);
     QWidget *oldtlw = window();
@@ -10270,6 +10279,8 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
             ancestorProxy->d_func()->embedSubWindow(this);
     }
 #endif
+
+    d->inSetParent = false;
 }
 
 /*!

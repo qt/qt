@@ -1499,6 +1499,7 @@ void QDeclarativeGridView::setDelegate(QDeclarativeComponent *delegate)
         d->ownModel = true;
     }
     if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model)) {
+        int oldCount = dataModel->count();
         dataModel->setDelegate(delegate);
         if (isComponentComplete()) {
             for (int i = 0; i < d->visibleItems.count(); ++i)
@@ -1516,6 +1517,8 @@ void QDeclarativeGridView::setDelegate(QDeclarativeComponent *delegate)
             }
             d->moveReason = QDeclarativeGridViewPrivate::Other;
         }
+        if (oldCount != dataModel->count())
+            emit countChanged();
         emit delegateChanged();
     }
 }

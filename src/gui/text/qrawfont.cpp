@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
    A QRawFont object represents a single, physical instance of a given font in a given pixel size.
    I.e. in the typical case it represents a set of TrueType or OpenType font tables and uses a
    user specified pixel size to convert metrics into logical pixel units. In can be used in
-   combination with the QGlyphs class to draw specific glyph indexes at specific positions, and
+   combination with the QGlyphRun class to draw specific glyph indexes at specific positions, and
    also have accessors to some relevant data in the physical font.
 
    QRawFont only provides support for the main font technologies: GDI and DirectWrite on Windows
@@ -87,9 +87,9 @@ QT_BEGIN_NAMESPACE
 
    QRawFont can be constructed in a number of ways:
    \list
-   \o \l It can be constructed by calling QTextLayout::glyphs() or QTextFragment::glyphs(). The
-         returned QGlyphs objects will contain QRawFont objects which represent the actual fonts
-         used to render each portion of the text.
+   \o \l It can be constructed by calling QTextLayout::glyphRuns() or QTextFragment::glyphRuns().
+         The returned QGlyphRun objects will contain QRawFont objects which represent the actual
+         fonts used to render each portion of the text.
    \o \l It can be constructed by passing a QFont object to QRawFont::fromFont(). The function
          will return a QRawFont object representing the font that will be selected as response to
          the QFont query and the selected writing system.
@@ -234,7 +234,7 @@ void QRawFont::loadFromData(const QByteArray &fontData,
    the pixel in the rasterization of the glyph. Otherwise, the image will be in the format of
    QImage::Format_A8 and each pixel will contain the opacity of the pixel in the rasterization.
 
-   \sa pathForGlyph(), QPainter::drawGlyphs()
+   \sa pathForGlyph(), QPainter::drawGlyphRun()
 */
 QImage QRawFont::alphaMapForGlyph(quint32 glyphIndex, AntialiasingType antialiasingType,
                                   const QTransform &transform) const
@@ -302,16 +302,68 @@ qreal QRawFont::descent() const
 }
 
 /*!
+   Returns the xHeight of this QRawFont in pixel units.
+
+   \sa QFontMetricsF::xHeight()
+*/
+qreal QRawFont::xHeight() const
+{
+    if (!isValid())
+        return 0.0;
+
+    return d->fontEngine->xHeight().toReal();
+}
+
+/*!
+   Returns the leading of this QRawFont in pixel units.
+
+   \sa QFontMetricsF::leading()
+*/
+qreal QRawFont::leading() const
+{
+    if (!isValid())
+        return 0.0;
+
+    return d->fontEngine->leading().toReal();
+}
+
+/*!
+   Returns the average character width of this QRawFont in pixel units.
+
+   \sa QFontMetricsF::averageCharWidth()
+*/
+qreal QRawFont::averageCharWidth() const
+{
+    if (!isValid())
+        return 0.0;
+
+    return d->fontEngine->averageCharWidth().toReal();
+}
+
+/*!
+   Returns the width of the widest character in the font.
+
+   \sa QFontMetricsF::maxWidth()
+*/
+qreal QRawFont::maxCharWidth() const
+{
+    if (!isValid())
+        return 0.0;
+
+    return d->fontEngine->maxCharWidth();
+}
+
+/*!
    Returns the pixel size set for this QRawFont. The pixel size affects how glyphs are
    rasterized, the size of glyphs returned by pathForGlyph(), and is used to convert
    internal metrics from design units to logical pixel units.
 
    \sa setPixelSize()
 */
-int QRawFont::pixelSize() const
+qreal QRawFont::pixelSize() const
 {
     if (!isValid())
-        return -1;
+        return 0.0;
 
     return d->fontEngine->fontDef.pixelSize;
 }
@@ -374,9 +426,9 @@ int QRawFont::weight() const
    underlying font. Note that in cases where there are other tables in the font that affect the
    shaping of the text, the returned glyph indexes will not correctly represent the rendering
    of the text. To get the correctly shaped text, you can use QTextLayout to lay out and shape the
-   text, and then call QTextLayout::glyphs() to get the set of glyph index list and QRawFont pairs.
+   text, and then call QTextLayout::glyphRuns() to get the set of glyph index list and QRawFont pairs.
 
-   \sa advancesForGlyphIndexes(), QGlyphs, QTextLayout::glyphs(), QTextFragment::glyphs()
+   \sa advancesForGlyphIndexes(), glyphIndexesForChars(), QGlyphRun, QTextLayout::glyphRuns(), QTextFragment::glyphRuns()
 */
 QVector<quint32> QRawFont::glyphIndexesForString(const QString &text) const
 {
@@ -385,11 +437,9 @@ QVector<quint32> QRawFont::glyphIndexesForString(const QString &text) const
 
     int nglyphs = text.size();
     QVarLengthGlyphLayoutArray glyphs(nglyphs);
-    if (!d->fontEngine->stringToCMap(text.data(), text.size(), &glyphs, &nglyphs,
-                                  QTextEngine::GlyphIndicesOnly)) {
+    if (!glyphIndexesForChars(text.data(), text.size(), glyphs.glyphs, &nglyphs)) {
         glyphs.resize(nglyphs);
-        if (!d->fontEngine->stringToCMap(text.data(), text.size(), &glyphs, &nglyphs,
-                                      QTextEngine::GlyphIndicesOnly)) {
+        if (!glyphIndexesForChars(text.data(), text.size(), glyphs.glyphs, &nglyphs)) {
             Q_ASSERT_X(false, Q_FUNC_INFO, "stringToCMap shouldn't fail twice");
             return QVector<quint32>();
         }
@@ -400,6 +450,26 @@ QVector<quint32> QRawFont::glyphIndexesForString(const QString &text) const
         glyphIndexes.append(glyphs.glyphs[i]);
 
     return glyphIndexes;
+}
+
+/*!
+   Converts a string of unicode points to glyph indexes using the CMAP table in the
+   underlying font. The function works like glyphIndexesForString() except it take
+   an array (\a chars), the results will be returned though \a glyphIndexes array
+   and number of glyphs will be set in \a numGlyphs. The size of \a glyphIndexes array
+   must be at least \a numChars, if that's still not enough, this function will return
+   false, then you can resize \a glyphIndexes from the size returned in \a numGlyphs.
+
+   \sa glyphIndexesForString(), advancesForGlyphIndexes(), QGlyphs, QTextLayout::glyphs(), QTextFragment::glyphs()
+*/
+bool QRawFont::glyphIndexesForChars(const QChar *chars, int numChars, quint32 *glyphIndexes, int *numGlyphs) const
+{
+    if (!isValid())
+        return false;
+
+    QGlyphLayout glyphs;
+    glyphs.glyphs = glyphIndexes;
+    return d->fontEngine->stringToCMap(chars, numChars, &glyphs, numGlyphs, QTextEngine::GlyphIndicesOnly);
 }
 
 /*!
@@ -425,6 +495,36 @@ QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyph
         advances.append(QPointF(glyphs.advances_x[i].toReal(), glyphs.advances_y[i].toReal()));
 
     return advances;
+}
+
+/*!
+   Returns the QRawFont's advances for each of the \a glyphIndexes in pixel units. The advances
+   give the distance from the position of a given glyph to where the next glyph should be drawn
+   to make it appear as if the two glyphs are unspaced. The glyph indexes are given with the
+   array \a glyphIndexes while the results are returned through \a advances, both of them must
+   have \a numGlyphs elements.
+
+   \sa QTextLine::horizontalAdvance(), QFontMetricsF::width()
+*/
+bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs) const
+{
+    if (!isValid())
+        return false;
+
+    QGlyphLayout glyphs;
+    glyphs.glyphs = const_cast<HB_Glyph *>(glyphIndexes);
+    glyphs.numGlyphs = numGlyphs;
+    QVarLengthArray<QFixed> advances_x(numGlyphs);
+    QVarLengthArray<QFixed> advances_y(numGlyphs);
+    glyphs.advances_x = advances_x.data();
+    glyphs.advances_y = advances_y.data();
+
+    d->fontEngine->recalcAdvances(&glyphs, 0);
+
+    for (int i=0; i<numGlyphs; ++i)
+        advances[i] = QPointF(glyphs.advances_x[i].toReal(), glyphs.advances_y[i].toReal());
+
+    return true;
 }
 
 /*!
@@ -535,17 +635,17 @@ QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writ
     layout.beginLayout();
     QTextLine line = layout.createLine();
     layout.endLayout();
-    QList<QGlyphs> list = layout.glyphs();
+    QList<QGlyphRun> list = layout.glyphRuns();
     if (list.size()) {
         // Pick the one matches the family name we originally requested,
         // if none of them match, just pick the first one
         for (int i = 0; i < list.size(); i++) {
-            QGlyphs glyphs = list.at(i);
-            QRawFont rawfont = glyphs.font();
+            QGlyphRun glyphs = list.at(i);
+            QRawFont rawfont = glyphs.rawFont();
             if (rawfont.familyName() == font.family())
                 return rawfont;
         }
-        return list.at(0).font();
+        return list.at(0).rawFont();
     }
     return QRawFont();
 #else
@@ -577,10 +677,21 @@ QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writ
 /*!
    Sets the pixel size with which this font should be rendered to \a pixelSize.
 */
-void QRawFont::setPixelSize(int pixelSize)
+void QRawFont::setPixelSize(qreal pixelSize)
 {
+    if (d->fontEngine == 0)
+        return;
+
     detach();
-    d->platformSetPixelSize(pixelSize);
+    QFontEngine *oldFontEngine = d->fontEngine;
+
+    d->fontEngine = d->fontEngine->cloneWithSize(pixelSize);
+    if (d->fontEngine != 0)
+        d->fontEngine->ref.ref();
+
+    oldFontEngine->ref.deref();
+    if (oldFontEngine->cache_count == 0 && oldFontEngine->ref == 0)
+        delete oldFontEngine;
 }
 
 /*!

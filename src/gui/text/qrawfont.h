@@ -90,19 +90,25 @@ public:
 
     QVector<quint32> glyphIndexesForString(const QString &text) const;
     QVector<QPointF> advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const;
+    bool glyphIndexesForChars(const QChar *chars, int numChars, quint32 *glyphIndexes, int *numGlyphs) const;
+    bool advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs) const;
 
     QImage alphaMapForGlyph(quint32 glyphIndex,
                             AntialiasingType antialiasingType = SubPixelAntialiasing,
                             const QTransform &transform = QTransform()) const;
     QPainterPath pathForGlyph(quint32 glyphIndex) const;
 
-    void setPixelSize(int pixelSize);
-    int pixelSize() const;
+    void setPixelSize(qreal pixelSize);
+    qreal pixelSize() const;
 
     QFont::HintingPreference hintingPreference() const;
 
     qreal ascent() const;
     qreal descent() const;
+    qreal leading() const;
+    qreal xHeight() const;
+    qreal averageCharWidth() const;
+    qreal maxCharWidth() const;
 
     qreal unitsPerEm() const;
 

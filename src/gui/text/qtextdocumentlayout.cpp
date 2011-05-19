@@ -2996,10 +2996,19 @@ void QTextDocumentLayout::resizeInlineObject(QTextInlineObject item, int posInDo
 
     QSizeF inlineSize = (pos == QTextFrameFormat::InFlow ? intrinsic : QSizeF(0, 0));
     item.setWidth(inlineSize.width());
-    if (f.verticalAlignment() == QTextCharFormat::AlignMiddle) {
+
+    QFontMetrics m(f.font());
+    switch (f.verticalAlignment())
+    {
+    case QTextCharFormat::AlignMiddle:
         item.setDescent(inlineSize.height() / 2);
         item.setAscent(inlineSize.height() / 2 - 1);
-    } else {
+        break;
+    case QTextCharFormat::AlignBaseline:
+        item.setDescent(m.descent());
+        item.setAscent(inlineSize.height() - m.descent() - 1);
+        break;
+    default:
         item.setDescent(0);
         item.setAscent(inlineSize.height() - 1);
     }
@@ -3081,6 +3090,7 @@ void QTextDocumentLayoutPrivate::ensureLayouted(QFixed y) const
     if (currentLazyLayoutPosition == -1)
         return;
     const QSizeF oldSize = q->dynamicDocumentSize();
+    Q_UNUSED(oldSize);
 
     if (checkPoints.isEmpty())
         layoutStep();

@@ -2418,6 +2418,7 @@ void tst_QtConcurrentMap::incrementalResults() {}
 void tst_QtConcurrentMap::stressTest() {}
 void tst_QtConcurrentMap::throttling() {}
 void tst_QtConcurrentMap::stlContainers() {}
+void tst_QtConcurrentMap::qFutureAssignmentLeak() { }
 void tst_QtConcurrentMap::noDetatch() {}
 
 QTEST_NOOP_MAIN

@@ -91,6 +91,9 @@ private slots:
 
     void unsupportedWritingSystem_data();
     void unsupportedWritingSystem();
+
+    void rawFontSetPixelSize_data();
+    void rawFontSetPixelSize();
 #endif // QT_NO_RAWFONT
 };
 
@@ -104,7 +107,7 @@ void tst_QRawFont::invalidRawFont()
 {
     QRawFont font;
     QVERIFY(!font.isValid());
-    QCOMPARE(font.pixelSize(), -1);
+    QCOMPARE(font.pixelSize(), 0.0);
     QVERIFY(font.familyName().isEmpty());
     QCOMPARE(font.style(), QFont::StyleNormal);
     QCOMPARE(font.weight(), -1);
@@ -165,7 +168,7 @@ void tst_QRawFont::correctFontData_data()
     QTest::addColumn<QFont::Weight>("weight");
     QTest::addColumn<QFont::HintingPreference>("hintingPreference");
     QTest::addColumn<qreal>("unitsPerEm");
-    QTest::addColumn<int>("pixelSize");
+    QTest::addColumn<qreal>("pixelSize");
 
     int hintingPreferences[] = {
         int(QFont::PreferDefaultHinting),
@@ -189,7 +192,7 @@ void tst_QRawFont::correctFontData_data()
                 << QFont::Normal
                 << QFont::HintingPreference(*hintingPreference)
                 << 1000.0
-                << 10;
+                << 10.0;
 
         fileName = QLatin1String(SRCDIR "testfont_bold_italic.ttf");
         title = fileName
@@ -203,7 +206,7 @@ void tst_QRawFont::correctFontData_data()
                 << QFont::Bold
                 << QFont::HintingPreference(*hintingPreference)
                 << 1000.0
-                << 10;
+                << 10.0;
 
         ++hintingPreference;
     }
@@ -217,7 +220,7 @@ void tst_QRawFont::correctFontData()
     QFETCH(QFont::Weight, weight);
     QFETCH(QFont::HintingPreference, hintingPreference);
     QFETCH(qreal, unitsPerEm);
-    QFETCH(int, pixelSize);
+    QFETCH(qreal, pixelSize);
 
     QRawFont font(fileName, 10, hintingPreference);
     QVERIFY(font.isValid());
@@ -284,7 +287,7 @@ void tst_QRawFont::textLayout()
 
     QString familyName = QString::fromLatin1("QtBidiTestFont");
     QFont font(familyName);
-    font.setPixelSize(18);
+    font.setPixelSize(18.0);
     QCOMPARE(QFontInfo(font).family(), familyName);
 
     QTextLayout layout(QLatin1String("Foobar"));
@@ -293,15 +296,15 @@ void tst_QRawFont::textLayout()
     layout.createLine();
     layout.endLayout();
 
-    QList<QGlyphs> glyphss = layout.glyphs();
-    QCOMPARE(glyphss.size(), 1);
+    QList<QGlyphRun> glyphRuns = layout.glyphRuns();
+    QCOMPARE(glyphRuns.size(), 1);
 
-    QGlyphs glyphs = glyphss.at(0);
+    QGlyphRun glyphs = glyphRuns.at(0);
 
-    QRawFont rawFont = glyphs.font();
+    QRawFont rawFont = glyphs.rawFont();
     QVERIFY(rawFont.isValid());
     QCOMPARE(rawFont.familyName(), familyName);
-    QCOMPARE(rawFont.pixelSize(), 18);
+    QCOMPARE(rawFont.pixelSize(), 18.0);
 
     QVector<quint32> expectedGlyphIndices;
     expectedGlyphIndices << 44 << 83 << 83 << 70 << 69 << 86;
@@ -597,12 +600,12 @@ void tst_QRawFont::fromFont()
 
     QFont font(familyName);
     font.setHintingPreference(hintingPreference);
-    font.setPixelSize(26);
+    font.setPixelSize(26.0);
 
     QRawFont rawFont = QRawFont::fromFont(font, writingSystem);
     QVERIFY(rawFont.isValid());
     QCOMPARE(rawFont.familyName(), familyName);
-    QCOMPARE(rawFont.pixelSize(), 26);
+    QCOMPARE(rawFont.pixelSize(), 26.0);
 
     QVERIFY(fontDatabase.removeApplicationFont(id));
 }
@@ -623,7 +626,7 @@ void tst_QRawFont::copyConstructor()
 
     {
         QString rawFontFamilyName;
-        int rawFontPixelSize;
+        qreal rawFontPixelSize;
         qreal rawFontAscent;
         qreal rawFontDescent;
         int rawFontTableSize;
@@ -691,7 +694,7 @@ void tst_QRawFont::detach()
 
     {
         QString rawFontFamilyName;
-        int rawFontPixelSize;
+        qreal rawFontPixelSize;
         qreal rawFontAscent;
         qreal rawFontDescent;
         int rawFontTableSize;
@@ -773,15 +776,15 @@ void tst_QRawFont::unsupportedWritingSystem()
 
     QFont font("QtBidiTestFont");
     font.setHintingPreference(hintingPreference);
-    font.setPixelSize(12);
+    font.setPixelSize(12.0);
 
     QRawFont rawFont = QRawFont::fromFont(font, QFontDatabase::Any);
     QCOMPARE(rawFont.familyName(), QString::fromLatin1("QtBidiTestFont"));
-    QCOMPARE(rawFont.pixelSize(), 12);
+    QCOMPARE(rawFont.pixelSize(), 12.0);
 
     rawFont = QRawFont::fromFont(font, QFontDatabase::Hebrew);
     QCOMPARE(rawFont.familyName(), QString::fromLatin1("QtBidiTestFont"));
-    QCOMPARE(rawFont.pixelSize(), 12);
+    QCOMPARE(rawFont.pixelSize(), 12.0);
 
     QString arabicText = QFontDatabase::writingSystemSample(QFontDatabase::Arabic);
 
@@ -792,19 +795,52 @@ void tst_QRawFont::unsupportedWritingSystem()
     layout.createLine();
     layout.endLayout();
 
-    QList<QGlyphs> glyphss = layout.glyphs();
-    QCOMPARE(glyphss.size(), 1);
+    QList<QGlyphRun> glyphRuns = layout.glyphRuns();
+    QCOMPARE(glyphRuns.size(), 1);
 
-    QGlyphs glyphs = glyphss.at(0);
-    QRawFont layoutFont = glyphs.font();
+    QGlyphRun glyphs = glyphRuns.at(0);
+    QRawFont layoutFont = glyphs.rawFont();
     QVERIFY(layoutFont.familyName() != QString::fromLatin1("QtBidiTestFont"));
-    QCOMPARE(layoutFont.pixelSize(), 12);
+    QCOMPARE(layoutFont.pixelSize(), 12.0);
 
     rawFont = QRawFont::fromFont(font, QFontDatabase::Arabic);
     QCOMPARE(rawFont.familyName(), layoutFont.familyName());
-    QCOMPARE(rawFont.pixelSize(), 12);
+    QCOMPARE(rawFont.pixelSize(), 12.0);
 
     fontDatabase.removeApplicationFont(id);
+}
+
+void tst_QRawFont::rawFontSetPixelSize_data()
+{
+    QTest::addColumn<QFont::HintingPreference>("hintingPreference");
+
+    QTest::newRow("Default hinting preference") << QFont::PreferDefaultHinting;
+    QTest::newRow("No hinting preference") << QFont::PreferNoHinting;
+    QTest::newRow("Vertical hinting preference") << QFont::PreferVerticalHinting;
+    QTest::newRow("Full hinting preference") << QFont::PreferFullHinting;
+}
+
+void tst_QRawFont::rawFontSetPixelSize()
+{
+    QFETCH(QFont::HintingPreference, hintingPreference);
+
+    QTextLayout layout("Foobar");
+
+    QFont font = layout.font();
+    font.setHintingPreference(hintingPreference);
+    font.setPixelSize(12);
+    layout.setFont(font);
+
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QGlyphRun glyphs = layout.glyphRuns().at(0);
+    QRawFont rawFont = glyphs.rawFont();
+    QCOMPARE(rawFont.pixelSize(), 12.0);
+
+    rawFont.setPixelSize(24);
+    QCOMPARE(rawFont.pixelSize(), 24.0);
 }
 
 #endif // QT_NO_RAWFONT

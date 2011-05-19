@@ -90,10 +90,10 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         return;
     }
 
+    if (!backend->start()) {
 #ifndef QT_NO_BEARERMANAGEMENT
-    if (!backend->start()) { // ### we should call that method even if bearer is not used
         // backend failed to start because the session state is not Connected.
-        // QNetworkAccessManager will call reply->backend->start() again for us when the session
+        // QNetworkAccessManager will call _q_startOperation again for us when the session
         // state changes.
         state = WaitingForSession;
 
@@ -109,11 +109,20 @@ void QNetworkReplyImplPrivate::_q_startOperation()
                 session->open();
         } else {
             qWarning("Backend is waiting for QNetworkSession to connect, but there is none!");
+            state = Working;
+            error(QNetworkReplyImpl::UnknownNetworkError,
+                  QCoreApplication::translate("QNetworkReply", "Network session error."));
+            finished();
         }
-
+#else
+        qWarning("Backend start failed");
+        state = Working;
+        error(QNetworkReplyImpl::UnknownNetworkError,
+              QCoreApplication::translate("QNetworkReply", "backend start error."));
+        finished();
+#endif
         return;
     }
-#endif
 
     if (backend && backend->isSynchronous()) {
         state = Finished;
@@ -851,6 +860,8 @@ void QNetworkReplyImpl::abort()
     if (d->state != QNetworkReplyImplPrivate::Finished) {
         // call finished which will emit signals
         d->error(OperationCanceledError, tr("Operation canceled"));
+        if (d->state == QNetworkReplyImplPrivate::WaitingForSession)
+            d->state = QNetworkReplyImplPrivate::Working;
         d->finished();
     }
     d->state = QNetworkReplyImplPrivate::Aborted;
@@ -1010,10 +1021,6 @@ bool QNetworkReplyImplPrivate::migrateBackend()
     if (state == Finished || state == Aborted)
         return true;
 
-    // Backend does not support resuming download.
-    if (!backend->canResume())
-        return false;
-
     // Request has outgoing data, not migrating.
     if (outgoingData)
         return false;
@@ -1021,6 +1028,10 @@ bool QNetworkReplyImplPrivate::migrateBackend()
     // Request is serviced from the cache, don't need to migrate.
     if (copyDevice)
         return true;
+
+    // Backend does not support resuming download.
+    if (!backend->canResume())
+        return false;
 
     state = QNetworkReplyImplPrivate::Reconnecting;
 

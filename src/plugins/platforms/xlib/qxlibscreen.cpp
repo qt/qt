@@ -54,8 +54,6 @@
 
 #include <private/qapplication_p.h>
 
-#include <X11/extensions/Xfixes.h>
-
 QT_BEGIN_NAMESPACE
 
 static int (*original_x_errhandler)(Display *dpy, XErrorEvent *);
@@ -201,7 +199,7 @@ QXlibScreen::QXlibScreen()
 
 
 #ifndef DONT_USE_MIT_SHM
-    Status MIT_SHM_extension_supported = XShmQueryExtension (mDisplay->nativeDisplay());
+    int MIT_SHM_extension_supported = XShmQueryExtension (mDisplay->nativeDisplay());
     Q_ASSERT(MIT_SHM_extension_supported == True);
 #endif
     original_x_errhandler = XSetErrorHandler(qt_x_errhandler);

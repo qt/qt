@@ -861,7 +861,7 @@ QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccess
     device will be uploaded to the server; in that case, data must be open for
     reading and must remain valid until the finished() signal is emitted for this reply.
 
-    \note This feature is currently available for HTTP only.
+    \note This feature is currently available for HTTP(S) only.
 
     \sa get(), post(), put(), deleteResource()
 */
@@ -986,10 +986,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     // third step: find a backend
     priv->backend = d->findBackend(op, request);
 
-#ifndef QT_NO_NETWORKPROXY
-    QList<QNetworkProxy> proxyList = d->queryProxy(QNetworkProxyQuery(request.url()));
-    priv->proxyList = proxyList;
-#endif
     if (priv->backend) {
         priv->backend->setParent(reply);
         priv->backend->reply = priv;

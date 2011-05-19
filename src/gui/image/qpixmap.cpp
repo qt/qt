@@ -1224,12 +1224,8 @@ Qt::HANDLE QPixmap::handle() const
 {
 #if defined(Q_WS_X11)
     const QPixmapData *pd = pixmapData();
-    if (pd) {
-        if (pd->classId() == QPixmapData::X11Class)
-            return static_cast<const QX11PixmapData*>(pd)->handle();
-        else
-            qWarning("QPixmap::handle(): Pixmap is not an X11 class pixmap");
-    }
+    if (pd && pd->classId() == QPixmapData::X11Class)
+        return static_cast<const QX11PixmapData*>(pd)->handle();
 #endif
     return 0;
 }
@@ -1518,6 +1514,8 @@ QPixmap QPixmap::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::Tran
 
     QSize newSize = size();
     newSize.scale(s, aspectMode);
+    newSize.rwidth() = qMax(newSize.width(), 1);
+    newSize.rheight() = qMax(newSize.height(), 1);
     if (newSize == size())
         return *this;
 

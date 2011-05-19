@@ -435,6 +435,8 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
         c += event->commitString().length() - qMin(-event->replacementStart(), event->replacementLength());
 
     m_cursor += event->replacementStart();
+    if (m_cursor < 0)
+        m_cursor = 0;
 
     // insert commit string
     if (event->replacementLength()) {
@@ -447,7 +449,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
         cursorPositionChanged = true;
     }
 
-    m_cursor = qMin(c, m_text.length());
+    m_cursor = qBound(0, c, m_text.length());
 
     for (int i = 0; i < event->attributes().size(); ++i) {
         const QInputMethodEvent::Attribute &a = event->attributes().at(i);
@@ -1593,6 +1595,7 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
     }
 
     bool unknown = false;
+    bool visual = cursorMoveStyle() == Qt::VisualMoveStyle;
 
     if (false) {
     }
@@ -1657,11 +1660,11 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
 #endif
             moveCursor(selectionEnd(), false);
         } else {
-            cursorForward(0, layoutDirection() == Qt::LeftToRight ? 1 : -1);
+            cursorForward(0, visual ? 1 : (layoutDirection() == Qt::LeftToRight ? 1 : -1));
         }
     }
     else if (event == QKeySequence::SelectNextChar) {
-        cursorForward(1, layoutDirection() == Qt::LeftToRight ? 1 : -1);
+        cursorForward(1, visual ? 1 : (layoutDirection() == Qt::LeftToRight ? 1 : -1));
     }
     else if (event == QKeySequence::MoveToPreviousChar) {
 #if !defined(Q_WS_WIN) || defined(QT_NO_COMPLETER)
@@ -1672,11 +1675,11 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
 #endif
             moveCursor(selectionStart(), false);
         } else {
-            cursorForward(0, layoutDirection() == Qt::LeftToRight ? -1 : 1);
+            cursorForward(0, visual ? -1 : (layoutDirection() == Qt::LeftToRight ? -1 : 1));
         }
     }
     else if (event == QKeySequence::SelectPreviousChar) {
-        cursorForward(1, layoutDirection() == Qt::LeftToRight ? -1 : 1);
+        cursorForward(1, visual ? -1 : (layoutDirection() == Qt::LeftToRight ? -1 : 1));
     }
     else if (event == QKeySequence::MoveToNextWord) {
         if (echoMode() == QLineEdit::Normal)

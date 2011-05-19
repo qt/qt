@@ -95,7 +95,6 @@ class QDeclarativeImportDatabase;
 class QDeclarativeObjectScriptClass;
 class QDeclarativeTypeNameScriptClass;
 class QDeclarativeValueTypeScriptClass;
-class QScriptEngineDebugger;
 class QNetworkReply;
 class QNetworkAccessManager;
 class QDeclarativeNetworkAccessManagerFactory;
@@ -332,14 +331,14 @@ public:
 /*!
 Returns a QDeclarativePropertyCache for \a obj if one is available.
 
-If \a obj is null, being deleted or contains a dynamic meta object 0 
+If \a obj is null, being deleted or contains a dynamic meta object 0
 is returned.
 
 The returned cache is not referenced, so if it is to be stored, call addref().
 */
-QDeclarativePropertyCache *QDeclarativeEnginePrivate::cache(QObject *obj) 
+QDeclarativePropertyCache *QDeclarativeEnginePrivate::cache(QObject *obj)
 {
-    if (!obj || QObjectPrivate::get(obj)->metaObject || QObjectPrivate::get(obj)->wasDeleted) 
+    if (!obj || QObjectPrivate::get(obj)->metaObject || QObjectPrivate::get(obj)->wasDeleted)
         return 0;
 
     const QMetaObject *mo = obj->metaObject();
@@ -349,10 +348,10 @@ QDeclarativePropertyCache *QDeclarativeEnginePrivate::cache(QObject *obj)
 }
 
 /*!
-Returns a QDeclarativePropertyCache for \a metaObject.  
+Returns a QDeclarativePropertyCache for \a metaObject.
 
 As the cache is persisted for the life of the engine, \a metaObject must be
-a static "compile time" meta-object, or a meta-object that is otherwise known to 
+a static "compile time" meta-object, or a meta-object that is otherwise known to
 exist for the lifetime of the QDeclarativeEngine.
 
 The returned cache is not referenced, so if it is to be stored, call addref().
