@@ -135,12 +135,12 @@ bool QLibraryPrivate::load_sys()
         } else {
             suffixes << QLatin1String(".sl");
         }
-#elif defined(Q_OS_AIX)
-        suffixes << ".a";
-
 #elif defined(Q_OS_SYMBIAN)
         suffixes << QLatin1String(".dll");
 #else
+#ifdef Q_OS_AIX
+        suffixes << ".a";
+#endif // Q_OS_AIX
         if (!fullVersion.isEmpty()) {
             suffixes << QString::fromLatin1(".so.%1").arg(fullVersion);
         } else {
