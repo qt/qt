@@ -174,6 +174,10 @@ void tst_QNetworkProxyFactory::systemProxyForQueryCalledFromThread()
 void tst_QNetworkProxyFactory::fromConfigurations()
 {
     QNetworkConfigurationManager manager;
+    //update is done to get the active / discovered states
+    manager.updateConfigurations();
+    connect(&manager, SIGNAL(updateCompleted()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
     QList<QNetworkProxy> proxies;
     QUrl url(QLatin1String("http://qt.nokia.com"));
     //get from known configurations
@@ -261,8 +265,6 @@ void tst_QNetworkProxyFactory::inNetworkAccessManager()
     foreach (QNetworkProxy proxy, proxies) {
         qDebug() << formatProxyName(proxy);
     }
-    if (config.type() != QNetworkConfiguration::InternetAccessPoint)
-        QEXPECT_FAIL("","QNetworkProxyFactory::systemProxyForQuery doesn't work for service networks yet", Continue);
     QCOMPARE(factory->returnedList, proxies);
 }
 
