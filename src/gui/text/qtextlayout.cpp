@@ -2691,6 +2691,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
             }
 
             int glyph_pos = -1;
+            QFixed edge;
             // has to be inside run
             if (cpos == QTextLine::CursorOnCharacter) {
                 if (si.analysis.bidiLevel % 2) {
@@ -2701,6 +2702,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                             if (pos < x)
                                 break;
                             glyph_pos = gs;
+                            edge = pos;
                             break;
                         }
                         pos -= glyphs.effectiveAdvance(gs);
@@ -2713,6 +2715,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                             if (pos > x)
                                 break;
                             glyph_pos = gs;
+                            edge = pos;
                         }
                         pos += glyphs.effectiveAdvance(gs);
                         ++gs;
@@ -2726,6 +2729,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                         while (gs <= ge) {
                             if (glyphs.attributes[gs].clusterStart && qAbs(x-pos) < dist) {
                                 glyph_pos = gs;
+                                edge = pos;
                                 dist = qAbs(x-pos);
                             }
                             pos -= glyphs.effectiveAdvance(gs);
@@ -2735,6 +2739,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                         while (ge >= gs) {
                             if (glyphs.attributes[ge].clusterStart && qAbs(x-pos) < dist) {
                                 glyph_pos = ge;
+                                edge = pos;
                                 dist = qAbs(x-pos);
                             }
                             pos += glyphs.effectiveAdvance(ge);
@@ -2746,6 +2751,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                         while (gs <= ge) {
                             if (glyphs.attributes[gs].clusterStart && qAbs(x-pos) < dist) {
                                 glyph_pos = gs;
+                                edge = pos;
                                 dist = qAbs(x-pos);
                             }
                             pos += glyphs.effectiveAdvance(gs);
@@ -2757,6 +2763,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                             pos += glyphs.effectiveAdvance(gs);
                             if (glyphs.attributes[gs].clusterStart && qAbs(x-pos) < dist) {
                                 glyph_pos = gs;
+                                edge = pos;
                                 dist = qAbs(x-pos);
                             }
                             ++gs;
@@ -2773,16 +2780,11 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                         if (rtl && nchars > 0)
                             return insertionPoints[lastLine ? nchars : nchars - 1];
                     }
-                    return si.position + end;
+                    return eng->positionInLigature(&si, end, x, pos, -1);
                 }
             }
             Q_ASSERT(glyph_pos != -1);
-            int j;
-            for (j = 0; j < eng->length(item); ++j)
-                if (logClusters[j] == glyph_pos)
-                    break;
-//             qDebug("at pos %d (in run: %d)", si.position + j, j);
-            return si.position + j;
+            return eng->positionInLigature(&si, end, x, edge, glyph_pos);
         }
     }
     // right of last item
