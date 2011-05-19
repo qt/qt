@@ -193,9 +193,11 @@ void QSoftKeyManager::sendKeyEvent()
 
 void QSoftKeyManager::updateSoftKeys()
 {
-    QSoftKeyManager::instance()->d_func()->pendingUpdate = true;
-    QEvent *event = new QEvent(QEvent::UpdateSoftKeys);
-    QApplication::postEvent(QSoftKeyManager::instance(), event);
+    if (QApplication::activeWindow()) {
+        QSoftKeyManager::instance()->d_func()->pendingUpdate = true;
+        QEvent *event = new QEvent(QEvent::UpdateSoftKeys);
+        QApplication::postEvent(QSoftKeyManager::instance(), event);
+    }
 }
 
 bool QSoftKeyManager::appendSoftkeys(const QWidget &source, int level)
