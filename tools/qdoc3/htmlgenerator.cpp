@@ -1792,7 +1792,8 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
         toc = node->doc().tableOfContents();
     if (toc.isEmpty() && !sections && (node->subType() != Node::Module))
         return;
-
+    bool debug = false;
+    
     QStringList sectionNumber;
     int detailsBase = 0;
 

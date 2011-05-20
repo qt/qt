@@ -343,7 +343,7 @@ class DitaXmlGenerator : public PageGenerator
     void generateIncludes(const InnerNode* inner, CodeMarker* marker);
     void generateTableOfContents(const Node* node, 
                                  CodeMarker* marker,
-                                 Doc::SectioningUnit sectioningUnit,
+                                 Doc::Sections sectioningUnit,
                                  int numColumns, 
                                  const Node* relative = 0);
     void generateTableOfContents(const Node* node, 
