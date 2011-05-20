@@ -1716,7 +1716,7 @@ EXPORTS
 	?inWorkerThread@QDeclarativeListModel@@ABE_NXZ @ 1715 NONAME ABSENT ; bool QDeclarativeListModel::inWorkerThread(void) const
 	?canMove@QDeclarativeListModel@@ABE_NHHH@Z @ 1716 NONAME ABSENT ; bool QDeclarativeListModel::canMove(int, int, int) const
 	?getScriptEngine@QDeclarativeDebugHelper@@SAPAVQScriptEngine@@PAVQDeclarativeEngine@@@Z @ 1717 NONAME ABSENT ; class QScriptEngine * QDeclarativeDebugHelper::getScriptEngine(class QDeclarativeEngine *)
-	?setAnimationSlowDownFactor@QDeclarativeDebugHelper@@SAXM@Z @ 1718 NONAME ABSENT ; void QDeclarativeDebugHelper::setAnimationSlowDownFactor(float)
+	?setAnimationSlowDownFactor@QDeclarativeDebugHelper@@SAXM@Z @ 1718 NONAME ; void QDeclarativeDebugHelper::setAnimationSlowDownFactor(float)
 	?add@QDeclarativeBasePositioner@@QBEPAVQDeclarativeTransition@@XZ @ 1719 NONAME ABSENT ; class QDeclarativeTransition * QDeclarativeBasePositioner::add(void) const
 	?setLoops@QDeclarativeAbstractAnimation@@QAEXH@Z @ 1720 NONAME ABSENT ; void QDeclarativeAbstractAnimation::setLoops(int)
 	?trUtf8@QDeclarativeAbstractAnimation@@SA?AVQString@@PBD0@Z @ 1721 NONAME ABSENT ; class QString QDeclarativeAbstractAnimation::trUtf8(char const *, char const *)
