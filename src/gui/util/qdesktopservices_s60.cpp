@@ -70,6 +70,10 @@
 #include <schemehandler.h>
 #endif
 
+#ifdef Q_WS_S60
+#include <CDirectoryLocalizer.h>     // CDirectoryLocalizer
+#endif
+
 QT_BEGIN_NAMESPACE
 
 _LIT(KCacheSubDir, "Cache\\");
@@ -444,18 +448,31 @@ static QString defaultLocalizedDirectoryName(QString&)
 
 QString QDesktopServices::displayName(StandardLocation type)
 {
-    static LocalizerFunc ptrLocalizerFunc = NULL;
+    QString ret;
 
-    if (!ptrLocalizerFunc) {
-        ptrLocalizerFunc = reinterpret_cast<LocalizerFunc>
-            (qt_resolveS60PluginFunc(S60Plugin_LocalizedDirectoryName));
-        if (!ptrLocalizerFunc)
-            ptrLocalizerFunc = &defaultLocalizedDirectoryName;
-    }
-
+#ifdef Q_WS_S60
     QString rawPath = storageLocation(type);
-    return ptrLocalizerFunc(rawPath);
-}
 
+    TRAPD(err,
+        QT_TRYCATCH_LEAVING(
+            CDirectoryLocalizer* localizer = CDirectoryLocalizer::NewL();
+            CleanupStack::PushL(localizer);
+            localizer->SetFullPath(qt_QString2TPtrC(QDir::toNativeSeparators(rawPath)));
+            if (localizer->IsLocalized()) {
+                TPtrC locName(localizer->LocalizedName());
+                ret = qt_TDesC2QString(locName);
+            }
+            CleanupStack::PopAndDestroy(localizer);
+        )
+    )
+
+    if (err != KErrNone)
+        ret = QString();
+#else
+    qWarning("QDesktopServices::displayName() not implemented for this platform version");
+#endif
+
+    return ret;
+}
 
 QT_END_NAMESPACE
