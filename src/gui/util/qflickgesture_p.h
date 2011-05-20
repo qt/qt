@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,31 +39,75 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDDRMSURFACE_H
-#define QWAYLANDDRMSURFACE_H
+#ifndef QFLICKGESTURE_P_H
+#define QFLICKGESTURE_P_H
 
-#include "qwaylanddisplay.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <QtGui/private/qwindowsurface_p.h>
+#include "qevent.h"
+#include "qgesturerecognizer.h"
+#include "private/qgesture_p.h"
+#include "qscroller.h"
+#include "qscopedpointer.h"
 
-class QGLFramebufferObject;
+#ifndef QT_NO_GESTURES
 
-class QWaylandGLWindowSurface : public QWindowSurface
+QT_BEGIN_NAMESPACE
+
+class QFlickGesturePrivate;
+class QGraphicsItem;
+
+class Q_GUI_EXPORT QFlickGesture : public QGesture
 {
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QFlickGesture)
+
 public:
-    QWaylandGLWindowSurface(QWidget *window);
-    ~QWaylandGLWindowSurface();
+    QFlickGesture(QObject *receiver, Qt::MouseButton button, QObject *parent = 0);
+    ~QFlickGesture();
 
-    void beginPaint(const QRegion &);
-
-    QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-
-    void resize(const QSize &size);
-
-private:
-    QWaylandDisplay *mDisplay;
-    QGLFramebufferObject *mPaintDevice;
+    friend class QFlickGestureRecognizer;
 };
 
-#endif // QWAYLANDDRMSURFACE_H
+class PressDelayHandler;
+
+class QFlickGesturePrivate : public QGesturePrivate
+{
+    Q_DECLARE_PUBLIC(QFlickGesture)
+public:
+    QFlickGesturePrivate();
+
+    QPointer<QObject> receiver;
+    QScroller *receiverScroller;
+    Qt::MouseButton button; // NoButton == Touch
+    bool macIgnoreWheel;
+    static PressDelayHandler *pressDelayHandler;
+};
+
+class QFlickGestureRecognizer : public QGestureRecognizer
+{
+public:
+    QFlickGestureRecognizer(Qt::MouseButton button);
+
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
+    void reset(QGesture *state);
+
+private:
+    Qt::MouseButton button; // NoButton == Touch
+};
+
+QT_END_NAMESPACE
+
+#endif // QT_NO_GESTURES
+
+#endif // QFLICKGESTURE_P_H
