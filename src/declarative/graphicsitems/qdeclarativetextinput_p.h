@@ -75,7 +75,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextInput : public QDeclarativeImplicitSizeP
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly NOTIFY readOnlyChanged)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible NOTIFY cursorVisibleChanged)
     Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged)
-    Q_PROPERTY(QRect cursorRectangle READ cursorRectangle NOTIFY cursorPositionChanged)
+    Q_PROPERTY(QRect cursorRectangle READ cursorRectangle NOTIFY cursorRectangleChanged)
     Q_PROPERTY(QDeclarativeComponent *cursorDelegate READ cursorDelegate WRITE setCursorDelegate NOTIFY cursorDelegateChanged)
     Q_PROPERTY(int selectionStart READ selectionStart NOTIFY selectionStartChanged)
     Q_PROPERTY(int selectionEnd READ selectionEnd NOTIFY selectionEndChanged)
@@ -221,6 +221,7 @@ public:
 Q_SIGNALS:
     void textChanged();
     void cursorPositionChanged();
+    void cursorRectangleChanged();
     void selectionStartChanged();
     void selectionEndChanged();
     void selectedTextChanged();
@@ -279,8 +280,8 @@ private Q_SLOTS:
     void q_textChanged();
     void selectionChanged();
     void createCursor();
-    void moveCursor();
     void cursorPosChanged();
+    void updateCursorRectangle();
     void updateRect(const QRect &r = QRect());
     void q_canPasteChanged();
 
