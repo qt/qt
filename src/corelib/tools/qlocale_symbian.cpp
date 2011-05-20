@@ -50,6 +50,7 @@
 #include <e32const.h>
 #include <e32base.h>
 #include <e32property.h>
+#include <numberconversion.h>
 #include <bacntf.h>
 #include "private/qcore_symbian_p.h"
 #include "private/qcoreapplication_p.h"
@@ -59,27 +60,6 @@
 QT_BEGIN_NAMESPACE
 
 static TExtendedLocale _s60Locale;
-
-// Type definitions for runtime resolved function pointers
-typedef void (*FormatFunc)(TTime&, TDes&, const TDesC&, const TLocale&);
-typedef TPtrC (*FormatSpecFunc)(TExtendedLocale&);
-
-// Runtime resolved functions
-static FormatFunc ptrTimeFormatL = NULL;
-static FormatSpecFunc ptrGetTimeFormatSpec = NULL;
-static FormatSpecFunc ptrGetLongDateFormatSpec = NULL;
-static FormatSpecFunc ptrGetShortDateFormatSpec = NULL;
-
-// Default functions if functions cannot be resolved
-static void defaultTimeFormatL(TTime&, TDes& des, const TDesC&, const TLocale&)
-{
-    des.Zero();
-}
-
-static TPtrC defaultFormatSpec(TExtendedLocale&)
-{
-    return TPtrC(KNullDesC);
-}
 
 /*
   Definition of struct for mapping Symbian to ISO locale
@@ -699,9 +679,9 @@ static QString symbianDateFormat(bool short_format)
     TPtrC dateFormat;
 
     if (short_format) {
-        dateFormat.Set(ptrGetShortDateFormatSpec(_s60Locale));
+        dateFormat.Set(_s60Locale.GetShortDateFormatSpec());
     } else {
-        dateFormat.Set(ptrGetLongDateFormatSpec(_s60Locale));
+        dateFormat.Set(_s60Locale.GetLongDateFormatSpec());
     }
 
     return s60ToQtFormat(qt_TDesC2QString(dateFormat));
@@ -713,7 +693,7 @@ static QString symbianDateFormat(bool short_format)
 */
 static QString symbianTimeFormat()
 {
-    return s60ToQtFormat(qt_TDesC2QString(ptrGetTimeFormatSpec(_s60Locale)));
+    return s60ToQtFormat(qt_TDesC2QString(_s60Locale.GetTimeFormatSpec()));
 }
 
 /*!
@@ -737,17 +717,20 @@ static QString symbianDateToString(const QDate &date, bool short_format)
 
     TPtrC dateFormat;
     if (short_format) {
-        dateFormat.Set(ptrGetShortDateFormatSpec(_s60Locale));
+        dateFormat.Set(_s60Locale.GetShortDateFormatSpec());
     } else {
-        dateFormat.Set(ptrGetLongDateFormatSpec(_s60Locale));
+        dateFormat.Set(_s60Locale.GetLongDateFormatSpec());
     }
 
-    TRAPD(err, ptrTimeFormatL(timeStr, buffer, dateFormat, *_s60Locale.GetLocale());)
+    TLocale *formatLocale = _s60Locale.GetLocale();
+    TRAPD(err, timeStr.FormatL(buffer, dateFormat, *formatLocale);)
 
-    if (err == KErrNone)
+    if (err == KErrNone) {
+        NumberConversion::ConvertDigits(buffer, formatLocale->DigitType());
         return qt_TDes2QString(buffer);
-    else
+    } else {
         return QString();
+    }
 }
 
 /*!
@@ -767,17 +750,15 @@ static QString symbianTimeToString(const QTime &time)
     TTime timeStr(dateTime);
     TBuf<KMaxTimeFormatSpec*2> buffer;
 
-    TRAPD(err, ptrTimeFormatL(
-        timeStr,
-        buffer,
-        ptrGetTimeFormatSpec(_s60Locale),
-        *_s60Locale.GetLocale());
-    )
+    TLocale *formatLocale = _s60Locale.GetLocale();
+    TRAPD(err, timeStr.FormatL(buffer, _s60Locale.GetTimeFormatSpec(), *formatLocale);)
 
-    if (err == KErrNone)
+    if (err == KErrNone) {
+        NumberConversion::ConvertDigits(buffer, formatLocale->DigitType());
         return qt_TDes2QString(buffer);
-    else
+    } else {
         return QString();
+    }
 }
 
 /*!
@@ -800,37 +781,6 @@ void qt_symbianUpdateSystemPrivate()
 {
     // load system data before query calls
     _s60Locale.LoadSystemSettings();
-}
-
-void qt_symbianInitSystemLocale()
-{
-    static QBasicAtomicInt initDone = Q_BASIC_ATOMIC_INITIALIZER(0);
-    if (initDone == 2)
-        return;
-    if (initDone.testAndSetRelaxed(0, 1)) {
-        // Initialize platform version dependent function pointers
-        ptrTimeFormatL = reinterpret_cast<FormatFunc>
-            (qt_resolveS60PluginFunc(S60Plugin_TimeFormatL));
-        ptrGetTimeFormatSpec = reinterpret_cast<FormatSpecFunc>
-            (qt_resolveS60PluginFunc(S60Plugin_GetTimeFormatSpec));
-        ptrGetLongDateFormatSpec = reinterpret_cast<FormatSpecFunc>
-            (qt_resolveS60PluginFunc(S60Plugin_GetLongDateFormatSpec));
-        ptrGetShortDateFormatSpec = reinterpret_cast<FormatSpecFunc>
-            (qt_resolveS60PluginFunc(S60Plugin_GetShortDateFormatSpec));
-        if (!ptrTimeFormatL)
-            ptrTimeFormatL = &defaultTimeFormatL;
-        if (!ptrGetTimeFormatSpec)
-            ptrGetTimeFormatSpec = &defaultFormatSpec;
-        if (!ptrGetLongDateFormatSpec)
-            ptrGetLongDateFormatSpec = &defaultFormatSpec;
-        if (!ptrGetShortDateFormatSpec)
-            ptrGetShortDateFormatSpec = &defaultFormatSpec;
-        bool ret = initDone.testAndSetRelease(1, 2);
-        Q_ASSERT(ret);
-        Q_UNUSED(ret);
-    }
-    while(initDone != 2)
-        QThread::yieldCurrentThread();
 }
 
 QLocale QSystemLocale::fallbackLocale() const

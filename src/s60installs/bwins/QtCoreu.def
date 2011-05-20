@@ -2940,7 +2940,7 @@ EXPORTS
 	?qt_qFindChildren_helper@@YAXPBVQObject@@ABVQString@@PBVQRegExp@@ABUQMetaObject@@PAV?$QList@PAX@@@Z @ 2939 NONAME ; void qt_qFindChildren_helper(class QObject const *, class QString const &, class QRegExp const *, struct QMetaObject const &, class QList<void *> *)
 	?qt_regexp_toCanonical@@YA?AVQString@@ABV1@W4PatternSyntax@QRegExp@@@Z @ 2940 NONAME ; class QString qt_regexp_toCanonical(class QString const &, enum QRegExp::PatternSyntax)
 	?qt_register_signal_spy_callbacks@@YAXABUQSignalSpyCallbackSet@@@Z @ 2941 NONAME ; void qt_register_signal_spy_callbacks(struct QSignalSpyCallbackSet const &)
-	?qt_resolveS60PluginFunc@@YAP6AHXZH@Z @ 2942 NONAME ; int (*)(void) qt_resolveS60PluginFunc(int)
+	?qt_resolveS60PluginFunc@@YAP6AHXZH@Z @ 2942 NONAME ABSENT ; int (*)(void) qt_resolveS60PluginFunc(int)
 	?qt_s60GetRFs@@YAAAVRFs@@XZ @ 2943 NONAME ; class RFs & qt_s60GetRFs(void)
 	?qt_safe_select@@YAHHPAUfd_set@@00PBUtimeval@@@Z @ 2944 NONAME ; int qt_safe_select(int, struct fd_set *, struct fd_set *, struct fd_set *, struct timeval const *)
 	?qt_symbianLocaleName@@YA?AVQByteArray@@H@Z @ 2945 NONAME ; class QByteArray qt_symbianLocaleName(int)
