@@ -12979,7 +12979,7 @@ EXPORTS
 	?byteCount@QVolatileImage@@QBEHXZ @ 12978 NONAME ; int QVolatileImage::byteCount(void) const
 	??0QVolatileImage@@QAE@ABV0@@Z @ 12979 NONAME ; QVolatileImage::QVolatileImage(class QVolatileImage const &)
 	?depth@QVolatileImage@@QBEHXZ @ 12980 NONAME ; int QVolatileImage::depth(void) const
-	?releaseCachedResources@QGraphicsSystem@@UAEXXZ @ 12981 NONAME ; void QGraphicsSystem::releaseCachedResources(void)
+	?releaseCachedResources@QGraphicsSystem@@UAEXXZ @ 12981 NONAME ABSENT ; void QGraphicsSystem::releaseCachedResources(void)
 	?qt_s60_setPartialScreenInputMode@@YAX_N@Z @ 12982 NONAME ; void qt_s60_setPartialScreenInputMode(bool)
 	png_access_version_number @ 12983 NONAME
 	png_benign_error @ 12984 NONAME
@@ -13228,7 +13228,7 @@ EXPORTS
 	?qt_static_metacall@QToolBox@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13227 NONAME ; void QToolBox::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?staticMetaObjectExtraData@QSplitter@@0UQMetaObjectExtraData@@B @ 13228 NONAME ; struct QMetaObjectExtraData const QSplitter::staticMetaObjectExtraData
 	?qt_static_metacall@QGraphicsTextItem@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13229 NONAME ; void QGraphicsTextItem::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?setCursorMoveStyle@QLineControl@@QAEXW4MoveStyle@QTextCursor@@@Z @ 13230 NONAME ; void QLineControl::setCursorMoveStyle(enum QTextCursor::MoveStyle)
+	?setCursorMoveStyle@QLineControl@@QAEXW4MoveStyle@QTextCursor@@@Z @ 13230 NONAME ABSENT ; void QLineControl::setCursorMoveStyle(enum QTextCursor::MoveStyle)
 	?qt_static_metacall@QGraphicsView@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13231 NONAME ; void QGraphicsView::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?qt_static_metacall@QGraphicsOpacityEffect@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13232 NONAME ; void QGraphicsOpacityEffect::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?staticMetaObjectExtraData@QGraphicsBlurEffect@@0UQMetaObjectExtraData@@B @ 13233 NONAME ; struct QMetaObjectExtraData const QGraphicsBlurEffect::staticMetaObjectExtraData
@@ -13260,7 +13260,7 @@ EXPORTS
 	?qt_static_metacall@QGraphicsScene@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13259 NONAME ; void QGraphicsScene::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?staticMetaObjectExtraData@QTextList@@0UQMetaObjectExtraData@@B @ 13260 NONAME ; struct QMetaObjectExtraData const QTextList::staticMetaObjectExtraData
 	?qt_fontdata_from_index@@YA?AVQByteArray@@H@Z @ 13261 NONAME ; class QByteArray qt_fontdata_from_index(int)
-	?defaultCursorMoveStyle@QTextDocument@@QBE?AW4MoveStyle@QTextCursor@@XZ @ 13262 NONAME ; enum QTextCursor::MoveStyle QTextDocument::defaultCursorMoveStyle(void) const
+	?defaultCursorMoveStyle@QTextDocument@@QBE?AW4MoveStyle@QTextCursor@@XZ @ 13262 NONAME ABSENT ; enum QTextCursor::MoveStyle QTextDocument::defaultCursorMoveStyle(void) const
 	?offsetInLigature@QTextEngine@@QAE?AUQFixed@@PBUQScriptItem@@HHH@Z @ 13263 NONAME ; struct QFixed QTextEngine::offsetInLigature(struct QScriptItem const *, int, int, int)
 	?qt_static_metacall@QGraphicsAnchor@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13264 NONAME ; void QGraphicsAnchor::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?swap@QImage@@QAEXAAV1@@Z @ 13265 NONAME ; void QImage::swap(class QImage &)
@@ -13333,7 +13333,7 @@ EXPORTS
 	?staticMetaObjectExtraData@QProxyModel@@0UQMetaObjectExtraData@@B @ 13332 NONAME ; struct QMetaObjectExtraData const QProxyModel::staticMetaObjectExtraData
 	?staticMetaObjectExtraData@QInputContextPlugin@@0UQMetaObjectExtraData@@B @ 13333 NONAME ; struct QMetaObjectExtraData const QInputContextPlugin::staticMetaObjectExtraData
 	?metaObject@QIdentityProxyModel@@UBEPBUQMetaObject@@XZ @ 13334 NONAME ; struct QMetaObject const * QIdentityProxyModel::metaObject(void) const
-	?cursorMoveStyle@QLineControl@@QBE?AW4MoveStyle@QTextCursor@@XZ @ 13335 NONAME ; enum QTextCursor::MoveStyle QLineControl::cursorMoveStyle(void) const
+	?cursorMoveStyle@QLineControl@@QBE?AW4MoveStyle@QTextCursor@@XZ @ 13335 NONAME ABSENT ; enum QTextCursor::MoveStyle QLineControl::cursorMoveStyle(void) const
 	?removeColumns@QIdentityProxyModel@@UAE_NHHABVQModelIndex@@@Z @ 13336 NONAME ; bool QIdentityProxyModel::removeColumns(int, int, class QModelIndex const &)
 	?qt_static_metacall@QDirModel@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13337 NONAME ; void QDirModel::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?qt_static_metacall@QMdiSubWindow@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13338 NONAME ; void QMdiSubWindow::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
@@ -13571,7 +13571,7 @@ EXPORTS
 	?d_func@QBlitterPaintEngine@@AAEPAVQBlitterPaintEnginePrivate@@XZ @ 13570 NONAME ; class QBlitterPaintEnginePrivate * QBlitterPaintEngine::d_func(void)
 	?setNumberPrefix@QTextListFormat@@QAEXABVQString@@@Z @ 13571 NONAME ; void QTextListFormat::setNumberPrefix(class QString const &)
 	?qt_static_metacall@QAbstractSpinBox@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13572 NONAME ; void QAbstractSpinBox::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?setCursorMoveStyle@QLineEdit@@QAEXW4MoveStyle@QTextCursor@@@Z @ 13573 NONAME ; void QLineEdit::setCursorMoveStyle(enum QTextCursor::MoveStyle)
+	?setCursorMoveStyle@QLineEdit@@QAEXW4MoveStyle@QTextCursor@@@Z @ 13573 NONAME ABSENT ; void QLineEdit::setCursorMoveStyle(enum QTextCursor::MoveStyle)
 	?lineHeight@QTextBlockFormat@@QBEMMM@Z @ 13574 NONAME ; float QTextBlockFormat::lineHeight(float, float) const
 	??0QIdentityProxyModel@@IAE@AAVQIdentityProxyModelPrivate@@PAVQObject@@@Z @ 13575 NONAME ; QIdentityProxyModel::QIdentityProxyModel(class QIdentityProxyModelPrivate &, class QObject *)
 	?staticMetaObjectExtraData@QGraphicsEffect@@0UQMetaObjectExtraData@@B @ 13576 NONAME ; struct QMetaObjectExtraData const QGraphicsEffect::staticMetaObjectExtraData
@@ -13660,7 +13660,7 @@ EXPORTS
 	?swap@QIcon@@QAEXAAV1@@Z @ 13659 NONAME ; void QIcon::swap(class QIcon &)
 	?columnCount@QIdentityProxyModel@@UBEHABVQModelIndex@@@Z @ 13660 NONAME ; int QIdentityProxyModel::columnCount(class QModelIndex const &) const
 	?unmarkRasterOverlay@QBlittablePixmapData@@QAEXABVQRectF@@@Z @ 13661 NONAME ; void QBlittablePixmapData::unmarkRasterOverlay(class QRectF const &)
-	?cursorMoveStyle@QLineEdit@@QBE?AW4MoveStyle@QTextCursor@@XZ @ 13662 NONAME ; enum QTextCursor::MoveStyle QLineEdit::cursorMoveStyle(void) const
+	?cursorMoveStyle@QLineEdit@@QBE?AW4MoveStyle@QTextCursor@@XZ @ 13662 NONAME ABSENT ; enum QTextCursor::MoveStyle QLineEdit::cursorMoveStyle(void) const
 	?trUtf8@QIdentityProxyModel@@SA?AVQString@@PBD0H@Z @ 13663 NONAME ; class QString QIdentityProxyModel::trUtf8(char const *, char const *, int)
 	?brushOriginChanged@QBlitterPaintEngine@@UAEXXZ @ 13664 NONAME ; void QBlitterPaintEngine::brushOriginChanged(void)
 	?openFile@QFileOpenEvent@@QBE_NAAVQFile@@V?$QFlags@W4OpenModeFlag@QIODevice@@@@@Z @ 13665 NONAME ; bool QFileOpenEvent::openFile(class QFile &, class QFlags<enum QIODevice::OpenModeFlag>) const
@@ -13683,7 +13683,7 @@ EXPORTS
 	?unlock@QBlittable@@QAEXXZ @ 13682 NONAME ; void QBlittable::unlock(void)
 	?swap@QRegion@@QAEXAAV1@@Z @ 13683 NONAME ; void QRegion::swap(class QRegion &)
 	?staticMetaObjectExtraData@QLCDNumber@@0UQMetaObjectExtraData@@B @ 13684 NONAME ; struct QMetaObjectExtraData const QLCDNumber::staticMetaObjectExtraData
-	?setDefaultCursorMoveStyle@QTextDocument@@QAEXW4MoveStyle@QTextCursor@@@Z @ 13685 NONAME ; void QTextDocument::setDefaultCursorMoveStyle(enum QTextCursor::MoveStyle)
+	?setDefaultCursorMoveStyle@QTextDocument@@QAEXW4MoveStyle@QTextCursor@@@Z @ 13685 NONAME ABSENT ; void QTextDocument::setDefaultCursorMoveStyle(enum QTextCursor::MoveStyle)
 	?staticMetaObjectExtraData@QS60Style@@0UQMetaObjectExtraData@@B @ 13686 NONAME ; struct QMetaObjectExtraData const QS60Style::staticMetaObjectExtraData
 	?qt_static_metacall@QWidgetAction@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13687 NONAME ; void QWidgetAction::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?qt_static_metacall@QListView@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13688 NONAME ; void QListView::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
@@ -13724,7 +13724,7 @@ EXPORTS
 	?staticMetaObjectExtraData@QProgressBar@@0UQMetaObjectExtraData@@B @ 13723 NONAME ; struct QMetaObjectExtraData const QProgressBar::staticMetaObjectExtraData
 	?qt_static_metacall@QLineEdit@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13724 NONAME ; void QLineEdit::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?drawStaticTextItem@QBlitterPaintEngine@@UAEXPAVQStaticTextItem@@@Z @ 13725 NONAME ; void QBlitterPaintEngine::drawStaticTextItem(class QStaticTextItem *)
-	?setCursorMoveStyle@QTextLayout@@QAEXW4MoveStyle@QTextCursor@@@Z @ 13726 NONAME ; void QTextLayout::setCursorMoveStyle(enum QTextCursor::MoveStyle)
+	?setCursorMoveStyle@QTextLayout@@QAEXW4MoveStyle@QTextCursor@@@Z @ 13726 NONAME ABSENT ; void QTextLayout::setCursorMoveStyle(enum QTextCursor::MoveStyle)
 	?lock@QBlittable@@QAEPAVQImage@@XZ @ 13727 NONAME ; class QImage * QBlittable::lock(void)
 	?setFontHintingPreference@QTextCharFormat@@QAEXW4HintingPreference@QFont@@@Z @ 13728 NONAME ; void QTextCharFormat::setFontHintingPreference(enum QFont::HintingPreference)
 	?qt_static_metacall@QPixmapColorizeFilter@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13729 NONAME ; void QPixmapColorizeFilter::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
@@ -13776,7 +13776,7 @@ EXPORTS
 	?trUtf8@QIdentityProxyModel@@SA?AVQString@@PBD0@Z @ 13775 NONAME ; class QString QIdentityProxyModel::trUtf8(char const *, char const *)
 	?qt_static_metacall@QRadioButton@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13776 NONAME ; void QRadioButton::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	??1QInternalMimeData@@UAE@XZ @ 13777 NONAME ; QInternalMimeData::~QInternalMimeData(void)
-	?cursorMoveStyle@QTextLayout@@QBE?AW4MoveStyle@QTextCursor@@XZ @ 13778 NONAME ; enum QTextCursor::MoveStyle QTextLayout::cursorMoveStyle(void) const
+	?cursorMoveStyle@QTextLayout@@QBE?AW4MoveStyle@QTextCursor@@XZ @ 13778 NONAME ABSENT ; enum QTextCursor::MoveStyle QTextLayout::cursorMoveStyle(void) const
 	?qt_addBitmapToPath@@YAXMMPBEHHHPAVQPainterPath@@@Z @ 13779 NONAME ; void qt_addBitmapToPath(float, float, unsigned char const *, int, int, int, class QPainterPath *)
 	?qt_static_metacall@QTextTable@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13780 NONAME ; void QTextTable::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?qt_static_metacall@QItemSelectionModel@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13781 NONAME ; void QItemSelectionModel::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
@@ -13786,4 +13786,17 @@ EXPORTS
 	?qt_static_metacall@QGraphicsWidget@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13785 NONAME ; void QGraphicsWidget::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?qt_static_metacall@QShortcut@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13786 NONAME ; void QShortcut::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?endOfLine@QTextEngine@@AAEHH@Z @ 13787 NONAME ; int QTextEngine::endOfLine(int)
+	?setCursorMoveStyle@QTextLayout@@QAEXW4CursorMoveStyle@Qt@@@Z @ 13788 NONAME ; void QTextLayout::setCursorMoveStyle(enum Qt::CursorMoveStyle)
+	?defaultCursorMoveStyle@QTextDocument@@QBE?AW4CursorMoveStyle@Qt@@XZ @ 13789 NONAME ; enum Qt::CursorMoveStyle QTextDocument::defaultCursorMoveStyle(void) const
+	?cursorMoveStyle@QTextLayout@@QBE?AW4CursorMoveStyle@Qt@@XZ @ 13790 NONAME ; enum Qt::CursorMoveStyle QTextLayout::cursorMoveStyle(void) const
+	?setDefaultCursorMoveStyle@QTextDocument@@QAEXW4CursorMoveStyle@Qt@@@Z @ 13791 NONAME ; void QTextDocument::setDefaultCursorMoveStyle(enum Qt::CursorMoveStyle)
+	?setCursorMoveStyle@QLineControl@@QAEXW4CursorMoveStyle@Qt@@@Z @ 13792 NONAME ; void QLineControl::setCursorMoveStyle(enum Qt::CursorMoveStyle)
+	?cursorMoveStyle@QLineEdit@@QBE?AW4CursorMoveStyle@Qt@@XZ @ 13793 NONAME ; enum Qt::CursorMoveStyle QLineEdit::cursorMoveStyle(void) const
+	?forceToRaster@QSymbianGraphicsSystemEx@@UAEXPAVQWidget@@@Z @ 13794 NONAME ; void QSymbianGraphicsSystemEx::forceToRaster(class QWidget *)
+	?releaseCachedGpuResources@QSymbianGraphicsSystemEx@@UAEXXZ @ 13795 NONAME ; void QSymbianGraphicsSystemEx::releaseCachedGpuResources(void)
+	?setCursorMoveStyle@QLineEdit@@QAEXW4CursorMoveStyle@Qt@@@Z @ 13796 NONAME ; void QLineEdit::setCursorMoveStyle(enum Qt::CursorMoveStyle)
+	?platformExtension@QGraphicsSystem@@UAEPAVQGraphicsSystemEx@@XZ @ 13797 NONAME ; class QGraphicsSystemEx * QGraphicsSystem::platformExtension(void)
+	?releaseAllGpuResources@QSymbianGraphicsSystemEx@@UAEXXZ @ 13798 NONAME ; void QSymbianGraphicsSystemEx::releaseAllGpuResources(void)
+	?cursorMoveStyle@QLineControl@@QBE?AW4CursorMoveStyle@Qt@@XZ @ 13799 NONAME ; enum Qt::CursorMoveStyle QLineControl::cursorMoveStyle(void) const
+	?hasBCM2727@QSymbianGraphicsSystemEx@@UAE_NXZ @ 13800 NONAME ; bool QSymbianGraphicsSystemEx::hasBCM2727(void)
 

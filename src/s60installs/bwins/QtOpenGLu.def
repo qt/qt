@@ -715,7 +715,7 @@ EXPORTS
 	?detachTextureFromPool@QGLPixmapData@@QAEXXZ @ 714 NONAME ; void QGLPixmapData::detachTextureFromPool(void)
 	?reclaimTexture@QGLPixmapData@@QAEXXZ @ 715 NONAME ; void QGLPixmapData::reclaimTexture(void)
 	?destroyTexture@QGLPixmapData@@QAEXXZ @ 716 NONAME ; void QGLPixmapData::destroyTexture(void)
-	?releaseCachedResources@QGLGraphicsSystem@@UAEXXZ @ 717 NONAME ; void QGLGraphicsSystem::releaseCachedResources(void)
+	?releaseCachedResources@QGLGraphicsSystem@@UAEXXZ @ 717 NONAME ABSENT ; void QGLGraphicsSystem::releaseCachedResources(void)
 	?serialNumber@QGLTextureGlyphCache@@QBEHXZ @ 718 NONAME ; int QGLTextureGlyphCache::serialNumber(void) const
 	?forceToImage@QGLPixmapData@@QAEXXZ @ 719 NONAME ; void QGLPixmapData::forceToImage(void)
 	?idealFormat@QGLPixmapData@@QAE?AW4Format@QImage@@AAV3@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 720 NONAME ; enum QImage::Format QGLPixmapData::idealFormat(class QImage &, class QFlags<enum Qt::ImageConversionFlag>)
@@ -874,4 +874,6 @@ EXPORTS
 	?staticMetaObjectExtraData@QGraphicsShaderEffect@@0UQMetaObjectExtraData@@B @ 873 NONAME ; struct QMetaObjectExtraData const QGraphicsShaderEffect::staticMetaObjectExtraData
 	?staticMetaObjectExtraData@QGLEngineShaderManager@@0UQMetaObjectExtraData@@B @ 874 NONAME ; struct QMetaObjectExtraData const QGLEngineShaderManager::staticMetaObjectExtraData
 	?qt_static_metacall@QGLShaderProgram@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 875 NONAME ; void QGLShaderProgram::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?platformExtension@QGLGraphicsSystem@@UAEPAVQGraphicsSystemEx@@XZ @ 876 NONAME ; class QGraphicsSystemEx * QGLGraphicsSystem::platformExtension(void)
+	?releaseCachedGpuResources@QGLGraphicsSystem@@UAEXXZ @ 877 NONAME ; void QGLGraphicsSystem::releaseCachedGpuResources(void)
 
