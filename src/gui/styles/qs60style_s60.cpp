@@ -579,7 +579,6 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsLX(
     const TAknsItemID skinId = m_partMap[stylepartIndex].skinID;
 
     TInt fallbackGraphicID = -1;
-    HBufC* iconFile = HBufC::NewLC( KMaxFileName );
     fallbackInfo(stylepart, fallbackGraphicID);
 
     TAknsItemID colorGroup = KAknsIIDQsnIconColors;
@@ -613,7 +612,7 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsLX(
         defaultColor);
 
     QPixmap result = fromFbsBitmap(icon, iconMask, flags, targetSize);
-    CleanupStack::PopAndDestroy(3); //icon, iconMask, iconFile
+    CleanupStack::PopAndDestroy(2); //icon, iconMask
     return result;
 }
 
@@ -1541,7 +1540,7 @@ QVariant QS60StyleModeSpecifics::themeDefinition(
     //Animation definitions
     case QS60StyleEnums::TD_AnimationData:
         {
-            CAknsBmpAnimItemData *animationData;
+            CAknsBmpAnimItemData *animationData = 0;
             TAknsItemID animationSkinId = partSpecificThemeId(part);
             QList<QVariant> list;
 
@@ -1557,9 +1556,6 @@ QVariant QS60StyleModeSpecifics::themeDefinition(
 
                 QS60StyleEnums::AnimationMode playMode;
                 switch(animationData->PlayMode()) {
-                    case CBitmapAnimClientData::EPlay:
-                        playMode = QS60StyleEnums::AM_PlayOnce;
-                        break;
                     case CBitmapAnimClientData::ECycle:
                         playMode = QS60StyleEnums::AM_Looping;
                         break;
@@ -1567,6 +1563,7 @@ QVariant QS60StyleModeSpecifics::themeDefinition(
                         playMode = QS60StyleEnums::AM_Bounce;
                         break;
                     default:
+                        playMode = QS60StyleEnums::AM_PlayOnce;
                         break;
                 }
                 list.append(QVariant((int)playMode));

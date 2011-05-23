@@ -1155,11 +1155,10 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     case Qt::UpArrow:
                         pe = PE_IndicatorArrowUp;
                         break;
-                    case Qt::DownArrow:
+                    default:
                         pe = PE_IndicatorArrowDown;
                         break;
-                    default:
-                        break; }
+                }
                 toolButton.rect = button;
                 drawPrimitive(pe, &toolButton, painter, widget);
             }
@@ -1333,8 +1332,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
             const bool isDisabled = !(option->state & State_Enabled);
             const bool isFlat = button->features & QStyleOptionButton::Flat;
-            QS60StyleEnums::SkinParts skinPart;
-            QS60StylePrivate::SkinElements skinElement;
+            QS60StyleEnums::SkinParts skinPart = QS60StyleEnums::SP_QsnFrButtonCenterInactive;
+            QS60StylePrivate::SkinElements skinElement = QS60StylePrivate::SE_ButtonInactive;
             if (!isDisabled) {
                 const bool isPressed = (option->state & State_Sunken) ||
                                        (option->state & State_On);
@@ -1345,11 +1344,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     skinElement =
                         isPressed ? QS60StylePrivate::SE_ButtonPressed : QS60StylePrivate::SE_ButtonNormal;
                 }
-            } else {
-                if (isFlat)
-                    skinPart =QS60StyleEnums::SP_QsnFrButtonCenterInactive;
-                else
-                    skinElement = QS60StylePrivate::SE_ButtonInactive;
             }
             if (isFlat)
                 QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, flags);
@@ -2226,21 +2220,16 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         break;
 #ifndef QT_NO_TOOLBUTTON
     case PE_IndicatorArrowDown:
+        QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafScrollArrowDown, painter, option->rect, flags);
+        break;
     case PE_IndicatorArrowLeft:
+        QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafScrollArrowLeft, painter, option->rect, flags);
+        break;
     case PE_IndicatorArrowRight:
-    case PE_IndicatorArrowUp: {
-        QS60StyleEnums::SkinParts skinPart;
-        if (element==PE_IndicatorArrowDown)
-            skinPart = QS60StyleEnums::SP_QgnGrafScrollArrowDown;
-        else if (element==PE_IndicatorArrowLeft)
-            skinPart = QS60StyleEnums::SP_QgnGrafScrollArrowLeft;
-        else if (element==PE_IndicatorArrowRight)
-            skinPart = QS60StyleEnums::SP_QgnGrafScrollArrowRight;
-        else if (element==PE_IndicatorArrowUp)
-            skinPart = QS60StyleEnums::SP_QgnGrafScrollArrowUp;
-
-        QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, flags);
-        }
+        QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafScrollArrowRight, painter, option->rect, flags);
+        break;
+    case PE_IndicatorArrowUp:
+        QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafScrollArrowUp, painter, option->rect, flags);
         break;
 #endif //QT_NO_TOOLBUTTON
 #ifndef QT_NO_SPINBOX
