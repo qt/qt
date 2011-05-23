@@ -1797,7 +1797,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 drawPrimitive(PE_IndicatorMenuCheckMark, &optionCheckBox, painter, widget);
 
             //draw icon and/or checkState
-            QPixmap pix = menuItem->icon.pixmap(pixelMetric(PM_SmallIconSize),
+            QPixmap pix = menuItem->icon.pixmap(iconRect.width(),
                 enabled ? QIcon::Normal : QIcon::Disabled);
             const bool itemWithIcon = !pix.isNull();
             if (itemWithIcon) {
