@@ -4860,21 +4860,21 @@ Please select another name.</source>
     <name>qdesigner_internal::PreviewDeviceSkin</name>
     <message>
         <source>&amp;Portrait</source>
-        <translation>Книжка</translation>
+        <translation>&amp;Книжка</translation>
     </message>
     <message>
         <source>Landscape (&amp;CCW)</source>
         <extracomment>Rotate form preview counter-clockwise</extracomment>
-        <translation>Альбом (проти ГС)</translation>
+        <translation>Альбом (проти &amp;ГС)</translation>
     </message>
     <message>
         <source>&amp;Landscape (CW)</source>
         <extracomment>Rotate form preview clockwise</extracomment>
-        <translation>Альбом (за ГС)</translation>
+        <translation>А&amp;льбом (за ГС)</translation>
     </message>
     <message>
         <source>&amp;Close</source>
-        <translation>Закрити</translation>
+        <translation>З&amp;акрити</translation>
     </message>
 </context>
 <context>
@@ -5833,7 +5833,7 @@ This indicates an inconsistency in the ui-file.</source>
     <name>qdesigner_internal::ZoomablePreviewDeviceSkin</name>
     <message>
         <source>&amp;Zoom</source>
-        <translation>Масштаб</translation>
+        <translation>Мас&amp;штаб</translation>
     </message>
 </context>
 </TS>

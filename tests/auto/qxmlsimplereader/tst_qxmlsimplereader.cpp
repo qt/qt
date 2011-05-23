@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -165,7 +165,7 @@ class tst_QXmlSimpleReader : public QObject
         void roundtripWithNamespaces() const;
 
     private:
-        static QDomDocument fromByteArray(const QString &title, const QByteArray &ba);
+        static QDomDocument fromByteArray(const QString &title, const QByteArray &ba, bool *ok);
         XmlServer *server;
 };
 
@@ -730,25 +730,27 @@ void tst_QXmlSimpleReader::reportNamespace_data() const
                                  << QString("http://example.com/");
 }
 
-QDomDocument tst_QXmlSimpleReader::fromByteArray(const QString &title, const QByteArray &ba)
+QDomDocument tst_QXmlSimpleReader::fromByteArray(const QString &title, const QByteArray &ba, bool *ok)
 {
     QDomDocument doc(title);
-    const bool ret = doc.setContent(ba, true);
-    Q_ASSERT(ret);
+    *ok = doc.setContent(ba, true);
     return doc;
 }
 
 void tst_QXmlSimpleReader::roundtripWithNamespaces() const
 {
-    QEXPECT_FAIL("", "Known problem, see 154573. The fix happens to break uic.", Abort);
-
     const char *const expected = "<element b:attr=\"value\" xmlns:a=\"http://www.example.com/A\" xmlns:b=\"http://www.example.com/B\" />\n";
+    bool ok;
 
     {
         const char *const xml = "<element xmlns:b=\"http://www.example.com/B\" b:attr=\"value\" xmlns:a=\"http://www.example.com/A\"/>";
 
-        const QDomDocument one(fromByteArray("document", xml));
-        const QDomDocument two(fromByteArray("document2", one.toByteArray(2)));
+        const QDomDocument one(fromByteArray("document", xml, &ok));
+        QVERIFY(ok);
+        const QDomDocument two(fromByteArray("document2", one.toByteArray(2), &ok));
+        QVERIFY(ok);
+
+        QEXPECT_FAIL("", "Known problem, see 154573. The fix happens to break uic.", Abort);
 
         QCOMPARE(expected, one.toByteArray().constData());
         QCOMPARE(one.toByteArray(2).constData(), two.toByteArray(2).constData());
@@ -758,8 +760,10 @@ void tst_QXmlSimpleReader::roundtripWithNamespaces() const
     {
         const char *const xml = "<element b:attr=\"value\" xmlns:b=\"http://www.example.com/B\" xmlns:a=\"http://www.example.com/A\"/>";
 
-        const QDomDocument one(fromByteArray("document", xml));
-        const QDomDocument two(fromByteArray("document2", one.toByteArray(2)));
+        const QDomDocument one(fromByteArray("document", xml, &ok));
+        QVERIFY(ok);
+        const QDomDocument two(fromByteArray("document2", one.toByteArray(2), &ok));
+        QVERIFY(ok);
 
         QCOMPARE(expected, one.toByteArray().constData());
         QCOMPARE(one.toByteArray(2).constData(), two.toByteArray(2).constData());
