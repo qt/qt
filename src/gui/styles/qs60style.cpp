@@ -91,11 +91,8 @@ static const qreal goldenRatio = 1.618;
 
 const layoutHeader QS60StylePrivate::m_layoutHeaders[] = {
 // *** generated layout data ***
-{240,320,1,19,"QVGA Landscape"},
-{320,240,1,19,"QVGA Portrait"},
 {360,640,1,19,"NHD Landscape"},
 {640,360,1,19,"NHD Portrait"},
-{352,800,1,12,"E90 Landscape"},
 {480,640,1,19,"VGA Landscape"}
 // *** End of generated data ***
 };
@@ -104,11 +101,8 @@ const int QS60StylePrivate::m_numberOfLayouts =
 
 const short QS60StylePrivate::data[][MAX_PIXELMETRICS] = {
 // *** generated pixel metrics ***
-{5,0,-909,0,0,2,0,2,-1,7,12,22,15,15,7,198,-909,-909,-909,20,13,2,0,0,21,7,18,30,3,3,1,-909,-909,0,1,0,0,12,20,15,15,18,18,1,115,18,0,-909,-909,-909,-909,0,0,16,2,-909,0,0,-909,16,-909,-909,-909,-909,32,18,55,24,55,4,4,4,9,13,-909,5,51,11,5,0,3,3,6,8,3,3,-909,2,-909,-909,-909,-909,5,5,3,1,106},
-{5,0,-909,0,0,1,0,2,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,8,27,28,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,3,3,5,10,15,-909,5,58,13,5,0,4,4,7,9,4,4,-909,2,-909,-909,-909,-909,6,6,3,1,106},
 {7,0,-909,0,0,2,0,5,-1,25,69,46,37,37,9,258,-909,-909,-909,23,19,11,0,0,32,25,72,44,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,13,3,6,8,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135},
 {7,0,-909,0,0,2,0,5,-1,25,68,46,37,37,9,258,-909,-909,-909,31,19,13,0,0,32,25,60,52,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,12,3,6,8,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135},
-{7,0,-909,0,0,2,0,2,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,7,32,30,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,6,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,5,6,8,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1,106},
 {9,0,-909,0,0,2,0,5,-1,34,99,76,51,51,25,352,-909,-909,-909,29,25,7,0,0,43,34,42,76,7,7,2,-909,-909,0,9,14,0,23,39,30,30,37,37,9,391,40,0,-909,-909,-909,-909,0,0,29,2,-909,0,0,-909,29,-909,-909,-909,-909,115,37,96,48,96,19,19,9,1,25,-909,9,101,24,9,0,7,7,7,16,7,7,-909,3,-909,-909,-909,-909,9,9,3,1,184}
 // *** End of generated data ***
 };
@@ -532,29 +526,14 @@ void QS60StylePrivate::setCurrentLayout(int index)
 void QS60StylePrivate::drawPart(QS60StyleEnums::SkinParts skinPart,
     QPainter *painter, const QRect &rect, SkinElementFlags flags)
 {
-    static const bool doCache =
-#if defined(Q_WS_S60)
-        // Freezes on 3.1. Anyways, caching is only really needed on touch UI
-        !(QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || QSysInfo::s60Version() == QSysInfo::SV_S60_3_2);
-#else
-        true;
-#endif
-
-    const QPixmap skinPartPixMap((doCache ? cachedPart : part)(skinPart, rect.size(), painter, flags));
+    const QPixmap skinPartPixMap((cachedPart)(skinPart, rect.size(), painter, flags));
     if (!skinPartPixMap.isNull())
         painter->drawPixmap(rect.topLeft(), skinPartPixMap);
 }
 
 void QS60StylePrivate::drawFrame(SkinFrameElements frameElement, QPainter *painter, const QRect &rect, SkinElementFlags flags)
 {
-    static const bool doCache =
-#if defined(Q_WS_S60)
-        // Freezes on 3.1. Anyways, caching is only really needed on touch UI
-        !(QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || QSysInfo::s60Version() == QSysInfo::SV_S60_3_2);
-#else
-        true;
-#endif
-    const QPixmap frameElementPixMap((doCache ? cachedFrame : frame)(frameElement, rect.size(), flags));
+    const QPixmap frameElementPixMap((cachedFrame)(frameElement, rect.size(), flags));
     if (!frameElementPixMap.isNull())
         painter->drawPixmap(rect.topLeft(), frameElementPixMap);
 }
@@ -1040,23 +1019,10 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 drawPrimitive(PE_FrameFocusRect, optionSlider, painter, widget);*/
 
             //Groove graphics
-            if (QS60StylePrivate::hasSliderGrooveGraphic()) {
-                const QS60StylePrivate::SkinElements grooveElement = horizontal ?
-                    QS60StylePrivate::SE_SliderGrooveHorizontal :
-                    QS60StylePrivate::SE_SliderGrooveVertical;
-                QS60StylePrivate::drawSkinElement(grooveElement, painter, sliderGroove, flags);
-            } else {
-                const QPoint sliderGrooveCenter = sliderGroove.center();
-                const bool horizontal = optionSlider->orientation == Qt::Horizontal;
-                painter->save();
-                if (widget)
-                    painter->setPen(widget->palette().windowText().color());
-                if (horizontal)
-                    painter->drawLine(0, sliderGrooveCenter.y(), sliderGroove.right(), sliderGrooveCenter.y());
-                else
-                    painter->drawLine(sliderGrooveCenter.x(), 0, sliderGrooveCenter.x(), sliderGroove.bottom());
-                painter->restore();
-            }
+            const QS60StylePrivate::SkinElements grooveElement = horizontal ?
+                QS60StylePrivate::SE_SliderGrooveHorizontal :
+                QS60StylePrivate::SE_SliderGrooveVertical;
+            QS60StylePrivate::drawSkinElement(grooveElement, painter, sliderGroove, flags);
 
             //Handle graphics
             const QRect sliderHandle = subControlRect(control, optionSlider, SC_SliderHandle, widget);
@@ -1979,36 +1945,31 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             if (!tbWidget || (widget && qobject_cast<QToolBar *>(widget->parentWidget())))
                 break;
 
-            // Normally in S60 5.0+ there is no background for toolbar, but in some cases with versatile QToolBar,
+            // Normally in S60 there is no background for toolbar, but in some cases with versatile QToolBar,
             // it looks a bit strange. So, lets fillRect with Button.
-            if (!QS60StylePrivate::isToolBarBackground()) {
-                QList<QAction *> actions = tbWidget->actions();
-                bool justToolButtonsInToolBar = true;
-                for (int i = 0; i < actions.size(); ++i) {
-                    QWidget *childWidget = tbWidget->widgetForAction(actions.at(i));
-                    const QToolButton *button = qobject_cast<const QToolButton *>(childWidget);
-                    if (!button){
-                        justToolButtonsInToolBar = false;
-                    }
-                }
+            QList<QAction *> actions = tbWidget->actions();
+            bool justToolButtonsInToolBar = true;
+            for (int i = 0; i < actions.size(); ++i) {
+                QWidget *childWidget = tbWidget->widgetForAction(actions.at(i));
+                const QToolButton *button = qobject_cast<const QToolButton *>(childWidget);
+                if (!button)
+                    justToolButtonsInToolBar = false;
+            }
 
-                // Draw frame background
-                // for vertical toolbars with text only and
-                // for toolbars with extension buttons and
-                // for toolbars with widgets in them.
-                if (!justToolButtonsInToolBar ||
-                        (tbWidget &&
-                         (tbWidget->orientation() == Qt::Vertical) &&
-                         (tbWidget->toolButtonStyle() == Qt::ToolButtonTextOnly))) {
-                        painter->save();
-                        if (widget)
-                            painter->setBrush(widget->palette().button());
-                        painter->setOpacity(0.3);
-                        painter->fillRect(toolBar->rect, painter->brush());
-                        painter->restore();
-                }
-            } else {
-                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ToolBar, painter, toolBar->rect, flags);
+            // Draw frame background
+            // for vertical toolbars with text only and
+            // for toolbars with extension buttons and
+            // for toolbars with widgets in them.
+            if (!justToolButtonsInToolBar
+                || (tbWidget
+                    && tbWidget->orientation() == Qt::Vertical
+                    && tbWidget->toolButtonStyle() == Qt::ToolButtonTextOnly)) {
+                painter->save();
+                if (widget)
+                    painter->setBrush(widget->palette().button());
+                painter->setOpacity(0.3);
+                painter->fillRect(toolBar->rect, painter->brush());
+                painter->restore();
             }
         }
         break;
@@ -2416,52 +2377,46 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 
     case PE_IndicatorBranch:
 #if defined(Q_WS_S60)
-        // 3.1 AVKON UI does not have tree view component, use common style for drawing there
-        if (QSysInfo::s60Version() == QSysInfo::SV_S60_3_1) {
-#else
-        if (true) {
-#endif
-            QCommonStyle::drawPrimitive(element, option, painter, widget);
-        } else {
-            if (const QStyleOptionViewItemV2 *vopt = qstyleoption_cast<const QStyleOptionViewItemV2 *>(option)) {
-                const bool rightLine = option->state & State_Item;
-                const bool downLine = option->state & State_Sibling;
-                const bool upLine = option->state & (State_Open | State_Children | State_Item | State_Sibling);
-                QS60StylePrivate::SkinElementFlags adjustedFlags = flags;
+        if (const QStyleOptionViewItemV2 *vopt = qstyleoption_cast<const QStyleOptionViewItemV2 *>(option)) {
+            const bool rightLine = option->state & State_Item;
+            const bool downLine = option->state & State_Sibling;
+            const bool upLine = option->state & (State_Open | State_Children | State_Item | State_Sibling);
+            QS60StylePrivate::SkinElementFlags adjustedFlags = flags;
 
-                QS60StyleEnums::SkinParts skinPart;
-                bool drawSkinPart = false;
-                if (rightLine && downLine && upLine) {
-                    skinPart = QS60StyleEnums::SP_QgnIndiHlLineBranch;
-                    drawSkinPart = true;
-                } else if (rightLine && upLine) {
-                    skinPart = QS60StyleEnums::SP_QgnIndiHlLineEnd;
-                    drawSkinPart = true;
-                } else if (upLine && downLine) {
-                    skinPart = QS60StyleEnums::SP_QgnIndiHlLineStraight;
-                    drawSkinPart = true;
-                }
+            QS60StyleEnums::SkinParts skinPart;
+            bool drawSkinPart = false;
+            if (rightLine && downLine && upLine) {
+                skinPart = QS60StyleEnums::SP_QgnIndiHlLineBranch;
+                drawSkinPart = true;
+            } else if (rightLine && upLine) {
+                skinPart = QS60StyleEnums::SP_QgnIndiHlLineEnd;
+                drawSkinPart = true;
+            } else if (upLine && downLine) {
+                skinPart = QS60StyleEnums::SP_QgnIndiHlLineStraight;
+                drawSkinPart = true;
+            }
 
-                if (option->direction == Qt::RightToLeft)
-                    adjustedFlags |= QS60StylePrivate::SF_Mirrored_X_Axis;
+            if (option->direction == Qt::RightToLeft)
+                adjustedFlags |= QS60StylePrivate::SF_Mirrored_X_Axis;
 
-                if (drawSkinPart)
-                    QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, adjustedFlags);
+            if (drawSkinPart)
+                QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, adjustedFlags);
 
-                if (option->state & State_Children) {
-                    QS60StyleEnums::SkinParts skinPart =
-                            (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;
-                    const QRect selectionRect = subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
-                    const int minDimension = qMin(option->rect.width(), option->rect.height());
-                    const int magicTweak = (option->direction == Qt::RightToLeft) ? -3 : 3; //@todo: magic
-                    //The branch indicator icon in S60 is supposed to be superimposed on top of branch lines.
-                    QRect iconRect(QPoint(option->rect.left() + magicTweak, selectionRect.top() + 1), QSize(minDimension, minDimension));
-                    if (!QS60StylePrivate::isTouchSupported())
-                        iconRect.translate(0, -4); //@todo: magic
-                    QS60StylePrivate::drawSkinPart(skinPart, painter, iconRect, adjustedFlags);
-                }
+            if (option->state & State_Children) {
+                QS60StyleEnums::SkinParts skinPart =
+                    (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;
+                const QRect selectionRect = subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
+                const int minDimension = qMin(option->rect.width(), option->rect.height());
+                const int magicTweak = (option->direction == Qt::RightToLeft) ? -3 : 3;
+                //The branch indicator icon in S60 is supposed to be superimposed on top of branch lines.
+                QRect iconRect(QPoint(option->rect.left() + magicTweak, selectionRect.top() + 1), QSize(minDimension, minDimension));
+                iconRect.translate(0, -4);
+                QS60StylePrivate::drawSkinPart(skinPart, painter, iconRect, adjustedFlags);
             }
         }
+#else
+        QCommonStyle::drawPrimitive(element, option, painter, widget);
+#endif
         break;
     case PE_PanelItemViewRow: // ### Qt 5: remove
 #ifndef QT_NO_ITEMVIEWS
@@ -2483,10 +2438,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_PanelScrollAreaCorner:
         break;
     case PE_IndicatorItemViewItemDrop:
-        if (QS60StylePrivate::isTouchSupported())
-            QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_DropArea, painter, option->rect, flags);
-        else
-            commonStyleDraws = true;
+        QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_DropArea, painter, option->rect, flags);
         break;
         // todo: items are below with #ifdefs "just in case". in final version, remove all non-required cases
     case PE_FrameLineEdit:
@@ -2662,13 +2614,11 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 }
             }
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
-            if (QS60StylePrivate::isTouchSupported()) {
-                //Make itemview easier to use in touch devices
-                sz.setHeight(sz.height() + 2 * pixelMetric(PM_FocusFrameVMargin));
-                //QCommonStyle does not adjust height with horizontal margin, it only adjusts width
-                if (ct == CT_MenuItem)
-                    sz.setHeight(sz.height() - 8); //QCommonstyle adds 8 to height that this style handles through PM values
-            }
+            //Make itemview easier to use in touch devices
+            sz.setHeight(sz.height() + 2 * pixelMetric(PM_FocusFrameVMargin));
+            //QCommonStyle does not adjust height with horizontal margin, it only adjusts width
+            if (ct == CT_MenuItem)
+                sz.setHeight(sz.height() - 8); //QCommonstyle adds 8 to height that this style handles through PM values
             break;
 #ifndef QT_NO_COMBOBOX
         case CT_ComboBox: {
@@ -3302,8 +3252,7 @@ void QS60Style::polish(QApplication *application)
     QCommonStyle::polish(qApp);
     d->m_originalPalette = application->palette();
     d->setThemePalette(application);
-    if (QS60StylePrivate::isTouchSupported())
-        qApp->installEventFilter(this);
+    qApp->installEventFilter(this);
 }
 
 /*!
@@ -3318,8 +3267,7 @@ void QS60Style::unpolish(QApplication *application)
     const QPalette newPalette = QApplication::style()->standardPalette();
     QApplication::setPalette(newPalette);
     QApplicationPrivate::setSystemPalette(d->m_originalPalette);
-    if (QS60StylePrivate::isTouchSupported())
-        qApp->removeEventFilter(this);
+    qApp->removeEventFilter(this);
 }
 
 /*!
@@ -3330,11 +3278,10 @@ bool QS60Style::event(QEvent *e)
 #ifdef QT_KEYPAD_NAVIGATION
     Q_D(QS60Style);
     const QEvent::Type eventType = e->type();
-    if ((eventType == QEvent::FocusIn ||
-         eventType == QEvent::FocusOut ||
-         eventType == QEvent::EnterEditFocus ||
-         eventType == QEvent::LeaveEditFocus) &&
-        QS60StylePrivate::isTouchSupported())
+    if (eventType == QEvent::FocusIn
+        || eventType == QEvent::FocusOut
+        || eventType == QEvent::EnterEditFocus
+        || eventType == QEvent::LeaveEditFocus)
             return false;
 #endif
 
