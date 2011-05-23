@@ -112,7 +112,7 @@ static QString _q_escapeIdentifier(const QString &identifier)
 
 static QVariant::Type qGetColumnType(const TSqlColumnType coltype)
 {
-    //ToDo Check Implmentation
+    //ToDo Check Implementation
     switch(coltype){
         case ESqlInt:
         case ESqlInt64:
