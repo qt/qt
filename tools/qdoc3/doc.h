@@ -70,14 +70,14 @@ class Doc
 {
  public:
     // the order is important
-    enum SectioningUnit { 
-        Book = -2, 
-        Part, 
-        Chapter, 
-        Section1, 
-        Section2, 
-        Section3, 
-        Section4 
+    enum Sections { 
+        NoSection = -2,
+        Part = -1,
+        Chapter = 1,
+        Section1 = 1,
+        Section2 = 2,
+        Section3 = 3,
+        Section4 = 4
     };
 
     Doc() : priv(0) {}
@@ -103,7 +103,7 @@ class Doc
     Text trimmedBriefText(const QString &className) const;
     Text legaleseText() const;
     const QString& baseName() const;
-    SectioningUnit granularity() const;
+    Sections granularity() const;
     const QSet<QString> &parameterNames() const;
     const QStringList &enumItemNames() const;
     const QStringList &omitEnumItemNames() const;

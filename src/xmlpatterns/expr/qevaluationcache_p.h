@@ -97,7 +97,7 @@ namespace QPatternist
     {
     public:
         EvaluationCache(const Expression::Ptr &operand,
-                        const VariableDeclaration::Ptr &varDecl,
+                        const VariableDeclaration *varDecl,
                         const VariableSlotID slot);
 
         virtual Item evaluateSingleton(const DynamicContext::Ptr &context) const;

@@ -59,7 +59,7 @@ Views display \l{qml-data-models}{models} onto the screen. A model could be a si
 
 To assign a model to a view, bind the view's \c model property to a model.
 \snippet doc/src/snippets/declarative/listview.qml model
-\snippet doc/src/snippets/declarative/listview.qml model
+\snippet doc/src/snippets/declarative/listview.qml view
 
 For more information, consult the \l {QML Data Models} article.
 

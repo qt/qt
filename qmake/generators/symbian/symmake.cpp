@@ -574,7 +574,30 @@ void SymbianMakefileGenerator::writeMmpFileMacrosPart(QTextStream& t)
 
 void SymbianMakefileGenerator::addMacro(QTextStream& t, const QString& value)
 {
-    t << "MACRO\t\t" <<  value << endl;
+    // String macros for Makefile based platforms are defined like this in pro files:
+    //
+    //   DEFINES += VERSION_STRING=\\\"1.2.3\\\"
+    //
+    // This will not work in *.mmp files, which don't need double escaping, and
+    // will therefore result in a VERSION_STRING value of \"1.2.3\" instead of "1.2.3".
+    // Improve cross platform support by removing one level of escaping from all
+    // DEFINES values.
+    static QChar backslash = QLatin1Char('\\');
+    QString fixedValue;
+    fixedValue.reserve(value.size());
+    int pos = 0;
+    int prevPos = 0;
+    while (pos < value.size()) {
+        if (value.at(pos) == backslash) {
+            fixedValue += value.mid(prevPos, pos - prevPos);
+            pos++;
+            prevPos = pos;
+        }
+        pos++;
+    }
+    fixedValue += value.mid(prevPos);
+
+    t << "MACRO\t\t" << fixedValue << endl;
 }
 
 
