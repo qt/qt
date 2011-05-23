@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -91,6 +91,9 @@ private slots:
 
     void unsupportedWritingSystem_data();
     void unsupportedWritingSystem();
+
+    void rawFontSetPixelSize_data();
+    void rawFontSetPixelSize();
 #endif // QT_NO_RAWFONT
 };
 
@@ -293,12 +296,12 @@ void tst_QRawFont::textLayout()
     layout.createLine();
     layout.endLayout();
 
-    QList<QGlyphs> glyphss = layout.glyphs();
-    QCOMPARE(glyphss.size(), 1);
+    QList<QGlyphRun> glyphRuns = layout.glyphRuns();
+    QCOMPARE(glyphRuns.size(), 1);
 
-    QGlyphs glyphs = glyphss.at(0);
+    QGlyphRun glyphs = glyphRuns.at(0);
 
-    QRawFont rawFont = glyphs.font();
+    QRawFont rawFont = glyphs.rawFont();
     QVERIFY(rawFont.isValid());
     QCOMPARE(rawFont.familyName(), familyName);
     QCOMPARE(rawFont.pixelSize(), 18.0);
@@ -792,11 +795,11 @@ void tst_QRawFont::unsupportedWritingSystem()
     layout.createLine();
     layout.endLayout();
 
-    QList<QGlyphs> glyphss = layout.glyphs();
-    QCOMPARE(glyphss.size(), 1);
+    QList<QGlyphRun> glyphRuns = layout.glyphRuns();
+    QCOMPARE(glyphRuns.size(), 1);
 
-    QGlyphs glyphs = glyphss.at(0);
-    QRawFont layoutFont = glyphs.font();
+    QGlyphRun glyphs = glyphRuns.at(0);
+    QRawFont layoutFont = glyphs.rawFont();
     QVERIFY(layoutFont.familyName() != QString::fromLatin1("QtBidiTestFont"));
     QCOMPARE(layoutFont.pixelSize(), 12.0);
 
@@ -805,6 +808,39 @@ void tst_QRawFont::unsupportedWritingSystem()
     QCOMPARE(rawFont.pixelSize(), 12.0);
 
     fontDatabase.removeApplicationFont(id);
+}
+
+void tst_QRawFont::rawFontSetPixelSize_data()
+{
+    QTest::addColumn<QFont::HintingPreference>("hintingPreference");
+
+    QTest::newRow("Default hinting preference") << QFont::PreferDefaultHinting;
+    QTest::newRow("No hinting preference") << QFont::PreferNoHinting;
+    QTest::newRow("Vertical hinting preference") << QFont::PreferVerticalHinting;
+    QTest::newRow("Full hinting preference") << QFont::PreferFullHinting;
+}
+
+void tst_QRawFont::rawFontSetPixelSize()
+{
+    QFETCH(QFont::HintingPreference, hintingPreference);
+
+    QTextLayout layout("Foobar");
+
+    QFont font = layout.font();
+    font.setHintingPreference(hintingPreference);
+    font.setPixelSize(12);
+    layout.setFont(font);
+
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QGlyphRun glyphs = layout.glyphRuns().at(0);
+    QRawFont rawFont = glyphs.rawFont();
+    QCOMPARE(rawFont.pixelSize(), 12.0);
+
+    rawFont.setPixelSize(24);
+    QCOMPARE(rawFont.pixelSize(), 24.0);
 }
 
 #endif // QT_NO_RAWFONT
