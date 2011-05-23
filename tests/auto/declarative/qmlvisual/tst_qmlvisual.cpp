@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -185,16 +185,22 @@ QString tst_qmlvisual::toTestScript(const QString &file, Mode mode)
     if (platformsuffix && (mode == UpdatePlatformVisuals || QFile::exists(testdata+QLatin1String(platformsuffix)+QDir::separator()+testname+".qml"))) {
         QString platformdir = testdata + QLatin1String(platformsuffix);
         if (mode == UpdatePlatformVisuals) {
-            Q_ASSERT(QDir().mkpath(platformdir));
+            if (!QDir().mkpath(platformdir)) {
+                qFatal("Cannot make path %s", qPrintable(platformdir));
+            }
             // Copy from base
             QDir dir(testdata,testname+".*");
             dir.setFilter(QDir::Files);
             QFileInfoList list = dir.entryInfoList();
             for (int i = 0; i < list.size(); ++i) {
                 QFile in(list.at(i).filePath());
-                Q_ASSERT(in.open(QIODevice::ReadOnly));
+                if (!in.open(QIODevice::ReadOnly)) {
+                    qFatal("Cannot open file %s: %s", qPrintable(in.fileName()), qPrintable(in.errorString()));
+                }
                 QFile out(platformdir + QDir::separator() + list.at(i).fileName());
-                Q_ASSERT(out.open(QIODevice::WriteOnly));
+                if (!out.open(QIODevice::WriteOnly)) {
+                    qFatal("Cannot open file %s: %s", qPrintable(out.fileName()), qPrintable(out.errorString()));
+                }
                 out.write(in.readAll());
             }
         }
@@ -234,8 +240,6 @@ QStringList tst_qmlvisual::findQmlFiles(const QDir &d)
 
 void action(Mode mode, const QString &file)
 {
-    Q_ASSERT(mode != Test);
-
     QString testdata = tst_qmlvisual::toTestScript(file,mode);
 
     QStringList arguments;

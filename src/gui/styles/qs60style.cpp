@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -1155,11 +1155,10 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     case Qt::UpArrow:
                         pe = PE_IndicatorArrowUp;
                         break;
-                    case Qt::DownArrow:
+                    default:
                         pe = PE_IndicatorArrowDown;
                         break;
-                    default:
-                        break; }
+                }
                 toolButton.rect = button;
                 drawPrimitive(pe, &toolButton, painter, widget);
             }
@@ -1333,8 +1332,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
             const bool isDisabled = !(option->state & State_Enabled);
             const bool isFlat = button->features & QStyleOptionButton::Flat;
-            QS60StyleEnums::SkinParts skinPart;
-            QS60StylePrivate::SkinElements skinElement;
+            QS60StyleEnums::SkinParts skinPart = QS60StyleEnums::SP_QsnFrButtonCenterInactive;
+            QS60StylePrivate::SkinElements skinElement = QS60StylePrivate::SE_ButtonInactive;
             if (!isDisabled) {
                 const bool isPressed = (option->state & State_Sunken) ||
                                        (option->state & State_On);
@@ -1345,11 +1344,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     skinElement =
                         isPressed ? QS60StylePrivate::SE_ButtonPressed : QS60StylePrivate::SE_ButtonNormal;
                 }
-            } else {
-                if (isFlat)
-                    skinPart =QS60StyleEnums::SP_QsnFrButtonCenterInactive;
-                else
-                    skinElement = QS60StylePrivate::SE_ButtonInactive;
             }
             if (isFlat)
                 QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, flags);
@@ -2226,21 +2220,16 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         break;
 #ifndef QT_NO_TOOLBUTTON
     case PE_IndicatorArrowDown:
+        QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafScrollArrowDown, painter, option->rect, flags);
+        break;
     case PE_IndicatorArrowLeft:
+        QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafScrollArrowLeft, painter, option->rect, flags);
+        break;
     case PE_IndicatorArrowRight:
-    case PE_IndicatorArrowUp: {
-        QS60StyleEnums::SkinParts skinPart;
-        if (element==PE_IndicatorArrowDown)
-            skinPart = QS60StyleEnums::SP_QgnGrafScrollArrowDown;
-        else if (element==PE_IndicatorArrowLeft)
-            skinPart = QS60StyleEnums::SP_QgnGrafScrollArrowLeft;
-        else if (element==PE_IndicatorArrowRight)
-            skinPart = QS60StyleEnums::SP_QgnGrafScrollArrowRight;
-        else if (element==PE_IndicatorArrowUp)
-            skinPart = QS60StyleEnums::SP_QgnGrafScrollArrowUp;
-
-        QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, flags);
-        }
+        QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafScrollArrowRight, painter, option->rect, flags);
+        break;
+    case PE_IndicatorArrowUp:
+        QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafScrollArrowUp, painter, option->rect, flags);
         break;
 #endif //QT_NO_TOOLBUTTON
 #ifndef QT_NO_SPINBOX

@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -403,6 +403,8 @@ public:
     }
 
     void reset() {
+        called_slot10 = 0;
+        called_slot9 = 0;
         called_slot8 = 0;
         called_slot7 = 0;
         called_slot6 = 0;
@@ -421,6 +423,8 @@ public:
     int called_slot6;
     int called_slot7;
     int called_slot8;
+    int called_slot9;
+    int called_slot10;
 
     bool called(int slot) {
         switch (slot) {
@@ -432,6 +436,8 @@ public:
         case 6: return called_slot6;
         case 7: return called_slot7;
         case 8: return called_slot8;
+        case 9: return called_slot9;
+        case 10: return called_slot10;
         default: return false;
         }
     }
@@ -449,8 +455,8 @@ public slots:
     void slotLoopBack() { ++called_slot8; }
 
 protected slots:
-    void o() { Q_ASSERT(0); }
-    void on() { Q_ASSERT(0); }
+    void o() { ++called_slot9; }
+    void on() { ++called_slot10; }
 
 signals:
     void on_Sender_signalLoopBack();
@@ -473,6 +479,8 @@ void tst_QObject::connectByName()
     QCOMPARE(receiver.called(6), false);
     QCOMPARE(receiver.called(7), false);
     QCOMPARE(receiver.called(8), false);
+    QCOMPARE(receiver.called(9), false);
+    QCOMPARE(receiver.called(10), false);
     receiver.reset();
 
     sender.emitSignalWithParams(0);
@@ -484,6 +492,8 @@ void tst_QObject::connectByName()
     QCOMPARE(receiver.called(6), false);
     QCOMPARE(receiver.called(7), false);
     QCOMPARE(receiver.called(8), false);
+    QCOMPARE(receiver.called(9), false);
+    QCOMPARE(receiver.called(10), false);
     receiver.reset();
 
     sender.emitSignalWithParams(0, "string");
@@ -495,6 +505,8 @@ void tst_QObject::connectByName()
     QCOMPARE(receiver.called(6), false);
     QCOMPARE(receiver.called(7), false);
     QCOMPARE(receiver.called(8), false);
+    QCOMPARE(receiver.called(9), false);
+    QCOMPARE(receiver.called(10), false);
     receiver.reset();
 
     sender.emitSignalManyParams(1, 2, 3, "string", true);
@@ -506,6 +518,8 @@ void tst_QObject::connectByName()
     QCOMPARE(receiver.called(6), false);
     QCOMPARE(receiver.called(7), false);
     QCOMPARE(receiver.called(8), false);
+    QCOMPARE(receiver.called(9), false);
+    QCOMPARE(receiver.called(10), false);
     receiver.reset();
 
     sender.emitSignalManyParams2(1, 2, 3, "string", true);
@@ -517,6 +531,8 @@ void tst_QObject::connectByName()
     QCOMPARE(receiver.called(6), false);
     QCOMPARE(receiver.called(7), true);
     QCOMPARE(receiver.called(8), false);
+    QCOMPARE(receiver.called(9), false);
+    QCOMPARE(receiver.called(10), false);
     receiver.reset();
 
     sender.emitSignalLoopBack();
@@ -528,6 +544,8 @@ void tst_QObject::connectByName()
     QCOMPARE(receiver.called(6), false);
     QCOMPARE(receiver.called(7), false);
     QCOMPARE(receiver.called(8), true);
+    QCOMPARE(receiver.called(9), false);
+    QCOMPARE(receiver.called(10), false);
     receiver.reset();
 }
 
@@ -1312,14 +1330,16 @@ public:
 
     void customEvent(QEvent *)
     {
-        Q_ASSERT(customEventThread == 0);
+        if (customEventThread)
+            qFatal("%s: customEventThread should be null", Q_FUNC_INFO);
         customEventThread = QThread::currentThread();
         emit theSignal();
     }
 
     void timerEvent(QTimerEvent *)
     {
-        Q_ASSERT(timerEventThread == 0);
+        if (timerEventThread)
+            qFatal("%s: timerEventThread should be null", Q_FUNC_INFO);
         timerEventThread = QThread::currentThread();
         emit theSignal();
     }
@@ -1327,7 +1347,8 @@ public:
 public slots:
     void theSlot()
     {
-        Q_ASSERT(slotThread == 0);
+        if (slotThread)
+            qFatal("%s: slotThread should be null", Q_FUNC_INFO);
         slotThread = QThread::currentThread();
         emit theSignal();
     }

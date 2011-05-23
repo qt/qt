@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -62,7 +62,7 @@
 #include "qthread.h"
 #include "qvarlengtharray.h"
 #include "qstatictext.h"
-#include "qglyphs.h"
+#include "qglyphrun.h"
 
 #include <private/qfontengine_p.h>
 #include <private/qpaintengine_p.h>
@@ -73,7 +73,7 @@
 #include <private/qpaintengine_raster_p.h>
 #include <private/qmath_p.h>
 #include <private/qstatictext_p.h>
-#include <private/qglyphs_p.h>
+#include <private/qglyphrun_p.h>
 #include <private/qstylehelper_p.h>
 #include <private/qrawfont_p.h>
 
@@ -5798,19 +5798,19 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
 
     \since 4.8
 
-    \sa QGlyphs::setFont(), QGlyphs::setPositions(), QGlyphs::setGlyphIndexes()
+    \sa QGlyphRun::setRawFont(), QGlyphRun::setPositions(), QGlyphRun::setGlyphIndexes()
 */
 #if !defined(QT_NO_RAWFONT)
-void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
+void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
 {
     Q_D(QPainter);
 
-    QRawFont font = glyphs.font();
+    QRawFont font = glyphRun.rawFont();
     if (!font.isValid())
         return;
 
-    QVector<quint32> glyphIndexes = glyphs.glyphIndexes();
-    QVector<QPointF> glyphPositions = glyphs.positions();
+    QVector<quint32> glyphIndexes = glyphRun.glyphIndexes();
+    QVector<QPointF> glyphPositions = glyphRun.positions();
 
     int count = qMin(glyphIndexes.size(), glyphPositions.size());
     QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
@@ -5819,6 +5819,13 @@ void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
             d->extended != 0
             ? qt_paintengine_supports_transformations(d->extended->type())
             : qt_paintengine_supports_transformations(d->engine->type());
+
+    // If the matrix is not affine, the paint engine will fall back to
+    // drawing the glyphs as paths, which in turn means we should not
+    // preprocess the glyph positions
+    if (!d->state->matrix.isAffine())
+        paintEngineSupportsTransformations = true;
+
     for (int i=0; i<count; ++i) {
         QPointF processedPosition = position + glyphPositions.at(i);
         if (!paintEngineSupportsTransformations)
@@ -5826,8 +5833,8 @@ void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
         fixedPointPositions[i] = QFixedPoint::fromPointF(processedPosition);
     }
 
-    d->drawGlyphs(glyphIndexes.data(), fixedPointPositions.data(), count, font, glyphs.overline(),
-                  glyphs.underline(), glyphs.strikeOut());
+    d->drawGlyphs(glyphIndexes.data(), fixedPointPositions.data(), count, font, glyphRun.overline(),
+                  glyphRun.underline(), glyphRun.strikeOut());
 }
 
 void QPainterPrivate::drawGlyphs(quint32 *glyphArray, QFixedPoint *positions, int glyphCount,
@@ -5862,7 +5869,7 @@ void QPainterPrivate::drawGlyphs(quint32 *glyphArray, QFixedPoint *positions, in
 
     QFixed width = rightMost - leftMost;
 
-    if (extended != 0) {
+    if (extended != 0 && state->matrix.isAffine()) {
         QStaticTextItem staticTextItem;
         staticTextItem.color = state->pen.color();
         staticTextItem.font = state->font;
