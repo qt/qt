@@ -274,9 +274,9 @@ EXPORTS
 	?sampleRate@QAudioFormat@@QBEHXZ @ 273 NONAME ; int QAudioFormat::sampleRate(void) const
 	?supportedSampleRates@QAudioDeviceInfo@@QBE?AV?$QList@H@@XZ @ 274 NONAME ; class QList<int> QAudioDeviceInfo::supportedSampleRates(void) const
 	?setChannelCount@QAudioFormat@@QAEXH@Z @ 275 NONAME ; void QAudioFormat::setChannelCount(int)
-	??0QAbstractAudioInput@@QAE@XZ @ 276 NONAME ; QAbstractAudioInput::QAbstractAudioInput(void)
-	??0QAudioEngineFactoryInterface@@QAE@XZ @ 277 NONAME ; QAudioEngineFactoryInterface::QAudioEngineFactoryInterface(void)
-	??0QAbstractAudioDeviceInfo@@QAE@XZ @ 278 NONAME ; QAbstractAudioDeviceInfo::QAbstractAudioDeviceInfo(void)
-	??0QAbstractAudioOutput@@QAE@XZ @ 279 NONAME ; QAbstractAudioOutput::QAbstractAudioOutput(void)
-	??_EQAudioDeviceInfo@@QAE@I@Z @ 280 NONAME ; QAudioDeviceInfo::~QAudioDeviceInfo(unsigned int)
+	??0QAbstractAudioInput@@QAE@XZ @ 276 NONAME ABSENT ; QAbstractAudioInput::QAbstractAudioInput(void)
+	??0QAudioEngineFactoryInterface@@QAE@XZ @ 277 NONAME ABSENT ; QAudioEngineFactoryInterface::QAudioEngineFactoryInterface(void)
+	??0QAbstractAudioDeviceInfo@@QAE@XZ @ 278 NONAME ABSENT ; QAbstractAudioDeviceInfo::QAbstractAudioDeviceInfo(void)
+	??0QAbstractAudioOutput@@QAE@XZ @ 279 NONAME ABSENT ; QAbstractAudioOutput::QAbstractAudioOutput(void)
+	??_EQAudioDeviceInfo@@QAE@I@Z @ 280 NONAME ABSENT ; QAudioDeviceInfo::~QAudioDeviceInfo(unsigned int)
 

@@ -103,7 +103,7 @@ symbian {
 		exists($${EPOCROOT}epoc32/include/mw/downloadmgrclient.h) {
 			HEADERS += $$PHONON_MMF_DIR/download.h
 			SOURCES += $$PHONON_MMF_DIR/download.cpp
-			LIBS += -lDownloadMgr
+			LIBS += -ldownloadmgr
 			DEFINES += PHONON_MMF_PROGRESSIVE_DOWNLOAD
 		}
 	}
@@ -125,7 +125,7 @@ symbian {
 	LIBS += -lmediaclientaudiostream  # For CMdaAudioOutputStream
 
 	# These are for effects.
-	LIBS += -lAudioEqualizerEffect -lBassBoostEffect -lDistanceAttenuationEffect -lDopplerbase -lEffectBase -lEnvironmentalReverbEffect -lListenerDopplerEffect -lListenerLocationEffect -lListenerOrientationEffect -lLocationBase -lLoudnessEffect -lOrientationBase -lSourceDopplerEffect -lSourceLocationEffect -lSourceOrientationEffect -lStereoWideningEffect
+	LIBS += -laudioequalizereffect -lbassboosteffect -ldistanceattenuationeffect -ldopplerbase -leffectbase -lenvironmentalreverbeffect -llistenerdopplereffect -llistenerlocationeffect -llistenerorientationeffect -llocationbase -lloudnesseffect -lorientationbase -lsourcedopplereffect -lsourcelocationeffect -lsourceorientationeffect -lstereowideningeffect
 
 	# This is to allow IAP to be specified
 	LIBS += -lcommdb
