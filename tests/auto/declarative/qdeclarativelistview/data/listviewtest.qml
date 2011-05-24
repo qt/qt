@@ -6,6 +6,7 @@ Rectangle {
     height: 320
     color: "#ffffff"
 
+    property int count: list.count
     property bool showHeader: false
     property bool showFooter: false
     property real hr: list.visibleArea.heightRatio

@@ -2,6 +2,7 @@ import QtQuick 1.0
 
 Rectangle {
     id: root
+    property int count: view.count
     property int currentA: -1
     property int currentB: -1
     property real delegateWidth: 60
