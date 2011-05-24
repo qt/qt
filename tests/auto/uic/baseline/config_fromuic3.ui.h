@@ -45,7 +45,7 @@
 ** Form generated from reading UI file 'config_fromuic3.ui'
 **
 ** Created: Thu Dec 17 12:48:42 2009
-**      by: Qt User Interface Compiler version 4.6.3
+**      by: Qt User Interface Compiler version 4.6.4
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
