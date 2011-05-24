@@ -730,10 +730,10 @@ void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *position
     }
 }
 
-QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, int /*margin*/, bool aa)
+QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, int margin, bool aa)
 {
     const glyph_metrics_t br = boundingBox(glyph);
-    QImage im(qRound(br.width)+2, qRound(br.height)+2, QImage::Format_RGB32);
+    QImage im(qRound(br.width) + margin * 2, qRound(br.height) + margin * 2, QImage::Format_RGB32);
     im.fill(0);
 
     CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
@@ -765,8 +765,8 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
 
     CGContextSetFont(ctx, cgFont);
 
-    qreal pos_x = -br.x.toReal() + subPixelPosition.toReal();
-    qreal pos_y = im.height() + br.y.toReal() - 1;
+    qreal pos_x = -br.x.toReal() + subPixelPosition.toReal() + margin;
+    qreal pos_y = im.height() + br.y.toReal() - margin;
     CGContextSetTextPosition(ctx, pos_x, pos_y);
 
     CGSize advance;
