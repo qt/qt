@@ -818,7 +818,7 @@ EXPORTS
 	?glGenFramebuffers@QGLFunctions@@QAEXHPAI@Z @ 817 NONAME ; void QGLFunctions::glGenFramebuffers(int, unsigned int *)
 	?glVertexAttrib3fv@QGLFunctions@@QAEXIPBM@Z @ 818 NONAME ; void QGLFunctions::glVertexAttrib3fv(unsigned int, float const *)
 	?glGetVertexAttribPointerv@QGLFunctions@@QAEXIIPAPAX@Z @ 819 NONAME ; void QGLFunctions::glGetVertexAttribPointerv(unsigned int, unsigned int, void * *)
-	?snippetNameStr@QGLEngineSharedShaders@@SA?AVQByteArray@@W4SnippetName@1@@Z @ 820 NONAME ABSENT ; class QByteArray QGLEngineSharedShaders::snippetNameStr(enum QGLEngineSharedShaders::SnippetName)
+	?snippetNameStr@QGLEngineSharedShaders@@SA?AVQByteArray@@W4SnippetName@1@@Z @ 820 NONAME ; class QByteArray QGLEngineSharedShaders::snippetNameStr(enum QGLEngineSharedShaders::SnippetName)
 	?glUniformMatrix4fv@QGLFunctions@@QAEXHHEPBM@Z @ 821 NONAME ; void QGLFunctions::glUniformMatrix4fv(int, int, unsigned char, float const *)
 	?setContext@QGLTextureGlyphCache@@QAEXPBVQGLContext@@@Z @ 822 NONAME ; void QGLTextureGlyphCache::setContext(class QGLContext const *)
 	?glDeleteBuffers@QGLFunctions@@QAEXHPBI@Z @ 823 NONAME ; void QGLFunctions::glDeleteBuffers(int, unsigned int const *)
@@ -860,18 +860,4 @@ EXPORTS
 	?glShaderSource@QGLFunctions@@QAEXIHPAPBDPBH@Z @ 859 NONAME ; void QGLFunctions::glShaderSource(unsigned int, int, char const * *, int const *)
 	?glGetShaderPrecisionFormat@QGLFunctions@@QAEXIIPAH0@Z @ 860 NONAME ; void QGLFunctions::glGetShaderPrecisionFormat(unsigned int, unsigned int, int *, int *)
 	?insert@QGLContextGroupResourceBase@@QAEXPBVQGLContext@@PAX@Z @ 861 NONAME ; void QGLContextGroupResourceBase::insert(class QGLContext const *, void *)
-	?staticMetaObjectExtraData@QGLWindowSurface@@0UQMetaObjectExtraData@@B @ 862 NONAME ; struct QMetaObjectExtraData const QGLWindowSurface::staticMetaObjectExtraData
-	?qt_static_metacall@QGLSignalProxy@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 863 NONAME ; void QGLSignalProxy::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@QGLSignalProxy@@0UQMetaObjectExtraData@@B @ 864 NONAME ; struct QMetaObjectExtraData const QGLSignalProxy::staticMetaObjectExtraData
-	?qt_static_metacall@QGLWindowSurface@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 865 NONAME ; void QGLWindowSurface::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@QGLWidget@@0UQMetaObjectExtraData@@B @ 866 NONAME ; struct QMetaObjectExtraData const QGLWidget::staticMetaObjectExtraData
-	?qt_static_metacall@QGraphicsShaderEffect@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 867 NONAME ; void QGraphicsShaderEffect::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?qt_static_metacall@QGLEngineShaderManager@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 868 NONAME ; void QGLEngineShaderManager::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@QGLShader@@0UQMetaObjectExtraData@@B @ 869 NONAME ; struct QMetaObjectExtraData const QGLShader::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@QGLShaderProgram@@0UQMetaObjectExtraData@@B @ 870 NONAME ; struct QMetaObjectExtraData const QGLShaderProgram::staticMetaObjectExtraData
-	?qt_static_metacall@QGLWidget@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 871 NONAME ; void QGLWidget::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?qt_static_metacall@QGLShader@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 872 NONAME ; void QGLShader::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@QGraphicsShaderEffect@@0UQMetaObjectExtraData@@B @ 873 NONAME ; struct QMetaObjectExtraData const QGraphicsShaderEffect::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@QGLEngineShaderManager@@0UQMetaObjectExtraData@@B @ 874 NONAME ; struct QMetaObjectExtraData const QGLEngineShaderManager::staticMetaObjectExtraData
-	?qt_static_metacall@QGLShaderProgram@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 875 NONAME ; void QGLShaderProgram::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 
