@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -72,6 +72,7 @@
 #include "qcheckbox.h"
 #include "qdesktopwidget.h"
 #include "qprogressbar.h"
+#include "qlabel.h"
 
 #include "private/qtoolbarextension_p.h"
 #include "private/qcombobox_p.h"
@@ -681,6 +682,13 @@ void QS60StylePrivate::setThemePalette(QWidget *widget)
         if (header->viewport())
             header->viewport()->setPalette(widgetPalette);
         QApplication::setPalette(widgetPalette, "QHeaderView");
+    } else if (qobject_cast<QLabel *>(widget)) {
+        if (widget->window() && widget->window()->windowType() == Qt::Dialog) {
+            QPalette widgetPalette = widget->palette();
+            widgetPalette.setColor(QPalette::WindowText,
+                s60Color(QS60StyleEnums::CL_QsnTextColors, 19, 0));
+            widget->setPalette(widgetPalette);
+        }
     }
 }
 
@@ -953,6 +961,17 @@ bool QS60StylePrivate::canDrawThemeBackground(const QBrush &backgroundBrush, con
 bool QS60StylePrivate::isWidgetPressed(const QWidget *widget)
 {
     return (widget && widget == m_pressedWidget);
+}
+
+// Generates 1*1 white pixmap as a placeholder for real texture.
+// The actual theme texture is drawn in qt_s60_fill_background().
+QPixmap QS60StylePrivate::placeHolderTexture()
+{
+    if (!m_placeHolderTexture) {
+        m_placeHolderTexture = new QPixmap(1,1);
+        m_placeHolderTexture->fill(Qt::green);
+    }
+    return *m_placeHolderTexture;
 }
 
 /*!
@@ -1540,8 +1559,10 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     skinElement==QS60StylePrivate::SE_TabBarTabWestActive) {
                 const int borderThickness =
                     QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
-                const int tabOverlap =
-                    QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap) - borderThickness;
+                int tabOverlap = pixelMetric(PM_TabBarTabOverlap);
+                if (tabOverlap > borderThickness)
+                    tabOverlap -= borderThickness;
+
                 const bool usesScrollButtons = 
                     (widget) ? (qobject_cast<const QTabBar*>(widget))->usesScrollButtons() : false;
                 const int roomForScrollButton = 
@@ -1580,9 +1601,11 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QStyleOptionTabV3 optionTab = *tab;
             QRect tr = optionTab.rect;
             const bool directionMirrored = (optionTab.direction == Qt::RightToLeft);
-            const int borderThickness = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
-            const int tabOverlap =
-                QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap) - borderThickness;
+            const int borderThickness =
+                QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
+            int tabOverlap = pixelMetric(PM_TabBarTabOverlap);
+            if (tabOverlap > borderThickness)
+                tabOverlap -= borderThickness;
             const bool usesScrollButtons = 
                 (widget) ? (qobject_cast<const QTabBar*>(widget))->usesScrollButtons() : false;
             const int roomForScrollButton = 
@@ -2531,6 +2554,11 @@ int QS60Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const
             //without having to define custom pixel metric
             metricValue *= 2;
 
+#if defined(Q_WS_S60)
+    if (metric == PM_TabBarTabOverlap && (QSysInfo::s60Version() > QSysInfo::SV_S60_5_2))
+        metricValue = 0;
+#endif
+
     return metricValue;
 }
 
@@ -2645,8 +2673,6 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 }
             }
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
-            //native items have small empty areas at the beginning and end of menu item
-            sz.setWidth(sz.width() + 2 * pixelMetric(PM_MenuHMargin) + 2 * QS60StylePrivate::pixelMetric(PM_FrameCornerWidth));
             if (QS60StylePrivate::isTouchSupported()) {
                 //Make itemview easier to use in touch devices
                 sz.setHeight(sz.height() + 2 * pixelMetric(PM_FocusFrameVMargin));
@@ -3005,10 +3031,11 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                 ret = QCommonStyle::subElementRect(element, opt, widget);
 
                 if (const QStyleOptionTabWidgetFrame *twf = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(opt)) {
-                    const int tabOverlapNoBorder =
-                        QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap);
-                    const int tabOverlap =
-                        tabOverlapNoBorder - QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
+                    const int borderThickness =
+                        QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
+                    int tabOverlap = pixelMetric(PM_TabBarTabOverlap);
+                    if (tabOverlap > borderThickness)
+                        tabOverlap -= borderThickness;
                     const QTabWidget *tab = qobject_cast<const QTabWidget *>(widget);
                     int gain = (tab) ? tabOverlap * tab->count() : 0;
                     switch (twf->shape) {
@@ -3026,7 +3053,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                                     if ((ret.right() + gain) > widget->rect().right())
                                         gain = widget->rect().right() - ret.right();
                                     ret.adjust(0, 0, gain, 0);
-                                    }
+                                }
                             }
                             break;
                         }
@@ -3114,7 +3141,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
             }
             break;
         case SE_ItemViewItemCheckIndicator:
-            if (const QStyleOptionViewItemV2 *vopt = qstyleoption_cast<const QStyleOptionViewItemV2 *>(opt)) {
+            if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
                 const QAbstractItemView *listItem = qobject_cast<const QAbstractItemView *>(widget);
 
                 const bool singleSelection = listItem &&
@@ -3122,7 +3149,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                      listItem->selectionMode() == QAbstractItemView::NoSelection);
                 const bool checkBoxOnly = (vopt->features & QStyleOptionViewItemV2::HasCheckIndicator) &&
                     listItem &&
-                    singleSelection;
+                    singleSelection && vopt->text.isEmpty() && vopt->icon.isNull();
 
                 // Selection check mark rect.
                 const int indicatorWidth = QS60StylePrivate::pixelMetric(PM_IndicatorWidth);

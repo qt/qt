@@ -7,29 +7,29 @@
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -556,6 +556,9 @@ void QSocks5SocketEnginePrivate::initialize(Socks5Mode socks5Mode)
         udpData = new QSocks5UdpAssociateData;
         data = udpData;
         udpData->udpSocket = new QUdpSocket(q);
+#ifndef QT_NO_BEARERMANAGEMENT
+        udpData->udpSocket->setProperty("_q_networksession", q->property("_q_networksession"));
+#endif
         udpData->udpSocket->setProxy(QNetworkProxy::NoProxy);
         QObject::connect(udpData->udpSocket, SIGNAL(readyRead()),
                          q, SLOT(_q_udpSocketReadNotification()),
@@ -567,6 +570,9 @@ void QSocks5SocketEnginePrivate::initialize(Socks5Mode socks5Mode)
     }
 
     data->controlSocket = new QTcpSocket(q);
+#ifndef QT_NO_BEARERMANAGEMENT
+    data->controlSocket->setProperty("_q_networksession", q->property("_q_networksession"));
+#endif
     data->controlSocket->setProxy(QNetworkProxy::NoProxy);
     QObject::connect(data->controlSocket, SIGNAL(connected()), q, SLOT(_q_controlSocketConnected()),
                      Qt::DirectConnection);
@@ -1376,6 +1382,9 @@ bool QSocks5SocketEngine::bind(const QHostAddress &address, quint16 port)
         d->udpData->associatePort = d->localPort;
         d->localPort = 0;
         QUdpSocket dummy;
+#ifndef QT_NO_BEARERMANAGEMENT
+        dummy.setProperty("_q_networksession", property("_q_networksession"));
+#endif
         dummy.setProxy(QNetworkProxy::NoProxy);
         if (!dummy.bind()
             || writeDatagram(0,0, d->data->controlSocket->localAddress(), dummy.localPort()) != 0
@@ -1531,8 +1540,13 @@ qint64 QSocks5SocketEngine::write(const char *data, qint64 len)
             // ### Handle this error.
         }
 
-        d->data->controlSocket->write(sealedBuf);
+        qint64 written = d->data->controlSocket->write(sealedBuf);
+        if (written <= 0) {
+            QSOCKS5_Q_DEBUG << "native write returned" << written;
+            return written;
+        }
         d->data->controlSocket->waitForBytesWritten(0);
+        //NB: returning len rather than written for the OK case, because the "sealing" may increase the length
         return len;
 #ifndef QT_NO_UDPSOCKET
     } else if (d->mode == QSocks5SocketEnginePrivate::UdpAssociateMode) {

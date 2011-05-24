@@ -8,29 +8,29 @@
 ## This file is part of the test suite of the Qt Toolkit.
 ##
 ## $QT_BEGIN_LICENSE:LGPL$
-## No Commercial Usage
-## This file contains pre-release code and may not be distributed.
-## You may use this file in accordance with the terms and conditions
-## contained in the Technology Preview License Agreement accompanying
-## this package.
-##
 ## GNU Lesser General Public License Usage
-## Alternatively, this file may be used under the terms of the GNU Lesser
-## General Public License version 2.1 as published by the Free Software
-## Foundation and appearing in the file LICENSE.LGPL included in the
-## packaging of this file.  Please review the following information to
-## ensure the GNU Lesser General Public License version 2.1 requirements
-## will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+## This file may be used under the terms of the GNU Lesser General Public
+## License version 2.1 as published by the Free Software Foundation and
+## appearing in the file LICENSE.LGPL included in the packaging of this
+## file. Please review the following information to ensure the GNU Lesser
+## General Public License version 2.1 requirements will be met:
+## http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 ##
 ## In addition, as a special exception, Nokia gives you certain additional
-## rights.  These rights are described in the Nokia Qt LGPL Exception
+## rights. These rights are described in the Nokia Qt LGPL Exception
 ## version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 ##
-## If you have questions regarding the use of this file, please contact
-## Nokia at qt-info@nokia.com.
+## GNU General Public License Usage
+## Alternatively, this file may be used under the terms of the GNU General
+## Public License version 3.0 as published by the Free Software Foundation
+## and appearing in the file LICENSE.GPL included in the packaging of this
+## file. Please review the following information to ensure the GNU General
+## Public License version 3.0 requirements will be met:
+## http://www.gnu.org/copyleft/gpl.html.
 ##
-##
-##
+## Other Usage
+## Alternatively, this file may be used in accordance with the terms and
+## conditions contained in a signed written agreement between you and Nokia.
 ##
 ##
 ##
@@ -86,6 +86,48 @@ def findChild(parent, tag_name, arg_name=None, arg_value=None, draft=None):
                 continue
         return node
     return False
+
+def findTagsInFile(file, path):
+    doc = False
+    if doc_cache.has_key(file):
+        doc = doc_cache[file]
+    else:
+        doc = xml.dom.minidom.parse(file)
+        doc_cache[file] = doc
+
+    elt = doc.documentElement
+    tag_spec_list = path.split("/")
+    last_entry = None
+    for i in range(len(tag_spec_list)):
+        tag_spec = tag_spec_list[i]
+        tag_name = tag_spec
+        arg_name = 'type'
+        arg_value = ''
+        left_bracket = tag_spec.find('[')
+        if left_bracket != -1:
+            tag_name = tag_spec[:left_bracket]
+            arg_value = tag_spec[left_bracket+1:-1].split("=")
+            if len(arg_value) == 2:
+                arg_name = arg_value[0]
+                arg_value = arg_value[1]
+            else:
+                arg_value = arg_value[0]
+        elt = findChild(elt, tag_name, arg_name, arg_value)
+        if not elt:
+            return None
+    ret = []
+    if elt.childNodes:
+        for node in elt.childNodes:
+            if node.attributes:
+                element = [node.nodeName, None]
+                element[1] = node.attributes.items()
+                ret.append(element)
+    else:
+        if elt.attributes:
+            element = [elt.nodeName, None]
+            element[1] = elt.attributes.items()
+            ret.append(element)
+    return ret
 
 def _findEntryInFile(file, path, draft=None, attribute=None):
     doc = False

@@ -58,7 +58,7 @@ SUBDIRS=\
     qfontdialog \
     qfontmetrics \
     qformlayout \
-    qglyphs \
+    qglyphrun \
     qgraphicsanchorlayout \
     qgraphicsanchorlayout1 \
     qgraphicseffect \
@@ -84,6 +84,7 @@ SUBDIRS=\
     qheaderview \
     qicoimageformat \
     qicon \
+    qidentityproxymodel \
     qimageiohandler \
     qimagereader \
     qimagewriter \
@@ -114,9 +115,6 @@ SUBDIRS=\
     qmovie \
     qvolatileimage \
     qnetworkaccessmanager_and_qprogressdialog \
-    qnetworkcachemetadata \
-    qnetworkdiskcache \
-    qnetworkreply \
     qpaintengine \
     qpainterpath \
     qpainterpathstroker \
@@ -139,11 +137,11 @@ SUBDIRS=\
     qpushbutton \
     qquaternion \
     qradiobutton \
+    qrawfont \
     qregexpvalidator \
     qregion \
     qscrollarea \
     qscrollbar \
-    qscroller \
     qsharedpointer_and_qwidget \
     qshortcut \
     qsidebar \
@@ -169,7 +167,6 @@ SUBDIRS=\
     qtabbar \
     qtableview \
     qtablewidget \
-    qtcpserver \
     qtcpsocket \
     qtessellator \
     qtextblock \
@@ -196,7 +193,6 @@ SUBDIRS=\
     qtreeview \
     qtreewidget \
     qtreewidgetitemiterator \
-    qudpsocket \
     qundogroup \
     qundostack \
     qvectornd \

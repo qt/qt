@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -69,7 +69,8 @@ void Receiver::received ()
 	::Step++;
 	const int stepCopy = ::Step;
 	TRACE (stepCopy, "Receiver::received()");
-	Q_ASSERT (::Step == 2 || ::Step == 4);
+	if (::Step != 2 && ::Step != 4)
+		qFatal("%s: Incorrect Step: %d (should be 2 or 4)", Q_FUNC_INFO, ::Step);
 
 	if (::Step == 2)
 		s->fire ();
@@ -91,7 +92,8 @@ void Disconnector::received ()
 	::Step++;
 	const int stepCopy = ::Step;
 	TRACE (stepCopy, "Disconnector::received()");
-	Q_ASSERT (::Step == 5 || ::Step == 6);
+	if (::Step != 5 && ::Step != 6)
+		qFatal("%s: Incorrect Step: %d (should be 5 or 6)", Q_FUNC_INFO, ::Step);
 
 	fprintf (stderr, "Disconnector<%s>::received() sender=%s\n",
 		(const char *) objectName ().toAscii (), sender ()->metaObject()->className());
@@ -124,7 +126,8 @@ void Sender::fire ()
 	::Step++;
 	const int stepCopy = ::Step;
 	TRACE (stepCopy, "Sender::fire()");
-	Q_ASSERT (::Step == 1 || ::Step == 3);
+	if (::Step != 1 && ::Step != 3)
+		qFatal("%s: Incorrect Step: %d (should be 1 or 3)", Q_FUNC_INFO, ::Step);
 
 	emit fired ();
 	TRACE (stepCopy, "ends Sender::fire()");

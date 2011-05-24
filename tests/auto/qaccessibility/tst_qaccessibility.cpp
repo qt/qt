@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -245,10 +245,13 @@ private slots:
     void actionText();
     void doAction();
 
+    void applicationTest();
+    void mainWindowTest();
     void buttonTest();
     void sliderTest();
     void scrollBarTest();
     void tabTest();
+    void tabWidgetTest();
     void menuTest();
     void spinBoxTest();
     void doubleSpinBoxTest();
@@ -323,68 +326,15 @@ QString eventName(const int ev)
     }
 }
 
-static QString stateNames(int state)
-{
-    QString stateString;
-    if (state == 0x00000000) stateString += " Normal";
-    if (state & 0x00000001) stateString += " Unavailable";
-    if (state & 0x00000002) stateString += " Selected";
-    if (state & 0x00000004) stateString += " Focused";
-    if (state & 0x00000008) stateString += " Pressed";
-    if (state & 0x00000010) stateString += " Checked";
-    if (state & 0x00000020) stateString += " Mixed";
-    if (state & 0x00000040) stateString += " ReadOnly";
-    if (state & 0x00000080) stateString += " HotTracked";
-    if (state & 0x00000100) stateString += " DefaultButton";
-    if (state & 0x00000200) stateString += " Expanded";
-    if (state & 0x00000400) stateString += " Collapsed";
-    if (state & 0x00000800) stateString += " Busy";
-    if (state & 0x00001000) stateString += " Floating";
-    if (state & 0x00002000) stateString += " Marqueed";
-    if (state & 0x00004000) stateString += " Animated";
-    if (state & 0x00008000) stateString += " Invisible";
-    if (state & 0x00010000) stateString += " Offscreen";
-    if (state & 0x00020000) stateString += " Sizeable";
-    if (state & 0x00040000) stateString += " Moveable";
-    if (state & 0x00080000) stateString += " SelfVoicing";
-    if (state & 0x00100000) stateString += " Focusable";
-    if (state & 0x00200000) stateString += " Selectable";
-    if (state & 0x00400000) stateString += " Linked";
-    if (state & 0x00800000) stateString += " Traversed";
-    if (state & 0x01000000) stateString += " MultiSelectable";
-    if (state & 0x02000000) stateString += " ExtSelectable";
-    if (state & 0x04000000) stateString += " AlertLow";
-    if (state & 0x08000000) stateString += " AlertMedium";
-    if (state & 0x10000000) stateString += " AlertHigh";
-    if (state & 0x20000000) stateString += " Protected";
-    if (state & 0x3fffffff) stateString += " Valid";
-
-    if (stateString.isEmpty())
-        stateString = "Unknown state " + QString::number(state);
-
-    return stateString;
-}
-
 QAccessible::State state(QWidget * const widget)
 {
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(widget);
-    Q_ASSERT(iface);
-    QAccessible::State state = iface->state(0);
+    if (!iface)
+        qWarning() << "Cannot get QAccessibleInterface for widget";
+    QAccessible::State state = (iface ? iface->state(0) : static_cast<QAccessible::State>(0));
     delete iface;
     return state;
 }
-
-void printState(QWidget * const widget)
-{
-    qDebug() << "State for" << widget->metaObject()->className() << stateNames(state(widget));
-}
-
-void printState(QAccessibleInterface * const iface, const int child = 0)
-{
-    qDebug() << "State for" << iface->object()->metaObject()->className() << "child" << child
-             <<  iface->text(QAccessible::Name, child) << stateNames(iface->state(child));
-}
-
 
 class QtTestAccessibleWidget: public QWidget
 {
@@ -400,7 +350,6 @@ public:
     }
 };
 
-#ifdef QTEST_ACCESSIBILITY
 class QtTestAccessibleWidgetIface: public QAccessibleWidget
 {
 public:
@@ -418,7 +367,6 @@ public:
         return 0;
     }
 };
-#endif
 
 tst_QAccessibility::tst_QAccessibility()
 {
@@ -430,17 +378,13 @@ tst_QAccessibility::~tst_QAccessibility()
 
 void tst_QAccessibility::initTestCase()
 {
-#ifdef QTEST_ACCESSIBILITY
     QTestAccessibility::initialize();
     QAccessible::installFactory(QtTestAccessibleWidgetIface::ifaceFactory);
-#endif
 }
 
 void tst_QAccessibility::cleanupTestCase()
 {
-#ifdef QTEST_ACCESSIBILITY
     QTestAccessibility::cleanup();
-#endif
 }
 
 void tst_QAccessibility::init()
@@ -450,7 +394,6 @@ void tst_QAccessibility::init()
 
 void tst_QAccessibility::cleanup()
 {
-#ifdef QTEST_ACCESSIBILITY
     const EventList list = QTestAccessibility::events();
     if (!list.isEmpty()) {
         qWarning("%d accessibility event(s) were not handled in testfunction '%s':", list.count(),
@@ -460,14 +403,10 @@ void tst_QAccessibility::cleanup()
                      eventName(list.at(i).event).toAscii().constData(), list.at(i).event, list.at(i).child);
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::eventTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QPushButton* button = new QPushButton(0);
     button->setObjectName(QString("Olaf"));
 
@@ -479,18 +418,19 @@ void tst_QAccessibility::eventTest()
     QVERIFY_EVENT(button, 0, QAccessible::StateChanged);
     QVERIFY_EVENT(button, 0, QAccessible::StateChanged);
 
+    button->setAccessibleName("Olaf the second");
+    QVERIFY_EVENT(button, 0, QAccessible::NameChanged);
+    button->setAccessibleDescription("This is a button labeled Olaf");
+    QVERIFY_EVENT(button, 0, QAccessible::DescriptionChanged);
+
     button->hide();
     QVERIFY_EVENT(button, 0, QAccessible::ObjectHide);
 
     delete button;
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::customWidget()
 {
-#ifdef QTEST_ACCESSIBILITY
     QtTestAccessibleWidget* widget = new QtTestAccessibleWidget(0, "Heinz");
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(widget);
@@ -502,14 +442,10 @@ void tst_QAccessibility::customWidget()
 
     delete iface;
     delete widget;
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::deletedWidget()
 {
-#ifdef QTEST_ACCESSIBILITY
     QtTestAccessibleWidget *widget = new QtTestAccessibleWidget(0, "Ralf");
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(widget);
     QVERIFY(iface != 0);
@@ -520,9 +456,6 @@ void tst_QAccessibility::deletedWidget()
     widget = 0;
     QVERIFY(!iface->isValid());
     delete iface;
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 QWidget *tst_QAccessibility::createGUI()
@@ -531,7 +464,6 @@ QWidget *tst_QAccessibility::createGUI()
     qWarning( "Should never get here without Qt3Support");
     return 0;
 #else
-#  ifdef QTEST_ACCESSIBILITY
     QWidget *toplevel = new QWidget(0, Qt::X11BypassWindowManagerHint);
     QGridLayout *grid = new QGridLayout(toplevel, 2, 2);
 
@@ -603,10 +535,6 @@ QWidget *tst_QAccessibility::createGUI()
     radioAM->setFocus();
     QTestAccessibility::clearEvents();
     return toplevel;
-#  else
-    Q_ASSERT(0); // this function cannot be called without accessibility support
-    return 0;
-#  endif
 #endif // !QT3_SUPPORT
 }
 
@@ -615,7 +543,6 @@ void tst_QAccessibility::childAt()
 #if !defined(QT3_SUPPORT)
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     QWidget *toplevel = createGUI();
     QAccessibleInterface *acc_toplevel = QAccessible::queryAccessibleInterface(toplevel);
     QVERIFY(acc_toplevel);
@@ -647,9 +574,6 @@ void tst_QAccessibility::childAt()
     delete acc_toplevel;
     delete toplevel;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif // !QT3_SUPPORT
 }
 
@@ -658,7 +582,6 @@ void tst_QAccessibility::childCount()
 #if !defined(QT3_SUPPORT)
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     QWidget *toplevel = createGUI();
     QObject *topLeft = toplevel->child("topLeft");
     QObject *topRight = toplevel->child("topRight");
@@ -691,9 +614,6 @@ void tst_QAccessibility::childCount()
     delete acc_bottomRight;
     delete toplevel;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif // !QT3_SUPPORT
 }
 
@@ -702,7 +622,6 @@ void tst_QAccessibility::relationTo()
 #if !defined(QT3_SUPPORT)
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     QWidget *toplevel = createGUI();
     toplevel->resize(400,300);
     QObject *topLeft = toplevel->child("topLeft");
@@ -908,15 +827,11 @@ void tst_QAccessibility::relationTo()
     delete toplevel;
 
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif // !QT3_SUPPORT
 }
 
 void tst_QAccessibility::navigateGeometric()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     static const int skip = 20; //speed the test up significantly
     static const double step = Q_PI / 180;
@@ -1012,14 +927,10 @@ void tst_QAccessibility::navigateGeometric()
     delete w;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::navigateSlider()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QSlider *slider = new QSlider(0);
     slider->setObjectName(QString("Slidy"));
@@ -1046,14 +957,10 @@ void tst_QAccessibility::navigateSlider()
     delete slider;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::navigateCovered()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QWidget *w = new QWidget(0);
     w->setObjectName(QString("Harry"));
@@ -1156,14 +1063,10 @@ void tst_QAccessibility::navigateCovered()
     delete w;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::navigateHierarchy()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QWidget *w = new QWidget(0);
     w->setObjectName(QString("Hans"));
@@ -1259,9 +1162,6 @@ void tst_QAccessibility::navigateHierarchy()
     delete w;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 #define QSETCOMPARE(thetypename, elements, otherelements) \
@@ -1272,7 +1172,6 @@ void tst_QAccessibility::navigateControllers()
 #if !defined(QT3_SUPPORT)
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     {
     Q3VBox vbox;
     QSlider     slider(&vbox);
@@ -1355,9 +1254,6 @@ void tst_QAccessibility::navigateControllers()
     delete acc_slider;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif // !QT3_SUPPORT
 }
 
@@ -1366,7 +1262,6 @@ void tst_QAccessibility::navigateLabels()
 #if !defined(QT3_SUPPORT)
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     {
     Q3VBox vbox;
     Q3HBox hbox(&vbox);
@@ -1488,9 +1383,6 @@ void tst_QAccessibility::navigateLabels()
     delete acc_lineedit3;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif // !QT3_SUPPORT
 }
 
@@ -1542,7 +1434,6 @@ static QWidget *createWidgets()
 
 void tst_QAccessibility::accessibleName()
 {
-#ifdef QTEST_ACCESSIBILITY
     QWidget *toplevel = createWidgets();
     toplevel->show();
 #if defined(Q_WS_X11)
@@ -1567,9 +1458,6 @@ void tst_QAccessibility::accessibleName()
 
     delete toplevel;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::text()
@@ -1577,7 +1465,6 @@ void tst_QAccessibility::text()
 #if !defined(QT3_SUPPORT)
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     QWidget *toplevel = createGUI();
     toplevel->show();
 #if defined(Q_WS_X11)
@@ -1673,10 +1560,6 @@ void tst_QAccessibility::text()
 
     delete toplevel;
     QTestAccessibility::clearEvents();
-
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif // !QT3_SUPPORT
 }
 
@@ -1685,7 +1568,6 @@ void tst_QAccessibility::setText()
 #if !defined(QT3_SUPPORT)
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     QWidget *toplevel = createGUI();
     toplevel->show();
     QObject *bottomLeft = toplevel->findChild<QObject *>("bottomLeft");
@@ -1709,16 +1591,11 @@ void tst_QAccessibility::setText()
     delete acc_lineedit;
     delete toplevel;
     QTestAccessibility::clearEvents();
-
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif //QT3_SUPPORT
 }
 
 void tst_QAccessibility::hideShowTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QWidget * const window = new QWidget();
     QWidget * const child = new QWidget(window);
 
@@ -1745,14 +1622,10 @@ void tst_QAccessibility::hideShowTest()
 
     delete window;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::userActionCount()
 {
-#ifdef QTEST_ACCESSIBILITY
     QWidget widget;
 
     QAccessibleInterface *test = QAccessible::queryAccessibleInterface(&widget);
@@ -1782,18 +1655,14 @@ void tst_QAccessibility::userActionCount()
     QCOMPARE(test->userActionCount(1), 0);
     QCOMPARE(test->userActionCount(-1), 0);
     delete test; test = 0;
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::actionText()
 {
-#ifdef QTEST_ACCESSIBILITY
-    QWidget widget;
-    widget.show();
+    QWidget *widget = new QWidget;
+    widget->show();
 
-    QAccessibleInterface *test = QAccessible::queryAccessibleInterface(&widget);
+    QAccessibleInterface *test = QAccessible::queryAccessibleInterface(widget);
     QVERIFY(test);
     QVERIFY(test->isValid());
 
@@ -1805,65 +1674,101 @@ void tst_QAccessibility::actionText()
     QCOMPARE(test->actionText(QAccessible::DefaultAction, QAccessible::Name, 0), QString("SetFocus"));
     QCOMPARE(test->actionText(QAccessible::SetFocus, QAccessible::Name, 0), QString("SetFocus"));
 
-    delete test; test = 0;
+    delete test;
+    delete widget;
 
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
+    QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::doAction()
 {
-#ifdef QTEST_ACCESSIBILITY
     QSKIP("TODO: Implement me", SkipAll);
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
+
+void tst_QAccessibility::applicationTest()
+{
+    QLatin1String name = QLatin1String("My Name");
+    qApp->setApplicationName(name);
+    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(qApp);
+    QCOMPARE(interface->text(QAccessible::Name, 0), name);
+    QCOMPARE(interface->role(0), QAccessible::Application);
+    delete interface;
+}
+
+void tst_QAccessibility::mainWindowTest()
+{
+    QMainWindow mw;
+    mw.resize(300, 200);
+    mw.show(); // triggers layout
+
+    QLatin1String name = QLatin1String("I am the main window");
+    mw.setWindowTitle(name);
+    QTest::qWaitForWindowShown(&mw);
+
+    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&mw);
+    QCOMPARE(interface->text(QAccessible::Name, 0), name);
+    QCOMPARE(interface->role(0), QAccessible::Window);
+    delete interface;
+}
+
+class CounterButton : public QPushButton {
+    Q_OBJECT
+public:
+    CounterButton(const QString& name, QWidget* parent)
+        : QPushButton(name, parent), clickCount(0)
+    {
+        connect(this, SIGNAL(clicked(bool)), SLOT(incClickCount()));
+    }
+    int clickCount;
+public Q_SLOTS:
+    void incClickCount() {
+        ++clickCount;
+    }
+};
 
 void tst_QAccessibility::buttonTest()
 {
-//#ifdef QTEST_ACCESSIBILITY
-#if 0
-    QAccessibleInterface *test = 0;
-    Q3VBox vbox;
+    QWidget window;
+    window.setLayout(new QVBoxLayout);
 
     // Standard push button
-    QPushButton pushButton("Ok", &vbox);
+    CounterButton pushButton("Ok", &window);
 
-    // toggle push button
-    QPushButton togglepush("Toggle", &vbox);
-    togglepush.setToggleButton(TRUE);
-
-    // push button with a menu
-    QPushButton menuButton("Menu", &vbox);
-    Q3PopupMenu buttonMenu(&menuButton);
-    buttonMenu.insertItem("Some item");
-    menuButton.setPopup(&buttonMenu);
+    // toggle button
+    QPushButton toggleButton("Toggle", &window);
+    toggleButton.setCheckable(true);
 
     // standard checkbox
-    QCheckBox checkBox("Check me!", &vbox);
+    QCheckBox checkBox("Check me!", &window);
 
     // tristate checkbox
-    QCheckBox tristate("Tristate!", &vbox);
+    QCheckBox tristate("Tristate!", &window);
     tristate.setTristate(TRUE);
 
     // radiobutton
-    QRadioButton radio("Radio me!", &vbox);
+    QRadioButton radio("Radio me!", &window);
 
     // standard toolbutton
-    QToolButton toolbutton(&vbox);
+    QToolButton toolbutton(&window);
     toolbutton.setText("Tool");
     toolbutton.setMinimumSize(20,20);
 
     // standard toolbutton
-    QToolButton toggletool(&vbox);
-    toggletool.setToggleButton(TRUE);
+    QToolButton toggletool(&window);
+    toggletool.setCheckable(true);
     toggletool.setText("Toggle");
     toggletool.setMinimumSize(20,20);
 
+#if 0
+    // QT3_SUPPORT
+    // push button with a menu
+    QPushButton menuButton("Menu", &window);
+    Q3PopupMenu buttonMenu(&menuButton);
+    buttonMenu.insertItem("Some item");
+    menuButton.setPopup(&buttonMenu);
+
     // menu toolbutton
-    QToolButton menuToolButton(&vbox);
+    QToolButton menuToolButton(&window);
     menuToolButton.setText("Menu Tool");
     Q3PopupMenu toolMenu(&menuToolButton);
     toolMenu.insertItem("Some item");
@@ -1871,142 +1776,146 @@ void tst_QAccessibility::buttonTest()
     menuToolButton.setMinimumSize(20,20);
 
     // splitted menu toolbutton
-    QToolButton splitToolButton(&vbox);
+    QToolButton splitToolButton(&window);
     splitToolButton.setTextLabel("Split Tool");
     Q3PopupMenu splitMenu(&splitToolButton);
     splitMenu.insertItem("Some item");
     splitToolButton.setPopup(&splitMenu);
     splitToolButton.setPopupDelay(0);
     splitToolButton.setMinimumSize(20,20);
+#endif
 
     // test push button
-    QVERIFY(QAccessible::queryAccessibleInterface(&pushButton, &test));
-    QCOMPARE(test->role(0), QAccessible::PushButton);
-    QCOMPARE(test->defaultAction(0), QAccessible::Press);
-    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Press"));
-    QCOMPARE(test->state(0), (int)QAccessible::Normal);
-    pushButton.setDown(TRUE);
-    QCOMPARE(test->state(0), (int)QAccessible::Pressed);
-    QVERIFY(test->doAction(QAccessible::Press, 0));
-    QTest::qWait(500);
-    QCOMPARE(test->state(0), (int)QAccessible::Normal);
-    test->release();
+    QAccessibleInterface* interface = QAccessible::queryAccessibleInterface(&pushButton);
+    QAccessibleActionInterface* actionInterface = interface->actionInterface();
+    QVERIFY(actionInterface != 0);
 
-    // test toggle push button
-    QVERIFY(QAccessible::queryAccessibleInterface(&togglepush, &test));
-    QCOMPARE(test->role(0), QAccessible::CheckBox);
-    QCOMPARE(test->defaultAction(0), QAccessible::Press);
-    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Check"));
-    QCOMPARE(test->state(0), (int)QAccessible::Normal);
-    QVERIFY(test->doAction(QAccessible::Press, 0));
-    QTest::qWait(500);
-    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Uncheck"));
-    QCOMPARE(test->state(0), (int)QAccessible::Checked);
-    test->release();
+    QCOMPARE(interface->role(0), QAccessible::PushButton);
 
-    // test menu push button
-    QVERIFY(QAccessible::queryAccessibleInterface(&menuButton, &test));
-    QCOMPARE(test->role(0), QAccessible::ButtonMenu);
-    QCOMPARE(test->defaultAction(0), QAccessible::Press);
-    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Open"));
-    QCOMPARE(test->state(0), (int)QAccessible::HasPopup);
-    test->release();
+    // currently our buttons only have click as action, press and release are missing
+    QCOMPARE(actionInterface->actionCount(), 1);
+    QCOMPARE(actionInterface->name(0), QString("Press"));
+    QCOMPARE(pushButton.clickCount, 0);
+    actionInterface->doAction(0);
+    QTest::qWait(500);
+    QCOMPARE(pushButton.clickCount, 1);
+    delete interface;
+
+    // test toggle button
+    interface = QAccessible::queryAccessibleInterface(&toggleButton);
+    actionInterface = interface->actionInterface();
+    QCOMPARE(interface->role(0), QAccessible::CheckBox);
+    QCOMPARE(actionInterface->description(0), QString("Toggles the button."));
+    QCOMPARE(actionInterface->name(0), QString("Check"));
+    QVERIFY(!toggleButton.isChecked());
+    QVERIFY((interface->state(0) & QAccessible::Checked) == 0);
+    actionInterface->doAction(0);
+    QTest::qWait(500);
+    QCOMPARE(actionInterface->name(0), QString("Uncheck"));
+    QVERIFY(toggleButton.isChecked());
+    QVERIFY((interface->state(0) & QAccessible::Checked));
+    delete interface;
+
+//    // test menu push button
+//    QVERIFY(QAccessible::queryAccessibleInterface(&menuButton, &test));
+//    QCOMPARE(test->role(0), QAccessible::ButtonMenu);
+//    QCOMPARE(test->defaultAction(0), QAccessible::Press);
+//    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Open"));
+//    QCOMPARE(test->state(0), (int)QAccessible::HasPopup);
+//    test->release();
 
     // test check box
-    QVERIFY(QAccessible::queryAccessibleInterface(&checkBox, &test));
-    QCOMPARE(test->role(0), QAccessible::CheckBox);
-    QCOMPARE(test->defaultAction(0), QAccessible::Press);
-    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Check"));
-    QCOMPARE(test->state(0), (int)QAccessible::Normal);
-    QVERIFY(test->doAction(QAccessible::Press, 0));
+    interface = QAccessible::queryAccessibleInterface(&checkBox);
+    actionInterface = interface->actionInterface();
+    QCOMPARE(interface->role(0), QAccessible::CheckBox);
+    QCOMPARE(actionInterface->name(0), QString("Check"));
+    QVERIFY((interface->state(0) & QAccessible::Checked) == 0);
+    actionInterface->doAction(0);
     QTest::qWait(500);
-    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Uncheck"));
-    QCOMPARE(test->state(0), (int)QAccessible::Checked);
-    test->release();
+    QCOMPARE(actionInterface->name(0), QString("Uncheck"));
+    QVERIFY(interface->state(0) & QAccessible::Checked);
+    QVERIFY(checkBox.isChecked());
+    delete interface;
 
-    // test tristate check box
-    QVERIFY(QAccessible::queryAccessibleInterface(&tristate, &test));
-    QCOMPARE(test->role(0), QAccessible::CheckBox);
-    QCOMPARE(test->defaultAction(0), QAccessible::Press);
-    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Toggle"));
-    QCOMPARE(test->state(0), (int)QAccessible::Normal);
-    QVERIFY(test->doAction(QAccessible::Press, 0));
-    QTest::qWait(500);
-    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Check"));
-    QCOMPARE(test->state(0), (int)QAccessible::Mixed);
-    QVERIFY(test->doAction(QAccessible::Press, 0));
-    QTest::qWait(500);
-    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Uncheck"));
-    QCOMPARE(test->state(0), (int)QAccessible::Checked);
-    test->release();
+//    // test tristate check box
+//    QVERIFY(QAccessible::queryAccessibleInterface(&tristate, &test));
+//    QCOMPARE(test->role(0), QAccessible::CheckBox);
+//    QCOMPARE(test->defaultAction(0), QAccessible::Press);
+//    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Toggle"));
+//    QCOMPARE(test->state(0), (int)QAccessible::Normal);
+//    QVERIFY(test->doAction(QAccessible::Press, 0));
+//    QTest::qWait(500);
+//    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Check"));
+//    QCOMPARE(test->state(0), (int)QAccessible::Mixed);
+//    QVERIFY(test->doAction(QAccessible::Press, 0));
+//    QTest::qWait(500);
+//    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Uncheck"));
+//    QCOMPARE(test->state(0), (int)QAccessible::Checked);
+//    test->release();
 
     // test radiobutton
-    QVERIFY(QAccessible::queryAccessibleInterface(&radio, &test));
-    QCOMPARE(test->role(0), QAccessible::RadioButton);
-    QCOMPARE(test->defaultAction(0), QAccessible::Press);
-    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Check"));
-    QCOMPARE(test->state(0), (int)QAccessible::Normal);
-    QVERIFY(test->doAction(QAccessible::Press, 0));
+    interface = QAccessible::queryAccessibleInterface(&radio);
+    actionInterface = interface->actionInterface();
+    QCOMPARE(interface->role(0), QAccessible::RadioButton);
+    QCOMPARE(actionInterface->name(0), QString("Check"));
+    QVERIFY((interface->state(0) & QAccessible::Checked) == 0);
+    actionInterface->doAction(0);
     QTest::qWait(500);
-    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Check"));
-    QCOMPARE(test->state(0), (int)QAccessible::Checked);
-    test->release();
+    QCOMPARE(actionInterface->name(0), QString("Uncheck"));
+    QVERIFY(interface->state(0) & QAccessible::Checked);
+    QVERIFY(checkBox.isChecked());
+    delete interface;
 
-    // test standard toolbutton
-    QVERIFY(QAccessible::queryAccessibleInterface(&toolbutton, &test));
-    QCOMPARE(test->role(0), QAccessible::PushButton);
-    QCOMPARE(test->defaultAction(0), QAccessible::Press);
-    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Press"));
-    QCOMPARE(test->state(0), (int)QAccessible::Normal);
-    test->release();
+//    // test standard toolbutton
+//    QVERIFY(QAccessible::queryAccessibleInterface(&toolbutton, &test));
+//    QCOMPARE(test->role(0), QAccessible::PushButton);
+//    QCOMPARE(test->defaultAction(0), QAccessible::Press);
+//    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Press"));
+//    QCOMPARE(test->state(0), (int)QAccessible::Normal);
+//    test->release();
 
-    // toggle tool button
-    QVERIFY(QAccessible::queryAccessibleInterface(&toggletool, &test));
-    QCOMPARE(test->role(0), QAccessible::CheckBox);
-    QCOMPARE(test->defaultAction(0), QAccessible::Press);
-    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Check"));
-    QCOMPARE(test->state(0), (int)QAccessible::Normal);
-    QVERIFY(test->doAction(QAccessible::Press, 0));
-    QTest::qWait(500);
-    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Uncheck"));
-    QCOMPARE(test->state(0), (int)QAccessible::Checked);
-    test->release();
+//    // toggle tool button
+//    QVERIFY(QAccessible::queryAccessibleInterface(&toggletool, &test));
+//    QCOMPARE(test->role(0), QAccessible::CheckBox);
+//    QCOMPARE(test->defaultAction(0), QAccessible::Press);
+//    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Check"));
+//    QCOMPARE(test->state(0), (int)QAccessible::Normal);
+//    QVERIFY(test->doAction(QAccessible::Press, 0));
+//    QTest::qWait(500);
+//    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Uncheck"));
+//    QCOMPARE(test->state(0), (int)QAccessible::Checked);
+//    test->release();
 
-    // test menu toolbutton
-    QVERIFY(QAccessible::queryAccessibleInterface(&menuToolButton, &test));
-    QCOMPARE(test->role(0), QAccessible::ButtonMenu);
-    QCOMPARE(test->defaultAction(0), 1);
-    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Open"));
-    QCOMPARE(test->state(0), (int)QAccessible::HasPopup);
-    QCOMPARE(test->actionCount(0), 1);
-    QCOMPARE(test->actionText(QAccessible::Press, QAccessible::Name, 0), QString("Press"));
-    test->release();
+//    // test menu toolbutton
+//    QVERIFY(QAccessible::queryAccessibleInterface(&menuToolButton, &test));
+//    QCOMPARE(test->role(0), QAccessible::ButtonMenu);
+//    QCOMPARE(test->defaultAction(0), 1);
+//    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Open"));
+//    QCOMPARE(test->state(0), (int)QAccessible::HasPopup);
+//    QCOMPARE(test->actionCount(0), 1);
+//    QCOMPARE(test->actionText(QAccessible::Press, QAccessible::Name, 0), QString("Press"));
+//    test->release();
 
-    // test splitted menu toolbutton
-    QVERIFY(QAccessible::queryAccessibleInterface(&splitToolButton, &test));
-    QCOMPARE(test->childCount(), 2);
-    QCOMPARE(test->role(0), QAccessible::ButtonDropDown);
-    QCOMPARE(test->role(1), QAccessible::PushButton);
-    QCOMPARE(test->role(2), QAccessible::ButtonMenu);
-    QCOMPARE(test->defaultAction(0), QAccessible::Press);
-    QCOMPARE(test->defaultAction(1), QAccessible::Press);
-    QCOMPARE(test->defaultAction(2), QAccessible::Press);
-    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Press"));
-    QCOMPARE(test->state(0), (int)QAccessible::HasPopup);
-    QCOMPARE(test->actionCount(0), 1);
-    QCOMPARE(test->actionText(1, QAccessible::Name, 0), QString("Open"));
-    QCOMPARE(test->actionText(test->defaultAction(1), QAccessible::Name, 1), QString("Press"));
-    QCOMPARE(test->state(1), (int)QAccessible::Normal);
-    QCOMPARE(test->actionText(test->defaultAction(2), QAccessible::Name, 2), QString("Open"));
-    QCOMPARE(test->state(2), (int)QAccessible::HasPopup);
-    test->release();
+//    // test splitted menu toolbutton
+//    QVERIFY(QAccessible::queryAccessibleInterface(&splitToolButton, &test));
+//    QCOMPARE(test->childCount(), 2);
+//    QCOMPARE(test->role(0), QAccessible::ButtonDropDown);
+//    QCOMPARE(test->role(1), QAccessible::PushButton);
+//    QCOMPARE(test->role(2), QAccessible::ButtonMenu);
+//    QCOMPARE(test->defaultAction(0), QAccessible::Press);
+//    QCOMPARE(test->defaultAction(1), QAccessible::Press);
+//    QCOMPARE(test->defaultAction(2), QAccessible::Press);
+//    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Press"));
+//    QCOMPARE(test->state(0), (int)QAccessible::HasPopup);
+//    QCOMPARE(test->actionCount(0), 1);
+//    QCOMPARE(test->actionText(1, QAccessible::Name, 0), QString("Open"));
+//    QCOMPARE(test->actionText(test->defaultAction(1), QAccessible::Name, 1), QString("Press"));
+//    QCOMPARE(test->state(1), (int)QAccessible::Normal);
+//    QCOMPARE(test->actionText(test->defaultAction(2), QAccessible::Name, 2), QString("Open"));
+//    QCOMPARE(test->state(2), (int)QAccessible::HasPopup);
+//    test->release();
 
     QTestAccessibility::clearEvents();
-
-#else
-//    QSKIP("Test needs accessibility support.", SkipAll);
-    QSKIP("No action interface in Qt 4 yet.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::sliderTest()
@@ -2014,20 +1923,19 @@ void tst_QAccessibility::sliderTest()
 #if !defined(QT3_SUPPORT)
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     QAccessibleInterface *test = 0;
-    Q3VBox vbox;
-    QLabel labelHorizontal("Horizontal", &vbox);
-    QSlider sliderHorizontal(Qt::Horizontal, &vbox);
-    labelHorizontal.setBuddy(&sliderHorizontal);
+    Q3VBox *vbox = new Q3VBox;
+    QLabel *labelHorizontal = new QLabel("Horizontal", vbox);
+    QSlider *sliderHorizontal = new QSlider(Qt::Horizontal, vbox);
+    labelHorizontal->setBuddy(sliderHorizontal);
 
-    QLabel labelVertical("Vertical", &vbox);
-    QSlider sliderVertical(Qt::Vertical, &vbox);
-    labelVertical.setBuddy(&sliderVertical);
-    vbox.show();
+    QLabel *labelVertical = new QLabel("Vertical", vbox);
+    QSlider *sliderVertical = new QSlider(Qt::Vertical, vbox);
+    labelVertical->setBuddy(sliderVertical);
+    vbox->show();
 
     // test horizontal slider
-    test = QAccessible::queryAccessibleInterface(&sliderHorizontal);
+    test = QAccessible::queryAccessibleInterface(sliderHorizontal);
     QVERIFY(test);
     QCOMPARE(test->childCount(), 3);
     QCOMPARE(test->role(0), QAccessible::Slider);
@@ -2035,15 +1943,15 @@ void tst_QAccessibility::sliderTest()
     QCOMPARE(test->role(2), QAccessible::Indicator);
     QCOMPARE(test->role(3), QAccessible::PushButton);
 
-    QCOMPARE(test->text(QAccessible::Name, 0), labelHorizontal.text());
+    QCOMPARE(test->text(QAccessible::Name, 0), labelHorizontal->text());
     QCOMPARE(test->text(QAccessible::Name, 1), QSlider::tr("Page left"));
     QCOMPARE(test->text(QAccessible::Name, 2), QSlider::tr("Position"));
     QCOMPARE(test->text(QAccessible::Name, 3), QSlider::tr("Page right"));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal.value()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal->value()));
     QCOMPARE(test->text(QAccessible::Value, 1), QString());
-    QCOMPARE(test->text(QAccessible::Value, 2), QString::number(sliderHorizontal.value()));
+    QCOMPARE(test->text(QAccessible::Value, 2), QString::number(sliderHorizontal->value()));
     QCOMPARE(test->text(QAccessible::Value, 3), QString());
-// Skip acton tests.
+// Skip action tests.
 #if 0
     QCOMPARE(test->defaultAction(0), QAccessible::SetFocus);
     QCOMPARE(test->defaultAction(1), QAccessible::Press);
@@ -2055,26 +1963,26 @@ void tst_QAccessibility::sliderTest()
     QCOMPARE(test->actionText(QAccessible::Decrease, QAccessible::Name, 2), QSlider::tr("Decrease"));
     QCOMPARE(test->actionText(QAccessible::Press, QAccessible::Name, 3), QSlider::tr("Press"));
     QVERIFY(test->doAction(QAccessible::Press, 3));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal.pageStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal->pageStep()));
     QVERIFY(test->doAction(QAccessible::Press, 3));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(2*sliderHorizontal.pageStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(2*sliderHorizontal->pageStep()));
     QVERIFY(test->doAction(QAccessible::Press, 1));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal.pageStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal->pageStep()));
     QVERIFY(test->doAction(QAccessible::Press, 1));
     QCOMPARE(test->text(QAccessible::Value, 0), QString::number(0));
     QVERIFY(test->doAction(QAccessible::Increase, 2));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal.lineStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal->lineStep()));
     QVERIFY(test->doAction(QAccessible::Increase, 2));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(2*sliderHorizontal.lineStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(2*sliderHorizontal->lineStep()));
     QVERIFY(test->doAction(QAccessible::Decrease, 2));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal.lineStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal->lineStep()));
     QVERIFY(test->doAction(QAccessible::Decrease, 2));
     QCOMPARE(test->text(QAccessible::Value, 0), QString::number(0));
 #endif
     delete test;
 
     // test vertical slider
-    test = QAccessible::queryAccessibleInterface(&sliderVertical);
+    test = QAccessible::queryAccessibleInterface(sliderVertical);
     QVERIFY(test);
     QCOMPARE(test->childCount(), 3);
     QCOMPARE(test->role(0), QAccessible::Slider);
@@ -2082,15 +1990,15 @@ void tst_QAccessibility::sliderTest()
     QCOMPARE(test->role(2), QAccessible::Indicator);
     QCOMPARE(test->role(3), QAccessible::PushButton);
 
-    QCOMPARE(test->text(QAccessible::Name, 0), labelVertical.text());
+    QCOMPARE(test->text(QAccessible::Name, 0), labelVertical->text());
     QCOMPARE(test->text(QAccessible::Name, 1), QSlider::tr("Page up"));
     QCOMPARE(test->text(QAccessible::Name, 2), QSlider::tr("Position"));
     QCOMPARE(test->text(QAccessible::Name, 3), QSlider::tr("Page down"));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical.value()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical->value()));
     QCOMPARE(test->text(QAccessible::Value, 1), QString());
-    QCOMPARE(test->text(QAccessible::Value, 2), QString::number(sliderVertical.value()));
+    QCOMPARE(test->text(QAccessible::Value, 2), QString::number(sliderVertical->value()));
     QCOMPARE(test->text(QAccessible::Value, 3), QString());
-// Skip acton tests.
+// Skip action tests.
 #if 0
     QCOMPARE(test->defaultAction(0), QAccessible::SetFocus);
     QCOMPARE(test->defaultAction(1), QAccessible::Press);
@@ -2102,23 +2010,28 @@ void tst_QAccessibility::sliderTest()
     QCOMPARE(test->actionText(QAccessible::Decrease, QAccessible::Name, 2), QSlider::tr("Decrease"));
     QCOMPARE(test->actionText(QAccessible::Press, QAccessible::Name, 3), QSlider::tr("Press"));
     QVERIFY(test->doAction(QAccessible::Press, 3));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical.pageStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical->pageStep()));
     QVERIFY(test->doAction(QAccessible::Press, 3));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(2*sliderVertical.pageStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(2*sliderVertical->pageStep()));
     QVERIFY(test->doAction(QAccessible::Press, 1));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical.pageStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical->pageStep()));
     QVERIFY(test->doAction(QAccessible::Press, 1));
     QCOMPARE(test->text(QAccessible::Value, 0), QString::number(0));
     QVERIFY(test->doAction(QAccessible::Increase, 2));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical.lineStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical->lineStep()));
     QVERIFY(test->doAction(QAccessible::Increase, 2));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(2*sliderVertical.lineStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(2*sliderVertical->lineStep()));
     QVERIFY(test->doAction(QAccessible::Decrease, 2));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical.lineStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical->lineStep()));
     QVERIFY(test->doAction(QAccessible::Decrease, 2));
     QCOMPARE(test->text(QAccessible::Value, 0), QString::number(0));
 #endif
     delete test;
+    delete sliderHorizontal;
+    delete sliderVertical;
+    delete labelHorizontal;
+    delete labelVertical;
+    delete vbox;
 
     // Test that when we hide() a slider, the PageLeft, Indicator, and PageRight also gets the
     // Invisible state bit set.
@@ -2201,17 +2114,12 @@ void tst_QAccessibility::sliderTest()
         delete sliderInterface;
     }
 
-
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif //!QT3_SUPPORT
 }
 
 void tst_QAccessibility::scrollBarTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     // Test that when we hide() a slider, the PageLeft, Indicator, and PageRight also gets the
     // Invisible state bit set.
     enum SubControls { LineUp = 1,
@@ -2219,7 +2127,7 @@ void tst_QAccessibility::scrollBarTest()
         Position = 3,
         PageDown = 4,
         LineDown = 5
- };
+    };
 
     QScrollBar *scrollBar  = new QScrollBar();
     QAccessibleInterface * const scrollBarInterface = QAccessible::queryAccessibleInterface(scrollBar);
@@ -2301,15 +2209,10 @@ void tst_QAccessibility::scrollBarTest()
     }
 
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
-
 }
 
 void tst_QAccessibility::tabTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QTabBar *tabBar = new QTabBar();
     tabBar->show();
 
@@ -2345,14 +2248,99 @@ void tst_QAccessibility::tabTest()
     delete tabBar;
     delete interface;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
+}
+
+void tst_QAccessibility::tabWidgetTest()
+{
+    QTabWidget *tabWidget = new QTabWidget();
+    tabWidget->show();
+
+    // the interface for the tab is just a container for tabbar and stacked widget
+    QAccessibleInterface * const interface = QAccessible::queryAccessibleInterface(tabWidget);
+    QVERIFY(interface);
+    QCOMPARE(interface->childCount(), 2);
+    QCOMPARE(interface->role(0), QAccessible::Client);
+
+    // Create pages, check navigation
+    QLabel *label1 = new QLabel("Page 1", tabWidget);
+    tabWidget->addTab(label1, "Tab 1");
+    QLabel *label2 = new QLabel("Page 2", tabWidget);
+    tabWidget->addTab(label2, "Tab 2");
+
+    QCOMPARE(interface->childCount(), 2);
+
+    QAccessibleInterface* tabBarInterface = 0;
+    // there is no special logic to sort the children, so the contents will be 1, the tab bar 2
+    QCOMPARE(interface->navigate(QAccessible::Child, 2 , &tabBarInterface), 0);
+    QVERIFY(tabBarInterface);
+    QCOMPARE(tabBarInterface->childCount(), 4);
+    QCOMPARE(tabBarInterface->role(0), QAccessible::PageTabList);
+
+    QAccessibleInterface* tabButton1Interface = 0;
+    QCOMPARE(tabBarInterface->navigate(QAccessible::Child, 1 , &tabButton1Interface), 1);
+    QVERIFY(tabButton1Interface == 0);
+
+    QCOMPARE(tabBarInterface->role(1), QAccessible::PageTab);
+    QCOMPARE(tabBarInterface->text(QAccessible::Name, 1), QLatin1String("Tab 1"));
+    QCOMPARE(tabBarInterface->role(2), QAccessible::PageTab);
+    QCOMPARE(tabBarInterface->text(QAccessible::Name, 2), QLatin1String("Tab 2"));
+    QCOMPARE(tabBarInterface->role(3), QAccessible::PushButton);
+    QCOMPARE(tabBarInterface->text(QAccessible::Name, 3), QLatin1String("Scroll Left"));
+    QCOMPARE(tabBarInterface->role(4), QAccessible::PushButton);
+    QCOMPARE(tabBarInterface->text(QAccessible::Name, 4), QLatin1String("Scroll Right"));
+
+    QAccessibleInterface* stackWidgetInterface = 0;
+    QCOMPARE(interface->navigate(QAccessible::Child, 1, &stackWidgetInterface), 0);
+    QVERIFY(stackWidgetInterface);
+    QCOMPARE(stackWidgetInterface->childCount(), 2);
+    QCOMPARE(stackWidgetInterface->role(0), QAccessible::LayeredPane);
+
+    QAccessibleInterface* stackChild1Interface = 0;
+    QCOMPARE(stackWidgetInterface->navigate(QAccessible::Child, 1, &stackChild1Interface), 0);
+    QVERIFY(stackChild1Interface);
+#ifndef Q_CC_INTEL
+    QCOMPARE(stackChild1Interface->childCount(), 0);
 #endif
+    QCOMPARE(stackChild1Interface->role(0), QAccessible::StaticText);
+    QCOMPARE(stackChild1Interface->text(QAccessible::Name, 0), QLatin1String("Page 1"));
+    QCOMPARE(label1, stackChild1Interface->object());
+
+    // Navigation in stack widgets should be consistent
+    QAccessibleInterface* parent = 0;
+    QCOMPARE(stackChild1Interface->navigate(QAccessible::Ancestor, 1, &parent), 0);
+    QVERIFY(parent);
+#ifndef Q_CC_INTEL
+    QCOMPARE(parent->childCount(), 2);
+#endif
+    QCOMPARE(parent->role(0), QAccessible::LayeredPane);
+    delete parent;
+
+    QAccessibleInterface* stackChild2Interface = 0;
+    QCOMPARE(stackWidgetInterface->navigate(QAccessible::Child, 2, &stackChild2Interface), 0);
+    QVERIFY(stackChild2Interface);
+    QCOMPARE(stackChild2Interface->childCount(), 0);
+    QCOMPARE(stackChild2Interface->role(0), QAccessible::StaticText);
+    QCOMPARE(label2, stackChild2Interface->object()); // the text will be empty since it is not visible
+
+    QCOMPARE(stackChild2Interface->navigate(QAccessible::Ancestor, 1, &parent), 0);
+    QVERIFY(parent);
+#ifndef Q_CC_INTEL
+    QCOMPARE(parent->childCount(), 2);
+#endif
+    QCOMPARE(parent->role(0), QAccessible::LayeredPane);
+    delete parent;
+
+    delete tabBarInterface;
+    delete stackChild1Interface;
+    delete stackChild2Interface;
+    delete stackWidgetInterface;
+    delete interface;
+    delete tabWidget;
+    QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::menuTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QMainWindow mw;
     mw.resize(300, 200);
@@ -2598,14 +2586,10 @@ void tst_QAccessibility::menuTest()
 
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs Qt >= 0x040000 and accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::spinBoxTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QSpinBox * const spinBox = new QSpinBox();
     spinBox->show();
 
@@ -2632,14 +2616,10 @@ void tst_QAccessibility::spinBoxTest()
     QVERIFY(events.contains(expectedEvent));
     delete spinBox;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::doubleSpinBoxTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QDoubleSpinBox *doubleSpinBox = new QDoubleSpinBox;
     doubleSpinBox->show();
 
@@ -2659,14 +2639,10 @@ void tst_QAccessibility::doubleSpinBoxTest()
 
     delete doubleSpinBox;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::textEditTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QTextEdit edit;
     QString text = "hello world\nhow are you today?\n";
@@ -2679,16 +2655,17 @@ void tst_QAccessibility::textEditTest()
     QCOMPARE(iface->text(QAccessible::Value, 4), QString("hello world"));
     QCOMPARE(iface->text(QAccessible::Value, 5), QString("how are you today?"));
     QCOMPARE(iface->text(QAccessible::Value, 6), QString());
+    QCOMPARE(iface->textInterface()->characterCount(), 31);
+    QFontMetrics fm(edit.font());
+    QCOMPARE(iface->textInterface()->characterRect(0, QAccessible2::RelativeToParent).size(), QSize(fm.width("h"), fm.height()));
+    QCOMPARE(iface->textInterface()->characterRect(5, QAccessible2::RelativeToParent).size(), QSize(fm.width(" "), fm.height()));
+    QCOMPARE(iface->textInterface()->characterRect(6, QAccessible2::RelativeToParent).size(), QSize(fm.width("w"), fm.height()));
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::textBrowserTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QTextBrowser textBrowser;
     QString text = QLatin1String("Hello world\nhow are you today?\n");
@@ -2705,14 +2682,10 @@ void tst_QAccessibility::textBrowserTest()
     QCOMPARE(interface->text(QAccessible::Value, 6), QString());
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::listViewTest()
 {
-#if 1 //def QTEST_ACCESSIBILITY
     {
         QListView listView;
         QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&listView);
@@ -2778,15 +2751,11 @@ void tst_QAccessibility::listViewTest()
 
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 
 void tst_QAccessibility::mdiAreaTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QMdiArea mdiArea;
     mdiArea.resize(400,300);
@@ -2835,14 +2804,10 @@ void tst_QAccessibility::mdiAreaTest()
 
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::mdiSubWindowTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QMdiArea mdiArea;
     mdiArea.show();
@@ -2965,14 +2930,10 @@ void tst_QAccessibility::mdiSubWindowTest()
 
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::lineEditTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QLineEdit *le = new QLineEdit;
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(le);
     QVERIFY(iface);
@@ -3030,14 +2991,10 @@ void tst_QAccessibility::lineEditTest()
     delete le2;
     delete toplevel;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::workspaceTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QWorkspace workspace;
     workspace.resize(400,300);
@@ -3091,14 +3048,10 @@ void tst_QAccessibility::workspaceTest()
 
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::dialogButtonBoxTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QDialogButtonBox box(QDialogButtonBox::Reset |
                          QDialogButtonBox::Help |
@@ -3211,14 +3164,10 @@ void tst_QAccessibility::dialogButtonBoxTest()
 
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::dialTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QDial dial;
     dial.setValue(20);
@@ -3260,28 +3209,20 @@ void tst_QAccessibility::dialTest()
 
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::rubberBandTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QRubberBand rubberBand(QRubberBand::Rectangle);
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&rubberBand);
     QVERIFY(interface);
     QCOMPARE(interface->role(0), QAccessible::Border);
     delete interface;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::abstractScrollAreaTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QAbstractScrollArea abstractScrollArea;
 
@@ -3439,14 +3380,10 @@ void tst_QAccessibility::abstractScrollAreaTest()
     }
 
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::scrollAreaTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QScrollArea scrollArea;
     scrollArea.show();
@@ -3460,14 +3397,10 @@ void tst_QAccessibility::scrollAreaTest()
     delete interface;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::tableWidgetTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QWidget *topLevel = new QWidget;
     QTableWidget *w = new QTableWidget(8,4,topLevel);
@@ -3507,10 +3440,6 @@ void tst_QAccessibility::tableWidgetTest()
     delete topLevel;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
-
 }
 
 class QtTestTableModel: public QAbstractTableModel
@@ -3593,7 +3522,6 @@ public:
 
 void tst_QAccessibility::tableViewTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QtTestTableModel *model = new QtTestTableModel(3, 4);
     QTableView *w = new QTableView();
@@ -3673,15 +3601,11 @@ void tst_QAccessibility::tableViewTest()
     delete model;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::calendarWidgetTest()
 {
 #ifndef QT_NO_CALENDARWIDGET
-#ifdef QTEST_ACCESSIBILITY
     {
     QCalendarWidget calendarWidget;
 
@@ -3774,17 +3698,12 @@ void tst_QAccessibility::calendarWidgetTest()
 
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif // QT_NO_CALENDARWIDGET
 }
 
 void tst_QAccessibility::dockWidgetTest()
 {
 #ifndef QT_NO_DOCKWIDGET
-
-#ifdef QTEST_ACCESSIBILITY
     // Set up a proper main window with two dock widgets
     QMainWindow *mw = new QMainWindow();
     QFrame *central = new QFrame(mw);
@@ -3852,19 +3771,14 @@ void tst_QAccessibility::dockWidgetTest()
     delete dock2;
     delete mw;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif // QT_NO_DOCKWIDGET
 }
 
 void tst_QAccessibility::pushButtonTest()
 {
 #if !defined(QT3_SUPPORT)
-    qWarning( "Should never get here without Qt3Support");
-    return ;
+    QSKIP( "Should never get here without Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     // Set up a proper main window with two dock widgets
     QWidget *toplevel = createGUI();
     QObject *topRight = toplevel->findChild<QObject *>("topRight");
@@ -3883,10 +3797,10 @@ void tst_QAccessibility::pushButtonTest()
     QAccessibleInterface *acc;
     QAccessibleInterface *acc2;
     int entry = accToplevel->childAt(pt.x(), pt.y());
-    int child = accToplevel->navigate(QAccessible::Child, entry, &acc);
+    accToplevel->navigate(QAccessible::Child, entry, &acc);
     if (acc) {
         entry = acc->childAt(pt.x(), pt.y());
-        child = acc->navigate(QAccessible::Child, entry, &acc2);
+        acc->navigate(QAccessible::Child, entry, &acc2);
         delete acc;
         acc = acc2;
     }
@@ -3898,15 +3812,11 @@ void tst_QAccessibility::pushButtonTest()
     delete accToplevel;
     delete toplevel;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif //QT3_SUPPORT
 }
 
 void tst_QAccessibility::comboBoxTest()
 {
-#ifdef QTEST_ACCESSIBILITY
 #if defined(Q_OS_WINCE)
     if (!IsValidCEPlatform()) {
         QSKIP("Test skipped on Windows Mobile test hardware", SkipAll);
@@ -3944,15 +3854,10 @@ void tst_QAccessibility::comboBoxTest()
     delete w;
 
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
-
 }
 
 void tst_QAccessibility::treeWidgetTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QWidget *w = new QWidget;
     QTreeWidget *tree = new QTreeWidget(w);
     QHBoxLayout *l = new QHBoxLayout(w);
@@ -4010,14 +3915,10 @@ void tst_QAccessibility::treeWidgetTest()
     delete w;
 
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::labelTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QString text = "Hello World";
     QLabel *label = new QLabel(text);
     label->show();
@@ -4056,14 +3957,10 @@ void tst_QAccessibility::labelTest()
     delete acc_label;
 
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::accelerators()
 {
-#ifdef QTEST_ACCESSIBILITY
     QWidget *window = new QWidget;
     QHBoxLayout *lay = new QHBoxLayout(window);
     QLabel *label = new QLabel(tr("&Line edit"), window);
@@ -4087,6 +3984,10 @@ void tst_QAccessibility::accelerators()
     QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QKeySequence(Qt::ALT).toString(QKeySequence::NativeText) + QLatin1String("A"));
     label->setText(tr("Q &&A"));
     QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QString());
+
+#if !defined(QT_NO_DEBUG) && !defined(Q_WS_MAC)
+    QTest::ignoreMessage(QtWarningMsg, "QKeySequence::mnemonic: \"Q &A&B\" contains multiple occurrences of '&'");
+#endif
     label->setText(tr("Q &A&B"));
     QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QKeySequence(Qt::ALT).toString(QKeySequence::NativeText) + QLatin1String("A"));
 
@@ -4096,9 +3997,6 @@ void tst_QAccessibility::accelerators()
     QTest::qWait(100);
     delete window;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs Qt >= 0x040000 and accessibility support.", SkipAll);
-#endif
 }
 
 

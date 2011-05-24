@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -112,8 +112,6 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
 
                 // First, align dest to 16 bytes:
                 ALIGNMENT_PROLOGUE_16BYTES(dst, x, w) {
-                    quint32 s = src[x];
-                    s = BYTE_MUL(s, const_alpha);
                     dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], one_minus_const_alpha);
                 }
 
@@ -127,8 +125,6 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
                     }
                 }
                 for (; x<w; ++x) {
-                    quint32 s = src[x];
-                    s = BYTE_MUL(s, const_alpha);
                     dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], one_minus_const_alpha);
                 }
                 dst = (quint32 *)(((uchar *) dst) + dbpl);
@@ -490,6 +486,58 @@ void qt_bitmapblit16_sse2(QRasterBuffer *rasterBuffer, int x, int y,
         src += stride;
     }
 }
+
+class QSimdSse2
+{
+public:
+    typedef __m128i Int32x4;
+    typedef __m128 Float32x4;
+
+    union Vect_buffer_i { Int32x4 v; int i[4]; };
+    union Vect_buffer_f { Float32x4 v; float f[4]; };
+
+    static inline Float32x4 v_dup(float x) { return _mm_set1_ps(x); }
+    static inline Float32x4 v_dup(double x) { return _mm_set1_ps(x); }
+    static inline Int32x4 v_dup(int x) { return _mm_set1_epi32(x); }
+    static inline Int32x4 v_dup(uint x) { return _mm_set1_epi32(x); }
+
+    static inline Float32x4 v_add(Float32x4 a, Float32x4 b) { return _mm_add_ps(a, b); }
+    static inline Int32x4 v_add(Int32x4 a, Int32x4 b) { return _mm_add_epi32(a, b); }
+
+    static inline Float32x4 v_max(Float32x4 a, Float32x4 b) { return _mm_max_ps(a, b); }
+    static inline Float32x4 v_min(Float32x4 a, Float32x4 b) { return _mm_min_ps(a, b); }
+    static inline Int32x4 v_min_16(Int32x4 a, Int32x4 b) { return _mm_min_epi16(a, b); }
+
+    static inline Int32x4 v_and(Int32x4 a, Int32x4 b) { return _mm_and_si128(a, b); }
+
+    static inline Float32x4 v_sub(Float32x4 a, Float32x4 b) { return _mm_sub_ps(a, b); }
+    static inline Int32x4 v_sub(Int32x4 a, Int32x4 b) { return _mm_sub_epi32(a, b); }
+
+    static inline Float32x4 v_mul(Float32x4 a, Float32x4 b) { return _mm_mul_ps(a, b); }
+
+    static inline Float32x4 v_sqrt(Float32x4 x) { return _mm_sqrt_ps(x); }
+
+    static inline Int32x4 v_toInt(Float32x4 x) { return _mm_cvttps_epi32(x); }
+
+    // pre-VS 2008 doesn't have cast intrinsics, whereas 2008 and later requires it
+#if defined(Q_CC_MSVC) && _MSC_VER < 1500
+    static inline Int32x4 v_greaterOrEqual(Float32x4 a, Float32x4 b)
+    {
+        union Convert { Int32x4 vi; Float32x4 vf; } convert;
+        convert.vf = _mm_cmpgt_ps(a, b);
+        return convert.vi;
+    }
+#else
+    static inline Int32x4 v_greaterOrEqual(Float32x4 a, Float32x4 b) { return _mm_castps_si128(_mm_cmpgt_ps(a, b)); }
+#endif
+};
+
+const uint * QT_FASTCALL qt_fetch_radial_gradient_sse2(uint *buffer, const Operator *op, const QSpanData *data,
+                                                       int y, int x, int length)
+{
+    return qt_fetch_radial_gradient_template<QRadialFetchSimd<QSimdSse2> >(buffer, op, data, y, x, length);
+}
+
 
 QT_END_NAMESPACE
 

@@ -7,29 +7,29 @@
 ** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -147,9 +147,9 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
     }
 
 
+    QOpenKODEIntegration *integration = static_cast<QOpenKODEIntegration *>(QApplicationPrivate::platformIntegration());
 
-
-    if (!isFullScreen || (isFullScreen && !QPlatformGLContext::defaultSharedContext())) {
+    if (!isFullScreen || (isFullScreen && !integration->mainGLContext())) {
         if (kdRealizeWindow(m_kdWindow, &m_eglWindow)) {
             qErrnoWarning(kdGetError(), "Could not realize native window");
             return;
@@ -158,9 +158,9 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
         EGLSurface surface = eglCreateWindowSurface(screen->eglDisplay(),m_eglConfig,m_eglWindow,m_eglWindowAttrs.constData());
         m_platformGlContext = new QEGLPlatformContext(screen->eglDisplay(), m_eglConfig,
                                                       m_eglContextAttrs.data(), surface, m_eglApi);
-        m_platformGlContext->makeDefaultSharedContext();
+        integration->setMainGLContext(m_platformGLContext);
     } else {
-        m_platformGlContext = const_cast<QEGLPlatformContext *>(static_cast<const QEGLPlatformContext *>(QPlatformGLContext::defaultSharedContext()));
+        m_platformGlContext = integration->mainGLContext();
         kdDestroyWindow(m_kdWindow);
         m_kdWindow = 0;
     }
@@ -169,7 +169,7 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
 
 QOpenKODEWindow::~QOpenKODEWindow()
 {
-    if (m_platformGlContext != QPlatformGLContext::defaultSharedContext()) {
+    if (m_platformGlContext != static_cast<QOpenKODEIntegration *>(QApplicationPrivate::platformIntegration())) {
         delete m_platformGlContext;
     }
     if (m_kdWindow)

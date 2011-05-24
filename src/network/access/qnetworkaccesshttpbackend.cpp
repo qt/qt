@@ -7,29 +7,29 @@
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -47,6 +47,7 @@
 #include "qabstractnetworkcache.h"
 #include "qnetworkrequest.h"
 #include "qnetworkreply.h"
+#include "QtNetwork/private/qnetworksession_p.h"
 #include "qnetworkrequest_p.h"
 #include "qnetworkcookie_p.h"
 #include "QtCore/qdatetime.h"
@@ -219,7 +220,7 @@ QNetworkAccessHttpBackend::~QNetworkAccessHttpBackend()
     2) If we have a cache entry for this url populate headers so the server can return 304
     3) Calculate if response_is_fresh and if so send the cache and set loadedFromCache to true
  */
-void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, bool &loadedFromCache)
+bool QNetworkAccessHttpBackend::loadFromCacheIfAllowed(QHttpNetworkRequest &httpRequest)
 {
     QNetworkRequest::CacheLoadControl CacheLoadControlAttribute =
         (QNetworkRequest::CacheLoadControl)request().attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt();
@@ -230,24 +231,24 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
             httpRequest.setHeaderField("Cache-Control", "no-cache");
             httpRequest.setHeaderField("Pragma", "no-cache");
         }
-        return;
+        return false;
     }
 
     // The disk cache API does not currently support partial content retrieval.
     // That is why we don't use the disk cache for any such requests.
     if (request().hasRawHeader("Range"))
-        return;
+        return false;
 
     QAbstractNetworkCache *nc = networkCache();
     if (!nc)
-        return;                 // no local cache
+        return false;                 // no local cache
 
     QNetworkCacheMetaData metaData = nc->metaData(url());
     if (!metaData.isValid())
-        return;                 // not in cache
+        return false;                 // not in cache
 
     if (!metaData.saveToDisk())
-        return;
+        return false;
 
     QNetworkHeadersPrivate cacheHeaders;
     QNetworkHeadersPrivate::RawHeadersList::ConstIterator it;
@@ -261,13 +262,11 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
     if (lastModified.isValid())
         httpRequest.setHeaderField("If-Modified-Since", QNetworkHeadersPrivate::toHttpDate(lastModified));
 
-    if (CacheLoadControlAttribute == QNetworkRequest::PreferNetwork) {
-        it = cacheHeaders.findRawHeader("Cache-Control");
-        if (it != cacheHeaders.rawHeaders.constEnd()) {
-            QHash<QByteArray, QByteArray> cacheControl = parseHttpOptionHeader(it->second);
-            if (cacheControl.contains("must-revalidate"))
-                return;
-        }
+    it = cacheHeaders.findRawHeader("Cache-Control");
+    if (it != cacheHeaders.rawHeaders.constEnd()) {
+        QHash<QByteArray, QByteArray> cacheControl = parseHttpOptionHeader(it->second);
+        if (cacheControl.contains("must-revalidate"))
+            return false;
     }
 
     QDateTime currentDateTime = QDateTime::currentDateTime();
@@ -338,14 +337,12 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
 #endif
 
     if (!response_is_fresh)
-        return;
+        return false;
 
-    loadedFromCache = true;
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
     qDebug() << "response_is_fresh" << CacheLoadControlAttribute;
 #endif
-    if (!sendCacheContents(metaData))
-        loadedFromCache = false;
+    return sendCacheContents(metaData);
 }
 
 static QHttpNetworkRequest::Priority convert(const QNetworkRequest::Priority& prio)
@@ -442,12 +439,12 @@ void QNetworkAccessHttpBackend::postRequest()
     switch (operation()) {
     case QNetworkAccessManager::GetOperation:
         httpRequest.setOperation(QHttpNetworkRequest::Get);
-        validateCache(httpRequest, loadedFromCache);
+        loadedFromCache = loadFromCacheIfAllowed(httpRequest);
         break;
 
     case QNetworkAccessManager::HeadOperation:
         httpRequest.setOperation(QHttpNetworkRequest::Head);
-        validateCache(httpRequest, loadedFromCache);
+        loadedFromCache = loadFromCacheIfAllowed(httpRequest);
         break;
 
     case QNetworkAccessManager::PostOperation:
@@ -479,6 +476,13 @@ void QNetworkAccessHttpBackend::postRequest()
         break;                  // can't happen
     }
 
+    if (loadedFromCache) {
+        // commented this out since it will be called later anyway
+        // by copyFinished()
+        //QNetworkAccessBackend::finished();
+        return;    // no need to send the request! :)
+    }
+
     QList<QByteArray> headers = request().rawHeaderList();
     if (resumeOffset != 0) {
         if (headers.contains("Range")) {
@@ -506,13 +510,6 @@ void QNetworkAccessHttpBackend::postRequest()
     foreach (const QByteArray &header, headers)
         httpRequest.setHeaderField(header, request().rawHeader(header));
 
-    if (loadedFromCache) {
-        // commented this out since it will be called later anyway
-        // by copyFinished()
-        //QNetworkAccessBackend::finished();
-        return;    // no need to send the request! :)
-    }
-
     if (request().attribute(QNetworkRequest::HttpPipeliningAllowedAttribute).toBool() == true)
         httpRequest.setPipeliningAllowed(true);
 
@@ -524,6 +521,11 @@ void QNetworkAccessHttpBackend::postRequest()
 
     // Create the HTTP thread delegate
     QHttpThreadDelegate *delegate = new QHttpThreadDelegate;
+#ifndef Q_NO_BEARERMANAGEMENT
+    QVariant v(property("_q_networksession"));
+    if (v.isValid())
+        delegate->networkSession = qvariant_cast<QSharedPointer<QNetworkSession> >(v);
+#endif
 
     // For the synchronous HTTP, this is the normal way the delegate gets deleted
     // For the asynchronous HTTP this is a safety measure, the delegate deletes itself when HTTP is finished
@@ -716,8 +718,13 @@ void QNetworkAccessHttpBackend::replyDownloadData(QByteArray d)
 
     pendingDownloadData.append(d);
     d.clear();
-    writeDownstreamData(pendingDownloadData);
+    // We need to usa a copy for calling writeDownstreamData as we could
+    // possibly recurse into this this function when we call
+    // appendDownstreamDataSignalEmissions because the user might call
+    // processEvents() or spin an event loop when this occur.
+    QByteDataBuffer pendingDownloadDataCopy = pendingDownloadData;
     pendingDownloadData.clear();
+    writeDownstreamData(pendingDownloadDataCopy);
 }
 
 void QNetworkAccessHttpBackend::replyFinished()

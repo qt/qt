@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -242,6 +242,8 @@ error:
     return i18n_name;
 }
 
+extern QFont::Weight weightFromInteger(int weight); // qfontdatabase.cpp
+
 static
 void addFontToDatabase(QString familyName, const QString &scriptName,
                        TEXTMETRIC *textmetric,
@@ -274,16 +276,7 @@ void addFontToDatabase(QString familyName, const QString &scriptName,
     if (familyName[0] != QLatin1Char('@') && !familyName.startsWith(QLatin1String("WST_"))) {
         QtFontStyle::Key styleKey;
         styleKey.style = italic ? QFont::StyleItalic : QFont::StyleNormal;
-        if (weight < 400)
-            styleKey.weight = QFont::Light;
-        else if (weight < 600)
-            styleKey.weight = QFont::Normal;
-        else if (weight < 700)
-            styleKey.weight = QFont::DemiBold;
-        else if (weight < 800)
-            styleKey.weight = QFont::Bold;
-        else
-            styleKey.weight = QFont::Black;
+        styleKey.weight = weightFromInteger(weight);
 
         QtFontFamily *family = privateDb()->family(familyName, true);
 
@@ -340,7 +333,7 @@ void addFontToDatabase(QString familyName, const QString &scriptName,
             quint32 codePageRange[2] = {
                 signature->fsCsb[0], signature->fsCsb[1]
             };
-            QList<QFontDatabase::WritingSystem> systems = determineWritingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
+            QList<QFontDatabase::WritingSystem> systems = qt_determine_writing_systems_from_truetype_bits(unicodeRange, codePageRange);
 
             for (int i = 0; i < systems.count(); ++i) {
                 QFontDatabase::WritingSystem writingSystem = systems.at(i);
@@ -530,26 +523,26 @@ static inline void load(const QString &family = QString(), int = -1)
 
 
 
-static void initFontInfo(QFontEngineWin *fe, const QFontDef &request, const QFontPrivate *fp)
+static void initFontInfo(QFontEngineWin *fe, const QFontDef &request, HDC fontHdc, int dpi)
 {
     fe->fontDef = request;                                // most settings are equal
 
-    HDC dc = ((request.styleStrategy & QFont::PreferDevice) && fp->hdc) ? fp->hdc : shared_dc();
+    HDC dc = ((request.styleStrategy & QFont::PreferDevice) && fontHdc) ? fontHdc : shared_dc();
     SelectObject(dc, fe->hfont);
     wchar_t n[64];
     GetTextFace(dc, 64, n);
     fe->fontDef.family = QString::fromWCharArray(n);
     fe->fontDef.fixedPitch = !(fe->tm.tmPitchAndFamily & TMPF_FIXED_PITCH);
     if (fe->fontDef.pointSize < 0) {
-        fe->fontDef.pointSize = fe->fontDef.pixelSize * 72. / fp->dpi;
+        fe->fontDef.pointSize = fe->fontDef.pixelSize * 72. / dpi;
     } else if (fe->fontDef.pixelSize == -1) {
-        fe->fontDef.pixelSize = qRound(fe->fontDef.pointSize * fp->dpi / 72.);
+        fe->fontDef.pixelSize = qRound(fe->fontDef.pointSize * dpi / 72.);
     }
 }
 
 #if !defined(QT_NO_DIRECTWRITE)
 static void initFontInfo(QFontEngineDirectWrite *fe, const QFontDef &request,
-                         const QFontPrivate *fp, IDWriteFont *font)
+                         int dpi, IDWriteFont *font)
 {
     fe->fontDef = request;
 
@@ -601,9 +594,9 @@ static void initFontInfo(QFontEngineDirectWrite *fe, const QFontDef &request,
         qErrnoWarning(hr, "initFontInfo: Failed to get family name");
 
     if (fe->fontDef.pointSize < 0)
-        fe->fontDef.pointSize = fe->fontDef.pixelSize * 72. / fp->dpi;
+        fe->fontDef.pointSize = fe->fontDef.pixelSize * 72. / dpi;
     else if (fe->fontDef.pixelSize == -1)
-        fe->fontDef.pixelSize = qRound(fe->fontDef.pointSize * fp->dpi / 72.);
+        fe->fontDef.pixelSize = qRound(fe->fontDef.pointSize * dpi / 72.);
 }
 #endif
 
@@ -679,20 +672,21 @@ static inline HFONT systemFont()
 #define DEFAULT_GUI_FONT 17
 #endif
 
-static
-QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &request, const QtFontDesc *desc,
-                        const QStringList &family_list)
+static QFontEngine *loadEngine(int script, const QFontDef &request,
+                               HDC fontHdc, int dpi, bool rawMode,
+                               const QtFontDesc *desc,
+                               const QStringList &family_list)
 {
     LOGFONT lf;
     memset(&lf, 0, sizeof(LOGFONT));
 
-    bool useDevice = (request.styleStrategy & QFont::PreferDevice) && fp->hdc;
+    bool useDevice = (request.styleStrategy & QFont::PreferDevice) && fontHdc;
 
     HDC hdc = shared_dc();
-    QString font_name = desc->family->name;
+    QString font_name = desc != 0 ? desc->family->name : request.family;
 
     if (useDevice) {
-        hdc = fp->hdc;
+        hdc = fontHdc;
         font_name = request.family;
     }
 
@@ -710,9 +704,9 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
     bool useDirectWrite = false;
 #endif
 
-    if (fp->rawMode) {                        // will choose a stock font
+    if (rawMode) {                        // will choose a stock font
         int f, deffnt = SYSTEM_FONT;
-        QString fam = desc->family->name.toLower();
+        QString fam = desc != 0 ? desc->family->name.toLower() : request.family.toLower();
         if (fam == QLatin1String("default"))
             f = deffnt;
         else if (fam == QLatin1String("system"))
@@ -766,11 +760,11 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
         lf.lfWidth                = 0;
         lf.lfEscapement        = 0;
         lf.lfOrientation        = 0;
-        if (desc->style->key.weight == 50)
+        if (desc == 0 || desc->style->key.weight == 50)
             lf.lfWeight = FW_DONTCARE;
         else
             lf.lfWeight = (desc->style->key.weight*900)/99;
-        lf.lfItalic                = (desc->style->key.style != QFont::StyleNormal);
+        lf.lfItalic         = (desc != 0 && desc->style->key.style != QFont::StyleNormal);
         lf.lfCharSet        = DEFAULT_CHARSET;
 
         int strat = OUT_DEFAULT_PRECIS;
@@ -901,9 +895,11 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
                             &lf,
                             &directWriteFont);
                 if (FAILED(hr)) {
+#ifndef QT_NO_DEBUG
                     qErrnoWarning("QFontEngine::loadEngine: CreateFontFromLOGFONT failed "
                                   "for %ls (0x%lx)",
                                   lf.lfFaceName, hr);
+#endif
                 } else {
                     DeleteObject(hfont);
                     useDirectWrite = true;
@@ -933,22 +929,27 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
             }
         }
 
-        initFontInfo(few, request, fp);
+        initFontInfo(few, request, fontHdc, dpi);
         fe = few;
     }
 
 #if !defined(QT_NO_DIRECTWRITE)
     else {
         QFontDatabasePrivate *db = privateDb();
-        QFontEngineDirectWrite *fedw = new QFontEngineDirectWrite(font_name,
-                                                                  db->directWriteFactory,
-                                                                  db->directWriteGdiInterop,
-                                                                  directWriteFont,
-                                                                  request.pixelSize);
 
-        initFontInfo(fedw, request, fp, directWriteFont);
+        IDWriteFontFace *directWriteFontFace = NULL;
+        HRESULT hr = directWriteFont->CreateFontFace(&directWriteFontFace);
+        if (SUCCEEDED(hr)) {
+            QFontEngineDirectWrite *fedw = new QFontEngineDirectWrite(db->directWriteFactory,
+                                                                      directWriteFontFace,
+                                                                      request.pixelSize);
 
-        fe = fedw;
+            initFontInfo(fedw, request, dpi, directWriteFont);
+
+            fe = fedw;
+        } else {
+            qErrnoWarning(hr, "QFontEngine::loadEngine: CreateFontFace failed");
+        }
     }
 
     if (directWriteFont != 0)
@@ -957,6 +958,7 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
 
     if(script == QUnicodeTables::Common
        && !(request.styleStrategy & QFont::NoFontMerging)
+       && desc != 0
        && !(desc->family->writingSystems[QFontDatabase::Symbol] & QtFontFamily::Supported)) {
         if(!tryFonts) {
             LANGID lid = GetUserDefaultLangID();
@@ -991,6 +993,20 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
         fe = mfe;
     }
     return fe;
+}
+
+QFontEngine *qt_load_font_engine_win(const QFontDef &request)
+{
+    // From qfont.cpp
+    extern int qt_defaultDpi();
+
+    QFontCache::Key key(request, QUnicodeTables::Common);
+    QFontEngine *fe = QFontCache::instance()->findEngine(key);
+    if (fe != 0)
+        return fe;
+    else
+        return loadEngine(QUnicodeTables::Common, request, 0, qt_defaultDpi(), false, 0,
+                          QStringList());
 }
 
 const char *styleHint(const QFontDef &request)
@@ -1053,7 +1069,7 @@ static QFontEngine *loadWin(const QFontPrivate *d, int script, const QFontDef &r
         }
         if (!desc.family)
             break;
-        fe = loadEngine(script, d, req, &desc, family_list);
+        fe = loadEngine(script, req, d->hdc, d->dpi, d->rawMode, &desc, family_list);
         if (!fe)
             blacklistedFamilies.append(desc.familyIndex);
     }

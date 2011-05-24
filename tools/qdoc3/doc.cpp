@@ -7,29 +7,29 @@
 ** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -74,32 +74,105 @@ struct Macro
 };
 
 enum {
-    CMD_A, CMD_ABSTRACT, CMD_ANNOTATEDLIST, CMD_BADCODE,
-    CMD_BASENAME, CMD_BOLD, CMD_BRIEF, CMD_C, CMD_CAPTION,
-    CMD_CHAPTER, CMD_CODE, CMD_CODELINE, CMD_DIV, CMD_DOTS,
-    CMD_ELSE, CMD_ENDABSTRACT, CMD_ENDCHAPTER, CMD_ENDCODE,
-    CMD_ENDDIV, CMD_ENDFOOTNOTE, CMD_ENDIF, CMD_ENDLEGALESE,
-    CMD_ENDLINK, CMD_ENDLIST, CMD_ENDOMIT, CMD_ENDPART,
-    CMD_ENDQUOTATION, CMD_ENDRAW, CMD_ENDSECTION1, CMD_ENDSECTION2,
-    CMD_ENDSECTION3, CMD_ENDSECTION4, CMD_ENDSIDEBAR,
-    CMD_ENDTABLE, CMD_EXPIRE, CMD_FOOTNOTE, CMD_GENERATELIST,
-    CMD_GRANULARITY, CMD_HEADER, CMD_I, CMD_IF, CMD_IMAGE,
-    CMD_INCLUDE, CMD_INLINEIMAGE, CMD_INDEX, CMD_KEYWORD,
-    CMD_L, CMD_LEGALESE, CMD_LINK, CMD_LIST, CMD_META,
-    CMD_NEWCODE, CMD_O, CMD_OLDCODE, CMD_OMIT, CMD_OMITVALUE,
-    CMD_OVERLOAD, CMD_PART, CMD_PRINTLINE, CMD_PRINTTO,
-    CMD_PRINTUNTIL, CMD_QUOTATION, CMD_QUOTEFILE,
-    CMD_QUOTEFROMFILE, CMD_QUOTEFUNCTION, CMD_RAW, CMD_ROW,
-    CMD_SA, CMD_SECTION1, CMD_SECTION2, CMD_SECTION3,
-    CMD_SECTION4, CMD_SIDEBAR, CMD_SINCELIST, CMD_SKIPLINE,
-    CMD_SKIPTO, CMD_SKIPUNTIL, CMD_SNIPPET, CMD_SPAN, CMD_SUB,
-    CMD_SUP, CMD_TABLE, CMD_TABLEOFCONTENTS, CMD_TARGET, CMD_TT,
-    CMD_UNDERLINE, CMD_UNICODE, CMD_VALUE, CMD_WARNING,
-#ifdef QDOC_QML    
-    CMD_QML, CMD_ENDQML, CMD_CPP, CMD_ENDCPP, CMD_QMLTEXT,
-    CMD_ENDQMLTEXT, CMD_CPPTEXT, CMD_ENDCPPTEXT,
-    CMD_JS, CMD_ENDJS,
-#endif    
+    CMD_A,
+    CMD_ABSTRACT,
+    CMD_ANNOTATEDLIST,
+    CMD_BADCODE,
+    CMD_BASENAME,
+    CMD_BOLD,
+    CMD_BRIEF,
+    CMD_C,
+    CMD_CAPTION,
+    CMD_CHAPTER, // 9
+    CMD_CODE,
+    CMD_CODELINE,
+    CMD_DIV,
+    CMD_DOTS,
+    CMD_ELSE,
+    CMD_ENDABSTRACT,
+    CMD_ENDCHAPTER,
+    CMD_ENDCODE,
+    CMD_ENDDIV,
+    CMD_ENDFOOTNOTE,
+    CMD_ENDIF,
+    CMD_ENDLEGALESE,
+    CMD_ENDLINK,
+    CMD_ENDLIST,
+    CMD_ENDOMIT,
+    CMD_ENDPART,
+    CMD_ENDQUOTATION,
+    CMD_ENDRAW,
+    CMD_ENDSECTION1,
+    CMD_ENDSECTION2,
+    CMD_ENDSECTION3,
+    CMD_ENDSECTION4,
+    CMD_ENDSIDEBAR,
+    CMD_ENDTABLE,
+    CMD_EXPIRE,
+    CMD_FOOTNOTE,
+    CMD_GENERATELIST,
+    CMD_GRANULARITY,
+    CMD_HEADER,
+    CMD_I,
+    CMD_IF,
+    CMD_IMAGE,
+    CMD_INCLUDE,
+    CMD_INLINEIMAGE,
+    CMD_INDEX,
+    CMD_KEYWORD,
+    CMD_L,
+    CMD_LEGALESE,
+    CMD_LINK,
+    CMD_LIST,
+    CMD_META,
+    CMD_NEWCODE,
+    CMD_O,
+    CMD_OLDCODE,
+    CMD_OMIT,
+    CMD_OMITVALUE,
+    CMD_OVERLOAD,
+    CMD_PART,
+    CMD_PRINTLINE,
+    CMD_PRINTTO,
+    CMD_PRINTUNTIL,
+    CMD_QUOTATION,
+    CMD_QUOTEFILE,
+    CMD_QUOTEFROMFILE,
+    CMD_QUOTEFUNCTION,
+    CMD_RAW,
+    CMD_ROW,
+    CMD_SA,
+    CMD_SECTION1, // 68
+    CMD_SECTION2, // 69
+    CMD_SECTION3, // 70
+    CMD_SECTION4, // 71
+    CMD_SIDEBAR,
+    CMD_SINCELIST,
+    CMD_SKIPLINE,
+    CMD_SKIPTO,
+    CMD_SKIPUNTIL,
+    CMD_SNIPPET,
+    CMD_SPAN,
+    CMD_SUB,
+    CMD_SUP,
+    CMD_TABLE,
+    CMD_TABLEOFCONTENTS,
+    CMD_TARGET,
+    CMD_TT,
+    CMD_UNDERLINE,
+    CMD_UNICODE,
+    CMD_VALUE,
+    CMD_WARNING,
+    CMD_QML,
+    CMD_ENDQML,
+    CMD_CPP,
+    CMD_ENDCPP,
+    CMD_QMLTEXT,
+    CMD_ENDQMLTEXT,
+    CMD_CPPTEXT,
+    CMD_ENDCPPTEXT,
+    CMD_JS,
+    CMD_ENDJS,
     NOT_A_CMD
 };
 
@@ -197,7 +270,6 @@ static struct {
     { "unicode", CMD_UNICODE, 0 },
     { "value", CMD_VALUE, 0 },
     { "warning", CMD_WARNING, 0 },
-#ifdef QDOC_QML
     { "qml", CMD_QML, 0 },
     { "endqml", CMD_ENDQML, 0 },
     { "cpp", CMD_CPP, 0 },
@@ -208,7 +280,6 @@ static struct {
     { "endcpptext", CMD_ENDCPPTEXT, 0 },
     { "js", CMD_JS, 0 },
     { "endjs", CMD_ENDJS, 0 },
-#endif
     { 0, 0, 0 }
 };
 
@@ -223,13 +294,13 @@ class DocPrivateExtra
 {
   public:
     QString             baseName;
-    Doc::SectioningUnit granularity;
-    Doc::SectioningUnit sectioningUnit; // ###
+    Doc::Sections       granularity;
+    Doc::Sections       section; // ###
     QList<Atom*>        tableOfContents;
     QList<int>          tableOfContentsLevels;
     QList<Atom*>        keywords;
     QList<Atom*>        targets;
-    QStringMultiMap          metaMap;
+    QStringMultiMap     metaMap;
 
     DocPrivateExtra()
         : granularity(Doc::Part) { }
@@ -365,7 +436,7 @@ class DocParser
     void startFormat(const QString& format, int cmd);
     bool openCommand(int cmd);
     bool closeCommand(int endCmd);
-    void startSection(Doc::SectioningUnit unit, int cmd);
+    void startSection(Doc::Sections unit, int cmd);
     void endSection(int unit, int endCmd);
     void parseAlso();
     void append(Atom::Type type, const QString& string = "");
@@ -385,7 +456,7 @@ class DocParser
     CodeMarker *quoteFromFile();
     void expandMacro(const QString& name, const QString& def, int numParams);
     QString expandMacroToString(const QString &name, const QString &def, int numParams);
-    Doc::SectioningUnit getSectioningUnit();
+    Doc::Sections getSectioningUnit();
     QString getArgument(bool verbatim = false);
     QString getOptionalArgument();
     QString getRestOfLine();
@@ -426,7 +497,7 @@ class DocParser
 
     int braceDepth;
     int minIndent;
-    Doc::SectioningUnit currentSectioningUnit;
+    Doc::Sections currentSection;
     QMap<QString, Location> targetMap;
     QMap<int, QString> pendingFormats;
     QStack<int> openedCommands;
@@ -472,7 +543,7 @@ void DocParser::parse(const QString& source,
 
     braceDepth = 0;
     minIndent = INT_MAX;
-    currentSectioningUnit = Doc::Book;
+    currentSection = Doc::NoSection;
     openedCommands.push(CMD_OMIT);
     quoter.reset();
 
@@ -561,7 +632,6 @@ void DocParser::parse(const QString& source,
                         leavePara();
                         append(Atom::Code, getCode(CMD_CODE, 0));
                         break;
-#ifdef QDOC_QML
                     case CMD_QML:
                         leavePara();
                         append(Atom::Qml, getCode(CMD_QML, CodeMarker::markerForLanguage(QLatin1String("QML"))));
@@ -573,7 +643,6 @@ void DocParser::parse(const QString& source,
                         leavePara();
                         append(Atom::JavaScript, getCode(CMD_JS, CodeMarker::markerForLanguage(QLatin1String("JavaScript"))));
                         break;
-#endif
                     case CMD_DIV:
                         leavePara();
                         p1 = getArgument(true);
@@ -652,7 +721,6 @@ void DocParser::parse(const QString& source,
                     case CMD_ENDCODE:
                         closeCommand(cmd);
                         break;
-#ifdef QDOC_QML
                     case CMD_ENDQML:
                         closeCommand(cmd);
                         break;
@@ -662,7 +730,6 @@ void DocParser::parse(const QString& source,
                     case CMD_ENDJS:
                         closeCommand(cmd);
                         break;
-#endif                        
                     case CMD_ENDFOOTNOTE:
                         if (closeCommand(cmd)) {
                             leavePara();
@@ -712,7 +779,7 @@ void DocParser::parse(const QString& source,
                         closeCommand(cmd);
                         break;
                     case CMD_ENDPART:
-                        endSection(-1, cmd);
+                        endSection(Doc::Part, cmd);
                         break;
                     case CMD_ENDQUOTATION:
                         if (closeCommand(cmd)) {
@@ -724,16 +791,16 @@ void DocParser::parse(const QString& source,
                         location().warning(tr("Unexpected '\\%1'").arg(cmdName(CMD_ENDRAW)));
                         break;
                     case CMD_ENDSECTION1:
-                        endSection(1, cmd);
+                        endSection(Doc::Section1, cmd);
                         break;
                     case CMD_ENDSECTION2:
-                        endSection(2, cmd);
+                        endSection(Doc::Section2, cmd);
                         break;
                     case CMD_ENDSECTION3:
-                        endSection(3, cmd);
+                        endSection(Doc::Section3, cmd);
                         break;
                     case CMD_ENDSECTION4:
-                        endSection(4, cmd);
+                        endSection(Doc::Section4, cmd);
                         break;
                     case CMD_ENDSIDEBAR:
                         if (closeCommand(cmd)) {
@@ -1463,14 +1530,13 @@ void DocParser::parse(const QString& source,
         location().warning(tr("Missing '\\%1'").arg(cmdName(CMD_ENDIF)));
     }
 
-    while (currentSectioningUnit >= Doc::Chapter) {
-        int delta = currentSectioningUnit - priv->extra->sectioningUnit;
-        append(Atom::SectionRight, QString::number(delta));
-        currentSectioningUnit = Doc::SectioningUnit(int(currentSectioningUnit) - 1);
+    if (currentSection > Doc::NoSection) {
+        append(Atom::SectionRight, QString::number(currentSection));
+        currentSection = Doc::NoSection;
     }
 
-    if (priv->extra && priv->extra->granularity < priv->extra->sectioningUnit)
-        priv->extra->granularity = priv->extra->sectioningUnit;
+    if (priv->extra && priv->extra->granularity < priv->extra->section)
+        priv->extra->granularity = priv->extra->section;
     priv->text.stripFirstAtom();
 }
 
@@ -1546,14 +1612,14 @@ void DocParser::checkExpiry(const QString& date)
 void DocParser::insertBaseName(const QString &baseName)
 {
     priv->constructExtra();
-    if (currentSectioningUnit == priv->extra->sectioningUnit) {
+    if (currentSection == priv->extra->section) {
         priv->extra->baseName = baseName;
     }
     else {
         Atom *atom = priv->text.firstAtom();
         Atom *sectionLeft = 0;
 
-        int delta = currentSectioningUnit - priv->extra->sectioningUnit;
+        int delta = currentSection - priv->extra->section;
 
         while (atom != 0) {
             if (atom->type() == Atom::SectionLeft &&
@@ -1772,60 +1838,34 @@ bool DocParser::closeCommand(int endCmd)
     }
 }
 
-void DocParser::startSection(Doc::SectioningUnit unit, int cmd)
+void DocParser::startSection(Doc::Sections unit, int cmd)
 {
     leaveValueList();
 
-    if (currentSectioningUnit == Doc::Book) {
-        currentSectioningUnit = (Doc::SectioningUnit) (unit - 1);
+    if (currentSection == Doc::NoSection) {
+        currentSection = (Doc::Sections) (unit);
         priv->constructExtra();
-        priv->extra->sectioningUnit = currentSectioningUnit;
+        priv->extra->section = currentSection;
     }
+    else
+        endSection(unit,cmd);
 
-    if (unit <= priv->extra->sectioningUnit) {
-        location().warning(tr("Unexpected '\\%1' in this documentation")
-                            .arg(cmdName(cmd)));
-    }
-    else if (unit - currentSectioningUnit > 1) {
-        location().warning(tr("Unexpected '\\%1' at this point")
-                            .arg(cmdName(cmd)));
-    }
-    else {
-        if (currentSectioningUnit >= unit)
-            endSection(unit, cmd);
+    append(Atom::SectionLeft, QString::number(unit));
+    priv->constructExtra();
+    priv->extra->tableOfContents.append(priv->text.lastAtom());
+    priv->extra->tableOfContentsLevels.append(unit);
+    enterPara(Atom::SectionHeadingLeft,
+              Atom::SectionHeadingRight,
+              QString::number(unit));
+    currentSection = unit;
 
-        int delta = unit - priv->extra->sectioningUnit;
-        append(Atom::SectionLeft, QString::number(delta));
-        priv->constructExtra();
-        priv->extra->tableOfContents.append(priv->text.lastAtom());
-        priv->extra->tableOfContentsLevels.append(unit);
-        enterPara(Atom::SectionHeadingLeft,
-                  Atom::SectionHeadingRight,
-                  QString::number(delta));
-        currentSectioningUnit = unit;
-    }
 }
 
 void DocParser::endSection(int unit, int endCmd)
 {
     leavePara();
-
-    if (unit < priv->extra->sectioningUnit) {
-        location().warning(tr("Unexpected '\\%1' in this documentation")
-                            .arg(cmdName(endCmd)));
-    }
-    else if (unit > currentSectioningUnit) {
-        location().warning(tr("Unexpected '\\%1' at this point")
-                            .arg(cmdName(endCmd)));
-    }
-    else {
-        while (currentSectioningUnit >= unit) {
-            int delta = currentSectioningUnit - priv->extra->sectioningUnit;
-            append(Atom::SectionRight, QString::number(delta));
-            currentSectioningUnit =
-                    (Doc::SectioningUnit) (currentSectioningUnit - 1);
-        }
-    }
+    append(Atom::SectionRight, QString::number(currentSection));
+    currentSection = (Doc::NoSection);
 }
 
 void DocParser::parseAlso()
@@ -2141,7 +2181,7 @@ QString DocParser::expandMacroToString(const QString &name, const QString &def, 
     }
 }
 
-Doc::SectioningUnit DocParser::getSectioningUnit()
+Doc::Sections DocParser::getSectioningUnit()
 {
     QString name = getOptionalArgument();
 
@@ -2164,11 +2204,11 @@ Doc::SectioningUnit DocParser::getSectioningUnit()
         return Doc::Section4;
     }
     else if (name.isEmpty()) {
-        return Doc::Section4;
+        return Doc::NoSection;
     }
     else {
-        location().warning(tr("Invalid sectioning unit '%1'").arg(name));
-        return Doc::Book;
+        location().warning(tr("Invalid section '%1'").arg(name));
+        return Doc::NoSection;
     }
 }
 
@@ -2508,14 +2548,12 @@ int DocParser::endCmdFor(int cmd)
         return CMD_ENDCODE;
     case CMD_DIV:
         return CMD_ENDDIV;
-#ifdef QDOC_QML        
     case CMD_QML:
         return CMD_ENDQML;
     case CMD_QMLTEXT:
         return CMD_ENDQMLTEXT;
     case CMD_JS:
         return CMD_ENDJS;
-#endif        
     case CMD_FOOTNOTE:
         return CMD_ENDFOOTNOTE;
     case CMD_LEGALESE:
@@ -2645,11 +2683,7 @@ QString DocParser::slashed(const QString& str)
 }
 
 #define COMMAND_BRIEF                   Doc::alias("brief")
-
-#ifdef QDOC_QML
 #define COMMAND_QMLBRIEF                Doc::alias("qmlbrief")
-#endif
-
 
 Doc::Doc(const Location& start_loc,
          const Location& end_loc,
@@ -2882,7 +2916,7 @@ const QString& Doc::baseName() const
     }
 }
 
-Doc::SectioningUnit Doc::granularity() const
+Doc::Sections Doc::granularity() const
 {
     if (priv == 0 || priv->extra == 0) {
         return DocPrivateExtra().granularity;
@@ -2975,9 +3009,7 @@ void Doc::initialize(const Config& config)
     DocParser::sourceDirs = config.getStringList(CONFIG_SOURCEDIRS);
     DocParser::quoting = config.getBool(CONFIG_QUOTINGINFORMATION);
 
-#ifdef QDOC_QML
     QmlClassNode::qmlOnly = config.getBool(CONFIG_QMLONLY);
-#endif
 
     QStringMap reverseAliasMap;
 

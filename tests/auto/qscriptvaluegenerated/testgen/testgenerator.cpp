@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -116,29 +116,29 @@ static QString generateLicence()
             "** This file is part of the test suite of the Qt Toolkit.\n"
             "**\n"
             "** $QT_BEGIN_LICENSE:LGPL$\n"
-            "** No Commercial Usage\n"
-            "** This file contains pre-release code and may not be distributed.\n"
-            "** You may use this file in accordance with the terms and conditions\n"
-            "** contained in the Technology Preview License Agreement accompanying\n"
-            "** this package.\n"
-            "**\n"
             "** GNU Lesser General Public License Usage\n"
-            "** Alternatively, this file may be used under the terms of the GNU Lesser\n"
-            "** General Public License version 2.1 as published by the Free Software\n"
-            "** Foundation and appearing in the file LICENSE.LGPL included in the\n"
-            "** packaging of this file.  Please review the following information to\n"
-            "** ensure the GNU Lesser General Public License version 2.1 requirements\n"
-            "** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.\n"
+            "** This file may be used under the terms of the GNU Lesser General Public\n"
+            "** License version 2.1 as published by the Free Software Foundation and\n"
+            "** appearing in the file LICENSE.LGPL included in the packaging of this\n"
+            "** file. Please review the following information to ensure the GNU Lesser\n"
+            "** General Public License version 2.1 requirements will be met:\n"
+            "** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.\n"
             "**\n"
             "** In addition, as a special exception, Nokia gives you certain additional\n"
-            "** rights.  These rights are described in the Nokia Qt LGPL Exception\n"
+            "** rights. These rights are described in the Nokia Qt LGPL Exception\n"
             "** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.\n"
             "**\n"
-            "** If you have questions regarding the use of this file, please contact\n"
-            "** Nokia at qt-info@nokia.com.\n"
+            "** GNU General Public License Usage\n"
+            "** Alternatively, this file may be used under the terms of the GNU General\n"
+            "** Public License version 3.0 as published by the Free Software Foundation\n"
+            "** and appearing in the file LICENSE.GPL included in the packaging of this\n"
+            "** file. Please review the following information to ensure the GNU General\n"
+            "** Public License version 3.0 requirements will be met:\n"
+            "** http://www.gnu.org/copyleft/gpl.html.\n"
             "**\n"
-            "**\n"
-            "**\n"
+            "** Other Usage\n"
+            "** Alternatively, this file may be used in accordance with the terms and\n"
+            "** conditions contained in a signed written agreement between you and Nokia.\n"
             "**\n"
             "**\n"
             "**\n"
@@ -467,7 +467,7 @@ QString generateCastDef<qsreal>(const QList<QPair<QString, qsreal> >& list)
                       QString::number(list.count()));
 }
 
-static QString generateCompareDef(const QString& comparisionType, const QList<QString> tags)
+static QString generateCompareDef(const QString& comparisonType, const QList<QString> tags)
 {
     static const QString templ = "\n"\
                                  "void tst_QScriptValueGenerated::%1_initData()\n"\
@@ -501,10 +501,11 @@ static QString generateCompareDef(const QString& comparisionType, const QList<QS
                                  "}\n"\
                                  "\n"\
                                  "DEFINE_TEST_FUNCTION(%1)\n";
-    Q_ASSERT(comparisionType == "strictlyEquals"
-             || comparisionType == "equals"
-             || comparisionType == "lessThan"
-             || comparisionType == "instanceOf");
+    if (comparisonType != "strictlyEquals"
+        && comparisonType != "equals"
+        && comparisonType != "lessThan"
+        && comparisonType != "instanceOf")
+        qFatal("%s: Unknown comparisonType: %s", Q_FUNC_INFO, qPrintable(comparisonType));
     QString result = templ;
 
     QStringList set;
@@ -516,7 +517,7 @@ static QString generateCompareDef(const QString& comparisionType, const QList<QS
         set.append(escape(tmp));
         set.append("\"");
     }
-    return result.arg(comparisionType, set.join(""), QString::number(tags.count()));
+    return result.arg(comparisonType, set.join(""), QString::number(tags.count()));
 }
 
 static QString generateInitDef(const QVector<QString>& allDataTags)
@@ -545,6 +546,17 @@ static void squashTags(QString dataTag, const QVector<bool>& results, QList<QStr
     }
 }
 
+static QString streamStatusString(QDataStream::Status s)
+{
+    switch (s) {
+    case QDataStream::ReadPastEnd:
+        return QString("ReadPastEnd");
+    case QDataStream::ReadCorruptData:
+        return QString("ReadCorruptData");
+    default:
+        return QString("Unknown (%1)").arg(static_cast<int>(s));
+    }
+}
 
 QHash<QString, QString> TestGenerator::generateTest()
 {
@@ -596,7 +608,10 @@ QHash<QString, QString> TestGenerator::generateTest()
     m_tempFile.seek(0);
     QDataStream in(&m_tempFile);
     in >> dataTags;
-    Q_ASSERT(in.status() == in.Ok);
+    if (in.status() != in.Ok)
+        qFatal("%s: stream has bad status %s after reading dataTags",
+               Q_FUNC_INFO,
+               qPrintable(streamStatusString(in.status())));
 
     while(!in.atEnd())
     {
@@ -720,10 +735,13 @@ QHash<QString, QString> TestGenerator::generateTest()
         castUInt32List.append(QPair<QString, quint32>(dataTag, castUInt32Res));
         castUInt16List.append(QPair<QString, quint16>(dataTag, castUInt16Res));
 
-        Q_ASSERT(in.status() == in.Ok);
+        if (in.status() != in.Ok)
+            qFatal("%s: stream has bad status %s after reading data items",
+                   Q_FUNC_INFO,
+                   qPrintable(streamStatusString(in.status())));
     }
-
-    Q_ASSERT(in.atEnd());
+    if (!in.atEnd())
+        qFatal("%s: stream has more data after reading all data items", Q_FUNC_INFO);
 
     // Generate.
     QHash<QString, QString> result;

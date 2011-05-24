@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -3017,39 +3017,6 @@ static QSizeF wfh(Qt::SizeHint /*which*/, const QSizeF &constraint)
     }
     return result;
 }
-
-static qreal growthFactorBelowPreferredSize(qreal desired, qreal sumAvailable, qreal sumDesired)
-{
-    Q_ASSERT(sumDesired != 0.0);
-    return desired * qPow(sumAvailable / sumDesired, desired / sumDesired);
-}
-
-static void expectedWidth(qreal minSize1, qreal prefSize1,
-                          qreal minSize2, qreal prefSize2,
-                          qreal targetSize, qreal *width1, qreal *width2)
-{
-    qreal sumAvail,factor1,factor2;
-    // stretch behaviour is different below and above preferred size...
-    if (targetSize < prefSize1 + prefSize2) {
-        sumAvail = targetSize - minSize1 - minSize2;
-        const qreal desired1 = prefSize1 - minSize1;
-        const qreal desired2 = prefSize2 - minSize2;
-        const qreal sumDesired = desired1 + desired2;
-        factor1 = growthFactorBelowPreferredSize(desired1, sumAvail, sumDesired);
-        factor2 = growthFactorBelowPreferredSize(desired2, sumAvail, sumDesired);
-        const qreal sumFactors = factor1 + factor2;
-        *width1 = sumAvail*factor1/sumFactors + minSize1;
-        *width2 = sumAvail*factor2/sumFactors + minSize2;
-    } else {
-        sumAvail = targetSize - prefSize1 - prefSize2;
-        factor1 = prefSize1;
-        factor2 = prefSize2;
-        const qreal sumFactors = factor1 + factor2;
-        *width1 = sumAvail*factor1/sumFactors + prefSize1;
-        *width2 = sumAvail*factor2/sumFactors + prefSize2;
-    }
-}
-
 
 bool qFuzzyCompare(const QSizeF &a, const QSizeF &b)
 {

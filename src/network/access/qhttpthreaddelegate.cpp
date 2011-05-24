@@ -7,29 +7,29 @@
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+//#define QHTTPTHREADDELEGATE_DEBUG
 #include "qhttpthreaddelegate_p.h"
 
 #include <QThread>
@@ -50,6 +51,7 @@
 #include "private/qnetworkaccesscache_p.h"
 #include "private/qnoncontiguousbytedevice_p.h"
 
+#ifndef QT_NO_HTTP
 
 QT_BEGIN_NAMESPACE
 
@@ -136,6 +138,8 @@ static QByteArray makeCacheKey(QUrl &url, QNetworkProxy *proxy)
             result = key.toEncoded();
         }
     }
+#else
+    Q_UNUSED(proxy)
 #endif
 
     return "http-connection:" + result;
@@ -146,8 +150,13 @@ class QNetworkAccessCachedHttpConnection: public QHttpNetworkConnection,
 {
     // Q_OBJECT
 public:
+#ifdef QT_NO_BEARERMANAGEMENT
     QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt)
         : QHttpNetworkConnection(hostName, port, encrypt)
+#else
+    QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt, QSharedPointer<QNetworkSession> networkSession)
+        : QHttpNetworkConnection(hostName, port, encrypt, /*parent=*/0, networkSession)
+#endif
     {
         setExpires(true);
         setShareable(true);
@@ -195,12 +204,16 @@ QHttpThreadDelegate::QHttpThreadDelegate(QObject *parent) :
     , downloadBuffer(0)
     , httpConnection(0)
     , httpReply(0)
+    , synchronousRequestLoop(0)
 {
 }
 
 // This is invoked as BlockingQueuedConnection from QNetworkAccessHttpBackend in the user thread
 void QHttpThreadDelegate::startRequestSynchronously()
 {
+#ifdef QHTTPTHREADDELEGATE_DEBUG
+    qDebug() << "QHttpThreadDelegate::startRequestSynchronously() thread=" << QThread::currentThreadId();
+#endif
     synchronous = true;
 
     QEventLoop synchronousRequestLoop;
@@ -215,12 +228,18 @@ void QHttpThreadDelegate::startRequestSynchronously()
     connections.localData()->releaseEntry(cacheKey);
     connections.setLocalData(0);
 
+#ifdef QHTTPTHREADDELEGATE_DEBUG
+    qDebug() << "QHttpThreadDelegate::startRequestSynchronously() thread=" << QThread::currentThreadId() << "finished";
+#endif
 }
 
 
 // This is invoked as QueuedConnection from QNetworkAccessHttpBackend in the user thread
 void QHttpThreadDelegate::startRequest()
 {
+#ifdef QHTTPTHREADDELEGATE_DEBUG
+    qDebug() << "QHttpThreadDelegate::startRequest() thread=" << QThread::currentThreadId();
+#endif
     // Check QThreadStorage for the QNetworkAccessCache
     // If not there, create this connection cache
     if (!connections.hasLocalData()) {
@@ -231,11 +250,13 @@ void QHttpThreadDelegate::startRequest()
     QUrl urlCopy = httpRequest.url();
     urlCopy.setPort(urlCopy.port(ssl ? 443 : 80));
 
+#ifndef QT_NO_NETWORKPROXY
     if (transparentProxy.type() != QNetworkProxy::NoProxy)
         cacheKey = makeCacheKey(urlCopy, &transparentProxy);
     else if (cacheProxy.type() != QNetworkProxy::NoProxy)
         cacheKey = makeCacheKey(urlCopy, &cacheProxy);
     else
+#endif
         cacheKey = makeCacheKey(urlCopy, 0);
 
 
@@ -244,10 +265,14 @@ void QHttpThreadDelegate::startRequest()
     if (httpConnection == 0) {
         // no entry in cache; create an object
         // the http object is actually a QHttpNetworkConnection
+#ifdef QT_NO_BEARERMANAGEMENT
         httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl);
+#else
+        httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl, networkSession);
+#endif
 #ifndef QT_NO_OPENSSL
         // Set the QSslConfiguration from this QNetworkRequest.
-        if (ssl) {
+        if (ssl && incomingSslConfiguration != QSslConfiguration::defaultConfiguration()) {
             httpConnection->setSslConfiguration(incomingSslConfiguration);
         }
 #endif
@@ -305,15 +330,22 @@ void QHttpThreadDelegate::startRequest()
 // This gets called from the user thread or by the synchronous HTTP timeout timer
 void QHttpThreadDelegate::abortRequest()
 {
+#ifdef QHTTPTHREADDELEGATE_DEBUG
+    qDebug() << "QHttpThreadDelegate::abortRequest() thread=" << QThread::currentThreadId() << "sync=" << synchronous;
+#endif
     if (httpReply) {
         delete httpReply;
         httpReply = 0;
-        this->deleteLater();
     }
 
     // Got aborted by the timeout timer
-    if (synchronous)
+    if (synchronous) {
         incomingErrorCode = QNetworkReply::TimeoutError;
+        QMetaObject::invokeMethod(synchronousRequestLoop, "quit", Qt::QueuedConnection);
+    } else {
+        //only delete this for asynchronous mode or QNetworkAccessHttpBackend will crash - see QNetworkAccessHttpBackend::postRequest()
+        this->deleteLater();
+    }
 }
 
 void QHttpThreadDelegate::readyReadSlot()
@@ -334,6 +366,9 @@ void QHttpThreadDelegate::finishedSlot()
         qWarning() << "QHttpThreadDelegate::finishedSlot: HTTP reply had already been deleted, internal problem. Please report.";
         return;
     }
+#ifdef QHTTPTHREADDELEGATE_DEBUG
+    qDebug() << "QHttpThreadDelegate::finishedSlot() thread=" << QThread::currentThreadId() << "result=" << httpReply->statusCode();
+#endif
 
     // If there is still some data left emit that now
     while (httpReply->readAnyAvailable()) {
@@ -363,6 +398,9 @@ void QHttpThreadDelegate::finishedSlot()
 
 void QHttpThreadDelegate::synchronousFinishedSlot()
 {
+#ifdef QHTTPTHREADDELEGATE_DEBUG
+    qDebug() << "QHttpThreadDelegate::synchronousFinishedSlot() thread=" << QThread::currentThreadId() << "result=" << httpReply->statusCode();
+#endif
     if (httpReply->statusCode() >= 400) {
             // it's an error reply
             QString msg = QLatin1String(QT_TRANSLATE_NOOP("QNetworkReply",
@@ -384,6 +422,9 @@ void QHttpThreadDelegate::finishedWithErrorSlot(QNetworkReply::NetworkError erro
         qWarning() << "QHttpThreadDelegate::finishedWithErrorSlot: HTTP reply had already been deleted, internal problem. Please report.";
         return;
     }
+#ifdef QHTTPTHREADDELEGATE_DEBUG
+    qDebug() << "QHttpThreadDelegate::finishedWithErrorSlot() thread=" << QThread::currentThreadId() << "error=" << errorCode << detail;
+#endif
 
 #ifndef QT_NO_OPENSSL
     if (ssl)
@@ -401,6 +442,9 @@ void QHttpThreadDelegate::finishedWithErrorSlot(QNetworkReply::NetworkError erro
 
 void QHttpThreadDelegate::synchronousFinishedWithErrorSlot(QNetworkReply::NetworkError errorCode, const QString &detail)
 {
+#ifdef QHTTPTHREADDELEGATE_DEBUG
+    qDebug() << "QHttpThreadDelegate::synchronousFinishedWithErrorSlot() thread=" << QThread::currentThreadId() << "error=" << errorCode << detail;
+#endif
     incomingErrorCode = errorCode;
     incomingErrorDetail = detail;
 
@@ -416,6 +460,10 @@ static void downloadBufferDeleter(char *ptr)
 
 void QHttpThreadDelegate::headerChangedSlot()
 {
+#ifdef QHTTPTHREADDELEGATE_DEBUG
+    qDebug() << "QHttpThreadDelegate::headerChangedSlot() thread=" << QThread::currentThreadId();
+#endif
+
 #ifndef QT_NO_OPENSSL
     if (ssl)
         emit sslConfigurationChanged(httpReply->sslConfiguration());
@@ -448,6 +496,9 @@ void QHttpThreadDelegate::headerChangedSlot()
 
 void QHttpThreadDelegate::synchronousHeaderChangedSlot()
 {
+#ifdef QHTTPTHREADDELEGATE_DEBUG
+    qDebug() << "QHttpThreadDelegate::synchronousHeaderChangedSlot() thread=" << QThread::currentThreadId();
+#endif
     // Store the information we need in this object, the QNetworkAccessHttpBackend will later read it
     incomingHeaders = httpReply->header();
     incomingStatusCode = httpReply->statusCode();
@@ -492,6 +543,9 @@ void QHttpThreadDelegate::sslErrorsSlot(const QList<QSslError> &errors)
 void QHttpThreadDelegate::synchronousAuthenticationRequiredSlot(const QHttpNetworkRequest &request, QAuthenticator *a)
 {
     Q_UNUSED(request);
+#ifdef QHTTPTHREADDELEGATE_DEBUG
+    qDebug() << "QHttpThreadDelegate::synchronousAuthenticationRequiredSlot() thread=" << QThread::currentThreadId();
+#endif
 
     // Ask the credential cache
     QNetworkAuthenticationCredential credential = authenticationManager->fetchCachedCredentials(httpRequest.url(), a);
@@ -507,6 +561,9 @@ void QHttpThreadDelegate::synchronousAuthenticationRequiredSlot(const QHttpNetwo
 #ifndef QT_NO_NETWORKPROXY
 void  QHttpThreadDelegate::synchronousProxyAuthenticationRequiredSlot(const QNetworkProxy &p, QAuthenticator *a)
 {
+#ifdef QHTTPTHREADDELEGATE_DEBUG
+    qDebug() << "QHttpThreadDelegate::synchronousProxyAuthenticationRequiredSlot() thread=" << QThread::currentThreadId();
+#endif
     // Ask the credential cache
     QNetworkAuthenticationCredential credential = authenticationManager->fetchCachedProxyCredentials(p, a);
     if (!credential.isNull()) {
@@ -519,5 +576,7 @@ void  QHttpThreadDelegate::synchronousProxyAuthenticationRequiredSlot(const QNet
 }
 
 #endif
+
+#endif // QT_NO_HTTP
 
 QT_END_NAMESPACE

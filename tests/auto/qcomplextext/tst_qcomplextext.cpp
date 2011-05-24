@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -71,6 +71,10 @@ private slots:
     void bidiReorderString();
     void bidiCursor_qtbug2795();
     void bidiCursor_PDF();
+    void bidiCursorMovement_data();
+    void bidiCursorMovement();
+    void bidiCursorLogicalMovement_data();
+    void bidiCursorLogicalMovement();
 };
 
 tst_QComplexText::tst_QComplexText()
@@ -183,6 +187,90 @@ void tst_QComplexText::bidiCursor_qtbug2795()
 
     // The cursor should remain at the same position after a digit is appended
     QVERIFY(x1 == x2);
+}
+
+void tst_QComplexText::bidiCursorMovement_data()
+{
+    QTest::addColumn<QString>("logical");
+    QTest::addColumn<int>("basicDir");
+
+    const LV *data = logical_visual;
+    while ( data->name ) {
+        //next we fill it with data
+        QTest::newRow( data->name )
+            << QString::fromUtf8( data->logical )
+            << (int) data->basicDir;
+        data++;
+    }
+}
+
+void tst_QComplexText::bidiCursorMovement()
+{
+    QFETCH(QString, logical);
+    QFETCH(int,  basicDir);
+
+    QTextLayout layout(logical);
+
+    QTextOption option = layout.textOption();
+    option.setTextDirection(basicDir == QChar::DirL ? Qt::LeftToRight : Qt::RightToLeft);
+    layout.setTextOption(option);
+    layout.setCursorMoveStyle(Qt::VisualMoveStyle);
+    bool moved;
+    int oldPos, newPos = 0;
+    qreal x, newX;
+
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    layout.endLayout();
+
+    newX = line.cursorToX(0);
+    do {
+        oldPos = newPos;
+        x = newX;
+        newX = line.cursorToX(oldPos);
+        if (basicDir == QChar::DirL) {
+            QVERIFY(newX >= x);
+            newPos = layout.rightCursorPosition(oldPos);
+        } else
+        {
+            QVERIFY(newX <= x);
+            newPos = layout.leftCursorPosition(oldPos);
+        }
+        moved = (oldPos != newPos);
+    } while (moved);
+}
+
+void tst_QComplexText::bidiCursorLogicalMovement_data()
+{
+    bidiCursorMovement_data();
+}
+
+void tst_QComplexText::bidiCursorLogicalMovement()
+{
+    QFETCH(QString, logical);
+    QFETCH(int,  basicDir);
+
+    QTextLayout layout(logical);
+
+    QTextOption option = layout.textOption();
+    option.setTextDirection(basicDir == QChar::DirL ? Qt::LeftToRight : Qt::RightToLeft);
+    layout.setTextOption(option);
+    bool moved;
+    int oldPos, newPos = 0;
+
+    do {
+        oldPos = newPos;
+        newPos = layout.nextCursorPosition(oldPos);
+        QVERIFY(newPos >= oldPos);
+        moved = (oldPos != newPos);
+    } while (moved);
+
+    do {
+        oldPos = newPos;
+        newPos = layout.previousCursorPosition(oldPos);
+        QVERIFY(newPos <= oldPos);
+        moved = (oldPos != newPos);
+    } while (moved);
 }
 
 void tst_QComplexText::bidiCursor_PDF()

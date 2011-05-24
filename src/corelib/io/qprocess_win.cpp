@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -278,29 +278,55 @@ static QString qt_create_commandline(const QString &program, const QStringList &
     return args;
 }
 
-static QByteArray qt_create_environment(const QHash<QString, QString> &environment)
+QProcessEnvironment QProcessEnvironment::systemEnvironment()
+{
+    QProcessEnvironment env;
+#if !defined(Q_OS_WINCE)
+    // Calls to setenv() affect the low-level environment as well.
+    // This is not the case the other way round.
+    if (wchar_t *envStrings = GetEnvironmentStringsW()) {
+        for (const wchar_t *entry = envStrings; *entry; ) {
+            int entryLen = wcslen(entry);
+            if (const wchar_t *equal = wcschr(entry, L'=')) {
+                int nameLen = equal - entry;
+                QString name = QString::fromWCharArray(entry, nameLen);
+                QString value = QString::fromWCharArray(equal + 1, entryLen - nameLen - 1);
+                env.d->hash.insert(QProcessEnvironmentPrivate::Key(name), value);
+            }
+            entry += entryLen + 1;
+        }
+        FreeEnvironmentStringsW(envStrings);
+    }
+#endif
+    return env;
+}
+
+#if !defined(Q_OS_WINCE)
+static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Hash &environment)
 {
     QByteArray envlist;
     if (!environment.isEmpty()) {
-        QHash<QString, QString> copy = environment;
+        QProcessEnvironmentPrivate::Hash copy = environment;
 
         // add PATH if necessary (for DLL loading)
-        if (!copy.contains(QLatin1String("PATH"))) {
+        QProcessEnvironmentPrivate::Key pathKey(QLatin1String("PATH"));
+        if (!copy.contains(pathKey)) {
             QByteArray path = qgetenv("PATH");
             if (!path.isEmpty())
-                copy.insert(QLatin1String("PATH"), QString::fromLocal8Bit(path));
+                copy.insert(pathKey, QString::fromLocal8Bit(path));
         }
 
         // add systemroot if needed
-        if (!copy.contains(QLatin1String("SYSTEMROOT"))) {
-            QByteArray systemRoot = qgetenv("SYSTEMROOT");
+        QProcessEnvironmentPrivate::Key rootKey(QLatin1String("SystemRoot"));
+        if (!copy.contains(rootKey)) {
+            QByteArray systemRoot = qgetenv("SystemRoot");
             if (!systemRoot.isEmpty())
-                copy.insert(QLatin1String("SYSTEMROOT"), QString::fromLocal8Bit(systemRoot));
+                copy.insert(rootKey, QString::fromLocal8Bit(systemRoot));
         }
 
         int pos = 0;
-        QHash<QString, QString>::ConstIterator it = copy.constBegin(),
-                                              end = copy.constEnd();
+        QProcessEnvironmentPrivate::Hash::ConstIterator it = copy.constBegin(),
+                                                       end = copy.constEnd();
 
         static const wchar_t equal = L'=';
         static const wchar_t nul = L'\0';
@@ -335,6 +361,7 @@ static QByteArray qt_create_environment(const QHash<QString, QString> &environme
     }
     return envlist;
 }
+#endif
 
 void QProcessPrivate::startProcess()
 {

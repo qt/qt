@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -133,7 +133,16 @@ static void destroy_current_thread_data(void *p)
     // this destructor function, so we need to set it back to the
     // right value...
     pthread_setspecific(current_thread_data_key, p);
-    reinterpret_cast<QThreadData *>(p)->deref();
+    QThreadData *data = static_cast<QThreadData *>(p);
+    if (data->isAdopted) {
+        QThread *thread = data->thread;
+        Q_ASSERT(thread);
+        QThreadPrivate *thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
+        Q_ASSERT(!thread_p->finished);
+        thread_p->finish(thread);
+    }
+    data->deref();
+
     // ... but we must reset it to zero before returning so we aren't
     // called again (POSIX allows implementations to call destructor
     // functions repeatedly until all values are zero)
@@ -161,18 +170,28 @@ Q_DESTRUCTOR_FUNCTION(destroy_current_thread_data_key)
 // Utility functions for getting, setting and clearing thread specific data.
 static QThreadData *get_thread_data()
 {
+#ifdef HAVE_TLS
+    return currentThreadData;
+#else
     pthread_once(&current_thread_data_once, create_current_thread_data_key);
     return reinterpret_cast<QThreadData *>(pthread_getspecific(current_thread_data_key));
+#endif
 }
 
 static void set_thread_data(QThreadData *data)
 {
+#ifdef HAVE_TLS
+    currentThreadData = data;
+#endif
     pthread_once(&current_thread_data_once, create_current_thread_data_key);
     pthread_setspecific(current_thread_data_key, data);
 }
 
 static void clear_thread_data()
 {
+#ifdef HAVE_TLS
+    currentThreadData = 0;
+#endif
     pthread_setspecific(current_thread_data_key, 0);
 }
 
@@ -202,6 +221,8 @@ QThreadData *QThreadData::current()
             }
             data->deref();
         }
+        data->isAdopted = true;
+        data->threadId = (Qt::HANDLE)pthread_self();
         if (!QCoreApplicationPrivate::theMainThread)
             QCoreApplicationPrivate::theMainThread = data->thread;
     }
@@ -259,6 +280,7 @@ void *QThreadPrivate::start(void *arg)
         thr->setPriority(QThread::Priority(thr->d_func()->priority & ~ThreadPriorityResetFlag));
     }
 
+    data->threadId = (Qt::HANDLE)pthread_self();
     set_thread_data(data);
 
     data->ref();

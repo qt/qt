@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -47,6 +47,7 @@
 #include <private/qimage_p.h>
 #include <qstatictext.h>
 #include <private/qstatictext_p.h>
+#include <private/qrawfont_p.h>
 
 #include <QDebug>
 
@@ -533,16 +534,6 @@ QString QPaintBuffer::commandDescription(int command) const
         QTextItemIntCopy *tiCopy = reinterpret_cast<QTextItemIntCopy *>(qvariant_cast<void *>(d_ptr->variants.at(cmd.offset)));
         QTextItemInt &ti = (*tiCopy)();
         QString text(ti.text());
-
-        QFont font(ti.font());
-        font.setUnderline(false);
-        font.setStrikeOut(false);
-        font.setOverline(false);
-
-        const QTextItemInt &si = static_cast<const QTextItemInt &>(ti);
-        qreal justificationWidth = 0;
-        if (si.justified)
-            justificationWidth = si.width.toReal();
 
         debug << "Cmd_DrawTextItem:" << pos << " " << text;
         break; }
@@ -1754,26 +1745,38 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
         painter->setClipRegion(region, Qt::ClipOperation(cmd.extra));
         break; }
         
+#if !defined(QT_NO_RAWFONT)
     case QPaintBufferPrivate::Cmd_DrawStaticText: {
             
             QVariantList variants(d->variants.at(cmd.offset).value<QVariantList>());
             
             QFont font = variants.at(0).value<QFont>();
 
-            QVector<quint32> glyphs;
+            QVector<quint32> glyphIndexes;
             QVector<QPointF> positions;
 
             for (int i=0; i<(variants.size() - 1) / 2; ++i) {
-                glyphs.append(variants.at(i*2 + 1).toUInt());
+                glyphIndexes.append(variants.at(i*2 + 1).toUInt());
                 positions.append(variants.at(i*2 + 2).toPointF());
             }
 
             painter->setFont(font);
 
-            qt_draw_glyphs(painter, glyphs.constData(), positions.constData(), glyphs.size());
-            
-        break;
+            QRawFont rawFont;
+            QRawFontPrivate *rawFontD = QRawFontPrivate::get(rawFont);
+            QFontPrivate *fontD = QFontPrivate::get(font);
+            rawFontD->fontEngine = fontD->engineForScript(QUnicodeTables::Common);
+            rawFontD->fontEngine->ref.ref();
+
+            QGlyphRun glyphs;
+            glyphs.setRawFont(rawFont);
+            glyphs.setGlyphIndexes(glyphIndexes);
+            glyphs.setPositions(positions);
+
+            painter->drawGlyphRun(QPointF(), glyphs);
+            break;
     }
+#endif
 
     case QPaintBufferPrivate::Cmd_DrawText: {
         QPointF pos(d->floats.at(cmd.extra), d->floats.at(cmd.extra+1));

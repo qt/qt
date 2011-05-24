@@ -7,29 +7,29 @@
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -377,28 +377,23 @@ static void qDBusUpdateDispatchStatus(DBusConnection *connection, DBusDispatchSt
 
 static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, void *data)
 {
-    // ### We may want to separate the server from the QDBusConnectionPrivate    
+    // ### We may want to separate the server from the QDBusConnectionPrivate
     Q_ASSERT(server); Q_UNUSED(server);
     Q_ASSERT(connection);
     Q_ASSERT(data);
 
     // keep the connection alive
     q_dbus_connection_ref(connection);
-    QDBusConnectionPrivate *d = new QDBusConnectionPrivate;
-    
-    // setConnection does the error handling for us
+    QDBusConnectionPrivate *d = static_cast<QDBusConnectionPrivate *>(data);
+
+    // setPeer does the error handling for us
     QDBusErrorInternal error;
     d->setPeer(connection, error);
 
     QDBusConnection retval = QDBusConnectionPrivate::q(d);
-    d->setBusService(retval);
-
-    //d->name = QString::number(reinterpret_cast<int>(d));
-    //d->setConnection(d->name, d); 
 
     // make QDBusServer emit the newConnection signal
-    QDBusConnectionPrivate *server_d = static_cast<QDBusConnectionPrivate *>(data);
-    server_d->serverConnection(retval);
+    d->serverConnection(retval);
 }
 
 } // extern "C"
@@ -435,6 +430,11 @@ static bool findObject(const QDBusConnectionPrivate::ObjectTreeNode *root,
                        const QString &fullpath, int &usedLength,
                        QDBusConnectionPrivate::ObjectTreeNode &result)
 {
+    if (!fullpath.compare(QLatin1String("/")) && root->obj) {
+        usedLength = 1;
+        result = *root;
+        return root;
+    }
     int start = 0;
     int length = fullpath.length();
     if (fullpath.at(0) == QLatin1Char('/'))
@@ -1036,11 +1036,10 @@ void QDBusConnectionPrivate::closeConnection()
     mode = InvalidMode; // prevent reentrancy
     baseService.clear();
 
-    if (oldMode == ServerMode) {
-        if (server) {
-            q_dbus_server_disconnect(server);
-        }
-    } else if (oldMode == ClientMode || oldMode == PeerMode) {
+    if (server)
+        q_dbus_server_disconnect(server);
+
+    if (oldMode == ClientMode || oldMode == PeerMode) {
         if (connection) {
             q_dbus_connection_close(connection);
             // send the "close" message
@@ -1515,7 +1514,7 @@ QDBusActivateObjectEvent::~QDBusActivateObjectEvent()
     // semaphore releasing happens in ~QMetaCallEvent
 }
 
-int QDBusActivateObjectEvent::placeMetaCall(QObject *)
+void QDBusActivateObjectEvent::placeMetaCall(QObject *)
 {
     QDBusConnectionPrivate *that = QDBusConnectionPrivate::d(connection);
 
@@ -1526,7 +1525,6 @@ int QDBusActivateObjectEvent::placeMetaCall(QObject *)
                                         QDBusLockerBase::AfterDeliver, that);
 
     handled = true;
-    return -1;
 }
 
 void QDBusConnectionPrivate::handleSignal(const QString &key, const QDBusMessage& msg)
@@ -1630,7 +1628,7 @@ void QDBusConnectionPrivate::setServer(DBusServer *s, const QDBusErrorInternal &
                                                                        this, 0);
     //qDebug() << "time_functions_set" << time_functions_set;
     Q_UNUSED(time_functions_set);
-    
+
     q_dbus_server_set_new_connection_function(server, qDBusNewConnection, this, 0);
 
     dbus_bool_t data_set = q_dbus_server_set_data(server, server_slot, this, 0);
@@ -1647,7 +1645,7 @@ void QDBusConnectionPrivate::setPeer(DBusConnection *c, const QDBusErrorInternal
 
     connection = c;
     mode = PeerMode;
-    
+
     q_dbus_connection_set_exit_on_disconnect(connection, false);
     q_dbus_connection_set_watch_functions(connection,
                                         qDBusAddWatch,
@@ -1667,6 +1665,31 @@ void QDBusConnectionPrivate::setPeer(DBusConnection *c, const QDBusErrorInternal
     QMetaObject::invokeMethod(this, "doDispatch", Qt::QueuedConnection);
 }
 
+static QDBusConnection::ConnectionCapabilities connectionCapabilies(DBusConnection *connection)
+{
+    QDBusConnection::ConnectionCapabilities result = 0;
+
+#if defined(QT_LINKED_LIBDBUS) && DBUS_VERSION < 0x010400
+    // no capabilities are possible
+#else
+# if !defined(QT_LINKED_LIBDBUS)
+    // run-time check if the next functions are available
+    int major, minor, micro;
+    q_dbus_get_version(&major, &minor, &micro);
+    if (major == 1 && minor < 4)
+        return result;
+# endif
+
+#ifndef DBUS_TYPE_UNIX_FD
+# define DBUS_TYPE_UNIX_FD int('h')
+#endif
+    if (q_dbus_connection_can_send_type(connection, DBUS_TYPE_UNIX_FD))
+        result |= QDBusConnection::UnixFileDescriptorPassing;
+#endif
+
+    return result;
+}
+
 void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusErrorInternal &error)
 {
     if (!dbc) {
@@ -1680,6 +1703,7 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
     const char *service = q_dbus_bus_get_unique_name(connection);
     Q_ASSERT(service);
     baseService = QString::fromUtf8(service);
+    capabilities = connectionCapabilies(connection);
 
     q_dbus_connection_set_exit_on_disconnect(connection, false);
     q_dbus_connection_set_watch_functions(connection, qDBusAddWatch, qDBusRemoveWatch,
@@ -2073,21 +2097,23 @@ void QDBusConnectionPrivate::connectSignal(const QString &key, const SignalHook 
     matchRefCounts.insert(hook.matchRule, 1);
 
     if (connection) {
-        qDBusDebug("Adding rule: %s", hook.matchRule.constData());
-        q_dbus_bus_add_match(connection, hook.matchRule, NULL);
+        if (mode != QDBusConnectionPrivate::PeerMode) {
+            qDBusDebug("Adding rule: %s", hook.matchRule.constData());
+            q_dbus_bus_add_match(connection, hook.matchRule, NULL);
 
-        // Successfully connected the signal
-        // Do we need to watch for this name?
-        if (shouldWatchService(hook.service)) {
-            WatchedServicesHash::mapped_type &data = watchedServices[hook.service];
-            if (++data.refcount == 1) {
-                // we need to watch for this service changing
-                connectSignal(dbusServiceString(), QString(), dbusInterfaceString(),
-                              QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
-                              this, SLOT(serviceOwnerChangedNoLock(QString,QString,QString)));
-                data.owner = getNameOwnerNoCache(hook.service);
-                qDBusDebug() << this << "Watching service" << hook.service << "for owner changes (current owner:"
-                             << data.owner << ")";
+            // Successfully connected the signal
+            // Do we need to watch for this name?
+            if (shouldWatchService(hook.service)) {
+                WatchedServicesHash::mapped_type &data = watchedServices[hook.service];
+                if (++data.refcount == 1) {
+                    // we need to watch for this service changing
+                    connectSignal(dbusServiceString(), QString(), dbusInterfaceString(),
+                                  QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
+                                  this, SLOT(serviceOwnerChangedNoLock(QString,QString,QString)));
+                    data.owner = getNameOwnerNoCache(hook.service);
+                    qDBusDebug() << this << "Watching service" << hook.service << "for owner changes (current owner:"
+                                 << data.owner << ")";
+                }
             }
         }
     }
@@ -2151,18 +2177,20 @@ QDBusConnectionPrivate::disconnectSignal(SignalHookHash::Iterator &it)
 
     // we don't care about errors here
     if (connection && erase) {
-        qDBusDebug("Removing rule: %s", hook.matchRule.constData());
-        q_dbus_bus_remove_match(connection, hook.matchRule, NULL);
+        if (mode != QDBusConnectionPrivate::PeerMode) {
+            qDBusDebug("Removing rule: %s", hook.matchRule.constData());
+            q_dbus_bus_remove_match(connection, hook.matchRule, NULL);
 
-        // Successfully disconnected the signal
-        // Were we watching for this name?
-        WatchedServicesHash::Iterator sit = watchedServices.find(hook.service);
-        if (sit != watchedServices.end()) {
-            if (--sit.value().refcount == 0) {
-                watchedServices.erase(sit);
-                disconnectSignal(dbusServiceString(), QString(), dbusInterfaceString(),
-                              QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
-                              this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+            // Successfully disconnected the signal
+            // Were we watching for this name?
+            WatchedServicesHash::Iterator sit = watchedServices.find(hook.service);
+            if (sit != watchedServices.end()) {
+                if (--sit.value().refcount == 0) {
+                    watchedServices.erase(sit);
+                    disconnectSignal(dbusServiceString(), QString(), dbusInterfaceString(),
+                                  QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
+                                  this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+                }
             }
         }
 
@@ -2365,7 +2393,7 @@ void QDBusConnectionPrivate::unregisterServiceNoLock(const QString &serviceName)
 
 bool QDBusConnectionPrivate::isServiceRegisteredByThread(const QString &serviceName) const
 {
-    if (serviceName == baseService)
+    if (!serviceName.isEmpty() && serviceName == baseService)
         return true;
     QStringList copy = serviceNames;
     return copy.contains(serviceName);

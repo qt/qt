@@ -7,29 +7,29 @@
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -319,6 +319,10 @@ void QFtpDTP::connectToHost(const QString & host, quint16 port)
         socket = 0;
     }
     socket = new QTcpSocket(this);
+#ifndef QT_NO_BEARERMANAGEMENT
+    //copy network session down to the socket
+    socket->setProperty("_q_networksession", property("_q_networksession"));
+#endif
     socket->setObjectName(QLatin1String("QFtpDTP Passive state socket"));
     connect(socket, SIGNAL(connected()), SLOT(socketConnected()));
     connect(socket, SIGNAL(readyRead()), SLOT(socketReadyRead()));
@@ -331,6 +335,10 @@ void QFtpDTP::connectToHost(const QString & host, quint16 port)
 
 int QFtpDTP::setupListener(const QHostAddress &address)
 {
+#ifndef QT_NO_BEARERMANAGEMENT
+    //copy network session down to the socket
+    listener.setProperty("_q_networksession", property("_q_networksession"));
+#endif
     if (!listener.isListening() && !listener.listen(address, 0))
         return -1;
     return listener.serverPort();
@@ -808,6 +816,11 @@ QFtpPI::QFtpPI(QObject *parent) :
 void QFtpPI::connectToHost(const QString &host, quint16 port)
 {
     emit connectState(QFtp::HostLookup);
+#ifndef QT_NO_BEARERMANAGEMENT
+    //copy network session down to the socket & DTP
+    commandSocket.setProperty("_q_networksession", property("_q_networksession"));
+    dtp.setProperty("_q_networksession", property("_q_networksession"));
+#endif
     commandSocket.connectToHost(host, port);
 }
 
@@ -2240,6 +2253,10 @@ void QFtpPrivate::_q_startNextCommand()
         c->rawCmds.clear();
         _q_piFinished(QLatin1String("Proxy set to ") + proxyHost + QLatin1Char(':') + QString::number(proxyPort));
     } else if (c->command == QFtp::ConnectToHost) {
+#ifndef QT_NO_BEARERMANAGEMENT
+        //copy network session down to the PI
+        pi.setProperty("_q_networksession", q->property("_q_networksession"));
+#endif
         if (!proxyHost.isEmpty()) {
             host = c->rawCmds[0];
             port = c->rawCmds[1].toUInt();

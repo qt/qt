@@ -7,29 +7,29 @@
 ** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -49,6 +49,7 @@
 #include "qxlibscreen.h"
 #include "qxlibclipboard.h"
 #include "qxlibdisplay.h"
+#include "qxlibnativeinterface.h"
 
 #if !defined(QT_NO_OPENGL)
 #if !defined(QT_OPENGL_ES_2)
@@ -66,9 +67,19 @@ QXlibIntegration::QXlibIntegration(bool useOpenGL)
     : mUseOpenGL(useOpenGL)
     , mFontDb(new QGenericUnixFontDatabase())
     , mClipboard(0)
+    , mNativeInterface(new QXlibNativeInterface)
 {
     mPrimaryScreen = new QXlibScreen();
     mScreens.append(mPrimaryScreen);
+}
+
+bool QXlibIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case ThreadedPixmaps: return true;
+    case OpenGL: return hasOpenGL();
+    default: return QPlatformIntegration::hasCapability(cap);
+    }
 }
 
 QPixmapData *QXlibIntegration::createPixmapData(QPixmapData::PixelType type) const
@@ -130,6 +141,11 @@ QPlatformClipboard * QXlibIntegration::clipboard() const
     return mClipboard;
 }
 
+QPlatformNativeInterface * QXlibIntegration::nativeInterface() const
+{
+    return mNativeInterface;
+}
+
 bool QXlibIntegration::hasOpenGL() const
 {
 #if !defined(QT_NO_OPENGL)
@@ -141,17 +157,17 @@ bool QXlibIntegration::hasOpenGL() const
     static bool wasEglInitialized = false;
     if (!eglHasbeenInitialized) {
         eglHasbeenInitialized = true;
-        const QXlibScreen *screen = static_cast<const QXlibScreen *>(mScreens.at(0));
+        QXlibScreen *screen = static_cast<QXlibScreen *>(mScreens.at(0));
         EGLint major, minor;
         eglBindAPI(EGL_OPENGL_ES_API);
         EGLDisplay disp = eglGetDisplay(screen->display()->nativeDisplay());
         wasEglInitialized = eglInitialize(disp,&major,&minor);
+        screen->setEglDisplay(disp);
     }
     return wasEglInitialized;
 #endif
 #endif
     return false;
 }
-
 
 QT_END_NAMESPACE

@@ -7,29 +7,29 @@
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -41,12 +41,13 @@
 
 #include "qnetworkaccessbackend_p.h"
 #include "qnetworkaccessmanager_p.h"
+#include "qnetworkconfigmanager.h"
 #include "qnetworkrequest.h"
 #include "qnetworkreply.h"
 #include "qnetworkreply_p.h"
 #include "QtCore/qhash.h"
 #include "QtCore/qmutex.h"
-#include "QtNetwork/qnetworksession.h"
+#include "QtNetwork/private/qnetworksession_p.h"
 
 #include "qnetworkaccesscachebackend_p.h"
 #include "qabstractnetworkcache.h"
@@ -343,8 +344,6 @@ void QNetworkAccessBackend::sslErrors(const QList<QSslError> &errors)
 #endif
 }
 
-#ifndef QT_NO_BEARERMANAGEMENT
-
 /*!
     Starts the backend.  Returns true if the backend is started.  Returns false if the backend
     could not be started due to an unopened or roaming session.  The caller should recall this
@@ -352,29 +351,62 @@ void QNetworkAccessBackend::sslErrors(const QList<QSslError> &errors)
 */
 bool QNetworkAccessBackend::start()
 {
-    if (!manager->networkSession) {
-        open();
-        return true;
-    }
+#ifndef QT_NO_BEARERMANAGEMENT
+    // For bearer, check if session start is required
+    if (manager->networkSession) {
+        // session required
+        if (manager->networkSession->isOpen() &&
+            manager->networkSession->state() == QNetworkSession::Connected) {
+            // Session is already open and ready to use.
+            // copy network session down to the backend
+            setProperty("_q_networksession", QVariant::fromValue(manager->networkSession));
+        } else {
+            // Session not ready, but can skip for loopback connections
 
-    // This is not ideal.
-    const QString host = reply->url.host();
-    if (host == QLatin1String("localhost") ||
-        QHostAddress(host) == QHostAddress::LocalHost ||
-        QHostAddress(host) == QHostAddress::LocalHostIPv6) {
-        // Don't need an open session for localhost access.
-        open();
-        return true;
-    }
+            // This is not ideal.
+            const QString host = reply->url.host();
 
-    if (manager->networkSession->isOpen() &&
-        manager->networkSession->state() == QNetworkSession::Connected) {
-        open();
-        return true;
+            if (host == QLatin1String("localhost") ||
+                QHostAddress(host) == QHostAddress::LocalHost ||
+                QHostAddress(host) == QHostAddress::LocalHostIPv6) {
+                // Don't need an open session for localhost access.
+            } else {
+                // need to wait for session to be opened
+                return false;
+            }
+        }
     }
-
-    return false;
-}
 #endif
+
+#ifndef QT_NO_NETWORKPROXY
+#ifndef QT_NO_BEARERMANAGEMENT
+    // Get the proxy settings from the network session (in the case of service networks,
+    // the proxy settings change depending which AP was activated)
+    QNetworkSession *session = manager->networkSession.data();
+    QNetworkConfiguration config;
+    if (session) {
+        QNetworkConfigurationManager configManager;
+        // The active configuration tells us what IAP is in use
+        QVariant v = session->sessionProperty(QLatin1String("ActiveConfiguration"));
+        if (v.isValid())
+            config = configManager.configurationFromIdentifier(qvariant_cast<QString>(v));
+        // Fallback to using the configuration if no active configuration
+        if (!config.isValid())
+            config = session->configuration();
+        // or unspecified configuration if that is no good either
+        if (!config.isValid())
+            config = QNetworkConfiguration();
+    }
+    reply->proxyList = manager->queryProxy(QNetworkProxyQuery(config, url()));
+#else // QT_NO_BEARERMANAGEMENT
+    // Without bearer management, the proxy depends only on the url
+    reply->proxyList = manager->queryProxy(QNetworkProxyQuery(url()));
+#endif
+#endif
+
+    // now start the request
+    open();
+    return true;
+}
 
 QT_END_NAMESPACE

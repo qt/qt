@@ -7,29 +7,29 @@
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -264,6 +264,7 @@ bool TSReader::read(Translator &translator)
             //qDebug() << "TS " << attributes();
             QHash<QString, int> currentLine;
             QString currentFile;
+            bool maybeRelative = false, maybeAbsolute = false;
 
             QXmlStreamAttributes atts = attributes();
             //QString version = atts.value(strversion).toString();
@@ -342,10 +343,12 @@ bool TSReader::read(Translator &translator)
                                     msg.setTranslatorComment(readContents());
                                 } else if (elementStarts(strlocation)) {
                                     // <location/>
+                                    maybeAbsolute = true;
                                     QXmlStreamAttributes atts = attributes();
                                     QString fileName = atts.value(strfilename).toString();
                                     if (fileName.isEmpty()) {
                                         fileName = currentMsgFile;
+                                        maybeRelative = true;
                                     } else {
                                         if (refs.isEmpty())
                                             currentFile = fileName;
@@ -353,7 +356,6 @@ bool TSReader::read(Translator &translator)
                                     }
                                     const QString lin = atts.value(strline).toString();
                                     if (lin.isEmpty()) {
-                                        translator.setLocationsType(Translator::RelativeLocations);
                                         refs.append(TranslatorMessage::Reference(fileName, -1));
                                     } else {
                                         bool bOK;
@@ -361,9 +363,7 @@ bool TSReader::read(Translator &translator)
                                         if (bOK) {
                                             if (lin.startsWith(QLatin1Char('+')) || lin.startsWith(QLatin1Char('-'))) {
                                                 lineNo = (currentLine[fileName] += lineNo);
-                                                translator.setLocationsType(Translator::RelativeLocations);
-                                            } else {
-                                                translator.setLocationsType(Translator::AbsoluteLocations);
+                                                maybeRelative = true;
                                             }
                                             refs.append(TranslatorMessage::Reference(fileName, lineNo));
                                         }
@@ -422,6 +422,9 @@ bool TSReader::read(Translator &translator)
                 } else {
                     handleError();
                 }
+                translator.setLocationsType(maybeRelative ? Translator::RelativeLocations :
+                                            maybeAbsolute ? Translator::AbsoluteLocations :
+                                                            Translator::NoLocations);
             } // </TS>
         } else {
             handleError();
@@ -727,7 +730,6 @@ bool saveTS(const Translator &translator, QIODevice &dev, ConversionData &cd, in
 
 bool loadTS(Translator &translator, QIODevice &dev, ConversionData &cd)
 {
-    translator.setLocationsType(Translator::NoLocations);
     TSReader reader(dev, cd);
     return reader.read(translator);
 }

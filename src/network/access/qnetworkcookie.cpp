@@ -7,29 +7,29 @@
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -395,8 +395,8 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
         // qdtext         = <any TEXT except <">>
         // quoted-pair    = "\" CHAR
 
-        // If its NAME=VALUE, retain the value as is
-        // refer to ttp://bugreports.qt.nokia.com/browse/QTBUG-17746
+        // If it is NAME=VALUE, retain the value as is
+        // refer to http://bugreports.qt.nokia.com/browse/QTBUG-17746
         if (isNameValue)
             second += '"';
         ++i;
@@ -432,7 +432,9 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
         position = i;
         for ( ; i < length; ++i) {
             register char c = text.at(i);
-            if (c == ',' || c == ';' || isLWS(c))
+            // for name value pairs, we want to parse until reaching the next ';'
+            // and not break when reaching a space char
+            if (c == ',' || c == ';' || ((isNameValue && (c == '\n' || c == '\r')) || (!isNameValue && isLWS(c))))
                 break;
         }
 
@@ -487,7 +489,6 @@ QByteArray QNetworkCookie::toRawForm(RawForm form) const
     result += '=';
     if ((d->value.contains(';') ||
         d->value.contains(',') ||
-        d->value.contains(' ') ||
         d->value.contains('"')) &&
         (!d->value.startsWith('"') &&
         !d->value.endsWith('"'))) {
@@ -737,7 +738,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
         // 4 digit Year
         if (isNum
             && year == -1
-            && dateString.length() >= at + 3) {
+            && dateString.length() > at + 3) {
             if (isNumber(dateString[at + 1])
                 && isNumber(dateString[at + 2])
                 && isNumber(dateString[at + 3])) {

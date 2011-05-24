@@ -7,29 +7,29 @@
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -55,8 +55,15 @@
 
 #include "qnetworksession.h"
 #include "qnetworkconfiguration_p.h"
+#include "QtCore/qsharedpointer.h"
 
 #ifndef QT_NO_BEARERMANAGEMENT
+
+#ifdef Q_OS_SYMBIAN
+class RConnection;
+class RSocket;
+class RHostResolver;
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -68,7 +75,7 @@ class Q_NETWORK_EXPORT QNetworkSessionPrivate : public QObject
 
 public:
     QNetworkSessionPrivate() : QObject(),
-        state(QNetworkSession::Invalid), isOpen(false)
+        state(QNetworkSession::Invalid), isOpen(false), mutex(QMutex::Recursive)
     {}
     virtual ~QNetworkSessionPrivate()
     {}
@@ -102,6 +109,15 @@ public:
     virtual quint64 bytesReceived() const = 0;
     virtual quint64 activeTime() const = 0;
 
+#ifdef Q_OS_SYMBIAN
+    // get internal RConnection (not thread safe, call only from thread that owns the QNetworkSession)
+    static RConnection* nativeSession(QNetworkSession&);
+    virtual RConnection* nativeSession() = 0;
+    // open socket using the internal RConnection (thread safe)
+    static TInt nativeOpenSocket(QNetworkSession& session, RSocket& socket, TUint family, TUint type, TUint protocol);
+    // open host resolver using the internal RConnection (thread safe)
+    static TInt nativeOpenHostResolver(QNetworkSession& session, RHostResolver& resolver, TUint family, TUint protocol);
+#endif
 protected:
     inline QNetworkConfigurationPrivatePointer privateConfiguration(const QNetworkConfiguration &config) const
     {
@@ -141,9 +157,13 @@ protected:
 
     QNetworkSession::State state;
     bool isOpen;
+
+    QMutex mutex;
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QSharedPointer<QNetworkSession>)
 
 #endif // QT_NO_BEARERMANAGEMENT
 
