@@ -443,4 +443,8 @@ EXPORTS
 	_ZNK23QScriptDeclarativeClass5Value13toScriptValueEP13QScriptEngine @ 442 NONAME
 	_ZN23QScriptDeclarativeClass15startsWithUpperERKPv @ 443 NONAME
 	_ZNK23QScriptDeclarativeClass20PersistentIdentifier8toStringEv @ 444 NONAME
+	_ZN13QScriptEngine18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 445 NONAME
+	_ZN13QScriptEngine25staticMetaObjectExtraDataE @ 446 NONAME DATA 8
+	_ZN22QScriptExtensionPlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 447 NONAME
+	_ZN22QScriptExtensionPlugin25staticMetaObjectExtraDataE @ 448 NONAME DATA 8
 

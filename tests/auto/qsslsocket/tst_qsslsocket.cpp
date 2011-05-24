@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -67,6 +67,7 @@ typedef QList<QSslError::SslError> SslErrorList;
 Q_DECLARE_METATYPE(SslErrorList)
 Q_DECLARE_METATYPE(QSslError)
 Q_DECLARE_METATYPE(QSsl::SslProtocol)
+Q_DECLARE_METATYPE(QSslConfiguration)
 #endif
 
 #if defined Q_OS_HPUX && defined Q_CC_GNU
@@ -152,7 +153,10 @@ private slots:
     void setLocalCertificate();
     void setPrivateKey();
     void setSocketDescriptor();
+    void setSslConfiguration_data();
+    void setSslConfiguration();
     void waitForEncrypted();
+    void waitForEncryptedMinusOne();
     void waitForConnectedEncryptedReadyRead();
     void startClientEncryption();
     void startServerEncryption();
@@ -185,7 +189,7 @@ private slots:
     void ignoreSslErrorsListWithSlot();
     void readFromClosedSocket();
     void writeBigChunk();
-    void blacklist();
+    void blacklistedCertificates();
     void setEmptyDefaultConfiguration();
 
     static void exitLoop()
@@ -534,6 +538,8 @@ void tst_QSslSocket::sslErrors()
 
     QSslSocketPtr socket = newSocket();
     socket->connectToHostEncrypted(host, port);
+    if (!socket->waitForConnected())
+        QEXPECT_FAIL("imap.trolltech.com", "server not open to internet", Continue);
     socket->waitForEncrypted(5000);
 
     SslErrorList output;
@@ -542,7 +548,7 @@ void tst_QSslSocket::sslErrors()
     }
 
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
-    if (output.last() == QSslError::CertificateUntrusted)
+    if (output.count() && output.last() == QSslError::CertificateUntrusted)
         output.takeLast();
 #endif
     QCOMPARE(output, expected);
@@ -651,7 +657,7 @@ void tst_QSslSocket::sessionCipher()
     connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
     QVERIFY(socket->sessionCipher().isNull());
     socket->connectToHost(QtNetworkSettings::serverName(), 443 /* https */);
-    QVERIFY(socket->waitForConnected(5000));
+    QVERIFY(socket->waitForConnected(10000));
     QVERIFY(socket->sessionCipher().isNull());
     socket->startClientEncryption();
     QVERIFY(socket->waitForEncrypted(5000));
@@ -685,7 +691,7 @@ void tst_QSslSocket::localCertificate()
     socket->setPrivateKey(QLatin1String(SRCDIR "certs/fluke.key"));
 
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
-    QVERIFY(socket->waitForEncrypted(5000));
+    QVERIFY(socket->waitForEncrypted(10000));
 }
 
 void tst_QSslSocket::mode()
@@ -926,13 +932,15 @@ void tst_QSslSocket::protocolServerSide_data()
     QTest::newRow("ssl3-tls1") << QSsl::SslV3 << QSsl::TlsV1 << false;
     QTest::newRow("ssl3-tls1ssl3") << QSsl::SslV3 << QSsl::TlsV1SslV3 << true;
     QTest::newRow("ssl3-secure") << QSsl::SslV3 << QSsl::SecureProtocols << true;
-    QTest::newRow("ssl3-any") << QSsl::SslV3 << QSsl::AnyProtocol << true;
+    QTest::newRow("ssl3-any") << QSsl::SslV3 << QSsl::AnyProtocol << false; // we wont set a SNI header here because we connect to a
+                                                                            // numerical IP, so OpenSSL will send a SSL 2 handshake
 
     QTest::newRow("tls1-ssl2") << QSsl::TlsV1 << QSsl::SslV2 << false;
     QTest::newRow("tls1-ssl3") << QSsl::TlsV1 << QSsl::SslV3 << false;
     QTest::newRow("tls1-tls1ssl3") << QSsl::TlsV1 << QSsl::TlsV1SslV3 << true;
     QTest::newRow("tls1-secure") << QSsl::TlsV1 << QSsl::SecureProtocols << true;
-    QTest::newRow("tls1-any") << QSsl::TlsV1 << QSsl::AnyProtocol << true;
+    QTest::newRow("tls1-any") << QSsl::TlsV1 << QSsl::AnyProtocol << false; // we wont set a SNI header here because we connect to a
+                                                                            // numerical IP, so OpenSSL will send a SSL 2 handshake
 
     QTest::newRow("tls1ssl3-ssl2") << QSsl::TlsV1SslV3 << QSsl::SslV2 << false;
     QTest::newRow("tls1ssl3-ssl3") << QSsl::TlsV1SslV3 << QSsl::SslV3 << true;
@@ -1044,6 +1052,39 @@ void tst_QSslSocket::setSocketDescriptor()
     QVERIFY(client->localPort() != 0);
 }
 
+void tst_QSslSocket::setSslConfiguration_data()
+{
+    QTest::addColumn<QSslConfiguration>("configuration");
+    QTest::addColumn<bool>("works");
+
+    QTest::newRow("empty") << QSslConfiguration() << false;
+    QSslConfiguration conf = QSslConfiguration::defaultConfiguration();
+    QTest::newRow("default") << conf << false; // does not contain test server cert
+    QList<QSslCertificate> testServerCert = QSslCertificate::fromPath(SRCDIR "certs/qt-test-server-cacert.pem");
+    conf.setCaCertificates(testServerCert);
+    QTest::newRow("set-root-cert") << conf << true;
+    conf.setProtocol(QSsl::SecureProtocols);
+    QTest::newRow("secure") << conf << true;
+}
+
+void tst_QSslSocket::setSslConfiguration()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QSslSocketPtr socket = newSocket();
+    QFETCH(QSslConfiguration, configuration);
+    socket->setSslConfiguration(configuration);
+    this->socket = socket;
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+    QFETCH(bool, works);
+    QCOMPARE(socket->waitForEncrypted(10000), works);
+    if (works) {
+        socket->disconnectFromHost();
+        QVERIFY2(socket->waitForDisconnected(), qPrintable(socket->errorString()));
+    }
+}
+
 void tst_QSslSocket::waitForEncrypted()
 {
     if (!QSslSocket::supportsSsl())
@@ -1056,6 +1097,20 @@ void tst_QSslSocket::waitForEncrypted()
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
 
     QVERIFY(socket->waitForEncrypted(10000));
+}
+
+void tst_QSslSocket::waitForEncryptedMinusOne()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QSslSocketPtr socket = newSocket();
+    this->socket = socket;
+
+    connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(ignoreErrorSlot()));
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+
+    QVERIFY(socket->waitForEncrypted(-1));
 }
 
 void tst_QSslSocket::waitForConnectedEncryptedReadyRead()
@@ -1525,8 +1580,8 @@ protected:
         // delayed start of encryption
         QTest::qSleep(100);
         QSslSocket *socket = server.socket;
-        Q_ASSERT(socket);
-        Q_ASSERT(socket->isValid());
+        if (!socket || !socket->isValid())
+            return;             // error
         socket->ignoreSslErrors();
         socket->startServerEncryption();
         if (!socket->waitForEncrypted(2000))
@@ -1716,7 +1771,7 @@ void tst_QSslSocket::disconnectFromHostWhenConnecting()
     QCOMPARE(state, socket->state());
     QVERIFY(socket->state() == QAbstractSocket::HostLookupState ||
             socket->state() == QAbstractSocket::ConnectingState);
-    QVERIFY(socket->waitForDisconnected(5000));
+    QVERIFY(socket->waitForDisconnected(10000));
     QCOMPARE(socket->state(), QAbstractSocket::UnconnectedState);
     // we did not call close, so the socket must be still open
     QVERIFY(socket->isOpen());
@@ -1945,7 +2000,7 @@ void tst_QSslSocket::writeBigChunk()
     socket->close();
 }
 
-void tst_QSslSocket::blacklist()
+void tst_QSslSocket::blacklistedCertificates()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
@@ -1966,14 +2021,15 @@ void tst_QSslSocket::blacklist()
     QVERIFY(sender->state() == QAbstractSocket::ConnectedState);
     receiver->setObjectName("receiver");
     sender->setObjectName("sender");
-    receiver->ignoreSslErrors();
     receiver->startClientEncryption();
 
-    connect(receiver, SIGNAL(error(QAbstractSocket::SocketError)), SLOT(exitLoop()));
+    connect(receiver, SIGNAL(sslErrors(QList<QSslError>)), SLOT(exitLoop()));
     connect(receiver, SIGNAL(encrypted()), SLOT(exitLoop()));
     enterLoop(1);
-    QCOMPARE(receiver->error(), QAbstractSocket::SslHandshakeFailedError);
-    QCOMPARE(receiver->errorString(), QString("The peer certificate is blacklisted"));
+    QList<QSslError> sslErrors = receiver->sslErrors();
+    QVERIFY(sslErrors.count() > 0);
+    // there are more errors (self signed cert and hostname mismatch), but we only care about the blacklist error
+    QCOMPARE(sslErrors.at(0).error(), QSslError::CertificateBlacklisted);
 }
 
 void tst_QSslSocket::setEmptyDefaultConfiguration()
@@ -1987,8 +2043,9 @@ void tst_QSslSocket::setEmptyDefaultConfiguration()
     QSslConfiguration::setDefaultConfiguration(emptyConf);
 
     QSslSocketPtr socket = newSocket();
+    connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(ignoreErrorSlot()));
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
-
+    QVERIFY2(!socket->waitForEncrypted(4000), qPrintable(socket->errorString()));
 }
 
 #endif // QT_NO_OPENSSL

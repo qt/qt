@@ -243,6 +243,12 @@ void FtpWindow::downloadFile()
 void FtpWindow::cancelDownload()
 {
     ftp->abort();
+
+    if (file->exists()) {
+        file->close();
+        file->remove();
+    }
+    delete file;
 }
 //![5]
 

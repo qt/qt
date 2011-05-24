@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -1104,6 +1104,21 @@ void QTableView::setRootIndex(const QModelIndex &index)
 /*!
   \reimp
 */
+void QTableView::doItemsLayout()
+{
+    Q_D(QTableView);
+    QAbstractItemView::doItemsLayout();
+    if (verticalScrollMode() == QAbstractItemView::ScrollPerItem)
+        d->verticalHeader->setOffsetToSectionPosition(verticalScrollBar()->value());
+    else
+        d->verticalHeader->setOffset(verticalScrollBar()->value());
+    if (!d->verticalHeader->updatesEnabled())
+        d->verticalHeader->setUpdatesEnabled(true);
+}
+
+/*!
+  \reimp
+*/
 void QTableView::setSelectionModel(QItemSelectionModel *selectionModel)
 {
     Q_D(QTableView);
@@ -1285,7 +1300,6 @@ void QTableView::paintEvent(QPaintEvent *event)
     const QPen gridPen = QPen(gridColor, 0, d->gridStyle);
     const QHeaderView *verticalHeader = d->verticalHeader;
     const QHeaderView *horizontalHeader = d->horizontalHeader;
-    const QStyle::State state = option.state;
     const bool alternate = d->alternatingColors;
     const bool rightToLeft = isRightToLeft();
 
@@ -1975,9 +1989,13 @@ QModelIndexList QTableView::selectedIndexes() const
     previous number of rows is specified by \a oldCount, and the new
     number of rows is specified by \a newCount.
 */
-void QTableView::rowCountChanged(int /*oldCount*/, int /*newCount*/ )
+void QTableView::rowCountChanged(int oldCount, int newCount )
 {
     Q_D(QTableView);
+    //when removing rows, we need to disable updates for the header until the geometries have been
+    //updated and the offset has been adjusted, or we risk calling paintSection for all the sections
+    if (newCount < oldCount)
+        d->verticalHeader->setUpdatesEnabled(false);
     d->doDelayedItemsLayout();
 }
 

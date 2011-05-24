@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -953,6 +953,46 @@ void qt_memrotate270_16_neon(const uchar *srcPixels, int w, int h,
             }
         }
     }
+}
+
+class QSimdNeon
+{
+public:
+    typedef int32x4_t Int32x4;
+    typedef float32x4_t Float32x4;
+
+    union Vect_buffer_i { Int32x4 v; int i[4]; };
+    union Vect_buffer_f { Float32x4 v; float f[4]; };
+
+    static inline Float32x4 v_dup(float x) { return vdupq_n_f32(x); }
+    static inline Int32x4 v_dup(int x) { return vdupq_n_s32(x); }
+    static inline Int32x4 v_dup(uint x) { return vdupq_n_s32(x); }
+
+    static inline Float32x4 v_add(Float32x4 a, Float32x4 b) { return vaddq_f32(a, b); }
+    static inline Int32x4 v_add(Int32x4 a, Int32x4 b) { return vaddq_s32(a, b); }
+
+    static inline Float32x4 v_max(Float32x4 a, Float32x4 b) { return vmaxq_f32(a, b); }
+    static inline Float32x4 v_min(Float32x4 a, Float32x4 b) { return vminq_f32(a, b); }
+    static inline Int32x4 v_min_16(Int32x4 a, Int32x4 b) { return vminq_s32(a, b); }
+
+    static inline Int32x4 v_and(Int32x4 a, Int32x4 b) { return vandq_s32(a, b); }
+
+    static inline Float32x4 v_sub(Float32x4 a, Float32x4 b) { return vsubq_f32(a, b); }
+    static inline Int32x4 v_sub(Int32x4 a, Int32x4 b) { return vsubq_s32(a, b); }
+
+    static inline Float32x4 v_mul(Float32x4 a, Float32x4 b) { return vmulq_f32(a, b); }
+
+    static inline Float32x4 v_sqrt(Float32x4 x) { Float32x4 y = vrsqrteq_f32(x); y = vmulq_f32(y, vrsqrtsq_f32(x, vmulq_f32(y, y))); return vmulq_f32(x, y); }
+
+    static inline Int32x4 v_toInt(Float32x4 x) { return vcvtq_s32_f32(x); }
+
+    static inline Int32x4 v_greaterOrEqual(Float32x4 a, Float32x4 b) { return vreinterpretq_s32_u32(vcgeq_f32(a, b)); }
+};
+
+const uint * QT_FASTCALL qt_fetch_radial_gradient_neon(uint *buffer, const Operator *op, const QSpanData *data,
+                                                       int y, int x, int length)
+{
+    return qt_fetch_radial_gradient_template<QRadialFetchSimd<QSimdNeon> >(buffer, op, data, y, x, length);
 }
 
 QT_END_NAMESPACE

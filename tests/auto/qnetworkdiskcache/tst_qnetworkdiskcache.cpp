@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -46,6 +46,8 @@
 #include "../../shared/util.h"
 
 #define EXAMPLE_URL "http://user:pass@www.example.com/#foo"
+//cached objects are organized into these many subdirs
+#define NUM_SUBDIRECTORIES 16
 
 class tst_QNetworkDiskCache : public QObject
 {
@@ -176,10 +178,10 @@ void tst_QNetworkDiskCache::initTestCase()
     cache.clear();
     QString s = QDir::tempPath() + "/diskCache/";
     QDir dir;
-    dir.rmdir(s + "http");
-    dir.rmdir(s + "https");
+    dir.rmdir(s + "data7"); // the number is the internal cache version
     dir.rmdir(s + "prepared");
     dir.rmdir(s);
+    dir.rmdir(s + "http"); // delete directory used by 4.7 and earlier (would make the tests fail)
 }
 
 // This will be called after the last test function is executed.
@@ -277,16 +279,16 @@ void tst_QNetworkDiskCache::clear()
     QVERIFY(cache.cacheSize() > qint64(0));
 
     QString cacheDirectory = cache.cacheDirectory();
-    QCOMPARE(countFiles(cacheDirectory).count(), 3);
+    QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 3);
     cache.clear();
-    QCOMPARE(countFiles(cacheDirectory).count(), 2);
+    QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 2);
 
     // don't delete files that it didn't create
-    QTemporaryFile file(cacheDirectory + "/cache_XXXXXX");
+    QTemporaryFile file(cacheDirectory + "/XXXXXX");
     if (file.open()) {
-        QCOMPARE(countFiles(cacheDirectory).count(), 3);
+        QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 3);
         cache.clear();
-        QCOMPARE(countFiles(cacheDirectory).count(), 3);
+        QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 3);
     }
 }
 
@@ -309,19 +311,10 @@ void tst_QNetworkDiskCache::data_data()
 // public QIODevice* data(QUrl const& url)
 void tst_QNetworkDiskCache::data()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP("Due to mmap(...) bug in Open C [Temtrack DEF142242]", SkipAll);
-#endif
     QFETCH(QNetworkCacheMetaData, data);
     SubQNetworkDiskCache cache;
     QUrl url(EXAMPLE_URL);
     cache.setupWithOne(url, data);
-
-    // flush the cache
-    QTemporaryFile file(cache.cacheDirectory() + "/cache_XXXXXX.cache");
-    if (file.open()) {
-        cache.call_fileMetaData(file.fileName());
-    }
 
     for (int i = 0; i < 3; ++i) {
         QIODevice *d = cache.data(url);
@@ -362,9 +355,9 @@ void tst_QNetworkDiskCache::remove()
     QUrl url(EXAMPLE_URL);
     cache.setupWithOne(url);
     QString cacheDirectory = cache.cacheDirectory();
-    QCOMPARE(countFiles(cacheDirectory).count(), 3);
+    QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 3);
     cache.remove(url);
-    QCOMPARE(countFiles(cacheDirectory).count(), 2);
+    QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 2);
 }
 
 void tst_QNetworkDiskCache::setCacheDirectory_data()
@@ -388,9 +381,6 @@ void tst_QNetworkDiskCache::setCacheDirectory()
 // public void updateMetaData(QNetworkCacheMetaData const& metaData)
 void tst_QNetworkDiskCache::updateMetaData()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP("Due to mmap(...) bug in Open C [Temtrack DEF142242]", SkipAll);
-#endif
     QUrl url(EXAMPLE_URL);
     SubQNetworkDiskCache cache;
     cache.setupWithOne(url);
@@ -414,7 +404,7 @@ void tst_QNetworkDiskCache::fileMetaData()
 
     QString cacheDirectory = cache.cacheDirectory();
     QStringList list = countFiles(cacheDirectory);
-    QCOMPARE(list.count(), 3);
+    QCOMPARE(list.count(), NUM_SUBDIRECTORIES + 3);
     foreach(QString fileName, list) {
         QFileInfo info(fileName);
         if (info.isFile()) {
@@ -491,7 +481,7 @@ void tst_QNetworkDiskCache::oldCacheVersionFile()
     if (pass == 0) {
         QString name;
         {
-        QTemporaryFile file(cache.cacheDirectory() + "/cache_XXXXXX.cache");
+        QTemporaryFile file(cache.cacheDirectory() + "/XXXXXX.d");
         file.setAutoRemove(false);
         QVERIFY(file.open());
         QDataStream out(&file);
@@ -507,7 +497,7 @@ void tst_QNetworkDiskCache::oldCacheVersionFile()
         QVERIFY(!QFile::exists(name));
     } else {
         QStringList files = countFiles(cache.cacheDirectory());
-        QCOMPARE(files.count(), 3);
+        QCOMPARE(files.count(), NUM_SUBDIRECTORIES + 3);
         // find the file
         QString cacheFile;
         foreach (QString file, files) {

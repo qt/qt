@@ -7,29 +7,29 @@
 ** This file is part of the qmake application of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -208,6 +208,7 @@ const char _slnExtSections[]    = "\n\tGlobalSection(ExtensibilityGlobals) = pos
 VcprojGenerator::VcprojGenerator()
     : Win32MakefileGenerator(),
       init_flag(false),
+      is64Bit(false),
       projectWriter(0)
 {
 }
@@ -360,6 +361,25 @@ QUuid VcprojGenerator::increaseUUID(const QUuid &id)
     return result;
 }
 
+QStringList VcprojGenerator::collectSubDirs(QMakeProject *proj)
+{
+    QStringList subdirs;
+    QStringList tmp_proj_subdirs = proj->variables()["SUBDIRS"];
+    for(int x = 0; x < tmp_proj_subdirs.size(); ++x) {
+        QString tmpdir = tmp_proj_subdirs.at(x);
+        if(!proj->isEmpty(tmpdir + ".file")) {
+            if(!proj->isEmpty(tmpdir + ".subdir"))
+                warn_msg(WarnLogic, "Cannot assign both file and subdir for subdir %s",
+                         tmpdir.toLatin1().constData());
+            tmpdir = proj->first(tmpdir + ".file");
+        } else if(!proj->isEmpty(tmpdir + ".subdir")) {
+            tmpdir = proj->first(tmpdir + ".subdir");
+        }
+        subdirs += tmpdir;
+    }
+    return subdirs;
+}
+
 void VcprojGenerator::writeSubDirs(QTextStream &t)
 {
     // Check if all requirements are fulfilled
@@ -394,7 +414,6 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     QHash<QString, VcsolutionDepend*> solution_depends;
     QList<VcsolutionDepend*> solution_cleanup;
 
-    QStringList subdirs = project->values("SUBDIRS");
     QString oldpwd = qmake_getpwd();
 
     // Make sure that all temp projects are configured
@@ -403,16 +422,9 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     QStringList old_after_vars = Option::after_user_vars;
     Option::after_user_vars.append("CONFIG+=release");
 
+    QStringList subdirs = collectSubDirs(project);
     for(int i = 0; i < subdirs.size(); ++i) {
         QString tmp = subdirs.at(i);
-        if(!project->isEmpty(tmp + ".file")) {
-            if(!project->isEmpty(tmp + ".subdir"))
-                warn_msg(WarnLogic, "Cannot assign both file and subdir for subdir %s",
-                         tmp.toLatin1().constData());
-            tmp = project->first(tmp + ".file");
-        } else if(!project->isEmpty(tmp + ".subdir")) {
-            tmp = project->first(tmp + ".subdir");
-        }
         QFileInfo fi(fileInfo(Option::fixPathToLocalOS(tmp, true)));
         if(fi.exists()) {
             if(fi.isDir()) {
@@ -436,19 +448,8 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                         continue;
                     }
                     if(tmp_proj.first("TEMPLATE") == "vcsubdirs") {
-                        QStringList tmp_proj_subdirs = tmp_proj.variables()["SUBDIRS"];
-                        for(int x = 0; x < tmp_proj_subdirs.size(); ++x) {
-                            QString tmpdir = tmp_proj_subdirs.at(x);
-                            if(!tmp_proj.isEmpty(tmpdir + ".file")) {
-                                if(!tmp_proj.isEmpty(tmpdir + ".subdir"))
-                                    warn_msg(WarnLogic, "Cannot assign both file and subdir for subdir %s",
-                                            tmpdir.toLatin1().constData());
-                                tmpdir = tmp_proj.first(tmpdir + ".file");
-                            } else if(!tmp_proj.isEmpty(tmpdir + ".subdir")) {
-                                tmpdir = tmp_proj.first(tmpdir + ".subdir");
-                            }
+                        foreach(const QString &tmpdir, collectSubDirs(&tmp_proj))
                             subdirs += fileFixify(tmpdir);
-                        }
                     } else if(tmp_proj.first("TEMPLATE") == "vcapp" || tmp_proj.first("TEMPLATE") == "vclib") {
                         // Initialize a 'fake' project to get the correct variables
                         // and to be able to extract all the dependencies
@@ -597,14 +598,16 @@ nextfile:
         }
     }
     t << _slnGlobalBeg;
+
+    QString slnConf = _slnSolutionConf;
     if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH")) {
-        QString slnConfCE = _slnSolutionConf;
-        QString platform = QString("|") + project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
-        slnConfCE.replace(QString("|Win32"), platform);
-        t << slnConfCE;
-    } else {
-        t << _slnSolutionConf;
+        QString slnPlatform = QString("|") + project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
+        slnConf.replace(QString("|Win32"), slnPlatform);
+    } else if (is64Bit) {
+        slnConf.replace(QString("|Win32"), "|x64");
     }
+    t << slnConf;
+
     t << _slnProjDepBeg;
 
     // Restore previous after_user_var options
@@ -621,7 +624,7 @@ nextfile:
     t << _slnProjDepEnd;
     t << _slnProjConfBeg;
     for(QList<VcsolutionDepend*>::Iterator it = solution_cleanup.begin(); it != solution_cleanup.end(); ++it) {
-        QString platform = "Win32";
+        QString platform = is64Bit ? "x64" : "Win32";
         if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH"))
             platform = project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
         t << "\n\t\t" << (*it)->uuid << QString(_slnProjDbgConfTag1).arg(platform) << platform;
@@ -661,6 +664,7 @@ void VcprojGenerator::init()
     if (init_flag)
         return;
     init_flag = true;
+    is64Bit = (project->first("QMAKE_TARGET.arch") == "x86_64");
     projectWriter = createProjectWriter();
 
     if(project->first("TEMPLATE") == "vcsubdirs") //too much work for subdirs
@@ -831,7 +835,7 @@ void VcprojGenerator::initProject()
 
     vcProject.Keyword = project->first("VCPROJ_KEYWORD");
     if (project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
-        vcProject.PlatformName = (vcProject.Configuration.idl.TargetEnvironment == midlTargetWin64 ? "Win64" : "Win32");
+        vcProject.PlatformName = (is64Bit ? "x64" : "Win32");
     } else {
         vcProject.PlatformName = project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
     }
@@ -895,7 +899,7 @@ void VcprojGenerator::initConfiguration()
         conf.Name = isDebug ? "Debug" : "Release";
     conf.ConfigurationName = conf.Name;
     if (project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
-        conf.Name += (conf.idl.TargetEnvironment == midlTargetWin64 ? "|Win64" : "|Win32");
+        conf.Name += (is64Bit ? "|x64" : "|Win32");
     } else {
         conf.Name += "|" + project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
     }
@@ -1319,6 +1323,9 @@ void VcprojGenerator::initResourceFiles()
 
                 dep_cmd = Option::fixPathToLocalOS(dep_cmd, true, false);
                 if(canExecute(dep_cmd)) {
+                    dep_cmd.prepend(QLatin1String("cd ")
+                                    + escapeFilePath(Option::fixPathToLocalOS(Option::output_dir, false))
+                                    + QLatin1String(" && "));
                     if(FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), "r")) {
                         QString indeps;
                         while(!feof(proc)) {
@@ -1329,7 +1336,8 @@ void VcprojGenerator::initResourceFiles()
                         }
                         QT_PCLOSE(proc);
                         if(!indeps.isEmpty())
-                            deps += fileFixify(indeps.replace('\n', ' ').simplified().split(' '));
+                            deps += fileFixify(indeps.replace('\n', ' ').simplified().split(' '),
+                                               QString(), Option::output_dir);
                     }
                 }
             }

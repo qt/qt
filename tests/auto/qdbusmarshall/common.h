@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -39,6 +39,22 @@
 **
 ****************************************************************************/
 #include <math.h>               // isnan
+#include <qvariant.h>
+
+#ifdef Q_OS_UNIX
+# include <private/qcore_unix_p.h>
+
+static bool compareFileDescriptors(int fd1, int fd2)
+{
+    QT_STATBUF st1, st2;
+    if (QT_FSTAT(fd1, &st1) == -1 || QT_FSTAT(fd2, &st2) == -1) {
+        perror("fstat");
+        return false;
+    }
+
+    return (st1.st_dev == st2.st_dev) && (st1.st_ino == st2.st_ino);
+}
+#endif
 
 Q_DECLARE_METATYPE(QVariant)
 Q_DECLARE_METATYPE(QList<bool>)
@@ -76,6 +92,22 @@ Q_DECLARE_METATYPE(StringStringMap)
 Q_DECLARE_METATYPE(ObjectPathStringMap)
 Q_DECLARE_METATYPE(LLDateTimeMap)
 Q_DECLARE_METATYPE(SignatureStringMap)
+
+static bool compare(const QDBusUnixFileDescriptor &t1, const QDBusUnixFileDescriptor &t2)
+{
+    int fd1 = t1.fileDescriptor();
+    int fd2 = t2.fileDescriptor();
+    if ((fd1 == -1 || fd2 == -1) && fd1 != fd2) {
+        // one is valid, the other isn't
+        return false;
+    }
+
+#ifdef Q_OS_UNIX
+    return compareFileDescriptors(fd1, fd2);
+#else
+    return true;
+#endif
+}
 
 struct MyStruct
 {
@@ -130,6 +162,32 @@ const QDBusArgument &operator>>(const QDBusArgument &arg, MyVariantMapStruct &ms
     return arg;
 }
 
+struct MyFileDescriptorStruct
+{
+    QDBusUnixFileDescriptor fd;
+
+    inline bool operator==(const MyFileDescriptorStruct &other) const
+    { return compare(fd, other.fd); }
+};
+Q_DECLARE_METATYPE(MyFileDescriptorStruct)
+Q_DECLARE_METATYPE(QList<MyFileDescriptorStruct>)
+
+QDBusArgument &operator<<(QDBusArgument &arg, const MyFileDescriptorStruct &ms)
+{
+    arg.beginStructure();
+    arg << ms.fd;
+    arg.endStructure();
+    return arg;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &arg, MyFileDescriptorStruct &ms)
+{
+    arg.beginStructure();
+    arg >> ms.fd;
+    arg.endStructure();
+    return arg;
+}
+
 
 void commonInit()
 {
@@ -157,6 +215,8 @@ void commonInit()
     qDBusRegisterMetaType<MyStruct>();
     qDBusRegisterMetaType<MyVariantMapStruct>();
     qDBusRegisterMetaType<QList<MyVariantMapStruct> >();
+    qDBusRegisterMetaType<MyFileDescriptorStruct>();
+    qDBusRegisterMetaType<QList<MyFileDescriptorStruct> >();
 }
 #ifdef USE_PRIVATE_CODE
 #include "private/qdbusintrospection_p.h"
@@ -467,6 +527,8 @@ bool compareToArgument(const QDBusArgument &arg, const QVariant &v2)
             return compare<QList<QDBusObjectPath> >(arg, v2);
         else if (id == qMetaTypeId<QList<QDBusSignature> >())
             return compare<QList<QDBusSignature> >(arg, v2);
+        else if (id == qMetaTypeId<QList<QDBusUnixFileDescriptor> >())
+            return compare<QList<QDBusUnixFileDescriptor> >(arg, v2);
         else if (id == qMetaTypeId<QList<QDateTime> >())
             return compare<QList<QDateTime> >(arg, v2);
 
@@ -511,6 +573,10 @@ bool compareToArgument(const QDBusArgument &arg, const QVariant &v2)
             return compare<MyVariantMapStruct>(arg, v2);
         else if (id == qMetaTypeId<QList<MyVariantMapStruct> >())
             return compare<QList<MyVariantMapStruct> >(arg, v2);
+        else if (id == qMetaTypeId<MyFileDescriptorStruct>())
+            return compare<MyFileDescriptorStruct>(arg, v2);
+        else if (id == qMetaTypeId<QList<MyFileDescriptorStruct> >())
+            return compare<QList<MyFileDescriptorStruct> >(arg, v2);
     }
 
     qWarning() << "Unexpected QVariant type" << v2.userType()
@@ -562,6 +628,9 @@ template<> bool compare(const QVariant &v1, const QVariant &v2)
 
     else if (id == qMetaTypeId<QDBusSignature>())
         return qvariant_cast<QDBusSignature>(v1).signature() == qvariant_cast<QDBusSignature>(v2).signature();
+
+    else if (id == qMetaTypeId<QDBusUnixFileDescriptor>())
+        return compare(qvariant_cast<QDBusUnixFileDescriptor>(v1), qvariant_cast<QDBusUnixFileDescriptor>(v2));
 
     else if (id == qMetaTypeId<QDBusVariant>())
         return compare(qvariant_cast<QDBusVariant>(v1).variant(), qvariant_cast<QDBusVariant>(v2).variant());

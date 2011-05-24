@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -137,4 +137,60 @@ void runScenario()
 
     string = QString::fromLatin1(LITERAL);
     QCOMPARE(QByteArray(qPrintable(string P string)), QByteArray(string.toLatin1() + string.toLatin1()));
+
+
+
+    //QByteArray
+    {
+        QByteArray ba = LITERAL;
+        QByteArray superba = ba P ba P LITERAL;
+        QCOMPARE(superba, QByteArray(LITERAL LITERAL LITERAL));
+
+        QByteArray testWith0 = ba P "test\0with\0zero" P ba;
+        QCOMPARE(testWith0, QByteArray(LITERAL "test" LITERAL));
+
+        QByteArray ba2 = ba P '\0' + LITERAL;
+        QCOMPARE(ba2, QByteArray(LITERAL "\0" LITERAL, ba.size()*2+1));
+
+        const char *mmh = "test\0foo";
+        QCOMPARE(QByteArray(ba P mmh P ba), testWith0);
+
+        QByteArray raw = QByteArray::fromRawData(UTF8_LITERAL_EXTRA, UTF8_LITERAL_LEN);
+        QByteArray r = "hello" P raw;
+        QByteArray r2 = "hello" UTF8_LITERAL;
+        QCOMPARE(r, r2);
+        r2 = QByteArray("hello\0") P UTF8_LITERAL;
+        QCOMPARE(r, r2);
+    }
+
+    //operator QString  +=
+    {
+        QString str = QString::fromUtf8(UTF8_LITERAL);
+        str +=  QLatin1String(LITERAL) P str;
+        QCOMPARE(str, QString::fromUtf8(UTF8_LITERAL LITERAL UTF8_LITERAL));
+#ifndef QT_NO_CAST_FROM_ASCII
+        str = (QString::fromUtf8(UTF8_LITERAL) += QLatin1String(LITERAL) P UTF8_LITERAL);
+        QCOMPARE(str, QString::fromUtf8(UTF8_LITERAL LITERAL UTF8_LITERAL));
+#endif
+    }
+
+    //operator QByteArray  +=
+    {
+        QByteArray ba = UTF8_LITERAL;
+        ba +=  QByteArray(LITERAL) P UTF8_LITERAL;
+        QCOMPARE(ba, QByteArray(UTF8_LITERAL LITERAL UTF8_LITERAL));
+        ba += LITERAL P QByteArray::fromRawData(UTF8_LITERAL_EXTRA, UTF8_LITERAL_LEN);
+        QCOMPARE(ba, QByteArray(UTF8_LITERAL LITERAL UTF8_LITERAL LITERAL UTF8_LITERAL));
+        QByteArray withZero = QByteArray(LITERAL "\0" LITERAL, LITERAL_LEN*2+1);
+        QByteArray ba2 = withZero;
+        ba2 += ba2 P withZero;
+        QCOMPARE(ba2, QByteArray(withZero + withZero + withZero));
+#ifndef QT_NO_CAST_TO_ASCII
+        ba = UTF8_LITERAL;
+        ba2 = (ba += QLatin1String(LITERAL) + QString::fromUtf8(UTF8_LITERAL));
+        QCOMPARE(ba2, ba);
+        QCOMPARE(ba, QByteArray(UTF8_LITERAL LITERAL UTF8_LITERAL));
+#endif
+    }
+
 }

@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -255,6 +255,7 @@ private:
     friend class QLinearGradient;
     friend class QRadialGradient;
     friend class QConicalGradient;
+    friend class QBrush;
 
     Type m_type;
     Spread m_spread;
@@ -264,7 +265,7 @@ private:
             qreal x1, y1, x2, y2;
         } linear;
         struct {
-            qreal cx, cy, fx, fy, radius;
+            qreal cx, cy, fx, fy, cradius;
         } radial;
         struct {
             qreal cx, cy, angle;
@@ -303,6 +304,9 @@ public:
     QRadialGradient(const QPointF &center, qreal radius);
     QRadialGradient(qreal cx, qreal cy, qreal radius);
 
+    QRadialGradient(const QPointF &center, qreal centerRadius, const QPointF &focalPoint, qreal focalRadius);
+    QRadialGradient(qreal cx, qreal cy, qreal centerRadius, qreal fx, qreal fy, qreal focalRadius);
+
     QPointF center() const;
     void setCenter(const QPointF &center);
     inline void setCenter(qreal x, qreal y) { setCenter(QPointF(x, y)); }
@@ -313,6 +317,12 @@ public:
 
     qreal radius() const;
     void setRadius(qreal radius);
+
+    qreal centerRadius() const;
+    void setCenterRadius(qreal radius);
+
+    qreal focalRadius() const;
+    void setFocalRadius(qreal radius);
 };
 
 

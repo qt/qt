@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -1199,10 +1199,12 @@ bool qSharedBuild()
     \value SV_9_2 Symbian OS v9.2
     \value SV_9_3 Symbian OS v9.3
     \value SV_9_4 Symbian OS v9.4
-    \value SV_SF_1 Symbian^1
+    \value SV_SF_1 S60 5th Edition (Symbian^1)
     \value SV_SF_2 Symbian^2
-    \value SV_SF_3 Symbian^3
+    \value SV_SF_3 Symbian^3 or Symbian Anna
     \value SV_SF_4 \e{This enum value is deprecated.}
+    \value SV_API_5_3 Symbian/S60 API version 5.3 release
+    \value SV_API_5_4 Symbian/S60 API version 5.4 release
     \value SV_Unknown An unknown and currently unsupported platform
 
     \sa S60Version, WinVersion, MacVersion
@@ -1219,9 +1221,10 @@ bool qSharedBuild()
     \value SV_S60_3_1 S60 3rd Edition Feature Pack 1
     \value SV_S60_3_2 S60 3rd Edition Feature Pack 2
     \value SV_S60_5_0 S60 5th Edition
-    \value SV_S60_5_1 S60 5th Edition Feature Pack 1
-    \value SV_S60_5_2 Symbian^3
-    \value SV_S60_5_3 To be determined - FIXME
+    \value SV_S60_5_1 \e{This enum value is deprecated.}
+    \value SV_S60_5_2 Symbian^3 and Symbian Anna
+    \value SV_S60_5_3 Symbian/S60 API version 5.3 release
+    \value SV_S60_5_4 Symbian/S60 API version 5.4 release
     \value SV_S60_Unknown An unknown and currently unsupported platform
     \omitvalue SV_S60_None
 
@@ -1866,9 +1869,12 @@ static void symbianInitVersions()
                 } else if (minor == 2) {
                     cachedS60Version = QSysInfo::SV_S60_5_2;
                     cachedSymbianVersion = QSysInfo::SV_SF_3;
-                } else if (minor >= 3) {
+                } else if (minor == 3) {
                     cachedS60Version = QSysInfo::SV_S60_5_3;
-                    cachedSymbianVersion = QSysInfo::SV_SF_3;
+                    cachedSymbianVersion = QSysInfo::SV_API_5_3;
+                } else if (minor >= 4) {
+                    cachedS60Version = QSysInfo::SV_S60_5_4;
+                    cachedSymbianVersion = QSysInfo::SV_API_5_4;
                 }
             }
         }
@@ -1894,7 +1900,10 @@ static void symbianInitVersions()
         cachedSymbianVersion = QSysInfo::SV_SF_3;
 #   elif defined(S60_VERSION_5_3)
         cachedS60Version = QSysInfo::SV_S60_5_3;
-        cachedSymbianVersion = QSysInfo::SV_SF_3;
+        cachedSymbianVersion = QSysInfo::SV_API_5_3;
+#   elif defined(S60_VERSION_5_4)
+        cachedS60Version = QSysInfo::SV_S60_5_4;
+        cachedSymbianVersion = QSysInfo::SV_API_5_4;
 #   endif
     }
 #  endif

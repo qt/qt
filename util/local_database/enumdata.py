@@ -8,29 +8,29 @@
 ## This file is part of the test suite of the Qt Toolkit.
 ##
 ## $QT_BEGIN_LICENSE:LGPL$
-## No Commercial Usage
-## This file contains pre-release code and may not be distributed.
-## You may use this file in accordance with the terms and conditions
-## contained in the Technology Preview License Agreement accompanying
-## this package.
-##
 ## GNU Lesser General Public License Usage
-## Alternatively, this file may be used under the terms of the GNU Lesser
-## General Public License version 2.1 as published by the Free Software
-## Foundation and appearing in the file LICENSE.LGPL included in the
-## packaging of this file.  Please review the following information to
-## ensure the GNU Lesser General Public License version 2.1 requirements
-## will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+## This file may be used under the terms of the GNU Lesser General Public
+## License version 2.1 as published by the Free Software Foundation and
+## appearing in the file LICENSE.LGPL included in the packaging of this
+## file. Please review the following information to ensure the GNU Lesser
+## General Public License version 2.1 requirements will be met:
+## http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 ##
 ## In addition, as a special exception, Nokia gives you certain additional
-## rights.  These rights are described in the Nokia Qt LGPL Exception
+## rights. These rights are described in the Nokia Qt LGPL Exception
 ## version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 ##
-## If you have questions regarding the use of this file, please contact
-## Nokia at qt-info@nokia.com.
+## GNU General Public License Usage
+## Alternatively, this file may be used under the terms of the GNU General
+## Public License version 3.0 as published by the Free Software Foundation
+## and appearing in the file LICENSE.GPL included in the packaging of this
+## file. Please review the following information to ensure the GNU General
+## Public License version 3.0 requirements will be met:
+## http://www.gnu.org/copyleft/gpl.html.
 ##
-##
-##
+## Other Usage
+## Alternatively, this file may be used in accordance with the terms and
+## conditions contained in a signed written agreement between you and Nokia.
 ##
 ##
 ##
@@ -45,6 +45,7 @@
 # need to be *appended* to this list.
 
 language_list = {
+    0 : [ "AnyLanguage",          "  " ],
     1 : [ "C",                    "  " ],
     2 : [ "Abkhazian",            "ab" ],
     3 : [ "Afan",                 "om" ],
@@ -511,6 +512,19 @@ country_list = {
     246 : [ "LatinAmericaAndTheCaribbean",              "419" ]
 }
 
+script_list = {
+    0   : [ "AnyScript",         "" ],
+    1   : [ "Arabic",            "Arab" ],
+    2   : [ "Cyrillic",          "Cyrl" ],
+    3   : [ "Deseret",           "Dsrt" ],
+    4   : [ "Gurmukhi",          "Guru" ],
+    5   : [ "Simplified Han",    "Hans" ],
+    6   : [ "Traditional Han",   "Hant" ],
+    7   : [ "Latin",             "Latn" ],
+    8   : [ "Mongolian",         "Mong" ],
+    9   : [ "Tifinagh",          "Tfng" ]
+}
+
 def countryCodeToId(code):
     for country_id in country_list:
         if country_list[country_id][1] == code:
@@ -521,4 +535,10 @@ def languageCodeToId(code):
     for language_id in language_list:
         if language_list[language_id][1] == code:
             return language_id
+    return -1
+
+def scriptCodeToId(code):
+    for script_id in script_list:
+        if script_list[script_id][1] == code:
+            return script_id
     return -1

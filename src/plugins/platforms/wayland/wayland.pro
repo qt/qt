@@ -8,49 +8,38 @@ DEFINES += $$QMAKE_DEFINES_WAYLAND
 
 SOURCES =   main.cpp \
             qwaylandintegration.cpp \
+            qwaylandnativeinterface.cpp \
             qwaylandshmsurface.cpp \
             qwaylandinputdevice.cpp \
             qwaylandcursor.cpp \
             qwaylanddisplay.cpp \
             qwaylandwindow.cpp \
             qwaylandscreen.cpp \
-            qwaylandshmwindow.cpp
+            qwaylandshmwindow.cpp \
+            qwaylandclipboard.cpp
 
 HEADERS =   qwaylandintegration.h \
+            qwaylandnativeinterface.h \
             qwaylandcursor.h \
             qwaylanddisplay.h \
             qwaylandwindow.h \
             qwaylandscreen.h \
             qwaylandshmsurface.h \
-            qwaylanddrmsurface.h \
             qwaylandbuffer.h \
-            qwaylandinclude.h \
-            qwaylandeglwindow.h \
-            qwaylandshmwindow.h
+            qwaylandshmwindow.h \
+            qwaylandclipboard.h
 
 INCLUDEPATH += $$QMAKE_INCDIR_WAYLAND
 LIBS += $$QMAKE_LIBS_WAYLAND
 QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_WAYLAND
 
-contains(QT_CONFIG, opengles2) {
-    QT += opengl
-    LIBS += -lwayland-egl -lEGL
-
-    SOURCES += qwaylanddrmsurface.cpp \
-            qwaylandglcontext.cpp \
-            ../eglconvenience/qeglconvenience.cpp \
-            qwaylandeglwindow.cpp
-
-    HEADERS += qwaylandglcontext.h \
-            ../eglconvenience/qeglconvenience.h \
-
-    DEFINES += QT_WAYLAND_GL_SUPPORT
+!isEmpty(QMAKE_LFLAGS_RPATH) {
+    !isEmpty(QMAKE_LIBDIR_WAYLAND):QMAKE_LFLAGS += $${QMAKE_LFLAGS_RPATH}$${QMAKE_LIBDIR_WAYLAND}
 }
 
-unix:isEmpty(QMAKE_INCDIR_WAYLAND) {
-	CONFIG += link_pkgconfig
-	PKGCONFIG += libdrm
-}
+INCLUDEPATH += $$PWD
+
+include ($$PWD/gl_integration/gl_integration.pri)
 
 include (../fontdatabases/genericunix/genericunix.pri)
 

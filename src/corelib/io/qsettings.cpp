@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -981,23 +981,6 @@ QStringList QSettingsPrivate::splitArgs(const QString &s, int idx)
 // ************************************************************************
 // QConfFileSettingsPrivate
 
-/*
-    If we don't have the permission to read the file, returns false.
-    If the file doesn't exist, returns true.
-*/
-static bool checkAccess(const QString &name)
-{
-    QFileInfo fileInfo(name);
-
-    if (fileInfo.exists()) {
-        QFile file(name);
-        // if the file exists but we can't open it, report an error
-        return file.open(QFile::ReadOnly);
-    } else {
-        return true;
-    }
-}
-
 void QConfFileSettingsPrivate::initFormat()
 {
     extension = (format == QSettings::NativeFormat) ? QLatin1String(".conf") : QLatin1String(".ini");
@@ -1026,17 +1009,12 @@ void QConfFileSettingsPrivate::initFormat()
 
 void QConfFileSettingsPrivate::initAccess()
 {
-    bool readAccess = false;
     if (confFiles[spec]) {
-        readAccess = checkAccess(confFiles[spec]->name);
         if (format > QSettings::IniFormat) {
             if (!readFunc)
-                readAccess = false;
+                setStatus(QSettings::AccessError);
         }
     }
-
-    if (!readAccess)
-        setStatus(QSettings::AccessError);
 
     sync();       // loads the files the first time
 }
@@ -1432,7 +1410,7 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
         We can often optimize the read-only case, if the file on disk
         hasn't changed.
     */
-    if (readOnly) {
+    if (readOnly && confFile->size > 0) {
         QFileInfo fileInfo(confFile->name);
         if (confFile->size == fileInfo.size() && confFile->timeStamp == fileInfo.lastModified())
             return;
@@ -1454,6 +1432,9 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
         file.open(QFile::ReadWrite);
     if (!file.isOpen())
         file.open(QFile::ReadOnly);
+
+    if (!createFile && !file.isOpen())
+        setStatus(QSettings::AccessError);
 
 #ifdef Q_OS_WIN
     HANDLE readSemaphore = 0;

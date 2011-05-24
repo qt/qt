@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -677,7 +677,7 @@ void QTextControlPrivate::extendWordwiseSelection(int suggestedNewPosition, qrea
 
     const qreal wordEndX = line.cursorToX(curs.position() - blockPos) + blockCoordinates.x();
 
-    if (mouseXPosition < wordStartX || mouseXPosition > wordEndX)
+    if (!wordSelectionEnabled && (mouseXPosition < wordStartX || mouseXPosition > wordEndX))
         return;
 
     // keep the already selected word even when moving to the left
@@ -1519,7 +1519,7 @@ void QTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton button, con
     const QTextCursor oldSelection = cursor;
     const int oldCursorPos = cursor.position();
 
-    mousePressed = true;
+    mousePressed = (interactionFlags & Qt::TextSelectableByMouse);
 #ifndef QT_NO_DRAGANDDROP
     mightStartDrag = false;
 #endif
@@ -1579,8 +1579,10 @@ void QTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton button, con
             emit q->cursorPositionChanged();
         _q_updateCurrentCharFormatAndSelection();
     } else {
-        if (cursor.position() != oldCursorPos)
+        if (cursor.position() != oldCursorPos) {
             emit q->cursorPositionChanged();
+            emit q->microFocusChanged();
+        }
         selectionChanged();
     }
     repaintOldAndNewSelection(oldSelection);
@@ -1608,13 +1610,11 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
     if (!(buttons & Qt::LeftButton))
         return;
 
-    const bool selectable = interactionFlags & Qt::TextSelectableByMouse;
     const bool editable = interactionFlags & Qt::TextEditable;
 
-    if (!selectable && !editable)
-        return;
-
     if (!(mousePressed
+          || editable
+          || mightStartDrag
           || selectedWordOnDoubleClick.hasSelection()
           || selectedBlockOnTrippleClick.hasSelection()))
         return;
@@ -1628,7 +1628,7 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
         return;
     }
 
-    if (!selectable)
+    if (!mousePressed)
         return;
 
     const qreal mouseX = qreal(mousePos.x());
@@ -1696,10 +1696,8 @@ void QTextControlPrivate::mouseReleaseEvent(QEvent *e, Qt::MouseButton button, c
     if (mousePressed) {
         mousePressed = false;
 #ifndef QT_NO_CLIPBOARD
-        if (interactionFlags & Qt::TextSelectableByMouse) {
-            setClipboardSelection();
-            selectionChanged(true);
-        }
+        setClipboardSelection();
+        selectionChanged(true);
     } else if (button == Qt::MidButton
                && (interactionFlags & Qt::TextEditable)
                && QApplication::clipboard()->supportsSelection()) {
@@ -1951,6 +1949,7 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
     if (isGettingInput)
         layout->setPreeditArea(cursor.position() - block.position(), e->preeditString());
     QList<QTextLayout::FormatRange> overrides;
+    const int oldPreeditCursor = preeditCursor;
     preeditCursor = e->preeditString().length();
     hideCursor = false;
     for (int i = 0; i < e->attributes().size(); ++i) {
@@ -1973,6 +1972,8 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
     cursor.endEditBlock();
     if (cursor.d)
         cursor.d->setX();
+    if (oldPreeditCursor != preeditCursor)
+        emit q->microFocusChanged();
 }
 
 QVariant QTextControl::inputMethodQuery(Qt::InputMethodQuery property) const
