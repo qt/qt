@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -199,6 +199,7 @@ void tst_QItemModel::nonDestructiveBasicTest()
 {
     QFETCH(QString, modelType);
     currentModel = testModels->createModel(modelType);
+    QVERIFY(currentModel);
 
     QCOMPARE(currentModel->buddy(QModelIndex()), QModelIndex());
     currentModel->canFetchMore(QModelIndex());
@@ -244,6 +245,7 @@ void tst_QItemModel::rowCount()
 {
     QFETCH(QString, modelType);
     currentModel = testModels->createModel(modelType);
+    QVERIFY(currentModel);
 
     QFETCH(bool, isEmpty);
     if (isEmpty) {
@@ -291,6 +293,7 @@ void tst_QItemModel::columnCount()
 {
     QFETCH(QString, modelType);
     currentModel = testModels->createModel(modelType);
+    QVERIFY(currentModel);
 
     QFETCH(bool, isEmpty);
     if (isEmpty) {
@@ -325,6 +328,7 @@ void tst_QItemModel::hasIndex()
 {
     QFETCH(QString, modelType);
     currentModel = testModels->createModel(modelType);
+    QVERIFY(currentModel);
 
     // Make sure that invalid values returns an invalid index
     QCOMPARE(currentModel->hasIndex(-2, -2), false);
@@ -359,6 +363,7 @@ void tst_QItemModel::index()
 {
     QFETCH(QString, modelType);
     currentModel = testModels->createModel(modelType);
+    QVERIFY(currentModel);
 
     // Make sure that invalid values returns an invalid index
     QCOMPARE(currentModel->index(-2, -2), QModelIndex());
@@ -489,6 +494,7 @@ void tst_QItemModel::parent()
 {
     QFETCH(QString, modelType);
     currentModel = testModels->createModel(modelType);
+    QVERIFY(currentModel);
 
     // Make sure the model wont crash and will return an invalid QModelIndex
     // when asked for the parent of an invalid index.
@@ -538,6 +544,7 @@ void tst_QItemModel::data()
 {
     QFETCH(QString, modelType);
     currentModel = testModels->createModel(modelType);
+    QVERIFY(currentModel);
 
     // Invalid index should return an invalid qvariant
     QVERIFY(!currentModel->data(QModelIndex()).isValid());
@@ -618,6 +625,7 @@ void tst_QItemModel::setData()
 {
     QFETCH(QString, modelType);
     currentModel = testModels->createModel(modelType);
+    QVERIFY(currentModel);
     qRegisterMetaType<QModelIndex>("QModelIndex");
     QSignalSpy spy(currentModel, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)));
     QCOMPARE(currentModel->setData(QModelIndex(), QVariant()), false);
@@ -660,6 +668,7 @@ void tst_QItemModel::setHeaderData()
 {
     QFETCH(QString, modelType);
     currentModel = testModels->createModel(modelType);
+    QVERIFY(currentModel);
 
     QCOMPARE(currentModel->setHeaderData(-1, Qt::Horizontal, QVariant()), false);
     QCOMPARE(currentModel->setHeaderData(-1, Qt::Vertical, QVariant()), false);
@@ -708,6 +717,7 @@ void tst_QItemModel::sort()
 {
     QFETCH(QString, modelType);
     currentModel = testModels->createModel(modelType);
+    QVERIFY(currentModel);
 
     QFETCH(bool, isEmpty);
     if (isEmpty)
@@ -819,6 +829,7 @@ void tst_QItemModel::remove()
     QFETCH(QString, modelType);
 
     currentModel = testModels->createModel(modelType);
+    QVERIFY(currentModel);
 
     QFETCH(bool, readOnly);
     if (readOnly)
@@ -1160,6 +1171,7 @@ void tst_QItemModel::insert()
 {
     QFETCH(QString, modelType);
     currentModel = testModels->createModel(modelType);
+    QVERIFY(currentModel);
 
     QFETCH(bool, readOnly);
     if (readOnly)

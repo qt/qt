@@ -7,29 +7,29 @@
 ** This file is part of the qmake application of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -208,6 +208,7 @@ const char _slnExtSections[]    = "\n\tGlobalSection(ExtensibilityGlobals) = pos
 VcprojGenerator::VcprojGenerator()
     : Win32MakefileGenerator(),
       init_flag(false),
+      is64Bit(false),
       projectWriter(0)
 {
 }
@@ -597,14 +598,16 @@ nextfile:
         }
     }
     t << _slnGlobalBeg;
+
+    QString slnConf = _slnSolutionConf;
     if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH")) {
-        QString slnConfCE = _slnSolutionConf;
-        QString platform = QString("|") + project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
-        slnConfCE.replace(QString("|Win32"), platform);
-        t << slnConfCE;
-    } else {
-        t << _slnSolutionConf;
+        QString slnPlatform = QString("|") + project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
+        slnConf.replace(QString("|Win32"), slnPlatform);
+    } else if (is64Bit) {
+        slnConf.replace(QString("|Win32"), "|x64");
     }
+    t << slnConf;
+
     t << _slnProjDepBeg;
 
     // Restore previous after_user_var options
@@ -621,7 +624,7 @@ nextfile:
     t << _slnProjDepEnd;
     t << _slnProjConfBeg;
     for(QList<VcsolutionDepend*>::Iterator it = solution_cleanup.begin(); it != solution_cleanup.end(); ++it) {
-        QString platform = "Win32";
+        QString platform = is64Bit ? "x64" : "Win32";
         if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH"))
             platform = project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
         t << "\n\t\t" << (*it)->uuid << QString(_slnProjDbgConfTag1).arg(platform) << platform;
@@ -661,6 +664,7 @@ void VcprojGenerator::init()
     if (init_flag)
         return;
     init_flag = true;
+    is64Bit = (project->first("QMAKE_TARGET.arch") == "x86_64");
     projectWriter = createProjectWriter();
 
     if(project->first("TEMPLATE") == "vcsubdirs") //too much work for subdirs
@@ -831,7 +835,7 @@ void VcprojGenerator::initProject()
 
     vcProject.Keyword = project->first("VCPROJ_KEYWORD");
     if (project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
-        vcProject.PlatformName = (vcProject.Configuration.idl.TargetEnvironment == midlTargetWin64 ? "Win64" : "Win32");
+        vcProject.PlatformName = (is64Bit ? "x64" : "Win32");
     } else {
         vcProject.PlatformName = project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
     }
@@ -895,7 +899,7 @@ void VcprojGenerator::initConfiguration()
         conf.Name = isDebug ? "Debug" : "Release";
     conf.ConfigurationName = conf.Name;
     if (project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
-        conf.Name += (conf.idl.TargetEnvironment == midlTargetWin64 ? "|Win64" : "|Win32");
+        conf.Name += (is64Bit ? "|x64" : "|Win32");
     } else {
         conf.Name += "|" + project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
     }

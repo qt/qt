@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -78,19 +78,6 @@ struct QEdge {
         b = pt1.y() - m * pt1.x();
         vertical = p1.x == p2.x;
         horizontal = p1.y == p2.y;
-    }
-
-    inline qreal xAt(const qreal &y) const
-    {
-        Q_ASSERT(p1.y != p2.y);
-        XFixed yf = XDoubleToFixed(y);
-
-        if (yf == p1.y)
-            return XFixedToDouble(p1.x);
-        else if (yf == p2.y)
-            return XFixedToDouble(p2.x);
-
-        return (!vertical) ? (((y - b)*im)) : pf1.x();
     }
 
     QPointF     pf1, pf2;
@@ -218,7 +205,8 @@ void old_tesselate_polygon(QVector<XTrapezoid> *traps, const QPointF *pg, int pg
     qreal ymax(INT_MIN/256);
 
     //painter.begin(pg, pgSize);
-    Q_ASSERT(pg[0] == pg[pgSize-1]);
+    if (pg[0] != pg[pgSize-1])
+        qWarning() << Q_FUNC_INFO << "Malformed polygon (first and last points must be identical)";
     // generate edge table
 //     qDebug() << "POINTS:";
     for (int x = 0; x < pgSize-1; ++x) {
@@ -383,7 +371,8 @@ void old_tesselate_polygon(QVector<XTrapezoid> *traps, const QPointF *pg, int pg
 	    isects[i].edge = edge;
 	}
 
-	Q_ASSERT(isects.size()%2 == 1);
+	if (isects.size()%2 != 1)
+	    qFatal("%s: number of intersection points must be odd", Q_FUNC_INFO);
 
 	// sort intersection points
  	qSort(&isects[0], &isects[isects.size()-1], compareIntersections);

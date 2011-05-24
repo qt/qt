@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -71,6 +71,7 @@
 #include "private/qdeclarativenotifier_p.h"
 #include "private/qdeclarativedebugtrace_p.h"
 #include "private/qdeclarativeapplication_p.h"
+#include "private/qjsdebugservice_p.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QScriptClass>
@@ -123,7 +124,7 @@ QT_BEGIN_NAMESPACE
   \brief The QtObject element is the most basic element in QML.
 
   The QtObject element is a non-visual element which contains only the
-  objectName property. 
+  objectName property.
 
   It can be useful to create a QtObject if you need an extremely
   lightweight element to enclose a set of custom properties:
@@ -138,7 +139,7 @@ QT_BEGIN_NAMESPACE
   This property holds the QObject::objectName for this specific object instance.
 
   This allows a C++ application to locate an item within a QML component
-  using the QObject::findChild() method. For example, the following C++ 
+  using the QObject::findChild() method. For example, the following C++
   application locates the child \l Rectangle item and dynamically changes its
   \c color value:
 
@@ -152,7 +153,7 @@ QT_BEGIN_NAMESPACE
 
         Rectangle {
             anchors.fill: parent
-            color: "red" 
+            color: "red"
             objectName: "myRect"
         }
     }
@@ -166,7 +167,7 @@ QT_BEGIN_NAMESPACE
     view.show();
 
     QDeclarativeItem *item = view.rootObject()->findChild<QDeclarativeItem*>("myRect");
-    if (item) 
+    if (item)
         item->setProperty("color", QColor(Qt::yellow));
     \endcode
 */
@@ -202,7 +203,7 @@ void QDeclarativeEnginePrivate::defineModule()
 
 \keyword QmlGlobalQtObject
 
-\brief The \c Qt object provides useful enums and functions from Qt, for use in all QML files. 
+\brief The \c Qt object provides useful enums and functions from Qt, for use in all QML files.
 
 The \c Qt object is a global object with utility functions, properties and enums.
 
@@ -583,6 +584,7 @@ void QDeclarativeEnginePrivate::init()
         QDeclarativeEngineDebugServer::isDebuggingEnabled()) {
         isDebugging = true;
         QDeclarativeEngineDebugServer::instance()->addEngine(q);
+        QJSDebugService::instance()->addEngine(q);
     }
 }
 
@@ -645,8 +647,10 @@ QDeclarativeEngine::QDeclarativeEngine(QObject *parent)
 QDeclarativeEngine::~QDeclarativeEngine()
 {
     Q_D(QDeclarativeEngine);
-    if (d->isDebugging)
+    if (d->isDebugging) {
         QDeclarativeEngineDebugServer::instance()->remEngine(this);
+        QJSDebugService::instance()->removeEngine(this);
+    }
 }
 
 /*! \fn void QDeclarativeEngine::quit()
@@ -757,7 +761,7 @@ QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
 /*!
 
   Sets the \a provider to use for images requested via the \e
-  image: url scheme, with host \a providerId. The QDeclarativeEngine 
+  image: url scheme, with host \a providerId. The QDeclarativeEngine
   takes ownership of \a provider.
 
   Image providers enable support for pixmap and threaded image
@@ -1066,7 +1070,7 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
 
     rv = pf(const_cast<QObject *>(object));
 
-    if (rv) 
+    if (rv)
         data->attachedProperties()->insert(id, rv);
 
     return rv;
@@ -1083,6 +1087,17 @@ QObject *qmlAttachedPropertiesObject(int *idCache, const QObject *object,
 
     return qmlAttachedPropertiesObjectById(*idCache, object, create);
 }
+
+QDeclarativeDebuggingEnabler::QDeclarativeDebuggingEnabler()
+{
+#ifndef QDECLARATIVE_NO_DEBUG_PROTOCOL
+    if (!QDeclarativeEnginePrivate::qml_debugging_enabled) {
+        qWarning("Qml debugging is enabled. Only use this in a safe environment!");
+    }
+    QDeclarativeEnginePrivate::qml_debugging_enabled = true;
+#endif
+}
+
 
 class QDeclarativeDataExtended {
 public:
@@ -1258,7 +1273,7 @@ Returns a \l Component object created using the QML file at the specified \a url
 or \c null if an empty string was given.
 
 The returned component's \l Component::status property indicates whether the
-component was successfully created. If the status is \c Component.Error, 
+component was successfully created. If the status is \c Component.Error,
 see \l Component::errorString() for an error description.
 
 Call \l {Component::createObject()}{Component.createObject()} on the returned
@@ -1311,6 +1326,8 @@ Example (where \c parentItem is the id of an existing QML item):
 In the case of an error, a QtScript Error object is thrown. This object has an additional property,
 \c qmlErrors, which is an array of the errors encountered.
 Each object in this array has the members \c lineNumber, \c columnNumber, \c fileName and \c message.
+For example, if the above snippet had misspelled color as 'colro' then the array would contain an object like the following:
+{ "lineNumber" : 1, "columnNumber" : 32, "fileName" : "dynamicSnippet1", "message" : "Cannot assign to non-existent property \"colro\""}.
 
 Note that this function returns immediately, and therefore may not work if
 the \a qml string loads new components (that is, external QML files that have not yet been loaded).
@@ -1618,7 +1635,7 @@ QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScr
             return engine->newVariant(QVariant::fromValue(date.toString(format)));
         } else if (formatArg.isNumber()) {
             enumFormat = Qt::DateFormat(formatArg.toUInt32());
-        } else { 
+        } else {
             return ctxt->throwError(QLatin1String("Qt.formatDateTime(): Invalid datetime format"));
         }
     }
@@ -1683,7 +1700,7 @@ QScriptValue QDeclarativeEnginePrivate::hsla(QScriptContext *ctxt, QScriptEngine
 }
 
 /*!
-\qmlmethod rect Qt::rect(int x, int y, int width, int height) 
+\qmlmethod rect Qt::rect(int x, int y, int width, int height)
 
 Returns a \c rect with the top-left corner at \c x, \c y and the specified \c width and \c height.
 
@@ -1855,7 +1872,7 @@ Binary to ASCII - this function returns a base64 encoding of \c data.
 */
 QScriptValue QDeclarativeEnginePrivate::btoa(QScriptContext *ctxt, QScriptEngine *)
 {
-    if (ctxt->argumentCount() != 1) 
+    if (ctxt->argumentCount() != 1)
         return ctxt->throwError(QLatin1String("Qt.btoa(): Invalid arguments"));
 
     QByteArray data = ctxt->argument(0).toString().toUtf8();
@@ -1870,7 +1887,7 @@ ASCII to binary - this function returns a base64 decoding of \c data.
 
 QScriptValue QDeclarativeEnginePrivate::atob(QScriptContext *ctxt, QScriptEngine *)
 {
-    if (ctxt->argumentCount() != 1) 
+    if (ctxt->argumentCount() != 1)
         return ctxt->throwError(QLatin1String("Qt.atob(): Invalid arguments"));
 
     QByteArray data = ctxt->argument(0).toString().toUtf8();
@@ -2289,7 +2306,7 @@ QDeclarativePropertyCache *QDeclarativeEnginePrivate::createCache(const QMetaObj
     }
 }
 
-QDeclarativePropertyCache *QDeclarativeEnginePrivate::createCache(QDeclarativeType *type, int minorVersion, 
+QDeclarativePropertyCache *QDeclarativeEnginePrivate::createCache(QDeclarativeType *type, int minorVersion,
                                                                   QDeclarativeError &error)
 {
     QList<QDeclarativeType *> types;
@@ -2298,7 +2315,7 @@ QDeclarativePropertyCache *QDeclarativeEnginePrivate::createCache(QDeclarativeTy
 
     const QMetaObject *metaObject = type->metaObject();
     while (metaObject) {
-        QDeclarativeType *t = QDeclarativeMetaType::qmlType(metaObject, type->module(), 
+        QDeclarativeType *t = QDeclarativeMetaType::qmlType(metaObject, type->module(),
                                                             type->majorVersion(), minorVersion);
         if (t) {
             maxMinorVersion = qMax(maxMinorVersion, t->minorVersion());
@@ -2342,7 +2359,7 @@ QDeclarativePropertyCache *QDeclarativeEnginePrivate::createCache(QDeclarativeTy
 
     // Signals override:
     //    * other signals and methods of the same name.
-    //    * properties named on<Signal Name> 
+    //    * properties named on<Signal Name>
     //    * automatic <property name>Changed notify signals
 
     // Methods override:
@@ -2367,7 +2384,7 @@ QDeclarativePropertyCache *QDeclarativeEnginePrivate::createCache(QDeclarativeTy
         QDeclarativePropertyCache::Data *current = d;
         while (!overloadError && current) {
             current = d->overrideData(current);
-            if (current && raw->isAllowedInRevision(current)) 
+            if (current && raw->isAllowedInRevision(current))
                 overloadError = true;
         }
     }
@@ -2375,7 +2392,7 @@ QDeclarativePropertyCache *QDeclarativeEnginePrivate::createCache(QDeclarativeTy
 
     if (overloadError) {
         if (hasCopied) raw->release();
-            
+
         error.setDescription(QLatin1String("Type ") + QString::fromUtf8(type->qmlTypeName()) + QLatin1String(" ") + QString::number(type->majorVersion()) + QLatin1String(".") + QString::number(minorVersion) + QLatin1String(" contains an illegal property \"") + overloadName + QLatin1String("\".  This is an error in the type's implementation."));
         return 0;
     }

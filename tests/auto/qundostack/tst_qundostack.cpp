@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -99,6 +99,16 @@ public:
 private:
     QString *m_str;
     QString m_text;
+};
+
+class IdleCommand : public QUndoCommand
+{
+public:
+    IdleCommand(QUndoCommand *parent = 0);
+    ~IdleCommand();
+
+    virtual void undo();
+    virtual void redo();
 };
 
 InsertCommand::InsertCommand(QString *str, int idx, const QString &text,
@@ -201,6 +211,26 @@ bool AppendCommand::mergeWith(const QUndoCommand *other)
     return true;
 }
 
+IdleCommand::IdleCommand(QUndoCommand *parent)
+    : QUndoCommand(parent)
+{
+    // "idle-item" goes to QUndoStack::{redo,undo}Text
+    // "idle-action" goes to all other places (e.g. QUndoView)
+    setText("idle-item\nidle-action");
+}
+
+IdleCommand::~IdleCommand()
+{
+}
+
+void IdleCommand::redo()
+{
+}
+
+void IdleCommand::undo()
+{
+}
+
 /******************************************************************************
 ** tst_QUndoStack
 */
@@ -220,6 +250,8 @@ private slots:
     void macroBeginEnd();
     void compression();
     void undoLimit();
+    void commandTextFormat();
+    void separateUndoText();
 };
 
 tst_QUndoStack::tst_QUndoStack()
@@ -2933,6 +2965,68 @@ void tst_QUndoStack::undoLimit()
                 true,       // indexChanged
                 true,       // undoChanged
                 true);      // redoChanged
+}
+
+void tst_QUndoStack::commandTextFormat()
+{
+    QString binDir = QLibraryInfo::location(QLibraryInfo::BinariesPath);
+    QVERIFY(!QProcess::execute(binDir + "/lrelease testdata/qundostack.ts"));
+
+    QTranslator translator;
+    QVERIFY(translator.load("testdata/qundostack.qm"));
+    qApp->installTranslator(&translator);
+
+    QUndoStack stack;
+    QAction *undo_action = stack.createUndoAction(0);
+    QAction *redo_action = stack.createRedoAction(0);
+
+    QCOMPARE(undo_action->text(), QString("Undo-default-text"));
+    QCOMPARE(redo_action->text(), QString("Redo-default-text"));
+
+    QString str;
+
+    stack.push(new AppendCommand(&str, "foo"));
+    QCOMPARE(undo_action->text(), QString("undo-prefix append undo-suffix"));
+    QCOMPARE(redo_action->text(), QString("Redo-default-text"));
+
+    stack.push(new InsertCommand(&str, 0, "bar"));
+    stack.undo();
+    QCOMPARE(undo_action->text(), QString("undo-prefix append undo-suffix"));
+    QCOMPARE(redo_action->text(), QString("redo-prefix insert redo-suffix"));
+
+    stack.undo();
+    QCOMPARE(undo_action->text(), QString("Undo-default-text"));
+    QCOMPARE(redo_action->text(), QString("redo-prefix append redo-suffix"));
+
+    qApp->removeTranslator(&translator);
+}
+
+void tst_QUndoStack::separateUndoText()
+{
+    QUndoStack stack;
+    QAction *undo_action = stack.createUndoAction(0);
+    QAction *redo_action = stack.createRedoAction(0);
+
+    QUndoCommand *command1 = new IdleCommand();
+    QUndoCommand *command2 = new IdleCommand();
+    stack.push(command1);
+    stack.push(command2);
+    stack.undo();
+
+    QCOMPARE(undo_action->text(), QString("Undo idle-action"));
+    QCOMPARE(redo_action->text(), QString("Redo idle-action"));
+    QCOMPARE(command1->actionText(), QString("idle-action"));
+
+    QCOMPARE(command1->text(), QString("idle-item"));
+    QCOMPARE(stack.text(0), QString("idle-item"));
+
+    command1->setText("idle");
+    QCOMPARE(command1->actionText(), QString("idle"));
+    QCOMPARE(command1->text(), QString("idle"));
+
+    command1->setText("idle-item\nidle-action");
+    QCOMPARE(command1->actionText(), QString("idle-action"));
+    QCOMPARE(command1->text(), QString("idle-item"));
 }
 
 QTEST_MAIN(tst_QUndoStack)

@@ -58,7 +58,7 @@ SUBDIRS=\
     qfontdialog \
     qfontmetrics \
     qformlayout \
-    qglyphs \
+    qglyphrun \
     qgraphicsanchorlayout \
     qgraphicsanchorlayout1 \
     qgraphicseffect \
@@ -142,7 +142,6 @@ SUBDIRS=\
     qregion \
     qscrollarea \
     qscrollbar \
-    qscroller \
     qsharedpointer_and_qwidget \
     qshortcut \
     qsidebar \
