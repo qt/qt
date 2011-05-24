@@ -2659,6 +2659,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                     while (gs <= ge) {
                         if (glyphs.attributes[gs].clusterStart && qAbs(x-pos) < dist) {
                             glyph_pos = gs;
+                            edge = pos;
                             dist = qAbs(x-pos);
                         }
                         pos -= glyphs.effectiveAdvance(gs);
@@ -2668,6 +2669,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                     while (gs <= ge) {
                         if (glyphs.attributes[gs].clusterStart && qAbs(x-pos) < dist) {
                             glyph_pos = gs;
+                            edge = pos;
                             dist = qAbs(x-pos);
                         }
                         pos += glyphs.effectiveAdvance(gs);
