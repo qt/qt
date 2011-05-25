@@ -494,8 +494,8 @@ void QDeclarativeViewObserverPrivate::setSelectedItemsForTools(const QList<QGrap
     }
 
     foreach (QGraphicsItem *item, items) {
-        if (item) {
-            if (QGraphicsObject *obj = item->toGraphicsObject()) {
+        if (QGraphicsObject *obj = item->toGraphicsObject()) {
+            if (!currentSelection.contains(obj)) {
                 QObject::connect(obj, SIGNAL(destroyed(QObject*)),
                                  this, SLOT(_q_removeFromSelection(QObject*)));
                 currentSelection.append(obj);
