@@ -2844,7 +2844,8 @@ int QTextEngine::getClusterLength(unsigned short *logClusters,
 }
 
 int QTextEngine::positionInLigature(const QScriptItem *si, int end,
-                                    QFixed x, QFixed edge, int glyph_pos)
+                                    QFixed x, QFixed edge, int glyph_pos,
+                                    bool cursorOnCharacter)
 {
     unsigned short *logClusters = this->logClusters(si);
     int clusterStart = -1;
@@ -2882,6 +2883,8 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
         int n = ((x - left) / perItemWidth).floor().toInt();
         QFixed dist = x - left - n * perItemWidth;
         int closestItem = dist > (perItemWidth / 2) ? n + 1 : n;
+        if (cursorOnCharacter && closestItem > 0)
+            closestItem--;
         int pos = si->position + clusterStart + closestItem;
         // Jump to the next charStop
         while (!attrs[pos].charStop && pos < end)

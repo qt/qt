@@ -2780,11 +2780,13 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                         if (rtl && nchars > 0)
                             return insertionPoints[lastLine ? nchars : nchars - 1];
                     }
-                    return eng->positionInLigature(&si, end, x, pos, -1);
+                    return eng->positionInLigature(&si, end, x, pos, -1,
+                                                   cpos == QTextLine::CursorOnCharacter);
                 }
             }
             Q_ASSERT(glyph_pos != -1);
-            return eng->positionInLigature(&si, end, x, edge, glyph_pos);
+            return eng->positionInLigature(&si, end, x, edge, glyph_pos,
+                                           cpos == QTextLine::CursorOnCharacter);
         }
     }
     // right of last item

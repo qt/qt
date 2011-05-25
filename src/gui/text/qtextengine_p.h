@@ -620,7 +620,7 @@ public:
     QFixed leadingSpaceWidth(const QScriptLine &line);
 
     QFixed offsetInLigature(const QScriptItem *si, int pos, int max, int glyph_pos);
-    int positionInLigature(const QScriptItem *si, int end, QFixed x, QFixed edge, int glyph_pos);
+    int positionInLigature(const QScriptItem *si, int end, QFixed x, QFixed edge, int glyph_pos, bool cursorOnCharacter);
     int previousLogicalPosition(int oldPos) const;
     int nextLogicalPosition(int oldPos) const;
     int lineNumberForTextPosition(int pos);
