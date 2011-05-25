@@ -557,7 +557,7 @@ void QDeclarativeViewObserverPrivate::changeTool(Constants::DesignTool tool,
     }
 }
 
-void QDeclarativeViewObserverPrivate::setSelectedItemsForTools(QList<QGraphicsItem *> items)
+void QDeclarativeViewObserverPrivate::setSelectedItemsForTools(const QList<QGraphicsItem *> &items)
 {
     foreach (const QWeakPointer<QGraphicsObject> &obj, currentSelection) {
         if (QGraphicsItem *item = obj.data()) {
@@ -582,7 +582,7 @@ void QDeclarativeViewObserverPrivate::setSelectedItemsForTools(QList<QGraphicsIt
     currentTool->updateSelectedItems();
 }
 
-void QDeclarativeViewObserverPrivate::setSelectedItems(QList<QGraphicsItem *> items)
+void QDeclarativeViewObserverPrivate::setSelectedItems(const QList<QGraphicsItem *> &items)
 {
     QList<QWeakPointer<QGraphicsObject> > oldList = currentSelection;
     setSelectedItemsForTools(items);
@@ -633,7 +633,8 @@ void QDeclarativeViewObserverPrivate::highlight(QGraphicsObject * item, ContextF
     highlight(QList<QGraphicsObject*>() << item, flags);
 }
 
-void QDeclarativeViewObserverPrivate::highlight(QList<QGraphicsObject *> items, ContextFlags flags)
+void QDeclarativeViewObserverPrivate::highlight(const QList<QGraphicsObject *> &items,
+                                                ContextFlags flags)
 {
     if (items.isEmpty())
         return;
@@ -1064,7 +1065,7 @@ void QDeclarativeViewObserver::sendDesignModeBehavior(bool inDesignMode)
     data->debugService->sendMessage(message);
 }
 
-void QDeclarativeViewObserver::sendCurrentObjects(QList<QObject*> objects)
+void QDeclarativeViewObserver::sendCurrentObjects(const QList<QObject*> &objects)
 {
     QByteArray message;
     QDataStream ds(&message, QIODevice::WriteOnly);
