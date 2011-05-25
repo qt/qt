@@ -594,7 +594,7 @@ public:
     void shapeLine(const QScriptLine &line);
     QFixed leadingSpaceWidth(const QScriptLine &line);
 
-    int positionInLigature(const QScriptItem *si, int end, QFixed x, QFixed edge, int glyph_pos);
+    int positionInLigature(const QScriptItem *si, int end, QFixed x, QFixed edge, int glyph_pos, bool cursorOnCharacter);
 
 private:
     void setBoundary(int strPos) const;
