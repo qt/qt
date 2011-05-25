@@ -10,8 +10,12 @@ contains(S60_VERSION, 3.1) {
     SOURCES += ../src/qlocale_3_2.cpp \
         ../src/qdesktopservices_3_2.cpp \
         ../src/qcoreapplication_3_2.cpp
-    LIBS += -lefsrv \
-            -ldirectorylocalizer
+    contains(CONFIG, is_using_gnupoc) {
+        LIBS += -ldirectorylocalizer
+    } else {
+        LIBS += -lDirectoryLocalizer
+    }
+    LIBS += -lefsrv
     INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
 }
 

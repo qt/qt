@@ -19,8 +19,13 @@ LIBS += -lcommdb \
         -linsock \
         -lecom \
         -lefsrv \
-        -lnetmeta \
-        -lconnmon
+        -lnetmeta
+
+is_using_gnupoc {
+    LIBS += -lconnmon
+} else {
+    LIBS += -lConnMon
+}
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/bearer
 target.path += $$[QT_INSTALL_PLUGINS]/bearer
