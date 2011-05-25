@@ -232,8 +232,8 @@ void QDeclarativeFlickablePrivate::AxisData::addVelocitySample(qreal v, qreal ma
 
 void QDeclarativeFlickablePrivate::AxisData::updateVelocity()
 {
+    velocity = 0;
     if (velocityBuffer.count() > QML_FLICK_DISCARDSAMPLES) {
-        velocity = 0;
         int count = velocityBuffer.count()-QML_FLICK_DISCARDSAMPLES;
         for (int i = 0; i < count; ++i) {
             qreal v = velocityBuffer.at(i);
