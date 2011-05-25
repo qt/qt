@@ -2867,7 +2867,7 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
     if (glyph_pos == -1 && end > 0)
         glyph_pos = logClusters[end - 1];
     else {
-        if (x < edge)
+        if (x <= edge)
             glyph_pos--;
     }
 
