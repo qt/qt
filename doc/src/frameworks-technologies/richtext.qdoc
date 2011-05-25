@@ -880,6 +880,10 @@
     \row    \o \c a
             \o Anchor or link
             \o Supports the \c href and \c name attributes.
+               Note that the \c{:visited} selector is one of those
+               that is not supported by the rich text engine.
+               See \l{#Supported CSS Selectors}{below} for a list
+               of others.
     \row    \o \c address
             \o Address
             \o
