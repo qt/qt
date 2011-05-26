@@ -41,9 +41,9 @@
 
 #include <qtest.h>
 #include <QtDeclarative>
-#include "../../../../src/imports/shaders/src/shadereffectitem.h"
-#include "../../../../src/imports/shaders/src/shadereffectsource.h"
-#include "../../../../src/imports/shaders/src/shadereffect.h"
+#include "../../../../src/imports/shaders/shadereffectitem.h"
+#include "../../../../src/imports/shaders/shadereffectsource.h"
+#include "../../../../src/imports/shaders/shadereffect.h"
 
 static const char qt_default_vertex_code[] =
         "uniform highp mat4 qt_ModelViewProjectionMatrix;\n"

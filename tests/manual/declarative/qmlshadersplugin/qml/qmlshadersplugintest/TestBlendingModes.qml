@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import Qt 4.7
+import QtQuick 1.0
 import Qt.labs.shaders 1.0
 
 Item {

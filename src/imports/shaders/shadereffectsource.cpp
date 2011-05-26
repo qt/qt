@@ -229,7 +229,7 @@ void ShaderEffectSource::setTextureSize(const QSize &size)
 
 /*!
     \property ShaderEffectSource::live
-    \brief the flag tells wheter source item content is changing between frames.
+    \brief the flag tells whether source item content is changing between frames.
 */
 
 void ShaderEffectSource::setLive(bool s)
@@ -245,7 +245,7 @@ void ShaderEffectSource::setLive(bool s)
 
 /*!
     \qmlproperty bool ShaderEffectSource::hideSource
-    This property holds the flag to define wheter the original source item is
+    This property holds the flag to define whether the original source item is
     hidden when the effect item is drawn.
 
     The default value is false.
@@ -253,7 +253,7 @@ void ShaderEffectSource::setLive(bool s)
 
 /*!
     \property ShaderEffectSource::hideSource
-    \brief the flag tells wheter original source item content should be hidden.
+    \brief the flag tells whether original source item content should be hidden.
 */
 
 void ShaderEffectSource::setHideSource(bool hide)

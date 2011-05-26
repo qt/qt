@@ -302,7 +302,7 @@ void ShaderEffectItem::setVertexShader(const QString &code)
 
 /*!
     \qmlproperty bool ShaderEffectItem::blending
-    This property defines wheter item is drawn using blending.
+    This property defines whether item is drawn using blending.
 
     If true, the RGBA pixel output from the fragment shader is blended with
     the pixel RGBA-values already in the framebuffer.
@@ -565,7 +565,7 @@ void ShaderEffectItem::bindGeometry()
             continue;
         Q_ASSERT_X(j < m_geometry.attributeCount(), "ShaderEffectItem::bindGeometry()", "Geometry lacks attribute required by material");
         const QSGGeometry::Attribute &a = m_geometry.attributes()[j];
-        Q_ASSERT_X(j == a.position, "ShaderEffectItem::bindGeometry()", "Geometry does not have continous attribute positions");
+        Q_ASSERT_X(j == a.position, "ShaderEffectItem::bindGeometry()", "Geometry does not have continuous attribute positions");
 #if defined(QT_OPENGL_ES_2)
         GLboolean normalize = a.type != GL_FLOAT;
 #else

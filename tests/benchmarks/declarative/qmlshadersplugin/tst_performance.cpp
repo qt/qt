@@ -41,8 +41,8 @@
 
 #include <QtTest/qtest.h>
 #include <QtDeclarative>
-#include "../../../../src/imports/shaders/src/shadereffectitem.h"
-#include "../../../../src/imports/shaders/src/shadereffectsource.h"
+#include "../../../../src/imports/shaders/shadereffectitem.h"
+#include "../../../../src/imports/shaders/shadereffectsource.h"
 //#include "../../../src/shadereffect.h"
 
 class BenchmarkItem : public QDeclarativeItem
