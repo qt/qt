@@ -71,6 +71,7 @@
 #include <QtGui/qpaintengine.h>
 #include <private/qbackingstore_p.h>
 #include <qmenubar.h>
+#include <qtableview.h>
 
 #include <QtGui/QGraphicsView>
 #include <QtGui/QGraphicsProxyWidget>
@@ -406,6 +407,7 @@ private slots:
     void childAt();
 #ifdef Q_WS_MAC
     void childAt_unifiedToolBar();
+    void taskQTBUG_17333_ResizeInfiniteRecursion();
 #ifdef QT_MAC_USE_COCOA
     void taskQTBUG_11373();
 #endif // QT_MAC_USE_COCOA
@@ -10591,6 +10593,18 @@ void tst_QWidget::childAt_unifiedToolBar()
 
     QCOMPARE(mainWindow.childAt(toolBarTopLeft), static_cast<QWidget *>(toolBar));
     QCOMPARE(mainWindow.childAt(labelTopLeft), static_cast<QWidget *>(label));
+}
+
+void tst_QWidget::taskQTBUG_17333_ResizeInfiniteRecursion()
+{
+    QTableView tb;
+    const char *s = "border: 1px solid;";
+    tb.setStyleSheet(s);
+    tb.show();
+
+    QTest::qWaitForWindowShown(&tb);
+    tb.setGeometry(QRect(100, 100, 0, 100));
+    // No crash, it works.
 }
 
 #ifdef QT_MAC_USE_COCOA
