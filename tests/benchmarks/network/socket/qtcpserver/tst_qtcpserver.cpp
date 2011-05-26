@@ -128,6 +128,7 @@ void tst_QTcpServer::initTestCase_data()
 
     QTest::newRow("WithoutProxy") << false << 0;
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
+    QTest::newRow("WithHttpProxy") << true << int(QNetworkProxy::HttpProxy);
 }
 
 void tst_QTcpServer::init()
@@ -262,6 +263,11 @@ void tst_QTcpServer::ipv4PerformanceTest()
 
     QTcpServer server;
     QVERIFY(server.listen(probeSocket.localAddress(), 0));
+
+    QFETCH_GLOBAL(int, proxyType);
+    //For http proxy, only the active connection can be proxied and not the server socket
+    if (proxyType == QNetworkProxy::HttpProxy)
+        QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::HttpProxy, QtNetworkSettings::serverName(), 3128));
 
     QTcpSocket clientA;
     clientA.connectToHost(server.serverAddress(), server.serverPort());
