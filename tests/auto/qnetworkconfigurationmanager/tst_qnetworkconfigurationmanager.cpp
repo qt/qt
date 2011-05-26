@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -62,6 +62,7 @@ public slots:
     void cleanup();
 
 private slots:
+    void usedInThread(); // this test must be first, or it will falsely pass
     void allConfigurations();
     void defaultConfiguration();
     void configurationFromIdentifier();
@@ -329,6 +330,49 @@ void tst_QNetworkConfigurationManager::configurationFromIdentifier()
     QVERIFY(!invalid.isValid());
 }
 
+class QNCMTestThread : public QThread
+{
+protected:
+    virtual void run()
+    {
+        QNetworkConfigurationManager manager;
+        preScanConfigs = manager.allConfigurations();
+        QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
+        manager.updateConfigurations(); //initiate scans
+        QTRY_VERIFY(spy.count() == 1); //wait for scan to complete
+        configs = manager.allConfigurations();
+    }
+public:
+    QList<QNetworkConfiguration> configs;
+    QList<QNetworkConfiguration> preScanConfigs;
+};
+
+// regression test for QTBUG-18795
+void tst_QNetworkConfigurationManager::usedInThread()
+{
+#if defined Q_OS_MAC && !defined (QT_NO_COREWLAN)
+    QSKIP("QTBUG-19070 Mac CoreWlan plugin is broken", SkipAll);
+#else
+    QNCMTestThread thread;
+    connect(&thread, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    thread.start();
+    QTestEventLoop::instance().enterLoop(100); //QTRY_VERIFY could take ~90 seconds to time out in the thread
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    qDebug() << "prescan:" << thread.preScanConfigs.count();
+    qDebug() << "postscan:" << thread.configs.count();
+
+    QNetworkConfigurationManager manager;
+    QList<QNetworkConfiguration> preScanConfigs = manager.allConfigurations();
+    QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
+    manager.updateConfigurations(); //initiate scans
+    QTRY_VERIFY(spy.count() == 1); //wait for scan to complete
+    QList<QNetworkConfiguration> configs = manager.allConfigurations();
+    QCOMPARE(thread.configs, configs);
+    //Don't compare pre scan configs, because these may be cached and therefore give different results
+    //which makes the test unstable.  The post scan results should have all configurations every time
+    //QCOMPARE(thread.preScanConfigs, preScanConfigs);
+#endif
+}
 
 QTEST_MAIN(tst_QNetworkConfigurationManager)
 #include "tst_qnetworkconfigurationmanager.moc"

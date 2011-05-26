@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -54,6 +54,7 @@
 #include <private/qpaintengine_mac_p.h>
 #include <private/qt_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
+#include <private/qapplication_p.h>
 
 #include <limits.h>
 #include <string.h>
@@ -73,12 +74,18 @@ static int qt_pixmap_serial = 0;
 
 Q_GUI_EXPORT quint32 *qt_mac_pixmap_get_base(const QPixmap *pix)
 {
-    return static_cast<QMacPixmapData*>(pix->data.data())->pixels;
+    if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
+        return reinterpret_cast<quint32 *>(static_cast<QRasterPixmapData*>(pix->data.data())->buffer()->bits());
+    else
+        return static_cast<QMacPixmapData*>(pix->data.data())->pixels;
 }
 
 Q_GUI_EXPORT int qt_mac_pixmap_get_bytes_per_line(const QPixmap *pix)
 {
-    return static_cast<QMacPixmapData*>(pix->data.data())->bytesPerRow;
+    if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
+        return static_cast<QRasterPixmapData*>(pix->data.data())->buffer()->bytesPerLine();
+    else
+        return static_cast<QMacPixmapData*>(pix->data.data())->bytesPerRow;
 }
 
 void qt_mac_cgimage_data_free(void *info, const void *memoryToFree, size_t)

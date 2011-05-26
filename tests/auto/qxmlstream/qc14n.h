@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -47,17 +47,9 @@ QT_FORWARD_DECLARE_CLASS(QString)
 class QC14N
 {
 public:
-    enum Option
-    {
-        IgnoreProcessingInstruction,
-        IgnoreComments
-    };
-    typedef QFlags<Option> Options;
-
     static bool isEqual(QIODevice *const firstDocument,
                         QIODevice *const secondDocument,
-                        QString *const message = 0,
-                        const Options options = Options());
+                        QString *const message = 0);
 
 private:
     static bool isDifferent(const QXmlStreamReader &r1,
@@ -76,20 +68,17 @@ private:
  */
 bool QC14N::isEqual(QIODevice *const firstDocument,
                     QIODevice *const secondDocument,
-                    QString *const message,
-                    const Options options)
+                    QString *const message)
 {
     qDebug() << Q_FUNC_INFO;
-    Q_ASSERT_X(firstDocument, Q_FUNC_INFO,
-               "A valid QIODevice pointer must be supplied");
-    Q_ASSERT_X(secondDocument, Q_FUNC_INFO,
-               "A valid QIODevice pointer must be supplied");
-    Q_ASSERT_X(firstDocument->isReadable(), Q_FUNC_INFO, "The device must be readable.");
-    Q_ASSERT_X(secondDocument->isReadable(), Q_FUNC_INFO, "The device must be readable.");
-               
-    Q_ASSERT_X(options == Options(), Q_FUNC_INFO,
-               "Not yet implemented.");
-    Q_UNUSED(options);
+    if (!firstDocument)
+        qFatal("%s: A valid firstDocument QIODevice pointer must be supplied", Q_FUNC_INFO);
+    if (!secondDocument)
+        qFatal("%s: A valid secondDocument QIODevice pointer must be supplied", Q_FUNC_INFO);
+    if (!firstDocument->isReadable())
+        qFatal("%s: The firstDocument device must be readable.", Q_FUNC_INFO);
+    if (!secondDocument->isReadable())
+        qFatal("%s: The secondDocument device must be readable.", Q_FUNC_INFO);
 
     QXmlStreamReader r1(firstDocument);
     QXmlStreamReader r2(secondDocument);
@@ -202,9 +191,9 @@ bool QC14N::isDifferent(const QXmlStreamReader &r1,
                    r2.processingInstructionData() == r2.processingInstructionData();
 
         }
+        default:
+            qFatal("%s: Unknown tokenType: %d", Q_FUNC_INFO, static_cast<int>(r1.tokenType()));
+            return false;
     }
-
-    Q_ASSERT_X(false, Q_FUNC_INFO, "This line should never be reached");
-    return false;
 }
 
