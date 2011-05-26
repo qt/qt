@@ -52,10 +52,6 @@
 
 QT_BEGIN_NAMESPACE
 
-const qreal AnimDelta = 0.025f;
-const int AnimInterval = 30;
-const int AnimFrames = 10;
-
 BoundingBox::BoundingBox(QGraphicsObject *itemToHighlight, QGraphicsItem *parentItem,
                          QObject *parent)
     : QObject(parent),
@@ -93,12 +89,8 @@ int BoundingBoxPolygonItem::type() const
 
 BoundingRectHighlighter::BoundingRectHighlighter(QDeclarativeViewInspector *view) :
     LiveLayerItem(view->declarativeView()->scene()),
-    m_view(view),
-    m_animFrame(0)
+    m_view(view)
 {
-    m_animTimer = new QTimer(this);
-    m_animTimer->setInterval(AnimInterval);
-    connect(m_animTimer, SIGNAL(timeout()), SLOT(animTimeout()));
 }
 
 BoundingRectHighlighter::~BoundingRectHighlighter()
@@ -106,37 +98,17 @@ BoundingRectHighlighter::~BoundingRectHighlighter()
 
 }
 
-void BoundingRectHighlighter::animTimeout()
-{
-    ++m_animFrame;
-    if (m_animFrame == AnimFrames) {
-        m_animTimer->stop();
-    }
-
-    qreal alpha = m_animFrame / float(AnimFrames);
-
-    foreach (BoundingBox *box, m_boxes) {
-        box->highlightPolygonEdge->setOpacity(alpha);
-    }
-}
-
 void BoundingRectHighlighter::clear()
 {
-    if (m_boxes.length()) {
-        m_animTimer->stop();
-
-        foreach (BoundingBox *box, m_boxes) {
-            freeBoundingBox(box);
-        }
-    }
+    foreach (BoundingBox *box, m_boxes)
+        freeBoundingBox(box);
 }
 
 BoundingBox *BoundingRectHighlighter::boxFor(QGraphicsObject *item) const
 {
     foreach (BoundingBox *box, m_boxes) {
-        if (box->highlightedObject.data() == item) {
+        if (box->highlightedObject.data() == item)
             return box;
-        }
     }
     return 0;
 }
@@ -146,15 +118,11 @@ void BoundingRectHighlighter::highlight(QList<QGraphicsObject*> items)
     if (items.isEmpty())
         return;
 
-    bool animate = false;
-
     QList<BoundingBox *> newBoxes;
     foreach (QGraphicsObject *itemToHighlight, items) {
         BoundingBox *box = boxFor(itemToHighlight);
-        if (!box) {
+        if (!box)
             box = createBoundingBox(itemToHighlight);
-            animate = true;
-        }
 
         newBoxes << box;
     }
@@ -165,7 +133,7 @@ void BoundingRectHighlighter::highlight(QList<QGraphicsObject*> items)
         m_boxes << newBoxes;
     }
 
-    highlightAll(animate);
+    highlightAll();
 }
 
 void BoundingRectHighlighter::highlight(QGraphicsObject* itemToHighlight)
@@ -173,17 +141,14 @@ void BoundingRectHighlighter::highlight(QGraphicsObject* itemToHighlight)
     if (!itemToHighlight)
         return;
 
-    bool animate = false;
-
     BoundingBox *box = boxFor(itemToHighlight);
     if (!box) {
         box = createBoundingBox(itemToHighlight);
         m_boxes << box;
-        animate = true;
         qSort(m_boxes);
     }
 
-    highlightAll(animate);
+    highlightAll();
 }
 
 BoundingBox *BoundingRectHighlighter::createBoundingBox(QGraphicsObject *itemToHighlight)
@@ -244,7 +209,7 @@ void BoundingRectHighlighter::itemDestroyed(QObject *obj)
     }
 }
 
-void BoundingRectHighlighter::highlightAll(bool animate)
+void BoundingRectHighlighter::highlightAll()
 {
     foreach (BoundingBox *box, m_boxes) {
         if (box && box->highlightedObject.isNull()) {
@@ -262,21 +227,13 @@ void BoundingRectHighlighter::highlightAll(bool animate)
 
         box->highlightPolygon->setPolygon(QPolygonF(bboxRect));
         box->highlightPolygonEdge->setPolygon(QPolygonF(edgeRect));
-
-        if (animate)
-            box->highlightPolygonEdge->setOpacity(0);
-    }
-
-    if (animate) {
-        m_animFrame = 0;
-        m_animTimer->start();
     }
 }
 
 void BoundingRectHighlighter::refresh()
 {
     if (!m_boxes.isEmpty())
-        highlightAll(true);
+        highlightAll();
 }
 
 QT_END_NAMESPACE
