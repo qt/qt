@@ -1963,4 +1963,28 @@ EXPORTS
 	_ZN26QDeclarativeStateOperation25staticMetaObjectExtraDataE @ 1962 NONAME DATA 8
 	_ZN27QDeclarativeExtensionPlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1963 NONAME
 	_ZN27QDeclarativeExtensionPlugin25staticMetaObjectExtraDataE @ 1964 NONAME DATA 8
+	_ZN15QPacketProtocol16waitForReadyReadEi @ 1965 NONAME
+	_ZN23QDeclarativeDebugServer14waitForMessageEP24QDeclarativeDebugService @ 1966 NONAME
+	_ZN24QDeclarativeDebugService14waitForMessageEv @ 1967 NONAME
+	_ZN27QDeclarativeObserverService10gotMessageERK10QByteArray @ 1968 NONAME
+	_ZN27QDeclarativeObserverService10removeViewEP16QDeclarativeView @ 1969 NONAME
+	_ZN27QDeclarativeObserverService11qt_metacallEN11QMetaObject4CallEiPPv @ 1970 NONAME
+	_ZN27QDeclarativeObserverService11qt_metacastEPKc @ 1971 NONAME
+	_ZN27QDeclarativeObserverService11sendMessageERK10QByteArray @ 1972 NONAME
+	_ZN27QDeclarativeObserverService13statusChangedEN24QDeclarativeDebugService6StatusE @ 1973 NONAME
+	_ZN27QDeclarativeObserverService15messageReceivedERK10QByteArray @ 1974 NONAME
+	_ZN27QDeclarativeObserverService16staticMetaObjectE @ 1975 NONAME DATA 16
+	_ZN27QDeclarativeObserverService18loadObserverPluginEv @ 1976 NONAME
+	_ZN27QDeclarativeObserverService18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1977 NONAME
+	_ZN27QDeclarativeObserverService19getStaticMetaObjectEv @ 1978 NONAME
+	_ZN27QDeclarativeObserverService25staticMetaObjectExtraDataE @ 1979 NONAME DATA 8
+	_ZN27QDeclarativeObserverService7addViewEP16QDeclarativeView @ 1980 NONAME
+	_ZN27QDeclarativeObserverService8instanceEv @ 1981 NONAME
+	_ZN27QDeclarativeObserverServiceC1Ev @ 1982 NONAME
+	_ZN27QDeclarativeObserverServiceC2Ev @ 1983 NONAME
+	_ZN28QDeclarativeDebuggingEnablerC1Ev @ 1984 NONAME
+	_ZN28QDeclarativeDebuggingEnablerC2Ev @ 1985 NONAME
+	_ZNK27QDeclarativeObserverService10metaObjectEv @ 1986 NONAME
+	_ZTI27QDeclarativeObserverService @ 1987 NONAME
+	_ZTV27QDeclarativeObserverService @ 1988 NONAME
 
