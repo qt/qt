@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -2007,13 +2007,9 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
     } else {
         alphaCornerColor = mergedColors(option->palette.background().color(), borderColor);
     }
-    QColor alphaTextColor = mergedColors(option->palette.background().color(), option->palette.text().color());
 
     QColor gradientStartColor = option->palette.button().color().lighter(104);
     QColor gradientStopColor = option->palette.button().color().darker(105);
-
-    QColor shadowGradientStartColor = option->palette.button().color().darker(115);
-    QColor shadowGradientStopColor = option->palette.button().color().darker(120);
 
     QColor highlightedGradientStartColor = option->palette.button().color().lighter(101);
     QColor highlightedGradientStopColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 85);
@@ -2025,8 +2021,6 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
     QColor highlightedLightInnerBorderColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 58);
 
     QColor alphaInnerColor = mergedColors(highlightedDarkInnerBorderColor, option->palette.base().color());
-    QColor lightShadow = lightShadowGradientStartColor;
-    QColor shadow = shadowGradientStartColor;
 
     switch (element) {
 #ifndef QT_NO_TABBAR
@@ -3786,10 +3780,6 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
     }
     QColor gradientStartColor = option->palette.button().color().lighter(104);
     QColor gradientStopColor = option->palette.button().color().darker(105);
-    QColor highlightedGradientStartColor = option->palette.button().color().lighter(101);
-    QColor highlightedGradientStopColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 85);
-    QColor highlightedDarkInnerBorderColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 35);
-    QColor highlightedLightInnerBorderColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 58);
 
     switch (control) {
 #ifndef QT_NO_SLIDER
@@ -3797,7 +3787,6 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
             QRect grooveRegion = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
             QRect handle = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
-            QRect ticks = proxy()->subControlRect(CC_Slider, option, SC_SliderTickmarks, widget);
             bool horizontal = slider->orientation == Qt::Horizontal;
             bool ticksAbove = slider->tickPosition & QSlider::TicksAbove;
             bool ticksBelow = slider->tickPosition & QSlider::TicksBelow;

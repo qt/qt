@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -132,33 +132,32 @@ static void setAnchor(QGraphicsAnchorLayout *l,
     anchor->setSpacing(spacing);
 }
 
-static bool checkReverseDirection(QGraphicsWidget *w)
+static bool checkReverseDirection(QGraphicsWidget *widget)
 {
-    QGraphicsLayout *l = w->layout();
-    Q_ASSERT(l);
+    QGraphicsLayout *layout = widget->layout();
     qreal left, top, right, bottom;
-    l->getContentsMargins(&left, &top, &right, &bottom);
-    w->setLayoutDirection(Qt::LeftToRight);
+    layout->getContentsMargins(&left, &top, &right, &bottom);
+    widget->setLayoutDirection(Qt::LeftToRight);
     QApplication::processEvents();
-    const QRectF lg = l->geometry();
+    const QRectF layoutGeometry = layout->geometry();
     QMap<QGraphicsLayoutItem *, QRectF> geometries;
-    for (int i = 0; i < l->count(); ++i) {
-        QGraphicsLayoutItem *w = l->itemAt(i);
-        geometries.insert(w, w->geometry());
+    for (int i = 0; i < layout->count(); ++i) {
+        QGraphicsLayoutItem *item = layout->itemAt(i);
+        geometries.insert(item, item->geometry());
     }
-    w->setLayoutDirection(Qt::RightToLeft);
+    widget->setLayoutDirection(Qt::RightToLeft);
     QApplication::processEvents();
-    lg.adjusted(+right, +top, -left, -bottom);
-    for (int i = 0; i < l->count(); ++i) {
-        QGraphicsLayoutItem *w = l->itemAt(i);
-        const QRectF rtlGeom = w->geometry();
-        const QRectF ltrGeom = geometries.value(w);
-        QRectF expectedGeom = ltrGeom;
-        expectedGeom.moveRight(lg.right() - (0 + ltrGeom.left()));
-        if (expectedGeom != rtlGeom) {
-            qDebug() << "layout->geometry():" << lg
-                     << "expected:" << expectedGeom
-                     << "actual:" << rtlGeom;
+    layoutGeometry.adjusted(+right, +top, -left, -bottom);
+    for (int i = 0; i < layout->count(); ++i) {
+        QGraphicsLayoutItem *item = layout->itemAt(i);
+        const QRectF rightToLeftGeometry = item->geometry();
+        const QRectF leftToRightGeometry = geometries.value(item);
+        QRectF expectedGeometry = leftToRightGeometry;
+        expectedGeometry.moveRight(layoutGeometry.right() - leftToRightGeometry.left());
+        if (expectedGeometry != rightToLeftGeometry) {
+            qDebug() << "layout->geometry():" << layoutGeometry
+                     << "expected:" << expectedGeometry
+                     << "actual:" << rightToLeftGeometry;
             return false;
         }
     }
@@ -345,6 +344,7 @@ void tst_QGraphicsAnchorLayout::layoutDirection()
     p->show();
     view->show();
 
+    QVERIFY(p->layout());
     QCOMPARE(checkReverseDirection(p), true);
 
     if (hasSimplification) {
@@ -445,6 +445,7 @@ void tst_QGraphicsAnchorLayout::diagonal()
         QVERIFY(!usedSimplex(l, Qt::Vertical));
     }
 
+    QVERIFY(p.layout());
     QCOMPARE(checkReverseDirection(&p), true);
 
     c->setMinimumWidth(300);
@@ -735,6 +736,7 @@ void tst_QGraphicsAnchorLayout::snakeOppositeDirections()
     QCOMPARE(c->geometry(), QRectF(90.0, 200.0, 100.0, 100.0));
     QCOMPARE(p.size(), layoutMaximumSize);
 
+    QVERIFY(p.layout());
     QCOMPARE(checkReverseDirection(&p), true);
 }
 
@@ -1091,6 +1093,9 @@ void tst_QGraphicsAnchorLayout::setSpacing()
 #ifdef Q_WS_MAC
     QTest::qWait(200);
 #endif
+
+    // 21x21
+    QCOMPARE(p->size(), QSizeF(41, 41));
     QCOMPARE(a->geometry(), QRectF(0, 0, 20, 20));
     QCOMPARE(b->geometry(), QRectF(21, 0, 20, 20));
     QCOMPARE(c->geometry(), QRectF(0, 21, 41, 20));

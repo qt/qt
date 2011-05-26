@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -2605,6 +2605,17 @@ void QDeclarativeItem::setKeepMouseGrab(bool keep)
     If \a item is a \c null value, this maps the point from the coordinate
     system of the root QML view.
 */
+
+/*!
+    Maps the point (\a x, \a y), which is in \a item's coordinate system, to
+    this item's coordinate system, and returns a script value with \c x and \c y
+    properties matching the mapped cooordinate.
+
+    If \a item is a \c null value, this maps the point from the coordinate
+    system of the root QML view.
+
+    \sa Item::mapFromItem()
+*/
 QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, qreal x, qreal y) const
 {
     QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
@@ -2631,6 +2642,17 @@ QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, qreal x, qr
     If \a item is a \c null value, this maps \a x and \a y to the coordinate
     system of the root QML view.
 */
+
+/*!
+    Maps the point (\a x, \a y), which is in this item's coordinate system, to
+    \a item's coordinate system, and returns a script value with \c x and \c y
+    properties matching the mapped cooordinate.
+
+    If \a item is a \c null value, this maps \a x and \a y to the coordinate
+    system of the root QML view.
+
+    \sa Item::mapToItem()
+*/
 QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, qreal x, qreal y) const
 {
     QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
@@ -2650,8 +2672,17 @@ QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, qreal x, qrea
 /*!
     \qmlmethod Item::forceActiveFocus()
 
-    Force active focus on the item.
-    This method sets focus on the item and makes sure that all the focus scopes higher in the object hierarchy are also given focus.
+    Forces active focus on the item.
+
+    This method sets focus on the item and makes sure that all the focus scopes
+    higher in the object hierarchy are also given the focus.
+*/
+
+/*!
+    Forces active focus on the item.
+
+    This method sets focus on the item and makes sure that all the focus scopes
+    higher in the object hierarchy are also given the focus.
 */
 void QDeclarativeItem::forceActiveFocus()
 {
@@ -2670,7 +2701,12 @@ void QDeclarativeItem::forceActiveFocus()
 
   Returns the visible child item at point (\a x, \a y), which is in this
   item's coordinate system, or \c null if there is no such item.
-  */
+*/
+
+/*!
+  Returns the visible child item at point (\a x, \a y), which is in this
+  item's coordinate system, or 0 if there is no such item.
+*/
 QDeclarativeItem *QDeclarativeItem::childAt(qreal x, qreal y) const
 {
     const QList<QGraphicsItem *> children = childItems();

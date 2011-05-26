@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -101,7 +101,7 @@ bool isVariantType(const char* type)
     return qvariant_nameToType(type) != 0;
 }
 
-// copied from qmetaobject.cpp
+// copied from qmetaobject_p.h
 // do not touch without touching the moc as well
 enum PropertyFlags  {
     Invalid = 0x00000000,
@@ -111,6 +111,8 @@ enum PropertyFlags  {
     EnumOrFlag = 0x00000008,
     StdCppSet = 0x00000100,
 //    Override = 0x00000200,
+    Constant = 0x00000400,
+    Final = 0x00000800,
     Designable = 0x00001000,
     ResolveDesignable = 0x00002000,
     Scriptable = 0x00004000,
@@ -618,6 +620,8 @@ QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QMetaProperty& protot
     property.setUser(prototype.isUser());
     property.setStdCppSet(prototype.hasStdCppSet());
     property.setEnumOrFlag(prototype.isEnumType());
+    property.setConstant(prototype.isConstant());
+    property.setFinal(prototype.isFinal());
     if (prototype.hasNotifySignal()) {
         // Find an existing method for the notify signal, or add a new one.
         QMetaMethod method = prototype.notifySignal();
@@ -1448,6 +1452,7 @@ QMetaObject *QMetaObjectBuilder::toMetaObject() const
 {
     int size = buildMetaObject(d, 0, false);
     char *buf = reinterpret_cast<char *>(qMalloc(size));
+    memset(buf, 0, size);
     buildMetaObject(d, buf, false);
     return reinterpret_cast<QMetaObject *>(buf);
 }
@@ -1477,6 +1482,7 @@ QByteArray QMetaObjectBuilder::toRelocatableData(bool *ok) const
     QByteArray data;
     data.resize(size);
     char *buf = data.data();
+    memset(buf, 0, size);
     buildMetaObject(d, buf, true);
     if (ok) *ok = true;
     return data;
@@ -2278,6 +2284,32 @@ bool QMetaPropertyBuilder::isEnumOrFlag() const
 }
 
 /*!
+    Returns true if the property is constant; otherwise returns false.
+    The default value is false.
+*/
+bool QMetaPropertyBuilder::isConstant() const
+{
+    QMetaPropertyBuilderPrivate *d = d_func();
+    if (d)
+        return d->flag(Constant);
+    else
+        return false;
+}
+
+/*!
+    Returns true if the property is final; otherwise returns false.
+    The default value is false.
+*/
+bool QMetaPropertyBuilder::isFinal() const
+{
+    QMetaPropertyBuilderPrivate *d = d_func();
+    if (d)
+        return d->flag(Final);
+    else
+        return false;
+}
+
+/*!
     Sets this property to readable if \a value is true.
 
     \sa isReadable(), setWritable()
@@ -2399,6 +2431,31 @@ void QMetaPropertyBuilder::setEnumOrFlag(bool value)
     if (d)
         d->setFlag(EnumOrFlag, value);
 }
+
+/*!
+    Sets the \c CONSTANT flag on this property to \a value.
+
+    \sa isConstant()
+*/
+void QMetaPropertyBuilder::setConstant(bool value)
+{
+    QMetaPropertyBuilderPrivate *d = d_func();
+    if (d)
+        d->setFlag(Constant, value);
+}
+
+/*!
+    Sets the \c FINAL flag on this property to \a value.
+
+    \sa isFinal()
+*/
+void QMetaPropertyBuilder::setFinal(bool value)
+{
+    QMetaPropertyBuilderPrivate *d = d_func();
+    if (d)
+        d->setFlag(Final, value);
+}
+
 
 /*!
     \class QMetaEnumBuilder

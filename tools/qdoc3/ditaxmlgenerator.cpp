@@ -7,29 +7,29 @@
 ** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -92,6 +92,7 @@ QString DitaXmlGenerator::ditaTags[] =
         "apiDesc",
         "APIMap",
         "apiName",
+        "apiRelation",
         "audience",
         "author",
         "b",
@@ -284,14 +285,15 @@ void DitaXmlGenerator::writeCharacters(const QString& text)
   with the \a href attribute and the \a text.
  */
 void DitaXmlGenerator::addLink(const QString& href,
-                               const QStringRef& text)
+                               const QStringRef& text,
+                               DitaTag t)
 {
     if (!href.isEmpty()) {
-        writeStartTag(DT_xref);
+        writeStartTag(t);
         // formathtml
         xmlWriter().writeAttribute("href", href);
         writeCharacters(text.toString());
-        writeEndTag(); // </xref>
+        writeEndTag(); // </t>
     }
     else {
         writeCharacters(text.toString());
@@ -767,6 +769,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::Code:
         {
             writeStartTag(DT_codeblock);
+            xmlWriter().writeAttribute("outputclass","cpp");
             QString chars = trimmedTrailing(atom->string()); 
             writeText(chars, marker, relative);
             writeEndTag(); // </codeblock>
@@ -774,6 +777,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
 	break;
     case Atom::Qml:
         writeStartTag(DT_codeblock);
+        xmlWriter().writeAttribute("outputclass","qml");
         writeText(trimmedTrailing(atom->string()), marker, relative);
         writeEndTag(); // </codeblock>
 	break;
@@ -797,15 +801,18 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
 	break;
     case Atom::DivLeft:
         {
+            bool inStartElement = false;
             attr = atom->string();
             DitaTag t = currentTag();
             if ((t == DT_section) || (t == DT_sectiondiv)) {
                 writeStartTag(DT_sectiondiv);
                 divNestingLevel++;
+                inStartElement = true;
             }
             else if ((t == DT_body) || (t == DT_bodydiv)) {
                 writeStartTag(DT_bodydiv);
                 divNestingLevel++;
+                inStartElement = true;
             }
             if (!attr.isEmpty()) {
                 if (attr.contains('=')) {
@@ -829,7 +836,8 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                     attr = values;
                 }
             }
-            xmlWriter().writeAttribute("outputclass", attr);
+            if (inStartElement)
+                xmlWriter().writeAttribute("outputclass", attr);
         }
         break;
     case Atom::DivRight:
@@ -1249,9 +1257,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::GuidLink:
         {
-#if 0            
-            qDebug() << "GUID LINK:" << atom->string() << outFileName();
-#endif            
             beginLink(atom->string());
             skipAhead = 1;
         }
@@ -1480,7 +1485,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             generateLink(atom, relative, marker);
         }
         else {
-            writeCharacters(protectEnc(atom->string()));
+            writeCharacters(atom->string());
         }
         break;
     case Atom::TableLeft:
@@ -1633,7 +1638,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             int numColumns = 1;
             const Node* node = relative;
 
-            Doc::SectioningUnit sectioningUnit = Doc::Section4;
+            Doc::Sections sectionUnit = Doc::Section4;
             QStringList params = atom->string().split(",");
             QString columnText = params.at(0);
             QStringList pieces = columnText.split(" ", QString::SkipEmptyParts);
@@ -1646,13 +1651,13 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
 
             if (params.size() == 2) {
                 numColumns = qMax(columnText.toInt(), numColumns);
-                sectioningUnit = (Doc::SectioningUnit)params.at(1).toInt();
+                sectionUnit = (Doc::Sections)params.at(1).toInt();
             }
 
             if (node)
                 generateTableOfContents(node,
                                         marker,
-                                        sectioningUnit,
+                                        sectionUnit,
                                         numColumns,
                                         relative);
         }
@@ -1718,7 +1723,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
          */
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
-        writeProlog(inner,marker);
+        writeProlog(inner);
             
         writeStartTag(DT_cxxClassDetail);
         writeStartTag(DT_cxxClassDefinition);
@@ -1739,6 +1744,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         enterSection("h2","Detailed Description");
         generateBody(nsn, marker);
+        generateAlsoList(nsn, marker);
         leaveSection();
         leaveSection(); // </apiDesc>
 
@@ -1838,7 +1844,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
-        writeProlog(inner,marker);
+        writeProlog(inner);
     
         writeStartTag(DT_cxxClassDetail);
         writeStartTag(DT_cxxClassDefinition);
@@ -1873,6 +1879,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateSince(cn, marker);
         enterSection("h2","Detailed Description");
         generateBody(cn, marker);
+        generateAlsoList(cn, marker);
         leaveSection();
         leaveSection(); // </apiDesc>
 
@@ -1974,7 +1981,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
          */
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
-        writeProlog(inner,marker);
+        writeProlog(inner);
 
         writeStartTag(DT_cxxClassDetail);
         enterApiDesc(QString(),title);
@@ -1991,6 +1998,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateSince(fn, marker);
         enterSection("h2","Detailed Description");
         generateBody(fn, marker);
+        generateAlsoList(fn, marker);
         leaveSection();
         leaveSection(); // </apiDesc>
 
@@ -2093,7 +2101,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
-        writeProlog(inner,marker);
+        writeProlog(inner);
 
         writeStartTag(DT_cxxClassDetail);
         enterApiDesc(QString(),title);
@@ -2111,6 +2119,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateBody(qcn, marker);
         if (cn)
             generateQmlText(cn->doc().body(), cn, marker, qcn->name());
+        generateAlsoList(cn, marker);
         leaveSection();
         leaveSection(); // </apiDesc>
 
@@ -2195,7 +2204,7 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode* fake, CodeMarker* marker
 
     generateHeader(fake, fullTitle);
     generateBrief(fake, marker); // <shortdesc>
-    writeProlog(fake, marker);
+    writeProlog(fake);
 
     writeStartTag(DT_body);
     enterSection(QString(),QString());
@@ -2454,7 +2463,7 @@ void DitaXmlGenerator::generateIncludes(const InnerNode* inner, CodeMarker* mark
  */
 void DitaXmlGenerator::generateTableOfContents(const Node* node,
                                                CodeMarker* marker,
-                                               Doc::SectioningUnit sectioningUnit,
+                                               Doc::Sections sectionUnit,
                                                int numColumns,
                                                const Node* relative)
 
@@ -2488,7 +2497,7 @@ void DitaXmlGenerator::generateTableOfContents(const Node* node,
         Atom *atom = toc.at(i);
 
         int nextLevel = atom->string().toInt();
-        if (nextLevel > (int)sectioningUnit)
+        if (nextLevel > (int)sectionUnit)
             continue;
 
         if (sectionNumber.size() < nextLevel) {
@@ -3632,10 +3641,6 @@ QString DitaXmlGenerator::registerRef(const QString& ref)
         }
         else if (prevRef == ref)
             break;
-#if 0        
-        else
-            qDebug() << "PREVREF:" << prevRef;
-#endif        
         clean += "x";
     }
     return clean;
@@ -3649,7 +3654,7 @@ QString DitaXmlGenerator::protectEnc(const QString& string)
     return protect(string, outputEncoding);
 }
 
-QString DitaXmlGenerator::protect(const QString& string, const QString& outputEncoding)
+QString DitaXmlGenerator::protect(const QString& string, const QString& ) //outputEncoding)
 {
 #define APPEND(x) \
     if (xml.isEmpty()) { \
@@ -3676,6 +3681,7 @@ QString DitaXmlGenerator::protect(const QString& string, const QString& outputEn
         else if (ch == QLatin1Char('"')) {
             APPEND("&quot;");
         }
+#if 0        
         else if ((outputEncoding == "ISO-8859-1" && ch.unicode() > 0x007F) ||
                  (ch == QLatin1Char('*') && i + 1 < n && string.at(i) == QLatin1Char('/')) ||
                  (ch == QLatin1Char('.') && i > 2 && string.at(i - 2) == QLatin1Char('.'))) {
@@ -3684,6 +3690,7 @@ QString DitaXmlGenerator::protect(const QString& string, const QString& outputEn
             xml += QString::number(ch.unicode(), 16);
             xml += QLatin1Char(';');
         }
+#endif
         else {
             if (!xml.isEmpty())
                 xml += ch;
@@ -3804,7 +3811,6 @@ QString DitaXmlGenerator::guidForNode(const Node* node)
                 QString ref = fn->name();
                 if (fn->overloadNumber() != 1) {
                     ref += "-" + QString::number(fn->overloadNumber());
-                    //qDebug() << "guidForNode() overloaded function:" << outFileName() << ref;
                 }
             }
             return fn->guid();
@@ -4712,7 +4718,7 @@ void DitaXmlGenerator::writeLocation(const Node* n)
   Write the <cxxFunction> elements.
  */
 void DitaXmlGenerator::writeFunctions(const Section& s, 
-                                      const Node* n, 
+                                      const InnerNode* parent, 
                                       CodeMarker* marker,
                                       const QString& attribute)
 {
@@ -4775,7 +4781,7 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
                 }
             }
             
-            if (fn->name() == n->name()) {
+            if (fn->name() == parent->name()) {
                 writeStartTag(DT_cxxFunctionConstructor);
                 xmlWriter().writeAttribute("name","constructor");
                 xmlWriter().writeAttribute("value","constructor");
@@ -4789,7 +4795,8 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
             }
             else {
                 writeStartTag(DT_cxxFunctionDeclaredType);
-                writeCharacters(fn->returnType());
+                QString src = marker->typified(fn->returnType());
+                replaceTypesWithLinks(fn,parent,marker,src);
                 writeEndTag(); // <cxxFunctionDeclaredType>
             }
 
@@ -4825,7 +4832,7 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
                     writeEndTag(); // </cxxFunctionReimplemented>
                 }
             }
-            writeParameters(fn);
+            writeParameters(fn,parent,marker);
             writeLocation(fn);
             writeEndTag(); // <cxxFunctionDefinition>
 
@@ -4846,10 +4853,51 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
     }
 }
 
+static const QString typeTag("type");
+static const QChar charLangle = '<';
+static const QChar charAt = '@';
+
+/*!
+  This function replaces class and enum names with <apiRelation>
+  elements, i.e. links.
+ */
+void DitaXmlGenerator::replaceTypesWithLinks(const Node* n,
+                                             const InnerNode* parent,
+                                             CodeMarker* marker,
+                                             QString& src)
+{
+    QStringRef arg;
+    QStringRef par1;
+    int srcSize = src.size();
+    QString text;
+    for (int i=0; i<srcSize;) {
+        if (src.at(i) == charLangle && src.at(i+1) == charAt) {
+            if (!text.isEmpty()) {
+                writeCharacters(text);
+                text.clear();
+            }
+            i += 2;
+            if (parseArg(src, typeTag, &i, srcSize, &arg, &par1)) {
+                const Node* tn = marker->resolveTarget(arg.toString(), myTree, parent, n);
+                addLink(linkForNode(tn,parent),arg,DT_apiRelation);
+            }
+        }
+        else {
+            text += src.at(i++);
+        }
+    }
+    if (!text.isEmpty()) {
+        writeCharacters(text);
+        text.clear();
+    }
+}
+
 /*!
   This function writes the <cxxFunctionParameters> element.
  */
-void DitaXmlGenerator::writeParameters(const FunctionNode* fn)
+void DitaXmlGenerator::writeParameters(const FunctionNode* fn,
+                                       const InnerNode* parent,
+                                       CodeMarker* marker)
 {
     const QList<Parameter>& parameters = fn->parameters();
     if (!parameters.isEmpty()) {
@@ -4858,7 +4906,9 @@ void DitaXmlGenerator::writeParameters(const FunctionNode* fn)
         while (p != parameters.end()) {
             writeStartTag(DT_cxxFunctionParameter);
             writeStartTag(DT_cxxFunctionParameterDeclaredType);
-            writeCharacters((*p).leftType());
+            QString src = marker->typified((*p).leftType());
+            replaceTypesWithLinks(fn,parent,marker,src);
+            //writeCharacters((*p).leftType());
             if (!(*p).rightType().isEmpty())
                 writeCharacters((*p).rightType());
             writeEndTag(); // <cxxFunctionParameterDeclaredType>
@@ -5434,6 +5484,7 @@ void DitaXmlGenerator::writeApiDesc(const Node* node,
         inDetailedDescription = true;
         enterApiDesc(QString(),title);
         generateBody(node, marker);
+        generateAlsoList(node, marker);    
         leaveSection();
     }
     inDetailedDescription = false;
@@ -5695,7 +5746,7 @@ QString DitaXmlGenerator::metadataDefault(DitaTag t) const
   
  */
 void
-DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
+DitaXmlGenerator::writeProlog(const InnerNode* inner)
 {
     if (!inner)
         return;

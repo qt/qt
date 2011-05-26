@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -801,106 +801,6 @@ int QFontEngineFT::loadFlags(QGlyphSet *set, GlyphFormat format, int flags,
         load_flags |= load_target;
 
     return load_flags;
-}
-
-QFontEngineFT::Glyph *QFontEngineFT::loadGlyphMetrics(QGlyphSet *set, uint glyph, GlyphFormat format) const
-{
-    Glyph *g = set->getGlyph(glyph);
-    if (g && g->format == format)
-        return g;
-
-    bool hsubpixel = false;
-    int vfactor = 1;
-    int load_flags = loadFlags(set, format, 0, hsubpixel, vfactor);
-
-    // apply our matrix to this, but note that the metrics will not be affected by this.
-    FT_Face face = lockFace();
-    FT_Matrix matrix = this->matrix;
-    FT_Matrix_Multiply(&set->transformationMatrix, &matrix);
-    FT_Set_Transform(face, &matrix, 0);
-    freetype->matrix = matrix;
-
-    bool transform = matrix.xx != 0x10000 || matrix.yy != 0x10000 || matrix.xy != 0 || matrix.yx != 0;
-    if (transform)
-        load_flags |= FT_LOAD_NO_BITMAP;
-
-    FT_Error err = FT_Load_Glyph(face, glyph, load_flags);
-    if (err && (load_flags & FT_LOAD_NO_BITMAP)) {
-        load_flags &= ~FT_LOAD_NO_BITMAP;
-        err = FT_Load_Glyph(face, glyph, load_flags);
-    }
-    if (err == FT_Err_Too_Few_Arguments) {
-        // this is an error in the bytecode interpreter, just try to run without it
-        load_flags |= FT_LOAD_FORCE_AUTOHINT;
-        err = FT_Load_Glyph(face, glyph, load_flags);
-    }
-    if (err != FT_Err_Ok)
-        qWarning("load glyph failed err=%x face=%p, glyph=%d", err, face, glyph);
-
-    unlockFace();
-    if (set->outline_drawing)
-        return 0;
-
-    if (!g) {
-        g = new Glyph;
-        g->uploadedToServer = false;
-        g->data = 0;
-    }
-
-    FT_GlyphSlot slot = face->glyph;
-    if (embolden) Q_FT_GLYPHSLOT_EMBOLDEN(slot);
-    int left  = slot->metrics.horiBearingX;
-    int right = slot->metrics.horiBearingX + slot->metrics.width;
-    int top    = slot->metrics.horiBearingY;
-    int bottom = slot->metrics.horiBearingY - slot->metrics.height;
-    if (transform && slot->format != FT_GLYPH_FORMAT_BITMAP) { // freetype doesn't apply the transformation on the metrics
-        int l, r, t, b;
-        FT_Vector vector;
-        vector.x = left;
-        vector.y = top;
-        FT_Vector_Transform(&vector, &matrix);
-        l = r = vector.x;
-        t = b = vector.y;
-        vector.x = right;
-        vector.y = top;
-        FT_Vector_Transform(&vector, &matrix);
-        if (l > vector.x) l = vector.x;
-        if (r < vector.x) r = vector.x;
-        if (t < vector.y) t = vector.y;
-        if (b > vector.y) b = vector.y;
-        vector.x = right;
-        vector.y = bottom;
-        FT_Vector_Transform(&vector, &matrix);
-        if (l > vector.x) l = vector.x;
-        if (r < vector.x) r = vector.x;
-        if (t < vector.y) t = vector.y;
-        if (b > vector.y) b = vector.y;
-        vector.x = left;
-        vector.y = bottom;
-        FT_Vector_Transform(&vector, &matrix);
-        if (l > vector.x) l = vector.x;
-        if (r < vector.x) r = vector.x;
-        if (t < vector.y) t = vector.y;
-        if (b > vector.y) b = vector.y;
-        left = l;
-        right = r;
-        top = t;
-        bottom = b;
-    }
-    left = FLOOR(left);
-    right = CEIL(right);
-    bottom = FLOOR(bottom);
-    top = CEIL(top);
-
-    g->linearAdvance = face->glyph->linearHoriAdvance >> 10;
-    g->width = TRUNC(right-left);
-    g->height = TRUNC(top-bottom);
-    g->x = TRUNC(left);
-    g->y = TRUNC(top);
-    g->advance = TRUNC(ROUND(face->glyph->advance.x));
-    g->format = Format_None;
-
-    return g;
 }
 
 QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
@@ -1697,7 +1597,7 @@ void QFontEngineFT::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlag
     FT_Face face = 0;
     bool design = (default_hint_style == HintNone ||
                    default_hint_style == HintLight ||
-                   (flags & HB_ShaperFlag_UseDesignMetrics));
+                   (flags & HB_ShaperFlag_UseDesignMetrics)) && FT_IS_SCALABLE(freetype->face);
     for (int i = 0; i < glyphs->numGlyphs; i++) {
         Glyph *g = defaultGlyphSet.getGlyph(glyphs->glyphs[i]);
         if (g) {
@@ -1851,6 +1751,7 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
     } else {
         glyphSet = &defaultGlyphSet;
     }
+    bool needsDelete = false;
     Glyph * g = glyphSet->getGlyph(glyph);
     if (!g || g->format != format) {
         face = lockFace();
@@ -1858,6 +1759,7 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
         FT_Matrix_Multiply(&glyphSet->transformationMatrix, &m);
         freetype->matrix = m;
         g = loadGlyph(glyphSet, glyph, subPixelPosition, format);
+        needsDelete = true;
     }
 
     if (g) {
@@ -1866,6 +1768,8 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
         overall.width = g->width;
         overall.height = g->height;
         overall.xoff = g->advance;
+        if (needsDelete)
+            delete g;
     } else {
         int left  = FLOOR(face->glyph->metrics.horiBearingX);
         int right = CEIL(face->glyph->metrics.horiBearingX + face->glyph->metrics.width);
@@ -2067,6 +1971,41 @@ HB_Error QFontEngineFT::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 p
     HB_Error result = freetype->getPointInOutline(glyph, load_flags, point, xpos, ypos, nPoints);
     unlockFace();
     return result;
+}
+
+bool QFontEngineFT::initFromFontEngine(const QFontEngineFT *fe)
+{
+    if (!init(fe->faceId(), fe->antialias, fe->defaultFormat, fe->freetype))
+        return false;
+
+    // Increase the reference of this QFreetypeFace since one more QFontEngineFT
+    // will be using it
+    freetype->ref.ref();
+
+    default_load_flags = fe->default_load_flags;
+    default_hint_style = fe->default_hint_style;
+    antialias = fe->antialias;
+    transform = fe->transform;
+    embolden = fe->embolden;
+    subpixelType = fe->subpixelType;
+    lcdFilterType = fe->lcdFilterType;
+    canUploadGlyphsToServer = fe->canUploadGlyphsToServer;
+    embeddedbitmap = fe->embeddedbitmap;
+
+    return true;
+}
+
+QFontEngine *QFontEngineFT::cloneWithSize(qreal pixelSize) const
+{
+    QFontDef fontDef;
+    fontDef.pixelSize = pixelSize;
+    QFontEngineFT *fe = new QFontEngineFT(fontDef);
+    if (!fe->initFromFontEngine(this)) {
+        delete fe;
+        return 0;
+    } else {
+        return fe;
+    }
 }
 
 QT_END_NAMESPACE

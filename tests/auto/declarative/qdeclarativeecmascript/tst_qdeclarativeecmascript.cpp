@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -176,6 +176,7 @@ private slots:
     void aliasBindingsOverrideTarget();
     void aliasWritesOverrideBindings();
     void pushCleanContext();
+    void realToInt();
 
     void include();
 
@@ -2161,16 +2162,12 @@ public:
     ~CppOwnershipReturnValue() { delete value; }
 
     Q_INVOKABLE QObject *create() {
-        Q_ASSERT(value == 0);
-
         value = new QObject;
         QDeclarativeEngine::setObjectOwnership(value, QDeclarativeEngine::CppOwnership);
         return value;
     }
 
     Q_INVOKABLE MyQmlObject *createQmlObject() {
-        Q_ASSERT(value == 0);
-
         MyQmlObject *rv = new MyQmlObject;
         value = rv;
         return rv;
@@ -3079,6 +3076,18 @@ void tst_qdeclarativeecmascript::pushCleanContext()
     // Check that function objects created in these contexts work
     QCOMPARE(func1.call().toInt32(), 15);
     QCOMPARE(func2.call().toInt32(), 6);
+}
+
+void tst_qdeclarativeecmascript::realToInt()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("realToInt.qml"));
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
+
+    QMetaObject::invokeMethod(object, "test1");
+    QCOMPARE(object->value(), int(4));
+    QMetaObject::invokeMethod(object, "test2");
+    QCOMPARE(object->value(), int(8));
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

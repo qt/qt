@@ -144,8 +144,8 @@
     implementation provided by QFtp to perform the low level work.
 
     In the \c FtpReply class, we need to reimplement four functions in the
-    QIODevice API to ensure that it will work correctly. These functions,
-    \l{QIODevice::}{abort()}, \l{QIODevice::}{bytesAvailable()},
+    API to ensure that it will work correctly. These functions,
+    \l{QNetworkReply::}{abort()}, \l{QIODevice::}{bytesAvailable()},
     \l{QIODevice::}{isSequential()}, \l{QIODevice::}{readData()},
     rely on the rest of the implementation to fill a QByteArray with data and
     use an integer offset to track how much has been read from the device by

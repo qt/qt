@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -435,6 +435,8 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
         c += event->commitString().length() - qMin(-event->replacementStart(), event->replacementLength());
 
     m_cursor += event->replacementStart();
+    if (m_cursor < 0)
+        m_cursor = 0;
 
     // insert commit string
     if (event->replacementLength()) {
@@ -447,7 +449,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
         cursorPositionChanged = true;
     }
 
-    m_cursor = qMin(c, m_text.length());
+    m_cursor = qBound(0, c, m_text.length());
 
     for (int i = 0; i < event->attributes().size(); ++i) {
         const QInputMethodEvent::Attribute &a = event->attributes().at(i);
@@ -651,7 +653,12 @@ void QLineControl::internalSetText(const QString &txt, int pos, bool edited)
     m_modifiedState =  m_undoState = 0;
     m_cursor = (pos < 0 || pos > m_text.length()) ? m_text.length() : pos;
     m_textDirty = (oldText != m_text);
-    finishChange(-1, true, edited);
+    bool changed = finishChange(-1, true, edited);
+
+#ifndef QT_NO_ACCESSIBILITY
+    if (changed)
+        QAccessible::updateAccessibility(parent(), 0, QAccessible::TextUpdated);
+#endif
 }
 
 
@@ -1238,6 +1245,9 @@ void QLineControl::emitCursorPositionChanged()
         const int oldLast = m_lastCursorPos;
         m_lastCursorPos = m_cursor;
         cursorPositionChanged(oldLast, m_cursor);
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(parent(), 0, QAccessible::TextCaretMoved);
+#endif
     }
 }
 
@@ -1585,6 +1595,7 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
     }
 
     bool unknown = false;
+    bool visual = cursorMoveStyle() == Qt::VisualMoveStyle;
 
     if (false) {
     }
@@ -1649,11 +1660,11 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
 #endif
             moveCursor(selectionEnd(), false);
         } else {
-            cursorForward(0, layoutDirection() == Qt::LeftToRight ? 1 : -1);
+            cursorForward(0, visual ? 1 : (layoutDirection() == Qt::LeftToRight ? 1 : -1));
         }
     }
     else if (event == QKeySequence::SelectNextChar) {
-        cursorForward(1, layoutDirection() == Qt::LeftToRight ? 1 : -1);
+        cursorForward(1, visual ? 1 : (layoutDirection() == Qt::LeftToRight ? 1 : -1));
     }
     else if (event == QKeySequence::MoveToPreviousChar) {
 #if !defined(Q_WS_WIN) || defined(QT_NO_COMPLETER)
@@ -1664,11 +1675,11 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
 #endif
             moveCursor(selectionStart(), false);
         } else {
-            cursorForward(0, layoutDirection() == Qt::LeftToRight ? -1 : 1);
+            cursorForward(0, visual ? -1 : (layoutDirection() == Qt::LeftToRight ? -1 : 1));
         }
     }
     else if (event == QKeySequence::SelectPreviousChar) {
-        cursorForward(1, layoutDirection() == Qt::LeftToRight ? -1 : 1);
+        cursorForward(1, visual ? -1 : (layoutDirection() == Qt::LeftToRight ? -1 : 1));
     }
     else if (event == QKeySequence::MoveToNextWord) {
         if (echoMode() == QLineEdit::Normal)
