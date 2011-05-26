@@ -216,7 +216,7 @@ void ShaderEffectSource::setTextureSize(const QSize &size)
 
 /*!
     \qmlproperty bool ShaderEffectSource::live
-    This property holds the optimization flag to define wheter the source item content is changing or
+    This property holds the optimization flag to define whether the source item content is changing or
     static.
 
     If value true is assigned to this property, source item content is re-rendered into a
