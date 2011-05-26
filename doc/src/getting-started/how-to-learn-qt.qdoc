@@ -200,8 +200,8 @@
     \section1 Prove your knowledge
 
     \l{Qt Certification} publishes the scope of each exam in Qt Curriculum as "Qt Curriculum Blocks," which are available under \l{Qt Certification Exam Preparation and Prerequisites}{this link}. The Qt Essentials Curriculum Block describes the scope of knowledge which covers all of the fundamental concepts and basic features in Qt. Review this list to find out which areas of Qt you should become familiar with in order to reach a basic level of Qt expertise. If you also have at least 6 months of Qt development experience, consider taking the Qt Essentials exam and becoming a Nokia Certified Qt Developer.
-
     \section1 Further Readings and Materials
+
     A selection of training materials is available to download under \l{Download Qt training materials}{this link} which includes slides (PDF) and source code from the following three courses:
     \list
     \o  Qt Essentials - Widget Edition
@@ -211,8 +211,7 @@
 
     \l{Qt in Education Course Material} is available to download as well. It is more tailored to the needs of educational institutions that use Qt for teaching purposes, but nonetheless provides helpful slides in various formats as well as labs and example code.
 
-    Another valuable source of example code and valuable information about Qt features
-    is the archive of articles from \l{Qt Quarterly}, a quarterly newsletter for users of Qt.
+    Another valuable source of example code and valuable information about Qt features is the archive of articles from \l{Qt Quarterly}, a quarterly newsletter for users of Qt.
 
     Good luck and have fun!
 
