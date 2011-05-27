@@ -72,7 +72,7 @@ protected:
     QMultiHash<int, QAction*> requestedSoftKeyActions;
     QWidget *initialSoftKeySource;
     bool pendingUpdate;
-#ifndef SYMBIAN_VERSION_9_4
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
     QHash<QAction*, int> softKeyCommandActions;
 #endif
 };
