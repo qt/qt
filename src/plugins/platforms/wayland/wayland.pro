@@ -8,26 +8,34 @@ DEFINES += $$QMAKE_DEFINES_WAYLAND
 
 SOURCES =   main.cpp \
             qwaylandintegration.cpp \
+            qwaylandnativeinterface.cpp \
             qwaylandshmsurface.cpp \
             qwaylandinputdevice.cpp \
             qwaylandcursor.cpp \
             qwaylanddisplay.cpp \
             qwaylandwindow.cpp \
             qwaylandscreen.cpp \
-            qwaylandshmwindow.cpp
+            qwaylandshmwindow.cpp \
+            qwaylandclipboard.cpp
 
 HEADERS =   qwaylandintegration.h \
+            qwaylandnativeinterface.h \
             qwaylandcursor.h \
             qwaylanddisplay.h \
             qwaylandwindow.h \
             qwaylandscreen.h \
             qwaylandshmsurface.h \
             qwaylandbuffer.h \
-            qwaylandshmwindow.h
+            qwaylandshmwindow.h \
+            qwaylandclipboard.h
 
 INCLUDEPATH += $$QMAKE_INCDIR_WAYLAND
 LIBS += $$QMAKE_LIBS_WAYLAND
 QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_WAYLAND
+
+!isEmpty(QMAKE_LFLAGS_RPATH) {
+    !isEmpty(QMAKE_LIBDIR_WAYLAND):QMAKE_LFLAGS += $${QMAKE_LFLAGS_RPATH}$${QMAKE_LIBDIR_WAYLAND}
+}
 
 INCLUDEPATH += $$PWD
 

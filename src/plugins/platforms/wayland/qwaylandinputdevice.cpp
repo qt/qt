@@ -7,29 +7,29 @@
 ** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -61,7 +61,7 @@
 QWaylandInputDevice::QWaylandInputDevice(struct wl_display *display,
 					 uint32_t id)
     : mDisplay(display)
-    , mInputDevice(wl_input_device_create(display, id))
+    , mInputDevice(wl_input_device_create(display, id, 1))
     , mPointerFocus(NULL)
     , mKeyboardFocus(NULL)
     , mButtons(0)
@@ -101,6 +101,12 @@ void QWaylandInputDevice::inputHandleMotion(void *data,
     QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
     QWaylandWindow *window = inputDevice->mPointerFocus;
 
+    if (window == NULL) {
+	/* We destroyed the pointer focus surface, but the server
+	 * didn't get the message yet. */
+	return;
+    }
+
     inputDevice->mSurfacePos = QPoint(surface_x, surface_y);
     inputDevice->mGlobalPos = QPoint(x, y);
     inputDevice->mTime = time;
@@ -119,6 +125,12 @@ void QWaylandInputDevice::inputHandleButton(void *data,
     QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
     QWaylandWindow *window = inputDevice->mPointerFocus;
     Qt::MouseButton qt_button;
+
+    if (window == NULL) {
+	/* We destroyed the pointer focus surface, but the server
+	 * didn't get the message yet. */
+	return;
+    }
 
     switch (button) {
     case 272:
@@ -229,6 +241,12 @@ void QWaylandInputDevice::inputHandleKey(void *data,
     QEvent::Type type;
     char s[2];
 
+    if (window == NULL) {
+	/* We destroyed the keyboard focus surface, but the server
+	 * didn't get the message yet. */
+	return;
+    }
+
     code = key + inputDevice->mXkb->min_key_code;
 
     level = 0;
@@ -249,9 +267,6 @@ void QWaylandInputDevice::inputHandleKey(void *data,
     }
 
     sym = translateKey(sym, s, sizeof s);
-
-    qWarning("keycode %d, sym %d, string %d, modifiers 0x%x",
-	     code, sym, s[0], (int) inputDevice->mModifiers);
 
     if (window) {
         QWindowSystemInterface::handleKeyEvent(window->widget(),

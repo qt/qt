@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -166,7 +166,9 @@ private slots:
     void readLineString();
     void readChunks();
     void waitForBytesWritten();
+    void waitForBytesWrittenMinusOne();
     void waitForReadyRead();
+    void waitForReadyReadMinusOne();
     void flush();
     void synchronousApi();
     void dontCloseOnTimeout();
@@ -476,6 +478,9 @@ void tst_QTcpSocket::setInvalidSocketDescriptor()
 {
     QTcpSocket *socket = newSocket();
     QCOMPARE(socket->socketDescriptor(), -1);
+#ifdef Q_OS_SYMBIAN
+    QTest::ignoreMessage(QtWarningMsg, "QSymbianSocketEngine::initialize - socket descriptor not found");
+#endif
     QVERIFY(!socket->setSocketDescriptor(-5, QTcpSocket::UnconnectedState));
     QCOMPARE(socket->socketDescriptor(), -1);
 
@@ -1414,12 +1419,27 @@ void tst_QTcpSocket::readChunks()
 void tst_QTcpSocket::waitForBytesWritten()
 {
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 22);
+    socket->connectToHost(QtNetworkSettings::serverName(), 80);
     QVERIFY(socket->waitForConnected(10000));
 
-    socket->write(QByteArray(10000, '@'));
+    socket->write("GET / HTTP/1.0\r\n\r\n");
     qint64 toWrite = socket->bytesToWrite();
     QVERIFY(socket->waitForBytesWritten(5000));
+    QVERIFY(toWrite > socket->bytesToWrite());
+
+    delete socket;
+}
+
+//----------------------------------------------------------------------------------
+void tst_QTcpSocket::waitForBytesWrittenMinusOne()
+{
+    QTcpSocket *socket = newSocket();
+    socket->connectToHost(QtNetworkSettings::serverName(), 80);
+    QVERIFY(socket->waitForConnected(10000));
+
+    socket->write("GET / HTTP/1.0\r\n\r\n");
+    qint64 toWrite = socket->bytesToWrite();
+    QVERIFY(socket->waitForBytesWritten(-1));
     QVERIFY(toWrite > socket->bytesToWrite());
 
     delete socket;
@@ -1429,8 +1449,19 @@ void tst_QTcpSocket::waitForBytesWritten()
 void tst_QTcpSocket::waitForReadyRead()
 {
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 22);
-    socket->waitForReadyRead(0);
+    socket->connectToHost(QtNetworkSettings::serverName(), 80);
+    socket->write("GET / HTTP/1.0\r\n\r\n");
+    QVERIFY(socket->waitForReadyRead(5000));
+    delete socket;
+}
+
+//----------------------------------------------------------------------------------
+void tst_QTcpSocket::waitForReadyReadMinusOne()
+{
+    QTcpSocket *socket = newSocket();
+    socket->connectToHost(QtNetworkSettings::serverName(), 80);
+    socket->write("GET / HTTP/1.0\r\n\r\n");
+    QVERIFY(socket->waitForReadyRead(-1));
     delete socket;
 }
 

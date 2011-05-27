@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -80,7 +80,7 @@ private:
     void recursiveCompareObjects(const QDeclarativeDebugObjectReference &a, const QDeclarativeDebugObjectReference &b) const;
     void recursiveCompareContexts(const QDeclarativeDebugContextReference &a, const QDeclarativeDebugContextReference &b) const;
     void compareProperties(const QDeclarativeDebugPropertyReference &a, const QDeclarativeDebugPropertyReference &b) const;
-    
+
     QDeclarativeDebugConnection *m_conn;
     QDeclarativeEngineDebug *m_dbg;
     QDeclarativeEngine *m_engine;
@@ -134,7 +134,7 @@ QDeclarativeDebugObjectReference tst_QDeclarativeDebug::findRootObject(int conte
 {
     QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);
-    
+
     if (q_engines->engines().count() == 0)
         return QDeclarativeDebugObjectReference();
     QDeclarativeDebugRootContextQuery *q_context = m_dbg->queryRootContexts(q_engines->engines()[0].debugId(), this);
@@ -368,7 +368,7 @@ void tst_QDeclarativeDebug::initTestCase()
     for (int i=0; i<qml.count(); i++) {
         QDeclarativeComponent component(m_engine);
         component.setData(qml[i], QUrl::fromLocalFile(""));
-        Q_ASSERT(component.isReady());  // fails if bad syntax
+        QVERIFY(component.isReady());  // fails if bad syntax
         m_components << qobject_cast<QDeclarativeItem*>(component.create());
     }
     m_rootItem = qobject_cast<QDeclarativeItem*>(m_components.first());
@@ -382,7 +382,7 @@ void tst_QDeclarativeDebug::initTestCase()
 
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Connection established");
     bool ok = m_conn->waitForConnected();
-    Q_ASSERT(ok);
+    QVERIFY(ok);
     QTRY_VERIFY(QDeclarativeDebugService::hasDebuggingClient());
     m_dbg = new QDeclarativeEngineDebug(m_conn, this);
     QTRY_VERIFY(m_dbg->status() == QDeclarativeEngineDebug::Enabled);
@@ -439,7 +439,7 @@ void tst_QDeclarativeDebug::watch_property()
     QDeclarativeDebugPropertyReference prop = findProperty(obj.properties(), "width");
 
     QDeclarativeDebugPropertyWatch *watch;
-    
+
     QDeclarativeEngineDebug *unconnected = new QDeclarativeEngineDebug(0);
     watch = unconnected->addWatch(prop, this);
     QCOMPARE(watch->state(), QDeclarativeDebugWatch::Dead);
@@ -450,7 +450,7 @@ void tst_QDeclarativeDebug::watch_property()
     QVERIFY(QDeclarativeDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QDeclarativeDebugWatch::State))));
     QCOMPARE(watch->state(), QDeclarativeDebugWatch::Inactive);
     delete watch;
-    
+
     watch = m_dbg->addWatch(prop, this);
     QCOMPARE(watch->state(), QDeclarativeDebugWatch::Waiting);
     QCOMPARE(watch->objectDebugId(), obj.debugId());
@@ -482,12 +482,12 @@ void tst_QDeclarativeDebug::watch_object()
 {
     QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);
-    
-    Q_ASSERT(q_engines->engines().count() > 0);
+
+    QVERIFY(q_engines->engines().count() > 0);
     QDeclarativeDebugRootContextQuery *q_context = m_dbg->queryRootContexts(q_engines->engines()[0].debugId(), this);
     waitForQuery(q_context);
 
-    Q_ASSERT(q_context->rootContext().objects().count() > 0);
+    QVERIFY(q_context->rootContext().objects().count() > 0);
     QDeclarativeDebugObjectQuery *q_obj = m_dbg->queryObject(q_context->rootContext().objects()[0], this);
     waitForQuery(q_obj);
 
@@ -504,7 +504,7 @@ void tst_QDeclarativeDebug::watch_object()
     QCOMPARE(watch->state(), QDeclarativeDebugWatch::Dead);
     delete watch;
     delete unconnected;
-    
+
     watch = m_dbg->addWatch(QDeclarativeDebugObjectReference(), this);
     QVERIFY(QDeclarativeDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QDeclarativeDebugWatch::State))));
     QCOMPARE(watch->state(), QDeclarativeDebugWatch::Inactive);
@@ -558,7 +558,7 @@ void tst_QDeclarativeDebug::watch_expression()
     QFETCH(int, incrementCount);
 
     int origWidth = m_rootItem->property("width").toInt();
-    
+
     QDeclarativeDebugObjectReference obj = findRootObject();
 
     QDeclarativeDebugObjectExpressionWatch *watch;
@@ -568,12 +568,12 @@ void tst_QDeclarativeDebug::watch_expression()
     QCOMPARE(watch->state(), QDeclarativeDebugWatch::Dead);
     delete watch;
     delete unconnected;
-    
+
     watch = m_dbg->addWatch(QDeclarativeDebugObjectReference(), expr, this);
     QVERIFY(QDeclarativeDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QDeclarativeDebugWatch::State))));
     QCOMPARE(watch->state(), QDeclarativeDebugWatch::Inactive);
     delete watch;
-    
+
     watch = m_dbg->addWatch(obj, expr, this);
     QCOMPARE(watch->state(), QDeclarativeDebugWatch::Waiting);
     QCOMPARE(watch->objectDebugId(), obj.debugId());
@@ -603,7 +603,7 @@ void tst_QDeclarativeDebug::watch_expression()
     delete watch;
 
     // restore original value and verify spy doesn't get a signal since watch has been removed
-    m_rootItem->setProperty("width", origWidth); 
+    m_rootItem->setProperty("width", origWidth);
     QTest::qWait(100);
     QCOMPARE(spy.count(), expectedSpyCount);
 
@@ -664,7 +664,13 @@ void tst_QDeclarativeDebug::queryAvailableEngines()
         QCOMPARE(e.name(), m_engine->objectName());
     }
 
+    // Make query invalid by deleting client
+    q_engines = m_dbg->queryAvailableEngines(this);
+    QCOMPARE(q_engines->state(), QDeclarativeDebugQuery::Waiting);
+    delete m_dbg;
+    QCOMPARE(q_engines->state(), QDeclarativeDebugQuery::Error);
     delete q_engines;
+    m_dbg = new QDeclarativeEngineDebug(m_conn, this);
 }
 
 void tst_QDeclarativeDebug::queryRootContexts()
@@ -672,9 +678,10 @@ void tst_QDeclarativeDebug::queryRootContexts()
     QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);
     int engineId = q_engines->engines()[0].debugId();
+    delete q_engines;
 
     QDeclarativeDebugRootContextQuery *q_context;
-    
+
     QDeclarativeEngineDebug *unconnected = new QDeclarativeEngineDebug(0);
     q_context = unconnected->queryRootContexts(engineId, this);
     QCOMPARE(q_context->state(), QDeclarativeDebugQuery::Error);
@@ -703,8 +710,13 @@ void tst_QDeclarativeDebug::queryRootContexts()
     QVERIFY(context.contexts()[0].debugId() >= 0);
     QCOMPARE(context.contexts()[0].name(), QString("tst_QDeclarativeDebug_childContext"));
 
-    delete q_engines;
+    // Make query invalid by deleting client
+    q_context = m_dbg->queryRootContexts(engineId, this);
+    QCOMPARE(q_context->state(), QDeclarativeDebugQuery::Waiting);
+    delete m_dbg;
+    QCOMPARE(q_context->state(), QDeclarativeDebugQuery::Error);
     delete q_context;
+    m_dbg = new QDeclarativeEngineDebug(m_conn, this);
 }
 
 void tst_QDeclarativeDebug::queryObject()
@@ -713,7 +725,7 @@ void tst_QDeclarativeDebug::queryObject()
 
     QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);
-    
+
     QDeclarativeDebugRootContextQuery *q_context = m_dbg->queryRootContexts(q_engines->engines()[0].debugId(), this);
     waitForQuery(q_context);
     QDeclarativeDebugObjectReference rootObject = q_context->rootContext().objects()[0];
@@ -736,7 +748,14 @@ void tst_QDeclarativeDebug::queryObject()
 
     delete q_engines;
     delete q_context;
+
+    // Make query invalid by deleting client
+    q_obj = recursive ? m_dbg->queryObjectRecursive(rootObject, this) : m_dbg->queryObject(rootObject, this);
+    QCOMPARE(q_obj->state(), QDeclarativeDebugQuery::Waiting);
+    delete m_dbg;
+    QCOMPARE(q_obj->state(), QDeclarativeDebugQuery::Error);
     delete q_obj;
+    m_dbg = new QDeclarativeEngineDebug(m_conn, this);
 
     // check source as defined in main()
     QDeclarativeDebugFileReference source = obj.source();
@@ -787,7 +806,7 @@ void tst_QDeclarativeDebug::queryExpressionResult()
 
     QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);    // check immediate deletion is ok
-    
+
     QDeclarativeDebugRootContextQuery *q_context = m_dbg->queryRootContexts(q_engines->engines()[0].debugId(), this);
     waitForQuery(q_context);
     int objectId = q_context->rootContext().objects()[0].debugId();
@@ -799,7 +818,7 @@ void tst_QDeclarativeDebug::queryExpressionResult()
     QCOMPARE(q_expr->state(), QDeclarativeDebugQuery::Error);
     delete q_expr;
     delete unconnected;
-    
+
     q_expr = m_dbg->queryExpressionResult(objectId, expr, this);
     delete q_expr;
 
@@ -811,7 +830,14 @@ void tst_QDeclarativeDebug::queryExpressionResult()
 
     delete q_engines;
     delete q_context;
+
+    // Make query invalid by deleting client
+    q_expr = m_dbg->queryExpressionResult(objectId, expr, this);
+    QCOMPARE(q_expr->state(), QDeclarativeDebugQuery::Waiting);
+    delete m_dbg;
+    QCOMPARE(q_expr->state(), QDeclarativeDebugQuery::Error);
     delete q_expr;
+    m_dbg = new QDeclarativeEngineDebug(m_conn, this);
 }
 
 void tst_QDeclarativeDebug::queryExpressionResult_data()
@@ -938,7 +964,7 @@ void tst_QDeclarativeDebug::tst_QDeclarativeDebugPropertyReference()
     QDeclarativeDebugObjectQuery *query = m_dbg->queryObject(rootObject, this);
     waitForQuery(query);
     QDeclarativeDebugObjectReference obj = query->object();
-    delete query;   
+    delete query;
 
     QDeclarativeDebugPropertyReference ref = findProperty(obj.properties(), "scale");
     QVERIFY(ref.objectDebugId() > 0);
@@ -947,7 +973,7 @@ void tst_QDeclarativeDebug::tst_QDeclarativeDebugPropertyReference()
     QVERIFY(!ref.valueTypeName().isEmpty());
     QVERIFY(!ref.binding().isEmpty());
     QVERIFY(ref.hasNotifySignal());
-  
+
     QDeclarativeDebugPropertyReference copy(ref);
     QDeclarativeDebugPropertyReference copyAssign;
     copyAssign = ref;
@@ -1001,7 +1027,7 @@ void tst_QDeclarativeDebug::setBindingForObject()
     // set handler
     //
     rootObject = findRootObject();
-    QCOMPARE(rootObject.children().size(), 3);
+    QCOMPARE(rootObject.children().size(), 5); // Rectangle, Text, MouseArea, Component.onCompleted, NonScriptPropertyElement
     QDeclarativeDebugObjectReference mouseAreaObject = rootObject.children().at(2);
     QDeclarativeDebugObjectQuery *q_obj = m_dbg->queryObjectRecursive(mouseAreaObject, this);
     waitForQuery(q_obj);

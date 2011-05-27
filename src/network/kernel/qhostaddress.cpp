@@ -7,29 +7,29 @@
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -720,7 +720,8 @@ Q_IPV6ADDR QHostAddress::toIPv6Address() const
     Returns the address as a string.
 
     For example, if the address is the IPv4 address 127.0.0.1, the
-    returned string is "127.0.0.1".
+    returned string is "127.0.0.1". For IPv6 the string format will 
+    follow the RFC5952 recommendation.
 
     \sa toIPv4Address()
 */
@@ -741,8 +742,32 @@ QString QHostAddress::toString() const
             ugle[i] = (quint16(d->a6[2*i]) << 8) | quint16(d->a6[2*i+1]);
         }
         QString s;
-        s.sprintf("%X:%X:%X:%X:%X:%X:%X:%X",
-                  ugle[0], ugle[1], ugle[2], ugle[3], ugle[4], ugle[5], ugle[6], ugle[7]);
+        QString temp;
+        bool zeroDetected = false;
+        bool zeroShortened = false;
+        for (int i = 0; i < 8; i++) {
+            if ((ugle[i] != 0) || zeroShortened) {
+                temp.sprintf("%X", ugle[i]);
+                s.append(temp);
+                if (zeroDetected)
+                    zeroShortened = true;
+            } else {
+                if (!zeroDetected) {
+                    if (i<7 && (ugle[i+1] == 0)) {
+                        s.append(QLatin1Char(':'));
+                        zeroDetected = true;
+                    } else {
+                        temp.sprintf("%X", ugle[i]);
+                        s.append(temp);
+                        if (i<7)
+                            s.append(QLatin1Char(':'));
+                    }
+                }
+            }
+            if (i<7 && ((ugle[i] != 0) || zeroShortened || (i==0 && zeroDetected)))
+                s.append(QLatin1Char(':'));
+        }
+
         if (!d->scopeId.isEmpty())
             s.append(QLatin1Char('%') + d->scopeId);
         return s;

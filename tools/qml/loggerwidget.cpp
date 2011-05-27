@@ -7,29 +7,29 @@
 ** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -139,10 +139,10 @@ QAction *LoggerWidget::showAction()
 void LoggerWidget::readSettings()
 {
     QSettings settings;
-    QString warningsPreferences = settings.value("warnings", "hide").toString();
-    if (warningsPreferences == "show") {
+    QString warningsPreferences = settings.value(QLatin1String("warnings"), QLatin1String("hide")).toString();
+    if (warningsPreferences == QLatin1String("show")) {
         m_visibility = ShowWarnings;
-    } else if (warningsPreferences == "hide") {
+    } else if (warningsPreferences == QLatin1String("hide")) {
         m_visibility = HideWarnings;
     } else {
         m_visibility = AutoShowWarnings;
@@ -154,15 +154,15 @@ void LoggerWidget::saveSettings()
     if (m_visibilityOrigin != SettingsOrigin)
         return;
 
-    QString value = "autoShow";
+    QString value = QLatin1String("autoShow");
     if (defaultVisibility() == ShowWarnings) {
-        value = "show";
+        value = QLatin1String("show");
     } else if (defaultVisibility() == HideWarnings) {
-        value = "hide";
+        value = QLatin1String("hide");
     }
 
     QSettings settings;
-    settings.setValue("warnings", value);
+    settings.setValue(QLatin1String("warnings"), value);
 }
 
 void LoggerWidget::warningsPreferenceChanged(QAction *action)
