@@ -347,11 +347,10 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
 {
     QGraphicsWidgetPrivate *wd = QGraphicsWidget::d_func();
     QGraphicsLayoutItemPrivate *d = QGraphicsLayoutItem::d_ptr.data();
-    QRectF newGeom;
+    QRectF newGeom = rect;
     QPointF oldPos = d->geom.topLeft();
     if (!wd->inSetPos) {
         setAttribute(Qt::WA_Resized);
-        newGeom = rect;
         newGeom.setSize(rect.size().expandedTo(effectiveSizeHint(Qt::MinimumSize))
                                    .boundedTo(effectiveSizeHint(Qt::MaximumSize)));
 

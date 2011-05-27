@@ -63,6 +63,8 @@ private slots:
     void automaticReparenting();
     void verifyActivate();
     void invalidate();
+    void invalidateAndMove_data();
+    void invalidateAndMove();
     void constructors();
     void alternativeLayoutItems();
     void ownership();
@@ -556,6 +558,77 @@ void tst_QGraphicsLayout::invalidate()
     QGraphicsLayout::setInstantInvalidatePropagation(false);
 }
 
+void tst_QGraphicsLayout::invalidateAndMove_data()
+{
+    QTest::addColumn<bool>("instantInvalidatePropagation");
+    QTest::newRow("Without instantInvalidatePropagation") << false;
+    QTest::newRow("With instantInvalidatePropagation") << true;
+
+}
+void tst_QGraphicsLayout::invalidateAndMove()
+{
+    // Check that if we set the position of an item and invalidate its layout at the same
+    // time, the widget keeps its correct size
+    QFETCH(bool, instantInvalidatePropagation);
+    QGraphicsLayout::setInstantInvalidatePropagation(instantInvalidatePropagation);
+    QGraphicsScene scene;
+
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    new QGraphicsLinearLayout(widget);
+
+    widget->setMinimumSize(1,1);
+    widget->setPreferredSize(34,34);
+    widget->setMaximumSize(100,100);
+    widget->resize(widget->preferredSize());
+
+    scene.addItem(widget);
+
+    qApp->processEvents();
+
+    /* Invalidate and reactivate.  The size should not have changed */
+    widget->layout()->invalidate();
+    widget->layout()->activate();
+
+    QCOMPARE(widget->geometry().size(), widget->preferredSize());
+    QCOMPARE(widget->layout()->geometry().size(), widget->preferredSize());
+    qApp->processEvents();
+    QCOMPARE(widget->geometry().size(), widget->preferredSize());
+    QCOMPARE(widget->layout()->geometry().size(), widget->preferredSize());
+
+    widget->layout()->invalidate();
+    widget->setX(1);  //Change just the position using setX
+    QCOMPARE(widget->geometry().size(), widget->preferredSize());
+    QCOMPARE(widget->layout()->geometry().size(), widget->preferredSize());
+    qApp->processEvents();
+    QCOMPARE(widget->geometry().size(), widget->preferredSize());
+    QCOMPARE(widget->layout()->geometry().size(), widget->preferredSize());
+
+    widget->layout()->invalidate();
+    widget->setGeometry(1,1,34,34);  //Change just the position using setGeometry
+    QCOMPARE(widget->geometry().size(), widget->preferredSize());
+    QCOMPARE(widget->layout()->geometry().size(), widget->preferredSize());
+    qApp->processEvents();
+    QCOMPARE(widget->geometry().size(), widget->preferredSize());
+    QCOMPARE(widget->layout()->geometry().size(), widget->preferredSize());
+
+    widget->layout()->invalidate();
+    widget->setGeometry(1,1,60,60);  //Change just the size using setGeometry
+    QCOMPARE(widget->geometry().size(), QSizeF(60,60));
+    QCOMPARE(widget->layout()->geometry().size(), QSizeF(60,60));
+    qApp->processEvents();
+    QCOMPARE(widget->geometry().size(), QSizeF(60,60));
+    QCOMPARE(widget->layout()->geometry().size(), QSizeF(60,60));
+
+    widget->layout()->invalidate();
+    widget->setGeometry(0,0,34,34); //Change the size and position using setGeometry
+    QCOMPARE(widget->geometry().size(), widget->preferredSize());
+    QCOMPARE(widget->layout()->geometry().size(), widget->preferredSize());
+    qApp->processEvents();
+    QCOMPARE(widget->geometry().size(), widget->preferredSize());
+    QCOMPARE(widget->layout()->geometry().size(), widget->preferredSize());
+
+    QGraphicsLayout::setInstantInvalidatePropagation(false);
+}
 class Layout : public QGraphicsLayout
 {
 public:
