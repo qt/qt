@@ -151,6 +151,11 @@
      on Mac OS X, or the task bar on Windows). The default screen is used if
      \a screen is -1.
 
+     \note In Symbian devices the available geometry reported by QDesktopWidget is
+     not guaranteed to be correct at the time the geometry change resize event
+     is passed to widgets. The correct way to listen for available geometry changes
+     is to connect to the workAreaResized() signal of QDesktopWidget.
+
      \sa screenNumber(), screenGeometry()
 */
 
@@ -178,6 +183,11 @@
 
     Returns the geometry of the screen with index \a screen. The default
     screen is used if \a screen is -1.
+
+     \note In Symbian devices the screen geometry reported by QDesktopWidget is
+     not guaranteed to be correct at the time the geometry change resize event
+     is passed to widgets. The correct way to listen for screen geometry changes
+     is to connect to the resized() signal of QDesktopWidget.
 
     \sa screenNumber()
 */
