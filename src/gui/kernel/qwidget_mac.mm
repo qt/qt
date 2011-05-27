@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -2733,7 +2733,7 @@ QWidget::macCGHandle() const
     return handle();
 }
 
-void qt_mac_repaintParentUnderAlienWidget(QWidget *alienWidget)
+void qt_mac_updateParentUnderAlienWidget(QWidget *alienWidget)
 {
     QWidget *nativeParent = alienWidget->nativeParentWidget();
     if (!nativeParent)
@@ -2741,7 +2741,7 @@ void qt_mac_repaintParentUnderAlienWidget(QWidget *alienWidget)
 
     QPoint globalPos = alienWidget->mapToGlobal(QPoint(0, 0));
     QRect dirtyRect = QRect(nativeParent->mapFromGlobal(globalPos), alienWidget->size());
-    nativeParent->repaint(dirtyRect);
+    nativeParent->update(dirtyRect);
 }
 
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
@@ -2752,7 +2752,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
     if (!isWindow() && parentWidget())
         parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
     if (!internalWinId())
-        qt_mac_repaintParentUnderAlienWidget(this);
+        qt_mac_updateParentUnderAlienWidget(this);
     d->deactivateWidgetCleanup();
     qt_mac_event_release(this);
     if(testAttribute(Qt::WA_WState_Created)) {
@@ -2849,6 +2849,11 @@ void QWidgetPrivate::transferChildren()
 #ifdef QT_MAC_USE_COCOA
 void QWidgetPrivate::setSubWindowStacking(bool set)
 {
+    // After hitting too many unforeseen bugs trying to put Qt on top of the cocoa child
+    // window API, we have decided to revert this behaviour as much as we can. We
+    // therefore now only allow child windows to exist for children of modal dialogs.
+    static bool use_behaviour_qt473 = !qgetenv("QT_MAC_USE_CHILDWINDOWS").isEmpty();
+
     // This will set/remove a visual relationship between parent and child on screen.
     // The reason for doing this is to ensure that a child always stacks infront of
     // its parent. Unfortunatly is turns out that [NSWindow addChildWindow] has
@@ -2877,7 +2882,10 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
         if (NSWindow *pwin = [qt_mac_nativeview_for(parent) window]) {
             if (set) {
                 Qt::WindowType ptype = parent->window()->windowType();
-                if ([pwin isVisible] && (ptype == Qt::Window || ptype == Qt::Dialog) && ![qwin parentWindow]) {
+                if ([pwin isVisible]
+                    && (ptype == Qt::Window || ptype == Qt::Dialog)
+                    && ![qwin parentWindow]
+                    && (use_behaviour_qt473 || parent->windowModality() == Qt::ApplicationModal)) {
                     NSInteger level = [qwin level];
                     [pwin addChildWindow:qwin ordered:NSWindowAbove];
                     if ([qwin level] < level)
@@ -2888,6 +2896,10 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
             }
         }
     }
+
+    // Only set-up child windows for q if q is modal:
+    if (set && !use_behaviour_qt473 && q->windowModality() != Qt::ApplicationModal)
+        return;
 
     QObjectList widgets = q->children();
     for (int i=0; i<widgets.size(); ++i) {
@@ -3019,6 +3031,16 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     if (q->isWindow() || (!parent || parent->isVisible()) || explicitlyHidden)
         q->setAttribute(Qt::WA_WState_Hidden);
     q->setAttribute(Qt::WA_WState_ExplicitShowHide, explicitlyHidden);
+
+#ifdef QT_MAC_USE_COCOA
+    // If we add a child to the unified toolbar, we have to redirect the painting.
+    if (parent && parent->d_func() && parent->d_func()->isInUnifiedToolbar) {
+        if (parent->d_func()->unifiedSurface) {
+            QWidget *toolbar = parent->d_func()->toolbar_ancestor;
+            parent->d_func()->unifiedSurface->recursiveRedirect(toolbar, toolbar, toolbar->d_func()->toolbar_offset);
+        }
+    }
+#endif // QT_MAC_USE_COCOA
 
     if (wasCreated) {
         transferChildren();
@@ -3514,8 +3536,8 @@ void QWidgetPrivate::show_sys()
             // INVARIANT: q is native. Just show the view:
             [view setHidden:NO];
         } else {
-            // INVARIANT: q is alien. Repaint q instead:
-            q->repaint();
+            // INVARIANT: q is alien. Update q instead:
+            q->update();
         }
 #endif
     }
@@ -3671,7 +3693,7 @@ void QWidgetPrivate::hide_sys()
             [view setHidden:YES];
         } else {
             // INVARIANT: q is alien. Repaint where q is placed instead:
-            qt_mac_repaintParentUnderAlienWidget(q);
+            qt_mac_updateParentUnderAlienWidget(q);
         }
 #endif
     }

@@ -7,29 +7,29 @@
 ** This file is part of the qmake application of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -118,54 +118,6 @@ struct FileInfoCacheKey
 inline uint qHash(const FileInfoCacheKey &f) { return f.hashCode(); }
 
 // -------------------------------------------------------------------------------------------------
-struct FileFixifyCacheKey
-{
-    mutable uint hash;
-    QString in_d, out_d;
-    QString file, pwd;
-    uint fixType;
-    bool canonicalize;
-    FileFixifyCacheKey(const QString &f, const QString &od, const QString &id,
-                       uint ft, bool c)
-    {
-        hash = 0;
-        pwd = qmake_getpwd();
-        file = f;
-        if(od.isNull())
-            out_d = Option::output_dir;
-        else
-            out_d = od;
-        if(id.isNull())
-            in_d = qmake_getpwd();
-        else
-            in_d = id;
-        fixType = ft;
-        canonicalize = c;
-    }
-    QString toString() const {
-        return file + "--" + in_d + "--" + out_d + "--" + pwd + "--" +
-            QString::number(fixType) + "--" + QString::number((int)canonicalize);
-    }
-    bool operator==(const FileFixifyCacheKey &f) const
-    {
-        return (f.canonicalize == canonicalize &&
-                f.fixType == fixType &&
-                f.file == file &&
-                f.in_d == in_d &&
-                f.out_d == out_d &&
-                f.pwd == pwd);
-    }
-    inline uint hashCode() const {
-        if(!hash)
-            hash = uint(canonicalize) | uint(fixType) |
-                   qHash(file) | qHash(in_d) | qHash(out_d) /*|qHash(pwd)*/;
-        return hash;
-    }
-};
-
-inline uint qHash(const FileFixifyCacheKey &f) { return f.hashCode(); }
-// -------------------------------------------------------------------------------------------------
-
 template <typename T>
 inline void qmakeDeleteCacheClear(void *i) { delete reinterpret_cast<T*>(i); }
 

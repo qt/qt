@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -174,6 +174,9 @@ private slots:
     void classInfo();
 
     void metaMethod();
+
+    void indexOfMethod_data();
+    void indexOfMethod();
 
 signals:
     void value6Changed();
@@ -1086,6 +1089,32 @@ void tst_QMetaObject::metaMethod()
     QCOMPARE(returnValue, argument);
     QCOMPARE(obj.slotResult, QString("sl13"));
 }
+
+void tst_QMetaObject::indexOfMethod_data()
+{
+    QTest::addColumn<QObject *>("object");
+    QTest::addColumn<QByteArray>("name");
+    QTest::addColumn<bool>("isSignal");
+    QTest::newRow("indexOfMethod_data") << (QObject*)this << QByteArray("indexOfMethod_data()") << false;
+    QTest::newRow("deleteLater") << (QObject*)this << QByteArray("deleteLater()") << false;
+    QTest::newRow("value6changed") << (QObject*)this << QByteArray("value6Changed()") << true;
+    QTest::newRow("value7changed") << (QObject*)this << QByteArray("value7Changed(QString)") << true;
+    QTest::newRow("destroyed") << (QObject*)this << QByteArray("destroyed()") << true;
+    QTest::newRow("destroyed2") << (QObject*)this << QByteArray("destroyed(QObject*)") << true;
+}
+
+void tst_QMetaObject::indexOfMethod()
+{
+    QFETCH(QObject *, object);
+    QFETCH(QByteArray, name);
+    QFETCH(bool, isSignal);
+    int idx = object->metaObject()->indexOfMethod(name);
+    QVERIFY(idx >= 0);
+    QCOMPARE(object->metaObject()->method(idx).signature(), name.constData());
+    QCOMPARE(object->metaObject()->indexOfSlot(name), isSignal ? -1 : idx);
+    QCOMPARE(object->metaObject()->indexOfSignal(name), !isSignal ? -1 : idx);
+}
+
 
 QTEST_MAIN(tst_QMetaObject)
 #include "tst_qmetaobject.moc"

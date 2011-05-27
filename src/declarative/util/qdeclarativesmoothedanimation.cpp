@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -257,8 +257,8 @@ void QSmoothedAnimation::init()
 
     A SmoothedAnimation animates a property's value to a set target value
     using an ease in/out quad easing curve.  When the target value changes,
-    the easing curves used to animate between the old and new target values 
-    are smoothly spliced together to create a smooth movement to the new 
+    the easing curves used to animate between the old and new target values
+    are smoothly spliced together to create a smooth movement to the new
     target value that maintains the current velocity.
 
     The follow example shows one \l Rectangle tracking the position of another
@@ -288,11 +288,11 @@ void QSmoothedAnimation::init()
     of 0.5 will take 2000 ms to complete.
 
     Like any other animation element, a SmoothedAnimation can be applied in a
-    number of ways, including transitions, behaviors and property value 
-    sources. The \l {QML Animation} documentation shows a variety of methods
-    for creating animations.
+    number of ways, including transitions, behaviors and property value
+    sources. The \l {QML Animation and Transitions} documentation shows a
+    variety of methods for creating animations.
 
-    \sa SpringAnimation, NumberAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}
+    \sa SpringAnimation, NumberAnimation, {QML Animation and Transitions}, {declarative/animation/basics}{Animation basics example}
 */
 
 QDeclarativeSmoothedAnimation::QDeclarativeSmoothedAnimation(QObject *parent)

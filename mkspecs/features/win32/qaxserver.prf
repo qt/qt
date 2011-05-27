@@ -8,12 +8,7 @@ isEmpty(ACTIVEQT_VERSION):ACTIVEQT_VERSION = 1.0
 
 DEFINES += QAXSERVER
 
-ACTIVEQT_IDE = makefile
-equals(TEMPLATE_PREFIX, "vc"):ACTIVEQT_IDE = VisualStudio
-equals(TEMPLATE, "vcapp"):ACTIVEQT_IDE = VisualStudio
-equals(TEMPLATE, "vclib"):ACTIVEQT_IDE = VisualStudio
-
-equals(ACTIVEQT_IDE, "VisualStudio") {
+contains(TEMPLATE, "vc.*") {
     ACTIVEQT_IDC = $${QMAKE_IDC}   ### Qt5: remove me
     qtPrepareTool(ACTIVEQT_IDC, idc)
     ACTIVEQT_IDL = $${QMAKE_IDL}
@@ -27,8 +22,7 @@ equals(ACTIVEQT_IDE, "VisualStudio") {
     }
     ACTIVEQT_TLBOUT = "$(TargetDir)/$${TARGET}.tlb"
     GENERATED += $${OBJECTS_DIR}/$${TARGET}.idl $${ACTIVEQT_TLBOUT}
-}
-equals(ACTIVEQT_IDE, "makefile") {
+} else {
     ACTIVEQT_IDC = -$(IDC)
     ACTIVEQT_IDL = -$(IDL)
     ACTIVEQT_NEWLINE = $$escape_expand(\\n\\t)

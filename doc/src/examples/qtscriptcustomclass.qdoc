@@ -7,20 +7,20 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of this
-** file.
+** Foundation and appearing in the file included in the packaging of
+** this file.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,7 +46,7 @@
     scripting environment, \c{ByteArray} objects can be constructed like
     so:
 
-    \snippet doc/src/snippets/code/doc_src_examples_qtscriptcustomclass.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_examples_qtscriptcustomclass.cpp 0
 
     \c{ByteArray} objects behave similar to normal \c{Array} objects. Every \c{ByteArray} object has
     a \c{length} property, that holds the length of the array. If a new value is assigned to the \c{length}
@@ -55,22 +55,22 @@
     Use normal array operations to read or write bytes in the array. The following code sets all the
     bytes of an array to a certain value:
 
-    \snippet doc/src/snippets/code/doc_src_examples_qtscriptcustomclass.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_examples_qtscriptcustomclass.cpp 1
 
     When assigning a value to an array element, the value is truncated to eight bits:
 
-    \snippet doc/src/snippets/code/doc_src_examples_qtscriptcustomclass.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_examples_qtscriptcustomclass.cpp 2
 
     Like normal \c{Array} objects, if the array index is greater than the current length
     of the array, the array is resized accordingly:
 
-    \snippet doc/src/snippets/code/doc_src_examples_qtscriptcustomclass.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_examples_qtscriptcustomclass.cpp 3
 
     Property names that aren't valid array indexes are treated
     like normal object properties (again, the same is the case for normal \c{Array} objects);
     in other words, it's perfectly fine to do something like this:
 
-    \snippet doc/src/snippets/code/doc_src_examples_qtscriptcustomclass.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_examples_qtscriptcustomclass.cpp 4
 
     The above assignment won't affect the contents of the array, but will rather assign a value
     to the object property named "foo".
@@ -78,7 +78,7 @@
     \c{ByteArray} objects have a set of methods: chop(), equals(), left(), mid(), toBase64() and so on.
     These map directly onto the corresponding methods in QByteArray.
 
-    \snippet doc/src/snippets/code/doc_src_examples_qtscriptcustomclass.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_examples_qtscriptcustomclass.cpp 5
 
     \section1 ByteArray Class Implementation
 

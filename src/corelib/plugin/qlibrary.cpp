@@ -8,29 +8,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -52,6 +52,7 @@
 #include <qmap.h>
 #include <qsettings.h>
 #include <qdatetime.h>
+#include <private/qcoreapplication_p.h>
 #ifdef Q_OS_MAC
 #  include <private/qcore_mac_p.h>
 #endif
@@ -408,12 +409,6 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
 typedef QMap<QString, QLibraryPrivate*> LibraryMap;
 
 struct LibraryData {
-    LibraryData() : settings(0) { }
-    ~LibraryData() {
-        delete settings;
-    }
-
-    QSettings *settings;
     LibraryMap libraryMap;
     QSet<QLibraryPrivate*> loadedLibs;
 };
@@ -516,6 +511,8 @@ bool QLibraryPrivate::loadPlugin()
         libraryUnloadCount.ref();
         return true;
     }
+    if (pluginState == IsNotAPlugin)
+        return false;
     if (load()) {
         instance = (QtPluginInstanceFunction)resolve("qt_plugin_instance");
 #if defined(Q_OS_SYMBIAN)
@@ -528,6 +525,9 @@ bool QLibraryPrivate::loadPlugin()
 #endif
         return instance;
     }
+    if (qt_debug_component())
+        qWarning() << "QLibraryPrivate::loadPlugin failed on" << fileName << ":" << errorString;
+    pluginState = IsNotAPlugin;
     return false;
 }
 
@@ -687,7 +687,7 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
                      .arg((QT_VERSION & 0xff00) >> 8)
                      .arg(QLIBRARY_AS_DEBUG ? QLatin1String("debug") : QLatin1String("false"))
                      .arg(fileName);
-#ifdef Q_WS_MAC    
+#ifdef Q_WS_MAC
     // On Mac, add the application arch to the reg key in order to
     // cache plugin information separately for each arch. This prevents
     // Qt from wrongly caching plugin load failures when the archs
@@ -702,15 +702,11 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
     regkey += QLatin1String("-ppc");
 #endif
 #endif // Q_WS_MAC
-    
+
     QStringList reg;
 #ifndef QT_NO_SETTINGS
     if (!settings) {
-        settings = libraryData()->settings;
-        if (!settings) {
-            settings = new QSettings(QSettings::UserScope, QLatin1String("Trolltech"));
-            libraryData()->settings = settings;
-        }
+        settings = QCoreApplicationPrivate::trolltechConf();
     }
     reg = settings->value(regkey).toStringList();
 #endif

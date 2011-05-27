@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -246,19 +246,19 @@ void QDeclarativeSpringAnimationPrivate::updateMode()
 
     You can also limit the maximum \l velocity of the animation.
 
-    The following \l Rectangle moves to the position of the mouse using a 
+    The following \l Rectangle moves to the position of the mouse using a
     SpringAnimation when the mouse is clicked. The use of the \l Behavior
-    on the \c x and \c y values indicates that whenever these values are 
+    on the \c x and \c y values indicates that whenever these values are
     changed, a SpringAnimation should be applied.
 
     \snippet doc/src/snippets/declarative/springanimation.qml 0
 
     Like any other animation element, a SpringAnimation can be applied in a
-    number of ways, including transitions, behaviors and property value 
-    sources. The \l {QML Animation} documentation shows a variety of methods
-    for creating animations.
+    number of ways, including transitions, behaviors and property value
+    sources. The \l {QML Animation and Transitions} documentation shows a
+    variety of methods for creating animations.
 
-    \sa SmoothedAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}, {declarative/toys/clocks}{Clocks example}
+    \sa SmoothedAnimation, {QML Animation and Transitions}, {declarative/animation/basics}{Animation basics example}, {declarative/toys/clocks}{Clocks example}
 */
 
 QDeclarativeSpringAnimation::QDeclarativeSpringAnimation(QObject *parent)
@@ -299,7 +299,7 @@ void QDeclarativeSpringAnimation::setVelocity(qreal velocity)
 
     This property describes how strongly the target is pulled towards the
     source. The default value is 0 (that is, the spring-like motion is disabled).
-    
+
     The useful value range is 0 - 5.0.
 
     When this property is set and the \l velocity value is greater than 0,
@@ -394,9 +394,9 @@ void QDeclarativeSpringAnimation::setModulus(qreal modulus)
     \qmlproperty real SpringAnimation::mass
     This property holds the "mass" of the property being moved.
 
-    The value is 1.0 by default. 
-    
-    A greater mass causes slower movement and a greater spring-like 
+    The value is 1.0 by default.
+
+    A greater mass causes slower movement and a greater spring-like
     motion when an item comes to rest.
 */
 qreal QDeclarativeSpringAnimation::mass() const

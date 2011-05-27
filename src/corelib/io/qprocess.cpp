@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -143,55 +143,13 @@ QT_BEGIN_NAMESPACE
 
     \sa QProcess, QProcess::systemEnvironment(), QProcess::setProcessEnvironment()
 */
-#ifdef Q_OS_WIN
-static inline QProcessEnvironmentPrivate::Unit prepareName(const QString &name)
-{ return name.toUpper(); }
-static inline QProcessEnvironmentPrivate::Unit prepareName(const QByteArray &name)
-{ return QString::fromLocal8Bit(name).toUpper(); }
-static inline QString nameToString(const QProcessEnvironmentPrivate::Unit &name)
-{ return name; }
-static inline QProcessEnvironmentPrivate::Unit prepareValue(const QString &value)
-{ return value; }
-static inline QProcessEnvironmentPrivate::Unit prepareValue(const QByteArray &value)
-{ return QString::fromLocal8Bit(value); }
-static inline QString valueToString(const QProcessEnvironmentPrivate::Unit &value)
-{ return value; }
-static inline QByteArray valueToByteArray(const QProcessEnvironmentPrivate::Unit &value)
-{ return value.toLocal8Bit(); }
-#else
-static inline QProcessEnvironmentPrivate::Unit prepareName(const QByteArray &name)
-{ return name; }
-static inline QProcessEnvironmentPrivate::Unit prepareName(const QString &name)
-{ return name.toLocal8Bit(); }
-static inline QString nameToString(const QProcessEnvironmentPrivate::Unit &name)
-{ return QString::fromLocal8Bit(name); }
-static inline QProcessEnvironmentPrivate::Unit prepareValue(const QByteArray &value)
-{ return value; }
-static inline QProcessEnvironmentPrivate::Unit prepareValue(const QString &value)
-{ return value.toLocal8Bit(); }
-static inline QString valueToString(const QProcessEnvironmentPrivate::Unit &value)
-{ return QString::fromLocal8Bit(value); }
-static inline QByteArray valueToByteArray(const QProcessEnvironmentPrivate::Unit &value)
-{ return value; }
-#endif
-
-template<> void QSharedDataPointer<QProcessEnvironmentPrivate>::detach()
-{
-    if (d && d->ref == 1)
-        return;
-    QProcessEnvironmentPrivate *x = (d ? new QProcessEnvironmentPrivate(*d)
-                                     : new QProcessEnvironmentPrivate);
-    x->ref.ref();
-    if (d && !d->ref.deref())
-        delete d;
-    d = x;
-}
 
 QStringList QProcessEnvironmentPrivate::toList() const
 {
     QStringList result;
-    QHash<Unit, Unit>::ConstIterator it = hash.constBegin(),
-                                    end = hash.constEnd();
+    result.reserve(hash.size());
+    Hash::ConstIterator it = hash.constBegin(),
+                       end = hash.constEnd();
     for ( ; it != end; ++it) {
         QString data = nameToString(it.key());
         QString value = valueToString(it.value());
@@ -219,6 +177,32 @@ QProcessEnvironment QProcessEnvironmentPrivate::fromList(const QStringList &list
         env.insert(name, value);
     }
     return env;
+}
+
+QStringList QProcessEnvironmentPrivate::keys() const
+{
+    QStringList result;
+    result.reserve(hash.size());
+    Hash::ConstIterator it = hash.constBegin(),
+                       end = hash.constEnd();
+    for ( ; it != end; ++it)
+        result << nameToString(it.key());
+    return result;
+}
+
+void QProcessEnvironmentPrivate::insert(const QProcessEnvironmentPrivate &other)
+{
+    Hash::ConstIterator it = other.hash.constBegin(),
+                       end = other.hash.constEnd();
+    for ( ; it != end; ++it)
+        hash.insert(it.key(), it.value());
+
+#ifdef Q_OS_UNIX
+    QHash<QString, Key>::ConstIterator nit = other.nameMap.constBegin(),
+                                      nend = other.nameMap.constEnd();
+    for ( ; nit != nend; ++nit)
+        nameMap.insert(nit.key(), nit.value());
+#endif
 }
 
 /*!
@@ -299,6 +283,8 @@ void QProcessEnvironment::clear()
 {
     if (d)
         d->hash.clear();
+    // Unix: Don't clear d->nameMap, as the environment is likely to be
+    // re-populated with the same keys again.
 }
 
 /*!
@@ -313,7 +299,7 @@ void QProcessEnvironment::clear()
 */
 bool QProcessEnvironment::contains(const QString &name) const
 {
-    return d ? d->hash.contains(prepareName(name)) : false;
+    return d ? d->hash.contains(d->prepareName(name)) : false;
 }
 
 /*!
@@ -335,7 +321,7 @@ bool QProcessEnvironment::contains(const QString &name) const
 void QProcessEnvironment::insert(const QString &name, const QString &value)
 {
     // d detaches from null
-    d->hash.insert(prepareName(name), prepareValue(value));
+    d->hash.insert(d->prepareName(name), d->prepareValue(value));
 }
 
 /*!
@@ -352,7 +338,7 @@ void QProcessEnvironment::insert(const QString &name, const QString &value)
 void QProcessEnvironment::remove(const QString &name)
 {
     if (d)
-        d->hash.remove(prepareName(name));
+        d->hash.remove(d->prepareName(name));
 }
 
 /*!
@@ -371,11 +357,11 @@ QString QProcessEnvironment::value(const QString &name, const QString &defaultVa
     if (!d)
         return defaultValue;
 
-    QProcessEnvironmentPrivate::Hash::ConstIterator it = d->hash.constFind(prepareName(name));
+    QProcessEnvironmentPrivate::Hash::ConstIterator it = d->hash.constFind(d->prepareName(name));
     if (it == d->hash.constEnd())
         return defaultValue;
 
-    return valueToString(it.value());
+    return d->valueToString(it.value());
 }
 
 /*!
@@ -394,6 +380,33 @@ QString QProcessEnvironment::value(const QString &name, const QString &defaultVa
 QStringList QProcessEnvironment::toStringList() const
 {
     return d ? d->toList() : QStringList();
+}
+
+/*!
+    \since 4.8
+
+    Returns a list containing all the variable names in this QProcessEnvironment
+    object.
+*/
+QStringList QProcessEnvironment::keys() const
+{
+    return d ? d->keys() : QStringList();
+}
+
+/*!
+    \overload
+    \since 4.8
+
+    Inserts the contents of \a e in this QProcessEnvironment object. Variables in
+    this object that also exist in \a e will be overwritten.
+*/
+void QProcessEnvironment::insert(const QProcessEnvironment &e)
+{
+    if (!e.d)
+        return;
+
+    // d detaches from null
+    d->insert(*e.d);
 }
 
 void QProcessPrivate::Channel::clear()
@@ -2082,6 +2095,9 @@ void QProcess::terminate()
     On Symbian, this function requires platform security capability
     \c PowerMgmt. If absent, the process will panic with KERN-EXEC 46.
 
+    \note Killing running processes from other processes will typically
+    cause a panic in Symbian due to platform security.
+
     \sa {Symbian Platform Security Requirements}
     \sa terminate()
 */
@@ -2273,6 +2289,8 @@ QStringList QProcess::systemEnvironment()
 }
 
 /*!
+    \fn QProcessEnvironment QProcessEnvironment::systemEnvironment()
+
     \since 4.6
 
     \brief The systemEnvironment function returns the environment of
@@ -2288,21 +2306,6 @@ QStringList QProcess::systemEnvironment()
 
     \sa QProcess::systemEnvironment()
 */
-QProcessEnvironment QProcessEnvironment::systemEnvironment()
-{
-    QProcessEnvironment env;
-    const char *entry;
-    for (int count = 0; (entry = environ[count]); ++count) {
-        const char *equal = strchr(entry, '=');
-        if (!equal)
-            continue;
-
-        QByteArray name(entry, equal - entry);
-        QByteArray value(equal + 1);
-        env.insert(QString::fromLocal8Bit(name), QString::fromLocal8Bit(value));
-    }
-    return env;
-}
 
 /*!
     \typedef Q_PID

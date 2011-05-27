@@ -7,20 +7,20 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of this
-** file.
+** Foundation and appearing in the file included in the packaging of
+** this file.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -319,16 +319,16 @@
 
     \section2 The Header File (\c card.h)
 
-    \snippet doc/src/snippets/code/doc_src_layout.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_layout.cpp 0
 
 
     \section2 The Implementation File (\c card.cpp)
 
-    \snippet doc/src/snippets/code/doc_src_layout.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_layout.cpp 1
 
     First we define \c{count()} to fetch the number of items in the list.
 
-    \snippet doc/src/snippets/code/doc_src_layout.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_layout.cpp 2
 
     Then we define two functions that iterate over the layout: \c{itemAt()}
     and \c{takeAt()}. These functions are used internally by the layout system
@@ -341,7 +341,7 @@
     structure, we may have to spend more effort defining a linear order for the
     items.
 
-    \snippet doc/src/snippets/code/doc_src_layout.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_layout.cpp 3
 
     \c{addItem()} implements the default placement strategy for layout items.
     This function must be implemented. It is used by QLayout::add(), by the
@@ -351,26 +351,26 @@
     QGridLayout::addItem(), QGridLayout::addWidget(), and
     QGridLayout::addLayout().
 
-    \snippet doc/src/snippets/code/doc_src_layout.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_layout.cpp 4
 
     The layout takes over responsibility of the items added. Since QLayoutItem
     does not inherit QObject, we must delete the items manually. In the 
     destructor, we remove each item from the list using \c{takeAt()}, and
     then delete it.
 
-    \snippet doc/src/snippets/code/doc_src_layout.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_layout.cpp 5
 
     The \c{setGeometry()} function actually performs the layout. The rectangle
     supplied as an argument does not include \c{margin()}. If relevant, use
     \c{spacing()} as the distance between items.
 
-    \snippet doc/src/snippets/code/doc_src_layout.qdoc 6
+    \snippet doc/src/snippets/code/doc_src_layout.cpp 6
 
     \c{sizeHint()} and \c{minimumSize()} are normally very similar in
     implementation. The sizes returned by both functions should include
     \c{spacing()}, but not \c{margin()}.
 
-    \snippet doc/src/snippets/code/doc_src_layout.qdoc 7
+    \snippet doc/src/snippets/code/doc_src_layout.cpp 7
 
 
     \section2 Further Notes

@@ -7,20 +7,20 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of this
-** file.
+** Foundation and appearing in the file included in the packaging of
+** this file.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -39,7 +39,7 @@
     \l{Qt Examples} and are used to highlight certain features of
     Qt.
 
-    \table 
+    \table
     \header
     \o {2,1} Getting an Overview
     \row
@@ -54,6 +54,17 @@
     If you are new to Qt, and want to start developing applications,
     you should probably start by going through the \l{Tutorials}.
 
+    \keyword qt-mobile-demos
+    \section1 Mobile Applications
+    These are demonstrations of some of the capabilities of \l{Qt Quick} and
+    \l{external: Qt Mobility Manual}{Mobility} to create feature rich mobile
+    applications.
+    \list
+    \o \l{Guitar Tuner Example}{Guitar Tuner} - a guitar tuner made with a QML frontend and a Mobility based backend
+    \o \l{Quick Hit Demo}{Quick Hit} - a game that uses multimedia and Qt Quick
+    \o \l{Qt Bubble Level Example}{Qt Bubble Level} - a game that utilizes hardware sensors for effects
+    \o \l{QCamera Example}{QCamera} - a camera application that accesses mobile contacts and networking
+    \endlist
     \section1 Painting
 
     \list
@@ -105,19 +116,19 @@
     \list
     \o \l{demos/mainwindow}{Main Window} shows Qt's extensive support for main window
        features, such as tool bars, dock windows, and menus.
-    \o \l{demos/macmainwindow}{Mac Main Window} shows how to create main window applications that has 
+    \o \l{demos/macmainwindow}{Mac Main Window} shows how to create main window applications that has
       the same appearance as other Mac OS X applications.
     \endlist
 
     \section1 Graphics View
 
     \list
-    \o \l{demos/chip}{40000 Chips} uses the \l{Graphics View Framework} to 
-       efficiently display a large number of individual graphical items on 
-       a scrolling canvas and highlighting features including rotation, 
+    \o \l{demos/chip}{40000 Chips} uses the \l{Graphics View Framework} to
+       efficiently display a large number of individual graphical items on
+       a scrolling canvas and highlighting features including rotation,
        zooming, level of detail control, and item selection.
-    \o \l{demos/embeddeddialogs}{Embedded Dialogs} showcases Qt 4.4's 
-       \e{Widgets on the Canvas} feature by embedding several 
+    \o \l{demos/embeddeddialogs}{Embedded Dialogs} showcases Qt 4.4's
+       \e{Widgets on the Canvas} feature by embedding several
        fully-functional dialogs in a scene.
     \o \l{demos/boxes}{Boxes} showcases Qt's OpenGL support and the
        integration with the \l{Graphics View Framework}.

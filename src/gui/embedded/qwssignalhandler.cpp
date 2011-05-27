@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -47,20 +47,12 @@
 #ifndef QT_NO_QWS_MULTIPROCESS
 #  include <sys/ipc.h>
 #  include <sys/sem.h>
+
+#  include <private/qcore_unix_p.h>
 #endif
 #include <signal.h>
 
 QT_BEGIN_NAMESPACE
-
-#ifndef Q_OS_BSD4
-union semun {
-    int val;
-    struct semid_ds *buf;
-    unsigned short *array;
-    struct seminfo  *__buf;
-};
-#endif
-
 
 class QWSSignalHandlerPrivate : public QWSSignalHandler
 {
@@ -106,7 +98,7 @@ void QWSSignalHandler::removeSemaphore(int semno)
 {
     const int index = semaphores.lastIndexOf(semno);
     if (index != -1) {
-        semun semval;
+        qt_semun semval;
         semval.val = 0;
         semctl(semaphores.at(index), 0, IPC_RMID, semval);
         semaphores.remove(index);
@@ -121,7 +113,7 @@ void QWSSignalHandler::handleSignal(int signum)
     signal(signum, h->oldHandlers[signum]);
 
 #ifndef QT_NO_QWS_MULTIPROCESS
-    semun semval;
+    qt_semun semval;
     semval.val = 0;
     for (int i = 0; i < h->semaphores.size(); ++i)
         semctl(h->semaphores.at(i), 0, IPC_RMID, semval);

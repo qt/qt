@@ -7,20 +7,20 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of this
-** file.
+** Foundation and appearing in the file included in the packaging of
+** this file.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1009,78 +1009,113 @@ We hope you will enjoy using Qt.
 
     \image x11_dependencies.png Qt for X11 Dependencies
 
-    \raw HTML
-    <style type="text/css" id="colorstyles">
-     #QtGuiColor { background-color: #98fd00; color: black }
-     #QtCoreColor { background-color: #9c9cff; color: black }
-     #DefaultColor { background-color: #f6f6dc; color: black }
-     #FreetypeColor { background-color: #e6e6fa; color: black }
-     #GLColor { background-color: #ffc0cb; color: black }
-     #PthreadColor { background-color: #bdb76b; color: black }
-     #OptionalColor { background-color: #cae1ff; color: black }
-     #SMColor { background-color: #c2fafa; color: black }
-     #MiscColor { background-color: #f0f9ff; color: black }
-     #GlibColor { background-color: #b3b3b3; color: black }
-    </style>
-    \endraw
-
     The QtGui module and the QtCore module, which provides the non-GUI features required
     by QtGui, depend on the libraries described in the following table. To build
     Qt from its source code, you will also need to install the development
     packages for these libraries for your system.
 
-    \raw HTML
-    <table class="generic"> 
-    <thead><tr class="qt-style topAlign"><th>Name</th><th>Library</th><th>Notes</th><th>Configuration options</th><th>Minimum working version 
-    <tr id="OptionalColor">
-    <td> XRender </td><td> libXrender </td><td> X Rendering Extension; used for anti-aliasing</td>
-    <td><tt>-xrender</tt> or auto-detected</td><td>0.9.0</td>
-    </tr><tr id="OptionalColor">
-    <td> Xrandr </td><td> libXrandr </td><td> X Resize and Rotate Extension</td>
-    <td><tt>-xrandr</tt> or auto-detected</td><td>1.0.2</td>
-    </tr><tr id="OptionalColor">
-    <td> Xcursor </td><td> libXcursor </td><td> X Cursor Extension</td>
-    <td><tt>-xcursor</tt> or auto-detected</td><td>1.1.4</td>
-    </tr><tr id="OptionalColor">
-    <td> Xfixes </td><td> libXfixes </td><td> X Fixes Extension</td>
-    <td><tt>-xfixes</tt> or auto-detected</td><td>3.0.0</td>
-    </tr><tr id="OptionalColor">
-    <td> Xinerama </td><td> libXinerama </td><td> Multi-head support</td>
-    <td><tt>-xinerama</tt> or auto-detected</td><td>1.1.0</td>
+    \table 100% 
+    \header
+    \o Name
+    \o Library
+    \o Notes
+    \o Configuration options
+    \o Minimum working version 
+    \row {id="OptionalColor"}
+    \o XRender
+    \o libXrender
+    \o X Rendering Extension; used for anti-aliasing
+    \o \tt{-xrender} or auto-detected
+    \o 0.9.0
+    \row {id="OptionalColor"}
+    \o Xrandr 
+    \o libXrandr
+    \o X Resize and Rotate Extension
+    \o \tt{-xrandr} or auto-detected
+    \o 1.0.2
+    \row {id="OptionalColor"}
+    \o Xcursor 
+    \o libXcursor
+    \o X Cursor Extension
+    \o \tt{-xcursor} or auto-detected
+    \o 1.1.4
+    \row {id="OptionalColor"}
+    \o Xfixes
+    \o libXfixes
+    \o X Fixes Extension
+    \o \tt{-xfixes} or auto-detected
+    \o 3.0.0
+    \row {id="OptionalColor"}
+    \o Xinerama 
+    \o libXinerama
+    \o Multi-head support
+    \o \tt{-xinerama} or auto-detected
+    \o 1.1.0
 
-    </tr><tr id="OptionalColor">
-    <td> Fontconfig </td><td> libfontconfig </td><td> Font customization and configuration</td>
-    <td><tt>-fontconfig</tt> or auto-detected</td><td>2.1</td>
-    </tr><tr id="OptionalColor">
-    <td> FreeType </td><td> libfreetype </td><td> Font engine</td>
-    <td></td><td>2.1.3</td>
+    \row {id="OptionalColor"}
+    \o Fontconfig
+    \o libfontconfig
+    \o Font customization and configuration
+    \o \tt{-fontconfig} or auto-detected
+    \o 2.1
+    \row {id="OptionalColor"}
+    \o FreeType
+    \o libfreetype
+    \o Font engine
+    \o 
+    \o 2.1.3
 
-    </tr><tr id="DefaultColor">
-    <td> Xi </td><td> libXi </td><td> X11 Input Extensions</td>
-    <td><tt>-xinput</tt> or auto-detected</td><td>1.3.0</td>
-    </tr><tr id="DefaultColor">
-    <td> Xt </td><td> libXt </td><td> Xt Intrinsics</td><td></td><td>0.99</td>
-    </tr><tr id="DefaultColor">
-    <td> Xext </td><td> libXext </td><td> X Extensions</td><td></td><td>6.4.3</td>
-    </tr><tr id="DefaultColor">
-    <td> X11 </td><td> libX11 </td><td> X11 Client-Side Library</td><td></td><td>6.2.1</td>
+    \row {id="DefaultColor"}
+    \o Xi
+    \o libXi
+    \o X11 Input Extensions
+    \o \tt{-xinput} or auto-detected
+    \o 1.3.0
+    \row {id="DefaultColor"}
+    \o Xt
+    \o libXt
+    \o Xt Intrinsics
+    \o
+    \o 0.99
+    \row {id="DefaultColor"}
+    \o Xext
+    \o libXext
+    \o X Extensions
+    \o
+    \o 6.4.3
+    \row {id="DefaultColor"}
+    \o X11
+    \o libX11
+    \o X11 Client-Side Library
+    \o
+    \o 6.2.1
 
-    </tr><tr id="SMColor">
-    <td> SM </td><td> libSM </td><td> X Session Management</td>
-    <td><tt>-sm</tt> or auto-detected</td><td>6.0.4</td>
-    </tr><tr id="SMColor">
-    <td> ICE </td><td> libICE </td><td> Inter-Client Exchange</td>
-    <td><tt>-sm</tt> or auto-detected</td><td>6.3.5</td>
+    \row {id="SMColor"}
+    \o SM
+    \o libSM
+    \o X Session Management
+    \o \tt{-sm} or auto-detected
+    \o 6.0.4
+    \row {id="SMColor"}
+    \o ICE
+    \o libICE
+    \o Inter-Client Exchange
+    \o \tt{-sm} or auto-detected
+    \o 6.3.5
 
-    </tr><tr id="GlibColor">
-    <td> glib </td><td> libglib-2.0 </td><td> Common event loop handling</td>
-    <td><tt>-glib</tt> or auto-detected</td><td>2.8.3</td>
-    </tr><tr id="PthreadColor">
-    <td> pthread </td><td> libpthread </td><td> Multithreading</td>
-    <td></td><td>2.3.5</td>
-    </tr></th></tr></thead> 
-    </table>  
-    \endraw
+    \row {id="GlibColor"}
+    \o glib
+    \o libglib-2.0
+    \o Common event loop handling
+    \o \tt{-glib} or auto-detected
+    \o 2.8.3
+    \row {id="PthreadColor"}
+    \o pthread
+    \o libpthread
+    \o Multithreading
+    \o
+    \o 2.3.5
+    \endtable  
 
     \note You must compile with XRender support to get alpha transparency
     support for pixmaps and images.
@@ -1142,7 +1177,7 @@ We hope you will enjoy using Qt.
     \brief Setting up the Windows CE environment for Qt.
     \previouspage General Qt Requirements
 
-    Qt is known to work with Visual Studio 2005/2008 and the following SDKs for
+    Qt is known to work with Visual Studio 2005/2008/2010 and the following SDKs for
     Windows CE development on Windows XP and Windows Vista:
 
     \list
@@ -1180,14 +1215,37 @@ We hope you will enjoy using Qt.
             \endlist
     \endtable
 
-
     Device manufacturers may prefer to make their own customized version of
     Windows CE using Platform Builder. In order for Qt for Windows CE to
     support a custom SDK, a build specification needs to be created. More
     information on Windows CE Customization can be found
     \l{Windows CE - Working with Custom SDKs}{here}.
 
-    \sa {Known Issues}
+	\section3 Requirements
+	\list
+		\o Development environment: 
+		\list
+			\o Microsoft Visual Studio 2005 (Standard Edition) or higher
+			\o ActivePerl
+		\endlist
+		\o Footprint
+		\list
+			\o Lean configuration - 4.8 MB
+			\o Full configuration - 8.4 MB
+		\endlist
+		\o Operating Systems
+		\list
+			\o Windows CE 5 or higher
+			\o Windows Mobile 5 or higher
+		\endlist
+		\o Hardware Platform
+		\list
+			\o Supported on ARM, x86
+			\o (Compiles on SH4 and MIPS)
+		\endlist
+	\endlist
+
+		\sa {Known Issues}
 */
 
 /*!
@@ -1332,7 +1390,7 @@ We hope you will enjoy using Qt.
    load those that have a matching <key>. \o
    \row   \o \c {-release } \o Compile and link Qt with debugging turned off. \o
    \row   \o \c {-debug } \o Compile and link Qt with debugging turned on.
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-debug-and-release} \o Compile and link two Qt libraries,
    with and without debugging turned on. \o This option denotes a default
    value and needs to be evaluated. If the evaluation succeeds, the
@@ -1343,28 +1401,28 @@ We hope you will enjoy using Qt.
    of Qt. \o
    \row   \o \c {-developer-build} \o Compile and link Qt with Qt developer
    options including auto-tests exporting) \o
-   \row   \o \c {-shared} \o Create and use shared Qt libraries. \o Defualt
+   \row   \o \c {-shared} \o Create and use shared Qt libraries. \o Default
    value.
    \row   \o \c {-static} \o Create and use static Qt libraries. \o
    \row   \o \c {-ltcg} \o Use Link Time Code Generation. \o Apply to release
    builds only.
-   \row   \o \c {-no-ltcg} \o Do not use Link Time Code Generation. \o Defualt
+   \row   \o \c {-no-ltcg} \o Do not use Link Time Code Generation. \o Default
    value.
    \row   \o \c {-no-fast} \o Configure Qt normally by generating Makefiles for
-   all project files. \o Defualt value.
+   all project files. \o Default value.
    \row   \o \c {-fast} \o Configure Qt quickly by generating Makefiles only for
    library and subdirectory targets. \o All other Makefiles are created as
    wrappers which will in turn run qmake.
    \row   \o \c {-no-exceptions} \o Disable exceptions on platforms that support
    it. \o 
    \row   \o \c {-exceptions} \o Enable exceptions on platforms that support it.
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-no-accessibility} \o Do not compile Windows Active
    Accessibility support. \o
    \row   \o \c {-accessibility} \o Compile Windows Active Accessibility
-   support. \o Defualt value.
+   support. \o Default value.
    \row   \o \c {-no-stl} \o Do not compile STL support. \o
-   \row   \o \c {-stl} \o Compile STL support. \o Defualt value.
+   \row   \o \c {-stl} \o Compile STL support. \o Default value.
    \row   \o \c {-no-sql-<driver>} \o Disable SQL <driver> entirely, by default
    none are turned on. \o
    \row   \o \c {-qt-sql-<driver>} \o Enable a SQL <driver> in the Qt Library.
@@ -1380,14 +1438,14 @@ We hope you will enjoy using Qt.
    version. \o Available values for <api>: desktop - Enable support for
    Desktop OpenGL (Default), es1 - Enable support for OpenGL ES Common
    Profile, es2 - Enable support for OpenGL ES 2.0. 
-   \row   \o \c {-no-openvg} \o Disables OpenVG functionality \o Defualt value.
+   \row   \o \c {-no-openvg} \o Disables OpenVG functionality \o Default value.
    \row   \o \c {-openvg} \o Enables OpenVG functionality \o Requires EGL
    support, typically supplied by an OpenGL or other graphics
    implementation. 
    \row   \o \c {-platform <spec> } \o The operating system and compiler you
    are building on. \o The default value is %QMAKESPEC%.
    \row   \o \c {-xplatform <spec> } \o The operating system and compiler you
-   are cross compiling to. \o See the README file for a list of supported
+   are cross compiling for. \o See the README file for a list of supported
    operating systems and compilers.
    \row   \o \c {-qtnamespace <namespace>} \o Wraps all Qt library code in
    'namespace name {..} \o
@@ -1399,7 +1457,7 @@ We hope you will enjoy using Qt.
    \row   \o \c {-L <librarypath>} \o Add an explicit library path. \o
    \row   \o \c {-l <libraryname>} \o Add an explicit library name, residing
    in a librarypath. \o
-   \row   \o \c {-graphicssystem <sys>} \o Specify which graphicssystem should
+   \row   \o \c {-graphicssystem <sys>} \o Specify which graphics system should
    be used. \o Available values for <sys>: * raster - Software rasterizer,
    opengl - Using OpenGL acceleration, experimental!, openvg - Using
    OpenVG acceleration, experimental! 
@@ -1428,7 +1486,7 @@ We hope you will enjoy using Qt.
 		succeeds, the feature is included.
 		\row   \o \c {-qt-libmng} \o Use the libmng bundled with Qt. \o
 		\row   \o \c {-system-libmng} \o Use libmng from the operating system.
-		\o See See http://www.libmng.com
+		\o See http://www.libmng.com
 		\row   \o \c {-no-libtiff} \o Do not compile TIFF support. \o This option
 		denotes a default value and needs to be evaluated. If the evaluation
 		succeeds, the feature is included.
@@ -1450,10 +1508,10 @@ We hope you will enjoy using Qt.
    \header \o Option  \o Description \o Note
    \row   \o \c {-no-dsp} \o Do not generate VC++ .dsp files. \o
    \row   \o \c {-dsp} \o Generate VC++ .dsp files, only if spec "win32-msvc".
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-no-vcproj} \o Do not generate VC++ .vcproj files. \o
    \row   \o \c {-vcproj} \o Generate VC++ .vcproj files, only if platform
-   "win32-msvc.net". \o Defualt value.
+   "win32-msvc.net". \o Default value.
    \row   \o \c {-no-incredibuild-xge} \o Do not add IncrediBuild XGE distribution
    commands to custom build steps. \o
    \row   \o \c {-incredibuild-xge} \o Add IncrediBuild XGE distribution commands
@@ -1464,14 +1522,14 @@ We hope you will enjoy using Qt.
    If the evaluation succeeds, the feature is included.
    \row   \o \c {-no-plugin-manifests} \o Do not embed manifests in plugins. \o
    \row   \o \c {-plugin-manifests} \o Embed manifests in plugins. 
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-no-qmake} \o Do not compile qmake. \o
-   \row   \o \c {-qmake} \o Compile qmake. \o Defualt value
+   \row   \o \c {-qmake} \o Compile qmake. \o Default value
    \row   \o \c {-dont-process} \o Do not generate Makefiles/Project files. This
    will override -no-fast if specified. \o
-   \row   \o \c {-process} \o Generate Makefiles/Project files. \o Defualt value.
+   \row   \o \c {-process} \o Generate Makefiles/Project files. \o Default value.
    \row   \o \c {-no-rtti} \o Do not compile runtime type information. \o
-   \row   \o \c {-rtti} \o Compile runtime type information. \o Defualt value.
+   \row   \o \c {-rtti} \o Compile runtime type information. \o Default value.
    \row   \o \c {-no-mmx} \o Do not compile with use of MMX instructions \o
    \row   \o \c {-mmx} \o Compile with use of MMX instructions \o This option
    denotes a default value and needs to be evaluated. If the evaluation
@@ -1506,9 +1564,9 @@ We hope you will enjoy using Qt.
    \row   \o \c {-no-phonon-backend} \o Do not compile the platform-specific
    Phonon backend-plugin \o
    \row   \o \c {-phonon-backend} \o Compile in the platform-specific Phonon
-   backend-plugin \o Defualt value.
+   backend-plugin \o Default value.
    \row   \o \c {-no-multimedia} \o Do not compile the multimedia module \o
-   \row   \o \c {-multimedia} \o Compile in multimedia module \o Defualt value.
+   \row   \o \c {-multimedia} \o Compile in multimedia module \o Default value.
    \row   \o \c {-no-audio-backend} \o Do not compile in the platform audio
    backend into QtMultimedia \o
    \row   \o \c {-audio-backend} \o Compile in the platform audio backend into
@@ -1536,7 +1594,7 @@ We hope you will enjoy using Qt.
    \row   \o \c {-no-declarative-debug} \o Do not build the declarative debugging
    support \o
    \row   \o \c {-declarative-debug} \o Build the declarative debugging support 
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-arch <arch>} \o Specify an architecture. \o Available values for
    <arch>:  * windows, windowsce, symbian, boundschecker, generic.
    \row   \o \c {-no-style-<style>} \o Disable <style> entirely. \o
@@ -1547,9 +1605,9 @@ We hope you will enjoy using Qt.
    \row   \o \c {-no-native-gestures} \o Do not use native gestures on Windows 7.
    \o 
    \row   \o \c {-native-gestures} \o Use native gestures on Windows 7.
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-no-mp} \o Do not use multiple processors for compiling with MSVC
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-mp} \o Use multiple processors for compiling with MSVC (-MP) \o
    \row   \o \c {-loadconfig <config>} \o Run configure with the parameters from file 
    configure_<config>.cache. \o
@@ -1566,7 +1624,7 @@ We hope you will enjoy using Qt.
    for Qt for Windows CE on Arm only. This option denotes a default value and
    needs to be evaluated. If the evaluation succeeds, the feature is included.
    \row   \o \c {-no-crt} \o Do not add the C runtime to default deployment rules.
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-qt-crt} \o Qt identifies C runtime during project generation \o
    \row   \o \c {-crt <path>} \o Specify path to C runtime used for project
    generation. \o
@@ -1576,20 +1634,20 @@ We hope you will enjoy using Qt.
    succeeds, the feature is included.
    \row   \o \c {-signature <file>} \o Use file for signing the target project \o
    \row   \o \c {-phonon-wince-ds9} \o Enable Phonon Direct Show 9 backend for
-   Windows CE \o Defualt value
+   Windows CE \o Default value
    \endtable
 	
  \section2 Qt for Symbian OS only:
    \table
    \header \o Option  \o Description \o Note
    \row   \o \c {-no-freetype} \o Do not compile in Freetype2 support.
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-qt-freetype} \o Use the libfreetype bundled with Qt. \o
    \row   \o \c {-fpu <flags>} \o VFP type on ARM, supported options:
    softvfp(default) |vfpv2 | softvfp+vfpv2 \o
    \row   \o \c {-no-s60} \o Do not compile in S60 support. \o
    \row   \o \c {-s60} \o Compile with support for the S60 UI Framework 
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-no-usedeffiles} \o Disable the usage of DEF files. \o
    \row   \o \c {-usedeffiles} \o Enable the usage of DEF files. \o
  \endtable	

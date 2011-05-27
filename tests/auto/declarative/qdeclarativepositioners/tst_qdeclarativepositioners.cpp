@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -153,6 +153,15 @@ void tst_QDeclarativePositioners::test_horizontal_rtl()
     QDeclarativeItem *row = canvas->rootObject()->findChild<QDeclarativeItem*>("row");
     QCOMPARE(row->width(), 110.0);
     QCOMPARE(row->height(), 50.0);
+
+    // Change the width of the row and check that items stay to the right
+    row->setWidth(200);
+    QCOMPARE(one->x(), 150.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 130.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 90.0);
+    QCOMPARE(three->y(), 0.0);
 
     delete canvas;
 }
@@ -526,6 +535,19 @@ void tst_QDeclarativePositioners::test_grid_rightToLeft()
     QCOMPARE(grid->layoutDirection(), Qt::RightToLeft);
     QCOMPARE(grid->width(), 100.0);
     QCOMPARE(grid->height(), 100.0);
+
+    // Change the width of the grid and check that items stay to the right
+    grid->setWidth(200);
+    QCOMPARE(one->x(), 150.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 130.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 100.0);
+    QCOMPARE(three->y(), 0.0);
+    QCOMPARE(four->x(), 150.0);
+    QCOMPARE(four->y(), 50.0);
+    QCOMPARE(five->x(), 140.0);
+    QCOMPARE(five->y(), 50.0);
 
     delete canvas;
 }

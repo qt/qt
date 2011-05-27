@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -118,6 +118,7 @@ struct QMetaObjectPrivate
     int flags; //since revision 3
     int signalCount; //since revision 4
     // revision 5 introduces changes in normalized signatures, no new members
+    // revision 6 added qt_static_metacall as a member of each Q_OBJECT and inside QMetaObject itself
 
     static inline const QMetaObjectPrivate *get(const QMetaObject *metaobject)
     { return reinterpret_cast<const QMetaObjectPrivate*>(metaobject->d.data); }
@@ -125,7 +126,7 @@ struct QMetaObjectPrivate
     static int indexOfSignalRelative(const QMetaObject **baseObject,
                                      const char* name,
                                      bool normalizeStringData);
-    static int indexOfSlot(const QMetaObject *m,
+    static int indexOfSlotRelative(const QMetaObject **m,
                            const char *slot,
                            bool normalizeStringData);
     static int originalClone(const QMetaObject *obj, int local_method_index);
@@ -136,7 +137,8 @@ struct QMetaObjectPrivate
     static void memberIndexes(const QObject *obj, const QMetaMethod &member,
                               int *signalIndex, int *methodIndex);
     static bool connect(const QObject *sender, int signal_index,
-                        const QObject *receiver, int method_index,
+                        const QObject *receiver, int method_index_relative,
+                        const QMetaObject *rmeta = 0,
                         int type = 0, int *types = 0);
     static bool disconnect(const QObject *sender, int signal_index,
                            const QObject *receiver, int method_index,

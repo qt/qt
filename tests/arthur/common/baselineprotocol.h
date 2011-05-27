@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -48,29 +48,49 @@
 #include <QVector>
 #include <QMap>
 #include <QPointer>
+#include <QStringList>
 
 #define QLS QLatin1String
 #define QLC QLatin1Char
 
 #define FileFormat "png"
 
-const QString PI_TestCase(QLS("TestCase"));
-const QString PI_HostName(QLS("HostName"));
-const QString PI_HostAddress(QLS("HostAddress"));
-const QString PI_OSName(QLS("OSName"));
-const QString PI_OSVersion(QLS("OSVersion"));
-const QString PI_QtVersion(QLS("QtVersion"));
-const QString PI_BuildKey(QLS("BuildKey"));
-const QString PI_GitCommit(QLS("GitCommit"));
-const QString PI_QMakeSpec(QLS("QMakeSpec"));
-const QString PI_PulseGitBranch(QLS("PulseGitBranch"));
-const QString PI_PulseTestrBranch(QLS("PulseTestrBranch"));
+extern const QString PI_TestCase;
+extern const QString PI_HostName;
+extern const QString PI_HostAddress;
+extern const QString PI_OSName;
+extern const QString PI_OSVersion;
+extern const QString PI_QtVersion;
+extern const QString PI_BuildKey;
+extern const QString PI_GitCommit;
+extern const QString PI_QMakeSpec;
+extern const QString PI_PulseGitBranch;
+extern const QString PI_PulseTestrBranch;
 
 class PlatformInfo : public QMap<QString, QString>
 {
 public:
-    PlatformInfo(bool useLocal = false);
+    PlatformInfo();
+    PlatformInfo(const PlatformInfo &other);
+    ~PlatformInfo()
+    {}
+    PlatformInfo &operator=(const PlatformInfo &other);
+
+    static PlatformInfo localHostInfo();
+
+    void addSignificantKeys(const QStringList& keys, bool replaceDefaultKeys=false);
+    QStringList addedKeys() const;
+    bool addedKeysReplaceDefault() const;
+
+private:
+    QStringList sigKeys;
+    bool replaceDefault;
+    friend QDataStream & operator<< (QDataStream &stream, const PlatformInfo &pi);
+    friend QDataStream & operator>> (QDataStream &stream, PlatformInfo& pi);
 };
+QDataStream & operator<< (QDataStream &stream, const PlatformInfo &pi);
+QDataStream & operator>> (QDataStream &stream, PlatformInfo& pi);
+
 
 struct ImageItem
 {
@@ -99,6 +119,7 @@ public:
     QImage image;
     QList<quint64> imageChecksums;
     quint16 itemChecksum;
+    QByteArray misc;
 
     void writeImageToStream(QDataStream &stream) const;
     void readImageFromStream(QDataStream &stream);
@@ -123,9 +144,9 @@ public:
     // Important constants here
     // ****************************************************
     enum Constant {
-        ProtocolVersion = 4,
+        ProtocolVersion = 5,
         ServerPort = 54129,
-        Timeout = 5000
+        Timeout = 15000
     };
 
     enum Command {

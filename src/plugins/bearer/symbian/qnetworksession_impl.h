@@ -7,29 +7,29 @@
 ** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -68,11 +68,12 @@
 QT_BEGIN_NAMESPACE
 
 class ConnectionProgressNotifier;
+class ConnectionStarter;
 class SymbianEngine;
 
 typedef void (*TOpenCUnSetdefaultifFunction)();
 
-class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate, public CActive
+class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
                                  , public MMobilityProtocolResp
 #endif
@@ -111,7 +112,8 @@ public:
     quint64 bytesWritten() const;
     quint64 bytesReceived() const;
     quint64 activeTime() const;
-    
+
+    RConnection* nativeSession();
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE    
 public: // From MMobilityProtocolResp
     void PreferredCarrierAvailable(TAccessPointInfo aOldAPInfo,
@@ -125,7 +127,7 @@ public: // From MMobilityProtocolResp
 #endif    
 
 protected: // From CActive
-    void RunL();
+    void ConnectionStartComplete(TInt statusCode);
     void DoCancel();
     
 private Q_SLOTS:
@@ -149,6 +151,7 @@ private:
     bool easyWlanTrueIapId(TUint32 &trueIapId) const;
 #endif
 
+    void closeHandles();
 
 private: // data
     SymbianEngine *engine;
@@ -159,19 +162,17 @@ private: // data
 
     QDateTime startTime;
 
-    RLibrary iOpenCLibrary;
-    TOpenCUnSetdefaultifFunction iDynamicUnSetdefaultif;
-
-    mutable RSocketServ iSocketServ;
+    mutable RSocketServ &iSocketServ; //not owned, shared from QtCore
     mutable RConnection iConnection;
     mutable RConnectionMonitor iConnectionMonitor;
     ConnectionProgressNotifier* ipConnectionNotifier;
-    
+    ConnectionStarter* ipConnectionStarter;
+
     bool iHandleStateNotificationsFromManager;
     bool iFirstSync;
     bool iStoppedByUser;
     bool iClosedByUser;
-    
+
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE    
     CActiveCommsMobilityApiExt* iMobility;
 #endif    
@@ -189,6 +190,7 @@ private: // data
     bool isOpening;
 
     friend class ConnectionProgressNotifier;
+    friend class ConnectionStarter;
 };
 
 class ConnectionProgressNotifier : public CActive
@@ -209,6 +211,24 @@ private: // Data
     RConnection& iConnection;
     TNifProgressBuf iProgress;
     
+};
+
+class ConnectionStarter : public CActive
+{
+public:
+    ConnectionStarter(QNetworkSessionPrivateImpl &owner, RConnection &connection);
+    ~ConnectionStarter();
+
+    void Start();
+    void Start(TConnPref &pref);
+protected:
+    void RunL();
+    TInt RunError(TInt err);
+    void DoCancel();
+
+private: // Data
+    QNetworkSessionPrivateImpl &iOwner;
+    RConnection& iConnection;
 };
 
 QT_END_NAMESPACE

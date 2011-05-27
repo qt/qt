@@ -7,29 +7,29 @@
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -69,6 +69,7 @@
 
 #if !defined(QT_OPENGL_ES_1)
 #include "gl2paintengineex/qpaintengineex_opengl2_p.h"
+#include <private/qwindowsurface_gl_p.h>
 #endif
 
 #ifndef QT_OPENGL_ES_2
@@ -90,7 +91,6 @@
 #include <private/qpixmapdata_p.h>
 #include <private/qpixmapdata_gl_p.h>
 #include <private/qglpixelbuffer_p.h>
-#include <private/qwindowsurface_gl_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
 #include "qcolormap.h"
 #include "qfile.h"
@@ -1422,10 +1422,6 @@ QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags()
             cachedDefault = true;
         }
     }
-
-#ifdef Q_WS_QPA
-    hasOpenGL(); // ### I have no idea why this is needed here, but it makes things work for testlite
-#endif
 
     QString versionString(QLatin1String(reinterpret_cast<const char*>(glGetString(GL_VERSION))));
     OpenGLVersionFlags versionFlags = qOpenGLVersionFlagsFromString(versionString);
@@ -5359,12 +5355,69 @@ QGLWidget::QGLWidget(QGLContext *context, QWidget *parent,
 
 #endif // QT3_SUPPORT
 
+typedef GLubyte * (*qt_glGetStringi)(GLenum, GLuint);
+
+#ifndef GL_NUM_EXTENSIONS
+#define GL_NUM_EXTENSIONS 0x821D
+#endif
+
+QGLExtensionMatcher::QGLExtensionMatcher(const char *str)
+{
+    init(str);
+}
+
+QGLExtensionMatcher::QGLExtensionMatcher()
+{
+    const char *extensionStr = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
+
+    if (extensionStr) {
+        init(extensionStr);
+    } else {
+        // clear error state
+        while (glGetError()) {}
+
+        const QGLContext *ctx = QGLContext::currentContext();
+        if (ctx) {
+            qt_glGetStringi glGetStringi = (qt_glGetStringi)ctx->getProcAddress(QLatin1String("glGetStringi"));
+
+            GLint numExtensions;
+            glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
+
+            for (int i = 0; i < numExtensions; ++i) {
+                const char *str = reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, i));
+
+                m_offsets << m_extensions.size();
+
+                while (*str != 0)
+                    m_extensions.append(*str++);
+                m_extensions.append(' ');
+            }
+        }
+    }
+}
+
+void QGLExtensionMatcher::init(const char *str)
+{
+    m_extensions = str;
+
+    // make sure extension string ends with a space
+    if (!m_extensions.endsWith(' '))
+        m_extensions.append(' ');
+
+    int index = 0;
+    int next = 0;
+    while ((next = m_extensions.indexOf(' ', index)) >= 0) {
+        m_offsets << index;
+        index = next + 1;
+    }
+}
+
 /*
     Returns the GL extensions for the current context.
 */
 QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
 {
-    QGLExtensionMatcher extensions(reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS)));
+    QGLExtensionMatcher extensions;
     Extensions glExtensions;
 
     if (extensions.match("GL_ARB_texture_rectangle"))
@@ -5436,6 +5489,13 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
 
     if (extensions.match("GL_EXT_bgra"))
         glExtensions |= BGRATextureFormat;
+
+    {
+        GLboolean srgbCapableFramebuffers;
+        glGetBooleanv(FRAMEBUFFER_SRGB_CAPABLE_EXT, &srgbCapableFramebuffers);
+        if (srgbCapableFramebuffers)
+            glExtensions |= SRGBFrameBuffer;
+    }
 
     return glExtensions;
 }
@@ -5604,6 +5664,21 @@ void *QGLContextGroupResourceBase::value(const QGLContext *context)
 {
     QGLContextGroup *group = QGLContextPrivate::contextGroup(context);
     return group->m_resources.value(this, 0);
+}
+
+void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx)
+{
+    void *resource = value(ctx);
+
+    if (resource != 0) {
+        QGLShareContextScope scope(ctx);
+        freeResource(resource);
+
+        QGLContextGroup *group = QGLContextPrivate::contextGroup(ctx);
+        group->m_resources.remove(this);
+        m_groups.removeOne(group);
+        active.deref();
+    }
 }
 
 void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx, void *value)

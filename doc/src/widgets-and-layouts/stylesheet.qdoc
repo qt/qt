@@ -7,20 +7,20 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of this
-** file.
+** Foundation and appearing in the file included in the packaging of
+** this file.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -469,11 +469,11 @@
     sheet. Consider the following example. First, we set a style
     sheet on the QApplication:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 21
+    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 21
 
     Then we set a style sheet on a QPushButton object:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 22
+    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 22
 
     The style sheet on the QPushButton forces the QPushButton (and
     any child widget) to have blue text, in spite of the more
@@ -481,7 +481,7 @@
 
     The result would have been the same if we had written
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 23
+    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 23
 
     except that if the QPushButton had children (which is unlikely),
     the style sheet would have no impact on them.
@@ -500,14 +500,14 @@
 
     For example, consider a QPushButton inside a QGroupBox:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 24
+    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 24
 
     The QPushButton does not have an explicit color set. Hence, instead
     of inheriting color of its parent QGroupBox, it has the system color.
     If we want to set the color on a QGroupBox and its children,
     we can write:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 25
+    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 25
 
     In contrast, setting a font and propagate using QWidget::setFont() and
     QWidget::setPalette() propagates to child widgets.
@@ -517,7 +517,7 @@
     The Type Selector can be used to style widgets of a particular type. For
     example,
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 26
+    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 26
 
     Qt Style Sheet uses QObject::className() of the widget to determine
     when to apply the Type Selector. When custom widgets are inside namespaces,
@@ -526,7 +526,7 @@
     when using the Type Selector for widgets inside namespaces, we must
     replace the "::" with "--". For example,
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 27
+    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 27
 
     \section1 Setting QObject properties
 
@@ -1328,7 +1328,7 @@
 
            If you subclass from QWidget, you need to provide a paintEvent for your
            custom QWidget as below:
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 32
+           \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 32
 
            The above code is a no-operation if there is no stylesheet set.
 
@@ -3373,35 +3373,35 @@
     \l{QLineEdit}s in an application. This could be achieved like
     this:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 88
+    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 88
 
     If we want the property to apply only to the \l{QLineEdit}s that are
     children (or grandchildren or grand-grandchildren) of a specific dialog,
     we would rather do this:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 89
+    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 89
 
     If we want the property to apply only to one specific QLineEdit,
     we can give it a name using QObject::setObjectName() and use an
     ID Selector to refer to it:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 90
+    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 90
 
     Alternatively, we can set the
     \l{Qt Style Sheets Reference#background-prop}{background-color} property directly on the
     QLineEdit, omitting the selector:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 91
+    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 91
 
     To ensure a good contrast, we should also specify a suitable
     color for the text:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 92
+    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 92
 
     It might be a good idea to change the colors used for selected
     text as well:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 93
+    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 93
 
 
     \section2 Customizing Using Dynamic Properties
@@ -3422,7 +3422,7 @@
     \c mandatoryField property on the fly and set it to true. For
     example:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 95
+    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 95
 
     \section2 Customizing a QPushButton Using the Box Model
 

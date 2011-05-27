@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -101,6 +101,7 @@ private slots:
     void testDifferentModels();
 
     void testValidRangesInSelectionsAfterReset();
+    void testChainedSelectionClear();
 
 private:
     QAbstractItemModel *model;
@@ -2653,6 +2654,59 @@ void tst_QItemSelectionModel::testValidRangesInSelectionsAfterReset()
     observer.setSelectionModel(&selectionModel);
 
     model.setStringList(strings);
+}
+
+class DuplicateItemSelectionModel : public QItemSelectionModel
+{
+  Q_OBJECT
+public:
+  DuplicateItemSelectionModel(QItemSelectionModel *target, QAbstractItemModel *model, QObject *parent = 0)
+    : QItemSelectionModel(model, parent), m_target(target)
+  {
+
+  }
+
+  void select(const QItemSelection &selection, QItemSelectionModel::SelectionFlags command)
+  {
+      QItemSelectionModel::select(selection, command);
+      m_target->select(selection, command);
+  }
+
+  using QItemSelectionModel::select;
+
+private:
+  QItemSelectionModel *m_target;
+
+};
+
+void tst_QItemSelectionModel::testChainedSelectionClear()
+{
+    QStringListModel model(QStringList() << "Apples" << "Pears");
+
+    QItemSelectionModel selectionModel(&model, 0);
+    DuplicateItemSelectionModel duplicate(&selectionModel, &model, 0);
+
+    duplicate.select(model.index(0, 0), QItemSelectionModel::Select);
+
+    {
+        QModelIndexList selectedIndexes = selectionModel.selection().indexes();
+        QModelIndexList duplicatedIndexes = duplicate.selection().indexes();
+
+        QVERIFY(selectedIndexes.size() == duplicatedIndexes.size());
+        QVERIFY(selectedIndexes.size() == 1);
+        QVERIFY(selectedIndexes.first() == model.index(0, 0));
+    }
+
+    duplicate.clearSelection();
+
+    {
+        QModelIndexList selectedIndexes = selectionModel.selection().indexes();
+        QModelIndexList duplicatedIndexes = duplicate.selection().indexes();
+
+        QVERIFY(selectedIndexes.size() == duplicatedIndexes.size());
+        QVERIFY(selectedIndexes.size() == 0);
+    }
+
 }
 
 QTEST_MAIN(tst_QItemSelectionModel)

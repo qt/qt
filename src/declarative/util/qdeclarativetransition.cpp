@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -60,24 +60,24 @@ QT_BEGIN_NAMESPACE
     A Transition defines the animations to be applied when a \l State change occurs.
 
     For example, the following \l Rectangle has two states: the default state, and
-    an added "moved" state. In the "moved state, the rectangle's position changes 
+    an added "moved" state. In the "moved state, the rectangle's position changes
     to (50, 50).  The added Transition specifies that when the rectangle
     changes between the default and the "moved" state, any changes
     to the \c x and \c y properties should be animated, using an \c Easing.InOutQuad.
 
     \snippet doc/src/snippets/declarative/transition.qml 0
 
-    Notice the example does not require \l{PropertyAnimation::}{to} and 
+    Notice the example does not require \l{PropertyAnimation::}{to} and
     \l{PropertyAnimation::}{from} values for the NumberAnimation. As a convenience,
     these properties are automatically set to the values of \c x and \c y before
     and after the state change; the \c from values are provided by
     the current values of \c x and \c y, and the \c to values are provided by
-    the PropertyChanges object. If you wish, you can provide \l{PropertyAnimation::}{to} and 
+    the PropertyChanges object. If you wish, you can provide \l{PropertyAnimation::}{to} and
     \l{PropertyAnimation::}{from} values anyway to override the default values.
 
-    By default, a Transition's animations are applied for any state change in the 
-    parent item. The  Transition \l {Transition::}{from} and \l {Transition::}{to} 
-    values can be set to restrict the animations to only be applied when changing 
+    By default, a Transition's animations are applied for any state change in the
+    parent item. The  Transition \l {Transition::}{from} and \l {Transition::}{to}
+    values can be set to restrict the animations to only be applied when changing
     from one particular state to another.
 
     To define multiple transitions, specify \l Item::transitions as a list:
@@ -92,7 +92,7 @@ QT_BEGIN_NAMESPACE
     \l Behavior, the Transition animation overrides the \l Behavior for that
     state change.
 
-    \sa {QML Animation}, {declarative/animation/states}{states example}, {qmlstates}{States}, {QtDeclarative}
+    \sa {QML Animation and Transitions}, {declarative/animation/states}{states example}, {qmlstates}{States}, {QtDeclarative}
 */
 
 //ParallelAnimationWrapper allows us to do a "callback" when the animation finishes, rather than connecting
@@ -111,8 +111,8 @@ class QDeclarativeTransitionPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeTransition)
 public:
-    QDeclarativeTransitionPrivate() 
-    : fromState(QLatin1String("*")), toState(QLatin1String("*")), 
+    QDeclarativeTransitionPrivate()
+    : fromState(QLatin1String("*")), toState(QLatin1String("*")),
       reversed(false), reversible(false), endState(0)
     {
         group.trans = this;
@@ -249,7 +249,7 @@ void QDeclarativeTransition::setFromState(const QString &f)
     is reversed, and it is not necessary to set this property to reverse
     the transition.
 
-    However, if a SequentialAnimation is used, or if the \l from or \l to 
+    However, if a SequentialAnimation is used, or if the \l from or \l to
     properties have been set, this property will need to be set to reverse
     a transition when a state change is reverted. For example, the following
     transition applies a sequential animation when the mouse is pressed,
@@ -257,7 +257,7 @@ void QDeclarativeTransition::setFromState(const QString &f)
 
     \snippet doc/src/snippets/declarative/transition-reversible.qml 0
 
-    If the transition did not set the \c to and \c reversible values, then 
+    If the transition did not set the \c to and \c reversible values, then
     on the mouse release, the transition would play the PropertyAnimation
     before the ColorAnimation instead of reversing the sequence.
 */

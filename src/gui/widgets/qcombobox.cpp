@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -399,7 +399,7 @@ void QComboBoxPrivateContainer::leaveEvent(QEvent *)
 #ifdef Q_WS_MAC
     QStyleOptionComboBox opt = comboStyleOption();
     if (combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo))
-        view->setCurrentIndex(QModelIndex());
+          view->clearSelection();
 #endif
 }
 
@@ -672,8 +672,8 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
             if (vector.manhattanLength() > 9 && blockMouseReleaseTimer.isActive())
                 blockMouseReleaseTimer.stop();
             QModelIndex indexUnderMouse = view->indexAt(m->pos());
-            if (indexUnderMouse.isValid() && indexUnderMouse != view->currentIndex()
-                    && !QComboBoxDelegate::isSeparator(indexUnderMouse)) {
+            if (indexUnderMouse.isValid()
+                     && !QComboBoxDelegate::isSeparator(indexUnderMouse)) {
                 view->setCurrentIndex(indexUnderMouse);
             }
         }
@@ -705,11 +705,13 @@ void QComboBoxPrivateContainer::hideEvent(QHideEvent *)
 {
     emit resetButton();
     combo->update();
+#ifndef QT_NO_GRAPHICSVIEW
     // QGraphicsScenePrivate::removePopup closes the combo box popup, it hides it non-explicitly.
     // Hiding/showing the QComboBox after this will unexpectedly show the popup as well.
     // Re-hiding the popup container makes sure it is explicitly hidden.
     if (QGraphicsProxyWidget *proxy = graphicsProxyWidget())
         proxy->hide();
+#endif
 }
 
 void QComboBoxPrivateContainer::mousePressEvent(QMouseEvent *e)
@@ -945,7 +947,10 @@ QComboBox::QComboBox(bool rw, QWidget *parent, const char *name)
     to set and get item data (e.g., setItemData() and itemText()). You
     can also set a new model and view (with setModel() and setView()).
     For the text and icon in the combobox label, the data in the model
-    that has the Qt::DisplayRole and Qt::DecorationRole is used.
+    that has the Qt::DisplayRole and Qt::DecorationRole is used.  Note
+    that you cannot alter the \l{QAbstractItemView::}{SelectionMode}
+    of the view(), e.g., by using
+    \l{QAbstractItemView::}{setSelectionMode()}.
 
     \image qstyle-comboboxes.png Comboboxes in the different built-in styles.
 
@@ -2358,7 +2363,12 @@ void QComboBox::showPopup()
     initStyleOption(&opt);
     QRect listRect(style->subControlRect(QStyle::CC_ComboBox, &opt,
                                          QStyle::SC_ComboBoxListBoxPopup, this));
+#ifndef Q_WS_S60
     QRect screen = d->popupGeometry(QApplication::desktop()->screenNumber(this));
+#else
+    QRect screen = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
+#endif
+
     QPoint below = mapToGlobal(listRect.bottomLeft());
     int belowHeight = screen.bottom() - below.y();
     QPoint above = mapToGlobal(listRect.topLeft());
@@ -2463,12 +2473,7 @@ void QComboBox::showPopup()
         // available screen geometry.This may override the vertical position, but it is more
         // important to show as much as possible of the popup.
         const int height = !boundToScreen ? listRect.height() : qMin(listRect.height(), screen.height());
-#ifdef Q_WS_S60
-        //popup needs to be stretched with screen minimum dimension
-        listRect.setHeight(qMin(screen.height(), screen.width()));
-#else
         listRect.setHeight(height);
-#endif
 
         if (boundToScreen) {
             if (listRect.top() < screen.top())
@@ -2486,18 +2491,10 @@ void QComboBox::showPopup()
             listRect.setWidth(listRect.height());
             //by default popup is centered on screen in landscape
             listRect.moveCenter(screen.center());
-            if (staConTopRect.IsEmpty()) {
-                TRect cbaRect = TRect();
-                AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EControlPane, cbaRect);
-                AknLayoutUtils::TAknCbaLocation cbaLocation = AknLayoutUtils::CbaLocation();
-                switch (cbaLocation) {
-                case AknLayoutUtils::EAknCbaLocationRight:
-                    listRect.setRight(screen.right());
-                    break;
-                case AknLayoutUtils::EAknCbaLocationLeft:
-                    listRect.setLeft(screen.left());
-                    break;
-                }
+            if (staConTopRect.IsEmpty() && AknLayoutUtils::CbaLocation() != AknLayoutUtils::EAknCbaLocationBottom) {
+                // landscape without stacon, menu should be at the right
+                (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
+                                                     listRect.setLeft(screen.left());
             }
         }
 #endif
@@ -2716,7 +2713,7 @@ void QComboBox::changeEvent(QEvent *e)
             initStyleOption(&opt);
 
             if (style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, this)) {
-                const QRect screen = d->popupGeometry(QApplication::desktop()->screenNumber(this));
+                QRect screen = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
 
                 QRect listRect(style()->subControlRect(QStyle::CC_ComboBox, &opt,
                     QStyle::SC_ComboBoxListBoxPopup, this));
@@ -2731,13 +2728,14 @@ void QComboBox::changeEvent(QEvent *e)
                     listRect.setWidth(listRect.height());
                     //by default popup is centered on screen in landscape
                     listRect.moveCenter(screen.center());
-                    if (staConTopRect.IsEmpty()) {
+                    if (staConTopRect.IsEmpty() && AknLayoutUtils::CbaLocation() != AknLayoutUtils::EAknCbaLocationBottom) {
                         // landscape without stacon, menu should be at the right
                         (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
                                                              listRect.setLeft(screen.left());
                     }
-                    d->container->setGeometry(listRect);
                 }
+                
+                d->container->setGeometry(listRect);
             }
         }
 #endif
@@ -2770,6 +2768,10 @@ void QComboBox::changeEvent(QEvent *e)
 void QComboBox::resizeEvent(QResizeEvent *)
 {
     Q_D(QComboBox);
+#ifdef Q_WS_S60
+    if (d->viewContainer() && d->viewContainer()->isVisible())
+        showPopup();
+#endif
     d->updateLineEditGeometry();
 }
 

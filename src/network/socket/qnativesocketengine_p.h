@@ -7,29 +7,29 @@
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -58,11 +58,6 @@
 #  include "qplatformdefs.h"
 #else
 #  include <winsock2.h>
-#endif
-
-#ifdef Q_OS_SYMBIAN
-#include <private/qeventdispatcher_symbian_p.h>
-#include <unistd.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -101,7 +96,9 @@ union qt_sockaddr {
 };
 
 class QNativeSocketEnginePrivate;
+#ifndef QT_NO_NETWORKINTERFACE
 class QNetworkInterface;
+#endif
 
 class Q_AUTOTEST_EXPORT QNativeSocketEngine : public QAbstractSocketEngine
 {
@@ -124,12 +121,14 @@ public:
     int accept();
     void close();
 
+#ifndef QT_NO_NETWORKINTERFACE
     bool joinMulticastGroup(const QHostAddress &groupAddress,
                             const QNetworkInterface &iface);
     bool leaveMulticastGroup(const QHostAddress &groupAddress,
                              const QNetworkInterface &iface);
     QNetworkInterface multicastInterface() const;
     bool setMulticastInterface(const QNetworkInterface &iface);
+#endif
 
     qint64 bytesAvailable() const;
 
@@ -245,12 +244,14 @@ public:
     bool nativeBind(const QHostAddress &address, quint16 port);
     bool nativeListen(int backlog);
     int nativeAccept();
+#ifndef QT_NO_NETWORKINTERFACE
     bool nativeJoinMulticastGroup(const QHostAddress &groupAddress,
                                   const QNetworkInterface &iface);
     bool nativeLeaveMulticastGroup(const QHostAddress &groupAddress,
                                    const QNetworkInterface &iface);
     QNetworkInterface nativeMulticastInterface() const;
     bool nativeSetMulticastInterface(const QNetworkInterface &iface);
+#endif
     qint64 nativeBytesAvailable() const;
 
     bool nativeHasPendingDatagrams() const;

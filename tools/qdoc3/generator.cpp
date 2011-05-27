@@ -7,29 +7,29 @@
 ** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -549,10 +549,35 @@ void Generator::generateAlsoList(const Node *node, CodeMarker *marker)
 
     if (!alsoList.isEmpty()) {
         Text text;
-        text << Atom::ParaLeft << "See also ";
+        text << Atom::ParaLeft
+             << Atom(Atom::FormattingLeft,ATOM_FORMATTING_BOLD)
+             << "See also "
+             << Atom(Atom::FormattingRight,ATOM_FORMATTING_BOLD);
 
         for (int i = 0; i < alsoList.size(); ++i)
             text << alsoList.at(i) << separator(i, alsoList.size());
+
+        text << Atom::ParaRight;
+        generateText(text, node, marker);
+    }
+}
+
+/*!
+  Generate a list of maintainers in the output
+ */
+void Generator::generateMaintainerList(const InnerNode* node, CodeMarker* marker)
+{
+    QStringList sl = getMetadataElements(node,"maintainer");
+
+    if (!sl.isEmpty()) {
+        Text text;
+        text << Atom::ParaLeft
+             << Atom(Atom::FormattingLeft,ATOM_FORMATTING_BOLD)
+             << "Maintained by: "
+             << Atom(Atom::FormattingRight,ATOM_FORMATTING_BOLD);
+
+        for (int i = 0; i < sl.size(); ++i)
+            text << sl.at(i) << separator(i, sl.size());
 
         text << Atom::ParaRight;
         generateText(text, node, marker);
@@ -566,7 +591,10 @@ void Generator::generateInherits(const ClassNode *classe, CodeMarker *marker)
 
     if (!classe->baseClasses().isEmpty()) {
         Text text;
-        text << Atom::ParaLeft << "Inherits ";
+        text << Atom::ParaLeft
+             << Atom(Atom::FormattingLeft,ATOM_FORMATTING_BOLD)
+             << "Inherits: "
+             << Atom(Atom::FormattingRight,ATOM_FORMATTING_BOLD);
 
         r = classe->baseClasses().begin();
         index = 0;
@@ -604,7 +632,10 @@ void Generator::generateInheritedBy(const ClassNode *classe,
 {
     if (!classe->derivedClasses().isEmpty()) {
         Text text;
-        text << Atom::ParaLeft << "Inherited by ";
+        text << Atom::ParaLeft
+             << Atom(Atom::FormattingLeft,ATOM_FORMATTING_BOLD)
+             << "Inherited by: "
+             << Atom(Atom::FormattingRight,ATOM_FORMATTING_BOLD);
 
         appendSortedNames(text, classe, classe->derivedClasses(), marker);
         text << Atom::ParaRight;
@@ -1273,6 +1304,46 @@ QString Generator::fullName(const Node *node,
 QString Generator::outputPrefix(const QString &nodeType)
 {
     return outputPrefixes[nodeType];
+}
+
+/*!
+  Looks up the tag \a t in the map of metadata values for the
+  current topic in \a inner. If a value for the tag is found,
+  the value is returned.
+
+  \note If \a t is found in the metadata map, it is erased.
+  i.e. Once you call this function for a particular \a t,
+  you consume \a t.
+ */
+QString Generator::getMetadataElement(const InnerNode* inner, const QString& t)
+{
+    QString s;
+    QStringMultiMap& metaTagMap = const_cast<QStringMultiMap&>(inner->doc().metaTagMap());
+    QStringMultiMap::iterator i = metaTagMap.find(t);
+    if (i != metaTagMap.end()) {
+        s = i.value();
+        metaTagMap.erase(i);
+    }
+    return s;
+}
+
+/*!
+  Looks up the tag \a t in the map of metadata values for the
+  current topic in \a inner. If values for the tag are found,
+  they are returned in a string list.
+
+  \note If \a t is found in the metadata map, all the pairs
+  having the key \a t are erased. i.e. Once you call this
+  function for a particular \a t, you consume \a t.
+ */
+QStringList Generator::getMetadataElements(const InnerNode* inner, const QString& t)
+{
+    QStringList s;
+    QStringMultiMap& metaTagMap = const_cast<QStringMultiMap&>(inner->doc().metaTagMap());
+    s = metaTagMap.values(t);
+    if (!s.isEmpty())
+        metaTagMap.remove(t);
+    return s;
 }
 
 QT_END_NAMESPACE

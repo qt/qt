@@ -7,29 +7,29 @@
 ** This file is part of the qmake application of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -1670,21 +1670,21 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
     for (int i = 0; i < project.SingleProjects.count(); ++i) {
         VCFilter filter;
         const VCProjectSingleConfig &singleCfg = project.SingleProjects.at(i);
-        if (filtername == "Root Files") {
+        if (filtername.startsWith("Root Files")) {
             filter = singleCfg.RootFiles;
-        } else if (filtername == "Source Files") {
+        } else if (filtername.startsWith("Source Files")) {
             filter = singleCfg.SourceFiles;
-        } else if (filtername == "Header Files") {
+        } else if (filtername.startsWith("Header Files")) {
             filter = singleCfg.HeaderFiles;
-        } else if (filtername == "Generated Files") {
+        } else if (filtername.startsWith("Generated Files")) {
             filter = singleCfg.GeneratedFiles;
-        } else if (filtername == "LexYacc Files") {
+        } else if (filtername.startsWith("LexYacc Files")) {
             filter = singleCfg.LexYaccFiles;
-        } else if (filtername == "Translation Files") {
+        } else if (filtername.startsWith("Translation Files")) {
             filter = singleCfg.TranslationFiles;
-        } else if (filtername == "Form Files") {
+        } else if (filtername.startsWith("Form Files")) {
             filter = singleCfg.FormFiles;
-        } else if (filtername == "Resource Files") {
+        } else if (filtername.startsWith("Resource Files")) {
             filter = singleCfg.ResourceFiles;
         } else {
             // ExtraCompilers
@@ -1698,7 +1698,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
 
     if ( !fileAdded )
     {
-        if (filtername == "Source Files") {
+        if (filtername.startsWith("Source Files")) {
 
             xmlFilter << tag("ClCompile")
                       << attrTag("Include",Option::fixPathToLocalOS(info.file))
@@ -1707,7 +1707,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
             xml << tag("ClCompile")
                 << attrTag("Include",Option::fixPathToLocalOS(info.file));
 
-        } else if(filtername == "Header Files") {
+        } else if(filtername.startsWith("Header Files")) {
 
             xmlFilter << tag("ClInclude")
                 << attrTag("Include",Option::fixPathToLocalOS(info.file))
@@ -1715,7 +1715,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
 
             xml << tag("ClInclude")
                 << attrTag("Include",Option::fixPathToLocalOS(info.file));
-        } else if(filtername == "Generated Files" || filtername == "Form Files") {
+        } else if(filtername.startsWith("Generated Files") || filtername.startsWith("Form Files")) {
 
             if (info.file.endsWith(".h")) {
 
@@ -1751,7 +1751,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
                     << attrTag("Include",Option::fixPathToLocalOS(info.file));
             }
 
-        } else if(filtername == "Root Files") {
+        } else if(filtername.startsWith("Root Files")) {
 
             if (info.file.endsWith(".rc")) {
 
@@ -1831,7 +1831,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
                 xml << tag("CustomBuild")
                     << attrTag("Include",Option::fixPathToLocalOS(filename));
 
-                if ( filtername == "Form Files" || filtername == "Generated Files" || filtername == "Resource Files" )
+                if ( filtername.startsWith("Form Files") || filtername.startsWith("Generated Files") || filtername.startsWith("Resource Files") )
                     xml << attrTagS("FileType", "Document");
             }
 
@@ -1842,7 +1842,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
         {
             fileAdded = true;
 
-            if (filtername == "Source Files") {
+            if (filtername.startsWith("Source Files")) {
 
                 xmlFilter << tag("ClCompile")
                           << attrTag("Include",Option::fixPathToLocalOS(filename))
@@ -1851,7 +1851,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
                 xml << tag("ClCompile")
                     << attrTag("Include",Option::fixPathToLocalOS(filename));
 
-            } else if(filtername == "Header Files") {
+            } else if(filtername.startsWith("Header Files")) {
 
                 xmlFilter << tag("ClInclude")
                     << attrTag("Include",Option::fixPathToLocalOS(filename))
@@ -1859,7 +1859,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
 
                 xml << tag("ClInclude")
                     << attrTag("Include",Option::fixPathToLocalOS(filename));
-            } else if(filtername == "Generated Files" || filtername == "Form Files") {
+            } else if(filtername.startsWith("Generated Files") || filtername.startsWith("Form Files")) {
 
                 if (filename.endsWith(".h")) {
 
@@ -1894,7 +1894,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
                     xml << tag("CustomBuild")
                         << attrTag("Include",Option::fixPathToLocalOS(filename));
                 }
-            } else if(filtername == "Root Files") {
+            } else if(filtername.startsWith("Root Files")) {
 
                 if (filename.endsWith(".rc")) {
 

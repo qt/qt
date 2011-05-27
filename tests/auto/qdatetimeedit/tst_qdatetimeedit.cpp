@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -275,6 +275,8 @@ private slots:
     void focusNextPrevChild();
 
     void taskQTBUG_12384_timeSpecShowTimeOnly();
+    
+    void deleteCalendarWidget();
 
 private:
     EditorDateEdit* testWidget;
@@ -3429,6 +3431,27 @@ void tst_QDateTimeEdit::taskQTBUG_12384_timeSpecShowTimeOnly()
     QCOMPARE(edit.minimumTime(), QTime(0, 0, 0, 0));
     QCOMPARE(edit.maximumTime(), QTime(23, 59, 59, 999));
     QCOMPARE(edit.time(), time.time());
+}
+
+void tst_QDateTimeEdit::deleteCalendarWidget()
+{
+    {
+        // setup
+        QCalendarWidget *cw = 0;
+        QDateEdit edit;
+        QVERIFY(!edit.calendarWidget());
+        edit.setCalendarPopup(true);
+        QVERIFY(edit.calendarWidget());
+        edit.calendarWidget()->setObjectName("cw1");;
+        
+        // delete
+        cw = edit.calendarWidget();
+        delete cw;
+        
+        // it should create a new widget
+        QVERIFY(edit.calendarWidget());
+        QVERIFY(edit.calendarWidget()->objectName() != "cw1");
+    }
 }
 
 QTEST_MAIN(tst_QDateTimeEdit)

@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -84,6 +84,7 @@ public:
     static void remove(QDeclarativeEngineDebug *, QDeclarativeDebugRootContextQuery *);
     static void remove(QDeclarativeEngineDebug *, QDeclarativeDebugObjectQuery *);
     static void remove(QDeclarativeEngineDebug *, QDeclarativeDebugExpressionQuery *);
+    static void remove(QDeclarativeEngineDebug *, QDeclarativeDebugWatch *);
 
     QHash<int, QDeclarativeDebugEnginesQuery *> enginesQuery;
     QHash<int, QDeclarativeDebugRootContextQuery *> rootContextQuery;
@@ -120,6 +121,41 @@ QDeclarativeEngineDebugPrivate::~QDeclarativeEngineDebugPrivate()
 {
     if (client)
         client->priv = 0;
+    delete client;
+
+    QHash<int, QDeclarativeDebugEnginesQuery*>::iterator enginesIter = enginesQuery.begin();
+    for (; enginesIter != enginesQuery.end(); ++enginesIter) {
+        enginesIter.value()->m_client = 0;
+        if (enginesIter.value()->state() == QDeclarativeDebugQuery::Waiting)
+            enginesIter.value()->setState(QDeclarativeDebugQuery::Error);
+    }
+
+    QHash<int, QDeclarativeDebugRootContextQuery*>::iterator rootContextIter = rootContextQuery.begin();
+    for (; rootContextIter != rootContextQuery.end(); ++rootContextIter) {
+        rootContextIter.value()->m_client = 0;
+        if (rootContextIter.value()->state() == QDeclarativeDebugQuery::Waiting)
+            rootContextIter.value()->setState(QDeclarativeDebugQuery::Error);
+    }
+
+    QHash<int, QDeclarativeDebugObjectQuery*>::iterator objectIter = objectQuery.begin();
+    for (; objectIter != objectQuery.end(); ++objectIter) {
+        objectIter.value()->m_client = 0;
+        if (objectIter.value()->state() == QDeclarativeDebugQuery::Waiting)
+            objectIter.value()->setState(QDeclarativeDebugQuery::Error);
+    }
+
+    QHash<int, QDeclarativeDebugExpressionQuery*>::iterator exprIter = expressionQuery.begin();
+    for (; exprIter != expressionQuery.end(); ++exprIter) {
+        exprIter.value()->m_client = 0;
+        if (exprIter.value()->state() == QDeclarativeDebugQuery::Waiting)
+            exprIter.value()->setState(QDeclarativeDebugQuery::Error);
+    }
+
+    QHash<int, QDeclarativeDebugWatch*>::iterator watchIter = watched.begin();
+    for (; watchIter != watched.end(); ++watchIter) {
+        watchIter.value()->m_client = 0;
+        watchIter.value()->setState(QDeclarativeDebugWatch::Dead);
+    }
 }
 
 int QDeclarativeEngineDebugPrivate::getId()
@@ -157,6 +193,14 @@ void QDeclarativeEngineDebugPrivate::remove(QDeclarativeEngineDebug *c, QDeclara
     if (c && q) {
         QDeclarativeEngineDebugPrivate *p = (QDeclarativeEngineDebugPrivate *)QObjectPrivate::get(c);
         p->expressionQuery.remove(q->m_queryId);
+    }
+}
+
+void QDeclarativeEngineDebugPrivate::remove(QDeclarativeEngineDebug *c, QDeclarativeDebugWatch *w)
+{
+    if (c && w) {
+        QDeclarativeEngineDebugPrivate *p = (QDeclarativeEngineDebugPrivate *)QObjectPrivate::get(c);
+        p->watched.remove(w->m_queryId);
     }
 }
 
@@ -647,6 +691,8 @@ QDeclarativeDebugWatch::QDeclarativeDebugWatch(QObject *parent)
 
 QDeclarativeDebugWatch::~QDeclarativeDebugWatch()
 {
+    if (m_client && m_queryId != -1)
+        QDeclarativeEngineDebugPrivate::remove(m_client, this);
 }
 
 int QDeclarativeDebugWatch::queryId() const

@@ -7,20 +7,20 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of this
-** file.
+** Foundation and appearing in the file included in the packaging of
+** this file.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -99,7 +99,7 @@
 
     If you use \c qmake and Makefiles, use the \c QMAKE_LFLAGS_SONAME setting:
 
-    \snippet doc/src/snippets/code/doc_src_mac-differences.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_mac-differences.pro 0
 
     Alternatively, you can modify the install name using the
     install_name_tool(1) on the command line. See its manpage for more
@@ -165,7 +165,7 @@
     the bundle resides on the disk. The following code returns the
     path of the application bundle:
 
-    \snippet doc/src/snippets/code/doc_src_mac-differences.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_mac-differences.cpp 1
 
     Note: When OS X is set to use Japanese, a bug causes this sequence
     to fail and return an empty string. Therefore, always test the

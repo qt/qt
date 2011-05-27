@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -222,6 +222,8 @@ private slots:
     void task262677remove();
     void QTBUG10404_compareRef();
     void QTBUG9281_arg_locale();
+
+    void toUpperLower_icu();
 };
 
 typedef QList<int> IntList;
@@ -697,11 +699,11 @@ void tst_QString::acc_01()
     QVERIFY(a<=c);
     QVERIFY(!(c<=a));
     QVERIFY(!(d<=a));
-    QCOMPARE(a+b,(QString)"ABCABC");
-    QCOMPARE(a	+"XXXX",(QString)"ABCXXXX");
-    QCOMPARE(a+'X',(QString)"ABCX");
-    QCOMPARE("XXXX"+a,(QString)"XXXXABC");
-    QCOMPARE('X'+a,(QString)"XABC");
+    QCOMPARE(QString(a+b),(QString)"ABCABC");
+    QCOMPARE(QString(a+"XXXX"),(QString)"ABCXXXX");
+    QCOMPARE(QString(a+'X'),(QString)"ABCX");
+    QCOMPARE(QString("XXXX"+a),(QString)"XXXXABC");
+    QCOMPARE(QString('X'+a),(QString)"XABC");
     a = (const char*)0;
     QVERIFY(a.isNull());
     QVERIFY(*a.toLatin1().constData() == '\0');
@@ -1060,12 +1062,12 @@ void tst_QString::indexOf_data()
     QString veryBigHaystack(500, 'a');
     veryBigHaystack += 'B';
     QTest::newRow("BoyerMooreStressTest") << veryBigHaystack << veryBigHaystack << 0 << true << 0;
-    QTest::newRow("BoyerMooreStressTest2") << veryBigHaystack + 'c' << veryBigHaystack << 0 << true << 0;
-    QTest::newRow("BoyerMooreStressTest3") << 'c' + veryBigHaystack << veryBigHaystack << 0 << true << 1;
-    QTest::newRow("BoyerMooreStressTest4") << veryBigHaystack << veryBigHaystack + 'c' << 0 << true << -1;
-    QTest::newRow("BoyerMooreStressTest5") << veryBigHaystack << 'c' + veryBigHaystack << 0 << true << -1;
-    QTest::newRow("BoyerMooreStressTest6") << 'd' + veryBigHaystack << 'c' + veryBigHaystack << 0 << true << -1;
-    QTest::newRow("BoyerMooreStressTest6") << veryBigHaystack + 'c' << 'c' + veryBigHaystack << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest2") << QString(veryBigHaystack + 'c') << veryBigHaystack << 0 << true << 0;
+    QTest::newRow("BoyerMooreStressTest3") << QString('c' + veryBigHaystack) << veryBigHaystack << 0 << true << 1;
+    QTest::newRow("BoyerMooreStressTest4") << veryBigHaystack << QString(veryBigHaystack + 'c') << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest5") << veryBigHaystack << QString('c' + veryBigHaystack) << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest6") << QString('d' + veryBigHaystack) << QString('c' + veryBigHaystack) << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest6") << QString(veryBigHaystack + 'c') << QString('c' + veryBigHaystack) << 0 << true << -1;
 
     QTest::newRow("BoyerMooreInsensitiveStressTest") << veryBigHaystack << veryBigHaystack << 0 << false << 0;
 
@@ -1175,14 +1177,14 @@ void tst_QString::indexOf2_data()
     QString whale = "a5zby6cx7dw8evf9ug0th1si2rj3qkp4lomn";
     QString minnow = "zby";
     QTest::newRow( "data40" ) << whale << minnow << 2;
-    QTest::newRow( "data41" ) << (whale + whale) << minnow << 2;
-    QTest::newRow( "data42" ) << (minnow + whale) << minnow << 0;
+    QTest::newRow( "data41" ) << QString(whale + whale) << minnow << 2;
+    QTest::newRow( "data42" ) << QString(minnow + whale) << minnow << 0;
     QTest::newRow( "data43" ) << whale << whale << 0;
-    QTest::newRow( "data44" ) << (whale + whale) << whale << 0;
-    QTest::newRow( "data45" ) << whale << (whale + whale) << -1;
-    QTest::newRow( "data46" ) << (whale + whale) << (whale + whale) << 0;
-    QTest::newRow( "data47" ) << (whale + whale) << (whale + minnow) << -1;
-    QTest::newRow( "data48" ) << (minnow + whale) << whale << (int)minnow.length();
+    QTest::newRow( "data44" ) << QString(whale + whale) << whale << 0;
+    QTest::newRow( "data45" ) << whale << QString(whale + whale) << -1;
+    QTest::newRow( "data46" ) << QString(whale + whale) << QString(whale + whale) << 0;
+    QTest::newRow( "data47" ) << QString(whale + whale) << QString(whale + minnow) << -1;
+    QTest::newRow( "data48" ) << QString(minnow + whale) << whale << (int)minnow.length();
 }
 
 void tst_QString::indexOf2()
@@ -1603,6 +1605,11 @@ void tst_QString::toUpper()
     QCOMPARE( lower.toUpper(), upper);
 
 
+#ifdef QT_USE_ICU
+    // test doesn't work with ICU support, since QChar is unaware of any locale
+    QEXPECT_FAIL("", "test doesn't work with ICU support, since QChar is unaware of any locale", Continue);
+    QVERIFY(false);
+#else
     for (int i = 0; i < 65536; ++i) {
         QString str(1, QChar(i));
         QString upper = str.toUpper();
@@ -1610,6 +1617,7 @@ void tst_QString::toUpper()
         if (upper.length() == 1)
             QVERIFY(upper == QString(1, QChar(i).toUpper()));
     }
+#endif
 }
 
 void tst_QString::toLower()
@@ -1631,7 +1639,7 @@ void tst_QString::toLower()
     QCOMPARE( QString("`ABYZ{").toLower(), QString("`abyz{"));
     QCOMPARE( QString("`abyz{").toLower(), QString("`abyz{"));
 
-    QCOMPARE( QString(1, QChar(0x130)).toLower(), QString(1, QChar(0x69)) + QChar(0x307));
+    QCOMPARE( QString(1, QChar(0x130)).toLower(), QString(QString(1, QChar(0x69)) + QChar(0x307)));
 
     QString lower;
     lower += QChar(QChar::highSurrogate(0x10428));
@@ -1641,6 +1649,11 @@ void tst_QString::toLower()
     upper += QChar(QChar::lowSurrogate(0x10400));
     QCOMPARE( upper.toLower(), lower);
 
+#ifdef QT_USE_ICU
+    // test doesn't work with ICU support, since QChar is unaware of any locale
+    QEXPECT_FAIL("", "test doesn't work with ICU support, since QChar is unaware of any locale", Continue);
+    QVERIFY(false);
+#else
     for (int i = 0; i < 65536; ++i) {
         QString str(1, QChar(i));
         QString lower = str.toLower();
@@ -1648,6 +1661,7 @@ void tst_QString::toLower()
         if (lower.length() == 1)
             QVERIFY(str.toLower() == QString(1, QChar(i).toLower()));
     }
+#endif
 }
 
 void tst_QString::trimmed()
@@ -4352,6 +4366,8 @@ void tst_QString::localeAwareCompare()
 
 #elif defined (Q_WS_MAC)
     QSKIP("Setting the locale is not supported on OS X (you can set the C locale, but that won't affect CFStringCompare which is used to compare strings)", SkipAll);
+#elif defined(QT_USE_ICU)
+    QLocale::setDefault(QLocale(locale));
 #else
     if (!locale.isEmpty()) {
         const char *newLocale = setlocale(LC_ALL, locale.toLatin1());
@@ -4361,6 +4377,11 @@ void tst_QString::localeAwareCompare()
             return;
         }
     }
+#endif
+
+#ifdef QT_USE_ICU
+    // ### for c1, ICU disagrees with libc on how to compare
+    QEXPECT_FAIL("c1", "ICU disagrees with test", Abort);
 #endif
 
     int testres = QString::localeAwareCompare(s1, s2);
@@ -5065,6 +5086,40 @@ void tst_QString::QTBUG9281_arg_locale()
     QLocale::setDefault(QLocale::C);
 }
 
+void tst_QString::toUpperLower_icu()
+{
+#ifndef QT_USE_ICU
+    QSKIP("Qt was built without ICU support", SkipAll);
+#endif
+
+    QString s = QString::fromLatin1("i");
+
+    QCOMPARE(s.toUpper(), QString::fromLatin1("I"));
+    QCOMPARE(s.toLower(), QString::fromLatin1("i"));
+
+    QLocale::setDefault(QLocale(QLocale::Turkish, QLocale::Turkey));
+
+    // turkish locale has a capital I with a dot (U+0130, utf8 c4b0)
+
+    QCOMPARE(s.toUpper(), QString::fromUtf8("\xc4\xb0"));
+    QCOMPARE(QString::fromUtf8("\xc4\xb0").toLower(), s);
+
+    // nothing should happen here
+    QCOMPARE(s.toLower(), s);
+    QCOMPARE(QString::fromLatin1("I").toUpper(), QString::fromLatin1("I"));
+
+    // U+0131, utf8 c4b1 is the lower-case i without a dot
+    QString sup = QString::fromUtf8("\xc4\xb1");
+
+    QCOMPARE(sup.toUpper(), QString::fromLatin1("I"));
+    QCOMPARE(QString::fromLatin1("I").toLower(), sup);
+
+    // nothing should happen here
+    QCOMPARE(sup.toLower(), sup);
+    QCOMPARE(QString::fromLatin1("i").toLower(), QString::fromLatin1("i"));
+
+    // the cleanup function will restore the default locale
+}
 
 
 QTEST_APPLESS_MAIN(tst_QString)

@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -4628,224 +4628,5 @@ const QGestureEventPrivate *QGestureEvent::d_func() const
 #endif
 
 #endif // QT_NO_GESTURES
-
-/*!
-    \class QScrollPrepareEvent
-    \since 4.8
-    \ingroup events
-
-    \brief The QScrollPrepareEvent class is send in preparation of a scrolling.
-
-    The scroll prepare event is send before scrolling (usually by QScroller) is started.
-    The object receiving this event should set viewportSize, maxContentPos and contentPos.
-    It also should accept this event to indicate that scrolling should be started.
-
-    It is not guaranteed that a QScrollEvent will be send after an acceepted
-    QScrollPrepareEvent, e.g. in a case where the maximum content position is (0,0).
-
-    \sa QScrollEvent, QScroller
-*/
-
-/*!
-    Creates new QScrollPrepareEvent
-    The \a startPos is the position of a touch or mouse event that started the scrolling.
-*/
-QScrollPrepareEvent::QScrollPrepareEvent(const QPointF &startPos)
-    : QEvent(QEvent::ScrollPrepare)
-{
-    d = reinterpret_cast<QEventPrivate *>(new QScrollPrepareEventPrivate());
-    d_func()->startPos = startPos;
-}
-
-/*!
-    Destroys QScrollEvent.
-*/
-QScrollPrepareEvent::~QScrollPrepareEvent()
-{
-    delete reinterpret_cast<QScrollPrepareEventPrivate *>(d);
-}
-
-/*!
-    Returns the position of the touch or mouse event that started the scrolling.
-*/
-QPointF QScrollPrepareEvent::startPos() const
-{
-    return d_func()->startPos;
-}
-
-/*!
-    Returns size of the area that is to be scrolled as set by setViewportSize
-
-    \sa setViewportSize()
-*/
-QSizeF QScrollPrepareEvent::viewportSize() const
-{
-    return d_func()->viewportSize;
-}
-
-/*!
-    Returns the range of coordinates for the content as set by setContentPosRange().
-*/
-QRectF QScrollPrepareEvent::contentPosRange() const
-{
-    return d_func()->contentPosRange;
-}
-
-/*!
-    Returns the current position of the content as set by setContentPos.
-*/
-QPointF QScrollPrepareEvent::contentPos() const
-{
-    return d_func()->contentPos;
-}
-
-
-/*!
-    Sets the size of the area that is to be scrolled to \a size.
-
-    \sa viewportSize()
-*/
-void QScrollPrepareEvent::setViewportSize(const QSizeF &size)
-{
-    d_func()->viewportSize = size;
-}
-
-/*!
-    Sets the range of content coordinates to \a rect.
-
-    \sa contentPosRange()
-*/
-void QScrollPrepareEvent::setContentPosRange(const QRectF &rect)
-{
-    d_func()->contentPosRange = rect;
-}
-
-/*!
-    Sets the current content position to \a pos.
-
-    \sa contentPos()
-*/
-void QScrollPrepareEvent::setContentPos(const QPointF &pos)
-{
-    d_func()->contentPos = pos;
-}
-
-
-/*!
-    \internal
-*/
-QScrollPrepareEventPrivate *QScrollPrepareEvent::d_func()
-{
-    return reinterpret_cast<QScrollPrepareEventPrivate *>(d);
-}
-
-/*!
-    \internal
-*/
-const QScrollPrepareEventPrivate *QScrollPrepareEvent::d_func() const
-{
-    return reinterpret_cast<const QScrollPrepareEventPrivate *>(d);
-}
-
-/*!
-    \class QScrollEvent
-    \since 4.8
-    \ingroup events
-
-    \brief The QScrollEvent class is send when scrolling.
-
-    The scroll event is send to indicate that the receiver should be scrolled.
-    Usually the receiver should be something visual like QWidget or QGraphicsObject.
-
-    Some care should be taken that no conflicting QScrollEvents are sent from two
-    sources. Using QScroller::scrollTo is save however.
-
-    \sa QScrollPrepareEvent, QScroller
-*/
-
-/*!
-    \enum QScrollEvent::ScrollState
-
-    This enum describes the states a scroll event can have.
-
-    \value ScrollStarted Set for the first scroll event of a scroll activity.
-
-    \value ScrollUpdated Set for all but the first and the last scroll event of a scroll activity.
-
-    \value ScrollFinished Set for the last scroll event of a scroll activity.
-
-    \sa QScrollEvent::scrollState()
-*/
-
-/*!
-    Creates a new QScrollEvent
-    \a contentPos is the new content position, \a overshootDistance is the
-    new overshoot distance while \a scrollState indicates if this scroll
-    event is the first one, the last one or some event in between.
-*/
-QScrollEvent::QScrollEvent(const QPointF &contentPos, const QPointF &overshootDistance, ScrollState scrollState)
-    : QEvent(QEvent::Scroll)
-{
-    d = reinterpret_cast<QEventPrivate *>(new QScrollEventPrivate());
-    d_func()->contentPos = contentPos;
-    d_func()->overshoot= overshootDistance;
-    d_func()->state = scrollState;
-}
-
-/*!
-    Destroys QScrollEvent.
-*/
-QScrollEvent::~QScrollEvent()
-{
-    delete reinterpret_cast<QScrollEventPrivate *>(d);
-}
-
-/*!
-    Returns the new scroll position.
-*/
-QPointF QScrollEvent::contentPos() const
-{
-    return d_func()->contentPos;
-}
-
-/*!
-    Returns the new overshoot distance.
-    See QScroller for an explanation of the term overshoot.
-
-    \sa QScroller
-*/
-QPointF QScrollEvent::overshootDistance() const
-{
-    return d_func()->overshoot;
-}
-
-/*!
-    Returns the current scroll state as a combination of ScrollStateFlag values.
-    ScrollStarted (or ScrollFinished) will be set, if this scroll event is the first (or last) event in a scrolling activity.
-    Please note that both values can be set at the same time, if the activity consists of a single QScrollEvent.
-    All other scroll events in between will have their state set to ScrollUpdated.
-
-    A widget could for example revert selections when scrolling is started and stopped.
-*/
-QScrollEvent::ScrollState QScrollEvent::scrollState() const
-{
-    return d_func()->state;
-}
-
-/*!
-    \internal
-*/
-QScrollEventPrivate *QScrollEvent::d_func()
-{
-    return reinterpret_cast<QScrollEventPrivate *>(d);
-}
-
-/*!
-    \internal
-*/
-const QScrollEventPrivate *QScrollEvent::d_func() const
-{
-    return reinterpret_cast<const QScrollEventPrivate *>(d);
-}
 
 QT_END_NAMESPACE

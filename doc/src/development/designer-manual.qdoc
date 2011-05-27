@@ -7,20 +7,20 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of this
-** file.
+** Foundation and appearing in the file included in the packaging of
+** this file.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1385,17 +1385,13 @@
 
 
     \target CreatingAMenu
-    \raw HTML
-    <div style="float: left; margin-right: 2em">
-    \endraw
+    \div {class="float-left"}
     \inlineimage designer-creating-menu1.png
     \inlineimage designer-creating-menu2.png
     \br
     \inlineimage designer-creating-menu3.png
     \inlineimage designer-creating-menu4.png
-    \raw HTML
-    </div>
-    \endraw
+    \enddiv
 
     \section2 Creating a Menu
 
@@ -1410,9 +1406,8 @@
     \key Escape to reject it. You can undo the editing operation later if
     required.
 
-    \raw HTML
-    <div style="clear: both" />
-    \endraw
+    \div {class="clear-both"}
+    \enddiv
 
     Menus can also be rearranged in the menu bar simply by dragging and
     dropping them in the preferred location. A vertical red line indicates the
@@ -1423,17 +1418,13 @@
     navigating the menu structure in the usual way.
 
     \target CreatingAMenuEntry
-    \raw HTML
-    <div style="float: right; margin-left: 2em">
-    \endraw
+    \div {class="float-right"}
     \inlineimage designer-creating-menu-entry1.png
     \inlineimage designer-creating-menu-entry2.png
     \br
     \inlineimage designer-creating-menu-entry3.png
     \inlineimage designer-creating-menu-entry4.png
-    \raw HTML
-    </div>
-    \endraw
+    \enddiv
 
     \section2 Creating a Menu Entry
 
@@ -1453,9 +1444,8 @@
     be accessible via the \l{#TheActionEditor}{Action Editor}, and any
     associated keyboard shortcut can be set there.
 
-    \raw HTML
-    <div style="clear: both" />
-    \endraw
+    \div {class="clear-both"}
+    \enddiv
 
     Just like with menus, entries can be moved around simply by dragging and
     dropping them in the preferred location. When an entry is dragged over a
@@ -1465,13 +1455,9 @@
 
     \section1 Toolbars
 
-    \raw HTML
-    <div style="float: left; margin-right: 2em">
-    \endraw
+    \div {class="float-left"}
     \inlineimage designer-creating-toolbar.png
-    \raw HTML
-    </div>
-    \endraw
+    \enddiv
 
     \section2 Creating and Removing a Toolbar
 
@@ -1483,9 +1469,8 @@
     Toolbars are removed from the form via an entry in the toolbar's context
     menu.
 
-    \raw HTML
-    <div style="clear: both" />
-    \endraw
+    \div {class="clear-both"}
+    \enddiv
 
     \section2 Adding and Removing Toolbar Buttons
 
@@ -1494,14 +1479,10 @@
     Since actions can be represented by menu entries and toolbar buttons,
     they can be moved between menus and toolbars.
 
-    \raw HTML
-    <div style="float: right; margin-left: 2em">
-    \endraw
+    \div {class="float-right"}
     \inlineimage designer-adding-toolbar-action.png
     \inlineimage designer-removing-toolbar-action.png
-    \raw HTML
-    </div>
-    \endraw
+    \enddiv
 
     To share an action between a menu and a toolbar, drag its icon from the
     action editor to the toolbar rather than from the menu where its entry is
@@ -1510,9 +1491,8 @@
 
     Toolbar buttons are removed via the toolbar's context menu.
 
-    \raw HTML
-    <div style="clear: both" />
-    \endraw
+    \div {class="clear-both"}
+    \enddiv
 
     \section1 Actions
 
@@ -1521,13 +1501,9 @@
     action editor window, simplifying the creation and management of actions.
 
     \target TheActionEditor
-    \raw HTML
-    <div style="float: left; margin-right: 2em">
-    \endraw
+    \div {class="float-left"}
     \inlineimage designer-action-editor.png
-    \raw HTML
-    </div>
-    \endraw
+    \enddiv
 
     \section2 The Action Editor
 
@@ -1543,9 +1519,8 @@
     \gui{Detailed View}. You can also copy and paste actions between menus,
     toolbars and forms.
 
-    \raw HTML
-    <div style="clear: both" />
-    \endraw
+    \div {class="clear-both"}
+    \enddiv
 
     \section2 Creating an Action
 
@@ -1560,19 +1535,14 @@
 
     Once the action is created, it can be used wherever actions are applicable.
 
-    \raw HTML
-    <div style="clear: left" />
-    \endraw
+    \div {class="clear-left"}
+    \enddiv
 
     \target AddingAnAction
-    \raw HTML
-    <div style="float: right; margin-left: 2em">
-    \endraw
+    \div {class="float-right"}
     \inlineimage designer-adding-menu-action.png
     \inlineimage designer-adding-toolbar-action.png
-    \raw HTML
-    </div>
-    \endraw
+    \enddiv
 
     \section2 Adding an Action
 
@@ -1584,9 +1554,8 @@
     will be added. Release the mouse button to add the action when you have
     found the right spot.
 
-    \raw HTML
-    <div style="clear: right" />
-    \endraw
+    \div {class="clear-right"}
+    \enddiv
 
     \section1 Dock Widgets
 
@@ -1598,13 +1567,9 @@
 
     \target AddingADockWidget
 
-    \raw HTML
-    <div style="float: left; margin-right: 2em">
-    \endraw
+    \div {class="float-left"}
     \inlineimage designer-adding-dockwidget.png
-    \raw HTML
-    </div>
-    \endraw
+    \enddiv
 
     \section2 Adding a Dock Widget
 
@@ -1623,9 +1588,8 @@
     \l{QDockWidget::}{windowTitle} property. This also helps to identify them on the
     form.
 
-    \raw HTML
-    <div style="clear: both" />
-    \endraw
+    \div {class="clear-both"}
+    \enddiv
 */
 
 
@@ -2044,7 +2008,7 @@ pixmap property in the property editor.
     project file, ensuring that the application is compiled and linked
     appropriately.
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_designer-manual.pro 0
 
     The QUiLoader class provides a form loader object to construct the user
     interface. This user interface can be retrieved from any QIODevice, e.g.,
@@ -2054,7 +2018,7 @@ pixmap property in the property editor.
 
     The QtUiTools module classes can be included using the following directive:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_designer-manual.cpp 1
 
     The QUiLoader::load() function is invoked as shown in this code from the
     \l{Text Finder Example}{Text Finder} example:
@@ -2126,7 +2090,7 @@ pixmap property in the property editor.
     \c setupUi() function to do this, so we only need to declare and
     implement a slot with a name that follows a standard convention:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_designer-manual.cpp 2
 
     Using this convention, we can define and implement a slot that responds to
     mouse clicks on the \gui OK button:
@@ -2588,7 +2552,7 @@ pixmap property in the property editor.
     plugins are also built in release mode. To do this, include the following
     declaration in the plugin's \c{.pro} file:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_designer-manual.pro 3
 
     If plugins are built in a mode that is incompatible with \QD, they will
     not be loaded and installed. For more information about plugins, see the
@@ -2597,7 +2561,7 @@ pixmap property in the property editor.
     It is also necessary to ensure that the plugin is installed together with
     other \QD widget plugins:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_designer-manual.pro 4
 
     The \c $[QT_INSTALL_PLUGINS] variable is a placeholder to the location of
     the installed Qt plugins. You can configure \QD to look for plugins in
@@ -2756,7 +2720,7 @@ pixmap property in the property editor.
     using the Q_INTERFACES() macro in the extension class's definition. For
     example:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 7
+    \snippet doc/src/snippets/code/doc_src_designer-manual.cpp 7
 
     This enables \QD to use the qobject_cast() function to query for supported
     interfaces using a QObject pointer only.
@@ -2791,13 +2755,13 @@ pixmap property in the property editor.
     You can either create a new QExtensionFactory and reimplement the
     QExtensionFactory::createExtension() function:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 8
+    \snippet doc/src/snippets/code/doc_src_designer-manual.cpp 8
 
     or you can use an existing factory, expanding the
     QExtensionFactory::createExtension() function to enable the factory to
     create your custom extension as well:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 9
+    \snippet doc/src/snippets/code/doc_src_designer-manual.cpp 9
 
 
     \section2 Accessing Qt Designer's Extension Manager
@@ -2809,7 +2773,7 @@ pixmap property in the property editor.
     an extension factory is typically made in the
     QDesignerCustomWidgetInterface::initialize() function:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 10
+    \snippet doc/src/snippets/code/doc_src_designer-manual.cpp 10
 
     The \c formEditor parameter in the
     QDesignerCustomWidgetInterface::initialize() function is a pointer to \QD's

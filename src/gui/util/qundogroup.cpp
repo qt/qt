@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -375,15 +375,18 @@ bool QUndoGroup::isClean() const
     for undo, if the group is empty or if none of the stacks are active, this action will
     be disabled.
 
-    If \a prefix is empty, the default prefix "Undo" is used.
+    If \a prefix is empty, the default template "Undo %1" is used instead of prefix.
+    Before Qt 4.8, the prefix "Undo" was used by default.
 
     \sa createRedoAction() canUndo() QUndoCommand::text()
 */
 
 QAction *QUndoGroup::createUndoAction(QObject *parent, const QString &prefix) const
 {
-    QString pref = prefix.isEmpty() ? tr("Undo") : prefix;
-    QUndoAction *result = new QUndoAction(pref, parent);
+    QUndoAction *result = new QUndoAction(prefix, parent);
+    if (prefix.isEmpty())
+        result->setTextFormat(tr("Undo %1"), tr("Undo", "Default text for undo action"));
+
     result->setEnabled(canUndo());
     result->setPrefixedText(undoText());
     connect(this, SIGNAL(canUndoChanged(bool)),
@@ -403,15 +406,18 @@ QAction *QUndoGroup::createUndoAction(QObject *parent, const QString &prefix) co
     for redo, if the group is empty or if none of the stacks are active, this action will
     be disabled.
 
-    If \a prefix is empty, the default prefix "Undo" is used.
+    If \a prefix is empty, the default template "Redo %1" is used instead of prefix.
+    Before Qt 4.8, the prefix "Redo" was used by default.
 
     \sa createUndoAction() canRedo() QUndoCommand::text()
 */
 
 QAction *QUndoGroup::createRedoAction(QObject *parent, const QString &prefix) const
 {
-    QString pref = prefix.isEmpty() ? tr("Redo") : prefix;
-    QUndoAction *result = new QUndoAction(pref, parent);
+    QUndoAction *result = new QUndoAction(prefix, parent);
+    if (prefix.isEmpty())
+        result->setTextFormat(tr("Redo %1"), tr("Redo", "Default text for redo action"));
+
     result->setEnabled(canRedo());
     result->setPrefixedText(redoText());
     connect(this, SIGNAL(canRedoChanged(bool)),

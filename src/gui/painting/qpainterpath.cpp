@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -1126,6 +1126,7 @@ void QPainterPath::addText(const QPointF &point, const QFont &f, const QString &
     QTextEngine *eng = layout.engine();
     layout.beginLayout();
     QTextLine line = layout.createLine();
+    Q_UNUSED(line);
     layout.endLayout();
     const QScriptLine &sl = eng->lines[0];
     if (!sl.length || !eng->layoutData)
@@ -1897,39 +1898,39 @@ static bool qt_painterpath_isect_line_rect(qreal x1, qreal y1, qreal x2, qreal y
     return false;
 }
 
-static bool qt_isect_curve_horizontal(const QBezier &bezier, qreal y, qreal x1, qreal x2)
+static bool qt_isect_curve_horizontal(const QBezier &bezier, qreal y, qreal x1, qreal x2, int depth = 0)
 {
     QRectF bounds = bezier.bounds();
 
     if (y >= bounds.top() && y < bounds.bottom()
         && bounds.right() >= x1 && bounds.left() < x2) {
         const qreal lower_bound = qreal(.01);
-        if (bounds.width() < lower_bound && bounds.height() < lower_bound)
+        if (depth == 32 || (bounds.width() < lower_bound && bounds.height() < lower_bound))
             return true;
 
         QBezier first_half, second_half;
         bezier.split(&first_half, &second_half);
-        if (qt_isect_curve_horizontal(first_half, y, x1, x2)
-            || qt_isect_curve_horizontal(second_half, y, x1, x2))
+        if (qt_isect_curve_horizontal(first_half, y, x1, x2, depth + 1)
+            || qt_isect_curve_horizontal(second_half, y, x1, x2, depth + 1))
             return true;
     }
     return false;
 }
 
-static bool qt_isect_curve_vertical(const QBezier &bezier, qreal x, qreal y1, qreal y2)
+static bool qt_isect_curve_vertical(const QBezier &bezier, qreal x, qreal y1, qreal y2, int depth = 0)
 {
     QRectF bounds = bezier.bounds();
 
     if (x >= bounds.left() && x < bounds.right()
         && bounds.bottom() >= y1 && bounds.top() < y2) {
         const qreal lower_bound = qreal(.01);
-        if (bounds.width() < lower_bound && bounds.height() < lower_bound)
+        if (depth == 32 || (bounds.width() < lower_bound && bounds.height() < lower_bound))
             return true;
 
         QBezier first_half, second_half;
         bezier.split(&first_half, &second_half);
-        if (qt_isect_curve_vertical(first_half, x, y1, y2)
-            || qt_isect_curve_vertical(second_half, x, y1, y2))
+        if (qt_isect_curve_vertical(first_half, x, y1, y2, depth + 1)
+            || qt_isect_curve_vertical(second_half, x, y1, y2, depth + 1))
             return true;
     }
      return false;

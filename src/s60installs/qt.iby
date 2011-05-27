@@ -15,7 +15,6 @@ file=ABI_DIR\BUILD_DIR\QtXml.dll             SHARED_LIB_DIR\QtXml.dll
 file=ABI_DIR\BUILD_DIR\QtNetwork.dll         SHARED_LIB_DIR\QtNetwork.dll
 file=ABI_DIR\BUILD_DIR\QtScript.dll          SHARED_LIB_DIR\QtScript.dll
 file=ABI_DIR\BUILD_DIR\QtTest.dll            SHARED_LIB_DIR\QtTest.dll
-file=ABI_DIR\BUILD_DIR\QtWebKit.dll          SHARED_LIB_DIR\QtWebKit.dll
 file=ABI_DIR\BUILD_DIR\phonon.dll            SHARED_LIB_DIR\phonon.dll
 file=ABI_DIR\BUILD_DIR\QtMultimedia.dll      SHARED_LIB_DIR\QtMultimedia.dll
 file=ABI_DIR\BUILD_DIR\QtXmlPatterns.dll     SHARED_LIB_DIR\QtXmlPatterns.dll
@@ -40,14 +39,8 @@ file=ABI_DIR\BUILD_DIR\qtwcodecs.dll         SHARED_LIB_DIR\qtwcodecs.dll
 file=ABI_DIR\BUILD_DIR\qsvgicon.dll          SHARED_LIB_DIR\qsvgicon.dll
 
 // Phonon MMF backend
-// This is commented out by default, as normally Helix backend will be used.
-// If the Helix backend is present, it will override MMF backend, so make sure to remove it from
-// image creation in addition to uncommenting the following lines if you want to use MMF backend.
-//file=ABI_DIR\BUILD_DIR\phonon_mmf.dll        SHARED_LIB_DIR\phonon_mmf.dll
-//data=\epoc32\data\z\resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin
-
-// QtMultimedia audio backend
-file=ABI_DIR\BUILD_DIR\qaudio.dll            SHARED_LIB_DIR\qaudio.dll
+file=ABI_DIR\BUILD_DIR\phonon_mmf.dll        SHARED_LIB_DIR\phonon_mmf.dll
+data=\epoc32\data\z\resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin
 
 // graphicssystems
 file=ABI_DIR\BUILD_DIR\qvggraphicssystem.dll SHARED_LIB_DIR\qvggraphicssystem.dll
@@ -59,8 +52,6 @@ file=ABI_DIR\BUILD_DIR\qsymbianbearer.dll    SHARED_LIB_DIR\qsymbianbearer.dll
 // S60 version compatibility plugins for 5.0 (3.1 and 3.2 devices are never likely to have this in ROM,
 // so don't bother including those plugins
 file=ABI_DIR\BUILD_DIR\qts60plugin_5_0.dll   SHARED_LIB_DIR\qts60plugin_5_0.dll
-
-S60_APP_RESOURCE(s60main)
 
 // imageformats stubs
 data=\epoc32\data\z\resource\qt\plugins\imageformats\qgif.qtplugin         resource\qt\plugins\imageformats\qgif.qtplugin
@@ -80,23 +71,17 @@ data=\epoc32\data\z\resource\qt\plugins\codecs\qtwcodecs.qtplugin          resou
 data=\epoc32\data\z\resource\qt\plugins\iconengines\qsvgicon.qtplugin      resource\qt\plugins\iconengines\qsvgicon.qtplugin
 
 // qml import plugins
-file=ABI_DIR\BUILD_DIR\qmlwebkitplugin.dll      SHARED_LIB_DIR\qmlwebkitplugin.dll
 file=ABI_DIR\BUILD_DIR\qmlfolderlistmodelplugin.dll      SHARED_LIB_DIR\qmlfolderlistmodelplugin.dll
 file=ABI_DIR\BUILD_DIR\qmlgesturesplugin.dll      SHARED_LIB_DIR\qmlgesturesplugin.dll
 file=ABI_DIR\BUILD_DIR\qmlparticlesplugin.dll      SHARED_LIB_DIR\qmlparticlesplugin.dll
 
-data=\epoc32\data\z\resource\qt\imports\QtWebKit\qmlwebkitplugin.qtplugin    resource\qt\imports\QtWebKit\qmlwebkitplugin.qtplugin
 data=\epoc32\data\z\resource\qt\imports\Qt\labs\folderlistmodel\qmlfolderlistmodelplugin.qtplugin    resource\qt\imports\Qt\labs\folderlistmodel\qmlfolderlistmodelplugin.qtplugin
 data=\epoc32\data\z\resource\qt\imports\Qt\labs\gestures\qmlgesturesplugin.qtplugin    resource\qt\imports\Qt\labs\gestures\qmlgesturesplugin.qtplugin
 data=\epoc32\data\z\resource\qt\imports\Qt\labs\particles\qmlparticlesplugin.qtplugin    resource\qt\imports\Qt\labs\particles\qmlparticlesplugin.qtplugin
 
-data=\epoc32\data\z\resource\qt\imports\QtWebKit\qmldir    resource\qt\imports\QtWebKit\qmldir
 data=\epoc32\data\z\resource\qt\imports\Qt\labs\folderlistmodel\qmldir    resource\qt\imports\Qt\labs\folderlistmodel\qmldir
 data=\epoc32\data\z\resource\qt\imports\Qt\labs\gestures\qmldir    resource\qt\imports\Qt\labs\gestures\qmldir
 data=\epoc32\data\z\resource\qt\imports\Qt\labs\particles\qmldir    resource\qt\imports\Qt\labs\particles\qmldir
-
-// QtMultimedia audio backend
-data=\epoc32\data\qt\qtlibspluginstubs\qaudio.qtplugin resource\qt\plugins\audio\qaudio.qtplugin
 
 // graphicssystems
 data=\epoc32\data\z\resource\qt\plugins\graphicssystems\qvggraphicssystem.qtplugin      resource\qt\plugins\graphicssystems\qvggraphicssystem.qtplugin
@@ -107,7 +92,6 @@ data=\epoc32\data\z\resource\qt\plugins\bearer\qsymbianbearer.qtplugin resource\
 
 // Stub sis file
 data=ZSYSTEM\install\qt_stub.sis    System\Install\qt_stub.sis
-data=ZSYSTEM\install\qtwebkit_stub.sis    System\Install\qtwebkit_stub.sis
 
 #endif // __QT_IBY__
 

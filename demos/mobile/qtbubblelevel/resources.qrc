@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/BubbleLevel.qml</file>
+        <file>qml/Tube.qml</file>
+        <file>qml/Button.qml</file>
+        <file>qml/images/taskswitcher.png</file>
+        <file>qml/images/exit.png</file>
+        <file>qml/images/board.png</file>
+        <file>qml/images/bubble.png</file>
+        <file>qml/images/scale.png</file>
+        <file>qml/images/reflection.png</file>
+        <file>qml/images/signwithtext.png</file>
+        <file>qml/images/calibbutton.png</file>
+        <file>qml/images/signblank.png</file>
+    </qresource>
+</RCC>

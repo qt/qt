@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -345,6 +345,7 @@ private slots:
     void immediateRepaintAfterInvalidateBuffer();
 #endif
     void effectiveWinId();
+    void effectiveWinId2();
     void customDpi();
     void customDpiProperty();
 
@@ -4738,7 +4739,8 @@ void tst_QWidget::update()
         QCOMPARE(w.visibleRegion(), expectedVisible);
         QCOMPARE(w.paintedRegion, expectedVisible);
 #ifdef QT_MAC_USE_COCOA
-        QEXPECT_FAIL(0, "Cocoa compositor says to paint this.", Continue);
+        if (QApplicationPrivate::graphics_system_name != QLatin1String("raster"))
+            QEXPECT_FAIL(0, "Cocoa compositor says to paint this.", Continue);
 #endif
         QCOMPARE(child.numPaintEvents, 0);
 
@@ -6336,11 +6338,15 @@ void tst_QWidget::compatibilityChildInsertedEvents()
         expected =
             EventRecorder::EventList()
             << qMakePair(&widget, QEvent::PolishRequest)
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60) || defined(Q_WS_QPA)
-            << qMakePair(&widget, QEvent::UpdateRequest)
-#endif
-            ;
+            << qMakePair(&widget, QEvent::Type(QEvent::User + 1));
+
+#ifndef QT_MAC_USE_CARBON
+#ifdef QT_MAC_USE_COCOA
+        if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
+#endif // QT_MAC_USE_COCOA
+            expected << qMakePair(&widget, QEvent::UpdateRequest);
+#endif // !QT_MAC_USE_CARBON
+
         QCOMPARE(spy.eventList(), expected);
     }
 
@@ -6432,11 +6438,15 @@ void tst_QWidget::compatibilityChildInsertedEvents()
 #endif
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60) || defined(Q_WS_QPA)
-            << qMakePair(&widget, QEvent::UpdateRequest)
-#endif
-            ;
+            << qMakePair(&widget, QEvent::Type(QEvent::User + 2));
+
+#ifndef QT_MAC_USE_CARBON
+#ifdef QT_MAC_USE_COCOA
+        if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
+#endif // QT_MAC_USE_COCOA
+            expected << qMakePair(&widget, QEvent::UpdateRequest);
+#endif // !QT_MAC_USE_CARBON
+
         QCOMPARE(spy.eventList(), expected);
     }
 
@@ -6528,11 +6538,15 @@ void tst_QWidget::compatibilityChildInsertedEvents()
 #endif
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60) || defined(Q_WS_QPA)
-            << qMakePair(&widget, QEvent::UpdateRequest)
-#endif
-            ;
+            << qMakePair(&widget, QEvent::Type(QEvent::User + 2));
+
+#ifndef QT_MAC_USE_CARBON
+#ifdef QT_MAC_USE_COCOA
+        if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
+#endif // QT_MAC_USE_COCOA
+            expected << qMakePair(&widget, QEvent::UpdateRequest);
+#endif // !QT_MAC_USE_CARBON
+
         QCOMPARE(spy.eventList(), expected);
     }
 }
@@ -8479,6 +8493,30 @@ void tst_QWidget::effectiveWinId()
 
     QVERIFY(parent.effectiveWinId());
     QVERIFY(child.effectiveWinId());
+}
+
+void tst_QWidget::effectiveWinId2()
+{
+    QWidget parent;
+
+    class MyWidget : public QWidget {
+        bool event(QEvent *e)
+        {
+            if (e->type() == QEvent::WinIdChange) {
+                // Shouldn't crash.
+                effectiveWinId();
+            }
+
+            return QWidget::event(e);
+        }
+    };
+
+    MyWidget child;
+    child.setParent(&parent);
+    parent.show();
+
+    child.setParent(0);
+    child.setParent(&parent);
 }
 
 class CustomWidget : public QWidget

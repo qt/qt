@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -102,7 +102,7 @@ int QTextureGlyphCache::calculateSubPixelPositionCount(glyph_t glyph) const
 
 QFixed QTextureGlyphCache::subPixelPositionForX(QFixed x) const
 {
-    if (m_subPixelPositionCount == 0)
+    if (m_subPixelPositionCount <= 1)
         return QFixed();
 
     QFixed subPixelPosition;
@@ -134,9 +134,13 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         if (!supportsSubPixelPositions) {
             m_subPixelPositionCount = 1;
         } else {
+#if !defined(Q_WS_X11)
             int i = 0;
             while (m_subPixelPositionCount == 0 && i < numGlyphs)
                 m_subPixelPositionCount = calculateSubPixelPositionCount(glyphs[i++]);
+#else
+            m_subPixelPositionCount = 4;
+#endif
         }
     }
 
@@ -164,7 +168,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
             continue;
         if (listItemCoordinates.contains(GlyphAndSubPixelPosition(glyph, subPixelPosition)))
             continue;
-        glyph_metrics_t metrics = fontEngine->alphaMapBoundingBox(glyph, m_transform, format);
+        glyph_metrics_t metrics = fontEngine->alphaMapBoundingBox(glyph, subPixelPosition, m_transform, format);
 
 #ifdef CACHE_DEBUG
         printf("(%4x): w=%.2f, h=%.2f, xoff=%.2f, yoff=%.2f, x=%.2f, y=%.2f\n",
@@ -234,6 +238,11 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
             }
         }
 
+        if (maxTextureHeight() > 0 && m_cy + c.h > maxTextureHeight()) {
+            // We can't make a cache of the required size, so we bail out
+            return false;
+        }
+
         c.x = m_cx;
         c.y = m_cy;
 
@@ -287,7 +296,7 @@ void QTextureGlyphCache::fillInPendingGlyphs()
 QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g, QFixed subPixelPosition) const
 {
 #if defined(Q_WS_X11)
-    if (m_transform.type() > QTransform::TxTranslate) {
+    if (m_transform.type() > QTransform::TxTranslate && m_current_fontengine->type() == QFontEngine::Freetype) {
         QFontEngineFT::GlyphFormat format = QFontEngineFT::Format_None;
         QImage::Format imageFormat = QImage::Format_Invalid;
         switch (m_type) {
@@ -307,9 +316,11 @@ QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g, QFixed subPixelPosition
 
         QFontEngineFT *ft = static_cast<QFontEngineFT*> (m_current_fontengine);
         QFontEngineFT::QGlyphSet *gset = ft->loadTransformedGlyphSet(m_transform);
+        QFixedPoint positions[1];
+        positions[0].x = subPixelPosition;
 
-        if (gset && ft->loadGlyphs(gset, &g, 1, format)) {
-            QFontEngineFT::Glyph *glyph = gset->getGlyph(g);
+        if (gset && ft->loadGlyphs(gset, &g, 1, positions, format)) {
+            QFontEngineFT::Glyph *glyph = gset->getGlyph(g, subPixelPosition);
             const int bytesPerLine = (format == QFontEngineFT::Format_Mono ? ((glyph->width + 31) & ~31) >> 3
                                : (glyph->width + 3) & ~3);
             return QImage(glyph->data, glyph->width, glyph->height, bytesPerLine, imageFormat);
@@ -356,7 +367,7 @@ void QImageTextureGlyphCache::createTextureData(int width, int height)
 
 int QImageTextureGlyphCache::glyphMargin() const
 {
-#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+#if (defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)) || defined(Q_WS_X11)
     return 0;
 #else
     return m_type == QFontEngineGlyphCache::Raster_RGBMask ? 2 : 0;

@@ -7,20 +7,20 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of this
-** file.
+** Foundation and appearing in the file included in the packaging of
+** this file.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,16 +58,16 @@
     新しい行を作り、\c{SOURCES +=}、続いて hello.cpp を入力します。
     つまり、以下のようになります:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 108
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 108
 
     これを以下のようになるまでプロジェクトの各ソースファイルに対して行います:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 109
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 109
 
     make に似たシンタックスを使いたい場合は、
     以下のように改行をエスケープしてすべてのファイルを 1 行に書きます:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 110
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 110
 
     ソースファイルの一覧をプロジェクトファイルに追加しました。
     次にヘッダファイルを追加します。
@@ -77,7 +77,7 @@
 
     これを終えると、プロジェクトファイルは以下のようになるでしょう:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 111
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 111
 
     ターゲットの名前は自動的に設定され、
     プロジェクトファイルと同じ名前になります。
@@ -86,7 +86,7 @@
     ターゲットは Windows では \c hello.exe 、Unix では \c hello になります。
     プロジェクトファイルで別の名前を指定することもできます:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 112
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 112
 
     最後に \l{qmake Variable Reference#CONFIG}{CONFIG} 変数を設定します。
     このアプリケーションは Qt アプリケーションなので \c CONFIG に
@@ -96,19 +96,19 @@
 
     最終的なプロジェクトファイルは以下のようになります:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 113
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 113
 
     \c qmake を使って、このアプリケーションのための Makefile を生成します。
     プロジェクトのディレクトリでコマンドラインに次のように入力します:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 114
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 114
 
     そして、使用するコンパイラによって \c make または \c nmake を入力します。
 
     Visual Studio ユーザの場合、\c qmake は、以下のように
     \c .dsp ファイルまたは \c .vcproj ファイルも作成できます:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 115
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 115
 
     \section1 アプリケーションをデバッグできるようにする
 
@@ -119,7 +119,7 @@
 
     たとえば:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 116
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 116
 
     直前の例と同様に、Makefile を生成するには \c qmake を使います。
     アプリケーションをデバッグ環境で実行する際に役に立つ情報を得られるようになります。
@@ -137,7 +137,7 @@
 
     Windows 用のファイルを追加するシンプルなスコープは以下のようになります:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 117
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 117
 
     \c qmake が Windows 上で実行されると、ソースファイルのリストに
     \c hellowin.cpp が追加されます。
@@ -146,7 +146,7 @@
 
     これを終えると、プロジェクトファイルは以下のようになります:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 118
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 118
 
     これまでと同様に、Makefile を生成するには \c qmake を使います。
 
@@ -159,13 +159,13 @@
     使い方はスコープの条件をこれらの関数で置き換えるだけです。
     \c main.cpp ファイルの確認は以下のようになります :
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 119
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 119
 
     記号 \c{!} はテストを否定します。
     つまり \c{exists( main.cpp )} はファイルが存在する場合に真になり、
     \c{!exists( main.cpp )} はファイルが存在しない場合に真になります。
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 120
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 120
 
     前と同様に、\c qmake を実行して Makefile を生成します。
     仮に \c main.cpp の名前を変更すると、上記のメッセージが表示され、
@@ -185,12 +185,12 @@
     まず 1 つのスコープを作成し、その中にもう 1 つスコープを作成します。
     そして 2 つのスコープの中に設定を書きます。例えば:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 121
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 121
 
     ネストされたスコープはコロンを使ってつなぐことができます。
     最終的なプロジェクトファイルは以下のようになります:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 122
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 122
 
     以上です。\c qmake のチュートリアルが終了しました。
     それでは、あなたの開発プロジェクトのプロジェクトファイルを作成してみましょう。

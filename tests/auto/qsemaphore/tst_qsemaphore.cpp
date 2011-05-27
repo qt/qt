@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -244,6 +244,8 @@ void tst_QSemaphore::tryAcquireWithTimeout()
     QSemaphore semaphore;
     QTime time;
 
+#define QVERIFYGE(a,b) {int e = a; if (a<b) qDebug() << #a << "=" << e << " !>= " << #b << "=" << b; QVERIFY(e>=b);}
+#define QVERIFYLE(a,b) {int e = a; if (b<a) qDebug() << #a << "=" << e << " !<= " << #b << "=" << b; QVERIFY(e<=b);}
 
     QCOMPARE(semaphore.available(), 0);
 
@@ -251,69 +253,69 @@ void tst_QSemaphore::tryAcquireWithTimeout()
     QCOMPARE(semaphore.available(), 1);
     time.start();
     QVERIFY(!semaphore.tryAcquire(2, timeout));
-    QVERIFY(time.elapsed() >= timeout);
+    QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 1);
 
     semaphore.release();
     QCOMPARE(semaphore.available(), 2);
     time.start();
     QVERIFY(!semaphore.tryAcquire(3, timeout));
-    QVERIFY(time.elapsed() >= timeout);
+    QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 2);
 
     semaphore.release(10);
     QCOMPARE(semaphore.available(), 12);
     time.start();
     QVERIFY(!semaphore.tryAcquire(100, timeout));
-    QVERIFY(time.elapsed() >= timeout);
+    QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 12);
 
     semaphore.release(10);
     QCOMPARE(semaphore.available(), 22);
     time.start();
     QVERIFY(!semaphore.tryAcquire(100, timeout));
-    QVERIFY(time.elapsed() >= timeout);
+    QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 22);
 
     time.start();
     QVERIFY(semaphore.tryAcquire(1, timeout));
-    QVERIFY(time.elapsed() <= timeout);
+    QVERIFYLE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 21);
 
     time.start();
     QVERIFY(semaphore.tryAcquire(1, timeout));
-    QVERIFY(time.elapsed() <= timeout);
+    QVERIFYLE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 20);
 
     time.start();
     QVERIFY(semaphore.tryAcquire(10, timeout));
-    QVERIFY(time.elapsed() <= timeout);
+    QVERIFYLE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 10);
 
     time.start();
     QVERIFY(semaphore.tryAcquire(10, timeout));
-    QVERIFY(time.elapsed() <= timeout);
+    QVERIFYLE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 0);
 
     // should not be able to acquire more
     time.start();
     QVERIFY(!semaphore.tryAcquire(1, timeout));
-    QVERIFY(time.elapsed() >= timeout);
+    QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 0);
 
     time.start();
     QVERIFY(!semaphore.tryAcquire(1, timeout));
-    QVERIFY(time.elapsed() >= timeout);
+    QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 0);
 
     time.start();
     QVERIFY(!semaphore.tryAcquire(10, timeout));
-    QVERIFY(time.elapsed() >= timeout);
+    QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 0);
 
     time.start();
     QVERIFY(!semaphore.tryAcquire(10, timeout));
-    QVERIFY(time.elapsed() >= timeout);
+    QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 0);
 }
 

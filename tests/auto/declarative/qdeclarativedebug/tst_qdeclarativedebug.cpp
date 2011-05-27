@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -65,7 +65,6 @@
 #include "../shared/debugutil_p.h"
 
 Q_DECLARE_METATYPE(QDeclarativeDebugWatch::State)
-
 
 class tst_QDeclarativeDebug : public QObject
 {
@@ -118,6 +117,18 @@ private slots:
     void queryObjectTree();
     void setBindingInStates();
 };
+
+class NonScriptProperty : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(int nonScriptProp READ nonScriptProp WRITE setNonScriptProp NOTIFY nonScriptPropChanged SCRIPTABLE false)
+public:
+    int nonScriptProp() const { return 0; }
+    void setNonScriptProp(int) {}
+signals:
+    void nonScriptPropChanged();
+};
+QML_DECLARE_TYPE(NonScriptProperty)
+
 
 QDeclarativeDebugObjectReference tst_QDeclarativeDebug::findRootObject(int context, bool recursive)
 {
@@ -283,6 +294,7 @@ void tst_QDeclarativeDebug::compareProperties(const QDeclarativeDebugPropertyRef
 void tst_QDeclarativeDebug::initTestCase()
 {
     qRegisterMetaType<QDeclarativeDebugWatch::State>();
+    qmlRegisterType<NonScriptProperty>("Test", 1, 0, "NonScriptPropertyElement");
 
     QTest::ignoreMessage(QtWarningMsg, "Qml debugging is enabled. Only use this in a safe environment!");
     QDeclarativeDebugHelper::enableDebugging();
@@ -292,7 +304,8 @@ void tst_QDeclarativeDebug::initTestCase()
 
     QList<QByteArray> qml;
     qml << "import QtQuick 1.0\n"
-            "Item {"
+           "import Test 1.0\n"
+           "Item {"
                 "id: root\n"
                 "width: 10; height: 20; scale: blueRect.scale;"
                 "Rectangle { id: blueRect; width: 500; height: 600; color: \"blue\"; }"
@@ -307,6 +320,8 @@ void tst_QDeclarativeDebug::initTestCase()
                     "var list = varObjList;\n"
                     "list[0] = blueRect;\n"
                     "varObjList = list;\n"
+                "}\n"
+                "NonScriptPropertyElement {\n"
                 "}\n"
             "}";
 
@@ -649,7 +664,13 @@ void tst_QDeclarativeDebug::queryAvailableEngines()
         QCOMPARE(e.name(), m_engine->objectName());
     }
 
+    // Make query invalid by deleting client
+    q_engines = m_dbg->queryAvailableEngines(this);
+    QCOMPARE(q_engines->state(), QDeclarativeDebugQuery::Waiting);
+    delete m_dbg;
+    QCOMPARE(q_engines->state(), QDeclarativeDebugQuery::Error);
     delete q_engines;
+    m_dbg = new QDeclarativeEngineDebug(m_conn, this);
 }
 
 void tst_QDeclarativeDebug::queryRootContexts()
@@ -657,6 +678,7 @@ void tst_QDeclarativeDebug::queryRootContexts()
     QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);
     int engineId = q_engines->engines()[0].debugId();
+    delete q_engines;
 
     QDeclarativeDebugRootContextQuery *q_context;
 
@@ -688,8 +710,13 @@ void tst_QDeclarativeDebug::queryRootContexts()
     QVERIFY(context.contexts()[0].debugId() >= 0);
     QCOMPARE(context.contexts()[0].name(), QString("tst_QDeclarativeDebug_childContext"));
 
-    delete q_engines;
+    // Make query invalid by deleting client
+    q_context = m_dbg->queryRootContexts(engineId, this);
+    QCOMPARE(q_context->state(), QDeclarativeDebugQuery::Waiting);
+    delete m_dbg;
+    QCOMPARE(q_context->state(), QDeclarativeDebugQuery::Error);
     delete q_context;
+    m_dbg = new QDeclarativeEngineDebug(m_conn, this);
 }
 
 void tst_QDeclarativeDebug::queryObject()
@@ -721,12 +748,19 @@ void tst_QDeclarativeDebug::queryObject()
 
     delete q_engines;
     delete q_context;
+
+    // Make query invalid by deleting client
+    q_obj = recursive ? m_dbg->queryObjectRecursive(rootObject, this) : m_dbg->queryObject(rootObject, this);
+    QCOMPARE(q_obj->state(), QDeclarativeDebugQuery::Waiting);
+    delete m_dbg;
+    QCOMPARE(q_obj->state(), QDeclarativeDebugQuery::Error);
     delete q_obj;
+    m_dbg = new QDeclarativeEngineDebug(m_conn, this);
 
     // check source as defined in main()
     QDeclarativeDebugFileReference source = obj.source();
     QCOMPARE(source.url(), QUrl::fromLocalFile(""));
-    QCOMPARE(source.lineNumber(), 2);
+    QCOMPARE(source.lineNumber(), 3);
     QCOMPARE(source.columnNumber(), 1);
 
     // generically test all properties, children and childrens' properties
@@ -796,7 +830,14 @@ void tst_QDeclarativeDebug::queryExpressionResult()
 
     delete q_engines;
     delete q_context;
+
+    // Make query invalid by deleting client
+    q_expr = m_dbg->queryExpressionResult(objectId, expr, this);
+    QCOMPARE(q_expr->state(), QDeclarativeDebugQuery::Waiting);
+    delete m_dbg;
+    QCOMPARE(q_expr->state(), QDeclarativeDebugQuery::Error);
     delete q_expr;
+    m_dbg = new QDeclarativeEngineDebug(m_conn, this);
 }
 
 void tst_QDeclarativeDebug::queryExpressionResult_data()
@@ -986,7 +1027,7 @@ void tst_QDeclarativeDebug::setBindingForObject()
     // set handler
     //
     rootObject = findRootObject();
-    QCOMPARE(rootObject.children().size(), 3);
+    QCOMPARE(rootObject.children().size(), 5); // Rectangle, Text, MouseArea, Component.onCompleted, NonScriptPropertyElement
     QDeclarativeDebugObjectReference mouseAreaObject = rootObject.children().at(2);
     QDeclarativeDebugObjectQuery *q_obj = m_dbg->queryObjectRecursive(mouseAreaObject, this);
     waitForQuery(q_obj);

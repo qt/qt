@@ -7,20 +7,20 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of this
-** file.
+** Foundation and appearing in the file included in the packaging of
+** this file.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -28,11 +28,16 @@
 /*!
 \target qmlfocus
 \page qdeclarativefocus.html
+\ingroup qml-features
+\contentspage QML Features
+\previouspage {QML Text Handling and Validators}{Text Handling and Validators}
+\nextpage {QML Signal and Handler Event System}{Signal and Handler Event System}
+
 \title Keyboard Focus in QML
 
 When a key is pressed or released, a key event is generated and delivered to the
 focused QML \l Item. To facilitate the construction of reusable components
-and to address some of the cases unique to fluid user interfaces, the QML items add a
+and to address some of the cases unique to fluid user interfaces, the QML items add aged
 \e scope based extension to Qt's traditional keyboard focus model.
 
 \tableofcontents

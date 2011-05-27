@@ -7,29 +7,29 @@
 ** This file is part of the QtOpenVG module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -76,9 +76,6 @@ QT_BEGIN_NAMESPACE
 static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
 
 #if !defined(QVG_NO_DRAW_GLYPHS)
-
-Q_GUI_EXPORT int qt_defaultDpiX();
-Q_GUI_EXPORT int qt_defaultDpiY();
 
 class QVGPaintEnginePrivate;
 
@@ -175,6 +172,9 @@ public:
 
     bool forcePenChange;    // Force a pen change, even if the same.
     bool forceBrushChange;  // Force a brush change, even if the same.
+
+    bool hasExtendedRadialGradientPen; // Current pen's brush is extended radial gradient.
+    bool hasExtendedRadialGradientBrush; // Current brush is extended radial gradient.
 
     VGPaintType penType;    // Type of the last pen that was set.
     VGPaintType brushType;  // Type of the last brush that was set.
@@ -278,6 +278,27 @@ public:
         }
     }
 
+    inline bool needsEmulation(const QBrush &brush) const
+    {
+        Q_GUI_EXPORT bool qt_isExtendedRadialGradient(const QBrush &brush);
+        return qt_isExtendedRadialGradient(brush);
+    }
+
+    inline bool needsEmulation() const
+    {
+        return hasExtendedRadialGradientPen || hasExtendedRadialGradientBrush;
+    }
+
+    inline bool needsPenEmulation() const
+    {
+        return hasExtendedRadialGradientPen;
+    }
+
+    inline bool needsBrushEmulation() const
+    {
+        return hasExtendedRadialGradientBrush;
+    }
+
     // Set various modes, but only if different.
     inline void setImageMode(VGImageMode mode);
     inline void setRenderingQuality(VGRenderingQuality mode);
@@ -358,6 +379,10 @@ void QVGPaintEnginePrivate::init()
 
     forcePenChange = true;
     forceBrushChange = true;
+
+    hasExtendedRadialGradientPen = false;
+    hasExtendedRadialGradientBrush = false;
+
     penType = (VGPaintType)0;
     brushType = (VGPaintType)0;
 
@@ -1024,9 +1049,11 @@ static VGImage toVGImage
     switch (img.format()) {
     case QImage::Format_Mono:
         img = image.convertToFormat(QImage::Format_MonoLSB, flags);
+        img.invertPixels();
         format = VG_BW_1;
         break;
     case QImage::Format_MonoLSB:
+        img.invertPixels();
         format = VG_BW_1;
         break;
     case QImage::Format_RGB32:
@@ -1531,12 +1558,18 @@ bool QVGPaintEngine::begin(QPaintDevice *pdev)
 
 bool QVGPaintEngine::end()
 {
+    vgSeti(VG_SCISSORING, VG_FALSE);
+    vgSeti(VG_MASKING, VG_FALSE);
     return true;
 }
 
 void QVGPaintEngine::draw(const QVectorPath &path)
 {
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation()) {
+        QPaintEngineEx::draw(path);
+        return;
+    }
     QVGPainterState *s = state();
     VGPath vgpath = d->vectorPathToVGPath(path);
     if (!path.hasWindingFill())
@@ -1546,9 +1579,19 @@ void QVGPaintEngine::draw(const QVectorPath &path)
     vgDestroyPath(vgpath);
 }
 
+Q_GUI_EXPORT QPainterPath qt_painterPathFromVectorPath(const QVectorPath &path);
+
 void QVGPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 {
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation(brush)) {
+        QPainter *p = painter();
+        QBrush oldBrush = p->brush();
+        p->setBrush(brush);
+        qt_draw_helper(p->d_ptr.data(), qt_painterPathFromVectorPath(path), QPainterPrivate::FillDraw);
+        p->setBrush(oldBrush);
+        return;
+    }
     VGPath vgpath = d->vectorPathToVGPath(path);
     if (!path.hasWindingFill())
         d->fill(vgpath, brush, VG_EVEN_ODD);
@@ -1560,6 +1603,10 @@ void QVGPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 void QVGPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 {
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation(pen.brush())) {
+        QPaintEngineEx::stroke(path, pen);
+        return;
+    }
     VGPath vgpath = d->vectorPathToVGPath(path);
     d->stroke(vgpath, pen);
     vgDestroyPath(vgpath);
@@ -2363,12 +2410,17 @@ void QVGPaintEngine::penChanged()
 {
     Q_D(QVGPaintEngine);
     d->dirty |= QPaintEngine::DirtyPen;
+
+    d->hasExtendedRadialGradientPen =
+        state()->pen.style() != Qt::NoPen && d->needsEmulation(state()->pen.brush());
 }
 
 void QVGPaintEngine::brushChanged()
 {
     Q_D(QVGPaintEngine);
     d->dirty |= QPaintEngine::DirtyBrush;
+
+    d->hasExtendedRadialGradientPen = d->needsEmulation(state()->brush);
 }
 
 void QVGPaintEngine::brushOriginChanged()
@@ -2547,6 +2599,11 @@ void QVGPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
         return;
     }
 
+    if (d->needsEmulation(brush)) {
+        QPaintEngineEx::fillRect(rect, brush);
+        return;
+    }
+
 #if !defined(QVG_NO_MODIFY_PATH)
     VGfloat coords[8];
     if (d->simpleTransform) {
@@ -2624,6 +2681,10 @@ void QVGPaintEngine::fillRect(const QRectF &rect, const QColor &color)
 void QVGPaintEngine::drawRoundedRect(const QRectF &rect, qreal xrad, qreal yrad, Qt::SizeMode mode)
 {
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawRoundedRect(rect, xrad, yrad, mode);
+        return;
+    }
     if (d->simpleTransform) {
         QVGPainterState *s = state();
         VGPath vgpath = d->roundedRectPath(rect, xrad, yrad, mode);
@@ -2640,6 +2701,10 @@ void QVGPaintEngine::drawRects(const QRect *rects, int rectCount)
 {
 #if !defined(QVG_NO_MODIFY_PATH)
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawRects(rects, rectCount);
+        return;
+    }
     QVGPainterState *s = state();
     for (int i = 0; i < rectCount; ++i, ++rects) {
         VGfloat coords[8];
@@ -2681,6 +2746,10 @@ void QVGPaintEngine::drawRects(const QRectF *rects, int rectCount)
 {
 #if !defined(QVG_NO_MODIFY_PATH)
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawRects(rects, rectCount);
+        return;
+    }
     QVGPainterState *s = state();
     for (int i = 0; i < rectCount; ++i, ++rects) {
         VGfloat coords[8];
@@ -2719,6 +2788,10 @@ void QVGPaintEngine::drawLines(const QLine *lines, int lineCount)
 {
 #if !defined(QVG_NO_MODIFY_PATH)
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawLines(lines, lineCount);
+        return;
+    }
     QVGPainterState *s = state();
     for (int i = 0; i < lineCount; ++i, ++lines) {
         VGfloat coords[4];
@@ -2747,6 +2820,10 @@ void QVGPaintEngine::drawLines(const QLineF *lines, int lineCount)
 {
 #if !defined(QVG_NO_MODIFY_PATH)
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawLines(lines, lineCount);
+        return;
+    }
     QVGPainterState *s = state();
     for (int i = 0; i < lineCount; ++i, ++lines) {
         VGfloat coords[4];
@@ -2776,6 +2853,10 @@ void QVGPaintEngine::drawEllipse(const QRectF &r)
     // Based on the description of vguEllipse() in the OpenVG specification.
     // We don't use vguEllipse(), to avoid unnecessary library dependencies.
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawEllipse(r);
+        return;
+    }
     if (d->simpleTransform) {
         QVGPainterState *s = state();
         VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD,
@@ -2826,6 +2907,10 @@ void QVGPaintEngine::drawPath(const QPainterPath &path)
     // Shortcut past the QPainterPath -> QVectorPath conversion,
     // converting the QPainterPath directly into a VGPath.
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawPath(path);
+        return;
+    }
     QVGPainterState *s = state();
     VGPath vgpath = d->painterPathToVGPath(path);
     if (path.fillRule() == Qt::OddEvenFill)
@@ -2839,6 +2924,11 @@ void QVGPaintEngine::drawPoints(const QPointF *points, int pointCount)
 {
 #if !defined(QVG_NO_MODIFY_PATH)
     Q_D(QVGPaintEngine);
+
+    if (d->needsPenEmulation()) {
+        QPaintEngineEx::drawPoints(points, pointCount);
+        return;
+    }
 
     // Set up a new pen if necessary.
     QPen pen = state()->pen;
@@ -2874,6 +2964,11 @@ void QVGPaintEngine::drawPoints(const QPoint *points, int pointCount)
 #if !defined(QVG_NO_MODIFY_PATH)
     Q_D(QVGPaintEngine);
 
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawPoints(points, pointCount);
+        return;
+    }
+
     // Set up a new pen if necessary.
     QPen pen = state()->pen;
     if (pen.style() == Qt::NoPen)
@@ -2906,6 +3001,12 @@ void QVGPaintEngine::drawPoints(const QPoint *points, int pointCount)
 void QVGPaintEngine::drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode)
 {
     Q_D(QVGPaintEngine);
+
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawPolygon(points, pointCount, mode);
+        return;
+    }
+
     QVGPainterState *s = state();
     VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD,
                                VG_PATH_DATATYPE_F,
@@ -2953,6 +3054,12 @@ void QVGPaintEngine::drawPolygon(const QPointF *points, int pointCount, PolygonD
 void QVGPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode)
 {
     Q_D(QVGPaintEngine);
+
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawPolygon(points, pointCount, mode);
+        return;
+    }
+
     QVGPainterState *s = state();
     VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD,
                                VG_PATH_DATATYPE_F,
@@ -3071,6 +3178,95 @@ static void drawVGImage(QVGPaintEnginePrivate *d,
     vgDrawImage(vgImg);
 }
 
+static void drawImageTiled(QVGPaintEnginePrivate *d,
+                           const QRectF &r,
+                           const QImage &image,
+                           const QRectF &sr = QRectF())
+{
+    const int minTileSize = 16;
+    int tileWidth = 512;
+    int tileHeight = tileWidth;
+
+    VGImageFormat tileFormat = qt_vg_image_to_vg_format(image.format());
+    VGImage tile = VG_INVALID_HANDLE;
+    QVGImagePool *pool = QVGImagePool::instance();
+    while (tile == VG_INVALID_HANDLE && tileWidth >= minTileSize) {
+        tile = pool->createPermanentImage(tileFormat, tileWidth, tileHeight,
+            VG_IMAGE_QUALITY_FASTER);
+        if (tile == VG_INVALID_HANDLE) {
+            tileWidth /= 2;
+            tileHeight /= 2;
+        }
+    }
+    if (tile == VG_INVALID_HANDLE) {
+        qWarning("drawImageTiled: Failed to create %dx%d tile, giving up", tileWidth, tileHeight);
+        return;
+    }
+
+    VGfloat opacityMatrix[20] = {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, d->opacity,
+        0.0f, 0.0f, 0.0f, 0.0f
+    };
+    VGImage tileWithOpacity = VG_INVALID_HANDLE;
+    if (d->opacity != 1) {
+        tileWithOpacity = pool->createPermanentImage(VG_sARGB_8888_PRE,
+            tileWidth, tileHeight, VG_IMAGE_QUALITY_FASTER);
+        if (tileWithOpacity == VG_INVALID_HANDLE)
+            qWarning("drawImageTiled: Failed to create extra tile, ignoring opacity");
+    }
+
+    QRect sourceRect = sr.toRect();
+    if (sourceRect.isNull())
+        sourceRect = QRect(0, 0, image.width(), image.height());
+
+    VGfloat scaleX = r.width() / sourceRect.width();
+    VGfloat scaleY = r.height() / sourceRect.height();
+
+    d->setImageOptions();
+
+    for (int y = sourceRect.y(); y < sourceRect.height(); y += tileHeight) {
+        int h = qMin(tileHeight, sourceRect.height() - y);
+        if (h < 1)
+            break;
+        for (int x = sourceRect.x(); x < sourceRect.width(); x += tileWidth) {
+            int w = qMin(tileWidth, sourceRect.width() - x);
+            if (w < 1)
+                break;
+
+            int bytesPerPixel = image.depth() / 8;
+            const uchar *sptr = image.constBits() + x * bytesPerPixel + y * image.bytesPerLine();
+            vgImageSubData(tile, sptr, image.bytesPerLine(), tileFormat, 0, 0, w, h);
+
+            QTransform transform(d->imageTransform);
+            transform.translate(r.x() + x, r.y() + y);
+            transform.scale(scaleX, scaleY);
+            d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
+
+            VGImage actualTile = tile;
+            if (tileWithOpacity != VG_INVALID_HANDLE) {
+                vgColorMatrix(tileWithOpacity, actualTile, opacityMatrix);
+                if (w < tileWidth || h < tileHeight)
+                    actualTile = vgChildImage(tileWithOpacity, 0, 0, w, h);
+                else
+                    actualTile = tileWithOpacity;
+            } else if (w < tileWidth || h < tileHeight) {
+                actualTile = vgChildImage(tile, 0, 0, w, h);
+            }
+            vgDrawImage(actualTile);
+
+            if (actualTile != tile && actualTile != tileWithOpacity)
+                vgDestroyImage(actualTile);
+        }
+    }
+
+    vgDestroyImage(tile);
+    if (tileWithOpacity != VG_INVALID_HANDLE)
+        vgDestroyImage(tileWithOpacity);
+}
+
 // Used by qpixmapfilter_vg.cpp to draw filtered VGImage's.
 void qt_vg_drawVGImage(QPainter *painter, const QPointF& pos, VGImage vgImg)
 {
@@ -3100,6 +3296,19 @@ void qt_vg_drawVGImageStencil
 bool QVGPaintEngine::canVgWritePixels(const QImage &image) const
 {
     Q_D(const QVGPaintEngine);
+
+    // qt_vg_image_to_vg_format returns VG_sARGB_8888 as
+    // fallback case if no matching VG format is found.
+    // If given image format is not Format_ARGB32 and returned
+    // format is VG_sARGB_8888, it means that no match was
+    // found. In that case vgWritePixels cannot be used.
+    // Also 1-bit formats cannot be used directly either.
+    if ((image.format() != QImage::Format_ARGB32
+           && qt_vg_image_to_vg_format(image.format()) == VG_sARGB_8888)
+           || image.depth() == 1) {
+        return false;
+    }
+
     // vgWritePixels ignores masking, blending and xforms so we can only use it if
     // ALL of the following conditions are true:
     // - It is a simple translate, or a scale of -1 on the y-axis (inverted)
@@ -3170,7 +3379,7 @@ void QVGPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
 
         vgpd->source.beginDataAccess();
         drawImage(pos, vgpd->source.imageRef());
-        vgpd->source.endDataAccess();
+        vgpd->source.endDataAccess(true);
     } else {
         drawImage(pos, *(pd->buffer()));
     }
@@ -3219,7 +3428,10 @@ void QVGPaintEngine::drawImage
         } else {
             // Monochrome images need to use the vgChildImage() path.
             vgImg = toVGImage(image, flags);
-            drawVGImage(d, r, vgImg, image.size(), sr);
+            if (vgImg == VG_INVALID_HANDLE)
+                drawImageTiled(d, r, image, sr);
+            else
+                drawVGImage(d, r, vgImg, image.size(), sr);
         }
     }
     vgDestroyImage(vgImg);
@@ -3246,7 +3458,10 @@ void QVGPaintEngine::drawImage(const QPointF &pos, const QImage &image)
     } else {
         vgImg = toVGImageWithOpacity(image, d->opacity);
     }
-    drawVGImage(d, pos, vgImg);
+    if (vgImg == VG_INVALID_HANDLE)
+        drawImageTiled(d, QRectF(pos, image.size()), image);
+    else
+        drawVGImage(d, pos, vgImg);
     vgDestroyImage(vgImg);
 }
 
@@ -3504,6 +3719,11 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
         return;
     }
 
+    if (d->needsPenEmulation()) {
+        QPaintEngineEx::drawTextItem(p, textItem);
+        return;
+    }
+
     // Get the glyphs and positions associated with the text item.
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
@@ -3649,6 +3869,8 @@ void QVGPaintEngine::beginNativePainting()
 #if !defined(QVG_NO_DRAW_GLYPHS)
     d->setTransform(VG_MATRIX_GLYPH_USER_TO_SURFACE, d->pathTransform);
 #endif
+    vgSeti(VG_SCISSORING, VG_FALSE);
+    vgSeti(VG_MASKING, VG_FALSE);
     d->rawVG = true;
 }
 
@@ -3709,6 +3931,7 @@ void QVGPaintEngine::restoreState(QPaintEngine::DirtyFlags dirty)
     if ((dirty & QPaintEngine::DirtyBrushOrigin) != 0)
         brushOriginChanged();
     d->fillRule = 0;
+    d->clearColor = QColor();
     if ((dirty & QPaintEngine::DirtyOpacity) != 0)
         opacityChanged();
     if ((dirty & QPaintEngine::DirtyTransform) != 0)

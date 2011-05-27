@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -94,6 +94,7 @@ private slots:
     void itemSpacing();
     void setStretchFactor_data();
     void setStretchFactor();
+    void testStretch();
     void defaultStretchFactors_data();
     void defaultStretchFactors();
     void sizeHint_data();
@@ -667,6 +668,10 @@ void tst_QGraphicsLinearLayout::invalidate()
     layout.setContentsMargins(0, 0, 0, 0);
     view.show();
     widget->show();
+    //QTest::qWait(1000);
+    QTest::qWaitForWindowShown(&view);
+    qApp->processEvents();
+    layout.layoutRequest = 0;
 
     layout.setContentsMargins(1, 2, 3, 4);
     QApplication::sendPostedEvents(0, 0);
@@ -1128,6 +1133,41 @@ void tst_QGraphicsLinearLayout::setStretchFactor()
     QCOMPARE(sumExtent, totalSize);
 
     delete widget;
+}
+
+void tst_QGraphicsLinearLayout::testStretch()
+{
+    QGraphicsScene scene;
+    QGraphicsView *view = new QGraphicsView(&scene);
+    QGraphicsWidget *form = new QGraphicsWidget(0, Qt::Window);
+
+    scene.addItem(form);
+    form->setMinimumSize(600, 600);
+    form->setMaximumSize(600, 600);
+    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Horizontal, form);
+    QGraphicsWidget *w1 = new RectWidget;
+    w1->setPreferredSize(100,100);
+    w1->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    QGraphicsWidget *w2 = new RectWidget;
+    w2->setPreferredSize(200,200);
+    w2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    layout->setSpacing(0);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addItem(w1);
+    layout->addStretch(2);
+    layout->addItem(w2);
+    QCOMPARE(layout->count(), 2);
+    QVERIFY(layout->itemAt(0) == w1);
+    QVERIFY(layout->itemAt(1) == w2);
+    layout->activate();
+
+    //view->setSceneRect(-50, -50, 800, 800);
+    //view->show();
+    //QTest::qWaitForWindowShown(view);
+    //QTest::qWait(5000);
+    QCOMPARE(form->geometry().size(), QSizeF(600,600));
+    QCOMPARE(w1->geometry(), QRectF(0, 0, 100, 100));
+    QCOMPARE(w2->geometry(), QRectF(400, 0, 200, 200));
 }
 
 void tst_QGraphicsLinearLayout::defaultStretchFactors_data()

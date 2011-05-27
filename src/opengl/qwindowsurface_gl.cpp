@@ -7,29 +7,29 @@
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -181,11 +181,12 @@ QGLGraphicsSystem::QGLGraphicsSystem(bool useX11GL)
 //
 // QGLWindowSurface
 //
-#ifndef Q_WS_QPA
 class QGLGlobalShareWidget
 {
 public:
-    QGLGlobalShareWidget() : firstPixmap(0), widgetRefCount(0), widget(0), initializing(false) {}
+    QGLGlobalShareWidget() : firstPixmap(0), widgetRefCount(0), widget(0), initializing(false) {
+        created = true;
+    }
 
     QGLWidget *shareWidget() {
         if (!initializing && !widget && !cleanedUp) {
@@ -224,6 +225,7 @@ public:
     }
 
     static bool cleanedUp;
+    static bool created;
 
     QGLPixmapData *firstPixmap;
     int widgetRefCount;
@@ -234,6 +236,7 @@ private:
 };
 
 bool QGLGlobalShareWidget::cleanedUp = false;
+bool QGLGlobalShareWidget::created = false;
 
 static void qt_cleanup_gl_share_widget();
 Q_GLOBAL_STATIC_WITH_INITIALIZER(QGLGlobalShareWidget, _qt_gl_share_widget,
@@ -243,7 +246,8 @@ Q_GLOBAL_STATIC_WITH_INITIALIZER(QGLGlobalShareWidget, _qt_gl_share_widget,
 
 static void qt_cleanup_gl_share_widget()
 {
-    _qt_gl_share_widget()->cleanup();
+    if (QGLGlobalShareWidget::created)
+        _qt_gl_share_widget()->cleanup();
 }
 
 QGLWidget* qt_gl_share_widget()
@@ -255,24 +259,16 @@ QGLWidget* qt_gl_share_widget()
 
 void qt_destroy_gl_share_widget()
 {
-    _qt_gl_share_widget()->destroy();
+    if (QGLGlobalShareWidget::created)
+        _qt_gl_share_widget()->destroy();
 }
-#endif//Q_WS_QPA
 
 const QGLContext *qt_gl_share_context()
 {
-#ifdef Q_WS_QPA
-    //make it possible to have an assesor to defaultSharedGLContext.
-    const QPlatformGLContext *platformContext = QPlatformGLContext::defaultSharedContext();
-    if (!platformContext)
-        qDebug() << "Please implement a defaultSharedContext for your platformplugin";
-    return QGLContext::fromPlatformGLContext(const_cast<QPlatformGLContext *>(platformContext));
-#else
     QGLWidget *widget = qt_gl_share_widget();
     if (widget)
         return widget->context();
     return 0;
-#endif
 }
 
 #ifdef QGL_USE_TEXTURE_POOL
@@ -338,7 +334,7 @@ struct QGLWindowSurfacePrivate
     QGLWindowSurfaceGLPaintDevice glDevice;
     QGLWindowSurface* q_ptr;
 
-    bool partialUpdateSupport;
+    bool swap_region_support;
 };
 
 QGLFormat QGLWindowSurface::surfaceFormat;
@@ -391,7 +387,7 @@ QGLWindowSurface::QGLWindowSurface(QWidget *window)
     d_ptr->q_ptr = this;
     d_ptr->geometry_updated = false;
     d_ptr->did_paint = false;
-    d_ptr->partialUpdateSupport = false;
+    d_ptr->swap_region_support = false;
 }
 
 QGLWindowSurface::~QGLWindowSurface()
@@ -427,7 +423,7 @@ QGLWindowSurface::~QGLWindowSurface()
         if (!qt_gl_share_widget()->context()->isSharing())
             qt_destroy_gl_share_widget();
     }
-#endif
+#endif // QGL_USE_TEXTURE_POOL
 }
 
 void QGLWindowSurface::deleted(QObject *object)
@@ -491,14 +487,17 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
         if (haveNOKSwapRegion)
             qDebug() << "Found EGL_NOK_swap_region2 extension. Using partial updates.";
     }
-    bool swapBehaviourPreserved = (ctx->d_func()->eglContext->configAttrib(EGL_SWAP_BEHAVIOR) != EGL_BUFFER_PRESERVED)
-        || (ctx->d_func()->eglContext->configAttrib(EGL_SURFACE_TYPE)&EGL_SWAP_BEHAVIOR_PRESERVED_BIT);
-    if (!swapBehaviourPreserved && !haveNOKSwapRegion)
-        d_ptr->partialUpdateSupport = false; // Force full-screen updates
-    else
-        d_ptr->partialUpdateSupport = true;
-#else
-    d_ptr->partialUpdateSupport = false;
+
+    d_ptr->destructive_swap_buffers = true;
+    if (ctx->d_func()->eglContext->configAttrib(EGL_SURFACE_TYPE)&EGL_SWAP_BEHAVIOR_PRESERVED_BIT) {
+        EGLint swapBehavior;
+        if (eglQuerySurface(ctx->d_func()->eglContext->display(), ctx->d_func()->eglSurface
+                            , EGL_SWAP_BEHAVIOR, &swapBehavior)) {
+            d_ptr->destructive_swap_buffers = (swapBehavior != EGL_BUFFER_PRESERVED);
+        }
+    }
+
+    d_ptr->swap_region_support = haveNOKSwapRegion;
 #endif
 
     widgetPrivate->extraData()->glContext = ctx;
@@ -541,6 +540,7 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
 void QGLWindowSurface::beginPaint(const QRegion &)
 {
     d_ptr->did_paint = true;
+    updateGeometry();
 
     if (!context())
         return;
@@ -613,8 +613,19 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     // mistake to call swapBuffers if nothing was painted unless
     // EGL_BUFFER_PRESERVED is set. This check protects the flush func from
     // being executed if it's for nothing.
-    if (!hasPartialUpdateSupport() && !d_ptr->did_paint)
+    if (!d_ptr->destructive_swap_buffers && !d_ptr->did_paint)
         return;
+
+#ifdef Q_OS_SYMBIAN
+    if (window() != widget) {
+        // For performance reasons we don't support
+        // flushing native child widgets on Symbian.
+        // It breaks overlapping native child widget
+        // rendering in some cases but we prefer performance.
+        return;
+    }
+#endif
+
 
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
     Q_ASSERT(parent);
@@ -689,12 +700,12 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
             }
 #endif
             bool doingPartialUpdate = false;
-            if (QGLWindowSurface::swapBehavior == QGLWindowSurface::AutomaticSwap)
-                doingPartialUpdate = hasPartialUpdateSupport() && br.width() * br.height() < parent->geometry().width() * parent->geometry().height() * 0.2;
-            else if (QGLWindowSurface::swapBehavior == QGLWindowSurface::AlwaysFullSwap)
-                doingPartialUpdate = false;
-            else if (QGLWindowSurface::swapBehavior == QGLWindowSurface::AlwaysPartialSwap)
-                doingPartialUpdate = hasPartialUpdateSupport();
+            if (d_ptr->swap_region_support) {
+                if (QGLWindowSurface::swapBehavior == QGLWindowSurface::AutomaticSwap)
+                    doingPartialUpdate = br.width() * br.height() < parent->geometry().width() * parent->geometry().height() * 0.2;
+                else if (QGLWindowSurface::swapBehavior == QGLWindowSurface::AlwaysPartialSwap)
+                    doingPartialUpdate = true;
+            }
 
             QGLContext *ctx = reinterpret_cast<QGLContext *>(parent->d_func()->extraData()->glContext);
             if (widget != window()) {
@@ -723,7 +734,6 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         } else {
             glFlush();
         }
-
         return;
     }
 
@@ -880,8 +890,22 @@ void QGLWindowSurface::updateGeometry() {
 
     bool hijack(true);
     QWidgetPrivate *wd = window()->d_func();
-    if (wd->extraData() && wd->extraData()->glContext)
-        hijack = false; // we already have gl context for widget
+    if (wd->extraData() && wd->extraData()->glContext) {
+#ifdef Q_OS_SYMBIAN // Symbian needs to recreate the context when native window size changes
+        if (d_ptr->size != geometry().size()) {
+            if (window() != qt_gl_share_widget())
+                --(_qt_gl_share_widget()->widgetRefCount);
+
+            delete wd->extraData()->glContext;
+            wd->extraData()->glContext = 0;
+            d_ptr->ctx = 0;
+        }
+        else
+#endif
+        {
+            hijack = false; // we already have gl context for widget
+        }
+    }
 
     if (hijack)
         hijackWindow(window());
@@ -901,27 +925,6 @@ void QGLWindowSurface::updateGeometry() {
         return;
 
     d_ptr->size = surfSize;
-
-#ifdef Q_OS_SYMBIAN
-    if (!hijack) { // Symbian needs to recreate EGL surface when native window size changes
-        if (ctx->d_func()->eglSurface != EGL_NO_SURFACE) {
-            eglDestroySurface(ctx->d_func()->eglContext->display(),
-                                                    ctx->d_func()->eglSurface);
-        }
-
-        ctx->d_func()->eglSurface = QEgl::createSurface(ctx->device(),
-                                           ctx->d_func()->eglContext->config());
-
-#if !defined(QGL_NO_PRESERVED_SWAP)
-        eglGetError();  // Clear error state first.
-        eglSurfaceAttrib(QEgl::display(), ctx->d_func()->eglSurface,
-                                    EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
-        if (eglGetError() != EGL_SUCCESS) {
-            qWarning("QGLWindowSurface: could not restore preserved swap behaviour");
-        }
-#endif
-    }
-#endif
 
     if (d_ptr->ctx) {
 #ifndef QT_OPENGL_ES_2
@@ -1149,12 +1152,15 @@ QImage *QGLWindowSurface::buffer(const QWidget *widget)
     return &d_ptr->buffers.last();
 }
 
-bool QGLWindowSurface::hasPartialUpdateSupport() const
+QWindowSurface::WindowSurfaceFeatures QGLWindowSurface::features() const
 {
-    return d_ptr->partialUpdateSupport;
+    WindowSurfaceFeatures features = 0;
+    if (!d_ptr->destructive_swap_buffers || d_ptr->swap_region_support)
+        features |= PartialUpdates;
+    if (!d_ptr->destructive_swap_buffers)
+        features |= PreservedContents;
+    return features;
 }
-
-
 
 QT_END_NAMESPACE
 

@@ -120,7 +120,7 @@ x11 {
     LIBS_PRIVATE += $$QMAKE_LIBS_DYNLOAD
 }
 
-mac {
+mac:!qpa {
     OBJECTIVE_SOURCES += qgl_mac.mm \
                          qglpixelbuffer_mac.mm
     LIBS_PRIVATE += -framework AppKit -framework Carbon
@@ -157,7 +157,7 @@ embedded {
 }
 
 symbian {
-    DEFINES += QGL_USE_TEXTURE_POOL
+    DEFINES += QGL_USE_TEXTURE_POOL QGL_NO_PRESERVED_SWAP
     SOURCES -= qpixmapdata_gl.cpp
     SOURCES += qgl_symbian.cpp \
                qpixmapdata_poolgl.cpp \

@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -44,6 +44,7 @@
 #include <e32uid.h>
 #include "qcore_symbian_p.h"
 #include <string>
+#include <in_sock.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -203,11 +204,114 @@ private:
     RFs iFs;
 };
 
+uint qHash(const RSubSessionBase& key)
+{
+    return qHash(key.SubSessionHandle());
+}
+
 Q_GLOBAL_STATIC(QS60RFsSession, qt_s60_RFsSession);
 
 Q_CORE_EXPORT RFs& qt_s60GetRFs()
 {
     return qt_s60_RFsSession()->GetRFs();
+}
+
+QSymbianSocketManager::QSymbianSocketManager() :
+    iNextSocket(0), iDefaultConnection(0)
+{
+    TSessionPref preferences;
+    // ### In future this could be changed to KAfInet6 when that is more common than IPv4
+    preferences.iAddrFamily = KAfInet;
+    preferences.iProtocol = KProtocolInetIp;
+    //use global message pool, as we do not know how many sockets app will use
+    //TODO: is this the right choice?
+    qt_symbian_throwIfError(iSocketServ.Connect(preferences, -1));
+    qt_symbian_throwIfError(iSocketServ.ShareAuto());
+}
+
+QSymbianSocketManager::~QSymbianSocketManager()
+{
+    iSocketServ.Close();
+    if(!socketMap.isEmpty()) {
+        qWarning("leaked %d sockets on exit", socketMap.count());
+    }
+}
+
+RSocketServ& QSymbianSocketManager::getSocketServer() {
+    return iSocketServ;
+}
+
+int QSymbianSocketManager::addSocket(const RSocket& socket) {
+    QHashableSocket sock(static_cast<const QHashableSocket &>(socket));
+    QMutexLocker l(&iMutex);
+    Q_ASSERT(!socketMap.contains(sock));
+    if(socketMap.contains(sock))
+        return socketMap.value(sock);
+    // allocate socket number
+    int guard = 0;
+    while(reverseSocketMap.contains(iNextSocket)) {
+        iNextSocket++;
+        iNextSocket %= max_sockets;
+        guard++;
+        if(guard > max_sockets)
+            return -1;
+    }
+    int id = iNextSocket;
+
+    socketMap[sock] = id;
+    reverseSocketMap[id] = sock;
+    return id + socket_offset;
+}
+
+bool QSymbianSocketManager::removeSocket(const RSocket &socket) {
+    QHashableSocket sock(static_cast<const QHashableSocket &>(socket));
+    QMutexLocker l(&iMutex);
+    if(!socketMap.contains(sock))
+        return false;
+    int id = socketMap.value(sock);
+    socketMap.remove(sock);
+    reverseSocketMap.remove(id);
+    return true;
+}
+
+int QSymbianSocketManager::lookupSocket(const RSocket& socket) const {
+    QHashableSocket sock(static_cast<const QHashableSocket &>(socket));
+    QMutexLocker l(&iMutex);
+    if(!socketMap.contains(sock))
+        return -1;
+    int id = socketMap.value(sock);
+    return id + socket_offset;
+}
+
+bool QSymbianSocketManager::lookupSocket(int fd, RSocket& socket) const {
+    QMutexLocker l(&iMutex);
+    int id = fd - socket_offset;
+    if(!reverseSocketMap.contains(id))
+        return false;
+    socket = reverseSocketMap.value(id);
+    return true;
+}
+
+void QSymbianSocketManager::setDefaultConnection(RConnection* con)
+{
+    iDefaultConnection = con;
+}
+
+RConnection* QSymbianSocketManager::defaultConnection() const
+{
+    return iDefaultConnection;
+}
+
+Q_GLOBAL_STATIC(QSymbianSocketManager, qt_symbianSocketManager);
+
+QSymbianSocketManager& QSymbianSocketManager::instance()
+{
+    return *(qt_symbianSocketManager());
+}
+
+Q_CORE_EXPORT RSocketServ& qt_symbianGetSocketServer()
+{
+    return QSymbianSocketManager::instance().getSocketServer();
 }
 
 QT_END_NAMESPACE

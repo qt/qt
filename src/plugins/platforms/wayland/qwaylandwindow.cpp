@@ -7,29 +7,29 @@
 ** This file is part of the config.tests of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -41,7 +41,9 @@
 
 #include "qwaylandwindow.h"
 
+#include "qwaylandbuffer.h"
 #include "qwaylanddisplay.h"
+#include "qwaylandinputdevice.h"
 #include "qwaylandscreen.h"
 
 #include <QtGui/QWidget>
@@ -52,15 +54,23 @@
 QWaylandWindow::QWaylandWindow(QWidget *window)
     : QPlatformWindow(window)
     , mDisplay(QWaylandScreen::waylandScreenFromWidget(window)->display())
+    , mBuffer(0)
+    , mWaitingForFrameSync(false)
 {
     static WId id = 1;
     mWindowId = id++;
 
-    mSurface = mDisplay->createSurface();
+    mSurface = mDisplay->createSurface(this);
 }
 
 QWaylandWindow::~QWaylandWindow()
 {
+    if (mSurface)
+        wl_surface_destroy(mSurface);
+
+    QList<QWaylandInputDevice *> inputDevices = mDisplay->inputDevices();
+    for (int i = 0; i < inputDevices.size(); ++i)
+        inputDevices.at(i)->handleWindowDestroyed(this);
 }
 
 WId QWaylandWindow::winId() const
@@ -71,18 +81,17 @@ WId QWaylandWindow::winId() const
 void QWaylandWindow::setParent(const QPlatformWindow *parent)
 {
     Q_UNUSED(parent);
-    qWarning("Trying to add a raster window as a sub-window");
+    qWarning("Sub window is not supported");
 }
 
 void QWaylandWindow::setVisible(bool visible)
 {
-    if (!mSurface) {
-        mSurface = mDisplay->createSurface();
+    if (!mSurface && visible) {
+        mSurface = mDisplay->createSurface(this);
         newSurfaceCreated();
     }
 
     if (visible) {
-        wl_surface_set_user_data(mSurface, this);
         wl_surface_map_toplevel(mSurface);
     } else {
         wl_surface_destroy(mSurface);
@@ -101,4 +110,50 @@ void QWaylandWindow::configure(uint32_t time, uint32_t edges,
     setGeometry(geometry);
 
     QWindowSystemInterface::handleGeometryChange(widget(), geometry);
+}
+
+void QWaylandWindow::attach(QWaylandBuffer *buffer)
+{
+    mBuffer = buffer;
+    if (mSurface) {
+        wl_surface_attach(mSurface, buffer->buffer(),0,0);
+    }
+}
+
+
+void QWaylandWindow::damage(const QRegion &region)
+{
+    //We have to do sync stuff before calling damage, or we might
+    //get a frame callback before we get the timestamp
+    mDisplay->frameCallback(QWaylandWindow::frameCallback, mSurface, this);
+    mWaitingForFrameSync = true;
+
+    QVector<QRect> rects = region.rects();
+    for (int i = 0; i < rects.size(); i++) {
+        const QRect rect = rects.at(i);
+        wl_surface_damage(mSurface,
+                          rect.x(), rect.y(), rect.width(), rect.height());
+    }
+}
+
+void QWaylandWindow::newSurfaceCreated()
+{
+    if (mBuffer) {
+        wl_surface_attach(mSurface,mBuffer->buffer(),0,0);
+    }
+}
+
+void QWaylandWindow::frameCallback(struct wl_surface *surface, void *data, uint32_t time)
+{
+    Q_UNUSED(time);
+    Q_UNUSED(surface);
+    QWaylandWindow *self = static_cast<QWaylandWindow*>(data);
+    self->mWaitingForFrameSync = false;
+}
+
+void QWaylandWindow::waitForFrameSync()
+{
+    mDisplay->flushRequests();
+    while (mWaitingForFrameSync)
+        mDisplay->blockingReadEvents();
 }

@@ -7,29 +7,29 @@
 ** This file is part of the Symbian application wrapper of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -62,6 +62,7 @@
 
 //Animated wallpapers in Qt applications are not supported.
 const TInt KAknDisableAnimationBackground = 0x02000000;
+const TInt KAknSingleClickCompatible = 0x01000000;
 
 QT_BEGIN_NAMESPACE
 
@@ -118,8 +119,12 @@ void QS60MainAppUi::ConstructL()
     // After 5th Edition S60, native side supports animated wallpapers.
     // However, there is no support for that feature on Qt side, so indicate to
     // native UI framework that this application will not support background animations.
-    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0)
-        flags |= KAknDisableAnimationBackground;
+
+    // Also, add support for single touch for post 5th edition platforms.
+    // This has only impact when launching native dialogs/menus from inside QApplication.
+    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0) {
+        flags |= (KAknDisableAnimationBackground | KAknSingleClickCompatible);
+    }
 #endif
     BaseConstructL(flags);
 }

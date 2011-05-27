@@ -7,20 +7,20 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of this
-** file.
+** Foundation and appearing in the file included in the packaging of
+** this file.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -336,7 +336,7 @@
     are many ways to solve this:
 
     \list
-    
+
     \o You can install the Qt libraries in one of the system
        library paths (e.g. \c /usr/lib on most systems).
 
@@ -345,7 +345,7 @@
        linker to look in this directory when starting your application.
 
     \o You can write a startup script for your application, where you
-       modify the dynamic linker configuration (e.g.  adding your
+       modify the dynamic linker configuration (e.g., adding your
        application's directory to the \c LD_LIBRARY_PATH environment
        variable. \note If your application will be running with "Set
        user ID on execution," and if it will be owned by root, then
@@ -375,7 +375,7 @@
     \c plugins directory, or you can set the \c DESTDIR in the
     plugins' project files:
 
-    \snippet doc/src/snippets/code/doc_src_deployment.qdoc 8
+    \snippet doc/src/snippets/code/doc_src_deployment.pro 8
 
     An archive distributing all the Qt libraries, and all the plugins,
     required to run the \l {tools/plugandpaint}{Plug & Paint}
@@ -422,7 +422,7 @@
     application using QApplication::addLibraryPath() or
     QApplication::setLibraryPaths().
 
-    \snippet doc/src/snippets/code/doc_src_deployment.qdoc 9
+    \snippet doc/src/snippets/code/doc_src_deployment.cpp 9
 
     \section1 Application Dependencies
 
@@ -718,7 +718,7 @@
     using QApplication::addLibraryPath() or
     QApplication::setLibraryPaths().
 
-    \snippet doc/src/snippets/code/doc_src_deployment.qdoc 19
+    \snippet doc/src/snippets/code/doc_src_deployment.cpp 19
 
     One benefit of using plugins is that they can easily be made
     available to a whole family of applications.
@@ -753,7 +753,7 @@
 
     To use the options, add
 
-    \snippet doc/src/snippets/code/doc_src_deployment.qdoc 21
+    \snippet doc/src/snippets/code/doc_src_deployment.pro 21
 
     to your .pro file. The \c embed_manifest_dll option is enabled by default.
 	The \c embed_manifest_exe option is NOT enabled by default.
@@ -965,7 +965,7 @@
     command line application on Unix and Windows. You probably don't
     want to run it in a bundle: Add this to your application's .pro:
 
-    \snippet doc/src/snippets/code/doc_src_deployment.qdoc 26
+    \snippet doc/src/snippets/code/doc_src_deployment.pro 26
 
     This will tell \c qmake not to put the executable inside a
     bundle. Please refer to the \l{Deploying an Application on
@@ -1249,7 +1249,7 @@
     to look for the new plugins. After constructing the
     QApplication, we add the following code:
 
-    \snippet doc/src/snippets/code/doc_src_deployment.qdoc 49
+    \snippet doc/src/snippets/code/doc_src_deployment.cpp 49
 
     First, we tell the application to only look for plugins in this
     directory. In our case, this is what we want since we only want to
@@ -1366,7 +1366,7 @@
     variable to get \e{weak linking} to work for your application. You
     can add:
 
-    \snippet doc/src/snippets/code/doc_src_deployment.qdoc 51
+    \snippet doc/src/snippets/code/doc_src_deployment.pro 51
 
     to your .pro file, and qmake will take care of this for you.
 
@@ -1416,7 +1416,7 @@
     add both to the \c CONFIG line. PowerPC users also need an
     SDK. For example:
 
-    \snippet doc/src/snippets/code/doc_src_deployment.qdoc 53
+    \snippet doc/src/snippets/code/doc_src_deployment.pro 53
 
     Besides \c lipo, you can also check your binaries with the \c file(1)
     command line tool or the Finder.
@@ -1513,12 +1513,12 @@
     First, we will change the vendor statement to something more meaningful. The application
     vendor is visible to end-user during the installation.
 
-    \snippet doc/src/snippets/code/doc_src_deployment.qdoc 56
+    \snippet doc/src/snippets/code/doc_src_deployment.pro 56
 
     Second we will tell the Symbian application installer that this application supports
     only S60 5.0 based devices:
 
-    \snippet doc/src/snippets/code/doc_src_deployment.qdoc 57
+    \snippet doc/src/snippets/code/doc_src_deployment.pro 57
 
     You can find a list of platform and device indentification codes from
     \l {http://wiki.forum.nokia.com/index.php/S60_Platform_and_device_identification_codes}{Forum Nokia Wiki}.
