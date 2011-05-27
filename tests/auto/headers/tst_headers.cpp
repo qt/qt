@@ -177,7 +177,7 @@ void tst_Headers::allSourceFilesData()
             || sourceFile.endsWith("/src/corelib/global/qconfig.h")
             || sourceFile.endsWith("/src/corelib/global/qconfig.cpp")
             || sourceFile.endsWith("/src/tools/uic/qclass_lib_map.h")
-            || sourceFile.endsWith("src/network/access/qnetworkcookiejartlds_p.h")
+            || sourceFile.endsWith("src/corelib/io/qurltlds_p.h")
             )
             continue;
 

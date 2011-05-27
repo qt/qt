@@ -17,7 +17,6 @@ SOURCES += \
     editor/liveselectionrectangle.cpp \
     editor/liveselectionindicator.cpp \
     editor/boundingrecthighlighter.cpp \
-    editor/subcomponenteditortool.cpp \
     editor/subcomponentmasklayeritem.cpp \
     editor/zoomtool.cpp \
     editor/colorpickertool.cpp \
@@ -38,7 +37,6 @@ HEADERS += \
     editor/liveselectionrectangle_p.h \
     editor/liveselectionindicator_p.h \
     editor/boundingrecthighlighter_p.h \
-    editor/subcomponenteditortool_p.h \
     editor/subcomponentmasklayeritem_p.h \
     editor/zoomtool_p.h \
     editor/colorpickertool_p.h \

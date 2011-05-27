@@ -12979,7 +12979,7 @@ EXPORTS
 	?byteCount@QVolatileImage@@QBEHXZ @ 12978 NONAME ; int QVolatileImage::byteCount(void) const
 	??0QVolatileImage@@QAE@ABV0@@Z @ 12979 NONAME ; QVolatileImage::QVolatileImage(class QVolatileImage const &)
 	?depth@QVolatileImage@@QBEHXZ @ 12980 NONAME ; int QVolatileImage::depth(void) const
-	?releaseCachedResources@QGraphicsSystem@@UAEXXZ @ 12981 NONAME ; void QGraphicsSystem::releaseCachedResources(void)
+	?releaseCachedResources@QGraphicsSystem@@UAEXXZ @ 12981 NONAME ABSENT ; void QGraphicsSystem::releaseCachedResources(void)
 	?qt_s60_setPartialScreenInputMode@@YAX_N@Z @ 12982 NONAME ; void qt_s60_setPartialScreenInputMode(bool)
 	png_access_version_number @ 12983 NONAME
 	png_benign_error @ 12984 NONAME
@@ -13953,4 +13953,84 @@ EXPORTS
 	?staticMetaObjectExtraData@QWorkspace@@0UQMetaObjectExtraData@@B @ 13952 NONAME ; struct QMetaObjectExtraData const QWorkspace::staticMetaObjectExtraData
 	?staticMetaObjectExtraData@QSessionManager@@0UQMetaObjectExtraData@@B @ 13953 NONAME ; struct QMetaObjectExtraData const QSessionManager::staticMetaObjectExtraData
 	?qt_static_metacall@QGraphicsItemAnimation@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13954 NONAME ; void QGraphicsItemAnimation::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-
+	?setCursorMoveStyle@QLineControl@@QAEXW4MoveStyle@QTextCursor@@@Z @ 13955 NONAME ABSENT ; void QLineControl::setCursorMoveStyle(enum QTextCursor::MoveStyle)
+	?staticMetaObjectExtraData@QIdentityProxyModel@@0UQMetaObjectExtraData@@B @ 13956 NONAME ; struct QMetaObjectExtraData const QIdentityProxyModel::staticMetaObjectExtraData
+	?defaultCursorMoveStyle@QTextDocument@@QBE?AW4MoveStyle@QTextCursor@@XZ @ 13957 NONAME ABSENT ; enum QTextCursor::MoveStyle QTextDocument::defaultCursorMoveStyle(void) const
+	?offsetInLigature@QTextEngine@@QAE?AUQFixed@@PBUQScriptItem@@HHH@Z @ 13958 NONAME ; struct QFixed QTextEngine::offsetInLigature(struct QScriptItem const *, int, int, int)
+	?qt_metacall@QIdentityProxyModel@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 13959 NONAME ; int QIdentityProxyModel::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?mapSelectionFromSource@QIdentityProxyModel@@UBE?AVQItemSelection@@ABV2@@Z @ 13960 NONAME ; class QItemSelection QIdentityProxyModel::mapSelectionFromSource(class QItemSelection const &) const
+	?qt_static_metacall@QIdentityProxyModel@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13961 NONAME ; void QIdentityProxyModel::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?mapSelectionToSource@QIdentityProxyModel@@UBE?AVQItemSelection@@ABV2@@Z @ 13962 NONAME ; class QItemSelection QIdentityProxyModel::mapSelectionToSource(class QItemSelection const &) const
+	??1QIdentityProxyModel@@UAE@XZ @ 13963 NONAME ; QIdentityProxyModel::~QIdentityProxyModel(void)
+	??_EQIdentityProxyModel@@UAE@I@Z @ 13964 NONAME ; QIdentityProxyModel::~QIdentityProxyModel(unsigned int)
+	?removeRows@QIdentityProxyModel@@UAE_NHHABVQModelIndex@@@Z @ 13965 NONAME ; bool QIdentityProxyModel::removeRows(int, int, class QModelIndex const &)
+	?previousLogicalPosition@QTextEngine@@QBEHH@Z @ 13966 NONAME ; int QTextEngine::previousLogicalPosition(int) const
+	?metaObject@QIdentityProxyModel@@UBEPBUQMetaObject@@XZ @ 13967 NONAME ; struct QMetaObject const * QIdentityProxyModel::metaObject(void) const
+	?cursorMoveStyle@QLineControl@@QBE?AW4MoveStyle@QTextCursor@@XZ @ 13968 NONAME ABSENT ; enum QTextCursor::MoveStyle QLineControl::cursorMoveStyle(void) const
+	?removeColumns@QIdentityProxyModel@@UAE_NHHABVQModelIndex@@@Z @ 13969 NONAME ; bool QIdentityProxyModel::removeColumns(int, int, class QModelIndex const &)
+	?alignLine@QTextEngine@@QAE?AUQFixed@@ABUQScriptLine@@@Z @ 13970 NONAME ; struct QFixed QTextEngine::alignLine(struct QScriptLine const &)
+	?qt_s60_setPartialScreenAutomaticTranslation@@YAX_N@Z @ 13971 NONAME ; void qt_s60_setPartialScreenAutomaticTranslation(bool)
+	?parent@QIdentityProxyModel@@UBE?AVQModelIndex@@ABV2@@Z @ 13972 NONAME ; class QModelIndex QIdentityProxyModel::parent(class QModelIndex const &) const
+	?insertColumns@QIdentityProxyModel@@UAE_NHHABVQModelIndex@@@Z @ 13973 NONAME ; bool QIdentityProxyModel::insertColumns(int, int, class QModelIndex const &)
+	?dropMimeData@QIdentityProxyModel@@UAE_NPBVQMimeData@@W4DropAction@Qt@@HHABVQModelIndex@@@Z @ 13974 NONAME ; bool QIdentityProxyModel::dropMimeData(class QMimeData const *, enum Qt::DropAction, int, int, class QModelIndex const &)
+	?visualCursorMovement@QTextEngine@@QBE_NXZ @ 13975 NONAME ; bool QTextEngine::visualCursorMovement(void) const
+	??0QRadialGradient@@QAE@MMMMMM@Z @ 13976 NONAME ; QRadialGradient::QRadialGradient(float, float, float, float, float, float)
+	?setSourceModel@QIdentityProxyModel@@UAEXPAVQAbstractItemModel@@@Z @ 13977 NONAME ; void QIdentityProxyModel::setSourceModel(class QAbstractItemModel *)
+	?getStaticMetaObject@QIdentityProxyModel@@SAABUQMetaObject@@XZ @ 13978 NONAME ; struct QMetaObject const & QIdentityProxyModel::getStaticMetaObject(void)
+	?index@QIdentityProxyModel@@UBE?AVQModelIndex@@HHABV2@@Z @ 13979 NONAME ; class QModelIndex QIdentityProxyModel::index(int, int, class QModelIndex const &) const
+	?setInstantInvalidatePropagation@QGraphicsLayout@@SAX_N@Z @ 13980 NONAME ; void QGraphicsLayout::setInstantInvalidatePropagation(bool)
+	?paintingActive@QVolatileImage@@QBE_NXZ @ 13981 NONAME ; bool QVolatileImage::paintingActive(void) const
+	?insertRows@QIdentityProxyModel@@UAE_NHHABVQModelIndex@@@Z @ 13982 NONAME ; bool QIdentityProxyModel::insertRows(int, int, class QModelIndex const &)
+	?positionAfterVisualMovement@QTextEngine@@QAEHHW4MoveOperation@QTextCursor@@@Z @ 13983 NONAME ; int QTextEngine::positionAfterVisualMovement(int, enum QTextCursor::MoveOperation)
+	?setCenterRadius@QRadialGradient@@QAEXM@Z @ 13984 NONAME ; void QRadialGradient::setCenterRadius(float)
+	?leftCursorPosition@QTextLayout@@QBEHH@Z @ 13985 NONAME ; int QTextLayout::leftCursorPosition(int) const
+	?focalRadius@QRadialGradient@@QBEMXZ @ 13986 NONAME ; float QRadialGradient::focalRadius(void) const
+	?qt_metacast@QIdentityProxyModel@@UAEPAXPBD@Z @ 13987 NONAME ; void * QIdentityProxyModel::qt_metacast(char const *)
+	?qt_draw_decoration_for_glyphs@@YAXPAVQPainter@@PBIPBUQFixedPoint@@HPAVQFontEngine@@ABVQFont@@ABVQTextCharFormat@@@Z @ 13988 NONAME ; void qt_draw_decoration_for_glyphs(class QPainter *, unsigned int const *, struct QFixedPoint const *, int, class QFontEngine *, class QFont const &, class QTextCharFormat const &)
+	??0QRadialGradient@@QAE@ABVQPointF@@M0M@Z @ 13989 NONAME ; QRadialGradient::QRadialGradient(class QPointF const &, float, class QPointF const &, float)
+	?centerRadius@QRadialGradient@@QBEMXZ @ 13990 NONAME ; float QRadialGradient::centerRadius(void) const
+	?qt_isExtendedRadialGradient@@YA_NABVQBrush@@@Z @ 13991 NONAME ; bool qt_isExtendedRadialGradient(class QBrush const &)
+	?mapToSource@QIdentityProxyModel@@UBE?AVQModelIndex@@ABV2@@Z @ 13992 NONAME ; class QModelIndex QIdentityProxyModel::mapToSource(class QModelIndex const &) const
+	?d_func@QIdentityProxyModel@@AAEPAVQIdentityProxyModelPrivate@@XZ @ 13993 NONAME ; class QIdentityProxyModelPrivate * QIdentityProxyModel::d_func(void)
+	?insertionPointsForLine@QTextEngine@@QAEXHAAV?$QVector@H@@@Z @ 13994 NONAME ; void QTextEngine::insertionPointsForLine(int, class QVector<int> &)
+	?cloneWithSize@QFontEngine@@UBEPAV1@M@Z @ 13995 NONAME ; class QFontEngine * QFontEngine::cloneWithSize(float) const
+	?setCursorMoveStyle@QLineEdit@@QAEXW4MoveStyle@QTextCursor@@@Z @ 13996 NONAME ABSENT ; void QLineEdit::setCursorMoveStyle(enum QTextCursor::MoveStyle)
+	??0QIdentityProxyModel@@IAE@AAVQIdentityProxyModelPrivate@@PAVQObject@@@Z @ 13997 NONAME ; QIdentityProxyModel::QIdentityProxyModel(class QIdentityProxyModelPrivate &, class QObject *)
+	?lineNumberForTextPosition@QTextEngine@@QAEHH@Z @ 13998 NONAME ; int QTextEngine::lineNumberForTextPosition(int)
+	?instantInvalidatePropagation@QGraphicsLayout@@SA_NXZ @ 13999 NONAME ; bool QGraphicsLayout::instantInvalidatePropagation(void)
+	?beginningOfLine@QTextEngine@@AAEHH@Z @ 14000 NONAME ; int QTextEngine::beginningOfLine(int)
+	??0QIdentityProxyModel@@QAE@PAVQObject@@@Z @ 14001 NONAME ; QIdentityProxyModel::QIdentityProxyModel(class QObject *)
+	?rightCursorPosition@QTextLayout@@QBEHH@Z @ 14002 NONAME ; int QTextLayout::rightCursorPosition(int) const
+	?d_func@QIdentityProxyModel@@ABEPBVQIdentityProxyModelPrivate@@XZ @ 14003 NONAME ; class QIdentityProxyModelPrivate const * QIdentityProxyModel::d_func(void) const
+	?columnCount@QIdentityProxyModel@@UBEHABVQModelIndex@@@Z @ 14004 NONAME ; int QIdentityProxyModel::columnCount(class QModelIndex const &) const
+	?cursorMoveStyle@QLineEdit@@QBE?AW4MoveStyle@QTextCursor@@XZ @ 14005 NONAME ABSENT ; enum QTextCursor::MoveStyle QLineEdit::cursorMoveStyle(void) const
+	?trUtf8@QIdentityProxyModel@@SA?AVQString@@PBD0H@Z @ 14006 NONAME ; class QString QIdentityProxyModel::trUtf8(char const *, char const *, int)
+	?setDefaultCursorMoveStyle@QTextDocument@@QAEXW4MoveStyle@QTextCursor@@@Z @ 14007 NONAME ABSENT ; void QTextDocument::setDefaultCursorMoveStyle(enum QTextCursor::MoveStyle)
+	?actionText@QUndoCommand@@QBE?AVQString@@XZ @ 14008 NONAME ; class QString QUndoCommand::actionText(void) const
+	?tr@QIdentityProxyModel@@SA?AVQString@@PBD0H@Z @ 14009 NONAME ; class QString QIdentityProxyModel::tr(char const *, char const *, int)
+	?mapFromSource@QIdentityProxyModel@@UBE?AVQModelIndex@@ABV2@@Z @ 14010 NONAME ; class QModelIndex QIdentityProxyModel::mapFromSource(class QModelIndex const &) const
+	?nextLogicalPosition@QTextEngine@@QBEHH@Z @ 14011 NONAME ; int QTextEngine::nextLogicalPosition(int) const
+	?setCursorMoveStyle@QTextLayout@@QAEXW4MoveStyle@QTextCursor@@@Z @ 14012 NONAME ABSENT ; void QTextLayout::setCursorMoveStyle(enum QTextCursor::MoveStyle)
+	?doItemsLayout@QTableView@@UAEXXZ @ 14013 NONAME ; void QTableView::doItemsLayout(void)
+	?setFocalRadius@QRadialGradient@@QAEXM@Z @ 14014 NONAME ; void QRadialGradient::setFocalRadius(float)
+	?qt_painterPathFromVectorPath@@YA?AVQPainterPath@@ABVQVectorPath@@@Z @ 14015 NONAME ; class QPainterPath qt_painterPathFromVectorPath(class QVectorPath const &)
+	?tr@QIdentityProxyModel@@SA?AVQString@@PBD0@Z @ 14016 NONAME ; class QString QIdentityProxyModel::tr(char const *, char const *)
+	?match@QIdentityProxyModel@@UBE?AV?$QList@VQModelIndex@@@@ABVQModelIndex@@HABVQVariant@@HV?$QFlags@W4MatchFlag@Qt@@@@@Z @ 14017 NONAME ; class QList<class QModelIndex> QIdentityProxyModel::match(class QModelIndex const &, int, class QVariant const &, int, class QFlags<enum Qt::MatchFlag>) const
+	?staticMetaObject@QIdentityProxyModel@@2UQMetaObject@@B @ 14018 NONAME ; struct QMetaObject const QIdentityProxyModel::staticMetaObject
+	?rowCount@QIdentityProxyModel@@UBEHABVQModelIndex@@@Z @ 14019 NONAME ; int QIdentityProxyModel::rowCount(class QModelIndex const &) const
+	?trUtf8@QIdentityProxyModel@@SA?AVQString@@PBD0@Z @ 14020 NONAME ; class QString QIdentityProxyModel::trUtf8(char const *, char const *)
+	?cursorMoveStyle@QTextLayout@@QBE?AW4MoveStyle@QTextCursor@@XZ @ 14021 NONAME ABSENT ; enum QTextCursor::MoveStyle QTextLayout::cursorMoveStyle(void) const
+	?endOfLine@QTextEngine@@AAEHH@Z @ 14022 NONAME ; int QTextEngine::endOfLine(int)
+	?setCursorMoveStyle@QTextLayout@@QAEXW4CursorMoveStyle@Qt@@@Z @ 14023 NONAME ; void QTextLayout::setCursorMoveStyle(enum Qt::CursorMoveStyle)
+	?defaultCursorMoveStyle@QTextDocument@@QBE?AW4CursorMoveStyle@Qt@@XZ @ 14024 NONAME ; enum Qt::CursorMoveStyle QTextDocument::defaultCursorMoveStyle(void) const
+	?cursorMoveStyle@QTextLayout@@QBE?AW4CursorMoveStyle@Qt@@XZ @ 14025 NONAME ; enum Qt::CursorMoveStyle QTextLayout::cursorMoveStyle(void) const
+	?setDefaultCursorMoveStyle@QTextDocument@@QAEXW4CursorMoveStyle@Qt@@@Z @ 14026 NONAME ; void QTextDocument::setDefaultCursorMoveStyle(enum Qt::CursorMoveStyle)
+	?setCursorMoveStyle@QLineControl@@QAEXW4CursorMoveStyle@Qt@@@Z @ 14027 NONAME ; void QLineControl::setCursorMoveStyle(enum Qt::CursorMoveStyle)
+	?cursorMoveStyle@QLineEdit@@QBE?AW4CursorMoveStyle@Qt@@XZ @ 14028 NONAME ; enum Qt::CursorMoveStyle QLineEdit::cursorMoveStyle(void) const
+	?forceToRaster@QSymbianGraphicsSystemEx@@UAEXPAVQWidget@@@Z @ 14029 NONAME ; void QSymbianGraphicsSystemEx::forceToRaster(class QWidget *)
+	?releaseCachedGpuResources@QSymbianGraphicsSystemEx@@UAEXXZ @ 14030 NONAME ; void QSymbianGraphicsSystemEx::releaseCachedGpuResources(void)
+	?setCursorMoveStyle@QLineEdit@@QAEXW4CursorMoveStyle@Qt@@@Z @ 14031 NONAME ; void QLineEdit::setCursorMoveStyle(enum Qt::CursorMoveStyle)
+	?platformExtension@QGraphicsSystem@@UAEPAVQGraphicsSystemEx@@XZ @ 14032 NONAME ; class QGraphicsSystemEx * QGraphicsSystem::platformExtension(void)
+	?releaseAllGpuResources@QSymbianGraphicsSystemEx@@UAEXXZ @ 14033 NONAME ; void QSymbianGraphicsSystemEx::releaseAllGpuResources(void)
+	?cursorMoveStyle@QLineControl@@QBE?AW4CursorMoveStyle@Qt@@XZ @ 14034 NONAME ; enum Qt::CursorMoveStyle QLineControl::cursorMoveStyle(void) const
+	?hasBCM2727@QSymbianGraphicsSystemEx@@UAE_NXZ @ 14035 NONAME ; bool QSymbianGraphicsSystemEx::hasBCM2727(void)

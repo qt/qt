@@ -116,6 +116,7 @@ private slots:
 private:
 #ifndef QT_NO_BEARERMANAGEMENT
     QNetworkSession *networkSession;
+    QNetworkConfigurationManager *netConfMan;
 #endif
 };
 
@@ -154,10 +155,20 @@ void tst_QTcpServer::initTestCase_data()
 void tst_QTcpServer::initTestCase()
 {
 #ifndef QT_NO_BEARERMANAGEMENT
-    QNetworkConfigurationManager man;
-    networkSession = new QNetworkSession(man.defaultConfiguration(), this);
-    networkSession->open();
-    QVERIFY(networkSession->waitForOpened());
+    netConfMan = new QNetworkConfigurationManager(this);
+    netConfMan->updateConfigurations();
+    connect(netConfMan, SIGNAL(updateCompleted()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QNetworkConfiguration networkConfiguration = netConfMan->defaultConfiguration();
+    if (networkConfiguration.isValid()) {
+        networkSession = new QNetworkSession(networkConfiguration);
+        if (!networkSession->isOpen()) {
+            networkSession->open();
+            QVERIFY(networkSession->waitForOpened(30000));
+        }
+    } else {
+        QVERIFY(!(netConfMan->capabilities() & QNetworkConfigurationManager::NetworkSessionRequired));
+    }
 #endif
 }
 

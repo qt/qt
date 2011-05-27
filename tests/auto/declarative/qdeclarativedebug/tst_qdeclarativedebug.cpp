@@ -224,7 +224,7 @@ void tst_QDeclarativeDebug::recursiveObjectTest(QObject *o, const QDeclarativeDe
 
         QCOMPARE(p.name(), QString::fromUtf8(pmeta.name()));
 
-        if (pmeta.type() < QVariant::UserType) // TODO test complex types
+        if (pmeta.type() > 0 && pmeta.type() < QVariant::UserType) // TODO test complex types
             QCOMPARE(p.value(), pmeta.read(o));
 
         if (p.name() == "parent")
@@ -1027,7 +1027,7 @@ void tst_QDeclarativeDebug::setBindingForObject()
     // set handler
     //
     rootObject = findRootObject();
-    QCOMPARE(rootObject.children().size(), 4); // Rectangle, Text, MouseArea, QDeclarativeComponentAttached
+    QCOMPARE(rootObject.children().size(), 5); // Rectangle, Text, MouseArea, Component.onCompleted, NonScriptPropertyElement
     QDeclarativeDebugObjectReference mouseAreaObject = rootObject.children().at(2);
     QDeclarativeDebugObjectQuery *q_obj = m_dbg->queryObjectRecursive(mouseAreaObject, this);
     waitForQuery(q_obj);
