@@ -7,29 +7,29 @@
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -604,6 +604,17 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     if (!hasPartialUpdateSupport() && !d_ptr->did_paint)
         return;
 
+#ifdef Q_OS_SYMBIAN
+    if (window() != widget) {
+        // For performance reasons we don't support
+        // flushing native child widgets on Symbian.
+        // It breaks overlapping native child widget
+        // rendering in some cases but we prefer performance.
+        return;
+    }
+#endif
+
+
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
     Q_ASSERT(parent);
 
@@ -706,7 +717,6 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         } else {
             glFlush();
         }
-
         return;
     }
 
@@ -856,8 +866,22 @@ void QGLWindowSurface::updateGeometry() {
 
     bool hijack(true);
     QWidgetPrivate *wd = window()->d_func();
-    if (wd->extraData() && wd->extraData()->glContext)
-        hijack = false; // we already have gl context for widget
+    if (wd->extraData() && wd->extraData()->glContext) {
+#ifdef Q_OS_SYMBIAN // Symbian needs to recreate the context when native window size changes
+        if (d_ptr->size != geometry().size()) {
+            if (window() != qt_gl_share_widget())
+                --(_qt_gl_share_widget()->widgetRefCount);
+
+            delete wd->extraData()->glContext;
+            wd->extraData()->glContext = 0;
+            d_ptr->ctx = 0;
+        }
+        else
+#endif
+        {
+            hijack = false; // we already have gl context for widget
+        }
+    }
 
     if (hijack)
         hijackWindow(window());
@@ -877,35 +901,6 @@ void QGLWindowSurface::updateGeometry() {
         return;
 
     d_ptr->size = surfSize;
-
-#ifdef Q_OS_SYMBIAN
-    if (!hijack) { // Symbian needs to recreate EGL surface when native window size changes
-        if (ctx->d_func()->eglSurface != EGL_NO_SURFACE) {
-            eglDestroySurface(ctx->d_func()->eglContext->display(),
-                                                    ctx->d_func()->eglSurface);
-        }
-
-        ctx->d_func()->eglSurface = QEgl::createSurface(ctx->device(),
-                                           ctx->d_func()->eglContext->config());
-
-        eglGetError();  // Clear error state.
-        if (hasPartialUpdateSupport()) {
-            eglSurfaceAttrib(ctx->d_func()->eglContext->display(),
-                                            ctx->d_func()->eglSurface,
-                                            EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
-
-            if (eglGetError() != EGL_SUCCESS)
-                qWarning("QGLWindowSurface: could not enable preserved swap behaviour");
-        } else {
-            eglSurfaceAttrib(ctx->d_func()->eglContext->display(),
-                                            ctx->d_func()->eglSurface,
-                                            EGL_SWAP_BEHAVIOR, EGL_BUFFER_DESTROYED);
-
-            if (eglGetError() != EGL_SUCCESS)
-                qWarning("QGLWindowSurface: could not enable destroyed swap behaviour");
-        }
-    }
-#endif
 
     if (d_ptr->ctx) {
 #ifndef QT_OPENGL_ES_2

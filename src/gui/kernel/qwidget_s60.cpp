@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -563,6 +563,11 @@ void QWidgetPrivate::show_sys()
                     if (isFullscreen) {
                         const bool cbaVisible = S60->buttonGroupContainer() && S60->buttonGroupContainer()->IsVisible();
                         S60->setStatusPaneAndButtonGroupVisibility(false, cbaVisible);
+                        if (cbaVisible) {
+                            // Fix window dimensions as without screen furniture they will have
+                            // defaulted to full screen dimensions initially.
+                            id->handleClientAreaChange();
+                        }
                     }
                 }
             }
@@ -777,7 +782,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     adjustFlags(data.window_flags, q);
     // keep compatibility with previous versions, we need to preserve the created state
     // (but we recreate the winId for the widget being reparented, again for compatibility)
-    if (wasCreated || (!q->isWindow() && parent->testAttribute(Qt::WA_WState_Created)))
+    if (wasCreated || (!q->isWindow() && parent && parent->testAttribute(Qt::WA_WState_Created)))
         createWinId();
     if (q->isWindow() || (!parent || parent->isVisible()) || explicitlyHidden)
         q->setAttribute(Qt::WA_WState_Hidden);
@@ -820,7 +825,8 @@ void QWidgetPrivate::s60UpdateIsOpaque()
     RWindow *const window = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
 
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
-    if (QApplicationPrivate::instance()->useTranslucentEGLSurfaces) {
+    if (QApplicationPrivate::instance()->useTranslucentEGLSurfaces
+            && !extra->topextra->forcedToRaster) {
         window->SetSurfaceTransparency(!isOpaque);
         extra->topextra->nativeWindowTransparencyEnabled = !isOpaque;
         return;
@@ -1004,6 +1010,7 @@ void QWidgetPrivate::createTLSysExtra()
 {
     extra->topextra->inExpose = 0;
     extra->topextra->nativeWindowTransparencyEnabled = 0;
+    extra->topextra->forcedToRaster = 0;
 }
 
 void QWidgetPrivate::deleteTLSysExtra()

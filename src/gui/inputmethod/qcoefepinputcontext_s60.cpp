@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -235,29 +235,18 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         return false;
 
     switch (event->type()) {
-    case QEvent::MouseButtonPress:
-        // Alphanumeric keypad doesn't like it when we click and text is still getting displayed
-        // It ignores the mouse event, so we need to commit and send a selection event (which will get triggered
-        // after the commit)
-        if (!m_preeditString.isEmpty()) {
-            commitCurrentString(true);
-
-            int pos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
-
-            QList<QInputMethodEvent::Attribute> selectAttributes;
-            selectAttributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, pos, 0, QVariant());
-            QInputMethodEvent selectEvent(QLatin1String(""), selectAttributes);
-            sendEvent(selectEvent);
-    }
-        break;
     case QEvent::KeyPress:
         commitTemporaryPreeditString();
         // fall through intended
     case QEvent::KeyRelease:
         const QKeyEvent *keyEvent = static_cast<const QKeyEvent *>(event);
+        //If proxy exists, always use hints from proxy.
+        QWidget *proxy = focusWidget()->focusProxy();
+        Qt::InputMethodHints currentHints = proxy ? proxy->inputMethodHints() : focusWidget()->inputMethodHints();
+
         switch (keyEvent->key()) {
         case Qt::Key_F20:
-            Q_ASSERT(m_lastImHints == focusWidget()->inputMethodHints());
+            Q_ASSERT(m_lastImHints == currentHints);
             if (m_lastImHints & Qt::ImhHiddenText) {
                 // Special case in Symbian. On editors with secret text, F20 is for some reason
                 // considered to be a backspace.
@@ -287,7 +276,7 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         }
 
         if (keyEvent->type() == QEvent::KeyPress
-            && focusWidget()->inputMethodHints() & Qt::ImhHiddenText
+            && currentHints & Qt::ImhHiddenText
             && !keyEvent->text().isEmpty()) {
             // Send some temporary preedit text in order to make text visible for a moment.
             m_preeditString = keyEvent->text();
@@ -324,7 +313,10 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         if (sControl) {
             sControl->setIgnoreFocusChanged(false);
         }
-        return true;
+        //If m_pointerHandler has already been set, it means that fep inline editing is in progress.
+        //When this is happening, do not filter out pointer events.
+        if (!m_pointerHandler)
+            return true;
     }
 
     return false;
@@ -376,18 +368,31 @@ void QCoeFepInputContext::commitTemporaryPreeditString()
     commitCurrentString(false);
 }
 
-void QCoeFepInputContext::mouseHandler( int x, QMouseEvent *event)
+void QCoeFepInputContext::mouseHandler(int x, QMouseEvent *event)
 {
     Q_ASSERT(focusWidget());
 
     if (event->type() == QEvent::MouseButtonPress && event->button() == Qt::LeftButton) {
-        commitCurrentString(true);
-        int pos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
+        QWidget *proxy = focusWidget()->focusProxy();
+        Qt::InputMethodHints currentHints = proxy ? proxy->inputMethodHints() : focusWidget()->inputMethodHints();
 
-        QList<QInputMethodEvent::Attribute> attributes;
-        attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, pos + x, 0, QVariant());
-        QInputMethodEvent event(QLatin1String(""), attributes);
-        sendEvent(event);
+        //If splitview is open and T9 word is tapped, pass the pointer event to pointer handler.
+        //This will open the "suggested words" list. Pass pointer position always as zero, to make
+        //full word replacement in case user makes a selection.
+        if (S60->partial_keyboard && S60->partialKeyboardOpen
+            && m_pointerHandler
+            && !(currentHints & Qt::ImhNoPredictiveText)
+            && (x > 0 && x < m_preeditString.length())) {
+            m_pointerHandler->HandlePointerEventInInlineTextL(TPointerEvent::EButton1Up, 0, 0);
+        } else {
+            commitCurrentString(true);
+            int pos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
+
+            QList<QInputMethodEvent::Attribute> attributes;
+            attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, pos + x, 0, QVariant());
+            QInputMethodEvent event(QLatin1String(""), attributes);
+            sendEvent(event);
+        }
     }
 }
 
@@ -588,9 +593,10 @@ void QCoeFepInputContext::updateHints(bool mustUpdateInputCapabilities)
 {
     QWidget *w = focusWidget();
     if (w) {
-        Qt::InputMethodHints hints = w->inputMethodHints();
+        QWidget *proxy = w->focusProxy();
+        Qt::InputMethodHints hints = proxy ? proxy->inputMethodHints() : w->inputMethodHints();
 
-        // Since splitview support works like an input method hint, yet it is private flag, 
+        // Since splitview support works like an input method hint, yet it is private flag,
         // we need to update its state separately.
         if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0) {
             TInt currentFlags = m_fepState->Flags();

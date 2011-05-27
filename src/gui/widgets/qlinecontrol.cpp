@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -254,12 +254,20 @@ void QLineControl::setSelection(int start, int length)
         m_selstart = start;
         m_selend = qMin(start + length, (int)m_text.length());
         m_cursor = m_selend;
-    } else {
+    } else if (length < 0){
         if (start == m_selend && start + length == m_selstart)
             return;
         m_selstart = qMax(start + length, 0);
         m_selend = start;
         m_cursor = m_selstart;
+    } else if (m_selstart != m_selend) {
+        m_selstart = 0;
+        m_selend = 0;
+        m_cursor = start;
+    } else {
+        m_cursor = start;
+        emitCursorPositionChanged();
+        return;
     }
     emit selectionChanged();
     emitCursorPositionChanged();
@@ -427,6 +435,8 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
         c += event->commitString().length() - qMin(-event->replacementStart(), event->replacementLength());
 
     m_cursor += event->replacementStart();
+    if (m_cursor < 0)
+        m_cursor = 0;
 
     // insert commit string
     if (event->replacementLength()) {
@@ -435,11 +445,11 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
         removeSelectedText();
     }
     if (!event->commitString().isEmpty()) {
-        insert(event->commitString());
+        internalInsert(event->commitString());
         cursorPositionChanged = true;
     }
 
-    m_cursor = qMin(c, m_text.length());
+    m_cursor = qBound(0, c, m_text.length());
 
     for (int i = 0; i < event->attributes().size(); ++i) {
         const QInputMethodEvent::Attribute &a = event->attributes().at(i);

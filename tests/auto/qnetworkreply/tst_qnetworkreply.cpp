@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -328,6 +328,8 @@ private Q_SLOTS:
     void httpWithNoCredentialUsage();
 
     void qtbug15311doubleContentLength();
+
+    void qtbug18232gzipContentLengthZero();
 
     void synchronousRequest_data();
     void synchronousRequest();
@@ -4537,7 +4539,9 @@ void tst_QNetworkReply::httpProxyCommands()
     QNetworkProxy proxy(QNetworkProxy::HttpProxy, "127.0.0.1", proxyServer.serverPort());
 
     manager.setProxy(proxy);
-    QNetworkReplyPtr reply = manager.get(QNetworkRequest(url));
+    QNetworkRequest request(url);
+    request.setRawHeader("User-Agent", "QNetworkReplyAutoTest/1.0");
+    QNetworkReplyPtr reply = manager.get(request);
     manager.setProxy(QNetworkProxy());
 
     // wait for the finished signal
@@ -4555,6 +4559,12 @@ void tst_QNetworkReply::httpProxyCommands()
 
     QString receivedHeader = proxyServer.receivedData.left(expectedCommand.length());
     QCOMPARE(receivedHeader, expectedCommand);
+
+    //QTBUG-17223 - make sure the user agent from the request is sent to proxy server even for CONNECT
+    int uapos = proxyServer.receivedData.indexOf("User-Agent");
+    int uaend = proxyServer.receivedData.indexOf("\r\n", uapos);
+    QByteArray uaheader = proxyServer.receivedData.mid(uapos, uaend - uapos);
+    QCOMPARE(uaheader, QByteArray("User-Agent: QNetworkReplyAutoTest/1.0"));
 }
 
 class ProxyChangeHelper : public QObject {
@@ -5215,6 +5225,25 @@ void tst_QNetworkReply::qtbug15311doubleContentLength()
     QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), qint64(3));
     QCOMPARE(reply->rawHeader("Content-length"), QByteArray("3, 3"));
     QCOMPARE(reply->readAll(), QByteArray("ABC"));
+}
+
+void tst_QNetworkReply::qtbug18232gzipContentLengthZero()
+{
+    QByteArray response("HTTP/1.0 200 OK\r\nContent-Encoding: gzip\r\nContent-Length: 0\r\n\r\n");
+    MiniHttpServer server(response);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->size(), qint64(0));
+    QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), qint64(0));
+    QCOMPARE(reply->readAll(), QByteArray());
 }
 
 void tst_QNetworkReply::synchronousRequest_data()
