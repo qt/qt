@@ -36,7 +36,7 @@ symbian: SUBDIRS = \
                 wiggly \
                 softkeys
 
-MAEMO5: SUBDIRS += maemovibration
+maemo5: SUBDIRS += maemovibration
 
 contains(styles, motif): SUBDIRS += styles
 
