@@ -47,6 +47,6 @@ maemo5 {
 }
 
 !maemo5 {
-    error(The Maemo Vibration Example only works for the maemo target!)
+    warning(The Maemo Vibration Example only works for the maemo target!)
 }
 
