@@ -510,7 +510,7 @@ int main(int argc, char *argv[])
         engine->addImportPath(pluginImportPath);
 
     // find all QMetaObjects reachable from the builtin module
-    QByteArray importCode("import QtQuick 1.0\n");
+    QByteArray importCode("import QtQuick 1.1\n");
     QSet<const QMetaObject *> defaultReachable = collectReachableMetaObjects(importCode, engine);
 
     // this will hold the meta objects we want to dump information of
