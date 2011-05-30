@@ -129,7 +129,7 @@ symbian {
 	LIBS += -lmediaclientaudiostream  # For CMdaAudioOutputStream
 
 	# These are for effects.
-        CONTAINS(config, is_using_gnupoc) {
+        contains(CONFIG, is_using_gnupoc) {
             LIBS += -laudioequalizereffect -lbassboosteffect -ldistanceattenuationeffect -ldopplerbase -leffectbase -lenvironmentalreverbeffect -llistenerdopplereffect -llistenerlocationeffect -llistenerorientationeffect -llocationbase -lloudnesseffect -lorientationbase -lsourcedopplereffect -lsourcelocationeffect -lsourceorientationeffect -lstereowideningeffect
         } else {
             LIBS += -lAudioEqualizerEffect -lBassBoostEffect -lDistanceAttenuationEffect -lDopplerbase -lEffectBase -lEnvironmentalReverbEffect -lListenerDopplerEffect -lListenerLocationEffect -lListenerOrientationEffect -lLocationBase -lLoudnessEffect -lOrientationBase -lSourceDopplerEffect -lSourceLocationEffect -lSourceOrientationEffect -lStereoWideningEffect
