@@ -2005,7 +2005,7 @@ void QApplicationPrivate::openPopup(QWidget *popup)
     QApplicationPrivate::popupWidgets->append(popup);
 
     // Cancel focus widget pointer capture and long tap timer
-    if (QApplication::focusWidget()) {
+    if (QApplication::focusWidget() && QApplication::focusWidget()->effectiveWinId()) {
         static_cast<QSymbianControl*>(QApplication::focusWidget()->effectiveWinId())->CancelLongTapTimer();
         QApplication::focusWidget()->effectiveWinId()->SetPointerCapture(false);
         }
