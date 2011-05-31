@@ -113,7 +113,7 @@ static void networkStateChanged()
         frames[i]->document()->dispatchWindowEvent(Event::create(eventName, false, false));
 }
 
-Page::Page(const PageClients& pageClients)
+Page::Page(PageClients& pageClients)
     : m_chrome(adoptPtr(new Chrome(this, pageClients.chromeClient)))
     , m_dragCaretController(adoptPtr(new SelectionController(0, true)))
 #if ENABLE(DRAG_SUPPORT)
@@ -174,7 +174,7 @@ Page::Page(const PageClients& pageClients)
     allPages->add(this);
 
     if (pageClients.pluginHalterClient) {
-        m_pluginHalter = adoptPtr(new PluginHalter(pageClients.pluginHalterClient));
+        m_pluginHalter = adoptPtr(new PluginHalter(pageClients.pluginHalterClient.release()));
         m_pluginHalter->setPluginAllowedRunTime(m_settings->pluginAllowedRunTime());
     }
 
@@ -940,7 +940,6 @@ Page::PageClients::PageClients()
     , editorClient(0)
     , dragClient(0)
     , inspectorClient(0)
-    , pluginHalterClient(0)
     , geolocationClient(0)
     , deviceMotionClient(0)
     , deviceOrientationClient(0)
