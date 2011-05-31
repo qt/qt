@@ -762,8 +762,17 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphMetrics(QGlyphSet *set, uint glyph
         return g;
 
     int load_flags = FT_LOAD_DEFAULT | default_load_flags;
+    int load_target = default_hint_style == HintLight
+                      ? FT_LOAD_TARGET_LIGHT
+                      : FT_LOAD_TARGET_NORMAL;
+
     if (set->outline_drawing)
         load_flags = FT_LOAD_NO_BITMAP;
+
+    if (default_hint_style == HintNone)
+        load_flags |= FT_LOAD_NO_HINTING;
+    else
+        load_flags |= load_target;
 
     // apply our matrix to this, but note that the metrics will not be affected by this.
     FT_Face face = lockFace();
