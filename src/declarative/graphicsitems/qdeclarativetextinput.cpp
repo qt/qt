@@ -326,7 +326,6 @@ void QDeclarativeTextInput::setSelectedTextColor(const QColor &color)
 
 /*!
     \qmlproperty enumeration TextInput::horizontalAlignment
-    \qmlproperty enumeration TextInput::effectiveHorizontalAlignment
 
     Sets the horizontal alignment of the text within the TextInput item's
     width and height. By default, the text alignment follows the natural alignment
@@ -342,10 +341,10 @@ void QDeclarativeTextInput::setSelectedTextColor(const QColor &color)
     The valid values for \c horizontalAlignment are \c TextInput.AlignLeft, \c TextInput.AlignRight and
     \c TextInput.AlignHCenter.
 
-    When using the attached property LayoutMirroring::enabled to mirror application
+    When using the attached property \l {LayoutMirroring::enabled} to mirror application
     layouts, the horizontal alignment of text will also be mirrored. However, the property
     \c horizontalAlignment will remain unchanged. To query the effective horizontal alignment
-    of TextInput, use the read-only property \c effectiveHorizontalAlignment.
+    of TextInput, use the property \l {LayoutMirroring::enabled}.
 */
 QDeclarativeTextInput::HAlignment QDeclarativeTextInput::hAlign() const
 {
@@ -398,8 +397,6 @@ bool QDeclarativeTextInputPrivate::setHAlign(QDeclarativeTextInput::HAlignment a
         QDeclarativeTextInput::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
         hAlign = alignment;
         emit q->horizontalAlignmentChanged(alignment);
-        if (oldEffectiveHAlign != q->effectiveHAlign())
-            emit q->effectiveHorizontalAlignmentChanged();
         return true;
     }
     return false;
@@ -422,7 +419,7 @@ void QDeclarativeTextInputPrivate::mirrorChange()
     if (q->isComponentComplete()) {
         if (!hAlignImplicit && (hAlign == QDeclarativeTextInput::AlignRight || hAlign == QDeclarativeTextInput::AlignLeft)) {
             q->updateCursorRectangle();
-            emit q->effectiveHorizontalAlignmentChanged();
+            updateHorizontalScroll();
         }
     }
 }

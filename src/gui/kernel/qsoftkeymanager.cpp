@@ -50,7 +50,7 @@
 #include "private/qsoftkeymanager_s60_p.h"
 #endif
 
-#ifdef SYMBIAN_VERSION_SYMBIAN3
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
 #include "private/qt_s60_p.h"
 #endif
 
@@ -105,7 +105,7 @@ QSoftKeyManager::QSoftKeyManager() :
 QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *actionWidget)
 {
     QAction *action = new QAction(standardSoftKeyText(standardKey), actionWidget);
-#ifdef SYMBIAN_VERSION_SYMBIAN3
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
     int key = 0;
     switch (standardKey) {
     case OkSoftKey:
@@ -171,7 +171,7 @@ void QSoftKeyManager::cleanupHash(QObject *obj)
     Q_D(QSoftKeyManager);
     QAction *action = qobject_cast<QAction*>(obj);
     d->keyedActions.remove(action);
-#ifdef SYMBIAN_VERSION_SYMBIAN3
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
     d->softKeyCommandActions.remove(action);
 #endif
 }

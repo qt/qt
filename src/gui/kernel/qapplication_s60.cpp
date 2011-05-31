@@ -74,6 +74,7 @@
 # include <centralrepository.h>
 # include "qs60mainappui.h"
 # include "qinputcontext.h"
+# include <private/qgraphicssystemex_symbian_p.h>
 #endif
 
 #if defined(Q_WS_S60)
@@ -1850,26 +1851,12 @@ void qt_init(QApplicationPrivate * /* priv */, int)
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
     QApplicationPrivate::instance()->useTranslucentEGLSurfaces = true;
 
-    const TUid KIvePropertyCat = {0x2726beef};
-    enum TIvePropertyChipType {
-        EVCBCM2727B1 = 0x00000000,
-        EVCBCM2763A0 = 0x04000100,
-        EVCBCM2763B0 = 0x04000102,
-        EVCBCM2763C0 = 0x04000103,
-        EVCBCM2763C1 = 0x04000104,
-        EVCBCMUnknown = 0x7fffffff
-    };
-
-    TInt chipType = EVCBCMUnknown;
-    if (RProperty::Get(KIvePropertyCat, 0 /*chip type*/, chipType) == KErrNone) {
-        if (chipType == EVCBCM2727B1) {
-            // We have only 32MB GPU memory. Use raster surfaces
-            // for transparent TLWs.
-            QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
-        }
-    } else {
+    if (QSymbianGraphicsSystemEx::hasBCM2727()) {
+        // We have only 32MB GPU memory. Use raster surfaces
+        // for transparent TLWs.
         QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
     }
+
     if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
         QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
 #else
@@ -2027,7 +2014,7 @@ void QApplicationPrivate::openPopup(QWidget *popup)
     QApplicationPrivate::popupWidgets->append(popup);
 
     // Cancel focus widget pointer capture and long tap timer
-    if (QApplication::focusWidget()) {
+    if (QApplication::focusWidget() && QApplication::focusWidget()->effectiveWinId()) {
         static_cast<QSymbianControl*>(QApplication::focusWidget()->effectiveWinId())->CancelLongTapTimer();
         QApplication::focusWidget()->effectiveWinId()->SetPointerCapture(false);
         }

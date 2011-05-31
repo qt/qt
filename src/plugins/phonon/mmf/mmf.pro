@@ -103,7 +103,11 @@ symbian {
 		exists($${EPOCROOT}epoc32/include/mw/downloadmgrclient.h) {
 			HEADERS += $$PHONON_MMF_DIR/download.h
 			SOURCES += $$PHONON_MMF_DIR/download.cpp
-			LIBS += -ldownloadmgr
+                        contains(CONFIG, is_using_gnupoc) {
+                            LIBS += -ldownloadmgr
+                        } else {
+                            LIBS += -lDownloadMgr
+                        }
 			DEFINES += PHONON_MMF_PROGRESSIVE_DOWNLOAD
 		}
 	}
