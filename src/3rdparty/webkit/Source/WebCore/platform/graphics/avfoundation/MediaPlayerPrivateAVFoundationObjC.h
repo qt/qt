@@ -55,6 +55,7 @@ class ApplicationCacheResource;
 
 class MediaPlayerPrivateAVFoundationObjC : public MediaPlayerPrivateAVFoundation {
 public:
+    ~MediaPlayerPrivateAVFoundationObjC();
 
     static void registerMediaEngine(MediaEngineRegistrar);
 
@@ -63,10 +64,9 @@ public:
 
 private:
     MediaPlayerPrivateAVFoundationObjC(MediaPlayer*);
-    ~MediaPlayerPrivateAVFoundationObjC();
 
     // engine support
-    static MediaPlayerPrivateInterface* create(MediaPlayer* player);
+    static PassOwnPtr<MediaPlayerPrivateInterface> create(MediaPlayer*);
     static void getSupportedTypes(HashSet<String>& types);
     static MediaPlayer::SupportsType supportsType(const String& type, const String& codecs);
     static bool isAvailable();

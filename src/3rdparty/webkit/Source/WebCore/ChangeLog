@@ -1,3 +1,82 @@
+2011-05-13  Adam Roben  <aroben@apple.com>
+
+        Build fix after r86418
+
+        * platform/graphics/avfoundation/MediaPlayerPrivateAVFoundationObjC.h:
+        Made the destructor public so that this class can be used with
+        [Pass]OwnPtr.
+
+2011-05-13  Patrick Gansterer  <paroga@webkit.org>
+
+        Reviewed by Adam Barth.
+
+        Enable OwnPtr strict mode in MediaPlayer
+        https://bugs.webkit.org/show_bug.cgi?id=59466
+
+        Let the CreateMediaEnginePlayer function return a PassOwnPtr instead of a raw pointer.
+        Also fix the templete argument of OwnPtr for the m_private member variable.
+
+        * platform/graphics/MediaPlayer.cpp:
+        (WebCore::MediaPlayer::MediaPlayer):
+        (WebCore::MediaPlayer::loadWithNextMediaEngine):
+        * platform/graphics/MediaPlayer.h:
+        * platform/graphics/avfoundation/MediaPlayerPrivateAVFoundationObjC.h:
+        * platform/graphics/avfoundation/MediaPlayerPrivateAVFoundationObjC.mm:
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::create):
+        * platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp:
+        (WebCore::MediaPlayerPrivateGStreamer::create):
+        * platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.h:
+        * platform/graphics/mac/MediaPlayerPrivateQTKit.h:
+        * platform/graphics/mac/MediaPlayerPrivateQTKit.mm:
+        (WebCore::MediaPlayerPrivateQTKit::create):
+        * platform/graphics/qt/MediaPlayerPrivatePhonon.cpp:
+        (WebCore::MediaPlayerPrivatePhonon::create):
+        * platform/graphics/qt/MediaPlayerPrivatePhonon.h:
+        * platform/graphics/qt/MediaPlayerPrivateQt.cpp:
+        (WebCore::MediaPlayerPrivateQt::create):
+        * platform/graphics/qt/MediaPlayerPrivateQt.h:
+        * platform/graphics/win/MediaPlayerPrivateQuickTimeVisualContext.cpp:
+        (WebCore::MediaPlayerPrivateQuickTimeVisualContext::create):
+        * platform/graphics/win/MediaPlayerPrivateQuickTimeVisualContext.h:
+        * platform/graphics/win/MediaPlayerPrivateQuickTimeWin.cpp:
+        (WebCore::MediaPlayerPrivate::create):
+        * platform/graphics/win/MediaPlayerPrivateQuickTimeWin.h:
+        * platform/graphics/wince/MediaPlayerPrivateWinCE.h:
+
+2011-05-12  Maciej Stachowiak  <mjs@apple.com>
+
+        Reviewed by Darin Adler.
+
+        XMLDocumentParserLibxml2 should play nice with strict OwnPtrs
+        https://bugs.webkit.org/show_bug.cgi?id=59394
+
+        Properly fix this (formerly rolled out for breaking the build). I think the original
+        failure had nothing to do with Deque<OwnPtr>, which in fact appears to work fine.
+
+        * dom/XMLDocumentParserLibxml2.cpp:
+        (WebCore::PendingCallbacks::~PendingCallbacks):
+        (WebCore::PendingCallbacks::create):
+        (WebCore::PendingCallbacks::appendStartElementNSCallback):
+        (WebCore::PendingCallbacks::appendEndElementNSCallback):
+        (WebCore::PendingCallbacks::appendCharactersCallback):
+        (WebCore::PendingCallbacks::appendProcessingInstructionCallback):
+        (WebCore::PendingCallbacks::appendCDATABlockCallback):
+        (WebCore::PendingCallbacks::appendCommentCallback):
+        (WebCore::PendingCallbacks::appendInternalSubsetCallback):
+        (WebCore::PendingCallbacks::appendErrorCallback):
+        (WebCore::PendingCallbacks::PendingCallbacks):
+        (WebCore::XMLDocumentParser::XMLDocumentParser):
+
+2011-05-31  Oleg Romashin  <oleg.romashin@nokia.com>
+
+        Reviewed by Benjamin Poulain.
+
+        Fix compilation with debug enabled, m_lightSource.type is not valid anymore
+        https://bugs.webkit.org/show_bug.cgi?id=61719
+
+        * platform/graphics/filters/arm/FELightingNEON.h:
+        (WebCore::FELighting::platformApplyNeon):
+
 2011-05-12  Daniel Bates  <dbates@rim.com>
 
         Attempt to fix the build after changeset 86391 <http://trac.webkit.org/changeset/86391>
