@@ -8029,7 +8029,16 @@ void tst_QGraphicsItem::sorting()
     QGraphicsView view(&scene);
     view.setResizeAnchor(QGraphicsView::NoAnchor);
     view.setTransformationAnchor(QGraphicsView::NoAnchor);
+#ifdef Q_OS_SYMBIAN
+    // Adjust area in devices where scrollbars are thicker than 25 pixels as they will
+    // obstruct painting otherwise.
+    int scrollWidth = qMax(25, view.verticalScrollBar()->width());
+    int scrollHeight = qMax(25, view.horizontalScrollBar()->height());
+
+    view.resize(95 + scrollWidth, 75 + scrollHeight);
+#else
     view.resize(120, 100);
+#endif
     view.setFrameStyle(0);
     view.show();
 #ifdef Q_WS_X11
