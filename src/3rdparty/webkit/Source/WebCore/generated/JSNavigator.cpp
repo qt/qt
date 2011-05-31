@@ -24,11 +24,9 @@
 #include "DOMMimeTypeArray.h"
 #include "DOMPluginArray.h"
 #include "ExceptionCode.h"
-#include "Geolocation.h"
 #include "JSDOMBinding.h"
 #include "JSDOMMimeTypeArray.h"
 #include "JSDOMPluginArray.h"
-#include "JSGeolocation.h"
 #include "KURL.h"
 #include "Navigator.h"
 #include <runtime/Error.h>
@@ -48,7 +46,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSNavigator);
 #define THUNK_GENERATOR(generator)
 #endif
 
-static const HashTableValue JSNavigatorTableValues[16] =
+static const HashTableValue JSNavigatorTableValues[15] =
 {
     { "appCodeName", DontDelete | ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorAppCodeName), (intptr_t)0 THUNK_GENERATOR(0) },
     { "appName", DontDelete | ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorAppName), (intptr_t)0 THUNK_GENERATOR(0) },
@@ -64,7 +62,6 @@ static const HashTableValue JSNavigatorTableValues[16] =
     { "vendorSub", DontDelete | ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorVendorSub), (intptr_t)0 THUNK_GENERATOR(0) },
     { "cookieEnabled", DontDelete | ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorCookieEnabled), (intptr_t)0 THUNK_GENERATOR(0) },
     { "onLine", DontDelete | ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorOnLine), (intptr_t)0 THUNK_GENERATOR(0) },
-    { "geolocation", DontDelete | ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorGeolocation), (intptr_t)0 THUNK_GENERATOR(0) },
     { 0, 0, 0, 0 THUNK_GENERATOR(0) }
 };
 
@@ -263,16 +260,6 @@ JSValue jsNavigatorOnLine(ExecState* exec, JSValue slotBase, const Identifier&)
     UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(castedThis->impl());
     JSValue result = jsBoolean(imp->onLine());
-    return result;
-}
-
-
-JSValue jsNavigatorGeolocation(ExecState* exec, JSValue slotBase, const Identifier&)
-{
-    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slotBase));
-    UNUSED_PARAM(exec);
-    Navigator* imp = static_cast<Navigator*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->geolocation()));
     return result;
 }
 

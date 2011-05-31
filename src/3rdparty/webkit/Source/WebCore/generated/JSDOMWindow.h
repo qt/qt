@@ -240,7 +240,6 @@ JSC::JSValue jsDOMWindowApplicationCache(JSC::ExecState*, JSC::JSValue, const JS
 JSC::JSValue jsDOMWindowSessionStorage(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 JSC::JSValue jsDOMWindowLocalStorage(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 JSC::JSValue jsDOMWindowWebkitNotifications(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
-JSC::JSValue jsDOMWindowOrientation(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 JSC::JSValue jsDOMWindowConsole(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDOMWindowConsole(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowOnabort(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
@@ -377,8 +376,6 @@ JSC::JSValue jsDOMWindowOnwebkitanimationstart(JSC::ExecState*, JSC::JSValue, co
 void setJSDOMWindowOnwebkitanimationstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowOnwebkittransitionend(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDOMWindowOnwebkittransitionend(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsDOMWindowOnorientationchange(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
-void setJSDOMWindowOnorientationchange(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowOntouchstart(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDOMWindowOntouchstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowOntouchmove(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);

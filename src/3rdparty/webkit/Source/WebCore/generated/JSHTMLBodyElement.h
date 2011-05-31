@@ -95,8 +95,6 @@ JSC::JSValue jsHTMLBodyElementOnstorage(JSC::ExecState*, JSC::JSValue, const JSC
 void setJSHTMLBodyElementOnstorage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLBodyElementOnunload(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBodyElementOnunload(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBodyElementOnorientationchange(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
-void setJSHTMLBodyElementOnorientationchange(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLBodyElementOnblur(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBodyElementOnblur(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLBodyElementOnerror(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);

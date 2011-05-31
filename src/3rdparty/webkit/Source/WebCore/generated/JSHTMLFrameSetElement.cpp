@@ -43,7 +43,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLFrameSetElement);
 #define THUNK_GENERATOR(generator)
 #endif
 
-static const HashTableValue JSHTMLFrameSetElementTableValues[18] =
+static const HashTableValue JSHTMLFrameSetElementTableValues[17] =
 {
     { "cols", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLFrameSetElementCols), (intptr_t)setJSHTMLFrameSetElementCols THUNK_GENERATOR(0) },
     { "rows", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLFrameSetElementRows), (intptr_t)setJSHTMLFrameSetElementRows THUNK_GENERATOR(0) },
@@ -56,7 +56,6 @@ static const HashTableValue JSHTMLFrameSetElementTableValues[18] =
     { "onresize", DontDelete | DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLFrameSetElementOnresize), (intptr_t)setJSHTMLFrameSetElementOnresize THUNK_GENERATOR(0) },
     { "onstorage", DontDelete | DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLFrameSetElementOnstorage), (intptr_t)setJSHTMLFrameSetElementOnstorage THUNK_GENERATOR(0) },
     { "onunload", DontDelete | DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLFrameSetElementOnunload), (intptr_t)setJSHTMLFrameSetElementOnunload THUNK_GENERATOR(0) },
-    { "onorientationchange", DontDelete | DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLFrameSetElementOnorientationchange), (intptr_t)setJSHTMLFrameSetElementOnorientationchange THUNK_GENERATOR(0) },
     { "onblur", DontDelete | DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLFrameSetElementOnblur), (intptr_t)setJSHTMLFrameSetElementOnblur THUNK_GENERATOR(0) },
     { "onerror", DontDelete | DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLFrameSetElementOnerror), (intptr_t)setJSHTMLFrameSetElementOnerror THUNK_GENERATOR(0) },
     { "onfocus", DontDelete | DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLFrameSetElementOnfocus), (intptr_t)setJSHTMLFrameSetElementOnfocus THUNK_GENERATOR(0) },
@@ -66,7 +65,7 @@ static const HashTableValue JSHTMLFrameSetElementTableValues[18] =
 };
 
 #undef THUNK_GENERATOR
-static JSC_CONST_HASHTABLE HashTable JSHTMLFrameSetElementTable = { 64, 63, JSHTMLFrameSetElementTableValues, 0 };
+static JSC_CONST_HASHTABLE HashTable JSHTMLFrameSetElementTable = { 33, 31, JSHTMLFrameSetElementTableValues, 0 };
 /* Hash table for constructor */
 #if ENABLE(JIT)
 #define THUNK_GENERATOR(generator) , generator
@@ -324,21 +323,6 @@ JSValue jsHTMLFrameSetElementOnunload(ExecState* exec, JSValue slotBase, const I
 }
 
 
-JSValue jsHTMLFrameSetElementOnorientationchange(ExecState* exec, JSValue slotBase, const Identifier&)
-{
-    JSHTMLFrameSetElement* castedThis = static_cast<JSHTMLFrameSetElement*>(asObject(slotBase));
-    UNUSED_PARAM(exec);
-    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(castedThis->impl());
-    if (EventListener* listener = imp->onorientationchange()) {
-        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
-            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
-                return jsFunction;
-        }
-    }
-    return jsNull();
-}
-
-
 JSValue jsHTMLFrameSetElementOnblur(ExecState* exec, JSValue slotBase, const Identifier&)
 {
     JSHTMLFrameSetElement* castedThis = static_cast<JSHTMLFrameSetElement*>(asObject(slotBase));
@@ -513,15 +497,6 @@ void setJSHTMLFrameSetElementOnunload(ExecState* exec, JSObject* thisObject, JSV
     JSDOMGlobalObject* globalObject = castedThis->globalObject();
     HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(castedThis->impl());
     imp->setOnunload(createJSAttributeEventListener(exec, value, globalObject));
-}
-
-
-void setJSHTMLFrameSetElementOnorientationchange(ExecState* exec, JSObject* thisObject, JSValue value)
-{
-    UNUSED_PARAM(exec);
-    JSHTMLFrameSetElement* castedThis = static_cast<JSHTMLFrameSetElement*>(thisObject);
-    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(castedThis->impl());
-    imp->setOnorientationchange(createJSAttributeEventListener(exec, value, thisObject));
 }
 
 
