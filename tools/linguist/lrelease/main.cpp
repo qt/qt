@@ -425,16 +425,4 @@ static void initBinaryDir(
 #endif
 }
 
-QT_BEGIN_NAMESPACE
-
-// The name is hard-coded in QLibraryInfo
-QString qmake_libraryInfoFile()
-{
-    if (binDir.isEmpty())
-        return QString();
-    return QDir(binDir).filePath(QString::fromLatin1("qt.conf"));
-}
-
-QT_END_NAMESPACE
-
 #endif // QT_BOOTSTRAPPED
