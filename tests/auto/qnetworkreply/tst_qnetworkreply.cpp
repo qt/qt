@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -629,9 +629,14 @@ public:
     }
 
     QIODevice *prepare(const QNetworkCacheMetaData &)
-    { Q_ASSERT(0 && "Should not have tried to add to the cache"); return 0; }
+    {
+        qFatal("%s: Should not have tried to add to the cache", Q_FUNC_INFO);
+        return 0;
+    }
     void insert(QIODevice *)
-    { Q_ASSERT(0 && "Should not have tried to add to the cache"); }
+    {
+        qFatal("%s: Should not have tried to add to the cache", Q_FUNC_INFO);
+    }
 
     void clear() { cache.clear(); }
 };
@@ -781,7 +786,9 @@ public:
     QTcpSocket* waitForNextConnectionSocket() {
         waitForNewConnection(-1);
         if (doSsl) {
-            Q_ASSERT(sslSocket);
+            if (!sslSocket)
+                qFatal("%s: sslSocket should not be null after calling waitForNewConnection()",
+                       Q_FUNC_INFO);
             return sslSocket;
         } else {
             //qDebug() << "returning nextPendingConnection";
@@ -953,7 +960,8 @@ protected:
         while (dataIndex < wantedSize) {
             const int remainingBytes = wantedSize - measuredSentBytes;
             const int bytesToWrite = qMin(remainingBytes, static_cast<int>(BlockSize));
-            Q_ASSERT(bytesToWrite);
+            if (bytesToWrite <= 0)
+                qFatal("%s: attempt to write %d bytes", Q_FUNC_INFO, bytesToWrite);
             measuredSentBytes += writeNextData(client, bytesToWrite);
 
             while (client->bytesToWrite() > 0) {
@@ -1012,7 +1020,8 @@ public:
 
         // Wait for data to be readyRead
         bool ok = connect(&senderObj, SIGNAL(dataReady()), this, SLOT(slotDataReady()));
-        Q_ASSERT(ok);
+        if (!ok)
+            qFatal("%s: Cannot connect dataReady signal", Q_FUNC_INFO);
     }
 
     void wrapUp()
@@ -1035,9 +1044,9 @@ protected:
     void timerEvent(QTimerEvent *)
     {
         //qDebug() << "RateControlledReader: timerEvent bytesAvailable=" << device->bytesAvailable();
-        if (readBufferSize > 0) {
-            // This asserts passes all the time, except in the final flush.
-            //Q_ASSERT(device->bytesAvailable() <= readBufferSize);
+        if (readBufferSize > 0 && device->bytesAvailable() > readBufferSize) {
+            // This passes all the time, except in the final flush.
+            //qFatal("%s: Too many bytes available", Q_FUNC_INFO);
         }
 
         qint64 bytesRead = 0;
@@ -1196,7 +1205,7 @@ QString tst_QNetworkReply::runSimpleRequest(QNetworkAccessManager::Operation op,
         break;
 
     default:
-        Q_ASSERT_X(false, "tst_QNetworkReply", "Invalid/unknown operation requested");
+        qFatal("%s: Invalid/unknown operation requested", Q_FUNC_INFO);
     }
     reply->setParent(this);
 
@@ -1281,11 +1290,18 @@ void tst_QNetworkReply::initTestCase()
 #endif
 #ifndef QT_NO_BEARERMANAGEMENT
     netConfMan = new QNetworkConfigurationManager(this);
+    netConfMan->updateConfigurations();
+    connect(netConfMan, SIGNAL(updateCompleted()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
     networkConfiguration = netConfMan->defaultConfiguration();
-    networkSession.reset(new QNetworkSession(networkConfiguration));
-    if (!networkSession->isOpen()) {
-        networkSession->open();
-        QVERIFY(networkSession->waitForOpened(30000));
+    if (networkConfiguration.isValid()) {
+        networkSession.reset(new QNetworkSession(networkConfiguration));
+        if (!networkSession->isOpen()) {
+            networkSession->open();
+            QVERIFY(networkSession->waitForOpened(30000));
+        }
+    } else {
+        QVERIFY(!(netConfMan->capabilities() & QNetworkConfigurationManager::NetworkSessionRequired));
     }
 #endif
 }

@@ -1721,10 +1721,6 @@ to
         <translation>Властивість-псевдонім виходить за межі псевдоніму</translation>
     </message>
     <message>
-        <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
-        <translation type="obsolete">Неправильне посилання на псевдонім. Посилання на псевдонім має бути вказане, як &lt;id&gt; або &lt;id&gt;.&lt;property&gt;</translation>
-    </message>
-    <message>
         <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
         <translation>Неправильне посилання на псевдонім. Неможливо знайти id &quot;%1&quot;</translation>
     </message>

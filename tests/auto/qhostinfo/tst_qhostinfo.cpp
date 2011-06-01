@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -197,13 +197,19 @@ tst_QHostInfo::~tst_QHostInfo()
 void tst_QHostInfo::initTestCase()
 {
 #ifndef QT_NO_BEARERMANAGEMENT
-    //start the default network
     netConfMan = new QNetworkConfigurationManager(this);
+    netConfMan->updateConfigurations();
+    connect(netConfMan, SIGNAL(updateCompleted()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
     networkConfiguration = netConfMan->defaultConfiguration();
-    networkSession.reset(new QNetworkSession(networkConfiguration));
-    if (!networkSession->isOpen()) {
-        networkSession->open();
-        QVERIFY(networkSession->waitForOpened(30000));
+    if (networkConfiguration.isValid()) {
+        networkSession.reset(new QNetworkSession(networkConfiguration));
+        if (!networkSession->isOpen()) {
+            networkSession->open();
+            QVERIFY(networkSession->waitForOpened(30000));
+        }
+    } else {
+        QVERIFY(!(netConfMan->capabilities() & QNetworkConfigurationManager::NetworkSessionRequired));
     }
 #endif
 
@@ -213,6 +219,13 @@ void tst_QHostInfo::initTestCase()
 #else
     ipv6Available = false;
     ipv6LookupsAvailable = false;
+
+    QTcpServer server;
+    if (server.listen(QHostAddress("::1"))) {
+        // We have IPv6 support
+        ipv6Available = true;
+    }
+
 #if !defined(QT_NO_GETADDRINFO)
     // check if the system getaddrinfo can do IPv6 lookups
     struct addrinfo hint, *result = 0;
@@ -234,13 +247,6 @@ void tst_QHostInfo::initTestCase()
     }
 #endif
 #endif
-
-    QTcpServer server;
-    if (server.listen(QHostAddress("::1"))) {
-        // We have IPv6 support
-        ipv6Available = true;
-    }
-
 
     // run each testcase with and without test enabled
     QTest::addColumn<bool>("cache");
@@ -316,16 +322,16 @@ void tst_QHostInfo::lookupIPv6_data()
     QTest::addColumn<QString>("addresses");
     QTest::addColumn<int>("err");
 
-    QTest::newRow("ipv6-net") << "www.ipv6-net.org" << "62.93.217.177 2001:618:1401:0:0:0:0:4" << int(QHostInfo::NoError);
-    QTest::newRow("ipv6-test") << "ipv6-test.dev.troll.no" << "2001:638:a00:2:0:0:0:2" << int(QHostInfo::NoError);
-    QTest::newRow("dns6-test") << "dns6-test-dev.troll.no" << "2001:470:1f01:115:0:0:0:10" << int(QHostInfo::NoError);
-    QTest::newRow("multi-dns6") << "multi-dns6-test-dev.troll.no" << "2001:470:1f01:115:0:0:0:11 2001:470:1f01:115:0:0:0:12" << int(QHostInfo::NoError);
-    QTest::newRow("dns46-test") << "dns46-test-dev.troll.no" << "10.3.4.90 2001:470:1f01:115:0:0:0:13" << int(QHostInfo::NoError);
+    QTest::newRow("ipv6-net") << "www.ipv6-net.org" << "62.93.217.177 2001:618:1401::4" << int(QHostInfo::NoError);
+    QTest::newRow("ipv6-test") << "ipv6-test.dev.troll.no" << "2001:638:a00:2::2" << int(QHostInfo::NoError);
+    QTest::newRow("dns6-test") << "dns6-test-dev.troll.no" << "2001:470:1f01:115::10" << int(QHostInfo::NoError);
+    QTest::newRow("multi-dns6") << "multi-dns6-test-dev.troll.no" << "2001:470:1f01:115::11 2001:470:1f01:115::12" << int(QHostInfo::NoError);
+    QTest::newRow("dns46-test") << "dns46-test-dev.troll.no" << "10.3.4.90 2001:470:1f01:115::13" << int(QHostInfo::NoError);
 
     // avoid using real IPv6 addresses here because this will do a DNS query
     // real addresses are between 2000:: and 3fff:ffff:ffff:ffff:ffff:ffff:ffff
     QTest::newRow("literal_ip6") << "f001:6b0:1:ea:202:a5ff:fecd:13a6" << "f001:6b0:1:ea:202:a5ff:fecd:13a6" << int(QHostInfo::NoError);
-    QTest::newRow("literal_shortip6") << "f001:618:1401::4" << "f001:618:1401:0:0:0:0:4" << int(QHostInfo::NoError);
+    QTest::newRow("literal_shortip6") << "f001:618:1401::4" << "f001:618:1401::4" << int(QHostInfo::NoError);
 }
 
 void tst_QHostInfo::lookupIPv6()

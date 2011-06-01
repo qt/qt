@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -42,6 +42,7 @@
 #include "private/qpacketprotocol_p.h"
 
 #include <QBuffer>
+#include <QElapsedTimer>
 
 QT_BEGIN_NAMESPACE
 
@@ -114,7 +115,7 @@ Q_OBJECT
 public:
     QPacketProtocolPrivate(QPacketProtocol * parent, QIODevice * _dev)
     : QObject(parent), inProgressSize(-1), maxPacketSize(MAX_PACKET_SIZE),
-      dev(_dev)
+      waitingForPacket(false), dev(_dev)
     {
         Q_ASSERT(4 == sizeof(qint32));
 
@@ -125,7 +126,7 @@ public:
         QObject::connect(this, SIGNAL(invalidPacket()),
                          parent, SIGNAL(invalidPacket()));
         QObject::connect(dev, SIGNAL(readyRead()),
-                         this, SLOT(readyToRead()), Qt::QueuedConnection);
+                         this, SLOT(readyToRead()));
         QObject::connect(dev, SIGNAL(aboutToClose()),
                          this, SLOT(aboutToClose()));
         QObject::connect(dev, SIGNAL(bytesWritten(qint64)),
@@ -200,6 +201,7 @@ public Q_SLOTS:
                 inProgress.clear();
 
                 emit readyRead();
+                waitingForPacket = false;
 
                 // Need to get trailing data
                 readyToRead();
@@ -213,6 +215,7 @@ public:
     QByteArray inProgress;
     qint32 inProgressSize;
     qint32 maxPacketSize;
+    bool waitingForPacket;
     QIODevice * dev;
 };
 
@@ -322,6 +325,48 @@ QPacket QPacketProtocol::read()
     QPacket rv(d->packets.at(0));
     d->packets.removeFirst();
     return rv;
+}
+
+/*
+   Returns the difference between msecs and elapsed. If msecs is -1,
+   however, -1 is returned.
+*/
+static int qt_timeout_value(int msecs, int elapsed)
+{
+    if (msecs == -1)
+        return -1;
+
+    int timeout = msecs - elapsed;
+    return timeout < 0 ? 0 : timeout;
+}
+
+/*!
+  This function locks until a new packet is available for reading and the
+  \l{QIODevice::}{readyRead()} signal has been emitted. The function
+  will timeout after \a msecs milliseconds; the default timeout is
+  30000 milliseconds.
+
+  The function returns true if the readyRead() signal is emitted and
+  there is new data available for reading; otherwise it returns false
+  (if an error occurred or the operation timed out).
+  */
+
+bool QPacketProtocol::waitForReadyRead(int msecs)
+{
+    if (!d->packets.isEmpty())
+        return true;
+
+    QElapsedTimer stopWatch;
+    stopWatch.start();
+
+    d->waitingForPacket = true;
+    do {
+        if (!d->dev->waitForReadyRead(msecs))
+            return false;
+        if (!d->waitingForPacket)
+            return true;
+        msecs = qt_timeout_value(msecs, stopWatch.elapsed());
+    } while (true);
 }
 
 /*!

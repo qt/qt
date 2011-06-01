@@ -7,29 +7,29 @@
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -101,6 +101,7 @@ DEFINEFUNC3(void *, ASN1_dup, i2d_of_void *a, a, d2i_of_void *b, b, char *c, c, 
 DEFINEFUNC(long, ASN1_INTEGER_get, ASN1_INTEGER *a, a, return 0, return)
 DEFINEFUNC(unsigned char *, ASN1_STRING_data, ASN1_STRING *a, a, return 0, return)
 DEFINEFUNC(int, ASN1_STRING_length, ASN1_STRING *a, a, return 0, return)
+DEFINEFUNC2(int, ASN1_STRING_to_UTF8, unsigned char **a, a, ASN1_STRING *b, b, return 0, return);
 DEFINEFUNC4(long, BIO_ctrl, BIO *a, a, int b, b, long c, c, void *d, d, return -1, return)
 DEFINEFUNC(int, BIO_free, BIO *a, a, return 0, return)
 DEFINEFUNC(BIO *, BIO_new, BIO_METHOD *a, a, return 0, return)
@@ -248,7 +249,10 @@ DEFINEFUNC4(void *, X509_get_ext_d2i, X509 *a, a, int b, b, int *c, c, int *d, d
 DEFINEFUNC(X509_NAME *, X509_get_issuer_name, X509 *a, a, return 0, return)
 DEFINEFUNC(X509_NAME *, X509_get_subject_name, X509 *a, a, return 0, return)
 DEFINEFUNC(int, X509_verify_cert, X509_STORE_CTX *a, a, return -1, return)
-DEFINEFUNC3(char *, X509_NAME_oneline, X509_NAME *a, a, char *b, b, int c, c, return 0, return)
+DEFINEFUNC(int, X509_NAME_entry_count, X509_NAME *a, a, return 0, return)
+DEFINEFUNC2(X509_NAME_ENTRY *, X509_NAME_get_entry, X509_NAME *a, a, int b, b, return 0, return)
+DEFINEFUNC(ASN1_STRING *, X509_NAME_ENTRY_get_data, X509_NAME_ENTRY *a, a, return 0, return)
+DEFINEFUNC(ASN1_OBJECT *, X509_NAME_ENTRY_get_object, X509_NAME_ENTRY *a, a, return 0, return)
 DEFINEFUNC(EVP_PKEY *, X509_PUBKEY_get, X509_PUBKEY *a, a, return 0, return)
 DEFINEFUNC(void, X509_STORE_free, X509_STORE *a, a, return, DUMMYARG)
 DEFINEFUNC(X509_STORE *, X509_STORE_new, DUMMYARG, DUMMYARG, return 0, return)
@@ -518,6 +522,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(ASN1_INTEGER_get, 48, libs.second )
     RESOLVEFUNC(ASN1_STRING_data, 71, libs.second )
     RESOLVEFUNC(ASN1_STRING_length, 76, libs.second )
+    RESOLVEFUNC(ASN1_STRING_to_UTF8, 86, libs.second )
     RESOLVEFUNC(BIO_ctrl, 184, libs.second )
     RESOLVEFUNC(BIO_free, 209, libs.second )
     RESOLVEFUNC(BIO_new, 222, libs.second )
@@ -608,7 +613,10 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSLv23_server_method, 191, libs.first )
     RESOLVEFUNC(TLSv1_server_method, 200, libs.first )
     RESOLVEFUNC(SSL_CTX_load_verify_locations, 34, libs.first )
-    RESOLVEFUNC(X509_NAME_oneline, 1830, libs.second )
+    RESOLVEFUNC(X509_NAME_entry_count, 1821, libs.second )
+    RESOLVEFUNC(X509_NAME_get_entry, 1823, libs.second )
+    RESOLVEFUNC(X509_NAME_ENTRY_get_data, 1808, libs.second )
+    RESOLVEFUNC(X509_NAME_ENTRY_get_object, 1809, libs.second )
     RESOLVEFUNC(X509_PUBKEY_get, 1844, libs.second )
     RESOLVEFUNC(X509_STORE_free, 1939, libs.second )
     RESOLVEFUNC(X509_STORE_new, 1942, libs.second )
@@ -647,6 +655,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(ASN1_INTEGER_get)
     RESOLVEFUNC(ASN1_STRING_data)
     RESOLVEFUNC(ASN1_STRING_length)
+    RESOLVEFUNC(ASN1_STRING_to_UTF8)
     RESOLVEFUNC(BIO_ctrl)
     RESOLVEFUNC(BIO_free)
     RESOLVEFUNC(BIO_new)
@@ -736,7 +745,10 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSLv3_server_method)
     RESOLVEFUNC(SSLv23_server_method)
     RESOLVEFUNC(TLSv1_server_method)
-    RESOLVEFUNC(X509_NAME_oneline)
+    RESOLVEFUNC(X509_NAME_entry_count)
+    RESOLVEFUNC(X509_NAME_get_entry)
+    RESOLVEFUNC(X509_NAME_ENTRY_get_data)
+    RESOLVEFUNC(X509_NAME_ENTRY_get_object)
     RESOLVEFUNC(X509_PUBKEY_get)
     RESOLVEFUNC(X509_STORE_free)
     RESOLVEFUNC(X509_STORE_new)

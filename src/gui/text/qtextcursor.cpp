@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -362,7 +362,7 @@ bool QTextCursorPrivate::movePosition(QTextCursor::MoveOperation op, QTextCursor
     currentCharFormat = -1;
     bool adjustX = true;
     QTextBlock blockIt = block();
-    bool visualMovement = priv->defaultCursorMoveStyle == QTextCursor::Visual;
+    bool visualMovement = priv->defaultCursorMoveStyle == Qt::VisualMoveStyle;
 
     if (!blockIt.isValid())
         return false;
@@ -2568,18 +2568,18 @@ QTextDocument *QTextCursor::document() const
 }
 
 /*!
-    \enum QTextCursor::MoveStyle
+    \enum Qt::CursorMoveStyle
 
-    This enum describes the movement style available to QTextCursor. The options
+    This enum describes the movement style available to text cursors. The options
     are:
 
-    \value Logical Within a left-to-right text block, increase cursor position
-    when pressing left arrow key, decrease cursor position when pressing the
-    right arrow key. If the text block is right-to-left, the opposite behavior
+    \value LogicalMoveStyle Within a left-to-right text block, decrease cursor
+    position when pressing left arrow key, increase cursor position when pressing
+    the right arrow key. If the text block is right-to-left, the opposite behavior
     applies.
-    \value Visual Pressing the left arrow key will always cause the cursor to move
-    left, regardless of the text's writing direction. The same behavior applies to
-    right arrow key.
+    \value VisualMoveStyle Pressing the left arrow key will always cause the cursor
+    to move left, regardless of the text's writing direction. Pressing the right
+    arrow key will always cause the cursor to move right.
 */
 
 QT_END_NAMESPACE
