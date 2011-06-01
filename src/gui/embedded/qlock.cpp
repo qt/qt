@@ -194,7 +194,7 @@ QLock::QLock(const QString &filename, char id, bool create)
 
 QLock::~QLock()
 {
-    if (locked())
+    while (locked())
         unlock();
 #ifdef Q_NO_SEMAPHORE
     if(isValid()) {
