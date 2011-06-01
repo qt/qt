@@ -272,6 +272,8 @@ void QLock::lock(Type t)
                 qDebug("Semop lock failure %s",strerror(errno));
         } while (rv == -1 && errno == EINTR);
 #endif
+    } else if (type == Read && t == Write) {
+        qDebug("QLock::lock: Attempt to lock for write while locked for read");
     }
     data->count++;
 }
