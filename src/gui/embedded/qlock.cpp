@@ -99,7 +99,6 @@ QT_END_NAMESPACE
 #endif
 #include <string.h>
 #include <errno.h>
-#include <qdebug.h>
 
 #include <private/qcore_unix_p.h> // overrides QT_OPEN
 
@@ -138,8 +137,6 @@ public:
 */
 
 /*!
-    \fn QLock::QLock(const QString &filename, char id, bool create)
-
     Creates a lock. \a filename is the file path of the Unix-domain
     socket the \l{Qt for Embedded Linux} client is using. \a id is the name of the
     particular lock to be created on that socket. If \a create is true
@@ -147,82 +144,75 @@ public:
     create is false the lock should exist already (as the Qt for Embedded Linux
     client expects).
 */
-
 QLock::QLock(const QString &filename, char id, bool create)
 {
     data = new QLockData;
     data->count = 0;
 #ifdef Q_NO_SEMAPHORE
-    data->file = QString(filename+id).toLocal8Bit().constData();
-    for(int x = 0; x < 2; x++) {
-        data->id = QT_OPEN(data->file, O_RDWR | (x ? O_CREAT : 0), S_IRWXU);
-        if(data->id != -1 || !create) {
+    data->file = filename.toLocal8Bit() + id;
+    for (int x = 0; x < 2; ++x) {
+        data->id = QT_OPEN(data->file.constData(), O_RDWR | (x ? O_CREAT : 0), S_IRWXU);
+        if (data->id != -1 || !create) {
             data->owned = x;
             break;
         }
     }
 #else
     key_t semkey = ftok(filename.toLocal8Bit().constData(), id);
-    data->id = semget(semkey,0,0);
+    data->id = semget(semkey, 0, 0);
     data->owned = create;
     if (create) {
-        qt_semun arg; arg.val = 0;
+        qt_semun arg;
+        arg.val = 0;
         if (data->id != -1)
-            semctl(data->id,0,IPC_RMID,arg);
-        data->id = semget(semkey,1,IPC_CREAT|0600);
+            semctl(data->id, 0, IPC_RMID, arg);
+        data->id = semget(semkey, 1, IPC_CREAT | 0600);
         arg.val = MAX_LOCKS;
-        semctl(data->id,0,SETVAL,arg);
+        semctl(data->id, 0, SETVAL, arg);
 
 #ifndef QT_NO_QWS_SIGNALHANDLER
         QWSSignalHandler::instance()->addSemaphore(data->id);
 #endif
     }
 #endif
-    if (data->id == -1) {
-        int eno = errno;
-        qWarning("Cannot %s semaphore %s '%c'", (create ? "create" : "get"),
-                 qPrintable(filename), id);
-        qDebug() << "Error" << eno << strerror(eno);
+    if (!isValid()) {
+        qWarning("QLock::QLock: Cannot %s semaphore %s '%c' (%d, %s)",
+                 (create ? "create" : "get"), qPrintable(filename), id,
+                 errno, strerror(errno));
     }
 }
 
 /*!
-    \fn QLock::~QLock()
-
     Destroys a lock
 */
-
 QLock::~QLock()
 {
     while (locked())
         unlock();
 #ifdef Q_NO_SEMAPHORE
-    if(isValid()) {
+    if (isValid())
         QT_CLOSE(data->id);
-        if(data->owned)
-            unlink(data->file);
-    }
-#else
+#endif
     if (data->owned) {
-#ifndef QT_NO_QWS_SIGNALHANDLER
-        QWSSignalHandler::instance()->removeSemaphore(data->id);
+#ifdef Q_NO_SEMAPHORE
+        unlink(data->file.constData());
 #else
         qt_semun semval;
         semval.val = 0;
         semctl(data->id, 0, IPC_RMID, semval);
+
+#ifndef QT_NO_QWS_SIGNALHANDLER
+        QWSSignalHandler::instance()->removeSemaphore(data->id);
+#endif
 #endif
     }
-#endif
     delete data;
 }
 
 /*!
-    \fn bool QLock::isValid() const
-
     Returns true if the lock constructor was successful; returns false if
     the lock could not be created or was not available to connect to.
 */
-
 bool QLock::isValid() const
 {
     return (data->id != -1);
@@ -239,98 +229,72 @@ bool QLock::isValid() const
     will only be unlocked after a corresponding number of unlock()
     calls.
 */
-
 void QLock::lock(Type t)
 {
     if (!data->count) {
+        type = t;
+
+        int rv;
 #ifdef Q_NO_SEMAPHORE
-        int op = LOCK_SH;
-        if(t == Write)
-            op = LOCK_EX;
-        for(int rv=1; rv;) {
-            rv = flock(data->id, op);
-            if (rv == -1 && errno != EINTR)
-                qDebug("Semop lock failure %s",strerror(errno));
-        }
+        int op = type == Write ? LOCK_EX : LOCK_SH;
+
+        EINTR_LOOP(rv, flock(data->id, op));
 #else
         sembuf sops;
         sops.sem_num = 0;
+        sops.sem_op = type == Write ? -MAX_LOCKS : -1;
         sops.sem_flg = SEM_UNDO;
 
-        if (t == Write) {
-            sops.sem_op = -MAX_LOCKS;
-            type = Write;
-        } else {
-            sops.sem_op = -1;
-            type = Read;
-        }
-
-        int rv;
-        do {
-            rv = semop(data->id,&sops,1);
-            if (rv == -1 && errno != EINTR)
-                qDebug("Semop lock failure %s",strerror(errno));
-        } while (rv == -1 && errno == EINTR);
+        EINTR_LOOP(rv, semop(data->id, &sops, 1));
 #endif
+        if (rv == -1) {
+            qDebug("QLock::lock(): %s", strerror(errno));
+            return;
+        }
     } else if (type == Read && t == Write) {
-        qDebug("QLock::lock: Attempt to lock for write while locked for read");
+        qDebug("QLock::lock(): Attempt to lock for write while locked for read");
     }
     data->count++;
 }
 
 /*!
-    \fn void QLock::unlock()
-
     Unlocks the semaphore. If other processes were blocking waiting to
     lock() the semaphore, one of them will wake up and succeed in
-    lock()ing.
+    locking.
 */
-
 void QLock::unlock()
 {
-    if(data->count) {
+    if (data->count) {
         data->count--;
-        if(!data->count) {
+        if (!data->count) {
+            int rv;
 #ifdef Q_NO_SEMAPHORE
-            for(int rv=1; rv;) {
-                rv = flock(data->id, LOCK_UN);
-                if (rv == -1 && errno != EINTR)
-                    qDebug("Semop lock failure %s",strerror(errno));
-            }
+            EINTR_LOOP(rv, flock(data->id, LOCK_UN));
 #else
             sembuf sops;
             sops.sem_num = 0;
-            sops.sem_op = 1;
+            sops.sem_op = type == Write ? MAX_LOCKS : 1;
             sops.sem_flg = SEM_UNDO;
-            if (type == Write)
-                sops.sem_op = MAX_LOCKS;
 
-            int rv;
-            do {
-                rv = semop(data->id,&sops,1);
-                if (rv == -1 && errno != EINTR)
-                    qDebug("Semop unlock failure %s",strerror(errno));
-            } while (rv == -1 && errno == EINTR);
+            EINTR_LOOP(rv, semop(data->id, &sops, 1));
 #endif
+            if (rv == -1)
+                qDebug("QLock::unlock(): %s", strerror(errno));
         }
     } else {
-        qDebug("Unlock without corresponding lock");
+        qDebug("QLock::unlock(): Unlock without corresponding lock");
     }
 }
 
 /*!
-    \fn bool QLock::locked() const
-
     Returns true if the lock is currently held by the current process;
     otherwise returns false.
 */
-
 bool QLock::locked() const
 {
-    return (data->count > 0);
+    return isValid() && data->count > 0;
 }
 
 QT_END_NAMESPACE
 
 #endif // QT_NO_QWS_MULTIPROCESS
-
