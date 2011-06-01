@@ -953,7 +953,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 		ident += ch;
                 finish = i;
 		readChar();
-	    } while (isalnum(ch) || ch == '_');
+            } while (ch >= 0 && isalnum(ch) || ch == '_');
 
 	    if (classRegExp.exactMatch(ident)) {
 		tag = QLatin1String("type");
