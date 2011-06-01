@@ -613,15 +613,6 @@ QList<TranslatorMessage> Translator::messages() const
     return m_messages;
 }
 
-QList<TranslatorMessage> Translator::translatedMessages() const
-{
-    TMM result;
-    for (TMM::ConstIterator it = m_messages.begin(); it != m_messages.end(); ++it)
-        if (it->type() == TranslatorMessage::Finished)
-            result.append(*it);
-    return result;
-}
-
 QStringList Translator::normalizedTranslations(const TranslatorMessage &msg, int numPlurals)
 {
     QStringList translations = msg.translations();

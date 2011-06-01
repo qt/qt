@@ -169,7 +169,6 @@ public:
     void setSourceLanguageCode(const QString &languageCode) { m_sourceLanguage = languageCode; }
     static QString guessLanguageCodeFromFileName(const QString &fileName);
     QList<TranslatorMessage> messages() const;
-    QList<TranslatorMessage> translatedMessages() const;
     static QStringList normalizedTranslations(const TranslatorMessage &m, int numPlurals);
     void normalizeTranslations(ConversionData &cd);
     QStringList normalizedTranslations(const TranslatorMessage &m, ConversionData &cd, bool *ok) const;
