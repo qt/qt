@@ -361,14 +361,6 @@ int Translator::find(const QString &context,
     return -1;
 }
 
-bool Translator::contains(const QString &context) const
-{
-    foreach (const TranslatorMessage &msg, m_messages)
-        if (msg.context() == context && msg.sourceText().isEmpty() && msg.id().isEmpty())
-            return true;
-    return false;
-}
-
 int Translator::find(const QString &context) const
 {
     for (TMM::ConstIterator it = m_messages.constBegin(); it != m_messages.constEnd(); ++it)

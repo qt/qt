@@ -130,7 +130,6 @@ public:
     int find(const QString &context,
         const QString &comment, const TranslatorMessage::References &refs) const;
 
-    bool contains(const QString &context) const;
     int find(const QString &context) const;
 
     void replaceSorted(const TranslatorMessage &msg);

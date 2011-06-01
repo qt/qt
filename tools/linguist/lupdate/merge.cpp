@@ -454,7 +454,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
     */
     foreach (const TranslatorMessage &mv, virginTor.messages()) {
         if (mv.sourceText().isEmpty() && mv.id().isEmpty()) {
-            if (tor.contains(mv.context()))
+            if (tor.find(mv.context()) >= 0)
                 continue;
         } else {
             if (tor.find(mv) >= 0)
