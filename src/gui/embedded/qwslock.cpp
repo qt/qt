@@ -116,59 +116,59 @@ QWSLock::~QWSLock()
 static bool forceLock(int semId, unsigned short semNum, int)
 {
     int ret;
-    do {
-        sembuf sops = { semNum, -1, 0 };
 
-        // As the BackingStore lock is a mutex, and only one process may own
-        // the lock, it's safe to use SEM_UNDO. On the other hand, the
-        // Communication lock is locked by the client but unlocked by the
-        // server and therefore can't use SEM_UNDO.
-        if (semNum == QWSLock::BackingStore)
-            sops.sem_flg |= SEM_UNDO;
+    sembuf sops = { semNum, -1, 0 };
+    // As the BackingStore lock is a mutex, and only one process may own
+    // the lock, it's safe to use SEM_UNDO. On the other hand, the
+    // Communication lock is locked by the client but unlocked by the
+    // server and therefore can't use SEM_UNDO.
+    if (semNum == QWSLock::BackingStore)
+        sops.sem_flg |= SEM_UNDO;
 
-        ret = semop(semId, &sops, 1);
-        if (ret == -1 && errno != EINTR)
-            qDebug("QWSLock::lock: %s", strerror(errno));
-    } while (ret == -1 && errno == EINTR);
+    EINTR_LOOP(ret, semop(semId, &sops, 1));
+    if (ret == -1) {
+        qDebug("QWSLock::lock(): %s", strerror(errno));
+        return false;
+    }
 
-    return (ret != -1);
+    return true;
 }
 
 static bool up(int semId, unsigned short semNum)
 {
     int ret;
-    do {
-        sembuf sops = { semNum, 1, 0 };
-        ret = semop(semId, &sops, 1);
-        if (ret == -1 && errno != EINTR)
-            qDebug("QWSLock::up: %s", strerror(errno));
-    } while (ret == -1 && errno == EINTR);
 
-    return (ret != -1);
+    sembuf sops = { semNum, 1, 0 };
+
+    EINTR_LOOP(ret, semop(semId, &sops, 1));
+    if (ret == -1) {
+        qDebug("QWSLock::up(): %s", strerror(errno));
+        return false;
+    }
+
+    return true;
 }
 
 static bool down(int semId, unsigned short semNum)
 {
     int ret;
-    do {
-        sembuf sops = { semNum, -1, 0 };
-        ret = semop(semId, &sops, 1);
-        if (ret == -1 && errno != EINTR)
-            qDebug("QWSLock::down: %s", strerror(errno));
-    } while (ret == -1 && errno == EINTR);
 
-    return (ret != -1);
+    sembuf sops = { semNum, -1, 0 };
+
+    EINTR_LOOP(ret, semop(semId, &sops, 1));
+    if (ret == -1) {
+        qDebug("QWSLock::down(): %s", strerror(errno));
+        return false;
+    }
+
+    return true;
 }
 
 static int getValue(int semId, unsigned short semNum)
 {
-    int ret;
-    do {
-        ret = semctl(semId, semNum, GETVAL, 0);
-        if (ret == -1 && errno != EINTR)
-            qDebug("QWSLock::getValue: %s", strerror(errno));
-    } while (ret == -1 && errno == EINTR);
-
+    int ret = semctl(semId, semNum, GETVAL, 0);
+    if (ret == -1)
+        qDebug("QWSLock::getValue(): %s", strerror(errno));
     return ret;
 }
 
@@ -218,7 +218,7 @@ void QWSLock::unlock(LockType type)
 
         ret = semop(semId, &sops, 1);
         if (ret == -1 && errno != EINTR)
-            qDebug("QWSLock::unlock: %s", strerror(errno));
+            qDebug("QWSLock::unlock(): %s", strerror(errno));
     } while (ret == -1 && errno == EINTR);
 }
 
