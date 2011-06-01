@@ -76,7 +76,9 @@ QWSLock::QWSLock()
         perror("QWSLock::QWSLock");
         qFatal("Unable to create semaphore");
     }
+#ifndef QT_NO_QWS_SIGNALHANDLER
     QWSSignalHandler::instance()->addSemaphore(semId);
+#endif
 
     qt_semun semval;
     semval.val = 1;
@@ -103,15 +105,23 @@ QWSLock::QWSLock()
 QWSLock::QWSLock(int id)
 {
     semId = id;
+#ifndef QT_NO_QWS_SIGNALHANDLER
     QWSSignalHandler::instance()->addSemaphore(semId);
+#endif
     lockCount[0] = lockCount[1] = 0;
 }
 
 QWSLock::~QWSLock()
 {
-    if (semId == -1)
-        return;
-    QWSSignalHandler::instance()->removeSemaphore(semId);
+    if (semId != -1) {
+#ifndef QT_NO_QWS_SIGNALHANDLER
+        QWSSignalHandler::instance()->removeSemaphore(semId);
+#else
+        qt_semun semval;
+        semval.val = 0;
+        semctl(semId, 0, IPC_RMID, semval);
+#endif
+    }
 }
 
 static bool forceLock(int semId, unsigned short semNum, int)

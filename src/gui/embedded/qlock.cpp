@@ -173,7 +173,9 @@ QLock::QLock(const QString &filename, char id, bool create)
         arg.val = MAX_LOCKS;
         semctl(data->id,0,SETVAL,arg);
 
+#ifndef QT_NO_QWS_SIGNALHANDLER
         QWSSignalHandler::instance()->addSemaphore(data->id);
+#endif
     }
 #endif
     if (data->id == -1) {
@@ -201,8 +203,15 @@ QLock::~QLock()
             unlink(data->file);
     }
 #else
-    if(data->owned)
+    if (data->owned) {
+#ifndef QT_NO_QWS_SIGNALHANDLER
         QWSSignalHandler::instance()->removeSemaphore(data->id);
+#else
+        qt_semun semval;
+        semval.val = 0;
+        semctl(data->id, 0, IPC_RMID, semval);
+#endif
+    }
 #endif
     delete data;
 }

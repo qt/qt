@@ -125,4 +125,4 @@ void QWSSignalHandler::handleSignal(int signum)
 
 QT_END_NAMESPACE
 
-#endif // QT_QWS_NO_SIGNALHANDLER
+#endif // QT_NO_QWS_SIGNALHANDLER
