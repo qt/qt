@@ -70,8 +70,9 @@ QT_BEGIN_NAMESPACE
 
 QWSLock::QWSLock()
 {
-    semId = semget(IPC_PRIVATE, 3, IPC_CREAT | 0666);
+    static unsigned short initialValues[3] = { 1, 1, 0 };
 
+    semId = semget(IPC_PRIVATE, 3, IPC_CREAT | 0666);
     if (semId == -1) {
         perror("QWSLock::QWSLock");
         qFatal("Unable to create semaphore");
@@ -81,25 +82,13 @@ QWSLock::QWSLock()
 #endif
 
     qt_semun semval;
-    semval.val = 1;
-
-    if (semctl(semId, BackingStore, SETVAL, semval) == -1) {
+    semval.array = initialValues;
+    if (semctl(semId, 0, SETALL, semval) == -1) {
         perror("QWSLock::QWSLock");
-        qFatal("Unable to initialize backingstore semaphore");
+        qFatal("Unable to initialize semaphores");
     }
-    lockCount[BackingStore] = 0;
 
-    if (semctl(semId, Communication, SETVAL, semval) == -1) {
-        perror("QWSLock::QWSLock");
-        qFatal("Unable to initialize communication semaphore");
-    }
-    lockCount[Communication] = 0;
-
-    semval.val = 0;
-    if (semctl(semId, RegionEvent, SETVAL, semval) == -1) {
-        perror("QWSLock::QWSLock");
-        qFatal("Unable to initialize region event semaphore");
-    }
+    lockCount[0] = lockCount[1] = 0;
 }
 
 QWSLock::QWSLock(int id)
