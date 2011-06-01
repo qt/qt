@@ -346,7 +346,7 @@ int Translator::find(const TranslatorMessage &msg) const
     return -1;
 }
 
-TranslatorMessage Translator::find(const QString &context,
+int Translator::find(const QString &context,
     const QString &comment, const TranslatorMessage::References &refs) const
 {
     if (!refs.isEmpty()) {
@@ -355,10 +355,10 @@ TranslatorMessage Translator::find(const QString &context,
                 foreach (const TranslatorMessage::Reference &itref, it->allReferences())
                     foreach (const TranslatorMessage::Reference &ref, refs)
                         if (itref == ref)
-                            return *it;
+                            return it - m_messages.constBegin();
         }
     }
-    return TranslatorMessage();
+    return -1;
 }
 
 bool Translator::contains(const QString &context) const
@@ -369,12 +369,12 @@ bool Translator::contains(const QString &context) const
     return false;
 }
 
-TranslatorMessage Translator::find(const QString &context) const
+int Translator::find(const QString &context) const
 {
-    foreach (const TranslatorMessage &msg, m_messages)
-        if (msg.context() == context && msg.sourceText().isEmpty() && msg.id().isEmpty())
-            return msg;
-    return TranslatorMessage();
+    for (TMM::ConstIterator it = m_messages.constBegin(); it != m_messages.constEnd(); ++it)
+        if (it->context() == context && it->sourceText().isEmpty() && it->id().isEmpty())
+            return it - m_messages.constBegin();
+    return -1;
 }
 
 void Translator::stripObsoleteMessages()

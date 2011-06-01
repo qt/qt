@@ -127,11 +127,11 @@ public:
     bool save(const QString &filename, ConversionData &err, const QString &format /* = "auto" */) const;
 
     int find(const TranslatorMessage &msg) const;
-    TranslatorMessage find(const QString &context,
+    int find(const QString &context,
         const QString &comment, const TranslatorMessage::References &refs) const;
 
     bool contains(const QString &context) const;
-    TranslatorMessage find(const QString &context) const;
+    int find(const QString &context) const;
 
     void replaceSorted(const TranslatorMessage &msg);
     void extend(const TranslatorMessage &msg); // Only for single-location messages
@@ -178,6 +178,7 @@ public:
     int messageCount() const { return m_messages.size(); }
     TranslatorMessage &message(int i) { return m_messages[i]; }
     const TranslatorMessage &message(int i) const { return m_messages.at(i); }
+    const TranslatorMessage &constMessage(int i) const { return m_messages.at(i); }
     void dump() const;
 
     // additional file format specific data
