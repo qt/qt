@@ -1294,7 +1294,7 @@ EXPORTS
 	_ZN23QEventDispatcherSymbian24reactivateSocketNotifierEP15QSocketNotifier @ 1293 NONAME
 	_ZN23QEventDispatcherSymbian24sendDeferredSocketEventsEv @ 1294 NONAME
 	_ZN23QEventDispatcherSymbian24unregisterSocketNotifierEP15QSocketNotifier @ 1295 NONAME
-	_ZN23QEventDispatcherSymbian31reactivateDeferredActiveObjectsEv @ 1296 NONAME
+	_ZN23QEventDispatcherSymbian31reactivateDeferredActiveObjectsEv @ 1296 NONAME ABSENT
 	_ZN23QEventDispatcherSymbian5flushEv @ 1297 NONAME
 	_ZN23QEventDispatcherSymbian6wakeUpEv @ 1298 NONAME
 	_ZN23QEventDispatcherSymbian9interruptEv @ 1299 NONAME
@@ -3713,7 +3713,7 @@ EXPORTS
 	_ZrsR11QDataStreamR12QEasingCurve @ 3712 NONAME
 	_Z26qt_symbian_SetupThreadHeapiR24SStdEpocThreadCreateInfo @ 3713 NONAME
 	_ZN24QAbstractDeclarativeData17objectNameChangedE @ 3714 NONAME DATA 4
-	_ZN23QEventDispatcherSymbian36queueDeferredActiveObjectsCompletionEv @ 3715 NONAME
+	_ZN23QEventDispatcherSymbian36queueDeferredActiveObjectsCompletionEv @ 3715 NONAME ABSENT
 	_ZN23QCoreApplicationPrivate18symbianCommandLineEv @ 3716 NONAME
 	_ZNK11QMetaMethod8revisionEv @ 3717 NONAME
 	_ZNK13QMetaProperty8revisionEv @ 3718 NONAME
@@ -3850,11 +3850,11 @@ EXPORTS
 	_ZN11QTranslator18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3849 NONAME
 	_ZN11QTranslator25staticMetaObjectExtraDataE @ 3850 NONAME DATA 8
 	_ZN11QTranslator4loadERK7QLocaleRK7QStringS5_S5_S5_ @ 3851 NONAME
-	_ZN13QActiveObject18maybeQueueForLaterEv @ 3852 NONAME
+	_ZN13QActiveObject18maybeQueueForLaterEv @ 3852 NONAME ABSENT
 	_ZN13QActiveObject21maybeDeferSocketEventEv @ 3853 NONAME
 	_ZN13QActiveObject21reactivateAndCompleteEv @ 3854 NONAME
-	_ZN13QActiveObject4waitE5QListIP7CActiveEi @ 3855 NONAME
-	_ZN13QActiveObject4waitEP7CActivei @ 3856 NONAME
+	_ZN13QActiveObject4waitE5QListIP7CActiveEi @ 3855 NONAME ABSENT
+	_ZN13QActiveObject4waitEP7CActivei @ 3856 NONAME ABSENT
 	_ZN13QActiveObjectC2EiP23QEventDispatcherSymbian @ 3857 NONAME
 	_ZN13QActiveObjectD0Ev @ 3858 NONAME
 	_ZN13QActiveObjectD1Ev @ 3859 NONAME

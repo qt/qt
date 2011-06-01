@@ -45,32 +45,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QtEikonEnv::QtEikonEnv()
-    : m_lastIterationCount(0)
-    , m_savedStatusCode(KRequestPending)
-    , m_hasAlreadyRun(false)
-{
-}
-
-QtEikonEnv::~QtEikonEnv()
-{
-}
-
-void QtEikonEnv::RunL()
-{
-    CEikonEnv::RunL();
-    return;
-}
-
-void QtEikonEnv::DoCancel()
-{
-    CEikonEnv::DoCancel();
-}
-
-void QtEikonEnv::complete()
-{
-}
-
 QEventDispatcherS60::QEventDispatcherS60(QObject *parent)
     : QEventDispatcherSymbian(parent),
       m_noInputEvents(false)
@@ -151,16 +125,6 @@ void QEventDispatcherS60::removeInputEventsForWidget(QObject *object)
             m_deferredInputEvents.removeAt(c--);
         }
     }
-}
-
-// reimpl
-void QEventDispatcherS60::reactivateDeferredActiveObjects()
-{
-    if (S60->qtOwnsS60Environment) {
-        static_cast<QtEikonEnv *>(CCoeEnv::Static())->complete();
-    }
-
-    QEventDispatcherSymbian::reactivateDeferredActiveObjects();
 }
 
 QT_END_NAMESPACE
