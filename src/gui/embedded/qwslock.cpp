@@ -70,6 +70,10 @@ QWSLock::QWSLock(int id) : semId(id)
 {
     static unsigned short initialValues[3] = { 1, 1, 0 };
 
+#ifndef QT_NO_QWS_SIGNALHANDLER
+    QWSSignalHandler::instance()->addWSLock(this);
+#endif
+
     if (semId == -1) {
         semId = semget(IPC_PRIVATE, 3, IPC_CREAT | 0666);
         if (semId == -1) {
@@ -86,22 +90,19 @@ QWSLock::QWSLock(int id) : semId(id)
     }
 
     lockCount[0] = lockCount[1] = 0;
-
-#ifndef QT_NO_QWS_SIGNALHANDLER
-    QWSSignalHandler::instance()->addSemaphore(semId);
-#endif
 }
 
 QWSLock::~QWSLock()
 {
-    if (semId != -1) {
 #ifndef QT_NO_QWS_SIGNALHANDLER
-        QWSSignalHandler::instance()->removeSemaphore(semId);
-#else
+    QWSSignalHandler::instance()->removeWSLock(this);
+#endif
+
+    if (semId != -1) {
         qt_semun semval;
         semval.val = 0;
         semctl(semId, 0, IPC_RMID, semval);
-#endif
+        semId = -1;
     }
 }
 

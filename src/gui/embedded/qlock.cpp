@@ -169,10 +169,6 @@ QLock::QLock(const QString &filename, char id, bool create)
         data->id = semget(semkey, 1, IPC_CREAT | 0600);
         arg.val = MAX_LOCKS;
         semctl(data->id, 0, SETVAL, arg);
-
-#ifndef QT_NO_QWS_SIGNALHANDLER
-        QWSSignalHandler::instance()->addSemaphore(data->id);
-#endif
     }
 #endif
     if (!isValid()) {
@@ -180,6 +176,10 @@ QLock::QLock(const QString &filename, char id, bool create)
                  (create ? "create" : "get"), qPrintable(filename), id,
                  errno, strerror(errno));
     }
+
+#ifndef QT_NO_QWS_SIGNALHANDLER
+    QWSSignalHandler::instance()->addLock(this);
+#endif
 }
 
 /*!
@@ -187,6 +187,10 @@ QLock::QLock(const QString &filename, char id, bool create)
 */
 QLock::~QLock()
 {
+#ifndef QT_NO_QWS_SIGNALHANDLER
+    QWSSignalHandler::instance()->removeLock(this);
+#endif
+
     while (locked())
         unlock();
 #ifdef Q_NO_SEMAPHORE
@@ -200,13 +204,10 @@ QLock::~QLock()
         qt_semun semval;
         semval.val = 0;
         semctl(data->id, 0, IPC_RMID, semval);
-
-#ifndef QT_NO_QWS_SIGNALHANDLER
-        QWSSignalHandler::instance()->removeSemaphore(data->id);
-#endif
 #endif
     }
     delete data;
+    data = 0;
 }
 
 /*!
@@ -215,7 +216,7 @@ QLock::~QLock()
 */
 bool QLock::isValid() const
 {
-    return (data->id != -1);
+    return data && data->id != -1;
 }
 
 /*!
