@@ -79,7 +79,8 @@ QString QObject::tr(const char *sourceText, const char *, int n)
 
 Translator::Translator() :
     m_codec(QTextCodec::codecForName("ISO-8859-1")),
-    m_locationsType(AbsoluteLocations)
+    m_locationsType(AbsoluteLocations),
+    m_indexOk(true)
 {
 }
 
@@ -101,20 +102,58 @@ QList<Translator::FileFormat> &Translator::registeredFileFormats()
     return theFormats;
 }
 
+void Translator::addIndex(int idx, const TranslatorMessage &msg) const
+{
+    if (msg.sourceText().isEmpty() && msg.id().isEmpty()) {
+        m_ctxCmtIdx[msg.context()] = idx;
+    } else {
+        m_msgIdx[TMMKey(msg)] = idx;
+        if (!msg.id().isEmpty())
+            m_idMsgIdx[msg.id()] = idx;
+    }
+}
+
+void Translator::delIndex(int idx) const
+{
+    const TranslatorMessage &msg = m_messages.at(idx);
+    if (msg.sourceText().isEmpty() && msg.id().isEmpty()) {
+        m_ctxCmtIdx.remove(msg.context());
+    } else {
+        m_msgIdx.remove(TMMKey(msg));
+        if (!msg.id().isEmpty())
+            m_idMsgIdx.remove(msg.id());
+    }
+}
+
+void Translator::ensureIndexed() const
+{
+    if (!m_indexOk) {
+        m_indexOk = true;
+        m_ctxCmtIdx.clear();
+        m_idMsgIdx.clear();
+        m_msgIdx.clear();
+        for (int i = 0; i < m_messages.count(); i++)
+            addIndex(i, m_messages.at(i));
+    }
+}
+
 void Translator::replaceSorted(const TranslatorMessage &msg)
 {
     int index = find(msg);
-    if (index == -1)
+    if (index == -1) {
         appendSorted(msg);
-    else
+    } else {
+        delIndex(index);
         m_messages[index] = msg;
+        addIndex(index, msg);
+    }
 }
 
 void Translator::extend(const TranslatorMessage &msg)
 {
     int index = find(msg);
     if (index == -1) {
-        m_messages.append(msg);
+        append(msg);
     } else {
         TranslatorMessage &emsg = m_messages[index];
         emsg.addReferenceUniq(msg.fileName(), msg.lineNumber());
@@ -132,16 +171,22 @@ void Translator::extend(const TranslatorMessage &msg)
     }
 }
 
+void Translator::insert(int idx, const TranslatorMessage &msg)
+{
+    addIndex(idx, msg);
+    m_messages.insert(idx, msg);
+}
+
 void Translator::append(const TranslatorMessage &msg)
 {
-    m_messages.append(msg);
+    insert(m_messages.count(), msg);
 }
 
 void Translator::appendSorted(const TranslatorMessage &msg)
 {
     int msgLine = msg.lineNumber();
     if (msgLine < 0) {
-        m_messages.append(msg);
+        append(msg);
         return;
     }
 
@@ -189,11 +234,11 @@ void Translator::appendSorted(const TranslatorMessage &msg)
         thisScore = 1;
     }
     if (thisScore > bestScore || (thisScore == bestScore && thisSize > bestSize))
-        m_messages.insert(thisIdx, msg);
+        insert(thisIdx, msg);
     else if (bestScore)
-        m_messages.insert(bestIdx, msg);
+        insert(bestIdx, msg);
     else
-        m_messages.append(msg);
+        append(msg);
 }
 
 static QString guessFormat(const QString &filename, const QString &format)
@@ -331,19 +376,15 @@ void Translator::languageAndCountry(const QString &languageCode,
 
 int Translator::find(const TranslatorMessage &msg) const
 {
-    for (int i = 0; i < m_messages.count(); ++i) {
-        const TranslatorMessage &tmsg = m_messages.at(i);
-        if (msg.id().isEmpty() || tmsg.id().isEmpty()) {
-            if (msg.context() == tmsg.context()
-                && msg.sourceText() == tmsg.sourceText()
-                && msg.comment() == tmsg.comment())
-                return i;
-        } else {
-            if (msg.id() == tmsg.id())
-                return i;
-        }
-    }
-    return -1;
+    ensureIndexed();
+    if (msg.id().isEmpty())
+        return m_msgIdx.value(TMMKey(msg), -1);
+    int i = m_idMsgIdx.value(msg.id(), -1);
+    if (i >= 0)
+        return i;
+    i = m_msgIdx.value(TMMKey(msg), -1);
+    // If both have an id, then find only by id.
+    return i >= 0 && m_messages.at(i).id().isEmpty() ? i : -1;
 }
 
 int Translator::find(const QString &context,
@@ -363,10 +404,8 @@ int Translator::find(const QString &context,
 
 int Translator::find(const QString &context) const
 {
-    for (TMM::ConstIterator it = m_messages.constBegin(); it != m_messages.constEnd(); ++it)
-        if (it->context() == context && it->sourceText().isEmpty() && it->id().isEmpty())
-            return it - m_messages.constBegin();
-    return -1;
+    ensureIndexed();
+    return m_ctxCmtIdx.value(context, -1);
 }
 
 void Translator::stripObsoleteMessages()
@@ -376,6 +415,7 @@ void Translator::stripObsoleteMessages()
         if (it->type() != TranslatorMessage::Obsolete)
             newmm.append(*it);
     m_messages = newmm;
+    m_indexOk = false;
 }
 
 void Translator::stripFinishedMessages()
@@ -385,6 +425,7 @@ void Translator::stripFinishedMessages()
         if (it->type() != TranslatorMessage::Finished)
             newmm.append(*it);
     m_messages = newmm;
+    m_indexOk = false;
 }
 
 void Translator::stripEmptyContexts()
@@ -394,6 +435,7 @@ void Translator::stripEmptyContexts()
         if (it->sourceText() != QLatin1String(ContextComment))
             newmm.append(*it);
     m_messages = newmm;
+    m_indexOk = false;
 }
 
 void Translator::stripNonPluralForms()
@@ -403,6 +445,7 @@ void Translator::stripNonPluralForms()
         if (it->isPlural())
             newmm.append(*it);
     m_messages = newmm;
+    m_indexOk = false;
 }
 
 void Translator::stripIdenticalSourceTranslations()
@@ -415,6 +458,7 @@ void Translator::stripIdenticalSourceTranslations()
         else if (it->translation() != it->sourceText())
             newmm.append(*it);
     }
+    m_indexOk = false;
     m_messages = newmm;
 }
 
@@ -561,6 +605,7 @@ Translator::Duplicates Translator::resolveDuplicates()
         }
         if (!omsg->isTranslated() && msg.isTranslated())
             omsg->setTranslations(msg.translations());
+        m_indexOk = false;
         m_messages.removeAt(i);
     }
     return dups;

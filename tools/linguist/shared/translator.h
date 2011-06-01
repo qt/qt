@@ -118,6 +118,17 @@ public:
     TranslatorSaveMode m_saveMode;
 };
 
+class TMMKey {
+public:
+    TMMKey(const TranslatorMessage &msg)
+        { context = msg.context(); source = msg.sourceText(); comment = msg.comment(); }
+    bool operator==(const TMMKey &o) const
+        { return context == o.context && source == o.source && comment == o.comment; }
+    QString context, source, comment;
+};
+Q_DECLARE_TYPEINFO(TMMKey, Q_MOVABLE_TYPE);
+inline uint qHash(const TMMKey &key) { return qHash(key.context) ^ qHash(key.source) ^ qHash(key.comment); }
+
 class Translator
 {
 public:
@@ -210,6 +221,11 @@ public:
     };
 
 private:
+    void insert(int idx, const TranslatorMessage &msg);
+    void addIndex(int idx, const TranslatorMessage &msg) const;
+    void delIndex(int idx) const;
+    void ensureIndexed() const;
+
     typedef QList<TranslatorMessage> TMM;       // int stores the sequence position.
 
     TMM m_messages;
@@ -228,6 +244,11 @@ private:
     QString m_language;
     QString m_sourceLanguage;
     ExtraData m_extra;
+
+    mutable bool m_indexOk;
+    mutable QHash<QString, int> m_ctxCmtIdx;
+    mutable QHash<QString, int> m_idMsgIdx;
+    mutable QHash<TMMKey, int> m_msgIdx;
 };
 
 bool getNumerusInfo(QLocale::Language language, QLocale::Country country,
