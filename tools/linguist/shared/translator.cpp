@@ -329,16 +329,6 @@ void Translator::languageAndCountry(const QString &languageCode,
     }
 }
 
-bool Translator::release(QFile *iod, ConversionData &cd) const
-{
-    foreach (const FileFormat &format, registeredFileFormats()) {
-        if (format.extension == QLatin1String("qm"))
-            return (*format.saver)(*this, *iod, cd);
-    }
-    cd.appendError(QLatin1String("No .qm saver available."));
-    return false;
-}
-
 int Translator::find(const TranslatorMessage &msg) const
 {
     for (int i = 0; i < m_messages.count(); ++i) {

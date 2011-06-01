@@ -697,7 +697,7 @@ static bool containsStripped(const Translator &translator, const TranslatorMessa
     return false;
 }
 
-static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData &cd)
+bool saveQM(const Translator &translator, QIODevice &dev, ConversionData &cd)
 {
     Releaser releaser;
     QLocale::Language l;

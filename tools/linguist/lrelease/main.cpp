@@ -157,7 +157,7 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
     }
 
     tor.normalizeTranslations(cd);
-    bool ok = tor.release(&file, cd);
+    bool ok = saveQM(tor, file, cd);
     file.close();
 
     if (!ok) {

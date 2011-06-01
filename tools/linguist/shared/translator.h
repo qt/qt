@@ -125,7 +125,6 @@ public:
 
     bool load(const QString &filename, ConversionData &err, const QString &format /* = "auto" */);
     bool save(const QString &filename, ConversionData &err, const QString &format /* = "auto" */) const;
-    bool release(QFile *iod, ConversionData &cd) const;
 
     int find(const TranslatorMessage &msg) const;
     TranslatorMessage find(const QString &context,
@@ -234,6 +233,8 @@ private:
 
 bool getNumerusInfo(QLocale::Language language, QLocale::Country country,
                     QByteArray *rules, QStringList *forms, const char **gettextRules);
+
+bool saveQM(const Translator &translator, QIODevice &dev, ConversionData &cd);
 
 /*
   This is a quick hack. The proper way to handle this would be
