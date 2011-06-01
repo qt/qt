@@ -410,56 +410,54 @@ int Translator::find(const QString &context) const
 
 void Translator::stripObsoleteMessages()
 {
-    TMM newmm;
-    for (TMM::ConstIterator it = m_messages.begin(); it != m_messages.end(); ++it)
-        if (it->type() != TranslatorMessage::Obsolete)
-            newmm.append(*it);
-    m_messages = newmm;
+    for (TMM::Iterator it = m_messages.begin(); it != m_messages.end(); )
+        if (it->type() == TranslatorMessage::Obsolete)
+            it = m_messages.erase(it);
+        else
+            ++it;
     m_indexOk = false;
 }
 
 void Translator::stripFinishedMessages()
 {
-    TMM newmm;
-    for (TMM::ConstIterator it = m_messages.begin(); it != m_messages.end(); ++it)
-        if (it->type() != TranslatorMessage::Finished)
-            newmm.append(*it);
-    m_messages = newmm;
+    for (TMM::Iterator it = m_messages.begin(); it != m_messages.end(); )
+        if (it->type() == TranslatorMessage::Finished)
+            it = m_messages.erase(it);
+        else
+            ++it;
     m_indexOk = false;
 }
 
 void Translator::stripEmptyContexts()
 {
-    TMM newmm;
-    for (TMM::ConstIterator it = m_messages.begin(); it != m_messages.end(); ++it)
-        if (it->sourceText() != QLatin1String(ContextComment))
-            newmm.append(*it);
-    m_messages = newmm;
+    for (TMM::Iterator it = m_messages.begin(); it != m_messages.end();)
+        if (it->sourceText() == QLatin1String(ContextComment))
+            it = m_messages.erase(it);
+        else
+            ++it;
     m_indexOk = false;
 }
 
 void Translator::stripNonPluralForms()
 {
-    TMM newmm;
-    for (TMM::ConstIterator it = m_messages.begin(); it != m_messages.end(); ++it)
-        if (it->isPlural())
-            newmm.append(*it);
-    m_messages = newmm;
+    for (TMM::Iterator it = m_messages.begin(); it != m_messages.end(); )
+        if (!it->isPlural())
+            it = m_messages.erase(it);
+        else
+            ++it;
     m_indexOk = false;
 }
 
 void Translator::stripIdenticalSourceTranslations()
 {
-    TMM newmm;
-    for (TMM::ConstIterator it = m_messages.begin(); it != m_messages.end(); ++it) {
+    for (TMM::Iterator it = m_messages.begin(); it != m_messages.end(); ) {
         // we need to have just one translation, and it be equal to the source
-        if (it->translations().count() != 1)
-            newmm.append(*it);
-        else if (it->translation() != it->sourceText())
-            newmm.append(*it);
+        if (it->translations().count() == 1 && it->translation() == it->sourceText())
+            it = m_messages.erase(it);
+        else
+            ++it;
     }
     m_indexOk = false;
-    m_messages = newmm;
 }
 
 void Translator::dropTranslations()
@@ -637,20 +635,18 @@ void Translator::reportDuplicates(const Duplicates &dupes,
 // Used by lupdate to be able to search using absolute paths during merging
 void Translator::makeFileNamesAbsolute(const QDir &originalPath)
 {
-    TMM newmm;
     for (TMM::iterator it = m_messages.begin(); it != m_messages.end(); ++it) {
-        TranslatorMessage msg = *it;
+        TranslatorMessage &msg = *it;
+        TranslatorMessage::References refs = msg.allReferences();
         msg.setReferences(TranslatorMessage::References());
-        foreach (const TranslatorMessage::Reference &ref, it->allReferences()) {
+        foreach (const TranslatorMessage::Reference &ref, refs) {
             QString fileName = ref.fileName();
             QFileInfo fi (fileName);
             if (fi.isRelative())
                 fileName = originalPath.absoluteFilePath(fileName);
             msg.addReference(fileName, ref.lineNumber());
         }
-        newmm.append(msg);
     }
-    m_messages = newmm;
 }
 
 QList<TranslatorMessage> Translator::messages() const
@@ -698,9 +694,7 @@ void Translator::normalizeTranslations(ConversionData &cd)
                 tlns.removeLast();
                 truncated = true;
             }
-            TranslatorMessage msg2(msg);
-            msg2.setTranslations(tlns);
-            m_messages[i] = msg2;
+            m_messages[i].setTranslations(tlns);
         }
     }
     if (truncated)
