@@ -107,6 +107,7 @@ JSC::JSValue jsNavigatorVendor(JSC::ExecState*, JSC::JSValue, const JSC::Identif
 JSC::JSValue jsNavigatorVendorSub(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 JSC::JSValue jsNavigatorCookieEnabled(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 JSC::JSValue jsNavigatorOnLine(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNavigatorGeolocation(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

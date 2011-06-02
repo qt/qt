@@ -410,7 +410,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSDOMWindow);
 #define THUNK_GENERATOR(generator)
 #endif
 
-static const HashTableValue JSDOMWindowTableValues[456] =
+static const HashTableValue JSDOMWindowTableValues[458] =
 {
     { "screen", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowScreen), (intptr_t)setJSDOMWindowScreen THUNK_GENERATOR(0) },
     { "history", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowHistory), (intptr_t)setJSDOMWindowHistory THUNK_GENERATOR(0) },
@@ -458,6 +458,7 @@ static const HashTableValue JSDOMWindowTableValues[456] =
     { "sessionStorage", DontDelete | ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowSessionStorage), (intptr_t)0 THUNK_GENERATOR(0) },
     { "localStorage", DontDelete | ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowLocalStorage), (intptr_t)0 THUNK_GENERATOR(0) },
     { "webkitNotifications", DontDelete | ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowWebkitNotifications), (intptr_t)0 THUNK_GENERATOR(0) },
+    { "orientation", DontDelete | ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowOrientation), (intptr_t)0 THUNK_GENERATOR(0) },
     { "console", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowConsole), (intptr_t)setJSDOMWindowConsole THUNK_GENERATOR(0) },
     { "onabort", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowOnabort), (intptr_t)setJSDOMWindowOnabort THUNK_GENERATOR(0) },
     { "onbeforeunload", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowOnbeforeunload), (intptr_t)setJSDOMWindowOnbeforeunload THUNK_GENERATOR(0) },
@@ -526,6 +527,7 @@ static const HashTableValue JSDOMWindowTableValues[456] =
     { "onwebkitanimationiteration", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowOnwebkitanimationiteration), (intptr_t)setJSDOMWindowOnwebkitanimationiteration THUNK_GENERATOR(0) },
     { "onwebkitanimationstart", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowOnwebkitanimationstart), (intptr_t)setJSDOMWindowOnwebkitanimationstart THUNK_GENERATOR(0) },
     { "onwebkittransitionend", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowOnwebkittransitionend), (intptr_t)setJSDOMWindowOnwebkittransitionend THUNK_GENERATOR(0) },
+    { "onorientationchange", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowOnorientationchange), (intptr_t)setJSDOMWindowOnorientationchange THUNK_GENERATOR(0) },
 #if ENABLE(TOUCH_EVENTS)
     { "ontouchstart", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowOntouchstart), (intptr_t)setJSDOMWindowOntouchstart THUNK_GENERATOR(0) },
 #endif
@@ -1579,6 +1581,18 @@ JSValue jsDOMWindowWebkitNotifications(ExecState* exec, JSValue slotBase, const 
     UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(castedThis->impl());
     JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->webkitNotifications()));
+    return result;
+}
+
+
+JSValue jsDOMWindowOrientation(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSDOMWindow* castedThis = static_cast<JSDOMWindow*>(asObject(slotBase));
+    if (!castedThis->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(castedThis->impl());
+    JSValue result = jsNumber(imp->orientation());
     return result;
 }
 
@@ -2725,6 +2739,23 @@ JSValue jsDOMWindowOnwebkittransitionend(ExecState* exec, JSValue slotBase, cons
     UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(castedThis->impl());
     if (EventListener* listener = imp->onwebkittransitionend()) {
+        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
+            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
+                return jsFunction;
+        }
+    }
+    return jsNull();
+}
+
+
+JSValue jsDOMWindowOnorientationchange(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSDOMWindow* castedThis = static_cast<JSDOMWindow*>(asObject(slotBase));
+    if (!castedThis->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(castedThis->impl());
+    if (EventListener* listener = imp->onorientationchange()) {
         if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
             if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
                 return jsFunction;
@@ -6967,6 +6998,17 @@ void setJSDOMWindowOnwebkittransitionend(ExecState* exec, JSObject* thisObject, 
     JSDOMWindow* castedThis = static_cast<JSDOMWindow*>(thisObject);
     DOMWindow* imp = static_cast<DOMWindow*>(castedThis->impl());
     imp->setOnwebkittransitionend(createJSAttributeEventListener(exec, value, thisObject));
+}
+
+
+void setJSDOMWindowOnorientationchange(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    JSDOMWindow* castedThis = static_cast<JSDOMWindow*>(thisObject);
+    DOMWindow* imp = static_cast<DOMWindow*>(castedThis->impl());
+    imp->setOnorientationchange(createJSAttributeEventListener(exec, value, thisObject));
 }
 
 

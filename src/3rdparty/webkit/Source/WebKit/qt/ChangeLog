@@ -1,5 +1,34 @@
 2011-06-02  Andreas Kling  <kling@webkit.org>
 
+        Rubber-stamped by Simon Hausmann.
+
+        Remove Qt's precompiled header hack as it was broken, and was not even
+        used unless building WebKit inside a Qt tree.
+
+        * WebKit_pch.h: Removed.
+
+2011-06-01  Andreas Kling  <kling@webkit.org>
+
+        Reviewed by Benjamin Poulain.
+
+        REGRESSION: [Qt] QNetworkReply delivered by the unsupportedContent() signal does not contain downloaded data
+        https://bugs.webkit.org/show_bug.cgi?id=49650
+
+        Defer emission of QWebPage::unsupportedContent() until we're back in the event loop.
+        This lets the QNAM backend finish with the reply without handing over ownership to the user code.
+
+        No new tests since this doesn't fail for qrc:// or file:// URLs and our tests can't depend on http:// URLs.
+
+        To correctly solve this issue, we need changes to Qt, tracked here:
+        http://bugreports.qt.nokia.com/browse/QTBUG-18718
+
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::setFrame):
+        (WebCore::FrameLoaderClientQt::download):
+        * WebCoreSupport/FrameLoaderClientQt.h:
+
+2011-06-02  Andreas Kling  <kling@webkit.org>
+
         Unreviewed build fix.
 
         To support building namespaced Qt, we require that forward-declarations

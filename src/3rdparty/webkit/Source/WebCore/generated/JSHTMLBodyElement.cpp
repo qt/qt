@@ -42,7 +42,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLBodyElement);
 #define THUNK_GENERATOR(generator)
 #endif
 
-static const HashTableValue JSHTMLBodyElementTableValues[21] =
+static const HashTableValue JSHTMLBodyElementTableValues[22] =
 {
     { "aLink", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLBodyElementALink), (intptr_t)setJSHTMLBodyElementALink THUNK_GENERATOR(0) },
     { "background", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLBodyElementBackground), (intptr_t)setJSHTMLBodyElementBackground THUNK_GENERATOR(0) },
@@ -59,6 +59,7 @@ static const HashTableValue JSHTMLBodyElementTableValues[21] =
     { "onresize", DontDelete | DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLBodyElementOnresize), (intptr_t)setJSHTMLBodyElementOnresize THUNK_GENERATOR(0) },
     { "onstorage", DontDelete | DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLBodyElementOnstorage), (intptr_t)setJSHTMLBodyElementOnstorage THUNK_GENERATOR(0) },
     { "onunload", DontDelete | DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLBodyElementOnunload), (intptr_t)setJSHTMLBodyElementOnunload THUNK_GENERATOR(0) },
+    { "onorientationchange", DontDelete | DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLBodyElementOnorientationchange), (intptr_t)setJSHTMLBodyElementOnorientationchange THUNK_GENERATOR(0) },
     { "onblur", DontDelete | DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLBodyElementOnblur), (intptr_t)setJSHTMLBodyElementOnblur THUNK_GENERATOR(0) },
     { "onerror", DontDelete | DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLBodyElementOnerror), (intptr_t)setJSHTMLBodyElementOnerror THUNK_GENERATOR(0) },
     { "onfocus", DontDelete | DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLBodyElementOnfocus), (intptr_t)setJSHTMLBodyElementOnfocus THUNK_GENERATOR(0) },
@@ -356,6 +357,21 @@ JSValue jsHTMLBodyElementOnunload(ExecState* exec, JSValue slotBase, const Ident
 }
 
 
+JSValue jsHTMLBodyElementOnorientationchange(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(asObject(slotBase));
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
+    if (EventListener* listener = imp->onorientationchange()) {
+        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
+            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
+                return jsFunction;
+        }
+    }
+    return jsNull();
+}
+
+
 JSValue jsHTMLBodyElementOnblur(ExecState* exec, JSValue slotBase, const Identifier&)
 {
     JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(asObject(slotBase));
@@ -562,6 +578,16 @@ void setJSHTMLBodyElementOnunload(ExecState* exec, JSObject* thisObject, JSValue
     JSDOMGlobalObject* globalObject = castedThis->globalObject();
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     imp->setOnunload(createJSAttributeEventListener(exec, value, globalObject));
+}
+
+
+void setJSHTMLBodyElementOnorientationchange(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(thisObject);
+    JSDOMGlobalObject* globalObject = castedThis->globalObject();
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
+    imp->setOnorientationchange(createJSAttributeEventListener(exec, value, globalObject));
 }
 
 
