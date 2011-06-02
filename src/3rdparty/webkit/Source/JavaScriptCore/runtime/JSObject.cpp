@@ -508,11 +508,17 @@ JSObject* JSObject::unwrappedObject()
 
 void JSObject::seal(JSGlobalData& globalData)
 {
+    if (isSealed(globalData))
+        return;
+    preventExtensions(globalData);
     setStructure(globalData, Structure::sealTransition(globalData, m_structure.get()));
 }
 
 void JSObject::freeze(JSGlobalData& globalData)
 {
+    if (isFrozen(globalData))
+        return;
+    preventExtensions(globalData);
     setStructure(globalData, Structure::freezeTransition(globalData, m_structure.get()));
 }
 

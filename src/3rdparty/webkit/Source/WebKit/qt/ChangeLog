@@ -1,3 +1,144 @@
+2011-06-02  Andreas Kling  <kling@webkit.org>
+
+        Unreviewed build fix.
+
+        To support building namespaced Qt, we require that forward-declarations
+        of Qt classes be wrapped in QT_BEGIN_NAMESPACE and QT_END_NAMESPACE.
+
+        * WebCoreSupport/DumpRenderTreeSupportQt.h:
+
+2011-06-01  Caio Marcelo de Oliveira Filho  <caio.oliveira@openbossa.org>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt]Fix tst_QWebFrame::setUrlToInvalid() autotest after r84762
+        https://bugs.webkit.org/show_bug.cgi?id=59345
+
+        KURL and QUrl disagree whether certain URLs are valid or not. The regression here
+        was caused by the fact that now KURL accepts "http:/example.com" (note only one
+        slash) and our test case used a strange edge case that's transformed into a
+        "one-slash" URL that now KURL can handle.
+
+        QtWebKit approach in this case is to do a best effort and accept the QUrl if KURL
+        can understand it. So I've updated the test to use a more meaningful example and
+        show that an invalid URL gets converted to a valid URL if possible.
+
+        * tests/qwebframe/tst_qwebframe.cpp:
+        (tst_QWebFrame::setUrlToInvalid):
+
+2011-06-01  Caio Marcelo de Oliveira Filho  <caio.oliveira@openbossa.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Rewrite tst_QDeclarativeWebView::multipleWindows() to not depend on Grid internals
+        https://bugs.webkit.org/show_bug.cgi?id=61739
+
+        The skipped test was imported from Qt source repository, and used private headers
+        to peek in the QML Grid element. This patch changes the QML used to expose the
+        information we want to test: number of pages opened and the first page opened.
+
+        * tests/qdeclarativewebview/resources/newwindows.html:
+        Added <body> tags. We have no reason to not use them in the test.
+
+        * tests/qdeclarativewebview/resources/newwindows.qml:
+        Moved the timer out of the page component, used anchors for setting webview size,
+        changed the way we count pages opened. Also changed coding style a bit.
+
+        * tests/qdeclarativewebview/tst_qdeclarativewebview.cpp:
+        (tst_QDeclarativeWebView::multipleWindows):
+        We now look for properties with the information we want in the rootItem: pagesOpened and
+        firstPageOpened.
+
+2011-05-31  Rafael Brandao  <rafael.lobo@openbossa.org>
+
+        Reviewed by Andreas Kling.
+
+        [Qt] tst_QWebFrame::render() failing
+        https://bugs.webkit.org/show_bug.cgi?id=60893
+        
+        The test was expecting the frame contents to be already loaded
+        before rendering it into a QPicture. Renamed the test to fit
+        its real purpose more accordingly.
+
+        * tests/qwebframe/tst_qwebframe.cpp:
+        (tst_QWebFrame::renderGeometry):
+
+2011-05-30  Caio Marcelo de Oliveira Filho  <caio.oliveira@openbossa.org>
+
+        Reviewed by Andreas Kling.
+
+        [Qt] Fix unnecessary wait in API autotest tst_QWebFrame::scrollbarsOff
+        https://bugs.webkit.org/show_bug.cgi?id=61711
+
+        The loadFinished() signal was emitted directly inside the call for setHtml, so
+        the test was waiting the loadFinished() signal with a big timeout. Change this by
+        a very small timeout and a verification with signal spy.
+
+        In practice, setHtml() will either directly call loadFinished() or queue it to
+        the next event loop run, and test will work for both situations.
+
+        * tests/qwebframe/tst_qwebframe.cpp:
+        (tst_QWebFrame::scrollbarsOff):
+
+2011-05-20  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Reviewed by Benjamin Poulain.
+
+        [Qt] tst_QWebElement::style() fails because QWebElement::InlineStyle doesn't work as expected
+        https://bugs.webkit.org/show_bug.cgi?id=60372
+
+        * tests/qwebelement/tst_qwebelement.cpp: Mark failing test case as expected fail.
+        (tst_QWebElement::style):
+
+2011-05-20  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Reviewed by Benjamin Poulain.
+
+        [Qt] Fix tst_QDeclarativeWebView::basicProperties() and historyNav() autotests
+        https://bugs.webkit.org/show_bug.cgi?id=61042
+
+        * tests/qdeclarativewebview/tst_qdeclarativewebview.cpp: Mark failing test cases as expected fails.
+        (tst_QDeclarativeWebView::basicProperties):
+        (tst_QDeclarativeWebView::historyNav):
+
+2011-05-20  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Reviewed by Benjamin Poulain.
+
+        [Qt] Fix tst_QWebPage::testOptionalJSObjects() autotest
+        https://bugs.webkit.org/show_bug.cgi?id=61045
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::testOptionalJSObjects): Mark failing test cases as expected fails.
+
+2011-05-20  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Reviewed by Benjamin Poulain.
+
+        [Qt]Fix tst_QWebFrame::setUrlToInvalid() autotest after r84762
+        https://bugs.webkit.org/show_bug.cgi?id=59345
+
+        * tests/qwebframe/tst_qwebframe.cpp:
+        (tst_QWebFrame::setUrlToInvalid): Mark failing test cases as expected fails.
+
+2011-05-10  Ademar de Souza Reis Jr.  <ademar.reis@openbossa.org>
+
+        Reviewed by Csaba Osztrogonác.
+
+        [Qt] tst_QWebPage creates temporary files in the current working dir
+        https://bugs.webkit.org/show_bug.cgi?id=60497
+
+        tst_QWebPage was using QDir::currentPath when creating temporary dirs
+        and leaving them after the test was run. I basically borrowed the fix
+        from tst_QDeclarativeWebView.
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (removeRecursive):
+        (tst_QWebPage::tmpDirPath):
+        (tst_QWebPage::cleanupFiles):
+        (tst_QWebPage::database):
+        (tst_QWebPage::multiplePageGroupsAndLocalStorage):
+
 2011-05-27  Alexis Menard  <alexis.menard@openbossa.org>
 
         Reviewed by Csaba Osztrogonác.

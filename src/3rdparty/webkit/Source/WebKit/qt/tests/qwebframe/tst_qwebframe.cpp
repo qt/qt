@@ -637,7 +637,7 @@ private slots:
     void baseUrl_data();
     void baseUrl();
     void hasSetFocus();
-    void render();
+    void renderGeometry();
     void renderHints();
     void scrollPosition();
     void scrollToAnchor();
@@ -2881,7 +2881,7 @@ void tst_QWebFrame::hasSetFocus()
     QTRY_VERIFY(m_page->mainFrame()->hasFocus());
 }
 
-void tst_QWebFrame::render()
+void tst_QWebFrame::renderGeometry()
 {
     QString html("<html>" \
                     "<head><style>" \
@@ -2897,6 +2897,7 @@ void tst_QWebFrame::render()
     QWebFrame *frame = frames.at(0);
     QString innerHtml("<body style='margin: 0px;'><img src='qrc:/image.png'/></body>");
     frame->setHtml(innerHtml);
+    waitForSignal(frame, SIGNAL(loadFinished(bool)), 200);
 
     QPicture picture;
 
@@ -3134,8 +3135,10 @@ void tst_QWebFrame::scrollbarsOff()
                  "</body>");
 
 
+    QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
     view.setHtml(html);
-    ::waitForSignal(&view, SIGNAL(loadFinished(bool)));
+    ::waitForSignal(&view, SIGNAL(loadFinished(bool)), 200);
+    QCOMPARE(loadSpy.count(), 1);
 
     mainFrame->evaluateJavaScript("checkScrollbar();");
     QCOMPARE(mainFrame->documentElement().findAll("span").at(0).toPlainText(), QString("SUCCESS"));
@@ -3453,15 +3456,17 @@ void tst_QWebFrame::setUrlToInvalid()
     QWebPage page;
     QWebFrame* frame = page.mainFrame();
 
-    const QUrl invalidUrl("http://strange;hostname/here");
+    const QUrl invalidUrl("http:/example.com");
     QVERIFY(!invalidUrl.isEmpty());
     QVERIFY(!invalidUrl.isValid());
     QVERIFY(invalidUrl != QUrl());
 
+    // QWebFrame will do its best to accept the URL, possible converting it to a valid equivalent URL.
+    const QUrl validUrl("http://example.com/");
     frame->setUrl(invalidUrl);
-    QCOMPARE(frame->url(), invalidUrl);
-    QCOMPARE(frame->requestedUrl(), invalidUrl);
-    QCOMPARE(frame->baseUrl(), invalidUrl);
+    QCOMPARE(frame->url(), validUrl);
+    QCOMPARE(frame->requestedUrl(), validUrl);
+    QCOMPARE(frame->baseUrl(), validUrl);
 
     // QUrls equivalent to QUrl() will be treated as such.
     const QUrl aboutBlank("about:blank");

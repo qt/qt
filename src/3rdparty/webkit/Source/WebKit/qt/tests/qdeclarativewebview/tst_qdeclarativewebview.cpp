@@ -101,6 +101,7 @@ void tst_QDeclarativeWebView::basicProperties()
     QVERIFY(wv);
     QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
     QCOMPARE(wv->property("title").toString(), QLatin1String("Basic"));
+    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=61042", Continue);
     QTRY_COMPARE(qvariant_cast<QPixmap>(wv->property("icon")).width(), 48);
     QEXPECT_FAIL("", "'icon' property isn't working", Continue);
     QCOMPARE(qvariant_cast<QPixmap>(wv->property("icon")), QPixmap("qrc:///resources/basic.png"));
@@ -178,6 +179,7 @@ void tst_QDeclarativeWebView::historyNav()
     for (int i = 1; i <= 2; ++i) {
         QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
         QCOMPARE(wv->property("title").toString(), QLatin1String("Basic"));
+        QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=61042", Continue);
         QTRY_COMPARE(qvariant_cast<QPixmap>(wv->property("icon")).width(), 48);
         QEXPECT_FAIL("", "'icon' property isn't working", Continue);
         QCOMPARE(qvariant_cast<QPixmap>(wv->property("icon")), QPixmap("qrc:///data/basic.png"));
@@ -197,6 +199,7 @@ void tst_QDeclarativeWebView::historyNav()
     wv->setProperty("url", QUrl("qrc:///resources/forward.html"));
     QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
     QCOMPARE(wv->property("title").toString(), QLatin1String("Forward"));
+    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=61042", Continue);
     QTRY_COMPARE(qvariant_cast<QPixmap>(wv->property("icon")).width(), 32);
     QEXPECT_FAIL("", "'icon' property isn't working", Continue);
     QCOMPARE(qvariant_cast<QPixmap>(wv->property("icon")), QPixmap("qrc:///resources/forward.png"));
@@ -269,17 +272,21 @@ void tst_QDeclarativeWebView::loadError()
 
 void tst_QDeclarativeWebView::multipleWindows()
 {
-    QSKIP("Rework this test to not depend on QDeclarativeGrid", SkipAll);
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine, QUrl("qrc:///resources/newwindows.qml"));
     checkNoErrors(component);
 
-//    QDeclarativeGrid *grid = qobject_cast<QDeclarativeGrid*>(component.create());
-//    QVERIFY(grid != 0);
-//    QTRY_COMPARE(grid->children().count(), 2+4); // Component, Loader (with 1 WebView), 4 new-window WebViews
-//    QDeclarativeItem* popup = qobject_cast<QDeclarativeItem*>(grid->children().at(2)); // first popup after Component and Loader.
-//    QVERIFY(popup != 0);
-//    QTRY_COMPARE(popup->x(), 150.0);
+    QDeclarativeItem* rootItem = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(rootItem);
+
+    QTRY_COMPARE(rootItem->property("pagesOpened").toInt(), 4);
+
+    QDeclarativeProperty prop(rootItem, "firstPageOpened");
+    QObject* firstPageOpened = qvariant_cast<QObject*>(prop.read());
+    QVERIFY(firstPageOpened);
+
+    QDeclarativeProperty xProp(firstPageOpened, "x");
+    QTRY_COMPARE(xProp.read().toReal(), qreal(150.0));
 }
 
 void tst_QDeclarativeWebView::newWindowComponent()
