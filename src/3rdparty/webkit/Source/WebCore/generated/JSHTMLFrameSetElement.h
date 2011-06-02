@@ -90,8 +90,6 @@ JSC::JSValue jsHTMLFrameSetElementOnstorage(JSC::ExecState*, JSC::JSValue, const
 void setJSHTMLFrameSetElementOnstorage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLFrameSetElementOnunload(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLFrameSetElementOnunload(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLFrameSetElementOnorientationchange(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
-void setJSHTMLFrameSetElementOnorientationchange(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLFrameSetElementOnblur(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLFrameSetElementOnblur(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLFrameSetElementOnerror(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
