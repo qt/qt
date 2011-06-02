@@ -818,7 +818,9 @@ void QDeclarativeGridViewPrivate::createHighlight()
     if (highlight) {
         if (trackedItem == highlight)
             trackedItem = 0;
-        delete highlight->item;
+        if (highlight->item->scene())
+            highlight->item->scene()->removeItem(highlight->item);
+        highlight->item->deleteLater();
         delete highlight;
         highlight = 0;
         delete highlightXAnimator;
