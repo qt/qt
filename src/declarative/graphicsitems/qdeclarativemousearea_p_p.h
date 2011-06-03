@@ -70,8 +70,6 @@ public:
       : absorb(true), hovered(false), pressed(false), longPress(false),
       moved(false), stealMouse(false), doubleClick(false), preventStealing(false), drag(0)
     {
-        Q_Q(QDeclarativeMouseArea);
-        forwardTo = QDeclarativeListProperty<QGraphicsObject>(q, forwardToList);
     }
 
     ~QDeclarativeMouseAreaPrivate();
@@ -89,18 +87,6 @@ public:
         lastButton = event->button();
         lastButtons = event->buttons();
         lastModifiers = event->modifiers();
-    }
-
-    void forwardEvent(QGraphicsSceneMouseEvent* event)
-    {
-        Q_Q(QDeclarativeMouseArea);
-        for(int i=0; i < forwardToList.count(); i++){
-            event->setPos(forwardToList[i]->mapFromScene(event->scenePos()));
-            forwardToList[i]->scene()->sendEvent(forwardToList[i], event);
-            if(event->isAccepted())
-                break;
-        }
-        event->setPos(q->mapFromScene(event->scenePos()));
     }
 
     bool isPressAndHoldConnected() {
@@ -135,9 +121,6 @@ public:
     Qt::MouseButtons lastButtons;
     Qt::KeyboardModifiers lastModifiers;
     QBasicTimer pressAndHoldTimer;
-
-    QDeclarativeListProperty<QGraphicsObject> forwardTo;
-    QList<QGraphicsObject*> forwardToList;
 };
 
 QT_END_NAMESPACE
