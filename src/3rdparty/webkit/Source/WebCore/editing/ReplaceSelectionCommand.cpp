@@ -891,8 +891,6 @@ void ReplaceSelectionCommand::doApply()
     if (Frame* frame = document()->frame())
         frame->selection()->clearTypingStyle();
     
-    bool handledStyleSpans = handleStyleSpansBeforeInsertion(fragment, insertionPos);
-
     // We don't want the destination to end up inside nodes that weren't selected.  To avoid that, we move the
     // position forward without changing the visible position so we're still at the same visible location, but
     // outside of preceding tags.
@@ -900,6 +898,8 @@ void ReplaceSelectionCommand::doApply()
 
     // Paste into run of tabs splits the tab span.
     insertionPos = positionOutsideTabSpan(insertionPos);
+
+    bool handledStyleSpans = handleStyleSpansBeforeInsertion(fragment, insertionPos);
 
     // If we are not trying to match the destination style we prefer a position
     // that is outside inline elements that provide style.

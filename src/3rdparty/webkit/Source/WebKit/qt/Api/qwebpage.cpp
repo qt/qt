@@ -170,7 +170,6 @@ static const char* editorCommandWebActions[] =
     0, // OpenImageInNewWindow,
     0, // DownloadImageToDisk,
     0, // CopyImageToClipboard,
-    0, // CopyImageUrlToClipboard,
 
     0, // Back,
     0, // Forward,
@@ -240,6 +239,10 @@ static const char* editorCommandWebActions[] =
     "AlignJustified", // AlignJustified,
     "AlignLeft", // AlignLeft,
     "AlignRight", // AlignRight,
+
+    0, // StopScheduledPageRefresh,
+
+    0, // CopyImageUrlToClipboard,
 
     0 // WebActionCount
 };
