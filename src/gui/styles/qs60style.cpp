@@ -1445,26 +1445,14 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                      checkMarkOption.rect = selectionRect;
                  // Draw selection mark.
                  if (isSelected && selectItems) {
-                     proxy()->drawPrimitive(PE_IndicatorViewItemCheck, &checkMarkOption, painter, widget);
                      // @todo: this should happen in the rect retrievel i.e. subElementRect()
                      if (textRect.right() > selectionRect.left())
                          textRect.setRight(selectionRect.left());
                  } else if (voptAdj.features & QStyleOptionViewItemV2::HasCheckIndicator) {
                      checkMarkOption.state = checkMarkOption.state & ~State_HasFocus;
 
-                     switch (vopt->checkState) {
-                     case Qt::Unchecked:
-                         checkMarkOption.state |= State_Off;
-                         break;
-                     case Qt::PartiallyChecked:
-                         checkMarkOption.state |= State_NoChange;
-                         break;
-                     case Qt::Checked:
-                         checkMarkOption.state |= State_On;
-                         break;
-                     }
-                     drawPrimitive(PE_IndicatorViewItemCheck, &checkMarkOption, painter, widget);
                  }
+                 proxy()->drawPrimitive(PE_IndicatorViewItemCheck, &checkMarkOption, painter, widget);
              }
 
              // draw the text
@@ -2114,12 +2102,28 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #ifndef QT_NO_ITEMVIEWS
         if (const QAbstractItemView *itemView = (qobject_cast<const QAbstractItemView *>(widget))) {
             if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option)) {
+                QStyleOptionViewItemV4 voptAdj = *vopt;
                 const bool checkBoxVisible = vopt->features & QStyleOptionViewItemV2::HasCheckIndicator;
                 const bool singleSelection = itemView->selectionMode() ==
                     QAbstractItemView::SingleSelection || itemView->selectionMode() == QAbstractItemView::NoSelection;
                 // draw either checkbox at the beginning
                 if (checkBoxVisible && singleSelection) {
-                    drawPrimitive(PE_IndicatorCheckBox, option, painter, widget);
+                    if (vopt->features & QStyleOptionViewItemV2::HasCheckIndicator) {
+                        switch (vopt->checkState) {
+                            case Qt::Unchecked:
+                                voptAdj.state |= State_Off;
+                                break;
+                            case Qt::PartiallyChecked:
+                                voptAdj.state |= State_NoChange;
+                                break;
+                            case Qt::Checked:
+                                voptAdj.state |= State_On;
+                                break;
+                            default:
+                                break;
+                            }
+                        }
+                    drawPrimitive(PE_IndicatorCheckBox, &voptAdj, painter, widget);
                 // ... or normal "tick" selection at the end.
                 } else if (option->state & State_Selected) {
                     QRect tickRect = option->rect;
