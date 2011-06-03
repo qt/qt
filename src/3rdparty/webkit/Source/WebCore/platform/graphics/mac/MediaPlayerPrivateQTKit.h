@@ -41,6 +41,8 @@
 @class QTVideoRendererWebKitOnly;
 @class WebCoreMovieObserver;
 #else
+class NSDictionary;
+class NSMutableDictionary;
 class QTMovie;
 class QTMovieView;
 class QTTime;
@@ -68,6 +70,9 @@ public:
     void sizeChanged();
     void timeChanged();
     void didEnd();
+#if USE(ACCELERATED_COMPOSITING)
+    void layerHostChanged(PlatformLayer* rootLayer);
+#endif
 
 private:
     MediaPlayerPrivateQTKit(MediaPlayer*);
@@ -82,7 +87,7 @@ private:
     static bool isAvailable();
 
     PlatformMedia platformMedia() const;
-#if USE(ACCELERATED_COMPOSITING)
+#if USE(ACCELERATED_COMPOSITING) && !(PLATFORM(QT) && USE(QTKIT))
     PlatformLayer* platformLayer() const;
 #endif
 
@@ -134,7 +139,7 @@ private:
     virtual void prepareForRendering();
 
 
-#if USE(ACCELERATED_COMPOSITING)
+#if USE(ACCELERATED_COMPOSITING) && !(PLATFORM(QT) && USE(QTKIT))
     bool supportsAcceleratedRendering() const;
     void acceleratedRenderingStateChanged();
 #endif

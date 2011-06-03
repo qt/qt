@@ -68,12 +68,25 @@ class MediaControls : public HTMLDivElement {
     virtual void updateTimeDisplay() = 0;
     virtual void updateStatusDisplay() = 0;
 
+    virtual bool shouldHideControls() = 0;
+
 protected:
     MediaControls(HTMLMediaElement*);
 
 private:
     MediaControls();
+
+    virtual bool isMediaControls() const { return true; }
 };
+
+inline MediaControls* toMediaControls(Node* node)
+{
+    ASSERT(!node || node->isMediaControls());
+    return static_cast<MediaControls*>(node);
+}
+
+// This will catch anyone doing an unneccessary cast.
+void toMediaControls(const Node*);
 
 }
 

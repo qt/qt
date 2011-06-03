@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -146,7 +146,7 @@ public:
     void togglePlayState();
     void beginScrubbing();
     void endScrubbing();
-
+    
     bool canPlay() const;
 
     float percentLoaded() const;
@@ -200,6 +200,8 @@ public:
     static void getSitesInMediaCache(Vector<String>&);
     static void clearMediaCache();
     static void clearMediaCacheForSite(const String&);
+
+    bool isPlaying() const { return m_playing; }
 
 protected:
     HTMLMediaElement(const QualifiedName&, Document*);
@@ -288,6 +290,7 @@ private:
     void mediaEngineError(PassRefPtr<MediaError> err);
     void cancelPendingEventsAndCallbacks();
     void waitForSourceChange();
+    void prepareToPlay();
 
     enum InvalidSourceAction { DoNothing, Complain };
     bool isSafeToLoadURL(const KURL&, InvalidSourceAction);
@@ -410,7 +413,6 @@ private:
 
     bool m_isFullscreen : 1;
     bool m_closedCaptionsVisible : 1;
-    bool m_mouseOver : 1;
 
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     bool m_needWidgetUpdate : 1;
@@ -419,6 +421,7 @@ private:
     bool m_dispatchingCanPlayEvent : 1;
     bool m_loadInitiatedByUserGesture : 1;
     bool m_completelyLoaded : 1;
+    bool m_havePreparedToPlay : 1;
 };
 
 } //namespace

@@ -40,6 +40,7 @@
 #include "Timer.h"
 #include "TreeScope.h"
 #include "ViewportArguments.h"
+#include <wtf/Deque.h>
 #include <wtf/FixedArray.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -1042,7 +1043,13 @@ public:
     bool webkitIsFullScreen() const { return m_fullScreenElement.get(); }
     bool webkitFullScreenKeyboardInputAllowed() const { return m_fullScreenElement.get() && m_areKeysEnabledInFullScreen; }
     Element* webkitCurrentFullScreenElement() const { return m_fullScreenElement.get(); }
-    void webkitRequestFullScreenForElement(Element*, unsigned short flags);
+    
+    enum FullScreenCheckType {
+        EnforceIFrameAllowFulScreenRequirement,
+        ExemptIFrameAllowFulScreenRequirement,
+    };
+
+    void requestFullScreenForElement(Element*, unsigned short flags, FullScreenCheckType);
     void webkitCancelFullScreen();
     
     void webkitWillEnterFullScreenForElement(Element*);
@@ -1058,6 +1065,8 @@ public:
     
     void fullScreenChangeDelayTimerFired(Timer<Document>*);
     bool fullScreenIsAllowedForElement(Element*) const;
+    void fullScreenElementRemoved();
+    void removeFullScreenElementOfSubtree(Node*, bool amongChildrenOnly = false);
 #endif
 
     // Used to allow element that loads data without going through a FrameLoader to delay the 'load' event.
@@ -1363,6 +1372,7 @@ private:
     RefPtr<Element> m_fullScreenElement;
     RenderFullScreen* m_fullScreenRenderer;
     Timer<Document> m_fullScreenChangeDelayTimer;
+    Deque<RefPtr<Element> > m_fullScreenChangeEventTargetQueue;
 #endif
 
     int m_loadEventDelayCount;

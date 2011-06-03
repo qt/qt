@@ -3391,24 +3391,6 @@ void Document::nodeWillBeRemoved(Node* n)
         frame->selection()->nodeWillBeRemoved(n);
         frame->page()->dragCaretController()->nodeWillBeRemoved(n);
     }
-    
-#if ENABLE(FULLSCREEN_API)
-    // If the current full screen element or any of its ancestors is removed, set the current
-    // full screen element to the document root, and fire a fullscreenchange event to inform 
-    // clients of the DOM.
-    ASSERT(n);
-    if (n->contains(m_fullScreenElement.get())) {
-        ASSERT(n != documentElement());
-        
-        if (m_fullScreenRenderer)
-            m_fullScreenRenderer->remove();
-
-        setFullScreenRenderer(0);
-        m_fullScreenElement = documentElement();
-        recalcStyle(Force);
-        m_fullScreenChangeDelayTimer.startOneShot(0);
-    }
-#endif
 }
 
 void Document::textInserted(Node* text, unsigned offset, unsigned length)
@@ -4803,7 +4785,7 @@ bool Document::fullScreenIsAllowedForElement(Element* element) const
     return true;
 }
 
-void Document::webkitRequestFullScreenForElement(Element* element, unsigned short flags)
+void Document::requestFullScreenForElement(Element* element, unsigned short flags, FullScreenCheckType checkType)
 {
     if (!page() || !page()->settings()->fullScreenEnabled())
         return;
@@ -4811,7 +4793,7 @@ void Document::webkitRequestFullScreenForElement(Element* element, unsigned shor
     if (!element)
         element = documentElement();
     
-    if (!fullScreenIsAllowedForElement(element))
+    if (checkType == EnforceIFrameAllowFulScreenRequirement && !fullScreenIsAllowedForElement(element))
         return;
     
     if (!ScriptController::processingUserGesture())
@@ -4872,12 +4854,15 @@ void Document::webkitWillEnterFullScreenForElement(Element* element)
 void Document::webkitDidEnterFullScreenForElement(Element*)
 {
     if (m_fullScreenRenderer) {
+#if USE(ACCELERATED_COMPOSITING)
+        page()->chrome()->client()->setRootFullScreenLayer(0);
+#endif
         m_fullScreenRenderer->setAnimating(false);
 #if USE(ACCELERATED_COMPOSITING)
         view()->updateCompositingLayers();
-        page()->chrome()->client()->setRootFullScreenLayer(0);
 #endif
     }
+    m_fullScreenChangeEventTargetQueue.append(m_fullScreenElement);
     m_fullScreenChangeDelayTimer.startOneShot(0);
 }
 
@@ -4905,7 +4890,7 @@ void Document::webkitDidExitFullScreenForElement(Element*)
     if (m_fullScreenElement != documentElement())
         m_fullScreenElement->detach();
 
-    m_fullScreenElement = 0;
+    m_fullScreenChangeEventTargetQueue.append(m_fullScreenElement.release());
     setFullScreenRenderer(0);
 #if USE(ACCELERATED_COMPOSITING)
     page()->chrome()->client()->setRootFullScreenLayer(0);
@@ -4958,13 +4943,48 @@ void Document::setFullScreenRendererBackgroundColor(Color backgroundColor)
     
 void Document::fullScreenChangeDelayTimerFired(Timer<Document>*)
 {
-    Element* element = m_fullScreenElement.get();
-    if (!element)
-        element = documentElement();
-    
-    element->dispatchEvent(Event::create(eventNames().webkitfullscreenchangeEvent, true, false));
+    while (!m_fullScreenChangeEventTargetQueue.isEmpty()) {
+        RefPtr<Element> element = m_fullScreenChangeEventTargetQueue.takeFirst();
+        if (!element)
+            element = documentElement();
+        
+        element->dispatchEvent(Event::create(eventNames().webkitfullscreenchangeEvent, true, false));
+    }
 }
 
+void Document::fullScreenElementRemoved()
+{
+    // If the current full screen element or any of its ancestors is removed, set the current
+    // full screen element to the document root, and fire a fullscreenchange event to inform 
+    // clients of the DOM.
+    if (m_fullScreenRenderer)
+        m_fullScreenRenderer->remove();
+    setFullScreenRenderer(0);
+
+    m_fullScreenChangeEventTargetQueue.append(m_fullScreenElement.release());
+    m_fullScreenElement = documentElement();
+    recalcStyle(Force);
+    
+    // Dispatch this event manually, before the element is actually removed from the DOM
+    // so that the message cascades as expected.
+    fullScreenChangeDelayTimerFired(&m_fullScreenChangeDelayTimer);
+    m_fullScreenChangeDelayTimer.stop();
+}
+
+void Document::removeFullScreenElementOfSubtree(Node* node, bool amongChildrenOnly)
+{
+    if (!m_fullScreenElement)
+        return;
+    
+    bool elementInSubtree = false;
+    if (amongChildrenOnly)
+        elementInSubtree = m_fullScreenElement->isDescendantOf(node);
+    else
+        elementInSubtree = (m_fullScreenElement == node) || m_fullScreenElement->isDescendantOf(node);
+    
+    if (elementInSubtree)
+        fullScreenElementRemoved();
+}
 #endif
 
 void Document::decrementLoadEventDelayCount()

@@ -164,13 +164,13 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     , m_sendProgressEvents(true)
     , m_isFullscreen(false)
     , m_closedCaptionsVisible(false)
-    , m_mouseOver(false)
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     , m_needWidgetUpdate(false)
 #endif
     , m_dispatchingCanPlayEvent(false)
     , m_loadInitiatedByUserGesture(false)
     , m_completelyLoaded(false)
+    , m_havePreparedToPlay(false)
 {
     LOG(Media, "HTMLMediaElement::HTMLMediaElement");
     document->registerForDocumentActivationCallbacks(this);
@@ -514,9 +514,11 @@ void HTMLMediaElement::prepareForLoad()
     // Perform the cleanup required for the resource load algorithm to run.
     stopPeriodicTimers();
     m_loadTimer.stop();
+    m_sentEndEvent = false;
     m_sentStalledEvent = false;
     m_haveFiredLoadedData = false;
     m_completelyLoaded = false;
+    m_havePreparedToPlay = false;
     m_displayMode = Unknown;
 
     // 1 - Abort any already-running instance of the resource selection algorithm for this element.
@@ -708,6 +710,9 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
     bool privateMode = !settings || settings->privateBrowsingEnabled();
     m_player->setPrivateBrowsingMode(privateMode);
 
+    // Reset display mode to force a recalculation of what to show because we are resetting the player.
+    setDisplayMode(Unknown);
+
     if (!autoplay())
         m_player->setPreload(m_preload);
     m_player->setPreservesPitch(m_webkitPreservesPitch);
@@ -767,6 +772,11 @@ void HTMLMediaElement::waitForSourceChange()
 
     // 6.18 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
     setShouldDelayLoadEvent(false);
+
+    updateDisplayState();
+
+    if (renderer())
+        renderer()->updateFromElement();
 }
 
 void HTMLMediaElement::noneSupported()
@@ -1085,7 +1095,15 @@ bool HTMLMediaElement::supportsSave() const
 {
     return m_player ? m_player->supportsSave() : false;
 }
-    
+
+void HTMLMediaElement::prepareToPlay()
+{
+    if (m_havePreparedToPlay)
+        return;
+    m_havePreparedToPlay = true;
+    m_player->prepareToPlay();
+}
+
 void HTMLMediaElement::seek(float time, ExceptionCode& ec)
 {
     LOG(Media, "HTMLMediaElement::seek(%f)", time);
@@ -1097,6 +1115,10 @@ void HTMLMediaElement::seek(float time, ExceptionCode& ec)
         ec = INVALID_STATE_ERR;
         return;
     }
+
+    // If the media engine has been told to postpone loading data, let it go ahead now.
+    if (m_preload < MediaPlayer::Auto && m_readyState < HAVE_FUTURE_DATA)
+        prepareToPlay();
 
     // Get the current time before setting m_seeking, m_lastSeekTime is returned once it is set.
     refreshCachedTime();
@@ -1599,6 +1621,8 @@ void HTMLMediaElement::endScrubbing()
 // "15 to 250ms", we choose the slowest frequency
 static const double maxTimeupdateEventFrequency = 0.25;
 
+static const double timeWithoutMouseMovementBeforeHidingControls = 3;
+
 void HTMLMediaElement::startPlaybackProgressTimer()
 {
     if (m_playbackProgressTimer.isActive())
@@ -1616,11 +1640,8 @@ void HTMLMediaElement::playbackProgressTimerFired(Timer<HTMLMediaElement>*)
         return;
 
     scheduleTimeupdateEvent(true);
-    if (hasMediaControls()) {
-        if (!m_mouseOver && controls() && hasVideo())
-            mediaControls()->makeTransparent();
+    if (hasMediaControls())
         mediaControls()->playbackProgressed();
-    }
     // FIXME: deal with cue ranges here
 }
 
@@ -2199,7 +2220,7 @@ void HTMLMediaElement::updatePlayState()
             addPlayedRange(m_lastSeekTime, time);
 
         if (couldPlayIfEnoughData())
-            m_player->prepareToPlay();
+            prepareToPlay();
 
         if (hasMediaControls())
             mediaControls()->playbackStopped();
@@ -2351,18 +2372,6 @@ void HTMLMediaElement::defaultEventHandler(Event* event)
     if (widget)
         widget->handleEvent(event);
 #else
-    if (event->isMouseEvent()) {
-        MouseEvent* mouseEvent = static_cast<MouseEvent*>(event);
-        if (mouseEvent->relatedTarget() != this) {
-            if (event->type() == eventNames().mouseoverEvent) {
-                m_mouseOver = true;
-                if (hasMediaControls() && controls() && !canPlay())
-                    mediaControls()->makeOpaque();
-            } else if (event->type() == eventNames().mouseoutEvent)
-                m_mouseOver = false;
-        }
-    }
-
     HTMLElement::defaultEventHandler(event);
 #endif
 }
@@ -2495,9 +2504,10 @@ bool HTMLMediaElement::isFullscreen() const
 void HTMLMediaElement::enterFullscreen()
 {
     LOG(Media, "HTMLMediaElement::enterFullscreen");
+
 #if ENABLE(FULLSCREEN_API)
     if (document() && document()->settings() && document()->settings()->fullScreenEnabled()) {
-        webkitRequestFullScreen(0);
+        document()->requestFullScreenForElement(this, 0, Document::ExemptIFrameAllowFulScreenRequirement);
         return;
     }
 #endif
@@ -2514,6 +2524,7 @@ void HTMLMediaElement::enterFullscreen()
 void HTMLMediaElement::exitFullscreen()
 {
     LOG(Media, "HTMLMediaElement::exitFullscreen");
+
 #if ENABLE(FULLSCREEN_API)
     if (document() && document()->settings() && document()->settings()->fullScreenEnabled()) {
         if (document()->webkitIsFullScreen() && document()->webkitCurrentFullScreenElement() == this)
@@ -2657,17 +2668,16 @@ void HTMLMediaElement::privateBrowsingStateDidChange()
 
 MediaControls* HTMLMediaElement::mediaControls()
 {
-    if (!shadowRoot())
-        return 0;
-
-    Node* node = shadowRoot()->firstChild();
-    ASSERT(node->isHTMLElement());
-    return static_cast<MediaControls*>(node);
+    return toMediaControls(shadowRoot()->firstChild());
 }
 
 bool HTMLMediaElement::hasMediaControls()
 {
-    return shadowRoot();
+    if (!shadowRoot())
+        return false;
+
+    Node* node = shadowRoot()->firstChild();
+    return node && node->isMediaControls();
 }
 
 void HTMLMediaElement::ensureMediaControls()

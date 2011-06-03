@@ -1,3 +1,620 @@
+2011-06-03  Alexis Menard  <alexis.menard@openbossa.org>
+
+        Reviewed by Andreas Kling.
+
+        To support building namespaced Qt, we require that forward-declarations
+        of Qt classes be wrapped in QT_BEGIN_NAMESPACE and QT_END_NAMESPACE.
+
+        * platform/network/qt/QtMIMETypeSniffer.h:
+
+2011-06-01  Andras Becsi  <abecsi@webkit.org>
+
+        Reviewed by Csaba Osztrogonác.
+
+        [Qt] Fix the Phonon build when logging is disabled
+        https://bugs.webkit.org/show_bug.cgi?id=61869
+
+        No new tests needed.
+
+        * platform/graphics/qt/MediaPlayerPrivatePhonon.cpp: Add missing guards.
+        (WebCore::MediaPlayerPrivatePhonon::networkState):
+        (WebCore::MediaPlayerPrivatePhonon::readyState):
+        (WebCore::MediaPlayerPrivatePhonon::updateStates):
+        (WebCore::MediaPlayerPrivatePhonon::stateChanged):
+
+2011-05-31  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        Improve hasMediaControls logic to check that node has
+        media controls. This can be false when cloning nodes.
+        https://bugs.webkit.org/show_bug.cgi?id=61765
+
+        Test: media/media-controls-clone-crash.html
+
+        * dom/Node.h:
+        (WebCore::Node::isMediaControls):
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::mediaControls):
+        (WebCore::HTMLMediaElement::hasMediaControls):
+        * html/shadow/MediaControls.h:
+        (WebCore::MediaControls::isMediaControls):
+        (WebCore::toMediaControls):
+
+2011-05-30  Eric Carlson  <eric.carlson@apple.com>
+
+        Reviewed by Alexey Proskuryakov.
+
+        Audio and video files saved to the Application Cache should preserve the original file extension
+        https://bugs.webkit.org/show_bug.cgi?id=61750
+        <rdar://9524922>
+
+        No new tests, it isn't possible to check the name of the file in the cache from within
+        DRT. Changes verified manually.
+
+        * loader/appcache/ApplicationCacheStorage.cpp:
+        (WebCore::ApplicationCacheStorage::store): Append the original file extension to the cache
+            file name.
+        (WebCore::ApplicationCacheStorage::writeDataToUniqueFileInDirectory): Add extension parameter.
+        * loader/appcache/ApplicationCacheStorage.h:
+
+2011-05-30  Jer Noble  <jer.noble@apple.com>
+
+        Reviewed by Darin Adler and Simon Fraser.
+
+        REGRESSION (r87622): Scrubbing a Vimeo movie when in fullscreen stops playback; no way to make it start again
+        https://bugs.webkit.org/show_bug.cgi?id=61717
+        rdar://problem/9522272
+
+        May be some good way to test this later. No immediate idea about the best way.
+
+        When a media element is taken into full-screen mode, stop events from propagating
+        outside the media element's shadow DOM, EventDispatcher::determineDispatchBehavior()
+        has been changed to take a shadow root node. In our full screen media element check,
+        we check to see if the passed shadow root is the shadow root of the full screen media
+        element, and if so, specify events should StayInsideShadowDOM. The end result is that
+        inside EventDispatcher::ensureEventAncestors, an ancestor chain is built up all the
+        way from the SliderThumb to the video element's shadow root, but no further.
+
+        * dom/EventDispatcher.cpp:
+        (WebCore::EventDispatcher::determineDispatchBehavior): Restrict events to the
+        shadow DOM when showing a full screen video.
+
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::HTMLMediaElement): Removed code to manage full screen controls.
+        The events telling us about activity in the shadow DOM no longer bubble out so we need to
+        handle this inside the shadow DOM on the root element.
+        (WebCore::HTMLMediaElement::play): Ditto.
+        (WebCore::HTMLMediaElement::playbackProgressTimerFired): Ditto.
+        (WebCore::HTMLMediaElement::defaultEventHandler): Ditto.
+        (WebCore::HTMLMediaElement::enterFullscreen): Ditto.
+        (WebCore::HTMLMediaElement::exitFullscreen): Ditto.
+        * html/HTMLMediaElement.h: Added isPlaying function, removed things moved to the root element.
+
+        * html/shadow/MediaControlElements.cpp:
+        (WebCore::MediaControlVolumeSliderContainerElement::defaultEventHandler): Rolled out
+        changes that tried to make special rules for events using preDispatchEventHandler and such.
+        This rolls out both r87622 and r87655.
+        (WebCore::MediaControlMuteButtonElement::defaultEventHandler): Ditto.
+        (WebCore::MediaControlPanelMuteButtonElement::defaultEventHandler): Ditto.
+        (WebCore::MediaControlPlayButtonElement::defaultEventHandler): Ditto.
+        (WebCore::MediaControlSeekButtonElement::defaultEventHandler): Ditto.
+        (WebCore::MediaControlRewindButtonElement::defaultEventHandler): Ditto.
+        (WebCore::MediaControlReturnToRealtimeButtonElement::defaultEventHandler): Ditto.
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::defaultEventHandler): Ditto.
+        (WebCore::MediaControlTimelineElement::defaultEventHandler): Ditto.
+        (WebCore::MediaControlVolumeSliderElement::defaultEventHandler): Ditto.
+        (WebCore::MediaControlFullscreenButtonElement::defaultEventHandler): Ditto.
+        (WebCore::MediaControlFullscreenVolumeMinButtonElement::defaultEventHandler): Ditto.
+        (WebCore::MediaControlFullscreenVolumeMaxButtonElement::defaultEventHandler): Ditto.
+        * html/shadow/MediaControlElements.h: Ditto.
+
+        * html/shadow/MediaControlRootElement.cpp:
+        (WebCore::MediaControlRootElement::MediaControlRootElement): Initialize new data members.
+        (WebCore::MediaControlRootElement::playbackStarted): Start the timer so we will consider
+        hiding the controls later.
+        (WebCore::MediaControlRootElement::playbackProgressed): Hide the controls if the mouse
+        is no longer over the controls.
+        (WebCore::MediaControlRootElement::playbackStopped): Stop the timer since we only hide
+        automatically if we're playing.
+        (WebCore::MediaControlRootElement::enteredFullscreen): Start the timer.
+        (WebCore::MediaControlRootElement::exitedFullscreen): Stop the timer since we only care
+        if we are full screen.
+        (WebCore::MediaControlRootElement::containsRelatedTarget): Added. Helper for next function.
+        (WebCore::MediaControlRootElement::defaultEventHandler): Do the hide/show and timer functions
+        as the mouse is moved in and out.
+        (WebCore::MediaControlRootElement::startHideFullscreenControlsTimer): Start the timer if
+        needed.
+        (WebCore::MediaControlRootElement::hideFullscreenControlsTimerFired): Hide if the conditions
+        are met.
+        (WebCore::MediaControlRootElement::stopHideFullscreenControlsTimer): Stop the timer.
+
+        * html/shadow/MediaControlRootElement.h: Added new functions and data members.
+
+
+2011-05-29  Brian Weinstein  <bweinstein@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Controls never hide in full screen after user stops moving mouse
+        https://bugs.webkit.org/show_bug.cgi?id=61715
+        <rdar://problem/9522182>
+        
+        When we get a mouse move event in HTMLMediaElement::defaultEventHandler, and we are in full screen,
+        show the media controls, and then start a timer.
+        
+        The timer fires 3 seconds after the user's last mouse movement (timer is restarted on every mouse
+        move), and hides the controls.
+
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::HTMLMediaElement): Initialize our new timer.
+        (WebCore::HTMLMediaElement::play): If we are in full screen mode, start our timer to hide the full screen
+            controls. We don't want the user to have to move the mouse to hide them when they use the spacebar
+            to play.
+        (WebCore::HTMLMediaElement::startHideFullscreenControlsTimer): Starts a oneshot timer 3 seconds in the future
+            if we are in full screen.
+        (WebCore::HTMLMediaElement::hideFullscreenControlsTimerFired): Make sure that we are currently playing, and
+            we are in full screen, and hide the controls. We don't want to hide the controls if we are paused.
+        (WebCore::HTMLMediaElement::stopHideFullscreenControlsTimer): Stops the timer.
+        (WebCore::HTMLMediaElement::defaultEventHandler): If we get a mouse move event and are in full screen, show the
+            controls and start a timer to hide them.
+        (WebCore::HTMLMediaElement::enterFullscreen): Start a timer to hide the full screen controls. The user shouldn't
+            have the move the mouse once they enter full screen to hide the controls.
+        (WebCore::HTMLMediaElement::exitFullscreen): Stop the timer to hide the full screen controls.
+        * html/HTMLMediaElement.h:
+        * html/shadow/MediaControls.h: Added pure virtual shouldHideControls() method.
+        * html/shadow/MediaControlRootElement.cpp:
+        (WebCore::MediaControlRootElement::playbackStopped): Stop the timer to hide the full screen controls.
+        (WebCore::MediaControlRootElement::shouldHideControls): Added, only report that
+            the caller should hide the controls if the panel is not hovered.
+        * html/shadow/MediaControlRootElement.h:
+
+2011-05-29  Darin Adler  <darin@apple.com>
+
+        Reviewed by Kevin Decker.
+
+        REGRESSION (r87622): In media documents, clicking the full screen button and the play button pauses the video
+        https://bugs.webkit.org/show_bug.cgi?id=61713
+
+        We need to come up with a way to regression-test these changes. Nothing at the moment.
+
+        The bug is that we removed calls to preventDefault, but we still do need to prevent
+        default handling of this event.
+
+        * html/shadow/MediaControlElements.cpp:
+        (WebCore::MediaControlElement::preDispatchEventHandler): Add back the preventDefault
+        that was in here before r87622 as well as the stopPropagation that was added in r87622.
+        (WebCore::MediaControlMuteButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlPlayButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlSeekButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlRewindButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlReturnToRealtimeButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlFullscreenButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlFullscreenVolumeMinButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlFullscreenVolumeMaxButtonElement::preDispatchEventHandler): Ditto.
+
+2011-05-28  Jer Noble  <jer.noble@apple.com>
+
+        Reviewed by Maciej Stachowiak.
+
+        Mouse clicks propagate outside full-screen media controls.
+        https://bugs.webkit.org/show_bug.cgi?id=61689
+
+        Mouse click events are propagating out of the media controls, so mouse click
+        listeners registered on the video element are getting fired when the user
+        clicks on media controller buttons.  By default, block propagation of click 
+        events from MediaControlElements by overriding preDispatchEventHandler, and
+        convert all instances of defaultEventHandler -> preDispatchEventHandler.  Change
+        all calls of event->setDefaultHandled() to event->stopPropagation().
+
+        * html/shadow/MediaControlElements.cpp:
+        (WebCore::MediaControlElement::preDispatchEventHandler): Added.  Block 
+            propagation of all mouse click events.
+        (WebCore::MediaControlVolumeSliderContainerElement::preDispatchEventHandler):
+            Renamed from setDefaultHandled.
+        (WebCore::MediaControlMuteButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlPanelMuteButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlPlayButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlSeekButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlRewindButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlReturnToRealtimeButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlTimelineElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlVolumeSliderElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlFullscreenButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlFullscreenVolumeMinButtonElement::preDispatchEventHandler): Ditto.
+        (WebCore::MediaControlFullscreenVolumeMaxButtonElement::preDispatchEventHandler): Ditto.
+        * html/shadow/MediaControlElements.h:
+
+2011-05-26  Alexis Menard  <alexis.menard@openbossa.org>
+
+        Unreviewed build fix for Qt and QuickTime backend.
+
+        r87328 added a new system interface, we need to add it too.
+
+        * platform/qt/WebCoreSystemInterface.h:
+        * platform/qt/WebCoreSystemInterface.mm:
+
+2011-05-24  Jer Noble  <jer.noble@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Video fails to play on Vimeo
+        https://bugs.webkit.org/show_bug.cgi?id=61403
+
+        No new tests; Covered by media/video-canvas-source.html.
+
+        Vimeo redirects their assets from player.vimeo.com to av.vimeo.com, which is rejected
+        by AVFoundation and QTKit due to our setting a ForbidCrossSiteReference option when
+        creating an AVAsset or QTMovie. Instead, we should just reject local->remote and
+        remote->local and make our answer to hasSingleSecurityOrigin dynamic.
+
+        When checking whether a given request has a single security origin, use a 
+        SecurityOrigin to check the host, port, and scheme.
+
+        * WebCore.exp.in:
+        * platform/graphics/avfoundation/MediaPlayerPrivateAVFoundation.h:
+        (WebCore::MediaPlayerPrivateAVFoundation::assetURL): Added.
+        * platform/graphics/avfoundation/MediaPlayerPrivateAVFoundationObjC.h:
+        * platform/graphics/avfoundation/MediaPlayerPrivateAVFoundationObjC.mm:
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::createAVAssetForURL): Exchange ForbidCrossSiteReference
+            for ForbidRemoteReferenceToLocal and ForbidLocalReferenceToRemote
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::hasSingleSecurityOrigin): Check to see that the
+            requested and resolved URLs have the same host and port.
+        * platform/graphics/mac/MediaPlayerPrivateQTKit.mm:
+        (WebCore::MediaPlayerPrivateQTKit::commonMovieAttributes): Exchange NoCrossSiteAttribute for 
+            NoRemoteToLocalSiteAttribute and NoLocalToRemoteSiteAttribute.
+        (WebCore::MediaPlayerPrivateQTKit::hasSingleSecurityOrigin):     Check to see that the
+                requested and resolved URLs have the same host and port.
+        * platform/mac/WebCoreSystemInterface.h: Added wkAVAssetResolvedURL.
+        * platform/mac/WebCoreSystemInterface.mm: Ditto.
+
+2011-05-15  Eric Carlson  <eric.carlson@apple.com>
+
+        Reviewed by Maciej Stachowiak.
+
+        Use new AVAssetReferenceRestrictions to prevent cross site media references
+        https://bugs.webkit.org/show_bug.cgi?id=60791
+        <rdar://problem/9374202>
+
+        Test: http/tests/media/video-cross-site.html
+
+        * platform/graphics/avfoundation/MediaPlayerPrivateAVFoundationObjC.mm:
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::createAVAssetForURL): Set restriction
+            to prevent cross-domain references from being followed.
+
+2011-05-10  Eric Carlson  <eric.carlson@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Files that load quickly sometimes won't play.
+        https://bugs.webkit.org/show_bug.cgi?id=60556
+        <rdar://problem/9330567>
+
+        No new tests, this failure is very difficult to reproduce on some machines. The fix was
+        verified manually.
+
+        * platform/graphics/avfoundation/MediaPlayerPrivateAVFoundation.cpp:
+        (WebCore::MediaPlayerPrivateAVFoundation::playabilityKnown): Move the call to updateStates
+            to dispatchNotification so it is more obvious which state changes call it.
+        (WebCore::MediaPlayerPrivateAVFoundation::setNaturalSize): Correct logging typo.
+        (WebCore::MediaPlayerPrivateAVFoundation::metadataLoaded): Move updateStates call to 
+            dispatchNotification.
+        (WebCore::MediaPlayerPrivateAVFoundation::rateChanged): Ditto.
+        (WebCore::MediaPlayerPrivateAVFoundation::loadedTimeRangesChanged): Ditto.
+        (WebCore::MediaPlayerPrivateAVFoundation::dispatchNotification): Call updateStates after
+            processing "size changed" notification so we detect all state changes. Consolidate
+            calls to updateStates here.
+
+        * platform/graphics/avfoundation/MediaPlayerPrivateAVFoundationObjC.mm:
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::createVideoLayer): Name the video layer in
+            a debug build.
+
+2011-05-05  Eric Carlson  <eric.carlson@apple.com>
+
+        Reviewed by Adam Roben.
+
+        Block callbacks delivered during destruction
+        https://bugs.webkit.org/show_bug.cgi?id=60291
+        <rdar://problem/9382942>
+
+        No new tests, tested by existing tests.
+
+        * platform/graphics/avfoundation/MediaPlayerPrivateAVFoundation.cpp:
+        (WebCore::MediaPlayerPrivateAVFoundation::~MediaPlayerPrivateAVFoundation): Call 
+            setIgnoreLoadStateChanges(true) to cancel all callbacks.
+        (WebCore::MediaPlayerPrivateAVFoundation::updateStates): Return immediately if 
+            m_ignoreLoadStateChanges is true.
+        (WebCore::MediaPlayerPrivateAVFoundation::dispatchNotification): loadStateChanged -> updateStates.
+            Don't call updateStates after calling loadedTimeRangesChanged, it already does it.
+        * platform/graphics/avfoundation/MediaPlayerPrivateAVFoundation.h:
+
+2011-05-25  Andrew Scherkus  <scherkus@chromium.org>
+
+        Reviewed by Eric Carlson.
+
+        Fix media element regression where ended event stopped firing after changing the src attribute.
+
+        https://bugs.webkit.org/show_bug.cgi?id=61336
+
+        Test: media/media-ended.html
+
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::prepareForLoad):
+
+2011-05-25  Jer Noble  <jer.noble@apple.com>
+
+        Reviewed by Darin Adler.
+
+        REGRESSION: Fullscreen button on embedded Vimeo videos does nothing
+        https://bugs.webkit.org/show_bug.cgi?id=61461
+
+        Tests: fullscreen/full-screen-iframe-legacy.html
+
+        Allow calls from the legacy full-screen API to bypass the iframe
+        "webkitallowfullscreen" requirement by adding a parameter to 
+        Document::webkitRequestFullScreenForElement specifying the strictness
+        of that check.  Specify this new parameter everywhere that function is 
+        called, including in the default controls' full-screen button handler.
+
+        * dom/Document.cpp:
+        (WebCore::Document::webkitRequestFullScreenForElement):
+        * dom/Document.h:
+        * dom/Element.cpp:
+        (WebCore::Element::requestFullScreen): Renamed from webkitRequestFullScreen.
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::enterFullscreen):
+        * html/shadow/MediaControlElements.cpp:
+        (WebCore::MediaControlFullscreenButtonElement::defaultEventHandler):
+
+2011-05-25  Alexis Menard  <alexis.menard@openbossa.org>
+
+        Reviewed by Eric Carlson.
+
+        [Qt] Enable usage of QuickTime mediaplayer for the Qt port on Mac.
+        https://bugs.webkit.org/show_bug.cgi?id=61279
+
+        Enable the QuickTime backend for the Qt port on Mac. The patch adds the bits in WebCore
+        to enable the QTKit backend of the Mac port. It can be enabled by passing DEFINES+=USE_QTKIT=1
+        when calling build-webkit.
+
+        * WebCore.pri:
+        * WebCore.pro:
+        * features.pri:
+        * platform/KURL.h:
+        * platform/SharedBuffer.h:
+        * platform/cf/KURLCFNet.cpp:
+        * platform/cf/SharedBufferCF.cpp:
+        * platform/graphics/FloatSize.h:
+        * platform/graphics/IntRect.h:
+        * platform/graphics/IntSize.h:
+        * platform/graphics/MediaPlayer.cpp:
+        * platform/graphics/cg/FloatSizeCG.cpp:
+        * platform/graphics/cg/IntRectCG.cpp:
+        * platform/graphics/mac/MediaPlayerPrivateQTKit.h:
+        * platform/graphics/mac/MediaPlayerPrivateQTKit.mm:
+        (WebCore::MediaPlayerPrivateQTKit::createQTMovieView):
+        (WebCore::MediaPlayerPrivateQTKit::createQTVideoRenderer):
+        (WebCore::MediaPlayerPrivateQTKit::createQTMovieLayer):
+        (WebCore::MediaPlayerPrivateQTKit::preferredRenderingMode):
+        (WebCore::MediaPlayerPrivateQTKit::paint):
+        (-[WebCoreMovieObserver layerHostChanged:]):
+        * platform/mac/KURLMac.mm:
+        * platform/mac/SharedBufferMac.mm:
+        (+[WebCoreSharedBufferData initialize]):
+        * platform/mac/WebCoreObjCExtras.mm:
+        * platform/qt/WebCoreSystemInterface.h: Added.
+        * platform/qt/WebCoreSystemInterface.mm: Added.
+
+2011-05-16  Jeremy Noble  <jer.noble@apple.com>
+
+        Unreviewed; build fix for non-SnowLeopard builds.
+
+        * platform/graphics/mac/MediaPlayerPrivateQTKit.mm: Wrap definition 
+            of layerIsDescendentOf in a #if check.
+
+2011-05-13  Jer Noble  <jer.noble@apple.com>
+
+        Reviewed by Simon Fraser.
+
+        Video is blank, controller is misplaced on trailers.apple.com movie in fullscreen (with two screens)
+        https://bugs.webkit.org/show_bug.cgi?id=60826
+
+        Listen for a WebKitLayerHostChanged notification and, if the affected layer is an
+        ancestor layer of the qtMovieLayer, tear down the layer and recreate it the
+        next time setVisible(true) is called.
+
+        * dom/Document.cpp:
+        (WebCore::Document::webkitDidEnterFullScreenForElement):  Call setFullScreenRootLayer(0) 
+            before disabling animation on the full screen renderer.
+        * platform/graphics/mac/MediaPlayerPrivateQTKit.h:
+        * platform/graphics/mac/MediaPlayerPrivateQTKit.mm:
+        (WebCore::MediaPlayerPrivateQTKit::createQTMovie): Register an observer for the new 
+            WebKitLayerHostChanged notification.
+        (WebCore::layerIsDescendentOf): Added.
+        (WebCore::MediaPlayerPrivateQTKit::layerHostChanged): Added.  If the changed
+            layer is an ancestor of the movie layer, tear down rendering and re-
+            create the next time setVisible(true) is called.
+        (-[WebCoreMovieObserver layerHostChanged:]):  Added ObjC listener wrapper.
+
+2011-05-18  Jeremy Noble  <jer.noble@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Poster is not shown in Safari for video element with no playable source elements.
+        https://bugs.webkit.org/show_bug.cgi?id=61109
+
+        Test: media/video-src-invalid-poster.html
+
+        In the case where no video sources are playable, update the display state and 
+        renderer, allowing the poster image to display.
+
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::waitForSourceChange): 
+
+2011-05-14  Jeremy Noble  <jer.noble@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Exiting full screen causes <video> element inline controls to become visible
+        https://bugs.webkit.org/show_bug.cgi?id=60142
+
+        Create a queue of elements who must be targeted with webkitfullscreenchange events. Instead of dispatching
+        a single event with whatever the current value of m_fullScreenElement is (which may have been cleared, or
+        changed since the timer was asked to fire), dispatch one event for each entry in the queue.
+
+        Test: fullscreen/video-controls-override.html
+
+        * dom/Document.cpp:
+        (WebCore::Document::webkitDidEnterFullScreenForElement): Push current full screen element onto the
+            webkitfullscreenchange event delay queue.
+        (WebCore::Document::webkitDidExitFullScreenForElement): Ditto.
+        (WebCore::Document::fullScreenElementRemoved): Ditto.
+        (WebCore::Document::fullScreenChangeDelayTimerFired): Empty the queue, dispatching a 
+            webkitfullscreenchange event for each entry.
+        * dom/Document.h:
+
+2011-05-05  Jer Noble  <jer.noble@apple.com>
+
+        Reviewed by Maciej Stachowiak.
+
+        Removing the full screen element via parent.innerHTML="" does not result in a webkitfullscreenchange event.
+        https://bugs.webkit.org/show_bug.cgi?id=60278
+
+        Handle the removal of a full screen element from within Node::willRemove() instead
+        of Document::nodeWillBeRemoved().  The new function Document::fullScreenElementWillBeRemoved() will
+        be called by Node::willRemove() to handle those changes which used to occur in nodeWillBeRemoved().
+
+        Test: fullscreen/full-screen-remove-children.html
+
+        * dom/Document.cpp:
+        (WebCore::Document::nodeWillBeRemoved): Removed the code checking for the full screen element.
+        (WebCore::Document::fullScreenElementWillBeRemoved): Added, moved from nodeWillBeRemoved.
+        * dom/Document.h:
+        * dom/Node.cpp:
+        (WebCore::Node::willRemove): Check to see if this is the current full screen element.
+
+2011-05-04  Philippe Normand  <pnormand@igalia.com>
+
+        Reviewed by Martin Robinson.
+
+        [Gtk+] deadlock in gstreamer video player when exiting fullscreen
+        https://bugs.webkit.org/show_bug.cgi?id=58548
+
+        Block data flow towards the pipeline branch to remove to avoid
+        potential deadlocks during the PAUSED->READY transitions of the
+        elements to remove.
+
+        * platform/graphics/gstreamer/GStreamerGWorld.cpp:
+        (WebCore::GStreamerGWorld::exitFullscreen):
+
+2011-05-11  Eric Carlson  <eric.carlson@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Video track sometimes fails to draw.
+        https://bugs.webkit.org/show_bug.cgi?id=60635
+        <rdar://problem/9281951>
+
+        No new tests, covered by existing pixel tests.
+
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::loadResource): Set display mode to "Unknown" to force a 
+            recalculation, and media engine notification, the next time the state machine runs.
+
+2011-05-05  Eric Carlson  <eric.carlson@apple.com>
+
+        Reviewed by Adam Roben.
+
+        The preload attribute of the video tag is not completely implemented
+        https://bugs.webkit.org/show_bug.cgi?id=43673
+        <rdar://problem/9369746>
+
+        This change implements "preload=metadata" for the AVFoundation backend.
+        Tested manually with manual-tests/media-elements/video-preload.html.
+
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::HTMLMediaElement): Initialize m_havePreparedToPlay.
+        (WebCore::HTMLMediaElement::prepareForLoad): Ditto.
+        (WebCore::HTMLMediaElement::prepareToPlay): New, tell player to prepare to play.
+        (WebCore::HTMLMediaElement::seek): Call prepareToPlay when preload is less than 'auto'
+            because we need to have media data loaded to seek.
+        (WebCore::HTMLMediaElement::updatePlayState): Call prepareToPlay.
+        * html/HTMLMediaElement.h:
+
+        * manual-tests/media-elements/video-preload.html: Make changing urls work. 
+
+        * platform/graphics/avfoundation/MediaPlayerPrivateAVFoundation.cpp:
+        (WebCore::MediaPlayerPrivateAVFoundation::MediaPlayerPrivateAVFoundation):  Remove 
+            m_videoFrameHasDrawn and m_delayingLoad as they are no longer used.
+        (WebCore::MediaPlayerPrivateAVFoundation::resumeLoad): Removed.
+        (WebCore::MediaPlayerPrivateAVFoundation::load): Don't initialize m_videoFrameHasDrawn. 
+            Move all preload logic to setPreload, call it from here.
+        (WebCore::MediaPlayerPrivateAVFoundation::prepareToPlay): Move all preload logic to 
+            setPreload, call it.
+        (WebCore::MediaPlayerPrivateAVFoundation::duration): Don't cache duration = 0, it is
+            unlikely to be correct and isn't worth caching. Use invalidTime() function.
+        (WebCore::MediaPlayerPrivateAVFoundation::seeking): Use invalidTime() function.
+        (WebCore::MediaPlayerPrivateAVFoundation::setNaturalSize): Add logging.
+        (WebCore::MediaPlayerPrivateAVFoundation::updateStates): Update for name change AVAssetStatus
+            to AssetStatus. Always create a AVPlayerItem for live streams because they can't be inspected
+            without one. Set networkState to 'idle' when the playback buffer is full because that is
+            a signal that AVFoundation won't do any more IO. Set readyState to 'HAVE_CURRENT_DATA' 
+            when the first frame is available.
+        (WebCore::MediaPlayerPrivateAVFoundation::metadataLoaded): Call tracksChanged so we cache
+            width, height, hasVideo, etc.
+        (WebCore::MediaPlayerPrivateAVFoundation::loadedTimeRangesChanged): Use invalidTime() function.
+        (WebCore::MediaPlayerPrivateAVFoundation::timeChanged): Ditto.
+        (WebCore::MediaPlayerPrivateAVFoundation::seekCompleted): Ditto.
+        (WebCore::MediaPlayerPrivateAVFoundation::repaint): Don't set m_videoFrameHasDrawn, it is done
+            in derived classes.
+        (WebCore::MediaPlayerPrivateAVFoundation::setPreload): Centralize all logic about when to create
+            AVAsset and AVPlayerItem here.
+        * platform/graphics/avfoundation/MediaPlayerPrivateAVFoundation.h:
+
+        * platform/graphics/avfoundation/MediaPlayerPrivateAVFoundationObjC.h:
+        * platform/graphics/avfoundation/MediaPlayerPrivateAVFoundationObjC.mm:
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::MediaPlayerPrivateAVFoundationObjC): Initialize
+            m_videoFrameHasDrawn.
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::hasAvailableVideoFrame): New, renamed from
+            videoLayerIsReadyToDisplay. Return true if we have a layer with frames available or
+            if we have painted a frame to the context.
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::createAVAssetForURL): New, create the AVAsset
+            if necessary.
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::createAVAssetForCacheResource): Ditto.
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::createAVPlayer): Restructure logic.
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::createAVPlayerItem): New, create AVPlayerItem.
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::beginLoadingMetadata): Correct logging.
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::playerItemStatus): Return "buffer full" when
+            the buffer is full.
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::platformDuration): Get the duration from the
+            AVAsset when we haven't allocated the AVPlayerItem yet so that we can return duration
+            when we only have metadata.
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::assetStatus): Update for name change.
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::paint): Set m_videoFrameHasDrawn.
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::tracksChanged): Get attributes from AVAsset
+            when when we haven't allocated the AVPlayerItem yet so that we can report attributes
+            when we only have metadata.
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::sizeChanged): Guard against being called before
+            we have allocated the AVPlayerItem.
+
+2011-06-03  Doreen Jiang  <doreen.jiang@nokia.com>
+
+        Reviewed by Benjamin Poulain.
+
+        [Qt]The minimum size of the select menu list is incorrect for qtwebkit
+        https://bugs.webkit.org/show_bug.cgi?id=56752
+
+        The minimum width of the select-box is calculated to be as small as possible 
+        instead of hardcoded value (width of 7 characters) in minimumMenuListSize() function
+        This will avoid overapping the select lists in popular websites.
+
+        Test: fast/forms/selectlist-minsize.html
+
+        * platform/qt/RenderThemeQt.cpp:
+        (WebCore::RenderThemeQt::minimumMenuListSize):
+
 2011-06-02  Ryosuke Niwa  <rniwa@webkit.org>
 
         Reviewed by Eric Seidel.

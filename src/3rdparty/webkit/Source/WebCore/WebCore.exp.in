@@ -1448,6 +1448,8 @@ _wkSetScrollbarPainterTrackAlpha
 _wkVerticalScrollbarPainterForController
 _wkWillEndLiveResize
 _wkWillStartLiveResize
+_wkQTMovieResolvedURL
+_wkAVAssetResolvedURL
 #else
 _wkGetNSEventMomentumPhase
 #endif

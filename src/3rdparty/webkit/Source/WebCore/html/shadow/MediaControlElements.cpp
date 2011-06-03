@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -654,6 +654,9 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event)
     if (event->type() == eventNames().mousedownEvent)
         mediaElement()->beginScrubbing();
 
+    if (event->type() == eventNames().mouseupEvent)
+        mediaElement()->endScrubbing();
+
     MediaControlInputElement::defaultEventHandler(event);
 
     if (event->type() == eventNames().mouseoverEvent || event->type() == eventNames().mouseoutEvent || event->type() == eventNames().mousemoveEvent)
@@ -669,9 +672,6 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event)
     RenderSlider* slider = toRenderSlider(renderer());
     if (slider && slider->inDragMode())
         m_controls->updateTimeDisplay();
-
-    if (event->type() == eventNames().mouseupEvent)
-        mediaElement()->endScrubbing();
 }
 
 void MediaControlTimelineElement::setPosition(float currentTime) 
@@ -797,7 +797,7 @@ void MediaControlFullscreenButtonElement::defaultEventHandler(Event* event)
                 document()->webkitCancelFullScreen();
                 m_controls->exitedFullscreen();
             } else {
-                mediaElement()->webkitRequestFullScreen(0);
+                document()->requestFullScreenForElement(mediaElement(), 0, Document::ExemptIFrameAllowFulScreenRequirement);
                 m_controls->enteredFullscreen();
             }
         } else

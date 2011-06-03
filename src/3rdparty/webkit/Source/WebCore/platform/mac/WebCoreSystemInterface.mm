@@ -64,6 +64,7 @@ NSString *(*wkQTMovieMaxTimeLoadedChangeNotification)(void);
 float (*wkQTMovieMaxTimeSeekable)(QTMovie*);
 int (*wkQTMovieGetType)(QTMovie*);
 BOOL (*wkQTMovieHasClosedCaptions)(QTMovie*);
+NSURL *(*wkQTMovieResolvedURL)(QTMovie*);
 void (*wkQTMovieSetShowClosedCaptions)(QTMovie*, BOOL);
 void (*wkQTMovieSelectPreferredAlternates)(QTMovie*);
 void (*wkQTMovieViewSetDrawSynchronously)(QTMovieView*, BOOL);
@@ -154,6 +155,8 @@ void (*wkDidBeginScrollGesture)(WKScrollbarPainterControllerRef);
 void (*wkDidEndScrollGesture)(WKScrollbarPainterControllerRef);
 
 bool (*wkScrollbarPainterUsesOverlayScrollers)(void);
+
+NSURL *(*wkAVAssetResolvedURL)(AVAsset*);
 #endif
 
 void (*wkUnregisterUniqueIdForElement)(id element);

@@ -109,6 +109,9 @@
 #endif // Q_OS_WIN32
 #include "TextIterator.h"
 #include "WebPlatformStrategies.h"
+#if USE(QTKIT)
+#include "WebSystemInterface.h"
+#endif
 #include "WindowFeatures.h"
 #include "WorkerThread.h"
 #include "runtime/InitializeThreading.h"
@@ -319,6 +322,10 @@ QWebPagePrivate::QWebPagePrivate(QWebPage *qq)
     WebCore::SecurityOrigin::setLocalLoadPolicy(WebCore::SecurityOrigin::AllowLocalLoadsForLocalAndSubstituteData);
 
     WebPlatformStrategies::initialize();
+
+#if USE(QTKIT)
+    InitWebCoreSystemInterface();
+#endif
 
     Page::PageClients pageClients;
     pageClients.chromeClient = new ChromeClientQt(q);
@@ -1105,6 +1112,8 @@ void QWebPagePrivate::inputMethodEvent(QInputMethodEvent *ev)
             }
             break;
         }
+        default:
+            break;
         }
     }
 
@@ -1168,7 +1177,7 @@ void QWebPagePrivate::dynamicPropertyChangeEvent(QDynamicPropertyChangeEvent* ev
         };
 
         QString p = q->property("_q_RepaintThrottlingPreset").toString();
-        for(int i = 0; i < sizeof(presets) / sizeof(presets[0]); i++) {
+        for (size_t i = 0; i < sizeof(presets) / sizeof(presets[0]); i++) {
             if (p == QLatin1String(presets[i].name)) {
                 FrameView::setRepaintThrottlingDeferredRepaintDelay(
                         presets[i].deferredRepaintDelay);
@@ -2961,9 +2970,10 @@ QAction *QWebPage::action(WebAction action) const
         case AlignRight:
             text = tr("Align Right");
             break;
-
         case NoWebAction:
             return 0;
+        default:
+            break;
     }
 
     if (text.isEmpty())

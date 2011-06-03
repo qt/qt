@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
  * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -96,10 +96,19 @@ public:
     void updateTimeDisplay();
     void updateStatusDisplay();
 
+    virtual bool shouldHideControls();
+
 private:
     MediaControlRootElement(HTMLMediaElement*);
 
+    virtual void defaultEventHandler(Event*);
+    void hideFullscreenControlsTimerFired(Timer<MediaControlRootElement>*);
+    void startHideFullscreenControlsTimer();
+    void stopHideFullscreenControlsTimer();
+
     virtual const AtomicString& shadowPseudoId() const;
+
+    bool containsRelatedTarget(Event*);
 
     HTMLMediaElement* m_mediaElement;
 
@@ -123,8 +132,9 @@ private:
     MediaControlFullscreenVolumeSliderElement* m_fullScreenVolumeSlider;
     MediaControlFullscreenVolumeMaxButtonElement* m_fullScreenMaxVolumeButton;
     MediaControlPanelElement* m_panel;
-
     bool m_opaque;
+    bool m_isMouseOverControls;
+    Timer<MediaControlRootElement> m_hideFullscreenControlsTimer;
 };
 
 }

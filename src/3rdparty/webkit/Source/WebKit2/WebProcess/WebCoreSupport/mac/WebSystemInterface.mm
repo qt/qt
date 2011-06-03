@@ -76,6 +76,7 @@ void InitWebCoreSystemInterface(void)
         INIT(QTMovieMaxTimeLoaded);
         INIT(QTMovieMaxTimeLoadedChangeNotification);
         INIT(QTMovieMaxTimeSeekable);
+        INIT(QTMovieResolvedURL);
         INIT(QTMovieSelectPreferredAlternates);
         INIT(QTMovieSetShowClosedCaptions);
         INIT(QTMovieViewSetDrawSynchronously);
@@ -144,6 +145,7 @@ void InitWebCoreSystemInterface(void)
         INIT(DidBeginScrollGesture);
         INIT(DidEndScrollGesture);
         INIT(ScrollbarPainterUsesOverlayScrollers);
+        INIT(AVAssetResolvedURL);
 #else
         INIT(GetHyphenationLocationBeforeIndex);
         INIT(GetNSEventMomentumPhase);
