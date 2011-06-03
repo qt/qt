@@ -633,6 +633,9 @@ public:
 
 void tst_QEventLoop::processEventsExcludeSocket()
 {
+#if defined(Q_WS_QWS)
+    QSKIP("Socket message seems to be leaking through QEventLoop::exec(ExcludeSocketNotifiers) on qws (QTBUG-19699)", SkipAll);
+#endif
     SocketTestThread thread;
     thread.start();
     QVERIFY(thread.wait());
