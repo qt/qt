@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,43 +39,28 @@
 **
 ****************************************************************************/
 
-#ifndef QHOSTADDRESSPRIVATE_H
-#define QHOSTADDRESSPRIVATE_H
+#ifndef QTLDURL_P_H
+#define QTLDURL_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of the QHostAddress and QNetworkInterface classes.  This header file may change from
-// version to version without notice, or even be removed.
+// of qDecodeDataUrl. This header file may change from version to
+// version without notice, or even be removed.
 //
 // We mean it.
 //
 
+#include "QtCore/qurl.h"
+#include "QtCore/qstring.h"
+
 QT_BEGIN_NAMESPACE
 
-#include "qhostaddress.h"
-#include "qabstractsocket.h"
-
-class QNetmaskAddress: public QHostAddress
-{
-    int length;
-public:
-    QNetmaskAddress() : QHostAddress(), length(-1) { }
-
-    bool setAddress(const QString &address);
-    bool setAddress(const QHostAddress &address);
-
-    int prefixLength() const;
-    void setPrefixLength(QAbstractSocket::NetworkLayerProtocol proto, int len);
-};
-
-#ifdef Q_OS_SYMBIAN
-class TInetAddr;
-QHostAddress qt_QHostAddressFromTInetAddr(const TInetAddr& addr);
-#endif
+Q_CORE_EXPORT QString qTopLevelDomain(const QString &domain);
+Q_CORE_EXPORT bool qIsEffectiveTLD(const QString &domain);
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QDATAURL_P_H

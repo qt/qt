@@ -224,7 +224,7 @@ void tst_QDeclarativeDebug::recursiveObjectTest(QObject *o, const QDeclarativeDe
 
         QCOMPARE(p.name(), QString::fromUtf8(pmeta.name()));
 
-        if (pmeta.type() < QVariant::UserType) // TODO test complex types
+        if (pmeta.type() > 0 && pmeta.type() < QVariant::UserType) // TODO test complex types
             QCOMPARE(p.value(), pmeta.read(o));
 
         if (p.name() == "parent")
