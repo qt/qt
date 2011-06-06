@@ -110,10 +110,9 @@ key_t QSharedMemoryPrivate::handle()
     return 1;
 }
 
-bool QSharedMemoryPrivate::cleanHandle()
+void QSharedMemoryPrivate::cleanHandle()
 {
     chunk.Close();
-    return true;
 }
 
 bool QSharedMemoryPrivate::create(int size)

@@ -253,8 +253,8 @@ void QSharedMemory::setNativeKey(const QString &key)
 
 bool QSharedMemoryPrivate::initKey()
 {
-    if (!cleanHandle())
-        return false;
+    cleanHandle();
+
 #ifndef QT_NO_SYSTEMSEMAPHORE
     systemSemaphore.setKey(QString(), 1);
     systemSemaphore.setKey(key, 1);

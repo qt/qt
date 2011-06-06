@@ -137,7 +137,7 @@ public:
     key_t handle();
 #endif
     bool initKey();
-    bool cleanHandle();
+    void cleanHandle();
     bool create(int size);
     bool attach(QSharedMemory::AccessMode mode);
     bool detach();

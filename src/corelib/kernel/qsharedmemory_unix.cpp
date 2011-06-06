@@ -173,10 +173,9 @@ int QSharedMemoryPrivate::createUnixKeyFile(const QString &fileName)
 
 #ifndef QT_NO_SHAREDMEMORY
 
-bool QSharedMemoryPrivate::cleanHandle()
+void QSharedMemoryPrivate::cleanHandle()
 {
     unix_key = 0;
-    return true;
 }
 
 bool QSharedMemoryPrivate::create(int size)

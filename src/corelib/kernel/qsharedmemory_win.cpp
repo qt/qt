@@ -125,15 +125,11 @@ HANDLE QSharedMemoryPrivate::handle()
     return hand;
 }
 
-bool QSharedMemoryPrivate::cleanHandle()
+void QSharedMemoryPrivate::cleanHandle()
 {
-    if (hand != 0 && !CloseHandle(hand)) {
-        hand = 0;
+    if (hand != 0 && !CloseHandle(hand))
         setErrorString(QLatin1String("QSharedMemory::cleanHandle"));
-        return false;
-    }
     hand = 0;
-    return true;
 }
 
 bool QSharedMemoryPrivate::create(int size)
@@ -192,7 +188,9 @@ bool QSharedMemoryPrivate::detach()
     size = 0;
 
     // close handle
-    return cleanHandle();
+    cleanHandle();
+
+    return true;
 }
 
 QT_END_NAMESPACE
