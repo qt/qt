@@ -964,10 +964,12 @@ void QWSLocalMemSurface::setGeometry(const QRect &rect)
         } else {
             const QImage::Format format = preferredImageFormat(win);
             const int bpl = nextMulOf4(bytesPerPixel(format) * size.width());
-            if (memsize)
+            const int imagesize = bpl * size.height();
+            if (memsize < imagesize) {
                 delete[] mem;
-            memsize = bpl * size.height();
-            mem = new uchar[memsize];
+                memsize = imagesize;
+                mem = new uchar[memsize];
+            }
             img = QImage(mem, size.width(), size.height(), bpl, format);
             setImageMetrics(img, win);
         }
@@ -1132,8 +1134,6 @@ void QWSSharedMemSurface::setGeometry(const QRect &rect)
             mem.detach();
             img = QImage();
         } else {
-            mem.detach();
-
             QWidget *win = window();
             const QImage::Format format = preferredImageFormat(win);
             const int bpl = nextMulOf4(bytesPerPixel(format) * size.width());
@@ -1142,9 +1142,12 @@ void QWSSharedMemSurface::setGeometry(const QRect &rect)
 #else
             const int imagesize = bpl * size.height();
 #endif
-            if (!mem.create(imagesize)) {
-                perror("QWSSharedMemSurface::setGeometry allocating shared memory");
-                qFatal("Error creating shared memory of size %d", imagesize);
+            if (mem.size() < imagesize) {
+                mem.detach();
+                if (!mem.create(imagesize)) {
+                    perror("QWSSharedMemSurface::setGeometry allocating shared memory");
+                    qFatal("Error creating shared memory of size %d", imagesize);
+                }
             }
 #ifdef QT_QWS_CLIENTBLIT
             *((uint *)mem.address()) = 0;
