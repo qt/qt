@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -115,7 +115,6 @@ int tst_qdeclarativelistmodel::roleFromName(const QDeclarativeListModel *model, 
         if (model->toString(roles[i]) == roleName)
             return roles[i];
     }
-    Q_ASSERT(false);
     return -1;
 }
 
@@ -741,6 +740,7 @@ void tst_qdeclarativelistmodel::get()
          "}", QUrl());
     QDeclarativeListModel *model = qobject_cast<QDeclarativeListModel*>(component.create());
     int role = roleFromName(model, roleName);
+    QVERIFY(role >= 0);
 
     QSignalSpy spy(model, SIGNAL(itemsChanged(int, int, QList<int>)));
     QDeclarativeExpression expr(eng.rootContext(), model, expression);
@@ -802,6 +802,7 @@ void tst_qdeclarativelistmodel::get_worker()
     model.append(sv);
     model.append(sv);
     int role = roleFromName(&model, roleName);
+    QVERIFY(role >= 0);
 
     const char *warning = "<Unknown File>: QML ListModel: Cannot add list-type data when modifying or after modification from a worker script";
     if (roleValue.type() == QVariant::List || roleValue.type() == QVariant::Map)
@@ -893,6 +894,7 @@ void tst_qdeclarativelistmodel::get_nested()
         int outerListIndex = testData[i].first;
         QString outerListRoleName = testData[i].second;
         int outerListRole = roleFromName(model, outerListRoleName);
+        QVERIFY(outerListRole >= 0);
 
         childModel = qobject_cast<QDeclarativeListModel*>(model->data(outerListIndex, outerListRole).value<QObject*>());
         QVERIFY(childModel);
@@ -905,6 +907,7 @@ void tst_qdeclarativelistmodel::get_nested()
         QVERIFY(!expr.hasError());
 
         int role = roleFromName(childModel, roleName);
+        QVERIFY(role >= 0);
         QCOMPARE(childModel->data(index, role), roleValue);
         QCOMPARE(spy.count(), 1);
 

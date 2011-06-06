@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -942,19 +942,32 @@ QLocale::Country QLocale::country() const
 
 QString QLocale::name() const
 {
-    Language l = language();
+    const QLocalePrivate *dd = d();
 
-    QString result = d()->languageCode();
+    if (dd->m_language_id == QLocale::AnyLanguage)
+        return QString();
+    if (dd->m_language_id == QLocale::C)
+        return QLatin1String("C");
 
-    if (l == C)
-        return result;
+    const unsigned char *c = language_code_list + 3*(uint(dd->m_language_id));
 
-    Country c = country();
-    if (c == AnyCountry)
-        return result;
+    QString result(7, Qt::Uninitialized);
+    ushort *data = (ushort *)result.unicode();
+    const ushort *begin = data;
 
-    result.append(QLatin1Char('_'));
-    result.append(d()->countryCode());
+    *data++ = ushort(c[0]);
+    *data++ = ushort(c[1]);
+    if (c[2] != 0)
+        *data++ = ushort(c[2]);
+    if (dd->m_country_id != AnyCountry) {
+        *data++ = '_';
+        const unsigned char *c = country_code_list + 3*(uint(dd->m_country_id));
+        *data++ = ushort(c[0]);
+        *data++ = ushort(c[1]);
+        if (c[2] != 0)
+            *data++ = ushort(c[2]);
+    }
+    result.resize(data - begin);
 
     return result;
 }

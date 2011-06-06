@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -345,6 +345,7 @@ private slots:
     void immediateRepaintAfterInvalidateBuffer();
 #endif
     void effectiveWinId();
+    void effectiveWinId2();
     void customDpi();
     void customDpiProperty();
 
@@ -7233,8 +7234,7 @@ void tst_QWidget::render_systemClip2()
     QFETCH(bool, usePaintEvent);
     QFETCH(QColor, expectedColor);
 
-    Q_ASSERT_X(expectedColor != QColor(Qt::red), Q_FUNC_INFO,
-               "Qt::red is the reference color for the image, pick another color");
+    QVERIFY2(expectedColor != QColor(Qt::red), "Qt::red is the reference color for the image, pick another color");
 
     class MyWidget : public QWidget
     {
@@ -8493,6 +8493,30 @@ void tst_QWidget::effectiveWinId()
 
     QVERIFY(parent.effectiveWinId());
     QVERIFY(child.effectiveWinId());
+}
+
+void tst_QWidget::effectiveWinId2()
+{
+    QWidget parent;
+
+    class MyWidget : public QWidget {
+        bool event(QEvent *e)
+        {
+            if (e->type() == QEvent::WinIdChange) {
+                // Shouldn't crash.
+                effectiveWinId();
+            }
+
+            return QWidget::event(e);
+        }
+    };
+
+    MyWidget child;
+    child.setParent(&parent);
+    parent.show();
+
+    child.setParent(0);
+    child.setParent(&parent);
 }
 
 class CustomWidget : public QWidget
@@ -10397,7 +10421,7 @@ void tst_QWidget::taskQTBUG_7532_tabOrderWithFocusProxy()
     w.setFocusProxy(fp);
     QWidget::setTabOrder(&w, fp);
 
-    // No Q_ASSERT, then it's allright.
+    // In debug mode, no assertion failure means it's alright.
 }
 
 void tst_QWidget::movedAndResizedAttributes()

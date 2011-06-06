@@ -7,29 +7,29 @@
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -40,12 +40,12 @@
 ****************************************************************************/
 
 #include "qnetworkcookiejar.h"
-#include "qnetworkcookiejartlds_p.h"
 #include "qnetworkcookiejar_p.h"
 
 #include "QtNetwork/qnetworkcookie.h"
 #include "QtCore/qurl.h"
 #include "QtCore/qdatetime.h"
+#include "private/qtldurl_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -216,7 +216,7 @@ bool QNetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieLis
             // the check for effective TLDs makes the "embedded dot" rule from RFC 2109 section 4.3.2
             // redundant; the "leading dot" rule has been relaxed anyway, see above
             // we remove the leading dot for this check
-            if (QNetworkCookieJarPrivate::isEffectiveTLD(domain.remove(0, 1)))
+            if (qIsEffectiveTLD(domain.remove(0, 1)))
                 continue; // not accepted
         }
 
@@ -302,45 +302,6 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
     }
 
     return result;
-}
-
-bool QNetworkCookieJarPrivate::isEffectiveTLD(const QString &domain)
-{
-    // for domain 'foo.bar.com':
-    // 1. return if TLD table contains 'foo.bar.com'
-    if (containsTLDEntry(domain))
-        return true;
-
-    if (domain.contains(QLatin1Char('.'))) {
-        int count = domain.size() - domain.indexOf(QLatin1Char('.'));
-        QString wildCardDomain;
-        wildCardDomain.reserve(count + 1);
-        wildCardDomain.append(QLatin1Char('*'));
-        wildCardDomain.append(domain.right(count));
-        // 2. if table contains '*.bar.com',
-        // test if table contains '!foo.bar.com'
-        if (containsTLDEntry(wildCardDomain)) {
-            QString exceptionDomain;
-            exceptionDomain.reserve(domain.size() + 1);
-            exceptionDomain.append(QLatin1Char('!'));
-            exceptionDomain.append(domain);
-            return (! containsTLDEntry(exceptionDomain));
-        }
-    }
-    return false;
-}
-
-bool QNetworkCookieJarPrivate::containsTLDEntry(const QString &entry)
-{
-    int index = qHash(entry) % tldCount;
-    int currentDomainIndex = tldIndices[index];
-    while (currentDomainIndex < tldIndices[index+1]) {
-        QString currentEntry = QString::fromUtf8(tldData + currentDomainIndex);
-        if (currentEntry == entry)
-            return true;
-        currentDomainIndex += qstrlen(tldData + currentDomainIndex) + 1; // +1 for the ending \0
-    }
-    return false;
 }
 
 QT_END_NAMESPACE

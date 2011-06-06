@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -277,7 +277,9 @@ retry:
         case 'L': row = completer->completionCount() - 1; break;
         case 'F': row = 0; break;
         default:
-            Q_ASSERT(false);
+            QFAIL(qPrintable(QString(
+                "Problem with 'step' value in test data: %1 (only P, N, L and F are allowed)."
+            ).arg(step[i])));
         }
         completer->setCurrentRow(row);
     }
@@ -1248,9 +1250,7 @@ public:
 void tst_QCompleter::task189564_omitNonSelectableItems()
 {
     const QString prefix("a");
-    Q_ASSERT(!prefix.isEmpty());
     const int n = 5;
-    Q_ASSERT(n > 0);
 
     QStringList strings;
     for (int i = 0; i < n; ++i)
@@ -1278,10 +1278,11 @@ public:
     {
         setEditable(true);
         setInsertPolicy(NoInsert);
-        Q_ASSERT(completer());
-        completer()->setCompletionMode(QCompleter::PopupCompletion);
-        completer()->setCompletionRole(Qt::DisplayRole);
-        connect(lineEdit(), SIGNAL(editingFinished()), SLOT(setCompletionPrefix()));
+        if (completer()) {
+            completer()->setCompletionMode(QCompleter::PopupCompletion);
+            completer()->setCompletionRole(Qt::DisplayRole);
+            connect(lineEdit(), SIGNAL(editingFinished()), SLOT(setCompletionPrefix()));
+        }
     }
 private slots:
     void setCompletionPrefix() { completer()->setCompletionPrefix(lineEdit()->text()); }
@@ -1290,6 +1291,7 @@ private slots:
 void tst_QCompleter::task246056_setCompletionPrefix()
 {
     task246056_ComboBox *comboBox = new task246056_ComboBox;
+    QVERIFY(comboBox->completer());
     comboBox->addItem("");
     comboBox->addItem("a1");
     comboBox->addItem("a2");
