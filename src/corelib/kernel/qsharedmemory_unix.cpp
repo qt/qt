@@ -162,7 +162,7 @@ int QSharedMemoryPrivate::createUnixKeyFile(const QString &fileName)
             return 0;
         return -1;
     } else {
-        close(fd);
+        qt_safe_close(fd);
     }
     return 1;
 }
