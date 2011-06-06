@@ -982,9 +982,7 @@ void QWSLocalMemSurface::setGeometry(const QRect &rect)
 
 QByteArray QWSLocalMemSurface::permanentState() const
 {
-    QByteArray array;
-    array.resize(sizeof(uchar*) + 3 * sizeof(int) +
-                 sizeof(SurfaceFlags));
+    QByteArray array(sizeof(uchar*) + 3 * sizeof(int) + sizeof(SurfaceFlags), Qt::Uninitialized);
 
     char *ptr = array.data();
 
@@ -1165,8 +1163,7 @@ void QWSSharedMemSurface::setGeometry(const QRect &rect)
 
 QByteArray QWSSharedMemSurface::permanentState() const
 {
-    QByteArray array;
-    array.resize(6 * sizeof(int));
+    QByteArray array(6 * sizeof(int), Qt::Uninitialized);
 
     int *ptr = reinterpret_cast<int*>(array.data());
 
@@ -1240,8 +1237,8 @@ bool QWSOnScreenSurface::isValid() const
 
 QByteArray QWSOnScreenSurface::permanentState() const
 {
-    QByteArray array;
-    array.resize(sizeof(int));
+    QByteArray array(sizeof(int), Qt::Uninitialized);
+
     int *ptr = reinterpret_cast<int*>(array.data());
     ptr[0] = QApplication::desktop()->screenNumber(window());
     return array;
@@ -1281,8 +1278,7 @@ QWSYellowSurface::~QWSYellowSurface()
 
 QByteArray QWSYellowSurface::permanentState() const
 {
-    QByteArray array;
-    array.resize(2 * sizeof(int));
+    QByteArray array(2 * sizeof(int), Qt::Uninitialized);
 
     int *ptr = reinterpret_cast<int*>(array.data());
     ptr[0] = surfaceSize.width();
