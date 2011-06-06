@@ -3552,13 +3552,8 @@ bool QETWidget::translateKeyEvent(const QWSKeyEvent *event, bool grab) /* grab i
                         QEvent::KeyPress : QEvent::KeyRelease;
     bool autor = event->simpleData.is_auto_repeat;
     QString text;
-    char ascii = 0;
-    if (event->simpleData.unicode) {
-        QChar ch(event->simpleData.unicode);
-        if (ch.unicode() != 0xffff)
-            text += ch;
-        ascii = ch.toLatin1();
-    }
+    if (event->simpleData.unicode && event->simpleData.unicode != 0xffff)
+        text += QChar(event->simpleData.unicode);
     code = event->simpleData.keycode;
 
 #if defined QT3_SUPPORT && !defined(QT_NO_SHORTCUT)
