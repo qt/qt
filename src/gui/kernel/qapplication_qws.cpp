@@ -112,19 +112,6 @@
 
 #include <qvfbhdr.h>
 
-#ifndef QT_NO_QWS_MULTIPROCESS
-#ifdef QT_NO_QSHM
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#ifndef Q_OS_DARWIN
-# include <sys/sem.h>
-#endif
-#include <sys/socket.h>
-#else
-#include "private/qwssharedmemory_p.h"
-#endif
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_DIRECTPAINTER
