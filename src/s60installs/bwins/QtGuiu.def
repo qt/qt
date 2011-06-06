@@ -14034,3 +14034,7 @@ EXPORTS
 	?releaseAllGpuResources@QSymbianGraphicsSystemEx@@UAEXXZ @ 14033 NONAME ; void QSymbianGraphicsSystemEx::releaseAllGpuResources(void)
 	?cursorMoveStyle@QLineControl@@QBE?AW4CursorMoveStyle@Qt@@XZ @ 14034 NONAME ; enum Qt::CursorMoveStyle QLineControl::cursorMoveStyle(void) const
 	?hasBCM2727@QSymbianGraphicsSystemEx@@UAE_NXZ @ 14035 NONAME ; bool QSymbianGraphicsSystemEx::hasBCM2727(void)
+	?hasStaticContentsSupport@QWindowSurface@@QBE_NXZ @ 14036 NONAME ; bool QWindowSurface::hasStaticContentsSupport(void) const
+	?hasPartialUpdateSupport@QWindowSurface@@QBE_NXZ @ 14037 NONAME ; bool QWindowSurface::hasPartialUpdateSupport(void) const
+	??0QSymbianGraphicsSystemEx@@QAE@XZ @ 14038 NONAME ABSENT ; QSymbianGraphicsSystemEx::QSymbianGraphicsSystemEx(void)
+	?hasBCM2727@QSymbianGraphicsSystemEx@@SA_NXZ @ 14039 NONAME ; bool QSymbianGraphicsSystemEx::hasBCM2727(void)
