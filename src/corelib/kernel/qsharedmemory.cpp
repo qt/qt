@@ -247,7 +247,7 @@ void QSharedMemory::setNativeKey(const QString &key)
     if (isAttached())
         detach();
     d->cleanHandle();
-    d->key = QString();
+    d->key.clear();
     d->nativeKey = key;
 }
 
@@ -285,7 +285,7 @@ bool QSharedMemoryPrivate::initKey()
         return false;
     }
 #endif
-    errorString = QString();
+    errorString.clear();
     error = QSharedMemory::NoError;
     return true;
 }
@@ -342,27 +342,23 @@ bool QSharedMemory::create(int size, AccessMode mode)
     if (!d->initKey())
         return false;
 
+    if (size <= 0) {
+        d->error = QSharedMemory::InvalidSize;
+        d->errorString = QSharedMemory::tr("%1: create size is less then 0").arg(QLatin1String("QSharedMemory::create"));
+        return false;
+    }
+
 #ifndef QT_NO_SYSTEMSEMAPHORE
 #ifndef Q_OS_WIN
     // Take ownership and force set initialValue because the semaphore
     // might have already existed from a previous crash.
     d->systemSemaphore.setKey(d->key, 1, QSystemSemaphore::Create);
 #endif
-#endif
 
-    QString function = QLatin1String("QSharedMemory::create");
-#ifndef QT_NO_SYSTEMSEMAPHORE
     QSharedMemoryLocker lock(this);
-    if (!d->key.isNull() && !d->tryLocker(&lock, function))
+    if (!d->key.isNull() && !d->tryLocker(&lock, QLatin1String("QSharedMemory::create")))
         return false;
 #endif
-
-    if (size <= 0) {
-        d->error = QSharedMemory::InvalidSize;
-        d->errorString =
-	    QSharedMemory::tr("%1: create size is less then 0").arg(function);
-        return false;
-    }
 
     if (!d->create(size))
         return false;

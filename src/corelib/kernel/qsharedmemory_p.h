@@ -74,8 +74,6 @@ namespace QSharedMemoryPrivate
 #elif defined(Q_OS_SYMBIAN)
 #include <e32std.h>
 #include <sys/types.h>
-#else
-#include <sys/sem.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -151,7 +149,7 @@ public:
 #endif
 
 #ifndef QT_NO_SYSTEMSEMAPHORE
-    bool tryLocker(QSharedMemoryLocker *locker, const QString function) {
+    inline bool tryLocker(QSharedMemoryLocker *locker, const QString &function) {
         if (!locker->lock()) {
             errorString = QSharedMemory::tr("%1: unable to lock").arg(function);
             error = QSharedMemory::LockError;

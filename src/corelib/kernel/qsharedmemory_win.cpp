@@ -41,24 +41,30 @@
 
 #include "qsharedmemory.h"
 #include "qsharedmemory_p.h"
-#include "qsystemsemaphore.h"
-#include <qdebug.h>
 
-QT_BEGIN_NAMESPACE
+#include <qdebug.h>
 
 #ifndef QT_NO_SHAREDMEMORY
 
-QSharedMemoryPrivate::QSharedMemoryPrivate() : QObjectPrivate(),
-        memory(0), size(0), error(QSharedMemory::NoError),
-           systemSemaphore(QString()), lockedByMe(false), hand(0)
+//#define QSHAREDMEMORY_DEBUG
+
+QT_BEGIN_NAMESPACE
+
+QSharedMemoryPrivate::QSharedMemoryPrivate()
+    : QObjectPrivate(), memory(0), size(0), error(QSharedMemory::NoError),
+#ifndef QT_NO_SYSTEMSEMAPHORE
+      systemSemaphore(QString()), lockedByMe(false),
+#endif
+      hand(0)
 {
 }
 
 void QSharedMemoryPrivate::setErrorString(const QString &function)
 {
-    BOOL windowsError = GetLastError();
+    DWORD windowsError = GetLastError();
     if (windowsError == 0)
         return;
+
     switch (windowsError) {
     case ERROR_ALREADY_EXISTS:
         error = QSharedMemory::AlreadyExists;
@@ -89,19 +95,20 @@ void QSharedMemoryPrivate::setErrorString(const QString &function)
     default:
         errorString = QSharedMemory::tr("%1: unknown error %2").arg(function).arg(windowsError);
         error = QSharedMemory::UnknownError;
-#if defined QSHAREDMEMORY_DEBUG
+#ifdef QSHAREDMEMORY_DEBUG
         qDebug() << errorString << "key" << key;
 #endif
+        break;
     }
 }
 
 HANDLE QSharedMemoryPrivate::handle()
 {
     if (!hand) {
-        QString function = QLatin1String("QSharedMemory::handle");
+        // don't allow making handles on empty keys
         if (nativeKey.isEmpty()) {
             error = QSharedMemory::KeyError;
-            errorString = QSharedMemory::tr("%1: unable to make key").arg(function);
+            errorString = QSharedMemory::tr("%1: key is empty").arg(QLatin1String("QSharedMemory::handle"));
             return false;
         }
 #ifndef Q_OS_WINCE
@@ -111,11 +118,10 @@ HANDLE QSharedMemoryPrivate::handle()
         // attach as it seems.
         hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, 0, (wchar_t*)nativeKey.utf16());
 #endif
-        if (!hand) {
-            setErrorString(function);
-            return false;
-        }
+        if (!hand)
+            setErrorString(QLatin1String("QSharedMemory::handle"));
     }
+
     return hand;
 }
 
@@ -132,20 +138,20 @@ bool QSharedMemoryPrivate::cleanHandle()
 
 bool QSharedMemoryPrivate::create(int size)
 {
-    QString function = QLatin1String("QSharedMemory::create");
     if (nativeKey.isEmpty()) {
         error = QSharedMemory::KeyError;
-        errorString = QSharedMemory::tr("%1: key error").arg(function);
+        errorString = QSharedMemory::tr("%1: key is empty").arg(QLatin1String("QSharedMemory::create"));
         return false;
     }
 
     // Create the file mapping.
     hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, size, (wchar_t*)nativeKey.utf16());
-    setErrorString(function);
 
     // hand is valid when it already exists unlike unix so explicitly check
-    if (error == QSharedMemory::AlreadyExists || !hand)
+    if (error == QSharedMemory::AlreadyExists || !hand) {
+        setErrorString(QLatin1String("QSharedMemory::create"));
         return false;
+    }
 
     return true;
 }
@@ -167,7 +173,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
         // Windows doesn't set an error code on this one,
         // it should only be a kernel memory error.
         error = QSharedMemory::UnknownError;
-        errorString = QSharedMemory::tr("%1: size query failed").arg(QLatin1String("QSharedMemory::attach: "));
+        errorString = QSharedMemory::tr("%1: size query failed").arg(QLatin1String("QSharedMemory::attach"));
         return false;
     }
     size = info.RegionSize;
@@ -189,7 +195,6 @@ bool QSharedMemoryPrivate::detach()
     return cleanHandle();
 }
 
-#endif //QT_NO_SHAREDMEMORY
-
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_SHAREDMEMORY

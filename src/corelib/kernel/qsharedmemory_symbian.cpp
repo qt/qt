@@ -41,19 +41,21 @@
 
 #include "qsharedmemory.h"
 #include "qsharedmemory_p.h"
-#include "qsystemsemaphore.h"
+
 #include "qcore_symbian_p.h"
 #include <qdebug.h>
-
-QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SHAREDMEMORY
 
 #define QSHAREDMEMORY_DEBUG
 
-QSharedMemoryPrivate::QSharedMemoryPrivate() : QObjectPrivate(),
-        memory(0), size(0), error(QSharedMemory::NoError),
-           systemSemaphore(QString()), lockedByMe(false)
+QT_BEGIN_NAMESPACE
+
+QSharedMemoryPrivate::QSharedMemoryPrivate()
+    : QObjectPrivate(), memory(0), size(0), error(QSharedMemory::NoError),
+#ifndef QT_NO_SYSTEMSEMAPHORE
+      systemSemaphore(QString()), lockedByMe(false)
+#endif
 {
 }
 
@@ -61,6 +63,7 @@ void QSharedMemoryPrivate::setErrorString(const QString &function, TInt errorCod
 {
     if (errorCode == KErrNone)
         return;
+
     switch (errorCode) {
     case KErrAlreadyExists:
         error = QSharedMemory::AlreadyExists;
@@ -88,11 +91,19 @@ void QSharedMemoryPrivate::setErrorString(const QString &function, TInt errorCod
 #if defined QSHAREDMEMORY_DEBUG
         qDebug() << errorString << "key" << key;
 #endif
+        break;
     }
 }
 
 key_t QSharedMemoryPrivate::handle()
 {
+    // don't allow making handles on empty keys
+    if (nativeKey.isEmpty()) {
+        error = QSharedMemory::KeyError;
+        errorString = QSharedMemory::tr("%1: key is empty").arg(QLatin1String("QSharedMemory::handle"));
+        return 0;
+    }
+
     // Not really cost effective to check here if shared memory is attachable, as it requires
     // exactly the same call as attaching, so always assume handle is valid and return failure
     // from attach.
@@ -107,21 +118,17 @@ bool QSharedMemoryPrivate::cleanHandle()
 
 bool QSharedMemoryPrivate::create(int size)
 {
-    QString function = QLatin1String("QSharedMemory::create");
-    if (nativeKey.isEmpty()) {
-        error = QSharedMemory::KeyError;
-        errorString = QSharedMemory::tr("%1: key error").arg(function);
+    if (!handle())
         return false;
-    }
 
     TPtrC ptr(qt_QString2TPtrC(nativeKey));
 
     TInt err = chunk.CreateGlobal(ptr, size, size);
 
-    setErrorString(function, err);
-
-    if (err != KErrNone)
+    if (err != KErrNone) {
+        setErrorString(QLatin1String("QSharedMemory::create"), err);
         return false;
+    }
 
     // Zero out the created chunk
     Mem::FillZ(chunk.Base(), chunk.Size());
@@ -133,12 +140,8 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode /* mode */)
 {
     // Grab a pointer to the memory block
     if (!chunk.Handle()) {
-        QString function = QLatin1String("QSharedMemory::handle");
-        if (nativeKey.isEmpty()) {
-            error = QSharedMemory::KeyError;
-            errorString = QSharedMemory::tr("%1: unable to make key").arg(function);
+        if (!handle())
             return false;
-        }
 
         TPtrC ptr(qt_QString2TPtrC(nativeKey));
 
@@ -147,7 +150,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode /* mode */)
         err = chunk.OpenGlobal(ptr, false);
 
         if (err != KErrNone) {
-            setErrorString(function, err);
+            setErrorString(QLatin1String("QSharedMemory::attach"), err);
             return false;
         }
     }
@@ -168,6 +171,6 @@ bool QSharedMemoryPrivate::detach()
     return true;
 }
 
-#endif //QT_NO_SHAREDMEMORY
-
 QT_END_NAMESPACE
+
+#endif //QT_NO_SHAREDMEMORY
