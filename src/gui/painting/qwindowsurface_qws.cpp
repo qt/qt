@@ -1079,17 +1079,15 @@ bool QWSSharedMemSurface::setMemory(int memId)
 void QWSSharedMemSurface::setDirectRegion(const QRegion &r, int id)
 {
     QWSMemorySurface::setDirectRegion(r, id);
-    if(mem.address())
+    if (mem.address())
         *(uint *)mem.address() = id;
 }
 
 const QRegion QWSSharedMemSurface::directRegion() const
 {
-    QWSSharedMemory *cmem = const_cast<QWSSharedMemory *>(&mem);
-    if (cmem->address() && ((int*)cmem->address())[0] == directRegionId())
+    if (mem.address() && *(uint *)mem.address() == uint(directRegionId())
         return QWSMemorySurface::directRegion();
-    else
-        return QRegion();
+    return QRegion();
 }
 #endif
 
