@@ -43,6 +43,9 @@
 
 #ifndef QT_NO_SESSIONMANAGER
 
+#include <qapplication.h>
+#include <private/qobject_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QSessionManagerPrivate : public QObjectPrivate
