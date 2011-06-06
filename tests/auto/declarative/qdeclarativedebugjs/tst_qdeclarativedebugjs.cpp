@@ -100,23 +100,23 @@ inline QUrl TEST_FILE(const char *filename)
     return TEST_FILE(QLatin1String(filename));
 }
 
-class tst_qdeclarativescriptdebugging : public QObject
+class tst_QDeclarativeDebugJS : public QObject
 {
     Q_OBJECT
 public:
-    tst_qdeclarativescriptdebugging() {}
+    tst_QDeclarativeDebugJS() {}
 
 private slots:
     void initTestCase();
     void backtrace1();
 };
 
-void tst_qdeclarativescriptdebugging::initTestCase()
+void tst_QDeclarativeDebugJS::initTestCase()
 {
         qmlRegisterType<MyTestObject>("Qt.test", 1,0, "MyTestObject");
 }
 
-void tst_qdeclarativescriptdebugging::backtrace1()
+void tst_QDeclarativeDebugJS::backtrace1()
 {
     {
     QDeclarativeEngine engine;
@@ -149,6 +149,6 @@ void tst_qdeclarativescriptdebugging::backtrace1()
 }
 
 
-QTEST_MAIN(tst_qdeclarativescriptdebugging)
+QTEST_MAIN(tst_QDeclarativeDebugJS)
 
-#include "tst_qdeclarativescriptdebugging.moc"
+#include "tst_qdeclarativedebugjs.moc"
