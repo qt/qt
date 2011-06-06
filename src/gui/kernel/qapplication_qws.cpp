@@ -217,7 +217,7 @@ QString qws_dataDir()
         qFatal("Qt for Embedded Linux data directory has incorrect permissions: %s", dataDir.constData());
 #endif
 
-    result.append("/");
+    result.append(QLatin1Char('/'));
     return result;
 }
 
