@@ -950,22 +950,23 @@ void QWSLocalMemSurface::setGeometry(const QRect &rect)
     }
 
     uchar *deleteLater = 0;
-    // In case of a Hide event we need to delete the memory after sending the
-    // event to the server in order to let the server animate the event.
-    if (size.isEmpty()) {
-        deleteLater = mem;
-        mem = 0;
-    }
 
     if (img.size() != size) {
-        delete[] mem;
         if (size.isEmpty()) {
+            if (memsize) {
+                // In case of a Hide event we need to delete the memory after sending the
+                // event to the server in order to let the server animate the event.
+                deleteLater = mem;
+                memsize = 0;
+            }
             mem = 0;
             img = QImage();
         } else {
             const QImage::Format format = preferredImageFormat(win);
             const int bpl = nextMulOf4(bytesPerPixel(format) * size.width());
-            const int memsize = bpl * size.height();
+            if (memsize)
+                delete[] mem;
+            memsize = bpl * size.height();
             mem = new uchar[memsize];
             img = QImage(mem, size.width(), size.height(), bpl, format);
             setImageMetrics(img, win);
@@ -973,6 +974,7 @@ void QWSLocalMemSurface::setGeometry(const QRect &rect)
     }
 
     QWSWindowSurface::setGeometry(rect);
+
     delete[] deleteLater;
 }
 
@@ -1001,6 +1003,11 @@ QByteArray QWSLocalMemSurface::permanentState() const
 
 void QWSLocalMemSurface::setPermanentState(const QByteArray &data)
 {
+    if (memsize) {
+        delete[] mem;
+        memsize = 0;
+    }
+
     int width;
     int height;
     QImage::Format format;
@@ -1027,6 +1034,10 @@ void QWSLocalMemSurface::setPermanentState(const QByteArray &data)
 
 void QWSLocalMemSurface::releaseSurface()
 {
+    if (memsize) {
+        delete[] mem;
+        memsize = 0;
+    }
     mem = 0;
     img = QImage();
 }
