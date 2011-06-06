@@ -152,14 +152,6 @@ static inline uint line_emulation(uint emulation)
                         | QPaintEngine_OpaqueBackground);
 }
 
-static bool qt_paintengine_supports_transformations(QPaintEngine::Type type)
-{
-    return type == QPaintEngine::OpenGL2
-            || type == QPaintEngine::OpenVG
-            || type == QPaintEngine::OpenGL
-            || type == QPaintEngine::CoreGraphics;
-}
-
 #ifndef QT_NO_DEBUG
 static bool qt_painter_thread_test(int devType, const char *what, bool extraCondition = false)
 {
@@ -692,7 +684,7 @@ void QPainterPrivate::updateInvMatrix()
     invMatrix = state->matrix.inverted();
 }
 
-extern bool qt_isExtendedRadialGradient(const QBrush &brush);
+Q_GUI_EXPORT bool qt_isExtendedRadialGradient(const QBrush &brush);
 
 void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
 {
@@ -5815,20 +5807,19 @@ void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
     int count = qMin(glyphIndexes.size(), glyphPositions.size());
     QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
 
-    bool paintEngineSupportsTransformations =
-            d->extended != 0
-            ? qt_paintengine_supports_transformations(d->extended->type())
-            : qt_paintengine_supports_transformations(d->engine->type());
-
-    // If the matrix is not affine, the paint engine will fall back to
-    // drawing the glyphs as paths, which in turn means we should not
-    // preprocess the glyph positions
-    if (!d->state->matrix.isAffine())
-        paintEngineSupportsTransformations = true;
+    QRawFontPrivate *fontD = QRawFontPrivate::get(font);
+    bool supportsTransformations;
+    if (d->extended != 0) {
+        supportsTransformations = d->extended->supportsTransformations(fontD->fontEngine->fontDef.pixelSize,
+                                                                       d->state->matrix);
+    } else {
+        supportsTransformations = d->engine->type() == QPaintEngine::CoreGraphics
+                                  || d->state->matrix.isAffine();
+    }
 
     for (int i=0; i<count; ++i) {
         QPointF processedPosition = position + glyphPositions.at(i);
-        if (!paintEngineSupportsTransformations)
+        if (!supportsTransformations)
             processedPosition = d->state->transform().map(processedPosition);
         fixedPointPositions[i] = QFixedPoint::fromPointF(processedPosition);
     }
@@ -6004,11 +5995,12 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         return;
     }
 
-    bool paintEngineSupportsTransformations = qt_paintengine_supports_transformations(d->extended->type());
-    if (paintEngineSupportsTransformations && !staticText_d->untransformedCoordinates) {
+    bool supportsTransformations = d->extended->supportsTransformations(staticText_d->font.pixelSize(),
+                                                                        d->state->matrix);
+    if (supportsTransformations && !staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = true;
         staticText_d->needsRelayout = true;
-    } else if (!paintEngineSupportsTransformations && staticText_d->untransformedCoordinates) {
+    } else if (!supportsTransformations && staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = false;
         staticText_d->needsRelayout = true;
     }
@@ -6468,8 +6460,7 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     const qreal underlineOffset = fe->underlinePosition().toReal();
     // deliberately ceil the offset to avoid the underline coming too close to
     // the text above it.
-    const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
-    const qreal underlinePos = pos.y() + qCeil(underlineOffset) - aliasedCoordinateDelta;
+    const qreal underlinePos = pos.y() + qCeil(underlineOffset);
 
     if (underlineStyle == QTextCharFormat::SpellCheckUnderline) {
         underlineStyle = QTextCharFormat::UnderlineStyle(QApplication::style()->styleHint(QStyle::SH_SpellCheckUnderlineStyle));

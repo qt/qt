@@ -55,6 +55,8 @@ class QWaylandBuffer;
 class QPlatformScreen;
 class QWaylandScreen;
 class QWaylandGLIntegration;
+class QWaylandWindowManagerIntegration;
+
 class QWaylandDisplay : public QObject {
     Q_OBJECT
 
@@ -74,12 +76,18 @@ public:
 #ifdef QT_WAYLAND_GL_SUPPORT
     QWaylandGLIntegration *eglIntegration();
 #endif
+
+#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
+    QWaylandWindowManagerIntegration *windowManagerIntegration();
+#endif
+
     void setCursor(QWaylandBuffer *buffer, int32_t x, int32_t y);
 
     void syncCallback(wl_display_sync_func_t func, void *data);
     void frameCallback(wl_display_frame_func_t func, struct wl_surface *surface, void *data);
 
     struct wl_display *wl_display() const { return mDisplay; }
+    struct wl_shell *wl_shell() const { return mShell; }
 
     QList<QWaylandInputDevice *> inputDevices() const { return mInputDevices; }
 
@@ -108,7 +116,10 @@ private:
 
     uint32_t mSocketMask;
 
+    struct wl_visual *argb_visual, *premultiplied_argb_visual, *rgb_visual;
+
     static const struct wl_output_listener outputListener;
+    static const struct wl_compositor_listener compositorListener;
     static int sourceUpdate(uint32_t mask, void *data);
     static void displayHandleGlobal(struct wl_display *display,
                                     uint32_t id,
@@ -119,8 +130,15 @@ private:
                                      int32_t x, int32_t y,
                                      int32_t width, int32_t height);
 
+    static void handleVisual(void *data,
+                                       struct wl_compositor *compositor,
+                                       uint32_t id, uint32_t token);
 #ifdef QT_WAYLAND_GL_SUPPORT
     QWaylandGLIntegration *mEglIntegration;
+#endif
+
+#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
+    QWaylandWindowManagerIntegration *mWindowManagerIntegration;
 #endif
 
     static void shellHandleConfigure(void *data, struct wl_shell *shell,

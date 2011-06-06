@@ -202,7 +202,7 @@ public:
 
     virtual void updateState(const QPaintEngineState &state);
 
-    virtual void drawStaticTextItem(QStaticTextItem *) = 0;
+    virtual void drawStaticTextItem(QStaticTextItem *);
 
     virtual void setState(QPainterState *s);
     inline QPainterState *state() { return static_cast<QPainterState *>(QPaintEngine::state); }
@@ -227,6 +227,7 @@ public:
         IsEmulationEngine = 0x02    // If set, this object is a QEmulationEngine.
     };
     virtual uint flags() const {return 0;}
+    virtual bool supportsTransformations(qreal pixelSize, const QTransform &m) const;
 
 protected:
     QPaintEngineEx(QPaintEngineExPrivate &data);

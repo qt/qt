@@ -171,10 +171,8 @@ void QUnifiedToolbarSurface::flush(QWidget *widget)
     if (!d->image)
         return;
 
-    if (widget->d_func()->flushRequested) {
-        // We call display: directly to avoid flickering in the toolbar.
-        qt_mac_display(widget);
-    }
+    if (widget->d_func()->flushRequested)
+        qt_mac_setNeedsDisplay(widget);
 }
 
 void QUnifiedToolbarSurface::prepareBuffer(QImage::Format format, QWidget *widget)
