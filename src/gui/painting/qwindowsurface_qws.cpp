@@ -806,6 +806,10 @@ QWSMemorySurface::QWSMemorySurface(QWidget *w)
 
 QWSMemorySurface::~QWSMemorySurface()
 {
+#ifndef QT_NO_QWS_MULTIPROCESS
+    if (memlock != QWSDisplay::Data::getClientLock())
+        delete memlock;
+#endif
 }
 
 
@@ -852,9 +856,9 @@ void QWSMemorySurface::setLock(int lockId)
 {
     if (memlock && memlock->id() == lockId)
         return;
-    delete memlock;
+    if (memlock != QWSDisplay::Data::getClientLock())
+        delete memlock;
     memlock = (lockId == -1 ? 0 : new QWSLock(lockId));
-    return;
 }
 #endif // QT_NO_QWS_MULTIPROCESS
 
