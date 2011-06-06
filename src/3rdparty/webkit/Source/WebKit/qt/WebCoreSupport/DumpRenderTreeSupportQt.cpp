@@ -568,7 +568,7 @@ QVariantMap DumpRenderTreeSupportQt::computedStyleIncludingVisitedInfo(const QWe
         return res;
 
     RefPtr<WebCore::CSSComputedStyleDeclaration> style = computedStyle(webElement, true);
-    for (int i = 0; i < style->length(); i++) {
+    for (unsigned i = 0; i < style->length(); i++) {
         QString name = style->item(i);
         QString value = (static_cast<WebCore::CSSStyleDeclaration*>(style.get()))->getPropertyValue(name);
         res[convertToPropertyName(name)] = QVariant(value);
@@ -967,7 +967,7 @@ QVariantList DumpRenderTreeSupportQt::nodesFromRect(const QWebElement& document,
     if (!doc)
         return res;
     RefPtr<NodeList> nodes = doc->nodesFromRect(x, y, top, right, bottom, left, ignoreClipping);
-    for (int i = 0; i < nodes->length(); i++) {
+    for (unsigned i = 0; i < nodes->length(); i++) {
         // QWebElement will be null if the Node is not an HTML Element
         if (nodes->item(i)->isHTMLElement())
             res << QVariant::fromValue(QWebElement(nodes->item(i)));
