@@ -1417,7 +1417,7 @@ QString QAccessibleTextEdit::attributes(int offset, int *startOffset, int *endOf
     }
 
     QString result;
-    foreach(const QString &attributeName, attrs.keys()) {
+    foreach (const QString &attributeName, attrs.keys()) {
         result.append(attributeName).append(':').append(attrs[attributeName]).append(';');
     }
 
