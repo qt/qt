@@ -50,14 +50,13 @@ symbian: {
             "   \"$$bearerPluginLocation/qsymbianbearer$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
             "ENDIF" \
             "   \"$$bearerStubZ\" - \"c:$$replace(QT_PLUGINS_BASE_DIR,/,\\)\\bearer\\qsymbianbearer$${QT_LIBINFIX}.qtplugin\""
+        qtlibraries.pkg_postrules += qts60plugindeployment
     } else {
         # No need to deploy plugins for older platform versions when building on Symbian3 or later
         bearer_plugin.files = $$QT_BUILD_TREE/plugins/bearer/qsymbianbearer$${QT_LIBINFIX}.dll
         bearer_plugin.path = c:$$QT_PLUGINS_BASE_DIR/bearer
         DEPLOYMENT += bearer_plugin
     }
-
-    qtlibraries.pkg_postrules += qts60plugindeployment
 
     qtlibraries.path = c:/sys/bin
 
