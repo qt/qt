@@ -360,6 +360,11 @@ bool QCoeFepInputContext::symbianFilterEvent(QWidget *keyWidget, const QSymbianE
         }
     }
 
+    if (event->type() == QSymbianEvent::ResourceChangeEvent
+         && event->resourceChangeType() == KEikMessageFadeAllWindows) {
+        reset();
+    }
+
     return false;
 }
 
