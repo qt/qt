@@ -142,19 +142,6 @@ inline uint qHash(TUid uid)
     return qHash(uid.iUid);
 }
 
-// S60 version specific function ordinals that can be resolved
-enum S60PluginFuncOrdinals
-{
-    S60Plugin_TimeFormatL            = 1,
-    S60Plugin_GetTimeFormatSpec      = 2,
-    S60Plugin_GetLongDateFormatSpec  = 3,
-    S60Plugin_GetShortDateFormatSpec = 4,
-    S60Plugin_LocalizedDirectoryName = 5,
-    S60Plugin_GetSystemDrive         = 6
-};
-
-Q_CORE_EXPORT TLibraryFunction qt_resolveS60PluginFunc(int ordinal);
-
 Q_CORE_EXPORT RFs& qt_s60GetRFs();
 Q_CORE_EXPORT RSocketServ& qt_symbianGetSocketServer();
 

@@ -318,25 +318,6 @@ QPixmap QS60StylePrivate::backgroundTexture(bool /*skipCreation*/)
     return *m_background;
 }
 
-bool QS60StylePrivate::isTouchSupported()
-{
-#ifdef QT_KEYPAD_NAVIGATION
-    return !QApplication::keypadNavigationEnabled();
-#else
-    return true;
-#endif
-}
-
-bool QS60StylePrivate::isToolBarBackground()
-{
-    return true;
-}
-
-bool QS60StylePrivate::hasSliderGrooveGraphic()
-{
-    return false;
-}
-
 bool QS60StylePrivate::isSingleClickUi()
 {
     return false;

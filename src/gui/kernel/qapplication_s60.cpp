@@ -1694,7 +1694,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         if (commandLine) {
             // After this construction, CEikonEnv will be available from CEikonEnv::Static().
             // (much like our qApp).
-            QtEikonEnv* coe = new QtEikonEnv;
+            CEikonEnv* coe = new CEikonEnv;
             //not using QT_TRAP_THROWING, because coe owns the cleanupstack so it can't be pushed there.
             TRAPD(err, coe->ConstructAppFromCommandLineL(factory, *commandLine));
             if(err != KErrNone) {
