@@ -132,6 +132,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
     d->aboutToDestroy();
     if (!isWindow() && parentWidget())
         parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
+    d->deactivateWidgetCleanup();
 
     if ((windowType() == Qt::Popup))
         qApp->d_func()->closePopup(this);
@@ -420,6 +421,7 @@ void QWidgetPrivate::hide_sys()
 {
     Q_Q(QWidget);
     q->setAttribute(Qt::WA_Mapped, false);
+    deactivateWidgetCleanup();
     if (!q->isWindow()) {
         QWidget *p = q->parentWidget();
         if (p &&p->isVisible()) {
