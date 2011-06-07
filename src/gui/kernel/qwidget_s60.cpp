@@ -1040,8 +1040,12 @@ void QWidgetPrivate::registerTouchWindow()
         RWindow *rwindow = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
         QSymbianControl *window = static_cast<QSymbianControl *>(q->effectiveWinId());
         //Enabling advanced pointer events for controls that already have active windows causes a panic.
-        if (!window->isControlActive())
+        if (!window->isControlActive()) {
             rwindow->EnableAdvancedPointers();
+#ifdef COE_GROUPED_POINTER_EVENT_VERSION
+            qt_symbian_throwIfError(window->ConfigureEventData(CCoeControl::EEventDataAllowGroupedPointerEvents));
+#endif
+        }
     }
 #endif
 }
