@@ -874,6 +874,8 @@ void QCoeFepInputContext::ensureInputCapabilitiesChanged()
 void QCoeFepInputContext::translateInputWidget()
 {
     QGraphicsView *gv = qobject_cast<QGraphicsView *>(S60->splitViewLastWidget);
+    if (!gv)
+        return;
     QRect splitViewRect = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
 
     QRectF cursor = gv->scene()->inputMethodQuery(Qt::ImMicroFocus).toRectF();

@@ -2265,6 +2265,7 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
 #if defined(Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS)
     case EEventDisplayChanged:
 #endif
+        {
         if (callSymbianEventFilters(symbianEvent))
             return 1;
         if (S60)
@@ -2275,6 +2276,12 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
             qt_desktopWidget->data->crect.setHeight(S60->screenHeightInPixels);
             QResizeEvent e(qt_desktopWidget->size(), oldSize);
             QApplication::sendEvent(qt_desktopWidget, &e);
+        }
+        // Close non-native QMenus (that should act like context menus, i.e. close
+        // automatically when the orientation changes).
+        QMenu *activeMenu = qobject_cast<QMenu *>(QApplication::activePopupWidget());
+        if (activeMenu)
+            activeMenu->close();
         }
         return 0; // Propagate to CONE
     case EEventWindowVisibilityChanged:
