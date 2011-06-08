@@ -39,48 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef LIVESELECTIONINDICATOR_H
-#define LIVESELECTIONINDICATOR_H
+#ifndef SUBCOMPONENTMASKLAYERITEM_H
+#define SUBCOMPONENTMASKLAYERITEM_H
 
-#include <QtCore/QWeakPointer>
-#include <QtCore/QHash>
+#include <QtGui/QGraphicsPolygonItem>
 
-QT_BEGIN_NAMESPACE
-class QGraphicsObject;
-class QGraphicsRectItem;
-class QGraphicsItem;
-class QPolygonF;
-QT_END_NAMESPACE
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
+namespace QmlJSDebugger {
 
 class QDeclarativeViewInspector;
 
-class LiveSelectionIndicator
+class SubcomponentMaskLayerItem : public QGraphicsPolygonItem
 {
 public:
-    LiveSelectionIndicator(QDeclarativeViewInspector *viewInspector, QGraphicsObject *layerItem);
-    ~LiveSelectionIndicator();
-
-    void show();
-    void hide();
-
-    void clear();
-
-    void setItems(const QList<QWeakPointer<QGraphicsObject> > &itemList);
+    explicit SubcomponentMaskLayerItem(QDeclarativeViewInspector *inspector,
+                                       QGraphicsItem *parentItem = 0);
+    int type() const;
+    void setCurrentItem(QGraphicsItem *item);
+    void setBoundingBox(const QRectF &boundingBox);
+    QGraphicsItem *currentItem() const;
+    QRectF itemRect() const;
 
 private:
-    QHash<QGraphicsItem*, QGraphicsRectItem *> m_indicatorShapeHash;
-    QWeakPointer<QGraphicsObject> m_layerItem;
-    QDeclarativeViewInspector *m_view;
+    QDeclarativeViewInspector *m_inspector;
+    QGraphicsItem *m_currentItem;
+    QGraphicsRectItem *m_borderRect;
+    QRectF m_itemPolyRect;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
-QT_END_HEADER
-
-#endif // LIVESELECTIONINDICATOR_H
+#endif // SUBCOMPONENTMASKLAYERITEM_H

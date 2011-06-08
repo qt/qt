@@ -42,74 +42,80 @@
 #ifndef QDECLARATIVEVIEWINSPECTOR_P_H
 #define QDECLARATIVEVIEWINSPECTOR_P_H
 
-#include <private/qdeclarativeglobal_p.h>
+#include "qdeclarativeviewinspector.h"
 
-#include "qmlinspectorconstants_p.h"
-#include "abstractviewinspector.h"
+#include <QtCore/QWeakPointer>
+#include <QtCore/QPointF>
 
-#include <QtCore/QScopedPointer>
-#include <QtDeclarative/QDeclarativeView>
+#include "QtDeclarative/private/qdeclarativeinspectorservice_p.h"
 
-QT_FORWARD_DECLARE_CLASS(QDeclarativeItem)
-QT_FORWARD_DECLARE_CLASS(QMouseEvent)
-QT_FORWARD_DECLARE_CLASS(QToolBar)
+namespace QmlJSDebugger {
 
-QT_BEGIN_HEADER
+class QDeclarativeViewInspector;
+class LiveSelectionTool;
+class ZoomTool;
+class ColorPickerTool;
+class LiveLayerItem;
+class BoundingRectHighlighter;
+class AbstractLiveEditTool;
 
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class QDeclarativeViewInspectorPrivate;
-
-class QDeclarativeViewInspector : public AbstractViewInspector
+class QDeclarativeViewInspectorPrivate : public QObject
 {
     Q_OBJECT
-
 public:
-    explicit QDeclarativeViewInspector(QDeclarativeView *view, QObject *parent = 0);
-    ~QDeclarativeViewInspector();
+    QDeclarativeViewInspectorPrivate(QDeclarativeViewInspector *);
+    ~QDeclarativeViewInspectorPrivate();
 
-    // AbstractViewInspector
-    void changeCurrentObjects(const QList<QObject*> &objects);
-    void reloadView();
-    void reparentQmlObject(QObject *object, QObject *newParent);
-    void changeTool(InspectorProtocol::Tool tool);
-    QWidget *viewWidget() const { return declarativeView(); }
-    QDeclarativeEngine *declarativeEngine() const;
+    QDeclarativeView *view;
+    QDeclarativeViewInspector *q;
+    QWeakPointer<QWidget> viewport;
 
-    void setSelectedItems(QList<QGraphicsItem *> items);
+    QPointF cursorPos;
+    QList<QWeakPointer<QGraphicsObject> > currentSelection;
+
+    Constants::DesignTool currentToolMode;
+    AbstractLiveEditTool *currentTool;
+
+    LiveSelectionTool *selectionTool;
+    ZoomTool *zoomTool;
+    ColorPickerTool *colorPickerTool;
+    LiveLayerItem *manipulatorLayer;
+
+    BoundingRectHighlighter *boundingRectHighlighter;
+
+    void setViewport(QWidget *widget);
+
+    void clearEditorItems();
+    void changeToSelectTool();
+    QList<QGraphicsItem*> filterForSelection(QList<QGraphicsItem*> &itemlist) const;
+
+    QList<QGraphicsItem*> selectableItems(const QPoint &pos) const;
+    QList<QGraphicsItem*> selectableItems(const QPointF &scenePos) const;
+    QList<QGraphicsItem*> selectableItems(const QRectF &sceneRect, Qt::ItemSelectionMode selectionMode) const;
+
+    void setSelectedItemsForTools(const QList<QGraphicsItem *> &items);
+    void setSelectedItems(const QList<QGraphicsItem *> &items);
     QList<QGraphicsItem *> selectedItems() const;
 
-    QDeclarativeView *declarativeView() const;
+    void clearHighlight();
+    void highlight(const QList<QGraphicsObject *> &item);
+    inline void highlight(QGraphicsObject *item)
+    { highlight(QList<QGraphicsObject*>() << item); }
 
-    QRectF adjustToScreenBoundaries(const QRectF &boundingRectInSceneSpace);
+    void changeToSingleSelectTool();
+    void changeToMarqueeSelectTool();
+    void changeToZoomTool();
+    void changeToColorPickerTool();
 
-protected:
-    bool eventFilter(QObject *obj, QEvent *event);
+public slots:
+    void _q_onStatusChanged(QDeclarativeView::Status status);
 
-    bool leaveEvent(QEvent *);
-    bool mousePressEvent(QMouseEvent *event);
-    bool mouseMoveEvent(QMouseEvent *event);
-    bool mouseReleaseEvent(QMouseEvent *event);
-    bool keyPressEvent(QKeyEvent *event);
-    bool keyReleaseEvent(QKeyEvent *keyEvent);
-    bool mouseDoubleClickEvent(QMouseEvent *event);
-    bool wheelEvent(QWheelEvent *event);
+    void _q_removeFromSelection(QObject *);
 
-    void setSelectedItemsForTools(QList<QGraphicsItem *> items);
-
-private:
-    Q_DISABLE_COPY(QDeclarativeViewInspector)
-
-    inline QDeclarativeViewInspectorPrivate *d_func() { return data.data(); }
-    QScopedPointer<QDeclarativeViewInspectorPrivate> data;
-    friend class QDeclarativeViewInspectorPrivate;
-    friend class AbstractLiveEditTool;
+public:
+    static QDeclarativeViewInspectorPrivate *get(QDeclarativeViewInspector *v) { return v->d_func(); }
 };
 
-QT_END_NAMESPACE
-
-QT_END_HEADER
+} // namespace QmlJSDebugger
 
 #endif // QDECLARATIVEVIEWINSPECTOR_P_H

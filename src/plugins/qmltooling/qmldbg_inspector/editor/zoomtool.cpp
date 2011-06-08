@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "zoomtool_p.h"
+#include "zoomtool.h"
 
-#include "../qdeclarativeviewinspector_p_p.h"
+#include "../qdeclarativeviewinspector_p.h"
 
 #include <QtGui/QMouseEvent>
 #include <QtGui/QWheelEvent>
@@ -52,7 +52,7 @@
 #include <QtCore/QRectF>
 #include <QtCore/QDebug>
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
 ZoomTool::ZoomTool(QDeclarativeViewInspector *view) :
     AbstractLiveEditTool(view),
@@ -333,4 +333,4 @@ qreal ZoomTool::nextZoomScale(ZoomDirection direction) const
     return 1.0f;
 }
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger

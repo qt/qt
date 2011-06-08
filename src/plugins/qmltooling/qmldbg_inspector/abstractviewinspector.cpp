@@ -41,7 +41,7 @@
 
 #include "abstractviewinspector.h"
 
-#include "editor/qmltoolbar_p.h"
+#include "editor/qmltoolbar.h"
 #include "qdeclarativeinspectorprotocol.h"
 
 #include <QtDeclarative/QDeclarativeEngine>
@@ -54,7 +54,7 @@
 
 static inline void initEditorResource() { Q_INIT_RESOURCE(editor); }
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
 const char * const KEY_TOOLBOX_GEOMETRY = "toolBox/geometry";
 
@@ -485,6 +485,6 @@ QString AbstractViewInspector::idStringForObject(QObject *obj) const
     return m_stringIdForObjectId.value(id);
 }
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
 #include "abstractviewinspector.moc"

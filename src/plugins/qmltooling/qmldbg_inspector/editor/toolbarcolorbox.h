@@ -39,47 +39,43 @@
 **
 ****************************************************************************/
 
-#ifndef QMLINSPECTORCONSTANTS_H
-#define QMLINSPECTORCONSTANTS_H
+#ifndef TOOLBARCOLORBOX_H
+#define TOOLBARCOLORBOX_H
 
-#include <QtDeclarative/private/qdeclarativeglobal_p.h>
+#include <QtGui/QLabel>
+#include <QtGui/QColor>
+#include <QtCore/QPoint>
 
-QT_BEGIN_HEADER
+QT_FORWARD_DECLARE_CLASS(QContextMenuEvent)
+QT_FORWARD_DECLARE_CLASS(QAction)
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
-QT_MODULE(Declarative)
+class ToolBarColorBox : public QLabel
+{
+    Q_OBJECT
 
-namespace Constants {
+public:
+    explicit ToolBarColorBox(QWidget *parent = 0);
+    void setColor(const QColor &color);
 
-enum DesignTool {
-    NoTool = 0,
-    SelectionToolMode = 1,
-    MarqueeSelectionToolMode = 2,
-    MoveToolMode = 3,
-    ResizeToolMode = 4,
-    ColorPickerMode = 5,
-    ZoomMode = 6
+protected:
+    void contextMenuEvent(QContextMenuEvent *ev);
+    void mousePressEvent(QMouseEvent *ev);
+    void mouseMoveEvent(QMouseEvent *ev);
+private slots:
+    void copyColorToClipboard();
+
+private:
+    QPixmap createDragPixmap(int size = 24) const;
+
+private:
+    bool m_dragStarted;
+    QPoint m_dragBeginPoint;
+    QAction *m_copyHexColor;
+    QColor m_color;
 };
 
-static const int DragStartTime = 50;
+} // namespace QmlJSDebugger
 
-static const int DragStartDistance = 20;
-
-static const double ZoomSnapDelta = 0.04;
-
-static const int EditorItemDataKey = 1000;
-
-enum GraphicsItemTypes {
-    EditorItemType = 0xEAAA,
-    ResizeHandleItemType = 0xEAEA
-};
-
-
-} // namespace Constants
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QMLINSPECTORCONSTANTS_H
+#endif // TOOLBARCOLORBOX_H

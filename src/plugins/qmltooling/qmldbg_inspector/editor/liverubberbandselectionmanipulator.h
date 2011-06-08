@@ -39,49 +39,58 @@
 **
 ****************************************************************************/
 
-#ifndef TOOLBARCOLORBOX_H
-#define TOOLBARCOLORBOX_H
+#ifndef RUBBERBANDSELECTIONMANIPULATOR_H
+#define RUBBERBANDSELECTIONMANIPULATOR_H
 
-#include <QtGui/QLabel>
-#include <QtGui/QColor>
-#include <QtCore/QPoint>
+#include "liveselectionrectangle.h"
 
-QT_FORWARD_DECLARE_CLASS(QContextMenuEvent)
-QT_FORWARD_DECLARE_CLASS(QAction)
+#include <QtCore/QPointF>
 
-QT_BEGIN_HEADER
+QT_FORWARD_DECLARE_CLASS(QGraphicsItem)
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
-QT_MODULE(Declarative)
+class QDeclarativeViewInspector;
 
-class ToolBarColorBox : public QLabel
+class LiveRubberBandSelectionManipulator
 {
-    Q_OBJECT
-
 public:
-    explicit ToolBarColorBox(QWidget *parent = 0);
-    void setColor(const QColor &color);
+    enum SelectionType {
+        ReplaceSelection,
+        AddToSelection,
+        RemoveFromSelection
+    };
+
+    LiveRubberBandSelectionManipulator(QGraphicsObject *layerItem,
+                                       QDeclarativeViewInspector *editorView);
+
+    void setItems(const QList<QGraphicsItem*> &itemList);
+
+    void begin(const QPointF& beginPoint);
+    void update(const QPointF& updatePoint);
+    void end();
+
+    void clear();
+
+    void select(SelectionType selectionType);
+
+    QPointF beginPoint() const;
+
+    bool isActive() const;
 
 protected:
-    void contextMenuEvent(QContextMenuEvent *ev);
-    void mousePressEvent(QMouseEvent *ev);
-    void mouseMoveEvent(QMouseEvent *ev);
-private slots:
-    void copyColorToClipboard();
+    QGraphicsItem *topFormEditorItem(const QList<QGraphicsItem*> &itemList);
 
 private:
-    QPixmap createDragPixmap(int size = 24) const;
-
-private:
-    bool m_dragStarted;
-    QPoint m_dragBeginPoint;
-    QAction *m_copyHexColor;
-    QColor m_color;
+    QList<QGraphicsItem*> m_itemList;
+    QList<QGraphicsItem*> m_oldSelectionList;
+    LiveSelectionRectangle m_selectionRectangleElement;
+    QPointF m_beginPoint;
+    QDeclarativeViewInspector *m_editorView;
+    QGraphicsItem *m_beginFormEditorItem;
+    bool m_isActive;
 };
 
-QT_END_NAMESPACE
+}
 
-QT_END_HEADER
-
-#endif // TOOLBARCOLORBOX_H
+#endif // RUBBERBANDSELECTIONMANIPULATOR_H

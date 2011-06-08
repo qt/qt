@@ -39,14 +39,14 @@
 **
 ****************************************************************************/
 
+#include "qdeclarativeviewinspector.h"
 #include "qdeclarativeviewinspector_p.h"
-#include "qdeclarativeviewinspector_p_p.h"
 
-#include "editor/liveselectiontool_p.h"
-#include "editor/zoomtool_p.h"
-#include "editor/colorpickertool_p.h"
-#include "editor/livelayeritem_p.h"
-#include "editor/boundingrecthighlighter_p.h"
+#include "editor/liveselectiontool.h"
+#include "editor/zoomtool.h"
+#include "editor/colorpickertool.h"
+#include "editor/livelayeritem.h"
+#include "editor/boundingrecthighlighter.h"
 
 #include <QtDeclarative/QDeclarativeItem>
 #include <QtDeclarative/QDeclarativeEngine>
@@ -57,7 +57,7 @@
 #include <QtGui/QGraphicsObject>
 #include <QtGui/QApplication>
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
 QDeclarativeViewInspectorPrivate::QDeclarativeViewInspectorPrivate(QDeclarativeViewInspector *q) :
     q(q)
@@ -570,4 +570,4 @@ QRectF QDeclarativeViewInspector::adjustToScreenBoundaries(const QRectF &boundin
     return boundingRect;
 }
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger

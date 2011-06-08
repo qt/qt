@@ -39,61 +39,42 @@
 **
 ****************************************************************************/
 
-#ifndef COLORPICKERTOOL_H
-#define COLORPICKERTOOL_H
+#ifndef LIVESELECTIONINDICATOR_H
+#define LIVESELECTIONINDICATOR_H
 
-#include "abstractliveedittool_p.h"
-
-#include <QtGui/QColor>
-
-QT_FORWARD_DECLARE_CLASS(QPoint)
-
-QT_BEGIN_HEADER
+#include <QtCore/QWeakPointer>
+#include <QtCore/QHash>
 
 QT_BEGIN_NAMESPACE
+class QGraphicsObject;
+class QGraphicsRectItem;
+class QGraphicsItem;
+class QPolygonF;
+QT_END_NAMESPACE
 
-QT_MODULE(Declarative)
+namespace QmlJSDebugger {
 
-class ColorPickerTool : public AbstractLiveEditTool
+class QDeclarativeViewInspector;
+
+class LiveSelectionIndicator
 {
-    Q_OBJECT
 public:
-    explicit ColorPickerTool(QDeclarativeViewInspector *view);
+    LiveSelectionIndicator(QDeclarativeViewInspector *viewInspector, QGraphicsObject *layerItem);
+    ~LiveSelectionIndicator();
 
-    virtual ~ColorPickerTool();
-
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void mouseDoubleClickEvent(QMouseEvent *event);
-
-    void hoverMoveEvent(QMouseEvent *event);
-
-    void keyPressEvent(QKeyEvent *event);
-    void keyReleaseEvent(QKeyEvent *keyEvent);
-
-    void wheelEvent(QWheelEvent *event);
-
-    void itemsAboutToRemoved(const QList<QGraphicsItem*> &itemList);
+    void show();
+    void hide();
 
     void clear();
 
-signals:
-    void selectedColorChanged(const QColor &color);
-
-protected:
-
-    void selectedItemsChanged(const QList<QGraphicsItem*> &itemList);
+    void setItems(const QList<QWeakPointer<QGraphicsObject> > &itemList);
 
 private:
-    void pickColor(const QPoint &pos);
-
-private:
-    QColor m_selectedColor;
+    QHash<QGraphicsItem*, QGraphicsRectItem *> m_indicatorShapeHash;
+    QWeakPointer<QGraphicsObject> m_layerItem;
+    QDeclarativeViewInspector *m_view;
 };
 
-QT_END_NAMESPACE
+}
 
-QT_END_HEADER
-
-#endif // COLORPICKERTOOL_H
+#endif // LIVESELECTIONINDICATOR_H

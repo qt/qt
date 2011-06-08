@@ -39,45 +39,55 @@
 **
 ****************************************************************************/
 
-#ifndef LIVESELECTIONRECTANGLE_H
-#define LIVESELECTIONRECTANGLE_H
+#ifndef COLORPICKERTOOL_H
+#define COLORPICKERTOOL_H
 
-#include <QtCore/QWeakPointer>
+#include "abstractliveedittool.h"
 
-QT_FORWARD_DECLARE_CLASS(QGraphicsObject)
-QT_FORWARD_DECLARE_CLASS(QGraphicsRectItem)
-QT_FORWARD_DECLARE_CLASS(QPointF)
-QT_FORWARD_DECLARE_CLASS(QRectF)
+#include <QtGui/QColor>
 
-QT_BEGIN_HEADER
+QT_FORWARD_DECLARE_CLASS(QPoint)
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
-QT_MODULE(Declarative)
-
-class LiveSelectionRectangle
+class ColorPickerTool : public AbstractLiveEditTool
 {
+    Q_OBJECT
 public:
-    LiveSelectionRectangle(QGraphicsObject *layerItem);
-    ~LiveSelectionRectangle();
+    explicit ColorPickerTool(QDeclarativeViewInspector *view);
 
-    void show();
-    void hide();
+    virtual ~ColorPickerTool();
+
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *event);
+
+    void hoverMoveEvent(QMouseEvent *event);
+
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *keyEvent);
+
+    void wheelEvent(QWheelEvent *event);
+
+    void itemsAboutToRemoved(const QList<QGraphicsItem*> &itemList);
 
     void clear();
 
-    void setRect(const QPointF &firstPoint,
-                 const QPointF &secondPoint);
+signals:
+    void selectedColorChanged(const QColor &color);
 
-    QRectF rect() const;
+protected:
+
+    void selectedItemsChanged(const QList<QGraphicsItem*> &itemList);
 
 private:
-    QGraphicsRectItem *m_controlShape;
-    QWeakPointer<QGraphicsObject> m_layerItem;
+    void pickColor(const QPoint &pos);
+
+private:
+    QColor m_selectedColor;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
-QT_END_HEADER
-
-#endif // LIVESELECTIONRECTANGLE_H
+#endif // COLORPICKERTOOL_H

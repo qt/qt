@@ -48,12 +48,15 @@
 #include <QtGui/QColor>
 
 #include "qdeclarativeinspectorprotocol.h"
-#include "qmlinspectorconstants_p.h"
+#include "qmlinspectorconstants.h"
 
 QT_BEGIN_NAMESPACE
-
 class QDeclarativeEngine;
 class QDeclarativeInspectorService;
+QT_END_NAMESPACE
+
+namespace QmlJSDebugger {
+
 class ToolBox;
 
 /*
@@ -150,6 +153,6 @@ private:
     QDeclarativeInspectorService *m_debugService;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
 #endif // ABSTRACTVIEWINSPECTOR_H

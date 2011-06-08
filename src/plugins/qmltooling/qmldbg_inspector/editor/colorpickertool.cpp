@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "colorpickertool_p.h"
+#include "colorpickertool.h"
 
-#include "../qdeclarativeviewinspector_p.h"
+#include "../qdeclarativeviewinspector.h"
 
 #include <QtGui/QMouseEvent>
 #include <QtGui/QKeyEvent>
@@ -51,7 +51,7 @@
 #include <QtGui/QApplication>
 #include <QtGui/QPalette>
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
 ColorPickerTool::ColorPickerTool(QDeclarativeViewInspector *view) :
     AbstractLiveEditTool(view)
@@ -128,4 +128,4 @@ void ColorPickerTool::pickColor(const QPoint &pos)
     emit selectedColorChanged(m_selectedColor);
 }
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger

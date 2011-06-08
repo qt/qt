@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "liveselectiontool_p.h"
-#include "livelayeritem_p.h"
+#include "liveselectiontool.h"
+#include "livelayeritem.h"
 
-#include "../qdeclarativeviewinspector_p_p.h"
+#include "../qdeclarativeviewinspector_p.h"
 
 #include <QtGui/QApplication>
 #include <QtGui/QWheelEvent>
@@ -57,7 +57,7 @@
 
 #include <QtCore/QDebug>
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
 LiveSelectionTool::LiveSelectionTool(QDeclarativeViewInspector *editorView) :
     AbstractLiveEditTool(editorView),
@@ -435,4 +435,4 @@ void LiveSelectionTool::selectUnderPoint(QMouseEvent *event)
     m_singleSelectionManipulator.end(event->pos());
 }
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger

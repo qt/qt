@@ -39,57 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef LIVESINGLESELECTIONMANIPULATOR_H
-#define LIVESINGLESELECTIONMANIPULATOR_H
+#ifndef LIVESELECTIONRECTANGLE_H
+#define LIVESELECTIONRECTANGLE_H
 
-#include <QtCore/QPointF>
-#include <QtCore/QList>
+#include <QtCore/QWeakPointer>
 
-QT_FORWARD_DECLARE_CLASS(QGraphicsItem)
+QT_FORWARD_DECLARE_CLASS(QGraphicsObject)
+QT_FORWARD_DECLARE_CLASS(QGraphicsRectItem)
+QT_FORWARD_DECLARE_CLASS(QPointF)
+QT_FORWARD_DECLARE_CLASS(QRectF)
 
-QT_BEGIN_HEADER
+namespace QmlJSDebugger {
 
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class QDeclarativeViewInspector;
-
-class LiveSingleSelectionManipulator
+class LiveSelectionRectangle
 {
 public:
-    LiveSingleSelectionManipulator(QDeclarativeViewInspector *editorView);
+    LiveSelectionRectangle(QGraphicsObject *layerItem);
+    ~LiveSelectionRectangle();
 
-    enum SelectionType {
-        ReplaceSelection,
-        AddToSelection,
-        RemoveFromSelection,
-        InvertSelection
-    };
-
-    void begin(const QPointF& beginPoint);
-    void update(const QPointF& updatePoint);
-    void end(const QPointF& updatePoint);
-
-    void select(SelectionType selectionType, const QList<QGraphicsItem*> &items,
-                bool selectOnlyContentItems);
-    void select(SelectionType selectionType, bool selectOnlyContentItems);
+    void show();
+    void hide();
 
     void clear();
 
-    QPointF beginPoint() const;
+    void setRect(const QPointF &firstPoint,
+                 const QPointF &secondPoint);
 
-    bool isActive() const;
+    QRectF rect() const;
 
 private:
-    QList<QGraphicsItem*> m_oldSelectionList;
-    QPointF m_beginPoint;
-    QDeclarativeViewInspector *m_editorView;
-    bool m_isActive;
+    QGraphicsRectItem *m_controlShape;
+    QWeakPointer<QGraphicsObject> m_layerItem;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
-QT_END_HEADER
-
-#endif // LIVESINGLESELECTIONMANIPULATOR_H
+#endif // LIVESELECTIONRECTANGLE_H

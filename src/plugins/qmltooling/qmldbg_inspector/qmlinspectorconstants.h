@@ -39,75 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef ZOOMTOOL_H
-#define ZOOMTOOL_H
+#ifndef QMLINSPECTORCONSTANTS_H
+#define QMLINSPECTORCONSTANTS_H
 
-#include "abstractliveedittool_p.h"
-#include "liverubberbandselectionmanipulator_p.h"
+#include <QtDeclarative/private/qdeclarativeglobal_p.h>
 
-QT_FORWARD_DECLARE_CLASS(QAction)
+namespace QmlJSDebugger {
+namespace Constants {
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class ZoomTool : public AbstractLiveEditTool
-{
-    Q_OBJECT
-
-public:
-    enum ZoomDirection {
-        ZoomIn,
-        ZoomOut
-    };
-
-    explicit ZoomTool(QDeclarativeViewInspector *view);
-
-    virtual ~ZoomTool();
-
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void mouseDoubleClickEvent(QMouseEvent *event);
-
-    void hoverMoveEvent(QMouseEvent *event);
-    void wheelEvent(QWheelEvent *event);
-
-    void keyPressEvent(QKeyEvent *event);
-    void keyReleaseEvent(QKeyEvent *keyEvent);
-    void itemsAboutToRemoved(const QList<QGraphicsItem*> &itemList);
-
-    void clear();
-
-protected:
-    void selectedItemsChanged(const QList<QGraphicsItem*> &itemList);
-
-private slots:
-    void zoomTo100();
-    void zoomIn();
-    void zoomOut();
-
-private:
-    qreal nextZoomScale(ZoomDirection direction) const;
-    void scaleView(const QPointF &centerPos);
-
-private:
-    bool m_dragStarted;
-    QPoint m_mousePos; // in view coords
-    QPointF m_dragBeginPos;
-    QAction *m_zoomTo100Action;
-    QAction *m_zoomInAction;
-    QAction *m_zoomOutAction;
-    LiveRubberBandSelectionManipulator *m_rubberbandManipulator;
-
-    qreal m_smoothZoomMultiplier;
-    qreal m_currentScale;
+enum DesignTool {
+    NoTool = 0,
+    SelectionToolMode = 1,
+    MarqueeSelectionToolMode = 2,
+    MoveToolMode = 3,
+    ResizeToolMode = 4,
+    ColorPickerMode = 5,
+    ZoomMode = 6
 };
 
-QT_END_NAMESPACE
+static const int DragStartTime = 50;
 
-QT_END_HEADER
+static const int DragStartDistance = 20;
 
-#endif // ZOOMTOOL_H
+static const double ZoomSnapDelta = 0.04;
+
+static const int EditorItemDataKey = 1000;
+
+enum GraphicsItemTypes {
+    EditorItemType = 0xEAAA,
+    ResizeHandleItemType = 0xEAEA
+};
+
+
+} // namespace Constants
+} // namespace QmlJSDebugger
+
+#endif // QMLINSPECTORCONSTANTS_H

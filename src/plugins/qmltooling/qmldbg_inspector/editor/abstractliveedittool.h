@@ -56,11 +56,7 @@ class QWheelEvent;
 class QDeclarativeView;
 QT_END_NAMESPACE
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
+namespace QmlJSDebugger {
 
 class QDeclarativeViewInspector;
 
@@ -112,8 +108,6 @@ private:
     QList<QGraphicsItem*> m_itemList;
 };
 
-QT_END_NAMESPACE
-
-QT_END_HEADER
+}
 
 #endif // ABSTRACTLIVEEDITTOOL_H

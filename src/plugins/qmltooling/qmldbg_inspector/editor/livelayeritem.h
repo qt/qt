@@ -39,39 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef SUBCOMPONENTMASKLAYERITEM_H
-#define SUBCOMPONENTMASKLAYERITEM_H
+#ifndef LIVELAYERITEM_H
+#define LIVELAYERITEM_H
 
-#include <QtGui/QGraphicsPolygonItem>
+#include <QtGui/QGraphicsObject>
 
-QT_BEGIN_HEADER
+namespace QmlJSDebugger {
 
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class QDeclarativeViewInspector;
-
-class SubcomponentMaskLayerItem : public QGraphicsPolygonItem
+class LiveLayerItem : public QGraphicsObject
 {
 public:
-    explicit SubcomponentMaskLayerItem(QDeclarativeViewInspector *inspector,
-                                       QGraphicsItem *parentItem = 0);
+    LiveLayerItem(QGraphicsScene *scene);
+    ~LiveLayerItem();
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                QWidget *widget = 0);
+    QRectF boundingRect() const;
     int type() const;
-    void setCurrentItem(QGraphicsItem *item);
-    void setBoundingBox(const QRectF &boundingBox);
-    QGraphicsItem *currentItem() const;
-    QRectF itemRect() const;
 
-private:
-    QDeclarativeViewInspector *m_inspector;
-    QGraphicsItem *m_currentItem;
-    QGraphicsRectItem *m_borderRect;
-    QRectF m_itemPolyRect;
+    QList<QGraphicsItem*> findAllChildItems() const;
+
+protected:
+    QList<QGraphicsItem*> findAllChildItems(const QGraphicsItem *item) const;
 };
 
-QT_END_NAMESPACE
+}
 
-QT_END_HEADER
-
-#endif // SUBCOMPONENTMASKLAYERITEM_H
+#endif // LIVELAYERITEM_H

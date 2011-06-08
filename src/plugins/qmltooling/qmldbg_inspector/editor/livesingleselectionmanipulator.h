@@ -39,35 +39,51 @@
 **
 ****************************************************************************/
 
-#ifndef LIVELAYERITEM_H
-#define LIVELAYERITEM_H
+#ifndef LIVESINGLESELECTIONMANIPULATOR_H
+#define LIVESINGLESELECTIONMANIPULATOR_H
 
-#include <QtGui/QGraphicsObject>
+#include <QtCore/QPointF>
+#include <QtCore/QList>
 
-QT_BEGIN_HEADER
+QT_FORWARD_DECLARE_CLASS(QGraphicsItem)
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
-QT_MODULE(Declarative)
+class QDeclarativeViewInspector;
 
-class LiveLayerItem : public QGraphicsObject
+class LiveSingleSelectionManipulator
 {
 public:
-    LiveLayerItem(QGraphicsScene *scene);
-    ~LiveLayerItem();
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                QWidget *widget = 0);
-    QRectF boundingRect() const;
-    int type() const;
+    LiveSingleSelectionManipulator(QDeclarativeViewInspector *editorView);
 
-    QList<QGraphicsItem*> findAllChildItems() const;
+    enum SelectionType {
+        ReplaceSelection,
+        AddToSelection,
+        RemoveFromSelection,
+        InvertSelection
+    };
 
-protected:
-    QList<QGraphicsItem*> findAllChildItems(const QGraphicsItem *item) const;
+    void begin(const QPointF& beginPoint);
+    void update(const QPointF& updatePoint);
+    void end(const QPointF& updatePoint);
+
+    void select(SelectionType selectionType, const QList<QGraphicsItem*> &items,
+                bool selectOnlyContentItems);
+    void select(SelectionType selectionType, bool selectOnlyContentItems);
+
+    void clear();
+
+    QPointF beginPoint() const;
+
+    bool isActive() const;
+
+private:
+    QList<QGraphicsItem*> m_oldSelectionList;
+    QPointF m_beginPoint;
+    QDeclarativeViewInspector *m_editorView;
+    bool m_isActive;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
-QT_END_HEADER
-
-#endif // LIVELAYERITEM_H
+#endif // LIVESINGLESELECTIONMANIPULATOR_H

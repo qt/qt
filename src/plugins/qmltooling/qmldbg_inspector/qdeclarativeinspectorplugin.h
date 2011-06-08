@@ -45,7 +45,7 @@
 #include <QtCore/QPointer>
 #include <QtDeclarative/private/qdeclarativeinspectorinterface_p.h>
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
 class AbstractViewInspector;
 
@@ -66,6 +66,6 @@ private:
     QPointer<AbstractViewInspector> m_inspector;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
 #endif // QDECLARATIVEINSPECTORPLUGIN_H

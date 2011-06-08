@@ -39,88 +39,69 @@
 **
 ****************************************************************************/
 
-#ifndef LIVESELECTIONTOOL_H
-#define LIVESELECTIONTOOL_H
+#ifndef ZOOMTOOL_H
+#define ZOOMTOOL_H
 
-#include "abstractliveedittool_p.h"
-#include "liverubberbandselectionmanipulator_p.h"
-#include "livesingleselectionmanipulator_p.h"
-#include "liveselectionindicator_p.h"
+#include "abstractliveedittool.h"
+#include "liverubberbandselectionmanipulator.h"
 
-#include <QtCore/QList>
-#include <QtCore/QTime>
-
-QT_FORWARD_DECLARE_CLASS(QGraphicsItem)
-QT_FORWARD_DECLARE_CLASS(QMouseEvent)
-QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 QT_FORWARD_DECLARE_CLASS(QAction)
 
-QT_BEGIN_HEADER
+namespace QmlJSDebugger {
 
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class LiveSelectionTool : public AbstractLiveEditTool
+class ZoomTool : public AbstractLiveEditTool
 {
     Q_OBJECT
 
 public:
-    LiveSelectionTool(QDeclarativeViewInspector* editorView);
-    ~LiveSelectionTool();
+    enum ZoomDirection {
+        ZoomIn,
+        ZoomOut
+    };
+
+    explicit ZoomTool(QDeclarativeViewInspector *view);
+
+    virtual ~ZoomTool();
 
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseDoubleClickEvent(QMouseEvent *event);
+
     void hoverMoveEvent(QMouseEvent *event);
-    void keyPressEvent(QKeyEvent *event);
-    void keyReleaseEvent(QKeyEvent *keyEvent);
     void wheelEvent(QWheelEvent *event);
 
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *keyEvent);
     void itemsAboutToRemoved(const QList<QGraphicsItem*> &itemList);
-//    QVariant itemChange(const QList<QGraphicsItem*> &itemList,
-//                        QGraphicsItem::GraphicsItemChange change,
-//                        const QVariant &value );
-
-//    void update();
 
     void clear();
 
+protected:
     void selectedItemsChanged(const QList<QGraphicsItem*> &itemList);
 
-    void selectUnderPoint(QMouseEvent *event);
-
-    void setSelectOnlyContentItems(bool selectOnlyContentItems);
-
-    void setRubberbandSelectionMode(bool value);
-
 private slots:
-    void contextMenuElementSelected();
-    void contextMenuElementHovered(QAction *action);
-    void repaintBoundingRects();
+    void zoomTo100();
+    void zoomIn();
+    void zoomOut();
 
 private:
-    void createContextMenu(QList<QGraphicsItem*> itemList, QPoint globalPos);
-    LiveSingleSelectionManipulator::SelectionType getSelectionType(Qt::KeyboardModifiers modifiers);
-    bool alreadySelected(const QList<QGraphicsItem*> &itemList) const;
+    qreal nextZoomScale(ZoomDirection direction) const;
+    void scaleView(const QPointF &centerPos);
 
 private:
-    bool m_rubberbandSelectionMode;
-    LiveRubberBandSelectionManipulator m_rubberbandSelectionManipulator;
-    LiveSingleSelectionManipulator m_singleSelectionManipulator;
-    LiveSelectionIndicator m_selectionIndicator;
-    //ResizeIndicator m_resizeIndicator;
-    QTime m_mousePressTimer;
-    bool m_selectOnlyContentItems;
+    bool m_dragStarted;
+    QPoint m_mousePos; // in view coords
+    QPointF m_dragBeginPos;
+    QAction *m_zoomTo100Action;
+    QAction *m_zoomInAction;
+    QAction *m_zoomOutAction;
+    LiveRubberBandSelectionManipulator *m_rubberbandManipulator;
 
-    QList<QWeakPointer<QGraphicsObject> > m_selectedItemList;
-
-    QList<QGraphicsItem*> m_contextMenuItemList;
+    qreal m_smoothZoomMultiplier;
+    qreal m_currentScale;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
-QT_END_HEADER
-
-#endif // LIVESELECTIONTOOL_H
+#endif // ZOOMTOOL_H
