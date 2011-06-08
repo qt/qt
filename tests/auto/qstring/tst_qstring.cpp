@@ -4334,7 +4334,7 @@ void tst_QString::localeAwareCompare_data()
 void tst_QString::localeAwareCompare()
 {
 #ifdef Q_OS_SYMBIAN
-    QSKIP("QTBUG-16921: There is no way to set up the system locale, so this test is not reliable in Symbian.");
+    QSKIP("QTBUG-16921: There is no way to set up the system locale, so this test is not reliable in Symbian.", SkipSingle);
 #else
 #ifdef Q_OS_WIN
 #   ifndef Q_OS_WINCE

@@ -12902,7 +12902,7 @@ EXPORTS
 	??0QStaticTextItem@@QAE@ABV0@@Z @ 12901 NONAME ; QStaticTextItem::QStaticTextItem(class QStaticTextItem const &)
 	??4QStaticTextItem@@QAEXABV0@@Z @ 12902 NONAME ; void QStaticTextItem::operator=(class QStaticTextItem const &)
 	?fontEngine@QStaticTextItem@@QBEPAVQFontEngine@@XZ @ 12903 NONAME ; class QFontEngine * QStaticTextItem::fontEngine(void) const
-	?reactivateDeferredActiveObjects@QEventDispatcherS60@@UAEXXZ @ 12904 NONAME ; void QEventDispatcherS60::reactivateDeferredActiveObjects(void)
+	?reactivateDeferredActiveObjects@QEventDispatcherS60@@UAEXXZ @ 12904 NONAME ABSENT ; void QEventDispatcherS60::reactivateDeferredActiveObjects(void)
 	?userData@QStaticTextItem@@QBEPAVQStaticTextUserData@@XZ @ 12905 NONAME ; class QStaticTextUserData * QStaticTextItem::userData(void) const
 	?populate@QTextureGlyphCache@@QAE_NPAVQFontEngine@@HPBIPBUQFixedPoint@@@Z @ 12906 NONAME ; bool QTextureGlyphCache::populate(class QFontEngine *, int, unsigned int const *, struct QFixedPoint const *)
 	?resetCursorBlinkTimer@QLineControl@@QAEXXZ @ 12907 NONAME ; void QLineControl::resetCursorBlinkTimer(void)
