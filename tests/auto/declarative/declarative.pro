@@ -78,5 +78,7 @@ contains(QT_CONFIG, private_tests) {
            qpacketprotocol
 }
 
+contains(QT_CONFIG, opengl): SUBDIRS += qmlshadersplugin
+
 # Tests which should run in Pulse
 PULSE_TESTS = $$SUBDIRS

@@ -66,8 +66,8 @@ contains(CONFIG, no_icon) {
                     mifconv.target = $$replace(mifconv.target, /, \\)
                 }
                 # Based on: http://www.forum.nokia.com/document/Cpp_Developers_Library
-                # svg-t icons should always use /c32 depth
-                mifconv.commands = mifconv $$mifconv.target /c32 $$ICON_backslashed
+                # svg-t icons should always use -c32 depth
+                mifconv.commands = mifconv $$mifconv.target -c32 $$ICON_backslashed
 
                 mifconv.depends = $$ICON
                 PRE_TARGETDEPS += $$mifconv.target

@@ -296,14 +296,10 @@ void QTextureGlyphCache::fillInPendingGlyphs()
 QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g, QFixed subPixelPosition) const
 {
 #if defined(Q_WS_X11)
-    if (m_transform.type() > QTransform::TxTranslate && m_current_fontengine->type() == QFontEngine::Freetype) {
+    if (m_type != Raster_RGBMask && m_transform.type() > QTransform::TxTranslate && m_current_fontengine->type() == QFontEngine::Freetype) {
         QFontEngineFT::GlyphFormat format = QFontEngineFT::Format_None;
         QImage::Format imageFormat = QImage::Format_Invalid;
         switch (m_type) {
-        case Raster_RGBMask:
-            format = QFontEngineFT::Format_A32;
-            imageFormat = QImage::Format_RGB32;
-            break;
         case Raster_A8:
             format = QFontEngineFT::Format_A8;
             imageFormat = QImage::Format_Indexed8;
@@ -388,7 +384,7 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subP
     }
 #endif
 
-    if (m_type == QFontEngineGlyphCache::Raster_RGBMask) {        
+    if (m_type == QFontEngineGlyphCache::Raster_RGBMask) {
         QImage ref(m_image.bits() + (c.x * 4 + c.y * m_image.bytesPerLine()),
                    qMax(mask.width(), c.w), qMax(mask.height(), c.h), m_image.bytesPerLine(),
                    m_image.format());

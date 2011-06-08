@@ -818,7 +818,7 @@ EXPORTS
 	?glGenFramebuffers@QGLFunctions@@QAEXHPAI@Z @ 817 NONAME ; void QGLFunctions::glGenFramebuffers(int, unsigned int *)
 	?glVertexAttrib3fv@QGLFunctions@@QAEXIPBM@Z @ 818 NONAME ; void QGLFunctions::glVertexAttrib3fv(unsigned int, float const *)
 	?glGetVertexAttribPointerv@QGLFunctions@@QAEXIIPAPAX@Z @ 819 NONAME ; void QGLFunctions::glGetVertexAttribPointerv(unsigned int, unsigned int, void * *)
-	?snippetNameStr@QGLEngineSharedShaders@@SA?AVQByteArray@@W4SnippetName@1@@Z @ 820 NONAME ABSENT ; class QByteArray QGLEngineSharedShaders::snippetNameStr(enum QGLEngineSharedShaders::SnippetName)
+	?snippetNameStr@QGLEngineSharedShaders@@SA?AVQByteArray@@W4SnippetName@1@@Z @ 820 NONAME ; class QByteArray QGLEngineSharedShaders::snippetNameStr(enum QGLEngineSharedShaders::SnippetName)
 	?glUniformMatrix4fv@QGLFunctions@@QAEXHHEPBM@Z @ 821 NONAME ; void QGLFunctions::glUniformMatrix4fv(int, int, unsigned char, float const *)
 	?setContext@QGLTextureGlyphCache@@QAEXPBVQGLContext@@@Z @ 822 NONAME ; void QGLTextureGlyphCache::setContext(class QGLContext const *)
 	?glDeleteBuffers@QGLFunctions@@QAEXHPBI@Z @ 823 NONAME ; void QGLFunctions::glDeleteBuffers(int, unsigned int const *)
@@ -876,4 +876,3 @@ EXPORTS
 	?qt_static_metacall@QGLShaderProgram@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 875 NONAME ; void QGLShaderProgram::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?platformExtension@QGLGraphicsSystem@@UAEPAVQGraphicsSystemEx@@XZ @ 876 NONAME ; class QGraphicsSystemEx * QGLGraphicsSystem::platformExtension(void)
 	?releaseCachedGpuResources@QGLGraphicsSystem@@UAEXXZ @ 877 NONAME ; void QGLGraphicsSystem::releaseCachedGpuResources(void)
-
