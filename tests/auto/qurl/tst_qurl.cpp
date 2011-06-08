@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -49,6 +49,7 @@
 #include <qurl.h>
 #include <qtextcodec.h>
 #include <qmap.h>
+#include "private/qtldurl_p.h"
 
 // For testsuites
 #define IDNA_ACE_PREFIX "xn--"
@@ -88,6 +89,8 @@ public slots:
     void init();
     void cleanup();
 private slots:
+    void effectiveTLDs_data();
+    void effectiveTLDs();
     void getSetCheck();
     void constructing();
     void assignment();
@@ -4003,6 +4006,29 @@ void tst_QUrl::taskQTBUG_8701()
 
     QCOMPARE(foo_triple_bar, QUrl(foo_triple_bar, QUrl::StrictMode).toString()); // fails
     QCOMPARE(foo_uni_bar, QUrl(foo_uni_bar, QUrl::StrictMode).toString());
+}
+
+void tst_QUrl::effectiveTLDs_data()
+{
+    QTest::addColumn<QUrl>("domain");
+    QTest::addColumn<QString>("TLD");
+
+    QTest::newRow("yes0") << QUrl::fromEncoded("http://test.co.uk") << ".co.uk";
+    QTest::newRow("yes1") << QUrl::fromEncoded("http://test.com") << ".com";
+    QTest::newRow("yes2") << QUrl::fromEncoded("http://www.test.de") << ".de";
+    QTest::newRow("yes3") << QUrl::fromEncoded("http://test.ulm.museum") << ".ulm.museum";
+    QTest::newRow("yes4") << QUrl::fromEncoded("http://www.com.krodsherad.no") << ".krodsherad.no";
+    QTest::newRow("yes5") << QUrl::fromEncoded("http://www.co.uk.1.bg") << ".1.bg";
+    QTest::newRow("yes6") << QUrl::fromEncoded("http://www.com.com.cn") << ".com.cn";
+    QTest::newRow("yes7") << QUrl::fromEncoded("http://www.test.org.ws") << ".org.ws";
+    QTest::newRow("yes9") << QUrl::fromEncoded("http://www.com.co.uk.wallonie.museum") << ".wallonie.museum";
+}
+
+void tst_QUrl::effectiveTLDs()
+{
+    QFETCH(QUrl, domain);
+    QFETCH(QString, TLD);
+    QCOMPARE(domain.topLevelDomain(), TLD);
 }
 
 QTEST_MAIN(tst_QUrl)

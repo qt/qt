@@ -7,29 +7,29 @@
 ** This file is part of the qmake application of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -569,12 +569,27 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     exportFlm();
 
     // Parse extra compilers data
+    QStringList rawDefines;
     QStringList defines;
     QStringList incPath;
 
-    defines << varGlue("PRL_EXPORT_DEFINES","-D"," -D"," ")
-            << varGlue("QMAKE_COMPILER_DEFINES", "-D", "-D", " ")
-            << varGlue("DEFINES","-D"," -D","");
+    rawDefines << project->values("PRL_EXPORT_DEFINES")
+               << project->values("QMAKE_COMPILER_DEFINES")
+               << project->values("DEFINES");
+
+    // Remove defines containing doubly-escaped characters (e.g. escaped double-quotation mark
+    // inside a string define) as bld.inf parsing done by sbsv2 toolchain breaks if they are
+    // present.
+    static QString backslashes = QLatin1String("\\\\");
+    QMutableStringListIterator i(rawDefines);
+    while (i.hasNext()) {
+        QString val = i.next();
+        if (val.indexOf(backslashes) != -1)
+            i.remove();
+    }
+
+    defines << valGlue(rawDefines,"-D"," -D","");
+
     for (QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
         QStringList values = it.value();
         for (int i = 0; i < values.size(); ++i) {

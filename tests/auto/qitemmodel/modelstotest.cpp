@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -227,7 +227,6 @@ QAbstractItemModel *ModelsToTest::createModel(const QString &modelType)
         return widget->model();
     }
 
-    Q_ASSERT(false);
     return 0;
 }
 
@@ -309,15 +308,23 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
             */
         }
         QModelIndex returnIndex = model->index(0,0);
-        Q_ASSERT(returnIndex.isValid());
+        if (!returnIndex.isValid())
+            qFatal("%s: model index to be returned is invalid", Q_FUNC_INFO);
         return returnIndex;
     }
 
     if (QDirModel *dirModel = qobject_cast<QDirModel *>(model)) {
-        // Don't risk somthing bad happening, assert if this fails
-        Q_ASSERT(QDir(QDir::currentPath()).mkdir("test"));
-        for (int i = 0; i < 26; ++i)
-            Q_ASSERT(QDir(QDir::currentPath()).mkdir(QString("test/foo_%1").arg(i)));
+        if (!QDir::current().mkdir("test"))
+            qFatal("%s: cannot create directory %s",
+                   Q_FUNC_INFO,
+                   qPrintable(QDir::toNativeSeparators(QDir::currentPath()+"/test")));
+        for (int i = 0; i < 26; ++i) {
+            QString subdir = QString("test/foo_%1").arg(i);
+            if (!QDir::current().mkdir(subdir))
+                qFatal("%s: cannot create directory %s",
+                       Q_FUNC_INFO,
+                       qPrintable(QDir::toNativeSeparators(QDir::currentPath()+"/"+subdir)));
+        }
         return dirModel->index(QDir::currentPath()+"/test");
     }
 
@@ -373,7 +380,7 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
         return QModelIndex();
     }
 
-    Q_ASSERT(false);
+    qFatal("%s: unknown type of model", Q_FUNC_INFO);
     return QModelIndex();
 }
 
@@ -387,9 +394,17 @@ void ModelsToTest::cleanupTestArea(QAbstractItemModel *model)
     {
         if (QDir(QDir::currentPath()+"/test").exists())
         {
-            for (int i = 0; i < 26; ++i)
-                QDir::current().rmdir(QString("test/foo_%1").arg(i));
-            Q_ASSERT(QDir::current().rmdir("test"));
+            for (int i = 0; i < 26; ++i) {
+                QString subdir(QString("test/foo_%1").arg(i));
+                if (!QDir::current().rmdir(subdir))
+                    qFatal("%s: cannot remove directory %s",
+                           Q_FUNC_INFO,
+                           qPrintable(QDir::toNativeSeparators(QDir::currentPath()+"/"+subdir)));
+            }
+            if (!QDir::current().rmdir("test"))
+                qFatal("%s: cannot remove directory %s",
+                       Q_FUNC_INFO,
+                       qPrintable(QDir::toNativeSeparators(QDir::currentPath()+"/test")));
         }
     } else if (qobject_cast<QSqlQueryModel *>(model)) {
         QSqlQuery q("DROP TABLE test");

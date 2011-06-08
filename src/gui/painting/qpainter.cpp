@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -5801,10 +5801,12 @@ void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
     if (!font.isValid())
         return;
 
-    QVector<quint32> glyphIndexes = glyphRun.glyphIndexes();
-    QVector<QPointF> glyphPositions = glyphRun.positions();
+    QGlyphRunPrivate *glyphRun_d = QGlyphRunPrivate::get(glyphRun);
 
-    int count = qMin(glyphIndexes.size(), glyphPositions.size());
+    const quint32 *glyphIndexes = glyphRun_d->glyphIndexData;
+    const QPointF *glyphPositions = glyphRun_d->glyphPositionData;
+
+    int count = qMin(glyphRun_d->glyphIndexDataSize, glyphRun_d->glyphPositionDataSize);
     QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
 
     QRawFontPrivate *fontD = QRawFontPrivate::get(font);
@@ -5818,17 +5820,18 @@ void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
     }
 
     for (int i=0; i<count; ++i) {
-        QPointF processedPosition = position + glyphPositions.at(i);
+        QPointF processedPosition = position + glyphPositions[i];
         if (!supportsTransformations)
             processedPosition = d->state->transform().map(processedPosition);
         fixedPointPositions[i] = QFixedPoint::fromPointF(processedPosition);
     }
 
-    d->drawGlyphs(glyphIndexes.data(), fixedPointPositions.data(), count, font, glyphRun.overline(),
+    d->drawGlyphs(glyphIndexes, fixedPointPositions.data(), count, font, glyphRun.overline(),
                   glyphRun.underline(), glyphRun.strikeOut());
 }
 
-void QPainterPrivate::drawGlyphs(quint32 *glyphArray, QFixedPoint *positions, int glyphCount,
+void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, QFixedPoint *positions,
+                                 int glyphCount,
                                  const QRawFont &font, bool overline, bool underline,
                                  bool strikeOut)
 {
