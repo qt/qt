@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the Qt Linguist of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,49 +39,36 @@
 **
 ****************************************************************************/
 
-#ifndef QWSSHAREDMEMORY_P_H
-#define QWSSHAREDMEMORY_P_H
+#ifndef IOUTILS_H
+#define IOUTILS_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtCore/QString>
 
-#include <qplatformdefs.h>
+namespace ProFileEvaluatorInternal {
 
-QT_BEGIN_NAMESPACE
-
-#if !defined(QT_NO_QWS_MULTIPROCESS)
-
-class QWSSharedMemory
-{
+/*!
+  This class provides replacement functionality for QFileInfo, QFile & QDir,
+  as these are abysmally slow.
+*/
+class IoUtils {
 public:
-    QWSSharedMemory();
-    ~QWSSharedMemory();
+    enum FileType {
+        FileNotFound = 0,
+        FileIsRegular = 1,
+        FileIsDir = 2
+    };
 
-    bool create(int size);
-    bool attach(int id);
-    void detach();
-
-    int id() const { return shmId; }
-
-    void *address() const { return shmBase; }
-    int size() const;
-
-private:
-    int shmId;
-    void *shmBase;
-    int shmSize;
+    static FileType fileType(const QString &fileName);
+    static bool exists(const QString &fileName) { return fileType(fileName) != FileNotFound; }
+    static bool isRelativePath(const QString &fileName);
+    static bool isAbsolutePath(const QString &fileName) { return !isRelativePath(fileName); }
+    static QStringRef fileName(const QString &fileName); // Requires normalized path
+    static QString resolvePath(const QString &baseDir, const QString &fileName);
+#ifdef QT_BOOTSTRAPPED
+    static QString shellQuote(const QString &arg);
+#endif
 };
 
-#endif // QT_NO_QWS_MULTIPROCESS
+}
 
-QT_END_NAMESPACE
-
-#endif // QWSSHAREDMEMORY_P_H
+#endif // IOUTILS_H
