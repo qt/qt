@@ -67,7 +67,7 @@ Rectangle {
             {
                 qt_TexCoord0 = qt_MultiTexCoord0;
                 gl_Position = qt_ModelViewProjectionMatrix * qt_Vertex;
-            };
+            }
         "
 
         property string dummyVertexShader: "
@@ -79,7 +79,7 @@ Rectangle {
             {
                  qt_TexCoord0 = qt_MultiTexCoord0;
                  gl_Position = qt_Vertex * vec4(0.0, 0.0, 0.0, 0.0001);
-            };
+            }
         "
 
         vertexShader: defaultVertexShader

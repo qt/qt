@@ -45,26 +45,26 @@
 #ifndef QT_OPENGL_ES
 
 #ifndef Q_WS_MAC
-# ifndef QGLF_APIENTRYP
-#   ifdef QGLF_APIENTRY
-#     define QGLF_APIENTRYP QGLF_APIENTRY *
+# ifndef APIENTRYP
+#   ifdef APIENTRY
+#     define APIENTRYP APIENTRY *
 #   else
-#     define QGLF_APIENTRY
-#     define QGLF_APIENTRYP *
+#     define APIENTRY
+#     define APIENTRYP *
 #   endif
 # endif
 #else
-# define QGLF_APIENTRY
-# define QGLF_APIENTRYP *
+# define APIENTRY
+# define APIENTRYP *
 #endif
 
 #define GL_TEXTURE0 0x84C0
 #define GL_CLAMP_TO_EDGE 0x812F
 #define GL_BGRA 0x80E1
 
-typedef void (QGLF_APIENTRYP type_glActiveTexture)(GLenum texture);
-typedef void (QGLF_APIENTRYP type_glGenerateMipmap)(GLenum target);
-typedef void (QGLF_APIENTRYP type_glVertexAttribPointer)(GLuint, GLint, GLenum, GLboolean, GLsizei, const GLvoid *);
+typedef void (APIENTRYP type_glActiveTexture)(GLenum texture);
+typedef void (APIENTRYP type_glGenerateMipmap)(GLenum target);
+typedef void (APIENTRYP type_glVertexAttribPointer)(GLuint, GLint, GLenum, GLboolean, GLsizei, const GLvoid *);
 
 #define glActiveTexture ((type_glActiveTexture)QGLContext::currentContext()->getProcAddress(QLatin1String("glActiveTexture")))
 #define glGenerateMipmap ((type_glGenerateMipmap)QGLContext::currentContext()->getProcAddress(QLatin1String("glGenerateMipmap")))
