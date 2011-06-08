@@ -3,7 +3,7 @@
 
 // INCLUDES
 #include "xqvibra.h"
-#include <HWRMVibra.h>
+#include <hwrmvibra.h>
 #include <QTimer>
 
 // CLASS DECLARATION
