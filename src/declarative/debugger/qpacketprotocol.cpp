@@ -199,6 +199,7 @@ public Q_SLOTS:
                     inProgressSize = -1;
                     inProgress.clear();
 
+                    waitingForPacket = false;
                     emit readyRead();
                 } else
                     return;
