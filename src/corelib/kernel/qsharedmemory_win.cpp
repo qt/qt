@@ -142,14 +142,10 @@ bool QSharedMemoryPrivate::create(int size)
 
     // Create the file mapping.
     hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, size, (wchar_t*)nativeKey.utf16());
+    setErrorString(QLatin1String("QSharedMemory::create"));
 
     // hand is valid when it already exists unlike unix so explicitly check
-    if (error == QSharedMemory::AlreadyExists || !hand) {
-        setErrorString(QLatin1String("QSharedMemory::create"));
-        return false;
-    }
-
-    return true;
+    return !(error == QSharedMemory::AlreadyExists || !hand);
 }
 
 bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
