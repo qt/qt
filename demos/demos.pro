@@ -44,6 +44,9 @@ wince*:  SUBDIRS = \
 contains(QT_CONFIG, opengl):!contains(QT_CONFIG, opengles1):!contains(QT_CONFIG, opengles2):{
 SUBDIRS += demos_boxes
 }
+contains(QT_CONFIG, opengl):contains(QT_CONFIG, svg){
+SUBDIRS += demos_glhypnotizer
+}
 
 mac* && !qpa: SUBDIRS += demos_macmainwindow
 wince*|symbian|embedded|x11: SUBDIRS += demos_embedded
@@ -103,6 +106,7 @@ demos_browser.subdir = browser
 demos_boxes.subdir = boxes
 demos_sub-attaq.subdir = sub-attaq
 demos_spectrum.subdir = spectrum
+demos_glhypnotizer.subdir = glhypnotizer
 
 #CONFIG += ordered
 !ordered {

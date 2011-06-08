@@ -1751,7 +1751,6 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
     } else {
         glyphSet = &defaultGlyphSet;
     }
-    bool needsDelete = false;
     Glyph * g = glyphSet->getGlyph(glyph);
     if (!g || g->format != format) {
         face = lockFace();
@@ -1759,7 +1758,6 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
         FT_Matrix_Multiply(&glyphSet->transformationMatrix, &m);
         freetype->matrix = m;
         g = loadGlyph(glyphSet, glyph, subPixelPosition, format);
-        needsDelete = true;
     }
 
     if (g) {
@@ -1768,8 +1766,6 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
         overall.width = g->width;
         overall.height = g->height;
         overall.xoff = g->advance;
-        if (needsDelete)
-            delete g;
     } else {
         int left  = FLOOR(face->glyph->metrics.horiBearingX);
         int right = CEIL(face->glyph->metrics.horiBearingX + face->glyph->metrics.width);
