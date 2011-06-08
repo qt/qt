@@ -70,10 +70,12 @@ namespace QSharedMemoryPrivate
 #include "private/qobject_p.h"
 
 #ifdef Q_OS_WIN
-#include <qt_windows.h>
+#  include <qt_windows.h>
 #elif defined(Q_OS_SYMBIAN)
-#include <e32std.h>
-#include <sys/types.h>
+#  include <e32std.h>
+#  include <sys/types.h>
+#else
+#  include <sys/types.h>
 #endif
 
 QT_BEGIN_NAMESPACE
