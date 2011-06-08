@@ -70,7 +70,7 @@ Rectangle {
         uniform lowp sampler2D source;
         varying highp vec2 qt_TexCoord0;
         void main() {
-            vec2 tex = qt_TexCoord0 * 4.0;
+            highp vec2 tex = qt_TexCoord0 * 4.0;
             gl_FragColor = texture2D(source, tex);
         }
         "
