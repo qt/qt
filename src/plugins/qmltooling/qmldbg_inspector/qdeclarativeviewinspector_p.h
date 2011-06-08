@@ -43,7 +43,9 @@
 #define QDECLARATIVEVIEWINSPECTOR_P_H
 
 #include <private/qdeclarativeglobal_p.h>
+
 #include "qmlinspectorconstants_p.h"
+#include "abstractviewinspector.h"
 
 #include <QtCore/QScopedPointer>
 #include <QtDeclarative/QDeclarativeView>
@@ -60,7 +62,7 @@ QT_MODULE(Declarative)
 
 class QDeclarativeViewInspectorPrivate;
 
-class QDeclarativeViewInspector : public QObject
+class QDeclarativeViewInspector : public AbstractViewInspector
 {
     Q_OBJECT
 
@@ -68,48 +70,20 @@ public:
     explicit QDeclarativeViewInspector(QDeclarativeView *view, QObject *parent = 0);
     ~QDeclarativeViewInspector();
 
+    // AbstractViewInspector
+    void changeCurrentObjects(const QList<QObject*> &objects);
+    void reloadView();
+    void reparentQmlObject(QObject *object, QObject *newParent);
+    void changeTool(InspectorProtocol::Tool tool);
+    QWidget *viewWidget() const { return declarativeView(); }
+    QDeclarativeEngine *declarativeEngine() const;
+
     void setSelectedItems(QList<QGraphicsItem *> items);
     QList<QGraphicsItem *> selectedItems() const;
 
-    QDeclarativeView *declarativeView();
+    QDeclarativeView *declarativeView() const;
 
     QRectF adjustToScreenBoundaries(const QRectF &boundingRectInSceneSpace);
-
-    bool showAppOnTop() const;
-
-    void sendDesignModeBehavior(bool inDesignMode);
-    void sendCurrentObjects(const QList<QObject*> &);
-    void sendAnimationSpeed(qreal slowDownFactor);
-    void sendAnimationPaused(bool paused);
-    void sendCurrentTool(Constants::DesignTool toolId);
-    void sendReloaded();
-    void sendShowAppOnTop(bool showAppOnTop);
-
-    QString idStringForObject(QObject *obj) const;
-
-public Q_SLOTS:
-    void sendColorChanged(const QColor &color);
-
-    void setDesignModeBehavior(bool value);
-    bool designModeBehavior();
-
-    void setShowAppOnTop(bool appOnTop);
-
-    void setAnimationSpeed(qreal factor);
-    void setAnimationPaused(bool paused);
-
-Q_SIGNALS:
-    void designModeBehaviorChanged(bool inDesignMode);
-    void showAppOnTopChanged(bool showAppOnTop);
-    void reloadRequested();
-    void marqueeSelectToolActivated();
-    void selectToolActivated();
-    void zoomToolActivated();
-    void colorPickerActivated();
-    void selectedColorChanged(const QColor &color);
-
-    void animationSpeedChanged(qreal factor);
-    void animationPausedChanged(bool paused);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
@@ -124,12 +98,6 @@ protected:
     bool wheelEvent(QWheelEvent *event);
 
     void setSelectedItemsForTools(QList<QGraphicsItem *> items);
-
-private slots:
-    void handleMessage(const QByteArray &message);
-
-    void animationSpeedChangeRequested(qreal factor);
-    void animationPausedChangeRequested(bool paused);
 
 private:
     Q_DISABLE_COPY(QDeclarativeViewInspector)

@@ -62,11 +62,6 @@ enum DesignTool {
     ZoomMode = 6
 };
 
-enum ToolFlags {
-    NoToolFlags = 0,
-    UseCursorPos = 1
-};
-
 static const int DragStartTime = 50;
 
 static const int DragStartDistance = 20;

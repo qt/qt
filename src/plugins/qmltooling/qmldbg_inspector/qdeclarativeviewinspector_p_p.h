@@ -61,7 +61,6 @@ class ZoomTool;
 class ColorPickerTool;
 class LiveLayerItem;
 class BoundingRectHighlighter;
-class ToolBox;
 class AbstractLiveEditTool;
 
 class QDeclarativeViewInspectorPrivate : public QObject
@@ -73,9 +72,7 @@ public:
 
     QDeclarativeView *view;
     QDeclarativeViewInspector *q;
-    QDeclarativeInspectorService *debugService;
     QWeakPointer<QWidget> viewport;
-    QHash<int, QString> stringIdForObjectId;
 
     QPointF cursorPos;
     QList<QWeakPointer<QGraphicsObject> > currentSelection;
@@ -90,18 +87,9 @@ public:
 
     BoundingRectHighlighter *boundingRectHighlighter;
 
-    bool designModeBehavior;
-    bool showAppOnTop;
-
-    bool animationPaused;
-    qreal slowDownFactor;
-
-    ToolBox *toolBox;
-
     void setViewport(QWidget *widget);
 
     void clearEditorItems();
-    void createToolBox();
     void changeToSelectTool();
     QList<QGraphicsItem*> filterForSelection(QList<QGraphicsItem*> &itemlist) const;
 
@@ -113,32 +101,19 @@ public:
     void setSelectedItems(const QList<QGraphicsItem *> &items);
     QList<QGraphicsItem *> selectedItems() const;
 
-    void changeTool(Constants::DesignTool tool,
-                    Constants::ToolFlags flags = Constants::NoToolFlags);
-
     void clearHighlight();
     void highlight(const QList<QGraphicsObject *> &item);
     inline void highlight(QGraphicsObject *item)
     { highlight(QList<QGraphicsObject*>() << item); }
 
-    bool isEditorItem(QGraphicsItem *item) const;
+    void changeToSingleSelectTool();
+    void changeToMarqueeSelectTool();
+    void changeToZoomTool();
+    void changeToColorPickerTool();
 
 public slots:
-    void _q_setToolBoxVisible(bool visible);
-
-    void _q_reloadView();
     void _q_onStatusChanged(QDeclarativeView::Status status);
-    void _q_onCurrentObjectsChanged(QList<QObject*> objects);
-    void _q_applyChangesFromClient();
-    void _q_createQmlObject(const QString &qml, QObject *parent,
-                            const QStringList &imports, const QString &filename = QString());
-    void _q_reparentQmlObject(QObject *, QObject *);
 
-    void _q_changeToSingleSelectTool();
-    void _q_changeToMarqueeSelectTool();
-    void _q_changeToZoomTool();
-    void _q_changeToColorPickerTool();
-    void _q_clearComponentCache();
     void _q_removeFromSelection(QObject *);
 
 public:

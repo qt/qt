@@ -47,7 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeViewInspector;
+class AbstractViewInspector;
 
 class QDeclarativeInspectorPlugin : public QObject, public QDeclarativeInspectorInterface
 {
@@ -63,7 +63,7 @@ public:
     void deactivate();
 
 private:
-    QPointer<QDeclarativeViewInspector> m_inspector;
+    QPointer<AbstractViewInspector> m_inspector;
 };
 
 QT_END_NAMESPACE
