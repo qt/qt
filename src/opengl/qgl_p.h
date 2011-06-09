@@ -64,6 +64,12 @@
 #include "qcache.h"
 #include "qglpaintdevice_p.h"
 
+#ifdef Q_OS_SYMBIAN
+#include "qgltexturepool_p.h"
+
+class QGLPixmapData;
+#endif
+
 #ifndef QT_NO_EGL
 #include <QtGui/private/qegl_p.h>
 #endif
@@ -540,6 +546,14 @@ public:
           options(opt)
 #if defined(Q_WS_X11)
         , boundPixmap(0)
+#elif defined(Q_OS_SYMBIAN)
+        , boundPixmap(0)
+        , boundKey(0)
+        , nextLRU(0)
+        , prevLRU(0)
+        , inLRU(false)
+        , failedToAlloc(false)
+        , inTexturePool(false)
 #endif
     {}
 
@@ -551,7 +565,7 @@ public:
 #endif
             context->d_ptr->texture_destroyer->emitFreeTexture(context, boundPixmap, id);
         }
-     }
+    }
 
     QGLContext *context;
     GLuint id;
@@ -571,6 +585,17 @@ public:
         (const char *buf, int len, const char *format = 0);
     QSize bindCompressedTextureDDS(const char *buf, int len);
     QSize bindCompressedTexturePVR(const char *buf, int len);
+
+#ifdef Q_OS_SYMBIAN
+    QGLPixmapData* boundPixmap;
+    qint64 boundKey;
+
+    QGLTexture *nextLRU;
+    QGLTexture *prevLRU;
+    mutable bool inLRU;
+    mutable bool failedToAlloc;
+    mutable bool inTexturePool;
+#endif
 };
 
 struct QGLTextureCacheKey {
