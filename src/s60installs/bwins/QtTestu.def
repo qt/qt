@@ -107,7 +107,7 @@ EXPORTS
 	?addSkip@QTestResult@@SAXPBDW4SkipMode@QTest@@0H@Z @ 106 NONAME ; void QTestResult::addSkip(char const *, enum QTest::SkipMode, char const *, int)
 	?currentGlobalDataTag@QTestResult@@SAPBDXZ @ 107 NONAME ; char const * QTestResult::currentGlobalDataTag(void)
 	?stopLogging@QTestLog@@SAXXZ @ 108 NONAME ; void QTestLog::stopLogging(void)
-	??_EQTestData@@QAE@I@Z @ 109 NONAME ; QTestData::~QTestData(unsigned int)
+	??_EQTestData@@QAE@I@Z @ 109 NONAME ABSENT ; QTestData::~QTestData(unsigned int)
 	??1QTestLog@@AAE@XZ @ 110 NONAME ; QTestLog::~QTestLog(void)
 	?skipCount@QTestResult@@SAHXZ @ 111 NONAME ; int QTestResult::skipCount(void)
 	?setCurrentGlobalTestData@QTestResult@@SAXPAVQTestData@@@Z @ 112 NONAME ; void QTestResult::setCurrentGlobalTestData(class QTestData *)
@@ -140,7 +140,7 @@ EXPORTS
 	?currentTestFailed@QTestResult@@SA_NXZ @ 139 NONAME ; bool QTestResult::currentTestFailed(void)
 	?compare@QTestResult@@SA_N_NPBDPAD2111H@Z @ 140 NONAME ; bool QTestResult::compare(bool, char const *, char *, char *, char const *, char const *, char const *, int)
 	?addXFail@QTestLog@@SAXPBD0H@Z @ 141 NONAME ; void QTestLog::addXFail(char const *, char const *, int)
-	??_EQTestTable@@QAE@I@Z @ 142 NONAME ; QTestTable::~QTestTable(unsigned int)
+	??_EQTestTable@@QAE@I@Z @ 142 NONAME ABSENT ; QTestTable::~QTestTable(unsigned int)
 	??0QBenchmarkGlobalData@@QAE@XZ @ 143 NONAME ; QBenchmarkGlobalData::QBenchmarkGlobalData(void)
 	?beginDataRun@QBenchmarkTestMethodData@@QAEXXZ @ 144 NONAME ; void QBenchmarkTestMethodData::beginDataRun(void)
 	?resultsAccepted@QBenchmarkTestMethodData@@QBE_NXZ @ 145 NONAME ; bool QBenchmarkTestMethodData::resultsAccepted(void) const

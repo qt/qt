@@ -79,5 +79,7 @@ contains(QT_CONFIG, webkit) {
            qdeclarativewebview
 }
 
+contains(QT_CONFIG, opengl): SUBDIRS += qmlshadersplugin
+
 # Tests which should run in Pulse
 PULSE_TESTS = $$SUBDIRS
