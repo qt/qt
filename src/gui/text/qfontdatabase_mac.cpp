@@ -362,7 +362,6 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
     if(fnt->data.isEmpty()) {
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
-                extern OSErr qt_mac_create_fsref(const QString &, FSRef *); // qglobal.cpp
                 FSRef ref;
                 if(qt_mac_create_fsref(fnt->fileName, &ref) != noErr)
                     return;
@@ -372,7 +371,6 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
 #endif
         {
 #ifndef Q_WS_MAC64
-                extern Q_CORE_EXPORT OSErr qt_mac_create_fsspec(const QString &, FSSpec *); // global.cpp
                 FSSpec spec;
                 if(qt_mac_create_fsspec(fnt->fileName, &spec) != noErr)
                     return;
