@@ -52,6 +52,7 @@
 #include <private/qcore_symbian_p.h>
 #include <private/qsystemerror_p.h>
 #include <private/qnetworksession_p.h>
+#include <private/qhostaddress_p.h>
 
 // Header does not exist in the S60 5.0 SDK
 //#include <networking/dnd_err.h>
@@ -152,23 +153,17 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetw
     QList<QHostAddress> hostAddresses;
 
     TInetAddr hostAdd = nameResult().iAddr;
-    // 39 is the maximum length of an IPv6 address.
-    TBuf<39> ipAddr;
 
-    // Fill ipAddr with the IP address from hostAdd
-    hostAdd.Output(ipAddr);
-    if (ipAddr.Length() > 0)
-        hostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
+    if (!(nameResult().iFlags & TNameRecord::EAlias) && !(hostAdd.IsUnspecified()))
+        hostAddresses.append(qt_QHostAddressFromTInetAddr(hostAdd));
 
     // Check if there's more than one IP address linkd to this name
     while (hostResolver.Next(nameResult) == KErrNone) {
         hostAdd = nameResult().iAddr;
-        hostAdd.Output(ipAddr);
 
         // Ensure that record is valid (not an alias and with length greater than 0)
-        if (!(nameResult().iFlags & TNameRecord::EAlias) && !(hostAdd.IsUnspecified())) {
-            hostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
-        }
+        if (!(nameResult().iFlags & TNameRecord::EAlias) && !(hostAdd.IsUnspecified()))
+            hostAddresses.append(qt_QHostAddressFromTInetAddr(hostAdd));
     }
 
     hostResolver.Close();
@@ -414,14 +409,10 @@ void QSymbianHostResolver::processNameResult()
 {
     if (iStatus.Int() == KErrNone) {
         TInetAddr hostAdd = iNameResult().iAddr;
-        // 39 is the maximum length of an IPv6 address.
-        TBuf<39> ipAddr;
-
-        hostAdd.Output(ipAddr);
 
         // Ensure that record is valid (not an alias and with length greater than 0)
         if (!(iNameResult().iFlags & TNameRecord::EAlias) && !(hostAdd.IsUnspecified())) {
-            iHostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
+            iHostAddresses.append(qt_QHostAddressFromTInetAddr(hostAdd));
         }
 
         iState = EGetByName;

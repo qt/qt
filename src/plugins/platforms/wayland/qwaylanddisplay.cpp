@@ -51,6 +51,10 @@
 #include "gl_integration/qwaylandglintegration.h"
 #endif
 
+#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
+#include "windowmanager_integration/qwaylandwindowmanagerintegration.h"
+#endif
+
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtGui/QApplication>
 #include <QtGui/private/qapplication_p.h>
@@ -77,23 +81,30 @@ struct wl_buffer *QWaylandDisplay::createShmBuffer(int fd,
 
 struct wl_visual *QWaylandDisplay::rgbVisual()
 {
-    return wl_display_get_rgb_visual(mDisplay);
+    return rgb_visual;
 }
 
 struct wl_visual *QWaylandDisplay::argbVisual()
 {
-    return wl_display_get_argb_visual(mDisplay);
+    return argb_visual;
 }
 
 struct wl_visual *QWaylandDisplay::argbPremultipliedVisual()
 {
-    return wl_display_get_premultiplied_argb_visual(mDisplay);
+    return premultiplied_argb_visual;
 }
 
 #ifdef QT_WAYLAND_GL_SUPPORT
 QWaylandGLIntegration * QWaylandDisplay::eglIntegration()
 {
     return mEglIntegration;
+}
+#endif
+
+#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
+QWaylandWindowManagerIntegration *QWaylandDisplay::windowManagerIntegration()
+{
+    return mWindowManagerIntegration;
 }
 #endif
 
@@ -116,6 +127,7 @@ const struct wl_shell_listener QWaylandDisplay::shellListener = {
 };
 
 QWaylandDisplay::QWaylandDisplay(void)
+    : argb_visual(0), premultiplied_argb_visual(0), rgb_visual(0)
 {
     mDisplay = wl_display_connect(NULL);
     if (mDisplay == NULL) {
@@ -128,6 +140,11 @@ QWaylandDisplay::QWaylandDisplay(void)
 #ifdef QT_WAYLAND_GL_SUPPORT
     mEglIntegration = QWaylandGLIntegration::createGLIntegration(this);
 #endif
+
+#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
+    mWindowManagerIntegration = QWaylandWindowManagerIntegration::createIntegration(this);
+#endif
+
     blockingReadEvents();
 
     qRegisterMetaType<uint32_t>("uint32_t");
@@ -228,6 +245,11 @@ const struct wl_output_listener QWaylandDisplay::outputListener = {
     QWaylandDisplay::outputHandleGeometry
 };
 
+const struct wl_compositor_listener QWaylandDisplay::compositorListener = {
+    QWaylandDisplay::handleVisual,
+};
+
+
 void QWaylandDisplay::waitForScreens()
 {
     flushRequests();
@@ -256,6 +278,8 @@ void QWaylandDisplay::displayHandleGlobal(uint32_t id,
         wl_output_add_listener(output, &outputListener, this);
     } else if (interface == "wl_compositor") {
         mCompositor = wl_compositor_create(mDisplay, id, 1);
+        wl_compositor_add_listener(mCompositor,
+                                   &compositorListener, this);
     } else if (interface == "wl_shm") {
         mShm = wl_shm_create(mDisplay, id, 1);
     } else if (interface == "wl_shell"){
@@ -269,5 +293,25 @@ void QWaylandDisplay::displayHandleGlobal(uint32_t id,
         QPlatformIntegration *plat = QApplicationPrivate::platformIntegration();
         QWaylandClipboard *clipboard = static_cast<QWaylandClipboard *>(plat->clipboard());
         clipboard->createSelectionOffer(id);
+    }
+}
+
+void QWaylandDisplay::handleVisual(void *data,
+                                   struct wl_compositor *compositor,
+                                   uint32_t id, uint32_t token)
+{
+    QWaylandDisplay *self = static_cast<QWaylandDisplay *>(data);
+
+    switch (token) {
+    case WL_COMPOSITOR_VISUAL_ARGB32:
+        self->argb_visual = wl_visual_create(self->mDisplay, id, 1);
+        break;
+    case WL_COMPOSITOR_VISUAL_PREMULTIPLIED_ARGB32:
+        self->premultiplied_argb_visual =
+            wl_visual_create(self->mDisplay, id, 1);
+        break;
+    case WL_COMPOSITOR_VISUAL_XRGB32:
+        self->rgb_visual = wl_visual_create(self->mDisplay, id, 1);
+        break;
     }
 }

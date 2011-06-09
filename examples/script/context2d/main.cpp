@@ -48,10 +48,12 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
     Window win;
 
-    bool smallScreen = QApplication::arguments().contains("-small-screen");
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
-    win.showMaximized();
+#ifdef Q_OS_SYMBIAN
+    bool smallScreen = true;
 #else
+    bool smallScreen = QApplication::arguments().contains("-small-screen");
+#endif
+
     if (!smallScreen) {
         win.show();
     } else {

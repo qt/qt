@@ -929,6 +929,7 @@ void QIcdEngine::connectionStateSignalsSlot(QDBusMessage msg)
 
                 configLocker.unlock();
                 locker.unlock();
+                emit iapStateChanged(iapid, icd_connection_state);
                 emit configurationChanged(ptr);
                 locker.relock();
 

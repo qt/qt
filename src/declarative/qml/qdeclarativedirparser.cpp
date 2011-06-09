@@ -240,7 +240,7 @@ QList<QDeclarativeDirParser::Component> QDeclarativeDirParser::components() cons
 }
 
 #ifdef QT_CREATOR
-QList<TypeInfo> QDeclarativeDirParser::typeInfos() const
+QList<QDeclarativeDirParser::TypeInfo> QDeclarativeDirParser::typeInfos() const
 {
     return _typeInfos;
 }

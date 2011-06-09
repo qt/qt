@@ -74,6 +74,7 @@
 # include <centralrepository.h>
 # include "qs60mainappui.h"
 # include "qinputcontext.h"
+# include <private/qgraphicssystemex_symbian_p.h>
 #endif
 
 #if defined(Q_WS_S60)
@@ -1694,7 +1695,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         if (commandLine) {
             // After this construction, CEikonEnv will be available from CEikonEnv::Static().
             // (much like our qApp).
-            QtEikonEnv* coe = new QtEikonEnv;
+            CEikonEnv* coe = new CEikonEnv;
             //not using QT_TRAP_THROWING, because coe owns the cleanupstack so it can't be pushed there.
             TRAPD(err, coe->ConstructAppFromCommandLineL(factory, *commandLine));
             if(err != KErrNone) {
@@ -1850,26 +1851,12 @@ void qt_init(QApplicationPrivate * /* priv */, int)
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
     QApplicationPrivate::instance()->useTranslucentEGLSurfaces = true;
 
-    const TUid KIvePropertyCat = {0x2726beef};
-    enum TIvePropertyChipType {
-        EVCBCM2727B1 = 0x00000000,
-        EVCBCM2763A0 = 0x04000100,
-        EVCBCM2763B0 = 0x04000102,
-        EVCBCM2763C0 = 0x04000103,
-        EVCBCM2763C1 = 0x04000104,
-        EVCBCMUnknown = 0x7fffffff
-    };
-
-    TInt chipType = EVCBCMUnknown;
-    if (RProperty::Get(KIvePropertyCat, 0 /*chip type*/, chipType) == KErrNone) {
-        if (chipType == EVCBCM2727B1) {
-            // We have only 32MB GPU memory. Use raster surfaces
-            // for transparent TLWs.
-            QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
-        }
-    } else {
+    if (QSymbianGraphicsSystemEx::hasBCM2727()) {
+        // We have only 32MB GPU memory. Use raster surfaces
+        // for transparent TLWs.
         QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
     }
+
     if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
         QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
 #else
@@ -2027,7 +2014,7 @@ void QApplicationPrivate::openPopup(QWidget *popup)
     QApplicationPrivate::popupWidgets->append(popup);
 
     // Cancel focus widget pointer capture and long tap timer
-    if (QApplication::focusWidget()) {
+    if (QApplication::focusWidget() && QApplication::focusWidget()->effectiveWinId()) {
         static_cast<QSymbianControl*>(QApplication::focusWidget()->effectiveWinId())->CancelLongTapTimer();
         QApplication::focusWidget()->effectiveWinId()->SetPointerCapture(false);
         }
@@ -2278,6 +2265,7 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
 #if defined(Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS)
     case EEventDisplayChanged:
 #endif
+        {
         if (callSymbianEventFilters(symbianEvent))
             return 1;
         if (S60)
@@ -2288,6 +2276,12 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
             qt_desktopWidget->data->crect.setHeight(S60->screenHeightInPixels);
             QResizeEvent e(qt_desktopWidget->size(), oldSize);
             QApplication::sendEvent(qt_desktopWidget, &e);
+        }
+        // Close non-native QMenus (that should act like context menus, i.e. close
+        // automatically when the orientation changes).
+        QMenu *activeMenu = qobject_cast<QMenu *>(QApplication::activePopupWidget());
+        if (activeMenu)
+            activeMenu->close();
         }
         return 0; // Propagate to CONE
     case EEventWindowVisibilityChanged:

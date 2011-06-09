@@ -44,13 +44,6 @@ PinchArea provides support for the common two finger pinch gesture.
 left-to-right and right-to-left layout versions of your application that target
 different language areas.
 
-\section2 Anchors
-
-Added the following property:
-\list
-\o \l {Item::}{anchors.mirrored}
-\endlist
-
 \section2 Text
 
 Added the following properties:
@@ -60,7 +53,6 @@ Added the following properties:
 \o \l {Text::}{lineCount}
 \o \l {Text::}{maximumLineCount}
 \o \l {Text::}{truncated}
-\o \l {Text::}{effectiveHorizontalAlignment}
 \endlist
 
 horizontalAlignment now accepts Text.AlignJustify alignment mode.
@@ -73,7 +65,6 @@ Added the following properties, methods and signal handlers:
 \o \l {TextEdit::}{lineCount}
 \o \l {TextEdit::}{inputMethodComposing}
 \o \l {TextEdit::}{mouseSelectionMode}
-\o \l {TextEdit::}{effectiveHorizontalAlignment}
 \o \l {TextEdit::}{deselect()}
 \o \l {TextEdit::}{isRightToLeft()}
 \o \l {TextEdit::}{moveCursorSelection()} to enable selection by word
@@ -87,7 +78,6 @@ Added the following properties and methods:
 \o \l {TextInput::}{canPaste}
 \o \l {TextInput::}{inputMethodComposing}
 \o \l {TextInput::}{mouseSelectionMode}
-\o \l {TextInput::}{effectiveHorizontalAlignment}
 \o \l {TextInput::}{deselect()}
 \o \l {TextInput::}{isRightToLeft()}
 \o \l {TextInput::}{moveCursorSelection()} to enable selection by word
@@ -128,17 +118,15 @@ Added the following property:
 Added the following properties and methods:
 \list
 \o \l{ListView::}{layoutDirection}
-\o \l{ListView::}{effectiveLayoutDirection}
 \o \l{ListView::}{positionViewAtBeginning()}
 \o \l{ListView::}{positionViewAtEnd()}
 \endlist
 
 \section2 Flow, Grid and Row
 
-Added the following properties:
+Added the following property:
 \list
 \o \l{Flow::}{layoutDirection}
-\o \l{Flow::}{effectiveLayoutDirection}
 \endlist
 
 \section2 Repeater

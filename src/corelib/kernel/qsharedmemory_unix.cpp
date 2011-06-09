@@ -43,25 +43,26 @@
 
 #include "qsharedmemory.h"
 #include "qsharedmemory_p.h"
-#include "qsystemsemaphore.h"
-#include <qdir.h>
-#include <qdebug.h>
 
-#include <errno.h>
+#include <qdebug.h>
+#include <qfile.h>
 
 #ifndef QT_NO_SHAREDMEMORY
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#endif //QT_NO_SHAREDMEMORY
+#endif // QT_NO_SHAREDMEMORY
+#include <errno.h>
 
 #include "private/qcore_unix_p.h"
 
 #ifndef QT_NO_SHAREDMEMORY
+
+//#define QSHAREDMEMORY_DEBUG
+
 QT_BEGIN_NAMESPACE
 
 QSharedMemoryPrivate::QSharedMemoryPrivate()
@@ -78,6 +79,7 @@ void QSharedMemoryPrivate::setErrorString(const QString &function)
     // EINVAL is handled in functions so they can give better error strings
     switch (errno) {
     case EACCES:
+    case EPERM:
         errorString = QSharedMemory::tr("%1: permission denied").arg(function);
         error = QSharedMemory::PermissionDenied;
         break;
@@ -98,9 +100,10 @@ void QSharedMemoryPrivate::setErrorString(const QString &function)
     default:
         errorString = QSharedMemory::tr("%1: unknown error %2").arg(function).arg(errno);
         error = QSharedMemory::UnknownError;
-#if defined QSHAREDMEMORY_DEBUG
+#ifdef QSHAREDMEMORY_DEBUG
         qDebug() << errorString << "key" << key << "errno" << errno << EINVAL;
 #endif
+        break;
     }
 }
 
@@ -117,21 +120,21 @@ key_t QSharedMemoryPrivate::handle()
 
     // don't allow making handles on empty keys
     if (nativeKey.isEmpty()) {
-        errorString = QSharedMemory::tr("%1: key is empty").arg(QLatin1String("QSharedMemory::handle:"));
+        errorString = QSharedMemory::tr("%1: key is empty").arg(QLatin1String("QSharedMemory::handle"));
         error = QSharedMemory::KeyError;
         return 0;
     }
 
     // ftok requires that an actual file exists somewhere
     if (!QFile::exists(nativeKey)) {
-        errorString = QSharedMemory::tr("%1: UNIX key file doesn't exist").arg(QLatin1String("QSharedMemory::handle:"));
+        errorString = QSharedMemory::tr("%1: UNIX key file doesn't exist").arg(QLatin1String("QSharedMemory::handle"));
         error = QSharedMemory::NotFound;
         return 0;
     }
 
     unix_key = ftok(QFile::encodeName(nativeKey).constData(), 'Q');
     if (-1 == unix_key) {
-        errorString = QSharedMemory::tr("%1: ftok failed").arg(QLatin1String("QSharedMemory::handle:"));
+        errorString = QSharedMemory::tr("%1: ftok failed").arg(QLatin1String("QSharedMemory::handle"));
         error = QSharedMemory::KeyError;
         unix_key = 0;
     }
@@ -149,20 +152,20 @@ key_t QSharedMemoryPrivate::handle()
     -1 error
      0 already existed
      1 created
-  */
+*/
 int QSharedMemoryPrivate::createUnixKeyFile(const QString &fileName)
 {
     if (QFile::exists(fileName))
         return 0;
 
     int fd = qt_safe_open(QFile::encodeName(fileName).constData(),
-            O_EXCL | O_CREAT | O_RDWR, 0640);
+                          O_EXCL | O_CREAT | O_RDWR, 0640);
     if (-1 == fd) {
         if (errno == EEXIST)
             return 0;
         return -1;
     } else {
-        close(fd);
+        qt_safe_close(fd);
     }
     return 1;
 }
@@ -170,25 +173,21 @@ int QSharedMemoryPrivate::createUnixKeyFile(const QString &fileName)
 
 #ifndef QT_NO_SHAREDMEMORY
 
-bool QSharedMemoryPrivate::cleanHandle()
+void QSharedMemoryPrivate::cleanHandle()
 {
     unix_key = 0;
-    return true;
 }
 
 bool QSharedMemoryPrivate::create(int size)
 {
     // build file if needed
-    bool createdFile = false;
     int built = createUnixKeyFile(nativeKey);
     if (built == -1) {
-        errorString = QSharedMemory::tr("%1: unable to make key").arg(QLatin1String("QSharedMemory::handle:"));
+        errorString = QSharedMemory::tr("%1: unable to make key").arg(QLatin1String("QSharedMemory::create"));
         error = QSharedMemory::KeyError;
         return false;
     }
-    if (built == 1) {
-        createdFile = true;
-    }
+    bool createdFile = built == 1;
 
     // get handle
     if (!handle()) {
@@ -202,7 +201,7 @@ bool QSharedMemoryPrivate::create(int size)
         QString function = QLatin1String("QSharedMemory::create");
         switch (errno) {
         case EINVAL:
-            errorString = QSharedMemory::tr("%1: system-imposed size restrictions").arg(QLatin1String("QSharedMemory::handle"));
+            errorString = QSharedMemory::tr("%1: system-imposed size restrictions").arg(function);
             error = QSharedMemory::InvalidSize;
             break;
         default:
@@ -280,7 +279,7 @@ bool QSharedMemoryPrivate::detach()
     if (shmid_ds.shm_nattch == 0) {
         // mark for removal
         if (-1 == shmctl(id, IPC_RMID, &shmid_ds)) {
-            setErrorString(QLatin1String("QSharedMemory::remove"));
+            setErrorString(QLatin1String("QSharedMemory::detach"));
             switch (errno) {
             case EINVAL:
                 return true;
@@ -295,7 +294,6 @@ bool QSharedMemoryPrivate::detach()
     }
     return true;
 }
-
 
 QT_END_NAMESPACE
 

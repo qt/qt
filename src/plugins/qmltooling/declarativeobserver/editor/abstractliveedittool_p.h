@@ -89,8 +89,6 @@ public:
     void updateSelectedItems();
     QList<QGraphicsItem*> items() const;
 
-    void enterContext(QGraphicsItem *itemToEnter);
-
     bool topItemIsMovable(const QList<QGraphicsItem*> &itemList);
     bool topItemIsResizeHandle(const QList<QGraphicsItem*> &itemList);
     bool topSelectedItemIsMovable(const QList<QGraphicsItem*> &itemList);
