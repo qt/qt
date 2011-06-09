@@ -60,17 +60,17 @@ public:
 
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void mouseDoubleClickEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *) {}
+    void mouseDoubleClickEvent(QMouseEvent *) {}
 
-    void hoverMoveEvent(QMouseEvent *event);
+    void hoverMoveEvent(QMouseEvent *) {}
 
-    void keyPressEvent(QKeyEvent *event);
-    void keyReleaseEvent(QKeyEvent *keyEvent);
+    void keyPressEvent(QKeyEvent *) {}
+    void keyReleaseEvent(QKeyEvent *) {}
 
-    void wheelEvent(QWheelEvent *event);
+    void wheelEvent(QWheelEvent *) {}
 
-    void itemsAboutToRemoved(const QList<QGraphicsItem*> &itemList);
+    void itemsAboutToRemoved(const QList<QGraphicsItem*> &) {}
 
     void clear();
 
@@ -78,8 +78,7 @@ signals:
     void selectedColorChanged(const QColor &color);
 
 protected:
-
-    void selectedItemsChanged(const QList<QGraphicsItem*> &itemList);
+    void selectedItemsChanged(const QList<QGraphicsItem*> &) {}
 
 private:
     void pickColor(const QPoint &pos);
