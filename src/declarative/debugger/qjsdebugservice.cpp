@@ -71,6 +71,16 @@ void QJSDebugService::addEngine(QDeclarativeEngine *engine)
     Q_ASSERT(!m_engines.contains(engine));
 
     m_engines.append(engine);
+
+    if (status() == Enabled && !m_engines.isEmpty() && !m_agent) {
+        m_agent = new QJSDebuggerAgent(engine, engine);
+        connect(m_agent, SIGNAL(stopped(bool,QString)),
+                this, SLOT(executionStopped(bool,QString)));
+
+        while (!m_agent->isInitialized()) {
+            waitForMessage();
+        }
+    }
 }
 
 void QJSDebugService::removeEngine(QDeclarativeEngine *engine)
