@@ -1000,7 +1000,7 @@ EXPORTS
 	?addDays@QDate@@QBE?AV1@H@Z @ 999 NONAME ; class QDate QDate::addDays(int) const
 	?addDays@QDateTime@@QBE?AV1@H@Z @ 1000 NONAME ; class QDateTime QDateTime::addDays(int) const
 	?addDefaultAnimation@QStateMachine@@QAEXPAVQAbstractAnimation@@@Z @ 1001 NONAME ; void QStateMachine::addDefaultAnimation(class QAbstractAnimation *)
-	?addDeferredActiveObject@QEventDispatcherSymbian@@QAEXPAVQActiveObject@@@Z @ 1002 NONAME ; void QEventDispatcherSymbian::addDeferredActiveObject(class QActiveObject *)
+	?addDeferredActiveObject@QEventDispatcherSymbian@@QAEXPAVQActiveObject@@@Z @ 1002 NONAME ABSENT ; void QEventDispatcherSymbian::addDeferredActiveObject(class QActiveObject *)
 	?addEncodedQueryItem@QUrl@@QAEXABVQByteArray@@0@Z @ 1003 NONAME ; void QUrl::addEncodedQueryItem(class QByteArray const &, class QByteArray const &)
 	?addExtraNamespaceDeclaration@QXmlStreamReader@@QAEXABVQXmlStreamNamespaceDeclaration@@@Z @ 1004 NONAME ; void QXmlStreamReader::addExtraNamespaceDeclaration(class QXmlStreamNamespaceDeclaration const &)
 	?addExtraNamespaceDeclarations@QXmlStreamReader@@QAEXABV?$QVector@VQXmlStreamNamespaceDeclaration@@@@@Z @ 1005 NONAME ; void QXmlStreamReader::addExtraNamespaceDeclarations(class QVector<class QXmlStreamNamespaceDeclaration> const &)
@@ -2940,7 +2940,7 @@ EXPORTS
 	?qt_qFindChildren_helper@@YAXPBVQObject@@ABVQString@@PBVQRegExp@@ABUQMetaObject@@PAV?$QList@PAX@@@Z @ 2939 NONAME ; void qt_qFindChildren_helper(class QObject const *, class QString const &, class QRegExp const *, struct QMetaObject const &, class QList<void *> *)
 	?qt_regexp_toCanonical@@YA?AVQString@@ABV1@W4PatternSyntax@QRegExp@@@Z @ 2940 NONAME ; class QString qt_regexp_toCanonical(class QString const &, enum QRegExp::PatternSyntax)
 	?qt_register_signal_spy_callbacks@@YAXABUQSignalSpyCallbackSet@@@Z @ 2941 NONAME ; void qt_register_signal_spy_callbacks(struct QSignalSpyCallbackSet const &)
-	?qt_resolveS60PluginFunc@@YAP6AHXZH@Z @ 2942 NONAME ; int (*)(void) qt_resolveS60PluginFunc(int)
+	?qt_resolveS60PluginFunc@@YAP6AHXZH@Z @ 2942 NONAME ABSENT ; int (*)(void) qt_resolveS60PluginFunc(int)
 	?qt_s60GetRFs@@YAAAVRFs@@XZ @ 2943 NONAME ; class RFs & qt_s60GetRFs(void)
 	?qt_safe_select@@YAHHPAUfd_set@@00PBUtimeval@@@Z @ 2944 NONAME ; int qt_safe_select(int, struct fd_set *, struct fd_set *, struct fd_set *, struct timeval const *)
 	?qt_symbianLocaleName@@YA?AVQByteArray@@H@Z @ 2945 NONAME ; class QByteArray qt_symbianLocaleName(int)
@@ -3062,7 +3062,7 @@ EXPORTS
 	?removeColumn@QAbstractItemModel@@QAE_NHABVQModelIndex@@@Z @ 3061 NONAME ; bool QAbstractItemModel::removeColumn(int, class QModelIndex const &)
 	?removeColumns@QAbstractItemModel@@UAE_NHHABVQModelIndex@@@Z @ 3062 NONAME ; bool QAbstractItemModel::removeColumns(int, int, class QModelIndex const &)
 	?removeDefaultAnimation@QStateMachine@@QAEXPAVQAbstractAnimation@@@Z @ 3063 NONAME ; void QStateMachine::removeDefaultAnimation(class QAbstractAnimation *)
-	?removeDeferredActiveObject@QEventDispatcherSymbian@@QAEXPAVQActiveObject@@@Z @ 3064 NONAME ; void QEventDispatcherSymbian::removeDeferredActiveObject(class QActiveObject *)
+	?removeDeferredActiveObject@QEventDispatcherSymbian@@QAEXPAVQActiveObject@@@Z @ 3064 NONAME ABSENT ; void QEventDispatcherSymbian::removeDeferredActiveObject(class QActiveObject *)
 	?removeEncodedQueryItem@QUrl@@QAEXABVQByteArray@@@Z @ 3065 NONAME ; void QUrl::removeEncodedQueryItem(class QByteArray const &)
 	?removeEventFilter@QObject@@QAEXPAV1@@Z @ 3066 NONAME ; void QObject::removeEventFilter(class QObject *)
 	?removeFormat@QMimeData@@QAEXABVQString@@@Z @ 3067 NONAME ; void QMimeData::removeFormat(class QString const &)
@@ -4484,8 +4484,8 @@ EXPORTS
 	?selectThread@QEventDispatcherSymbian@@AAEAAVQSelectThread@@XZ @ 4483 NONAME ; class QSelectThread & QEventDispatcherSymbian::selectThread(void)
 	?qt_symbian_SetupThreadHeap@@YAHHAAUSStdEpocThreadCreateInfo@@@Z @ 4484 NONAME ; int qt_symbian_SetupThreadHeap(int, struct SStdEpocThreadCreateInfo &)
 	?objectNameChanged@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@@ZA @ 4485 NONAME ; void (*QAbstractDeclarativeData::objectNameChanged)(class QAbstractDeclarativeData *, class QObject *)
-	?queueDeferredActiveObjectsCompletion@QEventDispatcherSymbian@@QAEXXZ @ 4486 NONAME ; void QEventDispatcherSymbian::queueDeferredActiveObjectsCompletion(void)
-	?reactivateDeferredActiveObjects@QEventDispatcherSymbian@@UAEXXZ @ 4487 NONAME ; void QEventDispatcherSymbian::reactivateDeferredActiveObjects(void)
+	?queueDeferredActiveObjectsCompletion@QEventDispatcherSymbian@@QAEXXZ @ 4486 NONAME ABSENT ; void QEventDispatcherSymbian::queueDeferredActiveObjectsCompletion(void)
+	?reactivateDeferredActiveObjects@QEventDispatcherSymbian@@UAEXXZ @ 4487 NONAME ABSENT ; void QEventDispatcherSymbian::reactivateDeferredActiveObjects(void)
 	?contains@QString@@QBE?AVQBool@@ABVQStringRef@@W4CaseSensitivity@Qt@@@Z @ 4488 NONAME ; class QBool QString::contains(class QStringRef const &, enum Qt::CaseSensitivity) const
 	?swap@QRegExp@@QAEXAAV1@@Z @ 4489 NONAME ; void QRegExp::swap(class QRegExp &)
 	?indexOf@QStringRef@@QBEHABVQString@@HW4CaseSensitivity@Qt@@@Z @ 4490 NONAME ; int QStringRef::indexOf(class QString const &, int, enum Qt::CaseSensitivity) const
@@ -4612,17 +4612,17 @@ EXPORTS
 	?reactivateAndComplete@QActiveObject@@QAEXXZ @ 4611 NONAME ; void QActiveObject::reactivateAndComplete(void)
 	?defaultConnection@QSymbianSocketManager@@QBEPAVRConnection@@XZ @ 4612 NONAME ; class RConnection * QSymbianSocketManager::defaultConnection(void) const
 	?qt_symbianGetSocketServer@@YAAAVRSocketServ@@XZ @ 4613 NONAME ; class RSocketServ & qt_symbianGetSocketServer(void)
-	?maybeQueueForLater@QActiveObject@@QAE_NXZ @ 4614 NONAME ; bool QActiveObject::maybeQueueForLater(void)
+	?maybeQueueForLater@QActiveObject@@QAE_NXZ @ 4614 NONAME ABSENT ; bool QActiveObject::maybeQueueForLater(void)
 	??_EQActiveObject@@UAE@I@Z @ 4615 NONAME ; QActiveObject::~QActiveObject(unsigned int)
 	?lookupSocket@QSymbianSocketManager@@QBE_NHAAVRSocket@@@Z @ 4616 NONAME ; bool QSymbianSocketManager::lookupSocket(int, class RSocket &) const
-	?wait@QActiveObject@@SA_NPAVCActive@@H@Z @ 4617 NONAME ; bool QActiveObject::wait(class CActive *, int)
+	?wait@QActiveObject@@SA_NPAVCActive@@H@Z @ 4617 NONAME ABSENT ; bool QActiveObject::wait(class CActive *, int)
 	?instance@QSymbianSocketManager@@SAAAV1@XZ @ 4618 NONAME ; class QSymbianSocketManager & QSymbianSocketManager::instance(void)
 	??0QSymbianSocketManager@@QAE@XZ @ 4619 NONAME ; QSymbianSocketManager::QSymbianSocketManager(void)
 	?create@QNonContiguousByteDeviceFactory@@SAPAVQNonContiguousByteDevice@@V?$QSharedPointer@VQRingBuffer@@@@@Z @ 4620 NONAME ; class QNonContiguousByteDevice * QNonContiguousByteDeviceFactory::create(class QSharedPointer<class QRingBuffer>)
 	??1QSymbianSocketManager@@QAE@XZ @ 4621 NONAME ; QSymbianSocketManager::~QSymbianSocketManager(void)
 	?isResetDisabled@QNonContiguousByteDevice@@QAE_NXZ @ 4622 NONAME ; bool QNonContiguousByteDevice::isResetDisabled(void)
 	??1QActiveObject@@UAE@XZ @ 4623 NONAME ; QActiveObject::~QActiveObject(void)
-	?wait@QActiveObject@@SA_NV?$QList@PAVCActive@@@@H@Z @ 4624 NONAME ; bool QActiveObject::wait(class QList<class CActive *>, int)
+	?wait@QActiveObject@@SA_NV?$QList@PAVCActive@@@@H@Z @ 4624 NONAME ABSENT ; bool QActiveObject::wait(class QList<class CActive *>, int)
 	?maybeDeferSocketEvent@QActiveObject@@QAE_NXZ @ 4625 NONAME ; bool QActiveObject::maybeDeferSocketEvent(void)
 	?lookupSocket@QSymbianSocketManager@@QBEHABVRSocket@@@Z @ 4626 NONAME ; int QSymbianSocketManager::lookupSocket(class RSocket const &) const
 	?areSocketEventsBlocked@QEventDispatcherSymbian@@QBE_NXZ @ 4627 NONAME ; bool QEventDispatcherSymbian::areSocketEventsBlocked(void) const
@@ -4844,172 +4844,4 @@ EXPORTS
 	?staticMetaObjectExtraData@QEventTransition@@0UQMetaObjectExtraData@@B @ 4843 NONAME ; struct QMetaObjectExtraData const QEventTransition::staticMetaObjectExtraData
 	?qt_static_metacall@QEventLoop@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 4844 NONAME ; void QEventLoop::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?keys@QProcessEnvironment@@QBE?AVQStringList@@XZ @ 4845 NONAME ; class QStringList QProcessEnvironment::keys(void) const
-	?progressTextChanged@QFutureWatcherBase@@IAEXABVQString@@@Z @ 4846 NONAME ; void QFutureWatcherBase::progressTextChanged(class QString const &)
-	?timeAfterUser@BlockSizeManager@QtConcurrent@@QAEXXZ @ 4847 NONAME ABSENT ; void QtConcurrent::BlockSizeManager::timeAfterUser(void)
-	?hasThrown@ExceptionStore@internal@QtConcurrent@@QBE_NXZ @ 4848 NONAME ABSENT ; bool QtConcurrent::internal::ExceptionStore::hasThrown(void) const
-	??1ExceptionStore@internal@QtConcurrent@@QAE@XZ @ 4849 NONAME ABSENT ; QtConcurrent::internal::ExceptionStore::~ExceptionStore(void)
-	?isVector@ResultIteratorBase@QtConcurrent@@QBE_NXZ @ 4850 NONAME ABSENT ; bool QtConcurrent::ResultIteratorBase::isVector(void) const
-	?queryState@QFutureInterfaceBase@@QBE_NW4State@1@@Z @ 4851 NONAME ABSENT ; bool QFutureInterfaceBase::queryState(enum QFutureInterfaceBase::State) const
-	?end@ResultStoreBase@QtConcurrent@@QBE?AVResultIteratorBase@2@XZ @ 4852 NONAME ABSENT ; class QtConcurrent::ResultIteratorBase QtConcurrent::ResultStoreBase::end(void) const
-	?run@ThreadEngineBase@QtConcurrent@@EAEXXZ @ 4853 NONAME ABSENT ; void QtConcurrent::ThreadEngineBase::run(void)
-	?exception@ExceptionStore@internal@QtConcurrent@@QAE?AVExceptionHolder@23@XZ @ 4854 NONAME ABSENT ; class QtConcurrent::internal::ExceptionHolder QtConcurrent::internal::ExceptionStore::exception(void)
-	?isStarted@QFutureWatcherBase@@QBE_NXZ @ 4855 NONAME ABSENT ; bool QFutureWatcherBase::isStarted(void) const
-	?resultIndex@ResultIteratorBase@QtConcurrent@@QBEHXZ @ 4856 NONAME ABSENT ; int QtConcurrent::ResultIteratorBase::resultIndex(void) const
-	?qt_metacast@QFutureWatcherBase@@UAEPAXPBD@Z @ 4857 NONAME ; void * QFutureWatcherBase::qt_metacast(char const *)
-	??9QFutureInterfaceBase@@QBE_NABV0@@Z @ 4858 NONAME ABSENT ; bool QFutureInterfaceBase::operator!=(class QFutureInterfaceBase const &) const
-	??0QFutureInterfaceBase@@QAE@W4State@0@@Z @ 4859 NONAME ABSENT ; QFutureInterfaceBase::QFutureInterfaceBase(enum QFutureInterfaceBase::State)
-	?staticMetaObjectExtraData@QFutureWatcherBase@@0UQMetaObjectExtraData@@B @ 4860 NONAME ; struct QMetaObjectExtraData const QFutureWatcherBase::staticMetaObjectExtraData
-	??0QFutureWatcherBase@@QAE@PAVQObject@@@Z @ 4861 NONAME ABSENT ; QFutureWatcherBase::QFutureWatcherBase(class QObject *)
-	??1QFutureInterfaceBase@@UAE@XZ @ 4862 NONAME ABSENT ; QFutureInterfaceBase::~QFutureInterfaceBase(void)
-	?resume@QFutureWatcherBase@@QAEXXZ @ 4863 NONAME ; void QFutureWatcherBase::resume(void)
-	?startSingleThreaded@ThreadEngineBase@QtConcurrent@@QAEXXZ @ 4864 NONAME ABSENT ; void QtConcurrent::ThreadEngineBase::startSingleThreaded(void)
-	?setPaused@QFutureWatcherBase@@QAEX_N@Z @ 4865 NONAME ; void QFutureWatcherBase::setPaused(bool)
-	?waitForResume@QFutureInterfaceBase@@QAEXXZ @ 4866 NONAME ABSENT ; void QFutureInterfaceBase::waitForResume(void)
-	?progressMinimum@QFutureInterfaceBase@@QBEHXZ @ 4867 NONAME ABSENT ; int QFutureInterfaceBase::progressMinimum(void) const
-	?hasException@ExceptionStore@internal@QtConcurrent@@QBE_NXZ @ 4868 NONAME ABSENT ; bool QtConcurrent::internal::ExceptionStore::hasException(void) const
-	?tr@QFutureWatcherBase@@SA?AVQString@@PBD0H@Z @ 4869 NONAME ; class QString QFutureWatcherBase::tr(char const *, char const *, int)
-	?resultAt@ResultStoreBase@QtConcurrent@@QBE?AVResultIteratorBase@2@H@Z @ 4870 NONAME ABSENT ; class QtConcurrent::ResultIteratorBase QtConcurrent::ResultStoreBase::resultAt(int) const
-	?connectOutputInterface@QFutureWatcherBase@@IAEXXZ @ 4871 NONAME ABSENT ; void QFutureWatcherBase::connectOutputInterface(void)
-	?insertResultItem@ResultStoreBase@QtConcurrent@@IAEHHAAVResultItem@2@@Z @ 4872 NONAME ABSENT ; int QtConcurrent::ResultStoreBase::insertResultItem(int, class QtConcurrent::ResultItem &)
-	?syncResultCount@ResultStoreBase@QtConcurrent@@IAEXXZ @ 4873 NONAME ABSENT ; void QtConcurrent::ResultStoreBase::syncResultCount(void)
-	?setProgressRange@ThreadEngineBase@QtConcurrent@@QAEXHH@Z @ 4874 NONAME ABSENT ; void QtConcurrent::ThreadEngineBase::setProgressRange(int, int)
-	??_EQFutureWatcherBase@@UAE@I@Z @ 4875 NONAME ABSENT ; QFutureWatcherBase::~QFutureWatcherBase(unsigned int)
-	?progressValueChanged@QFutureWatcherBase@@IAEXH@Z @ 4876 NONAME ; void QFutureWatcherBase::progressValueChanged(int)
-	?threadExit@ThreadEngineBase@QtConcurrent@@AAEXXZ @ 4877 NONAME ABSENT ; void QtConcurrent::ThreadEngineBase::threadExit(void)
-	?mutex@QFutureInterfaceBase@@QBEPAVQMutex@@XZ @ 4878 NONAME ABSENT ; class QMutex * QFutureInterfaceBase::mutex(void) const
-	?staticMetaObject@QFutureWatcherBase@@2UQMetaObject@@B @ 4879 NONAME ; struct QMetaObject const QFutureWatcherBase::staticMetaObject
-	?setException@ExceptionStore@internal@QtConcurrent@@QAEXABVException@3@@Z @ 4880 NONAME ABSENT ; void QtConcurrent::internal::ExceptionStore::setException(class QtConcurrent::Exception const &)
-	??0ResultIteratorBase@QtConcurrent@@QAE@XZ @ 4881 NONAME ABSENT ; QtConcurrent::ResultIteratorBase::ResultIteratorBase(void)
-	?hasNextResult@ResultStoreBase@QtConcurrent@@QBE_NXZ @ 4882 NONAME ABSENT ; bool QtConcurrent::ResultStoreBase::hasNextResult(void) const
-	??_EResultStoreBase@QtConcurrent@@UAE@I@Z @ 4883 NONAME ABSENT ; QtConcurrent::ResultStoreBase::~ResultStoreBase(unsigned int)
-	?contains@ResultStoreBase@QtConcurrent@@QBE_NH@Z @ 4884 NONAME ABSENT ; bool QtConcurrent::ResultStoreBase::contains(int) const
-	?updateInsertIndex@ResultStoreBase@QtConcurrent@@IAEHHH@Z @ 4885 NONAME ABSENT ; int QtConcurrent::ResultStoreBase::updateInsertIndex(int, int)
-	??_EException@QtConcurrent@@UAE@I@Z @ 4886 NONAME ABSENT ; QtConcurrent::Exception::~Exception(unsigned int)
-	?qt_metacall@QFutureWatcherBase@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 4887 NONAME ; int QFutureWatcherBase::qt_metacall(enum QMetaObject::Call, int, void * *)
-	?isStarted@QFutureInterfaceBase@@QBE_NXZ @ 4888 NONAME ABSENT ; bool QFutureInterfaceBase::isStarted(void) const
-	??0QFutureInterfaceBase@@QAE@ABV0@@Z @ 4889 NONAME ABSENT ; QFutureInterfaceBase::QFutureInterfaceBase(class QFutureInterfaceBase const &)
-	??_EUnhandledException@QtConcurrent@@UAE@I@Z @ 4890 NONAME ABSENT ; QtConcurrent::UnhandledException::~UnhandledException(unsigned int)
-	?progressValue@QFutureWatcherBase@@QBEHXZ @ 4891 NONAME ABSENT ; int QFutureWatcherBase::progressValue(void) const
-	??8ResultIteratorBase@QtConcurrent@@QBE_NABV01@@Z @ 4892 NONAME ABSENT ; bool QtConcurrent::ResultIteratorBase::operator==(class QtConcurrent::ResultIteratorBase const &) const
-	?tr@QFutureWatcherBase@@SA?AVQString@@PBD0@Z @ 4893 NONAME ; class QString QFutureWatcherBase::tr(char const *, char const *)
-	?startBlocking@ThreadEngineBase@QtConcurrent@@QAEXXZ @ 4894 NONAME ABSENT ; void QtConcurrent::ThreadEngineBase::startBlocking(void)
-	?threadThrottleExit@ThreadEngineBase@QtConcurrent@@AAE_NXZ @ 4895 NONAME ABSENT ; bool QtConcurrent::ThreadEngineBase::threadThrottleExit(void)
-	?isFinished@QFutureWatcherBase@@QBE_NXZ @ 4896 NONAME ABSENT ; bool QFutureWatcherBase::isFinished(void) const
-	?resultsReadyAt@QFutureWatcherBase@@IAEXHH@Z @ 4897 NONAME ; void QFutureWatcherBase::resultsReadyAt(int, int)
-	?start@ThreadEngineBase@QtConcurrent@@MAEXXZ @ 4898 NONAME ABSENT ; void QtConcurrent::ThreadEngineBase::start(void)
-	?runningAnimationCount@QUnifiedTimer@@QAEHXZ @ 4899 NONAME ; int QUnifiedTimer::runningAnimationCount(void)
-	??9ResultIteratorBase@QtConcurrent@@QBE_NABV01@@Z @ 4900 NONAME ABSENT ; bool QtConcurrent::ResultIteratorBase::operator!=(class QtConcurrent::ResultIteratorBase const &) const
-	??1UnhandledException@QtConcurrent@@UAE@XZ @ 4901 NONAME ABSENT ; QtConcurrent::UnhandledException::~UnhandledException(void)
-	?shouldStartThread@ThreadEngineBase@QtConcurrent@@MAE_NXZ @ 4902 NONAME ABSENT ; bool QtConcurrent::ThreadEngineBase::shouldStartThread(void)
-	?d_func@QFutureWatcherBase@@AAEPAVQFutureWatcherBasePrivate@@XZ @ 4903 NONAME ; class QFutureWatcherBasePrivate * QFutureWatcherBase::d_func(void)
-	?startThread@ThreadEngineBase@QtConcurrent@@QAEXXZ @ 4904 NONAME ABSENT ; void QtConcurrent::ThreadEngineBase::startThread(void)
-	?threadFunction@ThreadEngineBase@QtConcurrent@@MAE?AW4ThreadFunctionResult@2@XZ @ 4905 NONAME ABSENT ; enum QtConcurrent::ThreadFunctionResult QtConcurrent::ThreadEngineBase::threadFunction(void)
-	?count@ResultStoreBase@QtConcurrent@@QBEHXZ @ 4906 NONAME ABSENT ; int QtConcurrent::ResultStoreBase::count(void) const
-	?isThrottled@QFutureInterfaceBase@@QBE_NXZ @ 4907 NONAME ABSENT ; bool QFutureInterfaceBase::isThrottled(void) const
-	?waitForResume@ThreadEngineBase@QtConcurrent@@QAEXXZ @ 4908 NONAME ABSENT ; void QtConcurrent::ThreadEngineBase::waitForResume(void)
-	?progressMinimum@QFutureWatcherBase@@QBEHXZ @ 4909 NONAME ABSENT ; int QFutureWatcherBase::progressMinimum(void) const
-	??1ThreadEngineBase@QtConcurrent@@UAE@XZ @ 4910 NONAME ABSENT ; QtConcurrent::ThreadEngineBase::~ThreadEngineBase(void)
-	?finished@QFutureWatcherBase@@IAEXXZ @ 4911 NONAME ; void QFutureWatcherBase::finished(void)
-	?progressMaximum@QFutureInterfaceBase@@QBEHXZ @ 4912 NONAME ABSENT ; int QFutureInterfaceBase::progressMaximum(void) const
-	?pause@QFutureWatcherBase@@QAEXXZ @ 4913 NONAME ; void QFutureWatcherBase::pause(void)
-	?isProgressReportingEnabled@ThreadEngineBase@QtConcurrent@@QAE_NXZ @ 4914 NONAME ABSENT ; bool QtConcurrent::ThreadEngineBase::isProgressReportingEnabled(void)
-	?blockSizeMaxed@BlockSizeManager@QtConcurrent@@AAE_NXZ @ 4915 NONAME ABSENT ; bool QtConcurrent::BlockSizeManager::blockSizeMaxed(void)
-	?isCanceled@QFutureInterfaceBase@@QBE_NXZ @ 4916 NONAME ABSENT ; bool QFutureInterfaceBase::isCanceled(void) const
-	?cancel@QFutureInterfaceBase@@QAEXXZ @ 4917 NONAME ABSENT ; void QFutureInterfaceBase::cancel(void)
-	?setFilterMode@QFutureInterfaceBase@@QAEX_N@Z @ 4918 NONAME ABSENT ; void QFutureInterfaceBase::setFilterMode(bool)
-	?setProgressValueAndText@QFutureInterfaceBase@@QAEXHABVQString@@@Z @ 4919 NONAME ABSENT ; void QFutureInterfaceBase::setProgressValueAndText(int, class QString const &)
-	?setRunnable@QFutureInterfaceBase@@QAEXPAVQRunnable@@@Z @ 4920 NONAME ABSENT ; void QFutureInterfaceBase::setRunnable(class QRunnable *)
-	?trUtf8@QFutureWatcherBase@@SA?AVQString@@PBD0H@Z @ 4921 NONAME ; class QString QFutureWatcherBase::trUtf8(char const *, char const *, int)
-	?paused@QFutureWatcherBase@@IAEXXZ @ 4922 NONAME ; void QFutureWatcherBase::paused(void)
-	?disconnectOutputInterface@QFutureWatcherBase@@IAEX_N@Z @ 4923 NONAME ABSENT ; void QFutureWatcherBase::disconnectOutputInterface(bool)
-	?isCanceled@QFutureWatcherBase@@QBE_NXZ @ 4924 NONAME ABSENT ; bool QFutureWatcherBase::isCanceled(void) const
-	?expectedResultCount@QFutureInterfaceBase@@QAEHXZ @ 4925 NONAME ABSENT ; int QFutureInterfaceBase::expectedResultCount(void)
-	??_EQFutureInterfaceBase@@UAE@I@Z @ 4926 NONAME ABSENT ; QFutureInterfaceBase::~QFutureInterfaceBase(unsigned int)
-	?waitForResult@QFutureInterfaceBase@@QAEXH@Z @ 4927 NONAME ABSENT ; void QFutureInterfaceBase::waitForResult(int)
-	?d_func@QFutureWatcherBase@@ABEPBVQFutureWatcherBasePrivate@@XZ @ 4928 NONAME ; class QFutureWatcherBasePrivate const * QFutureWatcherBase::d_func(void) const
-	?setPaused@QFutureInterfaceBase@@QAEX_N@Z @ 4929 NONAME ABSENT ; void QFutureInterfaceBase::setPaused(bool)
-	??_EThreadEngineBase@QtConcurrent@@UAE@I@Z @ 4930 NONAME ABSENT ; QtConcurrent::ThreadEngineBase::~ThreadEngineBase(unsigned int)
-	??0Exception@QtConcurrent@@QAE@ABV01@@Z @ 4931 NONAME ABSENT ; QtConcurrent::Exception::Exception(class QtConcurrent::Exception const &)
-	?referenceCountIsOne@QFutureInterfaceBase@@IBE_NXZ @ 4932 NONAME ABSENT ; bool QFutureInterfaceBase::referenceCountIsOne(void) const
-	?progressText@QFutureInterfaceBase@@QBE?AVQString@@XZ @ 4933 NONAME ABSENT ; class QString QFutureInterfaceBase::progressText(void) const
-	?startThreadInternal@ThreadEngineBase@QtConcurrent@@AAE_NXZ @ 4934 NONAME ABSENT ; bool QtConcurrent::ThreadEngineBase::startThreadInternal(void)
-	?addResult@ResultStoreBase@QtConcurrent@@QAEHHPBX@Z @ 4935 NONAME ABSENT ; int QtConcurrent::ResultStoreBase::addResult(int, void const *)
-	?waitForFinished@QFutureWatcherBase@@QAEXXZ @ 4936 NONAME ABSENT ; void QFutureWatcherBase::waitForFinished(void)
-	?togglePaused@QFutureInterfaceBase@@QAEXXZ @ 4937 NONAME ABSENT ; void QFutureInterfaceBase::togglePaused(void)
-	?isProgressUpdateNeeded@QFutureInterfaceBase@@QBE_NXZ @ 4938 NONAME ABSENT ; bool QFutureInterfaceBase::isProgressUpdateNeeded(void) const
-	?resultReadyAt@QFutureWatcherBase@@IAEXH@Z @ 4939 NONAME ; void QFutureWatcherBase::resultReadyAt(int)
-	?waitForNextResult@QFutureInterfaceBase@@QAE_NXZ @ 4940 NONAME ABSENT ; bool QFutureInterfaceBase::waitForNextResult(void)
-	?raise@UnhandledException@QtConcurrent@@UBEXXZ @ 4941 NONAME ABSENT ; void QtConcurrent::UnhandledException::raise(void) const
-	?setProgressValue@QFutureInterfaceBase@@QAEXH@Z @ 4942 NONAME ABSENT ; void QFutureInterfaceBase::setProgressValue(int)
-	?startThreads@ThreadEngineBase@QtConcurrent@@AAEXXZ @ 4943 NONAME ABSENT ; void QtConcurrent::ThreadEngineBase::startThreads(void)
-	?isPaused@QFutureInterfaceBase@@QBE_NXZ @ 4944 NONAME ABSENT ; bool QFutureInterfaceBase::isPaused(void) const
-	?resultStoreBase@QFutureInterfaceBase@@QAEAAVResultStoreBase@QtConcurrent@@XZ @ 4945 NONAME ABSENT ; class QtConcurrent::ResultStoreBase & QFutureInterfaceBase::resultStoreBase(void)
-	?isRunning@QFutureInterfaceBase@@QBE_NXZ @ 4946 NONAME ABSENT ; bool QFutureInterfaceBase::isRunning(void) const
-	?begin@ResultStoreBase@QtConcurrent@@QBE?AVResultIteratorBase@2@XZ @ 4947 NONAME ABSENT ; class QtConcurrent::ResultIteratorBase QtConcurrent::ResultStoreBase::begin(void) const
-	?resultStoreBase@QFutureInterfaceBase@@QBEABVResultStoreBase@QtConcurrent@@XZ @ 4948 NONAME ABSENT ; class QtConcurrent::ResultStoreBase const & QFutureInterfaceBase::resultStoreBase(void) const
-	?setExpectedResultCount@QFutureInterfaceBase@@QAEXH@Z @ 4949 NONAME ABSENT ; void QFutureInterfaceBase::setExpectedResultCount(int)
-	?progressMaximum@QFutureWatcherBase@@QBEHXZ @ 4950 NONAME ABSENT ; int QFutureWatcherBase::progressMaximum(void) const
-	??0ResultStoreBase@QtConcurrent@@QAE@XZ @ 4951 NONAME ABSENT ; QtConcurrent::ResultStoreBase::ResultStoreBase(void)
-	?setProgressRange@QFutureInterfaceBase@@QAEXHH@Z @ 4952 NONAME ABSENT ; void QFutureInterfaceBase::setProgressRange(int, int)
-	?canIncrementVectorIndex@ResultIteratorBase@QtConcurrent@@QBE_NXZ @ 4953 NONAME ABSENT ; bool QtConcurrent::ResultIteratorBase::canIncrementVectorIndex(void) const
-	?progressValue@QFutureInterfaceBase@@QBEHXZ @ 4954 NONAME ABSENT ; int QFutureInterfaceBase::progressValue(void) const
-	?cancel@QFutureWatcherBase@@QAEXXZ @ 4955 NONAME ; void QFutureWatcherBase::cancel(void)
-	?trolltechConf@QCoreApplicationPrivate@@SAPAVQSettings@@XZ @ 4956 NONAME ; class QSettings * QCoreApplicationPrivate::trolltechConf(void)
-	?trUtf8@QFutureWatcherBase@@SA?AVQString@@PBD0@Z @ 4957 NONAME ; class QString QFutureWatcherBase::trUtf8(char const *, char const *)
-	?getStaticMetaObject@QFutureWatcherBase@@SAABUQMetaObject@@XZ @ 4958 NONAME ; struct QMetaObject const & QFutureWatcherBase::getStaticMetaObject(void)
-	?vectorIndex@ResultIteratorBase@QtConcurrent@@QBEHXZ @ 4959 NONAME ABSENT ; int QtConcurrent::ResultIteratorBase::vectorIndex(void) const
-	?syncPendingResults@ResultStoreBase@QtConcurrent@@IAEXXZ @ 4960 NONAME ABSENT ; void QtConcurrent::ResultStoreBase::syncPendingResults(void)
-	?progressText@QFutureWatcherBase@@QBE?AVQString@@XZ @ 4961 NONAME ABSENT ; class QString QFutureWatcherBase::progressText(void) const
-	??1QFutureWatcherBase@@UAE@XZ @ 4962 NONAME ABSENT ; QFutureWatcherBase::~QFutureWatcherBase(void)
-	?togglePaused@QFutureWatcherBase@@QAEXXZ @ 4963 NONAME ; void QFutureWatcherBase::togglePaused(void)
-	?acquireBarrierSemaphore@ThreadEngineBase@QtConcurrent@@QAEXXZ @ 4964 NONAME ABSENT ; void QtConcurrent::ThreadEngineBase::acquireBarrierSemaphore(void)
-	?setFilterMode@ResultStoreBase@QtConcurrent@@QAEX_N@Z @ 4965 NONAME ABSENT ; void QtConcurrent::ResultStoreBase::setFilterMode(bool)
-	?disconnectNotify@QFutureWatcherBase@@MAEXPBD@Z @ 4966 NONAME ABSENT ; void QFutureWatcherBase::disconnectNotify(char const *)
-	?handleException@ThreadEngineBase@QtConcurrent@@AAEXABVException@2@@Z @ 4967 NONAME ABSENT ; void QtConcurrent::ThreadEngineBase::handleException(class QtConcurrent::Exception const &)
-	?setThrottled@QFutureInterfaceBase@@QAEX_N@Z @ 4968 NONAME ABSENT ; void QFutureInterfaceBase::setThrottled(bool)
-	?setProgressValue@ThreadEngineBase@QtConcurrent@@QAEXH@Z @ 4969 NONAME ABSENT ; void QtConcurrent::ThreadEngineBase::setProgressValue(int)
-	??4QFutureInterfaceBase@@QAEAAV0@ABV0@@Z @ 4970 NONAME ABSENT ; class QFutureInterfaceBase & QFutureInterfaceBase::operator=(class QFutureInterfaceBase const &)
-	?isFinished@QFutureInterfaceBase@@QBE_NXZ @ 4971 NONAME ABSENT ; bool QFutureInterfaceBase::isFinished(void) const
-	?progressRangeChanged@QFutureWatcherBase@@IAEXHH@Z @ 4972 NONAME ; void QFutureWatcherBase::progressRangeChanged(int, int)
-	?finish@ThreadEngineBase@QtConcurrent@@MAEXXZ @ 4973 NONAME ABSENT ; void QtConcurrent::ThreadEngineBase::finish(void)
-	?isRunning@QFutureWatcherBase@@QBE_NXZ @ 4974 NONAME ABSENT ; bool QFutureWatcherBase::isRunning(void) const
-	?reportResultsReady@QFutureInterfaceBase@@QAEXHH@Z @ 4975 NONAME ABSENT ; void QFutureInterfaceBase::reportResultsReady(int, int)
-	?qt_static_metacall@QFutureWatcherBase@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 4976 NONAME ; void QFutureWatcherBase::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?blockSize@BlockSizeManager@QtConcurrent@@QAEHXZ @ 4977 NONAME ABSENT ; int QtConcurrent::BlockSizeManager::blockSize(void)
-	??0BlockSizeManager@QtConcurrent@@QAE@H@Z @ 4978 NONAME ABSENT ; QtConcurrent::BlockSizeManager::BlockSizeManager(int)
-	?batchSize@ResultIteratorBase@QtConcurrent@@QBEHXZ @ 4979 NONAME ABSENT ; int QtConcurrent::ResultIteratorBase::batchSize(void) const
-	?started@QFutureWatcherBase@@IAEXXZ @ 4980 NONAME ; void QFutureWatcherBase::started(void)
-	?metaObject@QFutureWatcherBase@@UBEPBUQMetaObject@@XZ @ 4981 NONAME ; struct QMetaObject const * QFutureWatcherBase::metaObject(void) const
-	?resumed@QFutureWatcherBase@@IAEXXZ @ 4982 NONAME ; void QFutureWatcherBase::resumed(void)
-	??0UnhandledException@QtConcurrent@@QAE@ABV01@@Z @ 4983 NONAME ABSENT ; QtConcurrent::UnhandledException::UnhandledException(class QtConcurrent::UnhandledException const &)
-	?timeBeforeUser@BlockSizeManager@QtConcurrent@@QAEXXZ @ 4984 NONAME ABSENT ; void QtConcurrent::BlockSizeManager::timeBeforeUser(void)
-	??EResultIteratorBase@QtConcurrent@@QAE?AV01@XZ @ 4985 NONAME ABSENT ; class QtConcurrent::ResultIteratorBase QtConcurrent::ResultIteratorBase::operator++(void)
-	?isResultReadyAt@QFutureInterfaceBase@@QBE_NH@Z @ 4986 NONAME ABSENT ; bool QFutureInterfaceBase::isResultReadyAt(int) const
-	?throwPossibleException@ExceptionStore@internal@QtConcurrent@@QAEXXZ @ 4987 NONAME ABSENT ; void QtConcurrent::internal::ExceptionStore::throwPossibleException(void)
-	?setPendingResultsLimit@QFutureWatcherBase@@QAEXH@Z @ 4988 NONAME ABSENT ; void QFutureWatcherBase::setPendingResultsLimit(int)
-	?resultCount@QFutureInterfaceBase@@QBEHXZ @ 4989 NONAME ABSENT ; int QFutureInterfaceBase::resultCount(void) const
-	?event@QFutureWatcherBase@@UAE_NPAVQEvent@@@Z @ 4990 NONAME ABSENT ; bool QFutureWatcherBase::event(class QEvent *)
-	?isPaused@QFutureWatcherBase@@QBE_NXZ @ 4991 NONAME ABSENT ; bool QFutureWatcherBase::isPaused(void) const
-	?clone@Exception@QtConcurrent@@UBEPAV12@XZ @ 4992 NONAME ABSENT ; class QtConcurrent::Exception * QtConcurrent::Exception::clone(void) const
-	?insertResultItemIfValid@ResultStoreBase@QtConcurrent@@IAEXHAAVResultItem@2@@Z @ 4993 NONAME ABSENT ; void QtConcurrent::ResultStoreBase::insertResultItemIfValid(int, class QtConcurrent::ResultItem &)
-	?reportException@QFutureInterfaceBase@@QAEXABVException@QtConcurrent@@@Z @ 4994 NONAME ABSENT ; void QFutureInterfaceBase::reportException(class QtConcurrent::Exception const &)
-	?waitForFinished@QFutureInterfaceBase@@QAEXXZ @ 4995 NONAME ABSENT ; void QFutureInterfaceBase::waitForFinished(void)
-	??0ResultIteratorBase@QtConcurrent@@QAE@Vconst_iterator@?$QMap@HVResultItem@QtConcurrent@@@@H@Z @ 4996 NONAME ABSENT ; QtConcurrent::ResultIteratorBase::ResultIteratorBase(class QMap<int, class QtConcurrent::ResultItem>::const_iterator, int)
-	?reportStarted@QFutureInterfaceBase@@QAEXXZ @ 4997 NONAME ABSENT ; void QFutureInterfaceBase::reportStarted(void)
-	??8QFutureInterfaceBase@@QBE_NABV0@@Z @ 4998 NONAME ABSENT ; bool QFutureInterfaceBase::operator==(class QFutureInterfaceBase const &) const
-	?addResults@ResultStoreBase@QtConcurrent@@QAEHHPBXHH@Z @ 4999 NONAME ABSENT ; int QtConcurrent::ResultStoreBase::addResults(int, void const *, int, int)
-	?shouldThrottleThread@ThreadEngineBase@QtConcurrent@@MAE_NXZ @ 5000 NONAME ABSENT ; bool QtConcurrent::ThreadEngineBase::shouldThrottleThread(void)
-	?reportFinished@QFutureInterfaceBase@@QAEXXZ @ 5001 NONAME ABSENT ; void QFutureInterfaceBase::reportFinished(void)
-	??0ThreadEngineBase@QtConcurrent@@QAE@XZ @ 5002 NONAME ABSENT ; QtConcurrent::ThreadEngineBase::ThreadEngineBase(void)
-	??1Exception@QtConcurrent@@UAE@XZ @ 5003 NONAME ABSENT ; QtConcurrent::Exception::~Exception(void)
-	?filterMode@ResultStoreBase@QtConcurrent@@QBE_NXZ @ 5004 NONAME ABSENT ; bool QtConcurrent::ResultStoreBase::filterMode(void) const
-	?raise@Exception@QtConcurrent@@UBEXXZ @ 5005 NONAME ABSENT ; void QtConcurrent::Exception::raise(void) const
-	?batchedAdvance@ResultIteratorBase@QtConcurrent@@QAEXXZ @ 5006 NONAME ABSENT ; void QtConcurrent::ResultIteratorBase::batchedAdvance(void)
-	?exceptionStore@QFutureInterfaceBase@@QAEAAVExceptionStore@internal@QtConcurrent@@XZ @ 5007 NONAME ABSENT ; class QtConcurrent::internal::ExceptionStore & QFutureInterfaceBase::exceptionStore(void)
-	?reportCanceled@QFutureInterfaceBase@@QAEXXZ @ 5008 NONAME ABSENT ; void QFutureInterfaceBase::reportCanceled(void)
-	?connectNotify@QFutureWatcherBase@@MAEXPBD@Z @ 5009 NONAME ABSENT ; void QFutureWatcherBase::connectNotify(char const *)
-	??1ResultStoreBase@QtConcurrent@@UAE@XZ @ 5010 NONAME ABSENT ; QtConcurrent::ResultStoreBase::~ResultStoreBase(void)
-	?isCanceled@ThreadEngineBase@QtConcurrent@@QAE_NXZ @ 5011 NONAME ABSENT ; bool QtConcurrent::ThreadEngineBase::isCanceled(void)
-	?canceled@QFutureWatcherBase@@IAEXXZ @ 5012 NONAME ; void QFutureWatcherBase::canceled(void)
-	?clone@UnhandledException@QtConcurrent@@UBEPAVException@2@XZ @ 5013 NONAME ABSENT ; class QtConcurrent::Exception * QtConcurrent::UnhandledException::clone(void) const
 

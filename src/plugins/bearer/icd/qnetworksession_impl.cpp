@@ -183,6 +183,12 @@ void QNetworkSessionPrivateImpl::updateState(QNetworkSession::State newState)
                 icdConfig->mutex.lock();
                 icdConfig->state = QNetworkConfiguration::Defined;
                 icdConfig->mutex.unlock();
+
+                // Reset the state of the default configuration to Discovered
+                icdConfig = toIcdConfig(privateConfiguration(publicConfig));
+                icdConfig->mutex.lock();
+                icdConfig->state = QNetworkConfiguration::Discovered;
+                icdConfig->mutex.unlock();
             } else {
                 if (!activeConfig.isValid()) {
                     // Active configuration (IAP) was removed from system
