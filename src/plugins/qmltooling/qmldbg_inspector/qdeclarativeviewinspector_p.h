@@ -73,9 +73,6 @@ public:
     QPointF cursorPos;
     QList<QWeakPointer<QGraphicsObject> > currentSelection;
 
-    Constants::DesignTool currentToolMode;
-    AbstractLiveEditTool *currentTool;
-
     LiveSelectionTool *selectionTool;
     ZoomTool *zoomTool;
     ColorPickerTool *colorPickerTool;

@@ -51,7 +51,7 @@
 namespace QmlJSDebugger {
 
 AbstractLiveEditTool::AbstractLiveEditTool(QDeclarativeViewInspector *editorView)
-    : QObject(editorView), m_inspector(editorView)
+    : AbstractTool(editorView)
 {
 }
 
@@ -62,12 +62,12 @@ AbstractLiveEditTool::~AbstractLiveEditTool()
 
 QDeclarativeViewInspector *AbstractLiveEditTool::inspector() const
 {
-    return m_inspector;
+    return static_cast<QDeclarativeViewInspector*>(AbstractTool::inspector());
 }
 
 QDeclarativeView *AbstractLiveEditTool::view() const
 {
-    return m_inspector->declarativeView();
+    return inspector()->declarativeView();
 }
 
 QGraphicsScene* AbstractLiveEditTool::scene() const
@@ -175,7 +175,7 @@ QString AbstractLiveEditTool::titleForItem(QGraphicsItem *item)
 
         QDeclarativeItem *declarativeItem = qobject_cast<QDeclarativeItem*>(gfxObject);
         if (declarativeItem) {
-            objectStringId = m_inspector->idStringForObject(declarativeItem);
+            objectStringId = inspector()->idStringForObject(declarativeItem);
         }
 
         if (!objectStringId.isEmpty()) {

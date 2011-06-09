@@ -39,66 +39,47 @@
 **
 ****************************************************************************/
 
-#ifndef ABSTRACTLIVEEDITTOOL_H
-#define ABSTRACTLIVEEDITTOOL_H
+#ifndef ABSTRACTTOOL_H
+#define ABSTRACTTOOL_H
 
-#include <QtCore/QList>
-#include "../abstracttool.h"
+#include <QtCore/QObject>
 
 QT_BEGIN_NAMESPACE
 class QMouseEvent;
-class QGraphicsItem;
-class QDeclarativeItem;
 class QKeyEvent;
-class QGraphicsScene;
-class QGraphicsObject;
 class QWheelEvent;
-class QDeclarativeView;
 QT_END_NAMESPACE
 
 namespace QmlJSDebugger {
 
-class QDeclarativeViewInspector;
+class AbstractViewInspector;
 
-class AbstractLiveEditTool : public AbstractTool
+class AbstractTool : public QObject
 {
     Q_OBJECT
+
 public:
-    AbstractLiveEditTool(QDeclarativeViewInspector *inspector);
+    explicit AbstractTool(AbstractViewInspector *inspector);
 
-    virtual ~AbstractLiveEditTool();
+    AbstractViewInspector *inspector() const { return m_inspector; }
 
-    void leaveEvent(QEvent *) {}
+    virtual void leaveEvent(QEvent *event) = 0;
 
-    virtual void itemsAboutToRemoved(const QList<QGraphicsItem*> &itemList) = 0;
+    virtual void mousePressEvent(QMouseEvent *event) = 0;
+    virtual void mouseMoveEvent(QMouseEvent *event) = 0;
+    virtual void mouseReleaseEvent(QMouseEvent *event) = 0;
+    virtual void mouseDoubleClickEvent(QMouseEvent *event) = 0;
 
-    virtual void clear() = 0;
+    virtual void hoverMoveEvent(QMouseEvent *event) = 0;
+    virtual void wheelEvent(QWheelEvent *event) = 0;
 
-    void updateSelectedItems();
-    QList<QGraphicsItem*> items() const;
-
-    bool topItemIsMovable(const QList<QGraphicsItem*> &itemList);
-    bool topItemIsResizeHandle(const QList<QGraphicsItem*> &itemList);
-    bool topSelectedItemIsMovable(const QList<QGraphicsItem*> &itemList);
-
-    QString titleForItem(QGraphicsItem *item);
-
-    static QList<QGraphicsObject*> toGraphicsObjectList(const QList<QGraphicsItem*> &itemList);
-    static QGraphicsItem* topMovableGraphicsItem(const QList<QGraphicsItem*> &itemList);
-    static QDeclarativeItem* topMovableDeclarativeItem(const QList<QGraphicsItem*> &itemList);
-    static QDeclarativeItem *toQDeclarativeItem(QGraphicsItem *item);
-
-protected:
-    virtual void selectedItemsChanged(const QList<QGraphicsItem*> &objectList) = 0;
-
-    QDeclarativeViewInspector *inspector() const;
-    QDeclarativeView *view() const;
-    QGraphicsScene *scene() const;
+    virtual void keyPressEvent(QKeyEvent *event) = 0;
+    virtual void keyReleaseEvent(QKeyEvent *keyEvent) = 0;
 
 private:
-    QList<QGraphicsItem*> m_itemList;
+    AbstractViewInspector *m_inspector;
 };
 
-}
+} // namespace QmlJSDebugger
 
-#endif // ABSTRACTLIVEEDITTOOL_H
+#endif // ABSTRACTTOOL_H

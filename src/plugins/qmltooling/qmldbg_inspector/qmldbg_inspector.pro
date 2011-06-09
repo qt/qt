@@ -22,7 +22,8 @@ SOURCES += \
     editor/zoomtool.cpp \
     editor/colorpickertool.cpp \
     editor/qmltoolbar.cpp \
-    editor/toolbarcolorbox.cpp
+    editor/toolbarcolorbox.cpp \
+    abstracttool.cpp
 
 HEADERS += \
     abstractviewinspector.h \
@@ -43,7 +44,8 @@ HEADERS += \
     editor/zoomtool.h \
     editor/colorpickertool.h \
     editor/qmltoolbar.h \
-    editor/toolbarcolorbox.h
+    editor/toolbarcolorbox.h \
+    abstracttool.h
 
 RESOURCES += editor/editor.qrc
 

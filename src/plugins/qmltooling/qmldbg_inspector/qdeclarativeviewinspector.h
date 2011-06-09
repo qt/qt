@@ -50,12 +50,9 @@
 #include <QtCore/QScopedPointer>
 #include <QtDeclarative/QDeclarativeView>
 
-QT_FORWARD_DECLARE_CLASS(QDeclarativeItem)
-QT_FORWARD_DECLARE_CLASS(QMouseEvent)
-QT_FORWARD_DECLARE_CLASS(QToolBar)
-
 namespace QmlJSDebugger {
 
+class AbstractLiveEditTool;
 class QDeclarativeViewInspectorPrivate;
 
 class QDeclarativeViewInspector : public AbstractViewInspector
@@ -88,12 +85,8 @@ protected:
     bool mousePressEvent(QMouseEvent *event);
     bool mouseMoveEvent(QMouseEvent *event);
     bool mouseReleaseEvent(QMouseEvent *event);
-    bool keyPressEvent(QKeyEvent *event);
-    bool keyReleaseEvent(QKeyEvent *keyEvent);
-    bool mouseDoubleClickEvent(QMouseEvent *event);
-    bool wheelEvent(QWheelEvent *event);
 
-    void setSelectedItemsForTools(QList<QGraphicsItem *> items);
+    AbstractLiveEditTool *currentTool() const;
 
 private:
     Q_DISABLE_COPY(QDeclarativeViewInspector)

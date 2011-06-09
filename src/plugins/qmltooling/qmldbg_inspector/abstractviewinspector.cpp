@@ -41,6 +41,7 @@
 
 #include "abstractviewinspector.h"
 
+#include "abstracttool.h"
 #include "editor/qmltoolbar.h"
 #include "qdeclarativeinspectorprotocol.h"
 
@@ -50,6 +51,7 @@
 #include "QtDeclarative/private/qdeclarativeinspectorservice_p.h"
 
 #include <QtGui/QVBoxLayout>
+#include <QtGui/QMouseEvent>
 #include <QtCore/QSettings>
 
 static inline void initEditorResource() { Q_INIT_RESOURCE(editor); }
@@ -99,6 +101,7 @@ ToolBox::~ToolBox()
 AbstractViewInspector::AbstractViewInspector(QObject *parent) :
     QObject(parent),
     m_toolBox(0),
+    m_currentTool(0),
     m_showAppOnTop(false),
     m_designModeBehavior(false),
     m_animationPaused(false),
@@ -282,6 +285,124 @@ void AbstractViewInspector::changeToSingleSelectTool()
 void AbstractViewInspector::changeToMarqueeSelectTool()
 {
     changeTool(InspectorProtocol::SelectMarqueeTool);
+}
+
+bool AbstractViewInspector::eventFilter(QObject *obj, QEvent *event)
+{
+    if (!designModeBehavior())
+        return QObject::eventFilter(obj, event);
+
+    switch (event->type()) {
+    case QEvent::Leave:
+        if (leaveEvent(event))
+            return true;
+        break;
+    case QEvent::MouseButtonPress:
+        if (mousePressEvent(static_cast<QMouseEvent*>(event)))
+            return true;
+        break;
+    case QEvent::MouseMove:
+        if (mouseMoveEvent(static_cast<QMouseEvent*>(event)))
+            return true;
+        break;
+    case QEvent::MouseButtonRelease:
+        if (mouseReleaseEvent(static_cast<QMouseEvent*>(event)))
+            return true;
+        break;
+    case QEvent::KeyPress:
+        if (keyPressEvent(static_cast<QKeyEvent*>(event)))
+            return true;
+        break;
+    case QEvent::KeyRelease:
+        if (keyReleaseEvent(static_cast<QKeyEvent*>(event)))
+            return true;
+        break;
+    case QEvent::MouseButtonDblClick:
+        if (mouseDoubleClickEvent(static_cast<QMouseEvent*>(event)))
+            return true;
+        break;
+    case QEvent::Wheel:
+        if (wheelEvent(static_cast<QWheelEvent*>(event)))
+            return true;
+        break;
+    default:
+        break;
+    }
+
+    return QObject::eventFilter(obj, event);
+}
+
+bool AbstractViewInspector::leaveEvent(QEvent *event)
+{
+    m_currentTool->leaveEvent(event);
+    return true;
+}
+
+bool AbstractViewInspector::mousePressEvent(QMouseEvent *event)
+{
+    m_currentTool->mousePressEvent(event);
+    return true;
+}
+
+bool AbstractViewInspector::mouseMoveEvent(QMouseEvent *event)
+{
+    if (event->buttons()) {
+        m_currentTool->mouseMoveEvent(event);
+    } else {
+        m_currentTool->hoverMoveEvent(event);
+    }
+    return true;
+}
+
+bool AbstractViewInspector::mouseReleaseEvent(QMouseEvent *event)
+{
+    m_currentTool->mouseReleaseEvent(event);
+    return true;
+}
+
+bool AbstractViewInspector::keyPressEvent(QKeyEvent *event)
+{
+    m_currentTool->keyPressEvent(event);
+    return true;
+}
+
+bool AbstractViewInspector::keyReleaseEvent(QKeyEvent *event)
+{
+    switch (event->key()) {
+    case Qt::Key_V:
+        changeTool(InspectorProtocol::SelectTool);
+        break;
+// disabled because multiselection does not do anything useful without design mode
+//    case Qt::Key_M:
+//        changeTool(InspectorProtocol::SelectMarqueeTool);
+//        break;
+    case Qt::Key_I:
+        changeTool(InspectorProtocol::ColorPickerTool);
+        break;
+    case Qt::Key_Z:
+        changeTool(InspectorProtocol::ZoomTool);
+        break;
+    case Qt::Key_Space:
+        setAnimationPaused(!animationPaused());
+        break;
+    default:
+        break;
+    }
+
+    m_currentTool->keyReleaseEvent(event);
+    return true;
+}
+
+bool AbstractViewInspector::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    m_currentTool->mouseDoubleClickEvent(event);
+    return true;
+}
+
+bool AbstractViewInspector::wheelEvent(QWheelEvent *event)
+{
+    m_currentTool->wheelEvent(event);
+    return true;
 }
 
 void AbstractViewInspector::handleMessage(const QByteArray &message)

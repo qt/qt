@@ -39,66 +39,16 @@
 **
 ****************************************************************************/
 
-#ifndef ABSTRACTLIVEEDITTOOL_H
-#define ABSTRACTLIVEEDITTOOL_H
+#include "abstracttool.h"
 
-#include <QtCore/QList>
-#include "../abstracttool.h"
-
-QT_BEGIN_NAMESPACE
-class QMouseEvent;
-class QGraphicsItem;
-class QDeclarativeItem;
-class QKeyEvent;
-class QGraphicsScene;
-class QGraphicsObject;
-class QWheelEvent;
-class QDeclarativeView;
-QT_END_NAMESPACE
+#include "abstractviewinspector.h"
 
 namespace QmlJSDebugger {
 
-class QDeclarativeViewInspector;
-
-class AbstractLiveEditTool : public AbstractTool
+AbstractTool::AbstractTool(AbstractViewInspector *inspector) :
+    QObject(inspector),
+    m_inspector(inspector)
 {
-    Q_OBJECT
-public:
-    AbstractLiveEditTool(QDeclarativeViewInspector *inspector);
-
-    virtual ~AbstractLiveEditTool();
-
-    void leaveEvent(QEvent *) {}
-
-    virtual void itemsAboutToRemoved(const QList<QGraphicsItem*> &itemList) = 0;
-
-    virtual void clear() = 0;
-
-    void updateSelectedItems();
-    QList<QGraphicsItem*> items() const;
-
-    bool topItemIsMovable(const QList<QGraphicsItem*> &itemList);
-    bool topItemIsResizeHandle(const QList<QGraphicsItem*> &itemList);
-    bool topSelectedItemIsMovable(const QList<QGraphicsItem*> &itemList);
-
-    QString titleForItem(QGraphicsItem *item);
-
-    static QList<QGraphicsObject*> toGraphicsObjectList(const QList<QGraphicsItem*> &itemList);
-    static QGraphicsItem* topMovableGraphicsItem(const QList<QGraphicsItem*> &itemList);
-    static QDeclarativeItem* topMovableDeclarativeItem(const QList<QGraphicsItem*> &itemList);
-    static QDeclarativeItem *toQDeclarativeItem(QGraphicsItem *item);
-
-protected:
-    virtual void selectedItemsChanged(const QList<QGraphicsItem*> &objectList) = 0;
-
-    QDeclarativeViewInspector *inspector() const;
-    QDeclarativeView *view() const;
-    QGraphicsScene *scene() const;
-
-private:
-    QList<QGraphicsItem*> m_itemList;
-};
-
 }
 
-#endif // ABSTRACTLIVEEDITTOOL_H
+} // namespace QmlJSDebugger

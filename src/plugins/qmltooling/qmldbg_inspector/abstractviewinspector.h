@@ -53,10 +53,14 @@
 QT_BEGIN_NAMESPACE
 class QDeclarativeEngine;
 class QDeclarativeInspectorService;
+class QKeyEvent;
+class QMouseEvent;
+class QWheelEvent;
 QT_END_NAMESPACE
 
 namespace QmlJSDebugger {
 
+class AbstractTool;
 class ToolBox;
 
 /*
@@ -131,6 +135,21 @@ signals:
     void animationSpeedChanged(qreal factor);
     void animationPausedChanged(bool paused);
 
+protected:
+    bool eventFilter(QObject *, QEvent *);
+
+    virtual bool leaveEvent(QEvent *);
+    virtual bool mousePressEvent(QMouseEvent *event);
+    virtual bool mouseMoveEvent(QMouseEvent *event);
+    virtual bool mouseReleaseEvent(QMouseEvent *event);
+    virtual bool keyPressEvent(QKeyEvent *event);
+    virtual bool keyReleaseEvent(QKeyEvent *keyEvent);
+    virtual bool mouseDoubleClickEvent(QMouseEvent *event);
+    virtual bool wheelEvent(QWheelEvent *event);
+
+    AbstractTool *currentTool() const { return m_currentTool; }
+    void setCurrentTool(AbstractTool *tool) { m_currentTool = tool; }
+
 private slots:
     void handleMessage(const QByteArray &message);
 
@@ -142,6 +161,7 @@ private:
     void createToolBox();
 
     ToolBox *m_toolBox;
+    AbstractTool *m_currentTool;
 
     bool m_showAppOnTop;
     bool m_designModeBehavior;

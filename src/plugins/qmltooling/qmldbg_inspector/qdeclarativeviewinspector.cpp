@@ -49,13 +49,9 @@
 #include "editor/boundingrecthighlighter.h"
 
 #include <QtDeclarative/QDeclarativeItem>
-#include <QtDeclarative/QDeclarativeEngine>
-#include <QtDeclarative/QDeclarativeContext>
-#include <QtDeclarative/QDeclarativeExpression>
 #include <QtGui/QWidget>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QGraphicsObject>
-#include <QtGui/QApplication>
 
 namespace QmlJSDebugger {
 
@@ -79,7 +75,7 @@ QDeclarativeViewInspector::QDeclarativeViewInspector(QDeclarativeView *view,
     data->zoomTool = new ZoomTool(this);
     data->colorPickerTool = new ColorPickerTool(this);
     data->boundingRectHighlighter = new BoundingRectHighlighter(this);
-    data->currentTool = data->selectionTool;
+    setCurrentTool(data->selectionTool);
 
     // to capture ChildRemoved event when viewport changes
     data->view->installEventFilter(this);
@@ -142,6 +138,11 @@ void QDeclarativeViewInspector::changeTool(InspectorProtocol::Tool tool)
     }
 }
 
+AbstractLiveEditTool *QDeclarativeViewInspector::currentTool() const
+{
+    return static_cast<AbstractLiveEditTool*>(AbstractViewInspector::currentTool());
+}
+
 QDeclarativeEngine *QDeclarativeViewInspector::declarativeEngine() const
 {
     return data->view->engine();
@@ -181,143 +182,39 @@ bool QDeclarativeViewInspector::eventFilter(QObject *obj, QEvent *event)
         return QObject::eventFilter(obj, event);
     }
 
-    // Event from viewport
-    switch (event->type()) {
-    case QEvent::Leave: {
-        if (leaveEvent(event))
-            return true;
-        break;
-    }
-    case QEvent::MouseButtonPress: {
-        if (mousePressEvent(static_cast<QMouseEvent*>(event)))
-            return true;
-        break;
-    }
-    case QEvent::MouseMove: {
-        if (mouseMoveEvent(static_cast<QMouseEvent*>(event)))
-            return true;
-        break;
-    }
-    case QEvent::MouseButtonRelease: {
-        if (mouseReleaseEvent(static_cast<QMouseEvent*>(event)))
-            return true;
-        break;
-    }
-    case QEvent::KeyPress: {
-        if (keyPressEvent(static_cast<QKeyEvent*>(event)))
-            return true;
-        break;
-    }
-    case QEvent::KeyRelease: {
-        if (keyReleaseEvent(static_cast<QKeyEvent*>(event)))
-            return true;
-        break;
-    }
-    case QEvent::MouseButtonDblClick: {
-        if (mouseDoubleClickEvent(static_cast<QMouseEvent*>(event)))
-            return true;
-        break;
-    }
-    case QEvent::Wheel: {
-        if (wheelEvent(static_cast<QWheelEvent*>(event)))
-            return true;
-        break;
-    }
-    default: {
-        break;
-    }
-    } //switch
-
-    // standard event processing
-    return QObject::eventFilter(obj, event);
+    return AbstractViewInspector::eventFilter(obj, event);
 }
 
-bool QDeclarativeViewInspector::leaveEvent(QEvent * /*event*/)
+bool QDeclarativeViewInspector::leaveEvent(QEvent *event)
 {
-    if (!designModeBehavior())
-        return false;
     data->clearHighlight();
-    return true;
+    return AbstractViewInspector::leaveEvent(event);
 }
 
 bool QDeclarativeViewInspector::mousePressEvent(QMouseEvent *event)
 {
-    if (!designModeBehavior())
-        return false;
     data->cursorPos = event->pos();
-    data->currentTool->mousePressEvent(event);
-    return true;
+    return AbstractViewInspector::mousePressEvent(event);
 }
 
 bool QDeclarativeViewInspector::mouseMoveEvent(QMouseEvent *event)
 {
-    if (!designModeBehavior()) {
-        data->clearEditorItems();
-        return false;
-    }
     data->cursorPos = event->pos();
 
     QList<QGraphicsItem*> selItems = data->selectableItems(event->pos());
     if (!selItems.isEmpty()) {
-        declarativeView()->setToolTip(data->currentTool->titleForItem(selItems.first()));
+        declarativeView()->setToolTip(currentTool()->titleForItem(selItems.first()));
     } else {
         declarativeView()->setToolTip(QString());
     }
-    if (event->buttons()) {
-        data->currentTool->mouseMoveEvent(event);
-    } else {
-        data->currentTool->hoverMoveEvent(event);
-    }
-    return true;
+
+    return AbstractViewInspector::mouseMoveEvent(event);
 }
 
 bool QDeclarativeViewInspector::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (!designModeBehavior())
-        return false;
-
     data->cursorPos = event->pos();
-    data->currentTool->mouseReleaseEvent(event);
-    return true;
-}
-
-bool QDeclarativeViewInspector::keyPressEvent(QKeyEvent *event)
-{
-    if (!designModeBehavior())
-        return false;
-
-    data->currentTool->keyPressEvent(event);
-    return true;
-}
-
-bool QDeclarativeViewInspector::keyReleaseEvent(QKeyEvent *event)
-{
-    if (!designModeBehavior())
-        return false;
-
-    switch (event->key()) {
-    case Qt::Key_V:
-        changeTool(InspectorProtocol::SelectTool);
-        break;
-// disabled because multiselection does not do anything useful without design mode
-//    case Qt::Key_M:
-//        changeTool(InspectorProtocol::SelectMarqueeTool);
-//        break;
-    case Qt::Key_I:
-        changeTool(InspectorProtocol::ColorPickerTool);
-        break;
-    case Qt::Key_Z:
-        changeTool(InspectorProtocol::ZoomTool);
-        break;
-    case Qt::Key_Space:
-        setAnimationPaused(!animationPaused());
-        break;
-    default:
-        break;
-    }
-
-    data->currentTool->keyReleaseEvent(event);
-    return true;
+    return AbstractViewInspector::mouseReleaseEvent(event);
 }
 
 void QDeclarativeViewInspector::reparentQmlObject(QObject *object, QObject *newParent)
@@ -338,22 +235,6 @@ void QDeclarativeViewInspectorPrivate::_q_removeFromSelection(QObject *obj)
     if (QGraphicsItem *item = qobject_cast<QGraphicsObject*>(obj))
         items.removeOne(item);
     setSelectedItems(items);
-}
-
-bool QDeclarativeViewInspector::mouseDoubleClickEvent(QMouseEvent * /*event*/)
-{
-    if (!designModeBehavior())
-        return false;
-
-    return true;
-}
-
-bool QDeclarativeViewInspector::wheelEvent(QWheelEvent *event)
-{
-    if (!designModeBehavior())
-        return false;
-    data->currentTool->wheelEvent(event);
-    return true;
 }
 
 void QDeclarativeViewInspectorPrivate::setSelectedItemsForTools(const QList<QGraphicsItem *> &items)
@@ -378,7 +259,7 @@ void QDeclarativeViewInspectorPrivate::setSelectedItemsForTools(const QList<QGra
         }
     }
 
-    currentTool->updateSelectedItems();
+    q->currentTool()->updateSelectedItems();
 }
 
 void QDeclarativeViewInspectorPrivate::setSelectedItems(const QList<QGraphicsItem *> &items)
@@ -468,7 +349,6 @@ QList<QGraphicsItem*> QDeclarativeViewInspectorPrivate::selectableItems(
 
 void QDeclarativeViewInspectorPrivate::changeToSingleSelectTool()
 {
-    currentToolMode = Constants::SelectionToolMode;
     selectionTool->setRubberbandSelectionMode(false);
 
     changeToSelectTool();
@@ -479,19 +359,18 @@ void QDeclarativeViewInspectorPrivate::changeToSingleSelectTool()
 
 void QDeclarativeViewInspectorPrivate::changeToSelectTool()
 {
-    if (currentTool == selectionTool)
+    if (q->currentTool() == selectionTool)
         return;
 
-    currentTool->clear();
-    currentTool = selectionTool;
-    currentTool->clear();
-    currentTool->updateSelectedItems();
+    q->currentTool()->clear();
+    q->setCurrentTool(selectionTool);
+    q->currentTool()->clear();
+    q->currentTool()->updateSelectedItems();
 }
 
 void QDeclarativeViewInspectorPrivate::changeToMarqueeSelectTool()
 {
     changeToSelectTool();
-    currentToolMode = Constants::MarqueeSelectionToolMode;
     selectionTool->setRubberbandSelectionMode(true);
 
     emit q->marqueeSelectToolActivated();
@@ -500,10 +379,9 @@ void QDeclarativeViewInspectorPrivate::changeToMarqueeSelectTool()
 
 void QDeclarativeViewInspectorPrivate::changeToZoomTool()
 {
-    currentToolMode = Constants::ZoomMode;
-    currentTool->clear();
-    currentTool = zoomTool;
-    currentTool->clear();
+    q->currentTool()->clear();
+    q->setCurrentTool(zoomTool);
+    q->currentTool()->clear();
 
     emit q->zoomToolActivated();
     q->sendCurrentTool(Constants::ZoomMode);
@@ -511,13 +389,12 @@ void QDeclarativeViewInspectorPrivate::changeToZoomTool()
 
 void QDeclarativeViewInspectorPrivate::changeToColorPickerTool()
 {
-    if (currentTool == colorPickerTool)
+    if (q->currentTool() == colorPickerTool)
         return;
 
-    currentToolMode = Constants::ColorPickerMode;
-    currentTool->clear();
-    currentTool = colorPickerTool;
-    currentTool->clear();
+    q->currentTool()->clear();
+    q->setCurrentTool(colorPickerTool);
+    q->currentTool()->clear();
 
     emit q->colorPickerActivated();
     q->sendCurrentTool(Constants::ColorPickerMode);
