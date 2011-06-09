@@ -558,6 +558,9 @@ public:
     {}
 
     ~QGLTexture() {
+#ifdef Q_OS_SYMBIAN
+        freeTexture();
+#else
         if (options & QGLContext::MemoryManagedBindOption) {
             Q_ASSERT(context);
 #if !defined(Q_WS_X11)
@@ -565,6 +568,7 @@ public:
 #endif
             context->d_ptr->texture_destroyer->emitFreeTexture(context, boundPixmap, id);
         }
+#endif
     }
 
     QGLContext *context;
@@ -587,6 +591,8 @@ public:
     QSize bindCompressedTexturePVR(const char *buf, int len);
 
 #ifdef Q_OS_SYMBIAN
+    void freeTexture();
+
     QGLPixmapData* boundPixmap;
     qint64 boundKey;
 
