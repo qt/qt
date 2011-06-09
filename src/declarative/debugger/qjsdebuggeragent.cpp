@@ -56,7 +56,7 @@ class QJSDebuggerAgentPrivate
 {
 public:
     QJSDebuggerAgentPrivate(QJSDebuggerAgent *q)
-        : q(q), state(NoState)
+        : q(q), state(NoState), isInitialized(false)
     {}
 
     void continueExec();
@@ -79,6 +79,7 @@ public:
     QHash<QString, JSAgentBreakpointData> fileNameToBreakpoints;
     QStringList watchExpressions;
     QSet<qint64> knownObjectIds;
+    bool isInitialized;
 };
 
 namespace {
@@ -252,6 +253,14 @@ QJSDebuggerAgent::~QJSDebuggerAgent()
     delete d;
 }
 
+/*!
+  Indicates whether the agent got the list of breakpoints.
+  */
+bool QJSDebuggerAgent::isInitialized() const
+{
+    return d->isInitialized;
+}
+
 void QJSDebuggerAgent::setBreakpoints(const JSAgentBreakpoints &breakpoints)
 {
     d->breakpoints = breakpoints;
@@ -259,6 +268,8 @@ void QJSDebuggerAgent::setBreakpoints(const JSAgentBreakpoints &breakpoints)
     d->fileNameToBreakpoints.clear();
     foreach (const JSAgentBreakpointData &bp, breakpoints)
         d->fileNameToBreakpoints.insertMulti(fileName(QString::fromUtf8(bp.fileUrl)), bp);
+
+    d->isInitialized = true;
 }
 
 void QJSDebuggerAgent::setWatchExpressions(const QStringList &watchExpressions)
