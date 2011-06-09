@@ -5902,4 +5902,26 @@ QSize QGLTexture::bindCompressedTexturePVR(const char *buf, int len)
 
 #undef ctx
 
+#ifdef Q_OS_SYMBIAN
+void QGLTexture::freeTexture()
+{
+    if (!id)
+        return;
+
+    if (inTexturePool)
+        QGLTexturePool::instance()->detachTexture(this);
+
+    if (boundPixmap)
+        boundPixmap->releaseNativeImageHandle();
+
+    if (options & QGLContext::MemoryManagedBindOption) {
+        Q_ASSERT(context);
+        context->d_ptr->texture_destroyer->emitFreeTexture(context, 0, id);
+    }
+
+    id = 0;
+    boundKey = 0;
+}
+#endif
+
 QT_END_NAMESPACE
