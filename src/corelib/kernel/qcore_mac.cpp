@@ -75,6 +75,8 @@ CFStringRef QCFString::toCFStringRef(const QString &string)
 QCFString::operator CFStringRef() const
 {
     if (!type) {
+        if (string.d->data != string.d->array)
+            const_cast<QCFString*>(this)->string.realloc(); // ### Qt5: do we really need this stupid user protection?
         const_cast<QCFString*>(this)->type =
             CFStringCreateWithCharactersNoCopy(0,
                                                reinterpret_cast<const UniChar *>(string.unicode()),
