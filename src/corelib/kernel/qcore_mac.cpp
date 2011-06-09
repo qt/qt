@@ -74,8 +74,13 @@ CFStringRef QCFString::toCFStringRef(const QString &string)
 
 QCFString::operator CFStringRef() const
 {
-    if (!type)
-        const_cast<QCFString*>(this)->type = toCFStringRef(string);
+    if (!type) {
+        const_cast<QCFString*>(this)->type =
+            CFStringCreateWithCharactersNoCopy(0,
+                                               reinterpret_cast<const UniChar *>(string.unicode()),
+                                               string.length(),
+                                               kCFAllocatorNull);
+    }
     return type;
 }
 
