@@ -1353,11 +1353,12 @@ void tst_QFiledialog::tildeExpansion()
 {
 #ifndef QT_BUILD_INTERNAL
     QSKIP("Test case relies on developer build (AUTOTEST_EXPORT)", SkipAll);
-#endif
+#else
     QFETCH(QString, tildePath);
     QFETCH(QString, expandedPath);
 
     QCOMPARE(qt_tildeExpansion(tildePath), expandedPath);
+#endif
 }
 #endif
 
