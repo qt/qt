@@ -41,22 +41,22 @@
 
 #include <private/qcore_mac_p.h>
 #include <new>
-#include "qvarlengtharray.h"
 
 QT_BEGIN_NAMESPACE
 
 QString QCFString::toQString(CFStringRef str)
 {
-    if(!str)
+    if (!str)
         return QString();
-    CFIndex length = CFStringGetLength(str);
-    const UniChar *chars = CFStringGetCharactersPtr(str);
-    if (chars)
-        return QString(reinterpret_cast<const QChar *>(chars), length);
 
-    QVarLengthArray<UniChar> buffer(length);
-    CFStringGetCharacters(str, CFRangeMake(0, length), buffer.data());
-    return QString(reinterpret_cast<const QChar *>(buffer.constData()), length);
+    CFIndex length = CFStringGetLength(str);
+    if (length == 0)
+        return QString();
+
+    QString string(length, Qt::Uninitialized);
+    CFStringGetCharacters(str, CFRangeMake(0, length), reinterpret_cast<UniChar *>(const_cast<QChar *>(string.unicode())));
+
+    return string;
 }
 
 QCFString::operator QString() const
