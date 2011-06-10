@@ -1423,6 +1423,7 @@ class QDataStream;
 #    define Q_DECLARATIVE_EXPORT
 #    define Q_OPENGL_EXPORT
 #    define Q_MULTIMEDIA_EXPORT
+#    define Q_OPENVG_EXPORT
 #    define Q_XML_EXPORT
 #    define Q_XMLPATTERNS_EXPORT
 #    define Q_SCRIPT_EXPORT
