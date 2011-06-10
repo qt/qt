@@ -2613,6 +2613,15 @@ contains(DEFINES, ENABLE_SQLITE=1) {
             # Build sqlite3 into WebCore from source
             # somewhat copied from $$QT_SOURCE_TREE/src/plugins/sqldrivers/sqlite/sqlite.pro
             SOURCES += $${SQLITE3SRCDIR}/sqlite3.c
+    } else {
+        # Use sqlite3 from the underlying OS
+        CONFIG(QTDIR_build) {
+            QMAKE_CXXFLAGS *= $$QT_CFLAGS_SQLITE
+            LIBS *= $$QT_LFLAGS_SQLITE
+        } else {
+            INCLUDEPATH += $${SQLITE3SRCDIR}
+            LIBS += -lsqlite3
+        }
     }
 
     SOURCES += \
