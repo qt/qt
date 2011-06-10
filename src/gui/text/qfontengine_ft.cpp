@@ -758,6 +758,8 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     }
 #endif
 
+    fontDef.styleName = QString::fromUtf8(face->style_name);
+
     unlockFace();
 
     fsType = freetype->fsType();
@@ -795,7 +797,7 @@ int QFontEngineFT::loadFlags(QGlyphSet *set, GlyphFormat format, int flags,
     if (set && set->outline_drawing)
         load_flags = FT_LOAD_NO_BITMAP;
 
-    if (default_hint_style == HintNone || (flags & HB_ShaperFlag_UseDesignMetrics))
+    if (default_hint_style == HintNone || (flags & HB_ShaperFlag_UseDesignMetrics) || set->outline_drawing)
         load_flags |= FT_LOAD_NO_HINTING;
     else
         load_flags |= load_target;

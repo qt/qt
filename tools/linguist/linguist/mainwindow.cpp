@@ -1388,7 +1388,7 @@ void MainWindow::setupPhrase()
 
 void MainWindow::closeEvent(QCloseEvent *e)
 {
-    if (maybeSaveAll() && closePhraseBooks())
+    if (maybeSaveAll() && maybeSavePhraseBooks())
         e->accept();
     else
         e->ignore();
@@ -2302,7 +2302,7 @@ bool MainWindow::maybeSavePhraseBook(PhraseBook *pb)
     return true;
 }
 
-bool MainWindow::closePhraseBooks()
+bool MainWindow::maybeSavePhraseBooks()
 {
     foreach(PhraseBook *phraseBook, m_phraseBooks)
         if (!maybeSavePhraseBook(phraseBook))

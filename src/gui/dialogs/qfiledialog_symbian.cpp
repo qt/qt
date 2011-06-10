@@ -44,7 +44,7 @@
 #ifndef QT_NO_FILEDIALOG
 
 #include <private/qfiledialog_p.h>
-#if defined(Q_WS_S60) && defined(SYMBIAN_VERSION_SYMBIAN3)
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
 #include <driveinfo.h>
 #include <AknCommonDialogsDynMem.h>
 #include <CAknMemorySelectionDialogMultiDrive.h>
@@ -58,7 +58,7 @@ extern QStringList qt_make_filter_list(const QString &filter); // defined in qfi
 extern QStringList qt_clean_filter_list(const QString &filter); // defined in qfiledialog.cpp
 
 enum DialogMode { DialogOpen, DialogSave, DialogFolder };
-#if defined(Q_WS_S60) && defined(SYMBIAN_VERSION_SYMBIAN3)
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
 class CExtensionFilter : public MAknFileFilter
 {
 public:
@@ -104,7 +104,7 @@ static QString launchSymbianDialog(const QString dialogCaption, const QString st
                                    const QString filter, DialogMode dialogMode)
 {
     QString selection;
-#if defined(Q_WS_S60) && defined(SYMBIAN_VERSION_SYMBIAN3)
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
     TFileName startFolder;
     if (!startDirectory.isEmpty()) {
         QString dir = QDir::toNativeSeparators(QFileDialogPrivate::workingDirectory(startDirectory));

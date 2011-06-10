@@ -62,9 +62,10 @@ class QWidget;
 class Q_GUI_EXPORT QSymbianGraphicsSystemEx : public QGraphicsSystemEx
 {
 public:
+    static bool hasBCM2727();
+
     virtual void releaseCachedGpuResources();
     virtual void releaseAllGpuResources();
-    virtual bool hasBCM2727();
     virtual void forceToRaster(QWidget *window);
 };
 

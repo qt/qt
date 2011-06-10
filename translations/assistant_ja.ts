@@ -610,7 +610,7 @@ Reason:
     </message>
     <message>
         <source>Next</source>
-        <translation>進む</translation>
+        <translation>次へ</translation>
     </message>
     <message>
         <source>Case Sensitive</source>
