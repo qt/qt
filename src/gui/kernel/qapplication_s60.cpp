@@ -1518,6 +1518,11 @@ void QSymbianControl::HandleResourceChange(int resourceType)
             QResizeEvent e(qt_desktopWidget->size(), qt_desktopWidget->size());
             QApplication::sendEvent(qt_desktopWidget, &e);
         }
+        // Send resize event to dialogs so they can adjust their position if necessary.
+        if (qwidget->windowType() & Qt::Dialog) {
+            QResizeEvent e(qwidget->size(), qwidget->size());
+            QApplication::sendEvent(qwidget, &e);
+        }
         break;
     }
 #endif
