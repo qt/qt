@@ -10,5 +10,7 @@ include(../shared/formats.pri)
 include(../shared/proparser.pri)
 include(../../shared/symbian/epocroot.pri)
 
+win32:LIBS += -ladvapi32   # for registry.cpp in epocroot
+
 target.path=$$[QT_INSTALL_BINS]
 INSTALLS        += target
