@@ -132,7 +132,7 @@ void LiveSelectionTool::mousePressEvent(QMouseEvent *event)
     }
 }
 
-void LiveSelectionTool::createContextMenu(QList<QGraphicsItem*> itemList, QPoint globalPos)
+void LiveSelectionTool::createContextMenu(const QList<QGraphicsItem*> &itemList, QPoint globalPos)
 {
     QMenu contextMenu;
     connect(&contextMenu, SIGNAL(hovered(QAction*)),
@@ -143,7 +143,6 @@ void LiveSelectionTool::createContextMenu(QList<QGraphicsItem*> itemList, QPoint
     contextMenu.addAction(tr("Items"));
     contextMenu.addSeparator();
     int shortcutKey = Qt::Key_1;
-    bool addKeySequence = true;
     int i = 0;
 
     foreach (QGraphicsItem * const item, itemList) {
@@ -158,12 +157,11 @@ void LiveSelectionTool::createContextMenu(QList<QGraphicsItem*> itemList, QPoint
         }
 
         elementAction->setData(i);
-        if (addKeySequence)
-            elementAction->setShortcut(QKeySequence(shortcutKey));
 
-        shortcutKey++;
-        if (shortcutKey > Qt::Key_9)
-            addKeySequence = false;
+        if (shortcutKey <= Qt::Key_9) {
+            elementAction->setShortcut(QKeySequence(shortcutKey));
+            shortcutKey++;
+        }
 
         ++i;
     }
@@ -305,10 +303,6 @@ void LiveSelectionTool::mouseReleaseEvent(QMouseEvent *event)
     }
 }
 
-void LiveSelectionTool::mouseDoubleClickEvent(QMouseEvent * /*event*/)
-{
-}
-
 void LiveSelectionTool::keyPressEvent(QKeyEvent *event)
 {
     switch (event->key()) {
@@ -321,11 +315,6 @@ void LiveSelectionTool::keyPressEvent(QKeyEvent *event)
         //view()->currentTool()->keyPressEvent(event);
         break;
     }
-}
-
-void LiveSelectionTool::keyReleaseEvent(QKeyEvent * /*keyEvent*/)
-{
-
 }
 
 void LiveSelectionTool::wheelEvent(QWheelEvent *event)
@@ -370,10 +359,6 @@ void LiveSelectionTool::wheelEvent(QWheelEvent *event)
 void LiveSelectionTool::setSelectOnlyContentItems(bool selectOnlyContentItems)
 {
     m_selectOnlyContentItems = selectOnlyContentItems;
-}
-
-void LiveSelectionTool::itemsAboutToRemoved(const QList<QGraphicsItem*> &/*itemList*/)
-{
 }
 
 void LiveSelectionTool::clear()

@@ -82,9 +82,7 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
     bool leaveEvent(QEvent *);
-    bool mousePressEvent(QMouseEvent *event);
     bool mouseMoveEvent(QMouseEvent *event);
-    bool mouseReleaseEvent(QMouseEvent *event);
 
     AbstractLiveEditTool *currentTool() const;
 

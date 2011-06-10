@@ -242,17 +242,9 @@ void ZoomTool::keyReleaseEvent(QKeyEvent *event)
 
 }
 
-void ZoomTool::itemsAboutToRemoved(const QList<QGraphicsItem*> &/*itemList*/)
-{
-}
-
 void ZoomTool::clear()
 {
     view()->setCursor(Qt::ArrowCursor);
-}
-
-void ZoomTool::selectedItemsChanged(const QList<QGraphicsItem*> &/*itemList*/)
-{
 }
 
 void ZoomTool::scaleView(const QPointF &centerPos)

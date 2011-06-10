@@ -70,7 +70,6 @@ public:
     QDeclarativeViewInspector *q;
     QWeakPointer<QWidget> viewport;
 
-    QPointF cursorPos;
     QList<QWeakPointer<QGraphicsObject> > currentSelection;
 
     LiveSelectionTool *selectionTool;

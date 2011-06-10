@@ -191,16 +191,8 @@ bool QDeclarativeViewInspector::leaveEvent(QEvent *event)
     return AbstractViewInspector::leaveEvent(event);
 }
 
-bool QDeclarativeViewInspector::mousePressEvent(QMouseEvent *event)
-{
-    data->cursorPos = event->pos();
-    return AbstractViewInspector::mousePressEvent(event);
-}
-
 bool QDeclarativeViewInspector::mouseMoveEvent(QMouseEvent *event)
 {
-    data->cursorPos = event->pos();
-
     QList<QGraphicsItem*> selItems = data->selectableItems(event->pos());
     if (!selItems.isEmpty()) {
         declarativeView()->setToolTip(currentTool()->titleForItem(selItems.first()));
@@ -209,12 +201,6 @@ bool QDeclarativeViewInspector::mouseMoveEvent(QMouseEvent *event)
     }
 
     return AbstractViewInspector::mouseMoveEvent(event);
-}
-
-bool QDeclarativeViewInspector::mouseReleaseEvent(QMouseEvent *event)
-{
-    data->cursorPos = event->pos();
-    return AbstractViewInspector::mouseReleaseEvent(event);
 }
 
 void QDeclarativeViewInspector::reparentQmlObject(QObject *object, QObject *newParent)

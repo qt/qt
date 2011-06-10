@@ -73,12 +73,12 @@ public:
 
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *keyEvent);
-    void itemsAboutToRemoved(const QList<QGraphicsItem*> &itemList);
+    void itemsAboutToRemoved(const QList<QGraphicsItem*> &) {}
 
     void clear();
 
 protected:
-    void selectedItemsChanged(const QList<QGraphicsItem*> &itemList);
+    void selectedItemsChanged(const QList<QGraphicsItem*> &) {}
 
 private slots:
     void zoomTo100();
