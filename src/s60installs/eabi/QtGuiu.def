@@ -12104,7 +12104,7 @@ EXPORTS
 	_ZN15QStaticTextItem13setFontEngineEP11QFontEngine @ 12103 NONAME
 	_ZN15QStaticTextItemD1Ev @ 12104 NONAME
 	_ZN15QStaticTextItemD2Ev @ 12105 NONAME
-	_ZN19QEventDispatcherS6031reactivateDeferredActiveObjectsEv @ 12106 NONAME
+	_ZN19QEventDispatcherS6031reactivateDeferredActiveObjectsEv @ 12106 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate11setSubFocusEP13QGraphicsItemS1_ @ 12107 NONAME
 	_ZN20QGraphicsItemPrivate13clearSubFocusEP13QGraphicsItemS1_ @ 12108 NONAME
 	_ZN12QLineControl21resetCursorBlinkTimerEv @ 12109 NONAME

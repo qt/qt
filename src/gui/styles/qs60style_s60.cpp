@@ -579,7 +579,6 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsLX(
     const TAknsItemID skinId = m_partMap[stylepartIndex].skinID;
 
     TInt fallbackGraphicID = -1;
-    HBufC* iconFile = HBufC::NewLC( KMaxFileName );
     fallbackInfo(stylepart, fallbackGraphicID);
 
     TAknsItemID colorGroup = KAknsIIDQsnIconColors;
@@ -613,7 +612,7 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsLX(
         defaultColor);
 
     QPixmap result = fromFbsBitmap(icon, iconMask, flags, targetSize);
-    CleanupStack::PopAndDestroy(3); //icon, iconMask, iconFile
+    CleanupStack::PopAndDestroy(2); //icon, iconMask
     return result;
 }
 
@@ -691,21 +690,6 @@ QPixmap QS60StyleModeSpecifics::fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask
     }
 
     return pixmap;
-}
-
-bool QS60StylePrivate::isTouchSupported()
-{
-    return bool(AknLayoutUtils::PenEnabled());
-}
-
-bool QS60StylePrivate::isToolBarBackground()
-{
-    return (QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || QSysInfo::s60Version() == QSysInfo::SV_S60_3_2);
-}
-
-bool QS60StylePrivate::hasSliderGrooveGraphic()
-{
-    return QSysInfo::s60Version() != QSysInfo::SV_S60_3_1;
 }
 
 bool QS60StylePrivate::isSingleClickUi()
@@ -1068,20 +1052,8 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
 
     switch(frameElement) {
         case QS60StylePrivate::SF_ToolTip:
-            if (QSysInfo::s60Version() != QSysInfo::SV_S60_3_1) {
-                centerId.Set(EAknsMajorGeneric, 0x19c2);
-                frameId.Set(EAknsMajorSkin, 0x5300);
-            } else {
-                centerId.Set(KAknsIIDQsnFrPopupCenter);
-                frameId.iMinor = centerId.iMinor - 9;
-            }
-            break;
-        case QS60StylePrivate::SF_ToolBar:
-            if (QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || 
-                QSysInfo::s60Version() == QSysInfo::SV_S60_3_2) {
-                centerId.Set(KAknsIIDQsnFrPopupCenterSubmenu);
-                frameId.Set(KAknsIIDQsnFrPopupSub);
-            }
+            centerId.Set(EAknsMajorGeneric, 0x19c2);
+            frameId.Set(EAknsMajorSkin, 0x5300);
             break;
         case QS60StylePrivate::SF_PopupBackground:
             centerId.Set(KAknsIIDQsnFrPopupCenterSubmenu);
@@ -1223,10 +1195,7 @@ void QS60StylePrivate::setActiveLayout()
 
     //not found, lets try with either of dimensions
     if (activeLayoutIndex==-1){
-        const QSysInfo::S60Version currentRelease = QSysInfo::s60Version();
         const bool landscape = screenHeight < screenWidth;
-
-        activeLayoutIndex = (currentRelease == QSysInfo::SV_S60_3_1 || currentRelease == QSysInfo::SV_S60_3_2) ? 0 : 2;
         activeLayoutIndex += (!landscape) ? 1 : 0;
     }
 
@@ -1282,9 +1251,7 @@ bool QS60StyleModeSpecifics::disabledPartGraphic(QS60StyleEnums::SkinParts &part
         case QS60StyleEnums::SP_QsnFrButtonSideLInactive:
         case QS60StyleEnums::SP_QsnFrButtonSideRInactive:
         case QS60StyleEnums::SP_QsnFrButtonCenterInactive:
-            if (!(QSysInfo::s60Version()==QSysInfo::SV_S60_3_1 ||
-                  QSysInfo::s60Version()==QSysInfo::SV_S60_3_2))
-                disabledGraphic = true;
+            disabledGraphic = true;
             break;
         default:
             break;
@@ -1300,9 +1267,7 @@ bool QS60StyleModeSpecifics::disabledFrameGraphic(QS60StylePrivate::SkinFrameEle
     switch(frame){
         // inactive button graphics are available from 5.0 onwards
         case QS60StylePrivate::SF_ButtonInactive:
-            if (!(QSysInfo::s60Version()==QSysInfo::SV_S60_3_1 ||
-                  QSysInfo::s60Version()==QSysInfo::SV_S60_3_2))
-                disabledGraphic = true;
+            disabledGraphic = true;
             break;
         default:
             break;
@@ -1313,9 +1278,6 @@ bool QS60StyleModeSpecifics::disabledFrameGraphic(QS60StylePrivate::SkinFrameEle
 QPixmap QS60StyleModeSpecifics::generateMissingThemeGraphic(QS60StyleEnums::SkinParts &part,
         const QSize &size, QS60StylePrivate::SkinElementFlags flags)
 {
-    if (!QS60StylePrivate::isTouchSupported())
-        return QPixmap();
-
     QS60StyleEnums::SkinParts updatedPart = part;
     switch(part){
     // AVKON UI has a abnormal handling for scrollbar graphics. It is possible that the root
@@ -1541,7 +1503,7 @@ QVariant QS60StyleModeSpecifics::themeDefinition(
     //Animation definitions
     case QS60StyleEnums::TD_AnimationData:
         {
-            CAknsBmpAnimItemData *animationData;
+            CAknsBmpAnimItemData *animationData = 0;
             TAknsItemID animationSkinId = partSpecificThemeId(part);
             QList<QVariant> list;
 
@@ -1557,9 +1519,6 @@ QVariant QS60StyleModeSpecifics::themeDefinition(
 
                 QS60StyleEnums::AnimationMode playMode;
                 switch(animationData->PlayMode()) {
-                    case CBitmapAnimClientData::EPlay:
-                        playMode = QS60StyleEnums::AM_PlayOnce;
-                        break;
                     case CBitmapAnimClientData::ECycle:
                         playMode = QS60StyleEnums::AM_Looping;
                         break;
@@ -1567,6 +1526,7 @@ QVariant QS60StyleModeSpecifics::themeDefinition(
                         playMode = QS60StyleEnums::AM_Bounce;
                         break;
                     default:
+                        playMode = QS60StyleEnums::AM_PlayOnce;
                         break;
                 }
                 list.append(QVariant((int)playMode));

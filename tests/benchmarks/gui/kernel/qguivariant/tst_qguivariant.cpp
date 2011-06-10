@@ -70,8 +70,12 @@ tst_QGuiVariant::~tst_QGuiVariant()
 void tst_QGuiVariant::createGuiType_data()
 {
     QTest::addColumn<int>("typeId");
-    for (int i = QMetaType::FirstGuiType; i <= QMetaType::LastGuiType; ++i)
+    for (int i = QMetaType::FirstGuiType; i <= QMetaType::LastGuiType; ++i) {
+#ifndef QT3_SUPPORT
+        if (i != 63) // QMetaType::QColorGroup (63) requires QT3_SUPPORT
+#endif
         QTest::newRow(QMetaType::typeName(i)) << i;
+    }
 }
 
 // Tests how fast a Qt GUI type can be default-constructed by a
