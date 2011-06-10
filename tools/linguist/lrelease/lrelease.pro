@@ -8,7 +8,6 @@ SOURCES += main.cpp
 include(../../../src/tools/bootstrap/bootstrap.pri)
 include(../shared/formats.pri)
 include(../shared/proparser.pri)
-include(../../shared/symbian/epocroot.pri)
 
 target.path=$$[QT_INSTALL_BINS]
 INSTALLS        += target
