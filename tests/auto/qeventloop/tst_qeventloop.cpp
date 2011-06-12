@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -602,10 +602,12 @@ public slots:
         QTcpSocket *serverSocket = server->nextPendingConnection();
         serverSocket->write(data, size);
         serverSocket->flush();
-        QTest::qSleep(200); //allow the TCP/IP stack time to loopback the data, so our socket is ready to read
-        QCoreApplication::processEvents(QEventLoop::ExcludeSocketNotifiers);
+        QEventLoop loop;
+        QTimer::singleShot(200, &loop, SLOT(quit())); //allow the TCP/IP stack time to loopback the data, so our socket is ready to read
+        loop.exec(QEventLoop::ExcludeSocketNotifiers);
         testResult = dataArrived;
-        QCoreApplication::processEvents(); //check the deferred event is processed
+        QTimer::singleShot(200, &loop, SLOT(quit()));
+        loop.exec(); //check the deferred event is processed
         serverSocket->close();
         QThread::currentThread()->exit(0);
     }
@@ -631,6 +633,9 @@ public:
 
 void tst_QEventLoop::processEventsExcludeSocket()
 {
+#if defined(Q_WS_QWS)
+    QSKIP("Socket message seems to be leaking through QEventLoop::exec(ExcludeSocketNotifiers) on qws (QTBUG-19699)", SkipAll);
+#endif
     SocketTestThread thread;
     thread.start();
     QVERIFY(thread.wait());

@@ -7,29 +7,29 @@
 ** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -48,7 +48,7 @@
 #include <QFile>
 #include <QTemporaryFile>
 #include <QTextStream>
-
+#include <qdebug.h>
 #include "config.h"
 #include <stdlib.h>
 
@@ -175,6 +175,7 @@ Config::Config(const QString& programName)
 }
 
 /*!
+  The destructor has nothing special to do.
  */
 Config::~Config()
 {
@@ -199,6 +200,30 @@ void Config::load(const QString& fileName)
 	loc.setEtc(true);
     }
     lastLoc = Location::null;
+}
+
+/*!
+  Writes the qdoc configuration data to the named file.
+  The previous contents of the file are overwritten.
+ */
+void Config::unload(const QString& fileName)
+{
+    
+    QStringMultiMap::ConstIterator v = stringValueMap.begin();
+    while (v != stringValueMap.end()) {
+        qDebug() << v.key() << " = " << v.value();
+#if 0        
+        if (v.key().startsWith(varDot)) {
+            QString subVar = v.key().mid(varDot.length());
+            int dot = subVar.indexOf(QLatin1Char('.'));
+            if (dot != -1)
+                subVar.truncate(dot);
+            t.insert(subVar,v.value());
+        }
+#endif
+        ++v;
+    }
+    qDebug() << "fileName:" << fileName;
 }
 
 /*!
@@ -671,6 +696,7 @@ void Config::load(Location location, const QString& fileName)
             } while (isMetaKeyChar(c));
 
             QStringList keys = stack.getExpanded(location);
+            //qDebug() << "KEYS:" << keys;
             SKIP_SPACES();
 
             if (keys.count() == 1 && keys.first() == "include") {

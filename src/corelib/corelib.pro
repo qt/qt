@@ -45,4 +45,5 @@ symbian: {
                   "UNPAGED" \
                   "$${LITERAL_HASH}endif"
     MMP_RULES += pagingBlock
+    LIBS += -ltzclient
 }

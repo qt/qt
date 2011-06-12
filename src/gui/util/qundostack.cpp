@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -114,7 +114,7 @@ QUndoCommand::QUndoCommand(const QString &text, QUndoCommand *parent)
     d = new QUndoCommandPrivate;
     if (parent != 0)
         parent->d->child_list.append(this);
-    d->text = text;
+    setText(text);
 }
 
 /*!
@@ -230,10 +230,9 @@ void QUndoCommand::undo()
     Returns a short text string describing what this command does; for example,
     "insert text".
 
-    The text is used when the text properties of the stack's undo and redo
-    actions are updated.
+    The text is used for names of items in QUndoView.
 
-    \sa setText(), QUndoStack::createUndoAction(), QUndoStack::createRedoAction()
+    \sa actionText(), setText(), QUndoStack::createUndoAction(), QUndoStack::createRedoAction()
 */
 
 QString QUndoCommand::text() const
@@ -242,17 +241,47 @@ QString QUndoCommand::text() const
 }
 
 /*!
+    \since 4.8
+
+    Returns a short text string describing what this command does; for example,
+    "insert text".
+
+    The text is used when the text properties of the stack's undo and redo
+    actions are updated.
+
+    \sa text(), setText(), QUndoStack::createUndoAction(), QUndoStack::createRedoAction()
+*/
+
+QString QUndoCommand::actionText() const
+{
+    return d->actionText;
+}
+
+/*!
     Sets the command's text to be the \a text specified.
 
     The specified text should be a short user-readable string describing what this
     command does.
 
-    \sa text() QUndoStack::createUndoAction() QUndoStack::createRedoAction()
+    If you need to have two different strings for text() and actionText(), separate
+    them with "\n" and pass into this function. Even if you do not use this feature
+    for English strings during development, you can still let translators use two
+    different strings in order to match specific languages' needs.
+    The described feature and the function actionText() are available since Qt 4.8.
+
+    \sa text() actionText() QUndoStack::createUndoAction() QUndoStack::createRedoAction()
 */
 
 void QUndoCommand::setText(const QString &text)
 {
-    d->text = text;
+    int cdpos = text.indexOf(QLatin1Char('\n'));
+    if (cdpos > 0) {
+        d->text = text.left(cdpos);
+        d->actionText = text.mid(cdpos + 1);
+    } else {
+        d->text = text;
+        d->actionText = text;
+    }
 }
 
 /*!
@@ -374,11 +403,24 @@ QUndoAction::QUndoAction(const QString &prefix, QObject *parent)
 
 void QUndoAction::setPrefixedText(const QString &text)
 {
-    QString s = m_prefix;
-    if (!m_prefix.isEmpty() && !text.isEmpty())
-        s.append(QLatin1Char(' '));
-    s.append(text);
-    setText(s);
+    if (m_defaultText.isEmpty()) {
+        QString s = m_prefix;
+        if (!m_prefix.isEmpty() && !text.isEmpty())
+            s.append(QLatin1Char(' '));
+        s.append(text);
+        setText(s);
+    } else {
+        if (text.isEmpty())
+            setText(m_defaultText);
+        else
+            setText(m_prefix.arg(text));
+    }
+}
+
+void QUndoAction::setTextFormat(const QString &textFormat, const QString &defaultText)
+{
+    m_prefix = textFormat;
+    m_defaultText = defaultText;
 }
 
 #endif // QT_NO_ACTION
@@ -783,7 +825,7 @@ bool QUndoStack::canRedo() const
 /*!
     Returns the text of the command which will be undone in the next call to undo().
 
-    \sa QUndoCommand::text() redoText()
+    \sa QUndoCommand::actionText() redoText()
 */
 
 QString QUndoStack::undoText() const
@@ -792,14 +834,14 @@ QString QUndoStack::undoText() const
     if (!d->macro_stack.isEmpty())
         return QString();
     if (d->index > 0)
-        return d->command_list.at(d->index - 1)->text();
+        return d->command_list.at(d->index - 1)->actionText();
     return QString();
 }
 
 /*!
     Returns the text of the command which will be redone in the next call to redo().
 
-    \sa QUndoCommand::text() undoText()
+    \sa QUndoCommand::actionText() undoText()
 */
 
 QString QUndoStack::redoText() const
@@ -808,7 +850,7 @@ QString QUndoStack::redoText() const
     if (!d->macro_stack.isEmpty())
         return QString();
     if (d->index < d->command_list.size())
-        return d->command_list.at(d->index)->text();
+        return d->command_list.at(d->index)->actionText();
     return QString();
 }
 
@@ -822,15 +864,18 @@ QString QUndoStack::redoText() const
     prefixed by the specified \a prefix. If there is no command available for undo,
     this action will be disabled.
 
-    If \a prefix is empty, the default prefix "Undo" is used.
+    If \a prefix is empty, the default template "Undo %1" is used instead of prefix.
+    Before Qt 4.8, the prefix "Undo" was used by default.
 
     \sa createRedoAction(), canUndo(), QUndoCommand::text()
 */
 
 QAction *QUndoStack::createUndoAction(QObject *parent, const QString &prefix) const
 {
-    QString pref = prefix.isEmpty() ? tr("Undo") : prefix;
-    QUndoAction *result = new QUndoAction(pref, parent);
+    QUndoAction *result = new QUndoAction(prefix, parent);
+    if (prefix.isEmpty())
+        result->setTextFormat(tr("Undo %1"), tr("Undo", "Default text for undo action"));
+
     result->setEnabled(canUndo());
     result->setPrefixedText(undoText());
     connect(this, SIGNAL(canUndoChanged(bool)),
@@ -849,15 +894,18 @@ QAction *QUndoStack::createUndoAction(QObject *parent, const QString &prefix) co
     prefixed by the specified \a prefix. If there is no command available for redo,
     this action will be disabled.
 
-    If \a prefix is empty, the default prefix "Redo" is used.
+    If \a prefix is empty, the default template "Redo %1" is used instead of prefix.
+    Before Qt 4.8, the prefix "Redo" was used by default.
 
     \sa createUndoAction(), canRedo(), QUndoCommand::text()
 */
 
 QAction *QUndoStack::createRedoAction(QObject *parent, const QString &prefix) const
 {
-    QString pref = prefix.isEmpty() ? tr("Redo") : prefix;
-    QUndoAction *result = new QUndoAction(pref, parent);
+    QUndoAction *result = new QUndoAction(prefix, parent);
+    if (prefix.isEmpty())
+        result->setTextFormat(tr("Redo %1"), tr("Redo", "Default text for redo action"));
+
     result->setEnabled(canRedo());
     result->setPrefixedText(redoText());
     connect(this, SIGNAL(canRedoChanged(bool)),

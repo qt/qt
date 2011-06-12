@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -854,25 +854,26 @@ struct MyPage2 : public QWizardPage
 public:
     MyPage2() : init(0), cleanup(0), validate(0) {}
 
-    void initializePage() { ++init; QWizardPage::initializePage(); checkInvariant(); }
-    void cleanupPage() { ++cleanup; QWizardPage::cleanupPage(); checkInvariant(); }
+    void initializePage() { ++init; QWizardPage::initializePage(); }
+    void cleanupPage() { ++cleanup; QWizardPage::cleanupPage(); }
     bool validatePage() { ++validate; return QWizardPage::validatePage(); }
 
-    void check(int init, int cleanup)
-    { Q_ASSERT(init == this->init && cleanup == this->cleanup); Q_UNUSED(init); Q_UNUSED(cleanup); }
+    bool check(int init, int cleanup)
+    {
+        return init == this->init
+            && cleanup == this->cleanup
+            && (this->init == this->cleanup || this->init - 1 == this->cleanup);
+    }
 
     int init;
     int cleanup;
     int validate;
-
-private:
-    void checkInvariant() { Q_ASSERT(init == cleanup || init - 1 == cleanup); }
 };
 
 #define CHECK_PAGE_INIT(i0, c0, i1, c1, i2, c2) \
-    page0->check((i0), (c0)); \
-    page1->check((i1), (c1)); \
-    page2->check((i2), (c2));
+    QVERIFY(page0->check((i0), (c0))); \
+    QVERIFY(page1->check((i1), (c1))); \
+    QVERIFY(page2->check((i2), (c2)));
 
 void tst_QWizard::setOption_IndependentPages()
 {

@@ -6,15 +6,17 @@ HEADERS += \
         painting/qcolor.h \
         painting/qcolor_p.h \
         painting/qcolormap.h \
+        painting/qcosmeticstroker_p.h \
         painting/qdrawutil.h \
         painting/qemulationpaintengine_p.h \
         painting/qgraphicssystem_p.h \
+        painting/qgraphicssystemex_p.h \
         painting/qmatrix.h \
         painting/qmemrotate_p.h \
         painting/qoutlinemapper_p.h \
         painting/qpaintdevice.h \
         painting/qpaintengine.h \
-		painting/qpaintengine_p.h \
+        painting/qpaintengine_p.h \
         painting/qpaintengine_alpha_p.h \
         painting/qpaintengine_preview_p.h \
         painting/qpaintengineex_p.h \
@@ -53,6 +55,7 @@ SOURCES += \
         painting/qbrush.cpp \
         painting/qcolor.cpp \
         painting/qcolor_p.cpp \
+        painting/qcosmeticstroker.cpp \
         painting/qcssutil.cpp \
         painting/qdrawutil.cpp \
         painting/qemulationpaintengine.cpp \
@@ -249,8 +252,10 @@ embedded {
 
 symbian {
         HEADERS += painting/qwindowsurface_s60_p.h \
-                    painting/qdrawhelper_arm_simd_p.h
-        SOURCES += painting/qwindowsurface_s60.cpp
+                    painting/qdrawhelper_arm_simd_p.h \
+                    painting/qgraphicssystemex_symbian_p.h
+        SOURCES += painting/qwindowsurface_s60.cpp \
+                    painting/qgraphicssystemex_symbian.cpp
         armccIfdefBlock = \
         "$${LITERAL_HASH}if defined(ARMV6)" \
         "MACRO QT_HAVE_ARM_SIMD" \

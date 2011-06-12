@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -38,7 +38,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 
 #include <QFile>
 #include <QStack>
@@ -54,7 +53,6 @@ LoadingModel::LoadingModel(const Node::Vector &content,
                            const QXmlNamePool &np) : QSimpleXmlNodeModel(np)
                                                    , m_nodes(content)
 {
-    Q_ASSERT(!content.isEmpty());
     /*
     foreach(const Node *n, content)
         qDebug() << "this:" << n
@@ -79,20 +77,21 @@ const LoadingModel::Node *LoadingModel::toInternal(const QXmlNodeModelIndex &ni)
 
 QXmlNodeModelIndex LoadingModel::createIndex(const Node *const internal) const
 {
-    Q_ASSERT_X(internal, Q_FUNC_INFO,
-               "We shouldn't construct from null pointers.");
+    if (!internal)
+        qFatal("%s: cannot construct a model index from a null pointer", Q_FUNC_INFO);
     return QAbstractXmlNodeModel::createIndex(const_cast<Node *>(internal));
 }
 
 QUrl LoadingModel::documentUri(const QXmlNodeModelIndex &) const
 {
-    Q_ASSERT(false);
+    qFatal("%s: This method should not be called during the test", Q_FUNC_INFO);
     return QUrl();
 }
 
 QXmlNodeModelIndex::NodeKind LoadingModel::kind(const QXmlNodeModelIndex &ni) const
 {
-    Q_ASSERT(!ni.isNull());
+    if (ni.isNull())
+        qFatal("%s: node model index should not be null", Q_FUNC_INFO);
     return toInternal(ni)->kind;
 }
 
@@ -100,8 +99,10 @@ QXmlNodeModelIndex::DocumentOrder LoadingModel::compareOrder(const QXmlNodeModel
 {
     const Node *const in1 = toInternal(n1);
     const Node *const in2 = toInternal(n2);
-    Q_ASSERT(m_nodes.indexOf(in1) != -1);
-    Q_ASSERT(m_nodes.indexOf(in2) != -1);
+    if (m_nodes.indexOf(in1) == -1)
+        qFatal("%s: node n1 is not in internal node list", Q_FUNC_INFO);
+    if (m_nodes.indexOf(in2) == -1)
+        qFatal("%s: node n2 is not in internal node list", Q_FUNC_INFO);
 
     if(in1 == in2)
         return QXmlNodeModelIndex::Is;
@@ -113,7 +114,10 @@ QXmlNodeModelIndex::DocumentOrder LoadingModel::compareOrder(const QXmlNodeModel
 
 QXmlNodeModelIndex LoadingModel::root(const QXmlNodeModelIndex &) const
 {
-    Q_ASSERT(kind(createIndex(m_nodes.first())) == QXmlNodeModelIndex::Document);
+    if (kind(createIndex(m_nodes.first())) != QXmlNodeModelIndex::Document) {
+        qWarning("%s: first node must be a Document node", Q_FUNC_INFO);
+        return QXmlNodeModelIndex();
+    }
     return createIndex(m_nodes.first());
 }
 
@@ -126,8 +130,11 @@ QVariant LoadingModel::typedValue(const QXmlNodeModelIndex &ni) const
 {
     const Node *const internal = toInternal(ni);
 
-    Q_ASSERT(internal->kind == QXmlNodeModelIndex::Attribute
-             || internal->kind == QXmlNodeModelIndex::Element);
+    if (internal->kind != QXmlNodeModelIndex::Attribute
+        && internal->kind != QXmlNodeModelIndex::Element) {
+        qWarning("%s: node must be an attribute or element", Q_FUNC_INFO);
+        return QVariant();
+    }
 
     return internal->value;
 }
@@ -167,10 +174,10 @@ QXmlNodeModelIndex LoadingModel::nextFromSimpleAxis(QAbstractXmlNodeModel::Simpl
             return internal->precedingSibling ? createIndex(internal->precedingSibling) : QXmlNodeModelIndex();
         case NextSibling:
             return internal->followingSibling ? createIndex(internal->followingSibling) : QXmlNodeModelIndex();
+        default:
+            qWarning("%s: unknown axis enum value %d", Q_FUNC_INFO, static_cast<int>(axis));
+            return QXmlNodeModelIndex();
     }
-
-    Q_ASSERT(false);
-    return QXmlNodeModelIndex();
 }
 
 QVector<QXmlNodeModelIndex> LoadingModel::attributes(const QXmlNodeModelIndex &ni) const
@@ -326,18 +333,16 @@ void Loader::load()
                 break;
             }
             case QXmlStreamReader::DTD:
-            /* Fallthrough. */
+                qFatal("%s: QXmlStreamReader::DTD token is not supported", Q_FUNC_INFO);
+                break;
             case QXmlStreamReader::EntityReference:
-            {
-                Q_ASSERT_X(false, Q_FUNC_INFO,
-                           "We don't support this.");
-                /* Fallthrough. */
-            }
+                qFatal("%s: QXmlStreamReader::EntityReference token is not supported", Q_FUNC_INFO);
+                break;
             case QXmlStreamReader::NoToken:
             /* Fallthrough. */
             case QXmlStreamReader::Invalid:
             {
-                qWarning(qPrintable(reader.errorString()));
+                qWarning("%s", qPrintable(reader.errorString()));
                 m_result.clear();
                 return;
             }
@@ -346,7 +351,7 @@ void Loader::load()
 
     if(reader.hasError())
     {
-        qWarning(qPrintable(reader.errorString()));
+        qWarning("%s", qPrintable(reader.errorString()));
         m_result.clear();
     }
 }
@@ -355,6 +360,11 @@ QAbstractXmlNodeModel::Ptr LoadingModel::create(const QXmlNamePool &np)
 {
     Loader loader(np);
     loader.load();
+    if (loader.m_result.isEmpty()) {
+        qWarning("%s: attempt to create model with no content", Q_FUNC_INFO);
+        return Ptr(0);
+    }
+
     return Ptr(new LoadingModel(loader.m_result, np));
 }
 #endif //QTEST_XMLPATTERNS

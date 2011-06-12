@@ -7,29 +7,29 @@
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -42,6 +42,7 @@
 #include "lupdate.h"
 
 #include <translator.h>
+#include <profileparser.h>
 #include <profileevaluator.h>
 
 #include <QtCore/QCoreApplication>
@@ -227,6 +228,40 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
     }
 }
 
+static void print(const QString &fileName, int lineNo, const QString &msg)
+{
+    if (lineNo)
+        printErr(QString::fromLatin1("%2(%1): %3").arg(lineNo).arg(fileName, msg));
+    else
+        printErr(msg);
+}
+
+class ParseHandler : public ProFileParserHandler {
+public:
+    virtual void parseError(const QString &fileName, int lineNo, const QString &msg)
+        { if (verbose) print(fileName, lineNo, msg); }
+
+    bool verbose;
+};
+
+class EvalHandler : public ProFileEvaluatorHandler {
+public:
+    virtual void configError(const QString &msg)
+        { printErr(msg); }
+    virtual void evalError(const QString &fileName, int lineNo, const QString &msg)
+        { if (verbose) print(fileName, lineNo, msg); }
+    virtual void fileMessage(const QString &msg)
+        { printErr(msg); }
+
+    virtual void aboutToEval(ProFile *, ProFile *, EvalFileType) {}
+    virtual void doneWithEval(ProFile *) {}
+
+    bool verbose;
+};
+
+static ParseHandler parseHandler;
+static EvalHandler evalHandler;
+
 static QStringList getSources(const char *var, const char *vvar, const QStringList &baseVPaths,
                               const QString &projectDir, const ProFileEvaluator &visitor)
 {
@@ -288,12 +323,14 @@ static void processSources(Translator &fetchedTor,
 
 static void processProjects(
         bool topLevel, bool nestComplain, const QStringList &proFiles,
+        ProFileOption *option, ProFileParser *parser,
         UpdateOptions options, const QByteArray &codecForSource,
         const QString &targetLanguage, const QString &sourceLanguage,
         Translator *parentTor, bool *fail);
 
 static void processProject(
-        bool nestComplain, const QFileInfo &pfi, ProFileEvaluator &visitor,
+        bool nestComplain, const QFileInfo &pfi,
+        ProFileOption *option, ProFileParser *parser, ProFileEvaluator &visitor,
         UpdateOptions options, const QByteArray &_codecForSource,
         const QString &targetLanguage, const QString &sourceLanguage,
         Translator *fetchedTor, bool *fail)
@@ -321,7 +358,7 @@ static void processProject(
             else
                 subProFiles << subPro;
         }
-        processProjects(false, nestComplain, subProFiles, options, codecForSource,
+        processProjects(false, nestComplain, subProFiles, option, parser, options, codecForSource,
                         targetLanguage, sourceLanguage, fetchedTor, fail);
     } else {
         ConversionData cd;
@@ -347,23 +384,25 @@ static void processProject(
 
 static void processProjects(
         bool topLevel, bool nestComplain, const QStringList &proFiles,
+        ProFileOption *option, ProFileParser *parser,
         UpdateOptions options, const QByteArray &codecForSource,
         const QString &targetLanguage, const QString &sourceLanguage,
         Translator *parentTor, bool *fail)
 {
     foreach (const QString &proFile, proFiles) {
-        ProFileEvaluator visitor;
-        visitor.setVerbose(options & Verbose);
-
-        QHash<QString, QStringList> lupdateConfig;
-        lupdateConfig.insert(QLatin1String("CONFIG"), QStringList(QLatin1String("lupdate_run")));
-        visitor.addVariables(lupdateConfig);
-
         QFileInfo pfi(proFile);
-        ProFile pro(pfi.absoluteFilePath());
-        if (!visitor.queryProFile(&pro) || !visitor.accept(&pro)) {
+
+        ProFileEvaluator visitor(option, parser, &evalHandler);
+        ProFile *pro;
+        if (!(pro = parser->parsedProFile(QDir::cleanPath(pfi.absoluteFilePath())))) {
             if (topLevel)
                 *fail = true;
+            continue;
+        }
+        if (!visitor.accept(pro)) {
+            if (topLevel)
+                *fail = true;
+            pro->deref();
             continue;
         }
 
@@ -376,6 +415,7 @@ static void processProjects(
                 } else if (nestComplain) {
                     printErr(LU::tr("lupdate warning: TS files from command line "
                                     "prevent recursing into %1.\n").arg(proFile));
+                    pro->deref();
                     continue;
                 }
             }
@@ -387,6 +427,7 @@ static void processProjects(
                 // This might mean either a buggy PRO file or an intentional detach -
                 // we can't know without seeing the actual RHS of the assignment ...
                 // Just assume correctness and be silent.
+                pro->deref();
                 continue;
             }
             Translator tor;
@@ -398,9 +439,10 @@ static void processProjects(
                 tor.setCodecName(tmp.last().toLatin1());
                 setCodec = true;
             }
-            processProject(false, pfi, visitor, options, codecForSource,
+            processProject(false, pfi, option, parser, visitor, options, codecForSource,
                            targetLanguage, sourceLanguage, &tor, fail);
             updateTsFiles(tor, tsFiles, setCodec, sourceLanguage, targetLanguage, options, fail);
+            pro->deref();
             continue;
         }
       noTrans:
@@ -409,12 +451,13 @@ static void processProjects(
                 printErr(LU::tr("lupdate warning: no TS files specified. Only diagnostics "
                                 "will be produced for '%1'.\n").arg(proFile));
             Translator tor;
-            processProject(nestComplain, pfi, visitor, options, codecForSource,
+            processProject(nestComplain, pfi, option, parser, visitor, options, codecForSource,
                            targetLanguage, sourceLanguage, &tor, fail);
         } else {
-            processProject(nestComplain, pfi, visitor, options, codecForSource,
+            processProject(nestComplain, pfi, option, parser, visitor, options, codecForSource,
                            targetLanguage, sourceLanguage, parentTor, fail);
         }
+        pro->deref();
     }
 }
 
@@ -714,15 +757,22 @@ int main(int argc, char **argv)
                             " Both project and source files / include paths specified.\n"));
             return 1;
         }
+
+        parseHandler.verbose = evalHandler.verbose = !!(options & Verbose);
+        ProFileOption option;
+        option.initProperties(app.applicationDirPath() + QLatin1String("/qmake"));
+        option.setCommandLineArguments(QStringList() << QLatin1String("CONFIG+=lupdate_run"));
+        ProFileParser parser(0, &parseHandler);
+
         if (!tsFileNames.isEmpty()) {
             Translator fetchedTor;
             fetchedTor.setCodecName(codecForTr);
-            processProjects(true, true, proFiles, options, QByteArray(),
+            processProjects(true, true, proFiles, &option, &parser, options, QByteArray(),
                             targetLanguage, sourceLanguage, &fetchedTor, &fail);
             updateTsFiles(fetchedTor, tsFileNames, !codecForTr.isEmpty(),
                           sourceLanguage, targetLanguage, options, &fail);
         } else {
-            processProjects(true, false, proFiles, options, QByteArray(),
+            processProjects(true, false, proFiles, &option, &parser, options, QByteArray(),
                             targetLanguage, sourceLanguage, 0, &fail);
         }
     }

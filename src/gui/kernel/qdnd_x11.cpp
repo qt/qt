@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -1166,12 +1166,20 @@ void QX11Data::xdndHandleDrop(QWidget *, const XEvent * xe, bool passive)
         // some XEMBEDding, so try to find the real QMimeData used
         // based on the timestamp for this drop.
         QMimeData *dropData = 0;
-        int at = findXdndDropTransactionByTime(qt_xdnd_target_current_time);
-        if (at != -1)
+        const int at = findXdndDropTransactionByTime(qt_xdnd_target_current_time);
+        if (at != -1) {
             dropData = QDragManager::dragPrivate(X11->dndDropTransactions.at(at).object)->data;
+            // Can't use the source QMimeData if we need the image conversion code from xdndObtainData
+            if (dropData && dropData->hasImage())
+                dropData = 0;
+        }
         // if we can't find it, then use the data in the drag manager
-        if (!dropData)
-            dropData = (manager->object) ? manager->dragPrivate()->data : manager->dropData;
+        if (!dropData) {
+            if (manager->object && !manager->dragPrivate()->data->hasImage())
+                dropData = manager->dragPrivate()->data;
+            else
+                dropData = manager->dropData;
+        }
 
         // Drop coming from another app? Update keyboard modifiers.
         if (!qt_xdnd_dragging) {
@@ -1855,8 +1863,16 @@ static QVariant xdndObtainData(const char *format, QVariant::Type requestedType)
          && (!(w->windowType() == Qt::Desktop) || w->acceptDrops()))
     {
         QDragPrivate * o = QDragManager::self()->dragPrivate();
-        if (o->data->hasFormat(QLatin1String(format)))
-            result = o->data->data(QLatin1String(format));
+        const QString mimeType = QString::fromLatin1(format);
+        if (o->data->hasFormat(mimeType)) {
+            result = o->data->data(mimeType);
+        } else if (mimeType.startsWith(QLatin1String("image/")) && o->data->hasImage()) {
+            // ### duplicated from QInternalMimeData::renderDataHelper
+            QImage image = qvariant_cast<QImage>(o->data->imageData());
+            QBuffer buf(&result);
+            buf.open(QBuffer::WriteOnly);
+            image.save(&buf, mimeType.mid(mimeType.indexOf(QLatin1Char('/')) + 1).toLatin1().toUpper());
+        }
         return result;
     }
 

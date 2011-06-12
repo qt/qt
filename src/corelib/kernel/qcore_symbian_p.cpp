@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -107,80 +107,6 @@ QHBufC::~QHBufC()
 {
     if (m_hBufC)
         delete m_hBufC;
-}
-
-class QS60PluginResolver
-{
-public:
-    QS60PluginResolver()
-        : initTried(false) {}
-
-    ~QS60PluginResolver() {
-        lib.Close();
-    }
-
-    TLibraryFunction resolve(int ordinal) {
-        if (!initTried) {
-            init();
-            initTried = true;
-        }
-
-        if (lib.Handle())
-            return lib.Lookup(ordinal);
-        else
-            return reinterpret_cast<TLibraryFunction>(NULL);
-    }
-
-private:
-    void init()
-    {
-        _LIT(KLibName_3_1, "qts60plugin_3_1" QT_LIBINFIX_UNICODE L".dll");
-        _LIT(KLibName_3_2, "qts60plugin_3_2" QT_LIBINFIX_UNICODE L".dll");
-        _LIT(KLibName_5_0, "qts60plugin_5_0" QT_LIBINFIX_UNICODE L".dll");
-
-        TPtrC libName;
-        TInt uidValue;
-        switch (QSysInfo::s60Version()) {
-        case QSysInfo::SV_S60_3_1:
-            libName.Set(KLibName_3_1);
-            uidValue = 0x2001E620;
-            break;
-        case QSysInfo::SV_S60_3_2:
-            libName.Set(KLibName_3_2);
-            uidValue = 0x2001E621;
-            break;
-        case QSysInfo::SV_S60_5_0: // Fall through to default
-        default:
-            // Default to 5.0 version, as any unknown platform is likely to be newer than that
-            libName.Set(KLibName_5_0);
-            uidValue = 0x2001E622;
-            break;
-        }
-
-        TUidType libUid(KDynamicLibraryUid, KSharedLibraryUid, TUid::Uid(uidValue));
-        lib.Load(libName, libUid);
-
-        // Duplicate lib handle to enable process wide access to it. Since Duplicate overwrites
-        // existing handle without closing it, store original for subsequent closing.
-        RLibrary origHandleCloser = lib;
-        lib.Duplicate(RThread(), EOwnerProcess);
-        origHandleCloser.Close();
-    }
-
-    RLibrary lib;
-    bool initTried;
-};
-
-Q_GLOBAL_STATIC(QS60PluginResolver, qt_s60_plugin_resolver);
-
-/*!
-  \internal
-  Resolves a platform version specific function from S60 plugin.
-  If plugin is missing or resolving fails for another reason, NULL is returned.
-*/
-Q_CORE_EXPORT TLibraryFunction qt_resolveS60PluginFunc(int ordinal)
-{
-    return qt_s60_plugin_resolver()->resolve(ordinal);
 }
 
 class QS60RFsSession

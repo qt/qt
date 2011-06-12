@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -62,7 +62,7 @@
 #include "qthread.h"
 #include "qvarlengtharray.h"
 #include "qstatictext.h"
-#include "qglyphs.h"
+#include "qglyphrun.h"
 
 #include <private/qfontengine_p.h>
 #include <private/qpaintengine_p.h>
@@ -73,7 +73,7 @@
 #include <private/qpaintengine_raster_p.h>
 #include <private/qmath_p.h>
 #include <private/qstatictext_p.h>
-#include <private/qglyphs_p.h>
+#include <private/qglyphrun_p.h>
 #include <private/qstylehelper_p.h>
 #include <private/qrawfont_p.h>
 
@@ -150,14 +150,6 @@ static inline uint line_emulation(uint emulation)
                         | QGradient_StretchToDevice
                         | QPaintEngine::ObjectBoundingModeGradients
                         | QPaintEngine_OpaqueBackground);
-}
-
-static bool qt_paintengine_supports_transformations(QPaintEngine::Type type)
-{
-    return type == QPaintEngine::OpenGL2
-            || type == QPaintEngine::OpenVG
-            || type == QPaintEngine::OpenGL
-            || type == QPaintEngine::CoreGraphics;
 }
 
 #ifndef QT_NO_DEBUG
@@ -692,7 +684,7 @@ void QPainterPrivate::updateInvMatrix()
     invMatrix = state->matrix.inverted();
 }
 
-extern bool qt_isExtendedRadialGradient(const QBrush &brush);
+Q_GUI_EXPORT bool qt_isExtendedRadialGradient(const QBrush &brush);
 
 void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
 {
@@ -2868,6 +2860,9 @@ void QPainter::setClipRect(const QRect &rect, Qt::ClipOperation op)
         return;
     }
 
+    if (d->state->clipOperation == Qt::NoClip && op == Qt::IntersectClip)
+        op = Qt::ReplaceClip;
+
     d->state->clipRegion = rect;
     d->state->clipOperation = op;
     if (op == Qt::NoClip || op == Qt::ReplaceClip)
@@ -2922,6 +2917,9 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
         d->state->clipOperation = op;
         return;
     }
+
+    if (d->state->clipOperation == Qt::NoClip && op == Qt::IntersectClip)
+        op = Qt::ReplaceClip;
 
     d->state->clipRegion = r;
     d->state->clipOperation = op;
@@ -3327,6 +3325,9 @@ void QPainter::setClipPath(const QPainterPath &path, Qt::ClipOperation op)
         d->state->clipOperation = op;
         return;
     }
+
+    if (d->state->clipOperation == Qt::NoClip && op == Qt::IntersectClip)
+        op = Qt::ReplaceClip;
 
     d->state->clipPath = path;
     d->state->clipOperation = op;
@@ -5798,39 +5799,48 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
 
     \since 4.8
 
-    \sa QGlyphs::setFont(), QGlyphs::setPositions(), QGlyphs::setGlyphIndexes()
+    \sa QGlyphRun::setRawFont(), QGlyphRun::setPositions(), QGlyphRun::setGlyphIndexes()
 */
 #if !defined(QT_NO_RAWFONT)
-void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
+void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
 {
     Q_D(QPainter);
 
-    QRawFont font = glyphs.font();
+    QRawFont font = glyphRun.rawFont();
     if (!font.isValid())
         return;
 
-    QVector<quint32> glyphIndexes = glyphs.glyphIndexes();
-    QVector<QPointF> glyphPositions = glyphs.positions();
+    QGlyphRunPrivate *glyphRun_d = QGlyphRunPrivate::get(glyphRun);
 
-    int count = qMin(glyphIndexes.size(), glyphPositions.size());
+    const quint32 *glyphIndexes = glyphRun_d->glyphIndexData;
+    const QPointF *glyphPositions = glyphRun_d->glyphPositionData;
+
+    int count = qMin(glyphRun_d->glyphIndexDataSize, glyphRun_d->glyphPositionDataSize);
     QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
 
-    bool paintEngineSupportsTransformations =
-            d->extended != 0
-            ? qt_paintengine_supports_transformations(d->extended->type())
-            : qt_paintengine_supports_transformations(d->engine->type());
+    QRawFontPrivate *fontD = QRawFontPrivate::get(font);
+    bool supportsTransformations;
+    if (d->extended != 0) {
+        supportsTransformations = d->extended->supportsTransformations(fontD->fontEngine->fontDef.pixelSize,
+                                                                       d->state->matrix);
+    } else {
+        supportsTransformations = d->engine->type() == QPaintEngine::CoreGraphics
+                                  || d->state->matrix.isAffine();
+    }
+
     for (int i=0; i<count; ++i) {
-        QPointF processedPosition = position + glyphPositions.at(i);
-        if (!paintEngineSupportsTransformations)
+        QPointF processedPosition = position + glyphPositions[i];
+        if (!supportsTransformations)
             processedPosition = d->state->transform().map(processedPosition);
         fixedPointPositions[i] = QFixedPoint::fromPointF(processedPosition);
     }
 
-    d->drawGlyphs(glyphIndexes.data(), fixedPointPositions.data(), count, font, glyphs.overline(),
-                  glyphs.underline(), glyphs.strikeOut());
+    d->drawGlyphs(glyphIndexes, fixedPointPositions.data(), count, font, glyphRun.overline(),
+                  glyphRun.underline(), glyphRun.strikeOut());
 }
 
-void QPainterPrivate::drawGlyphs(quint32 *glyphArray, QFixedPoint *positions, int glyphCount,
+void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, QFixedPoint *positions,
+                                 int glyphCount,
                                  const QRawFont &font, bool overline, bool underline,
                                  bool strikeOut)
 {
@@ -5862,7 +5872,7 @@ void QPainterPrivate::drawGlyphs(quint32 *glyphArray, QFixedPoint *positions, in
 
     QFixed width = rightMost - leftMost;
 
-    if (extended != 0) {
+    if (extended != 0 && state->matrix.isAffine()) {
         QStaticTextItem staticTextItem;
         staticTextItem.color = state->pen.color();
         staticTextItem.font = state->font;
@@ -5997,11 +6007,12 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         return;
     }
 
-    bool paintEngineSupportsTransformations = qt_paintengine_supports_transformations(d->extended->type());
-    if (paintEngineSupportsTransformations && !staticText_d->untransformedCoordinates) {
+    bool supportsTransformations = d->extended->supportsTransformations(staticText_d->font.pixelSize(),
+                                                                        d->state->matrix);
+    if (supportsTransformations && !staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = true;
         staticText_d->needsRelayout = true;
-    } else if (!paintEngineSupportsTransformations && staticText_d->untransformedCoordinates) {
+    } else if (!supportsTransformations && staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = false;
         staticText_d->needsRelayout = true;
     }
@@ -6461,8 +6472,7 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     const qreal underlineOffset = fe->underlinePosition().toReal();
     // deliberately ceil the offset to avoid the underline coming too close to
     // the text above it.
-    const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
-    const qreal underlinePos = pos.y() + qCeil(underlineOffset) - aliasedCoordinateDelta;
+    const qreal underlinePos = pos.y() + qCeil(underlineOffset);
 
     if (underlineStyle == QTextCharFormat::SpellCheckUnderline) {
         underlineStyle = QTextCharFormat::UnderlineStyle(QApplication::style()->styleHint(QStyle::SH_SpellCheckUnderlineStyle));

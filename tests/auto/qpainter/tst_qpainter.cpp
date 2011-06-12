@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -72,6 +72,7 @@
 #include <qgraphicsscene.h>
 #include <qgraphicsproxywidget.h>
 #include <qlayout.h>
+#include <qfontdatabase.h>
 
 #if defined(Q_OS_SYMBIAN)
 # define SRCDIR "."
@@ -265,6 +266,8 @@ private slots:
     void drawTextOpacity();
 
     void QTBUG17053_zeroDashPattern();
+
+    void drawTextOutsideGuiThread();
 
 private:
     void fillData();
@@ -1312,7 +1315,7 @@ void tst_QPainter::drawRect2()
         p.end();
 
         QRect stroke = getPaintedSize(image, Qt::white);
-        QCOMPARE(stroke, fill.adjusted(0, 0, 1, 1));
+        QCOMPARE(stroke.adjusted(1, 1, 0, 0), fill.adjusted(0, 0, 1, 1));
     }
 }
 
@@ -1409,13 +1412,13 @@ void tst_QPainter::drawPath_data()
     {
         QPainterPath p;
         p.addRect(2.25, 2.25, 10, 10);
-        QTest::newRow("non-aligned rect") << p << QRect(2, 2, 10, 10) << 10 * 10;
+        QTest::newRow("non-aligned rect") << p << QRect(3, 3, 10, 10) << 10 * 10;
     }
 
     {
         QPainterPath p;
         p.addRect(2.25, 2.25, 10.5, 10.5);
-        QTest::newRow("non-aligned rect 2") << p << QRect(2, 2, 11, 11) << 11 * 11;
+        QTest::newRow("non-aligned rect 2") << p << QRect(3, 3, 10, 10) << 10 * 10;
     }
 
     {
@@ -4737,6 +4740,44 @@ void tst_QPainter::QTBUG17053_zeroDashPattern()
     p.drawLine(0, 0, image.width(), image.height());
 
     QCOMPARE(image, original);
+}
+
+class TextDrawerThread : public QThread
+{
+public:
+    void run();
+    QImage rendering;
+};
+
+void TextDrawerThread::run()
+{
+    rendering = QImage(100, 100, QImage::Format_ARGB32_Premultiplied);
+    rendering.fill(0);
+    QPainter p(&rendering);
+    p.fillRect(10, 10, 100, 100, Qt::blue);
+    p.setPen(Qt::green);
+    p.drawText(20, 20, "some text");
+    p.end();
+}
+
+void tst_QPainter::drawTextOutsideGuiThread()
+{
+    if (!QFontDatabase::supportsThreadedFontRendering())
+        QSKIP("No threaded font rendering", SkipAll);
+
+    QImage referenceRendering(100, 100, QImage::Format_ARGB32_Premultiplied);
+    referenceRendering.fill(0);
+    QPainter p(&referenceRendering);
+    p.fillRect(10, 10, 100, 100, Qt::blue);
+    p.setPen(Qt::green);
+    p.drawText(20, 20, "some text");
+    p.end();
+
+    TextDrawerThread t;
+    t.start();
+    t.wait();
+
+    QCOMPARE(referenceRendering, t.rendering);
 }
 
 QTEST_MAIN(tst_QPainter)

@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -46,29 +46,32 @@
 
 #include "qcore_symbian_p.h"
 #include <e32cmn.h>
-QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SYSTEMSEMAPHORE
 
+//#define QSYSTEMSEMAPHORE_DEBUG
+
+QT_BEGIN_NAMESPACE
+
 QSystemSemaphorePrivate::QSystemSemaphorePrivate() :
-        error(QSystemSemaphore::NoError)
+    error(QSystemSemaphore::NoError)
 {
 }
 
 void QSystemSemaphorePrivate::setErrorString(const QString &function, int err)
 {
-    if (err == KErrNone){
+    if (err == KErrNone)
         return;
-    }
+
     switch(err){
     case KErrAlreadyExists:
         errorString = QCoreApplication::tr("%1: already exists", "QSystemSemaphore").arg(function);
         error = QSystemSemaphore::AlreadyExists;
-    break;
+        break;
     case KErrNotFound:
         errorString = QCoreApplication::tr("%1: does not exist", "QSystemSemaphore").arg(function);
         error = QSystemSemaphore::NotFound;
-    break;
+        break;
     case KErrNoMemory:
     case KErrInUse:
         errorString = QCoreApplication::tr("%1: out of resources", "QSystemSemaphore").arg(function);
@@ -77,22 +80,21 @@ void QSystemSemaphorePrivate::setErrorString(const QString &function, int err)
     case KErrPermissionDenied:
         errorString = QCoreApplication::tr("%1: permission denied", "QSystemSemaphore").arg(function);
         error = QSystemSemaphore::PermissionDenied;
-    break;
-default:
-    errorString = QCoreApplication::tr("%1: unknown error %2", "QSystemSemaphore").arg(function).arg(err);
-    error = QSystemSemaphore::UnknownError;
-    }
-
-#if defined QSYSTEMSEMAPHORE_DEBUG
+        break;
+    default:
+        errorString = QCoreApplication::tr("%1: unknown error %2", "QSystemSemaphore").arg(function).arg(err);
+        error = QSystemSemaphore::UnknownError;
+#ifdef QSYSTEMSEMAPHORE_DEBUG
         qDebug() << errorString << "key" << key;
 #endif
+        break;
+    }
 }
 
 int QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode)
 {
-    if (semaphore.Handle()) {
+    if (semaphore.Handle())
         return semaphore.Handle();
-    }
 
     // don't allow making handles on empty keys
     if (key.isEmpty())
@@ -106,12 +108,13 @@ int QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode)
     while (err != KErrNoMemory && err != KErrNone && tryCount-- >= 0) {
         err = semaphore.CreateGlobal(name, initialValue, EOwnerProcess);
         if (err != KErrNoMemory && err != KErrNone)
-            err = semaphore.OpenGlobal(name,EOwnerProcess);
+            err = semaphore.OpenGlobal(name, EOwnerProcess);
     }
-    if (err){
-        setErrorString(QLatin1String("QSystemSemaphore::handle"),err);
+    if (err) {
+        setErrorString(QLatin1String("QSystemSemaphore::handle"), err);
         return 0;
     }
+
     return semaphore.Handle();
 }
 
@@ -125,14 +128,14 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
     if (0 == handle())
         return false;
 
-    if (count > 0) {
+    if (count > 0)
         semaphore.Signal(count);
-    } else {
+    else
         semaphore.Wait();
-        }
+
     return true;
 }
 
-#endif //QT_NO_SYSTEMSEMAPHORE
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_SYSTEMSEMAPHORE

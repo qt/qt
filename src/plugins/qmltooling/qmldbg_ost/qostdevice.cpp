@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -57,6 +57,8 @@ public:
         Cancel();
     }
 
+    TInt& AoFlags() { return ((TInt*)&iStatus)[1]; }
+
 private:
     void RunL();
     void DoCancel();
@@ -65,6 +67,7 @@ private:
     RUsbOstComm ost;
     TBuf8<4096> readBuf;
     QByteArray dataBuf;
+    TBool inReadyRead;
 };
 
 QOstDevice::QOstDevice(QObject *parent) :
@@ -116,7 +119,11 @@ void QOstDevicePrivate::RunL()
         ost.ReadMessage(iStatus, readBuf);
         SetActive();
 
-        emit q->readyRead();
+        if (!inReadyRead) {
+            inReadyRead = true;
+            emit q->readyRead();
+            inReadyRead = false;
+        }
     } else {
         q->setErrorString(QString("Error %1 from RUsbOstComm::ReadMessage()").arg(iStatus.Int()));
     }
@@ -177,4 +184,37 @@ qint64 QOstDevice::bytesAvailable() const
 {
     Q_D(const QOstDevice);
     return d->dataBuf.length();
+}
+
+bool QOstDevice::waitForReadyRead(int msecs)
+{
+    Q_D(QOstDevice);
+    if (msecs >= 0) {
+        RTimer timer;
+        TInt err = timer.CreateLocal();
+        if (err) return false;
+        TRequestStatus timeoutStat;
+        timer.After(timeoutStat, msecs*1000);
+        User::WaitForRequest(timeoutStat, d->iStatus);
+        if (timeoutStat != KRequestPending) {
+            // Timed out
+            timer.Close();
+            return false;
+        } else {
+            // We got data, so cancel timer
+            timer.Cancel();
+            User::WaitForRequest(timeoutStat);
+            timer.Close();
+            // And drop through
+        }
+    } else {
+        // Just wait forever for data
+        User::WaitForRequest(d->iStatus);
+    }
+
+    // If we get here we have data
+    TInt err = d->iStatus.Int();
+    d->AoFlags() &= ~3; // This is necessary to clean up the scheduler as you're not supposed to bypass it like this
+    TRAP_IGNORE(d->RunL());
+    return err == KErrNone;
 }

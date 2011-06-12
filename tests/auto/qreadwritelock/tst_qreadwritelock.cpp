@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -362,34 +362,45 @@ void tst_QReadWriteLock::tryWriteLock()
         class Thread : public QThread
         {
         public:
+            Thread() : failureCount(0) { }
             void run()
             {
                 testsTurn.release();
 
                 threadsTurn.acquire();
-                Q_ASSERT(!readWriteLock.tryLockForWrite());
+                if (readWriteLock.tryLockForWrite())
+                    failureCount++;
                 testsTurn.release();
 
                 threadsTurn.acquire();
-                Q_ASSERT(readWriteLock.tryLockForWrite());
-                Q_ASSERT(lockCount.testAndSetRelaxed(0, 1));
-                Q_ASSERT(lockCount.testAndSetRelaxed(1, 0));
+                if (!readWriteLock.tryLockForWrite())
+                    failureCount++;
+                if (!lockCount.testAndSetRelaxed(0, 1))
+                    failureCount++;
+                if (!lockCount.testAndSetRelaxed(1, 0))
+                    failureCount++;
                 readWriteLock.unlock();
                 testsTurn.release();
 
                 threadsTurn.acquire();
-                Q_ASSERT(!readWriteLock.tryLockForWrite(1000));
+                if (readWriteLock.tryLockForWrite(1000))
+                    failureCount++;
                 testsTurn.release();
 
                 threadsTurn.acquire();
-                Q_ASSERT(readWriteLock.tryLockForWrite(1000));
-                Q_ASSERT(lockCount.testAndSetRelaxed(0, 1));
-                Q_ASSERT(lockCount.testAndSetRelaxed(1, 0));
+                if (!readWriteLock.tryLockForWrite(1000))
+                    failureCount++;
+                if (!lockCount.testAndSetRelaxed(0, 1))
+                    failureCount++;
+                if (!lockCount.testAndSetRelaxed(1, 0))
+                    failureCount++;
                 readWriteLock.unlock();
                 testsTurn.release();
 
                 threadsTurn.acquire();
             }
+
+            int failureCount;
         };
 
         Thread thread;
@@ -419,6 +430,8 @@ void tst_QReadWriteLock::tryWriteLock()
         testsTurn.acquire();
         threadsTurn.release();
         thread.wait();
+
+        QCOMPARE(thread.failureCount, 0);
     }
 }
 

@@ -7,29 +7,29 @@
 ** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -54,11 +54,12 @@
 #include <stdio.h>
 
 #include <qdebug.h>
+#include <qpainter.h>
 
 class QXcbShmImage : public QXcbObject
 {
 public:
-    QXcbShmImage(QXcbScreen *connection, const QSize &size);
+    QXcbShmImage(QXcbScreen *connection, const QSize &size, uint depth, QImage::Format format);
     ~QXcbShmImage() { destroy(); }
 
     QImage *image() { return &m_qimage; }
@@ -81,7 +82,7 @@ private:
     QRegion m_dirty;
 };
 
-QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size)
+QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QImage::Format format)
     : QXcbObject(screen->connection())
     , m_gc(0)
     , m_gc_window(0)
@@ -91,7 +92,7 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size)
                                           size.width(),
                                           size.height(),
                                           XCB_IMAGE_FORMAT_Z_PIXMAP,
-                                          screen->depth(),
+                                          depth,
                                           0,
                                           ~0,
                                           0);
@@ -111,7 +112,7 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size)
     if (shmctl(m_shm_info.shmid, IPC_RMID, 0) == -1)
         qWarning() << "QXcbWindowSurface: Error while marking the shared memory segment to be destroyed";
 
-    m_qimage = QImage( (uchar*) m_xcb_image->data, m_xcb_image->width, m_xcb_image->height, m_xcb_image->stride, screen->format());
+    m_qimage = QImage( (uchar*) m_xcb_image->data, m_xcb_image->width, m_xcb_image->height, m_xcb_image->stride, format);
 }
 
 void QXcbShmImage::destroy()
@@ -189,6 +190,16 @@ QPaintDevice *QXcbWindowSurface::paintDevice()
 void QXcbWindowSurface::beginPaint(const QRegion &region)
 {
     m_image->preparePaint(region);
+
+    if (m_image->image()->hasAlphaChannel()) {
+        QPainter p(m_image->image());
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        const QVector<QRect> rects = region.rects();
+        const QColor blank = Qt::transparent;
+        for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
+            p.fillRect(*it, blank);
+        }
+    }
 }
 
 void QXcbWindowSurface::endPaint(const QRegion &)
@@ -232,9 +243,10 @@ void QXcbWindowSurface::resize(const QSize &size)
     QWindowSurface::resize(size);
 
     QXcbScreen *screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(window()));
+    QXcbWindow* win = static_cast<QXcbWindow *>(window()->platformWindow());
 
     delete m_image;
-    m_image = new QXcbShmImage(screen, size);
+    m_image = new QXcbShmImage(screen, size, win->depth(), win->format());
     Q_XCB_NOOP(connection());
 
     m_syncingResize = true;

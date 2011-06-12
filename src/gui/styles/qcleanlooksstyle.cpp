@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -841,7 +841,6 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
     case PE_PanelButtonTool:
         painter->save();
         if ((option->state & State_Enabled || option->state & State_On) || !(option->state & State_AutoRaise)) {
-            QRect rect = option->rect;
             QPen oldPen = painter->pen();
 
             if (widget && widget->inherits("QDockWidgetTitleButton")) {
@@ -1241,7 +1240,6 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
         if (const QStyleOptionTabWidgetFrame *twf = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(option)) {
             QColor borderColor = darkOutline.lighter(110);
             QColor alphaCornerColor = mergedColors(borderColor, option->palette.background().color());
-            QColor innerShadow = mergedColors(borderColor, option->palette.base().color());
 
             int borderThickness = proxy()->pixelMetric(PM_TabBarBaseOverlap, twf, widget);
             bool reverse = (twf->direction == Qt::RightToLeft);
@@ -1879,7 +1877,6 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
             } else {
                 alphaCornerColor = mergedColors(option->palette.background().color(), borderColor);
             }
-            QColor alphaTextColor = mergedColors(option->palette.background().color(), option->palette.text().color());
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
                 painter->fillRect(menuItem->rect, menuBackground);
                 int w = 0;
@@ -2220,7 +2217,6 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                                     && tabBarAlignment == Qt::AlignLeft);
 
             QColor light = tab->palette.light().color();
-            QColor midlight = tab->palette.midlight().color();
 
             QColor background = tab->palette.background().color();
             int borderThinkness = proxy()->pixelMetric(PM_TabBarBaseOverlap, tab, widget);
@@ -2443,14 +2439,6 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
 
     QColor gradientStartColor = option->palette.button().color().lighter(108);
     QColor gradientStopColor = mergedColors(option->palette.button().color().darker(108), dark.lighter(150), 70);
-
-    QColor highlightedGradientStartColor = option->palette.button().color();
-    QColor highlightedGradientStopColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 85);
-
-    QColor highlightedDarkInnerBorderColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 35);
-    QColor highlightedLightInnerBorderColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 58);
-
-    QColor buttonShadowAlpha = option->palette.background().color().darker(105);
 
     QPalette palette = option->palette;
 
@@ -3437,7 +3425,6 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
             QRect groove = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
             QRect handle = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
-            QRect ticks = proxy()->subControlRect(CC_Slider, option, SC_SliderTickmarks, widget);
 
             bool horizontal = slider->orientation == Qt::Horizontal;
             bool ticksAbove = slider->tickPosition & QSlider::TicksAbove;
@@ -3539,8 +3526,6 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     QRect pixmapRect(0, 0, handle.width(), handle.height());
                     QPainter handlePainter(&cache);
 
-                    QColor highlightedGradientStartColor = option->palette.button().color();
-                    QColor highlightedGradientStopColor = option->palette.light().color();
                     QColor gradientStartColor = mergedColors(option->palette.button().color().lighter(155),
                                                              dark.lighter(155), 50);
                     QColor gradientStopColor = gradientStartColor.darker(108);
@@ -3557,7 +3542,6 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     }
 
                     // gradient fill
-                    QRect innerBorder = gradRect;
                     QRect r = pixmapRect.adjusted(1, 1, -1, -1);
 
                     qt_cleanlooks_draw_gradient(&handlePainter, gradRect,

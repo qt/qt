@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -74,6 +74,7 @@
 # include <centralrepository.h>
 # include "qs60mainappui.h"
 # include "qinputcontext.h"
+# include <private/qgraphicssystemex_symbian_p.h>
 #endif
 
 #if defined(Q_WS_S60)
@@ -1360,6 +1361,23 @@ void QSymbianControl::PositionChanged()
     }
 }
 
+// Search recursively if there is a child widget that is both visible and focused.
+bool QSymbianControl::hasFocusedAndVisibleChild(QWidget *parentWidget)
+{
+    for (int i = 0; i < parentWidget->children().size(); ++i) {
+        QObject *object = parentWidget->children().at(i);
+        if (object && object->isWidgetType()) {
+            QWidget *w = static_cast<QWidget *>(object);
+            WId winId = w->internalWinId();
+            if (winId && winId->IsFocused() && winId->IsVisible())
+                return true;
+            if (hasFocusedAndVisibleChild(w))
+                return true;
+        }
+    }
+    return false;
+}
+
 void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
 {
     if (m_ignoreFocusChanged || (qwidget->windowType() & Qt::WindowType_Mask) == Qt::Desktop)
@@ -1392,17 +1410,9 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         if (qwidget->isWindow())
             S60->setRecursiveDecorationsVisibility(qwidget, qwidget->windowState());
 #endif
-    } else if (QApplication::activeWindow() == qwidget->window()) {
-        bool focusedControlFound = false;
-        WId winId = 0;
-        for (QWidget *w = qwidget->parentWidget(); w && (winId = w->internalWinId()); w = w->parentWidget()) {
-            if (winId->IsFocused() && winId->IsVisible()) {
-                focusedControlFound = true;
-                break;
-            } else if (w->isWindow())
-                break;
-        }
-        if (!focusedControlFound) {
+    } else {
+        QWidget *parentWindow = qwidget->window();
+        if (QApplication::activeWindow() == parentWindow && !hasFocusedAndVisibleChild(parentWindow)) {
             if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog() || S60->menuBeingConstructed) {
                 QWidget *fw = QApplication::focusWidget();
                 if (fw) {
@@ -1481,8 +1491,10 @@ void QSymbianControl::HandleResourceChange(int resourceType)
             }
             if (ic && isSplitViewWidget(widget)) {
                 if (resourceType == KSplitViewCloseEvent) {
+                    S60->partialKeyboardOpen = false;
                     ic->resetSplitViewWidget();
                 } else {
+                    S60->partialKeyboardOpen = true;
                     ic->ensureFocusWidgetVisible(widget);
                 }
             }
@@ -1509,6 +1521,10 @@ void QSymbianControl::HandleResourceChange(int resourceType)
 #ifdef Q_WS_S60
     case KEikDynamicLayoutVariantSwitch:
     {
+#ifdef QT_SOFTKEYS_ENABLED
+        // Update needed just in case softkeys contain icons
+        QSoftKeyManager::updateSoftKeys();
+#endif
         handleClientAreaChange();
         // Send resize event to trigger desktopwidget workAreaResized signal
         if (qt_desktopWidget) {
@@ -1679,7 +1695,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         if (commandLine) {
             // After this construction, CEikonEnv will be available from CEikonEnv::Static().
             // (much like our qApp).
-            QtEikonEnv* coe = new QtEikonEnv;
+            CEikonEnv* coe = new CEikonEnv;
             //not using QT_TRAP_THROWING, because coe owns the cleanupstack so it can't be pushed there.
             TRAPD(err, coe->ConstructAppFromCommandLineL(factory, *commandLine));
             if(err != KErrNone) {
@@ -1835,26 +1851,12 @@ void qt_init(QApplicationPrivate * /* priv */, int)
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
     QApplicationPrivate::instance()->useTranslucentEGLSurfaces = true;
 
-    const TUid KIvePropertyCat = {0x2726beef};
-    enum TIvePropertyChipType {
-        EVCBCM2727B1 = 0x00000000,
-        EVCBCM2763A0 = 0x04000100,
-        EVCBCM2763B0 = 0x04000102,
-        EVCBCM2763C0 = 0x04000103,
-        EVCBCM2763C1 = 0x04000104,
-        EVCBCMUnknown = 0x7fffffff
-    };
-
-    TInt chipType = EVCBCMUnknown;
-    if (RProperty::Get(KIvePropertyCat, 0 /*chip type*/, chipType) == KErrNone) {
-        if (chipType == EVCBCM2727B1) {
-            // We have only 32MB GPU memory. Use raster surfaces
-            // for transparent TLWs.
-            QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
-        }
-    } else {
+    if (QSymbianGraphicsSystemEx::hasBCM2727()) {
+        // We have only 32MB GPU memory. Use raster surfaces
+        // for transparent TLWs.
         QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
     }
+
     if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
         QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
 #else
@@ -2012,7 +2014,7 @@ void QApplicationPrivate::openPopup(QWidget *popup)
     QApplicationPrivate::popupWidgets->append(popup);
 
     // Cancel focus widget pointer capture and long tap timer
-    if (QApplication::focusWidget()) {
+    if (QApplication::focusWidget() && QApplication::focusWidget()->effectiveWinId()) {
         static_cast<QSymbianControl*>(QApplication::focusWidget()->effectiveWinId())->CancelLongTapTimer();
         QApplication::focusWidget()->effectiveWinId()->SetPointerCapture(false);
         }
@@ -2263,6 +2265,7 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
 #if defined(Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS)
     case EEventDisplayChanged:
 #endif
+        {
         if (callSymbianEventFilters(symbianEvent))
             return 1;
         if (S60)
@@ -2273,6 +2276,12 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
             qt_desktopWidget->data->crect.setHeight(S60->screenHeightInPixels);
             QResizeEvent e(qt_desktopWidget->size(), oldSize);
             QApplication::sendEvent(qt_desktopWidget, &e);
+        }
+        // Close non-native QMenus (that should act like context menus, i.e. close
+        // automatically when the orientation changes).
+        QMenu *activeMenu = qobject_cast<QMenu *>(QApplication::activePopupWidget());
+        if (activeMenu)
+            activeMenu->close();
         }
         return 0; // Propagate to CONE
     case EEventWindowVisibilityChanged:
@@ -2703,6 +2712,9 @@ QS60ThreadLocalData::QS60ThreadLocalData()
 
 QS60ThreadLocalData::~QS60ThreadLocalData()
 {
+    for (int i = 0; i < releaseFuncs.count(); ++i)
+        releaseFuncs[i]();
+    releaseFuncs.clear();
     if (!usingCONEinstances) {
         delete screenDevice;
         wsSession.Close();
