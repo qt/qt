@@ -1427,6 +1427,24 @@ void QSymbianControl::handleClientAreaChange()
         SetExtentToWholeScreen();
     } else if (qwidget->isMaximized() || (qwidget->isFullScreen() && cbaVisibilityHint)) {
         TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+        if (!S60->splitViewLastWidget && S60->partialKeyboardOpen) {
+            // For some curious reason, native side indicates that splitviewRect starts
+            // underneath statuspane. So, if statuspane is visible, move the splitview
+            // down a little bit. Note that if there is S60->splitViewLastWidget, it means
+            // the resizing is done by input context handling and this metrics calculation
+            // is not needed.
+            TRect statusPaneRect;
+            TRect mainRect;
+            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStatusPane, statusPaneRect);
+            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EMainPane, mainRect);
+            int clientAreaHeight = mainRect.Height();
+            CEikStatusPane *const s = S60->statusPane();
+            if (s && s->IsVisible())
+                r.Move(0, statusPaneRect.Height());
+            else
+                clientAreaHeight += statusPaneRect.Height();
+            r.SetHeight(clientAreaHeight);
+        }
         SetExtent(r.iTl, r.Size());
     } else if (!qwidget->isMinimized()) { // Normal geometry
         if (!qwidget->testAttribute(Qt::WA_Resized)) {
