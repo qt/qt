@@ -1,27 +1,41 @@
 import QtQuick 1.0
-import Qt.test 1.0
 import "backtrace1.js" as Script
 
-Rectangle {
-    id: mainRectangle
+Item {
+    id: root
 
-    property string foo: "Default";
-    width: 200
-    height: 200
+    property int result:0
 
+    Component.onCompleted:
+    {
+        root.result = 10;
+        Script.functionInScript(4,5);
+        root.name = "nemo";
+        Script.logger(root.simpleBinding);
+    }
 
-    MyTestObject {
+    //DO NOT CHANGE CODE ABOVE
+    //ADD CODE FROM HERE
 
-        function append(a, b) {
-            return a + " " + b;
-        }
+    property string name
+    property int simpleBinding: result
 
+    VisualItemModel {
+        id: itemModel
+        Rectangle { height: 30; width: 80; color: "red" }
+        Rectangle { height: 30; width: 80; color: "green" }
+        Rectangle { height: 30; width: 80; color: "blue" }
+    }
 
-        id: testObject;
-        someProperty: append("Hello", mainRectangle.foo)
+    ListView {
+        anchors.fill: parent
+        model: itemModel
 
-        onSignaled: {
-            Script.functionInScript(value , "b");
+        Component.onCompleted:
+        {
+            Script.logger("List Loaded");
         }
     }
+
 }
+
