@@ -48,8 +48,47 @@
 #include <QtCore/QStringList>
 #include <QtCore/QFile>
 #include <QtCore/QtDebug>
+#include <QtGui/private/qdnd_p.h>
 
 static QWaylandClipboard *clipboard;
+
+class QWaylandMimeData : public QInternalMimeData
+{
+public:
+    void clearAll();
+    void setFormats(const QStringList &formatList);
+    bool hasFormat_sys(const QString &mimeType) const;
+    QStringList formats_sys() const;
+    QVariant retrieveData_sys(const QString &mimeType, QVariant::Type type) const;
+private:
+    QStringList mFormatList;
+};
+
+void QWaylandMimeData::clearAll()
+{
+    clear();
+    mFormatList.clear();
+}
+
+void QWaylandMimeData::setFormats(const QStringList &formatList)
+{
+    mFormatList = formatList;
+}
+
+bool QWaylandMimeData::hasFormat_sys(const QString &mimeType) const
+{
+    return formats().contains(mimeType);
+}
+
+QStringList QWaylandMimeData::formats_sys() const
+{
+    return mFormatList;
+}
+
+QVariant QWaylandMimeData::retrieveData_sys(const QString &mimeType, QVariant::Type type) const
+{
+    return clipboard->retrieveData(mimeType, type);
+}
 
 class QWaylandSelection
 {
@@ -57,7 +96,6 @@ public:
     QWaylandSelection(QWaylandDisplay *display, QMimeData *data);
     ~QWaylandSelection();
 
-private:
     static uint32_t getTime();
     static void send(void *data, struct wl_selection *selection, const char *mime_type, int fd);
     static void cancelled(void *data, struct wl_selection *selection);
@@ -125,7 +163,7 @@ void QWaylandSelection::cancelled(void *data, struct wl_selection *selection)
 }
 
 QWaylandClipboard::QWaylandClipboard(QWaylandDisplay *display)
-    : mDisplay(display), mSelection(0), mMimeDataIn(0), mOffer(0)
+    : mDisplay(display), mMimeDataIn(0), mOffer(0)
 {
     clipboard = this;
 }
@@ -157,32 +195,39 @@ void QWaylandClipboard::forceRoundtrip(struct wl_display *display)
         wl_display_iterate(display, WL_DISPLAY_READABLE);
 }
 
-const QMimeData *QWaylandClipboard::mimeData(QClipboard::Mode mode) const
+QVariant QWaylandClipboard::retrieveData(const QString &mimeType, QVariant::Type type) const
+{
+    Q_UNUSED(type);
+    if (mOfferedMimeTypes.isEmpty() || !mOffer)
+        return QVariant();
+    int pipefd[2];
+    if (pipe(pipefd) == -1) {
+        qWarning("QWaylandClipboard: pipe() failed");
+        return QVariant();
+    }
+    QByteArray mimeTypeBa = mimeType.toLatin1();
+    wl_selection_offer_receive(mOffer, mimeTypeBa.constData(), pipefd[1]);
+    QByteArray content;
+    forceRoundtrip(mDisplay->wl_display());
+    char buf[256];
+    int n;
+    close(pipefd[1]);
+    while ((n = read(pipefd[0], &buf, sizeof buf)) > 0)
+        content.append(buf, n);
+    close(pipefd[0]);
+    return content;
+}
+
+QMimeData *QWaylandClipboard::mimeData(QClipboard::Mode mode)
 {
     Q_ASSERT(mode == QClipboard::Clipboard);
+    if (!mSelections.isEmpty())
+        return mSelections.last()->mMimeData;
     if (!mMimeDataIn)
-        mMimeDataIn = new QMimeData;
-    mMimeDataIn->clear();
-    if (!mOfferedMimeTypes.isEmpty() && mOffer) {
-        foreach (const QString &mimeType, mOfferedMimeTypes) {
-            int pipefd[2];
-            if (pipe(pipefd) == -1) {
-                qWarning("QWaylandClipboard::mimedata: pipe() failed");
-                break;
-            }
-            QByteArray mimeTypeBa = mimeType.toLatin1();
-            wl_selection_offer_receive(mOffer, mimeTypeBa.constData(), pipefd[1]);
-            QByteArray content;
-            forceRoundtrip(mDisplay->wl_display());
-            char buf[256];
-            int n;
-            close(pipefd[1]);
-            while ((n = read(pipefd[0], &buf, sizeof buf)) > 0)
-                content.append(buf, n);
-            close(pipefd[0]);
-            mMimeDataIn->setData(mimeType, content);
-        }
-    }
+        mMimeDataIn = new QWaylandMimeData;
+    mMimeDataIn->clearAll();
+    if (!mOfferedMimeTypes.isEmpty() && mOffer)
+        mMimeDataIn->setFormats(mOfferedMimeTypes);
     return mMimeDataIn;
 }
 
@@ -192,7 +237,7 @@ void QWaylandClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
     if (!mDisplay->inputDevices().isEmpty()) {
         if (!data)
             data = new QMimeData;
-        mSelection = new QWaylandSelection(mDisplay, data);
+        mSelections.append(new QWaylandSelection(mDisplay, data));
     } else {
         qWarning("QWaylandClipboard::setMimeData: No input devices");
     }
@@ -222,21 +267,27 @@ void QWaylandClipboard::offer(void *data,
                               struct wl_selection_offer *selection_offer,
                               const char *type)
 {
+    Q_UNUSED(data);
     Q_UNUSED(selection_offer);
-    QWaylandClipboard *self = static_cast<QWaylandClipboard *>(data);
-    self->mOfferedMimeTypes.append(QString::fromLatin1(type));
+    clipboard->mOfferedMimeTypes.append(QString::fromLatin1(type));
 }
 
 void QWaylandClipboard::keyboardFocus(void *data,
                                       struct wl_selection_offer *selection_offer,
                                       wl_input_device *input_device)
 {
-    QWaylandClipboard *self = static_cast<QWaylandClipboard *>(data);
+    Q_UNUSED(data);
     if (!input_device) {
         wl_selection_offer_destroy(selection_offer);
-        self->mOffer = 0;
+        clipboard->mOffer = 0;
         return;
     }
-    self->mOffer = selection_offer;
-    self->emitChanged(QClipboard::Clipboard);
+    clipboard->mOffer = selection_offer;
+    if (clipboard->mSelections.isEmpty())
+        QMetaObject::invokeMethod(&clipboard->mEmitter, "emitChanged", Qt::QueuedConnection);
+}
+
+void QWaylandClipboardSignalEmitter::emitChanged()
+{
+    clipboard->emitChanged(QClipboard::Clipboard);
 }

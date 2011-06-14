@@ -51,7 +51,12 @@ int main(int argc, char *argv[])
 #endif
     DragWidget window;
 
+#ifdef Q_OS_SYMBIAN
+    bool smallScreen = true;
+#else
     bool smallScreen = QApplication::arguments().contains("-small-screen");
+#endif
+
     if (smallScreen)
         window.showFullScreen();
     else

@@ -320,7 +320,7 @@ static int qCocoaViewCount = 0;
 
             }
 
-            CGContextFlush(context);
+            CGContextSynchronize(context);
             qt_mac_release_graphics_context(context);
             return;
         }

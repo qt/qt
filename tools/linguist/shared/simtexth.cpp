@@ -238,9 +238,7 @@ CandidateList similarTextHeuristicCandidates(const Translator *tor,
     QList<int> scores;
     CandidateList candidates;
 
-    TML all = tor->translatedMessages();
-
-    foreach (const TranslatorMessage &mtm, all) {
+    foreach (const TranslatorMessage &mtm, tor->messages()) {
         if (mtm.type() == TranslatorMessage::Unfinished
             || mtm.translation().isEmpty())
             continue;
