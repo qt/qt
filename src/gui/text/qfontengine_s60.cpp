@@ -294,6 +294,7 @@ QFontEngineS60::QFontEngineS60(const QFontDef &request, const QSymbianTypeFaceEx
     , m_activeFont(0)
 {
     QFontEngine::fontDef = request;
+    QFontEngine::fontDef.pixelSize = m_originalFontSizeInPixels; // Needs a valid pixel size. QTBUG-13009, QTBUG-17844
     setFontScale(1.0);
     cache_cost = sizeof(QFontEngineS60);
 }
