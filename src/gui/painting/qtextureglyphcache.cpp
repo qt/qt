@@ -308,6 +308,10 @@ QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g, QFixed subPixelPosition
             format = QFontEngineFT::Format_Mono;
             imageFormat = QImage::Format_Mono;
             break;
+        case Raster_RGBMask:
+            // impossible condition (see the if-clause above)
+            // this option is here only to silence a compiler warning
+            break;
         };
 
         QFontEngineFT *ft = static_cast<QFontEngineFT*> (m_current_fontengine);
