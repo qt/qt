@@ -189,6 +189,7 @@ public:
     static bool setRecursiveDecorationsVisibility(QWidget *window, Qt::WindowStates newState);
 #endif
     static void controlVisibilityChanged(CCoeControl *control, bool visible);
+    static TRect clientRect();
 
 #ifdef Q_OS_SYMBIAN
     TTrapHandler *s60InstalledTrapHandler;

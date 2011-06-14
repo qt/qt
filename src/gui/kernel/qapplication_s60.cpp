@@ -134,7 +134,7 @@ void QS60Data::setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, boo
         s->MakeVisible(statusPaneVisible);
     }
     if (buttonGroupVisibilityChanged  || statusPaneVisibilityChanged) {
-        const QSize size = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect()).size();
+        const QSize size = qt_TRect2QRect(S60->clientRect()).size();
         const QSize oldSize; // note that QDesktopWidget::resizeEvent ignores the QResizeEvent contents
         QResizeEvent event(size, oldSize);
         QApplication::instance()->sendEvent(QApplication::desktop(), &event);
@@ -229,6 +229,28 @@ void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
             }
         }
     }
+}
+
+TRect QS60Data::clientRect()
+{
+    TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+    if (S60->partialKeyboardOpen) {
+        // Adjust client rect when splitview is open, since for some curious reason
+        // native side insists that clientRect starts from (0,0) even though status
+        // pane might be visible.
+        TRect statusPaneRect;
+        TRect mainRect;
+        AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStatusPane, statusPaneRect);
+        AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EMainPane, mainRect);
+        int clientAreaHeight = mainRect.Height();
+        CEikStatusPane *const s = S60->statusPane();
+        if (s && s->IsVisible())
+            r.Move(0, statusPaneRect.Height());
+        else
+            clientAreaHeight += statusPaneRect.Height();
+        r.SetHeight(clientAreaHeight);
+    }
+    return r;
 }
 
 bool qt_nograb()                                // application no-grab option
@@ -1426,25 +1448,9 @@ void QSymbianControl::handleClientAreaChange()
     if (qwidget->isFullScreen() && !cbaVisibilityHint) {
         SetExtentToWholeScreen();
     } else if (qwidget->isMaximized() || (qwidget->isFullScreen() && cbaVisibilityHint)) {
-        TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
-        if (!S60->splitViewLastWidget && S60->partialKeyboardOpen) {
-            // For some curious reason, native side indicates that splitviewRect starts
-            // underneath statuspane. So, if statuspane is visible, move the splitview
-            // down a little bit. Note that if there is S60->splitViewLastWidget, it means
-            // the resizing is done by input context handling and this metrics calculation
-            // is not needed.
-            TRect statusPaneRect;
-            TRect mainRect;
-            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStatusPane, statusPaneRect);
-            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EMainPane, mainRect);
-            int clientAreaHeight = mainRect.Height();
-            CEikStatusPane *const s = S60->statusPane();
-            if (s && s->IsVisible())
-                r.Move(0, statusPaneRect.Height());
-            else
-                clientAreaHeight += statusPaneRect.Height();
-            r.SetHeight(clientAreaHeight);
-        }
+        // Note that if there is S60->splitViewLastWidget, it means the resizing is done
+        // by input context handling and we can use just default ClientRect.
+        TRect r = (!S60->splitViewLastWidget) ? S60->clientRect() : static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
         SetExtent(r.iTl, r.Size());
     } else if (!qwidget->isMinimized()) { // Normal geometry
         if (!qwidget->testAttribute(Qt::WA_Resized)) {
@@ -1452,7 +1458,7 @@ void QSymbianControl::handleClientAreaChange()
             qwidget->setAttribute(Qt::WA_Resized, false); //not a user resize
         }
         if (!qwidget->testAttribute(Qt::WA_Moved) && qwidget->windowType() != Qt::Dialog) {
-            TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+            TRect r = S60->clientRect();
             SetPosition(r.iTl);
             qwidget->setAttribute(Qt::WA_Moved, false); // not really an explicit position
         }
@@ -1498,13 +1504,14 @@ void QSymbianControl::HandleResourceChange(int resourceType)
             if (!ic) {
                 ic = qobject_cast<QCoeFepInputContext *>(qApp->inputContext());
             }
-            if (ic && isSplitViewWidget(widget)) {
+            if (ic) {
                 if (resourceType == KSplitViewCloseEvent) {
                     S60->partialKeyboardOpen = false;
                     ic->resetSplitViewWidget();
                 } else {
                     S60->partialKeyboardOpen = true;
-                    ic->ensureFocusWidgetVisible(widget);
+                    if (isSplitViewWidget(widget))
+                        ic->ensureFocusWidgetVisible(widget);
                 }
             }
         }
