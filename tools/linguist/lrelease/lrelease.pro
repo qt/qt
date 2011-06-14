@@ -9,7 +9,5 @@ include(../../../src/tools/bootstrap/bootstrap.pri)
 include(../shared/formats.pri)
 include(../shared/proparser.pri)
 
-win32:LIBS += -ladvapi32   # for registry.cpp in epocroot
-
 target.path=$$[QT_INSTALL_BINS]
 INSTALLS        += target
