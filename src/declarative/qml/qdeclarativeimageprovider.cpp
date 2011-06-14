@@ -136,7 +136,8 @@ public:
 
     Image providers that support QImage loading automatically include support
     for asychronous loading of images. To enable asynchronous loading for an
-    \l Image source, set \l Image::asynchronous to \c true. When this is enabled, 
+    image source, set the \c asynchronous property to \c true for the relevant
+    \l Image, \l BorderImage or \l AnimatedImage object. When this is enabled, 
     the image request to the provider is run in a low priority thread,
     allowing image loading to be executed in the background, and reducing the
     performance impact on the user interface.
@@ -146,6 +147,17 @@ public:
     main thread. In this case, if \l {Image::}{asynchronous} is set to 
     \c true, the value is ignored and the image is loaded
     synchronously.
+
+
+    \section2 Image caching
+
+    Images returned by a QDeclarativeImageProvider are automatically cached,
+    similar to any image loaded by the QML engine. When an image with a
+    "image://" prefix is loaded from cache, requestImage() and requestPixmap()
+    will not be called for the relevant image provider. If an image should always
+    be fetched from the image provider, and should not be cached at all, set the
+    \c cache property to \c false for the relevant \l Image, \l BorderImage or
+    \l AnimatedImage object.
 
     \sa QDeclarativeEngine::addImageProvider()
 */
