@@ -162,7 +162,6 @@ public:
 
     void clear();
     void removePath(const QString &path);
-    Q_INVOKABLE void addPath(const QString& path);
     QExtendedInformation getInfo(const QFileInfo &info) const;
 
 public Q_SLOTS:

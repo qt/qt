@@ -170,6 +170,7 @@ void QFileInfoGatherer::updateFile(const QString &filePath)
 void QFileInfoGatherer::clear()
 {
 #ifndef QT_NO_FILESYSTEMWATCHER
+    QMutexLocker locker(&mutex);
     watcher->removePaths(watcher->files());
     watcher->removePaths(watcher->directories());
 #endif
@@ -183,15 +184,8 @@ void QFileInfoGatherer::clear()
 void QFileInfoGatherer::removePath(const QString &path)
 {
 #ifndef QT_NO_FILESYSTEMWATCHER
+    QMutexLocker locker(&mutex);
     watcher->removePath(path);
-#endif
-}
-
-void QFileInfoGatherer::addPath(const QString &path)
-{
-#ifndef QT_NO_FILESYSTEMWATCHER
-    if (!watcher->directories().contains(path))
-        watcher->addPath(path);
 #endif
 }
 
@@ -286,9 +280,10 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
 {
 #ifndef QT_NO_FILESYSTEMWATCHER
     if (files.isEmpty()
+        && !watcher->directories().contains(path)
         && !path.isEmpty()
         && !path.startsWith(QLatin1String("//")) /*don't watch UNC path*/) {
-            QMetaObject::invokeMethod(this, "addPath", Q_ARG(QString, path));
+        watcher->addPath(path);
     }
 #endif
 
