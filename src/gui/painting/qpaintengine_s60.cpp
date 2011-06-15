@@ -60,7 +60,7 @@ bool QS60PaintEngine::begin(QPaintDevice *device)
 {
     Q_D(QS60PaintEngine);
 
-    if (pixmapData->classId() == QPixmapData::RasterClass) {
+    if (pixmapData && pixmapData->classId() == QPixmapData::RasterClass) {
         pixmapData->beginDataAccess();
         bool ret = QRasterPaintEngine::begin(device);
         // Make sure QPaintEngine::paintDevice() returns the proper device.
@@ -69,13 +69,12 @@ bool QS60PaintEngine::begin(QPaintDevice *device)
         d->pdev = device;
         return ret;
     }
-
     return QRasterPaintEngine::begin(device);
 }
 
 bool QS60PaintEngine::end()
 {
-    if (pixmapData->classId() == QPixmapData::RasterClass) {
+    if (pixmapData && pixmapData->classId() == QPixmapData::RasterClass) {
         bool ret = QRasterPaintEngine::end();
         pixmapData->endDataAccess();
         return ret;
@@ -91,12 +90,14 @@ void QS60PaintEngine::drawPixmap(const QPointF &p, const QPixmap &pm)
         QRasterPaintEngine::drawPixmap(p, pm);
         srcData->endDataAccess();
     } else {
-        void *nativeData = pm.pixmapData()->toNativeType(QPixmapData::VolatileImage);
-        if (nativeData) {
-            QVolatileImage *img = static_cast<QVolatileImage *>(nativeData);
-            img->beginDataAccess();
-            QRasterPaintEngine::drawImage(p, img->imageRef());
-            img->endDataAccess(true);
+        QVolatileImage img = pm.pixmapData()->toVolatileImage();
+        if (!img.isNull()) {
+            img.beginDataAccess();
+            // imageRef() would detach and since we received the QVolatileImage
+            // from toVolatileImage() by value, it would cause a copy which
+            // would ruin our goal. So use constImageRef() instead.
+            QRasterPaintEngine::drawImage(p, img.constImageRef());
+            img.endDataAccess(true);
         } else {
             QRasterPaintEngine::drawPixmap(p, pm);
         }
@@ -111,12 +112,11 @@ void QS60PaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRect
         QRasterPaintEngine::drawPixmap(r, pm, sr);
         srcData->endDataAccess();
     } else {
-        void *nativeData = pm.pixmapData()->toNativeType(QPixmapData::VolatileImage);
-        if (nativeData) {
-            QVolatileImage *img = static_cast<QVolatileImage *>(nativeData);
-            img->beginDataAccess();
-            QRasterPaintEngine::drawImage(r, img->imageRef(), sr);
-            img->endDataAccess(true);
+        QVolatileImage img = pm.pixmapData()->toVolatileImage();
+        if (!img.isNull()) {
+            img.beginDataAccess();
+            QRasterPaintEngine::drawImage(r, img.constImageRef(), sr);
+            img.endDataAccess(true);
         } else {
             QRasterPaintEngine::drawPixmap(r, pm, sr);
         }
