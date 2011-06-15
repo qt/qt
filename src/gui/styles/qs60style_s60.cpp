@@ -1095,6 +1095,14 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
             centerId.Set(KAknsIIDQsnFrPopupCenterSubmenu);
             frameId.Set(KAknsIIDQsnFrPopupSub);
             break;
+        case QS60StylePrivate::SF_SettingsList:
+            // Starting from S60_5_3, the root theme has been changed so that KAknsIIDQsnFrSetOpt is empty.
+            // Set the theme ID to None, to avoid theme server trying to draw the empty frame.
+            if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_2) {
+                centerId.Set(KAknsIIDNone);
+                frameId.Set(KAknsIIDNone);
+            }
+            break;
         case QS60StylePrivate::SF_PanelBackground:
             // remove center piece for panel graphics, so that only border is drawn
             centerId.Set(KAknsIIDNone);
