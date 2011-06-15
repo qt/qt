@@ -1,5 +1,5 @@
 load(qttest_p4)
-contains(QT_CONFIG,declarative): QT += declarative script
+contains(QT_CONFIG,declarative): QT += declarative network script
 macx:CONFIG -= app_bundle
 
 HEADERS += ../shared/debugutil_p.h

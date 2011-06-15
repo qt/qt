@@ -338,13 +338,16 @@ QJSDebugProcess::QJSDebugProcess()
 
 QJSDebugProcess::~QJSDebugProcess()
 {
-    m_process.terminate();
-    m_process.waitForFinished();
+    if (m_process.state() != QProcess::NotRunning) {
+        m_process.kill();
+        m_process.waitForFinished(5000);
+    }
 }
 
 void QJSDebugProcess::start(const QStringList &arguments)
 {
-    m_process.start("app/app", arguments);
+    QString currentDir = QFileInfo(__FILE__).absoluteDir().absolutePath();
+    m_process.start(currentDir + "/app/app", arguments);
     m_timer.start();
 }
 
@@ -358,16 +361,25 @@ bool QJSDebugProcess::waitForStarted()
 void QJSDebugProcess::processAppOutput()
 {
     const QString appOutput = m_process.readAll();
-    if (appOutput.startsWith("Qml debugging is enabled")) // ignore
-        return;
-    if (appOutput.startsWith("QDeclarativeDebugServer:")) { // ignore
-        if (appOutput.contains("Waiting for connection ")) {
-            m_started = true;
-            m_eventLoop.quit();
+    static QRegExp newline("[\n\r]{1,2}");
+    QStringList lines = appOutput.split(newline);
+    foreach (const QString &line, lines) {
+        if (line.isEmpty())
+            continue;
+        if (line.startsWith("Qml debugging is enabled")) // ignore
+            continue;
+        if (line.startsWith("QDeclarativeDebugServer:")) {
+            if (line.contains("Waiting for connection ")) {
+                m_started = true;
+                m_eventLoop.quit();
+                continue;
+            }
+            if (line.contains("Connection established")) {
+                continue;
+            }
         }
-        return;
+        qDebug() << line;
     }
-    qDebug() << appOutput;
 }
 
 inline QString TEST_FILE(const QString &filename)
