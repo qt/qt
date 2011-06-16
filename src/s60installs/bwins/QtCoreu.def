@@ -4844,4 +4844,41 @@ EXPORTS
 	?staticMetaObjectExtraData@QEventTransition@@0UQMetaObjectExtraData@@B @ 4843 NONAME ; struct QMetaObjectExtraData const QEventTransition::staticMetaObjectExtraData
 	?qt_static_metacall@QEventLoop@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 4844 NONAME ; void QEventLoop::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?keys@QProcessEnvironment@@QBE?AVQStringList@@XZ @ 4845 NONAME ; class QStringList QProcessEnvironment::keys(void) const
+	?qt_static_metacall@QFutureWatcherBase@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 4846 NONAME ; void QFutureWatcherBase::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?progressValueChanged@QFutureWatcherBase@@IAEXH@Z @ 4847 NONAME ; void QFutureWatcherBase::progressValueChanged(int)
+	?qt_metacast@QFutureWatcherBase@@UAEPAXPBD@Z @ 4848 NONAME ; void * QFutureWatcherBase::qt_metacast(char const *)
+	?qIsEffectiveTLD@@YA_NABVQString@@@Z @ 4849 NONAME ; bool qIsEffectiveTLD(class QString const &)
+	?tr@QFutureWatcherBase@@SA?AVQString@@PBD0@Z @ 4850 NONAME ; class QString QFutureWatcherBase::tr(char const *, char const *)
+	?trolltechConf@QCoreApplicationPrivate@@SAPAVQSettings@@XZ @ 4851 NONAME ; class QSettings * QCoreApplicationPrivate::trolltechConf(void)
+	?pause@QFutureWatcherBase@@QAEXXZ @ 4852 NONAME ; void QFutureWatcherBase::pause(void)
+	?topLevelDomain@QUrl@@QBE?AVQString@@XZ @ 4853 NONAME ; class QString QUrl::topLevelDomain(void) const
+	?togglePaused@QFutureWatcherBase@@QAEXXZ @ 4854 NONAME ; void QFutureWatcherBase::togglePaused(void)
+	?toRfc4122@QUuid@@QBE?AVQByteArray@@XZ @ 4855 NONAME ; class QByteArray QUuid::toRfc4122(void) const
+	?progressRangeChanged@QFutureWatcherBase@@IAEXHH@Z @ 4856 NONAME ; void QFutureWatcherBase::progressRangeChanged(int, int)
+	?cancel@QFutureWatcherBase@@QAEXXZ @ 4857 NONAME ; void QFutureWatcherBase::cancel(void)
+	?tr@QFutureWatcherBase@@SA?AVQString@@PBD0H@Z @ 4858 NONAME ; class QString QFutureWatcherBase::tr(char const *, char const *, int)
+	?toByteArray@QUuid@@QBE?AVQByteArray@@XZ @ 4859 NONAME ; class QByteArray QUuid::toByteArray(void) const
+	?runningAnimationCount@QUnifiedTimer@@QAEHXZ @ 4860 NONAME ; int QUnifiedTimer::runningAnimationCount(void)
+	?getStaticMetaObject@QFutureWatcherBase@@SAABUQMetaObject@@XZ @ 4861 NONAME ; struct QMetaObject const & QFutureWatcherBase::getStaticMetaObject(void)
+	?trUtf8@QFutureWatcherBase@@SA?AVQString@@PBD0H@Z @ 4862 NONAME ; class QString QFutureWatcherBase::trUtf8(char const *, char const *, int)
+	?staticMetaObjectExtraData@QFutureWatcherBase@@0UQMetaObjectExtraData@@B @ 4863 NONAME ; struct QMetaObjectExtraData const QFutureWatcherBase::staticMetaObjectExtraData
+	?qt_metacall@QFutureWatcherBase@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 4864 NONAME ; int QFutureWatcherBase::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?resumed@QFutureWatcherBase@@IAEXXZ @ 4865 NONAME ; void QFutureWatcherBase::resumed(void)
+	?setPaused@QFutureWatcherBase@@QAEX_N@Z @ 4866 NONAME ; void QFutureWatcherBase::setPaused(bool)
+	?canceled@QFutureWatcherBase@@IAEXXZ @ 4867 NONAME ; void QFutureWatcherBase::canceled(void)
+	?progressTextChanged@QFutureWatcherBase@@IAEXABVQString@@@Z @ 4868 NONAME ; void QFutureWatcherBase::progressTextChanged(class QString const &)
+	?fromRfc4122@QUuid@@SA?AU1@ABVQByteArray@@@Z @ 4869 NONAME ; struct QUuid QUuid::fromRfc4122(class QByteArray const &)
+	?staticMetaObject@QFutureWatcherBase@@2UQMetaObject@@B @ 4870 NONAME ; struct QMetaObject const QFutureWatcherBase::staticMetaObject
+	?trUtf8@QFutureWatcherBase@@SA?AVQString@@PBD0@Z @ 4871 NONAME ; class QString QFutureWatcherBase::trUtf8(char const *, char const *)
+	?d_func@QFutureWatcherBase@@ABEPBVQFutureWatcherBasePrivate@@XZ @ 4872 NONAME ; class QFutureWatcherBasePrivate const * QFutureWatcherBase::d_func(void) const
+	?metaObject@QFutureWatcherBase@@UBEPBUQMetaObject@@XZ @ 4873 NONAME ; struct QMetaObject const * QFutureWatcherBase::metaObject(void) const
+	?d_func@QFutureWatcherBase@@AAEPAVQFutureWatcherBasePrivate@@XZ @ 4874 NONAME ; class QFutureWatcherBasePrivate * QFutureWatcherBase::d_func(void)
+	?qTopLevelDomain@@YA?AVQString@@ABV1@@Z @ 4875 NONAME ; class QString qTopLevelDomain(class QString const &)
+	??0QUuid@@QAE@ABVQByteArray@@@Z @ 4876 NONAME ; QUuid::QUuid(class QByteArray const &)
+	?resultReadyAt@QFutureWatcherBase@@IAEXH@Z @ 4877 NONAME ; void QFutureWatcherBase::resultReadyAt(int)
+	?paused@QFutureWatcherBase@@IAEXXZ @ 4878 NONAME ; void QFutureWatcherBase::paused(void)
+	?finished@QFutureWatcherBase@@IAEXXZ @ 4879 NONAME ; void QFutureWatcherBase::finished(void)
+	?resume@QFutureWatcherBase@@QAEXXZ @ 4880 NONAME ; void QFutureWatcherBase::resume(void)
+	?resultsReadyAt@QFutureWatcherBase@@IAEXHH@Z @ 4881 NONAME ; void QFutureWatcherBase::resultsReadyAt(int, int)
+	?started@QFutureWatcherBase@@IAEXXZ @ 4882 NONAME ; void QFutureWatcherBase::started(void)
 
