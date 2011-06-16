@@ -36,8 +36,8 @@
                 What is Qt
             \enddiv
             \list
-            \o \l{Qt Whitepaper}{Qt C++ Framework}
-            \o \l{Intro to Qt Quick}{Qt Quick}
+            \o \l{Qt Features Overview}
+            \o \l{Introduction to Qt Quick}{Qt Quick}
             \o \l{external: Qt Mobility Manual}{Qt Mobility}
             \o \l{Qt WebKit}
             \endlist
