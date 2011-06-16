@@ -154,6 +154,7 @@ public:
     int orientationSet : 1;
     int partial_keyboard : 1;
     int partialKeyboardOpen : 1;
+    int handleStatusPaneResizeNotifications : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     QPointer<QWidget> splitViewLastWidget;
 
@@ -343,6 +344,7 @@ inline QS60Data::QS60Data()
   orientationSet(0),
   partial_keyboard(0),
   partialKeyboardOpen(0),
+  handleStatusPaneResizeNotifications(1),
   s60ApplicationFactory(0)
 #ifdef Q_OS_SYMBIAN
   ,s60InstalledTrapHandler(0)

@@ -1524,7 +1524,8 @@ void QSymbianControl::HandleResourceChange(int resourceType)
         // client area.
         if (S60->statusPane() && (S60->statusPane()->IsVisible() || m_lastStatusPaneVisibility)) {
             m_lastStatusPaneVisibility = S60->statusPane()->IsVisible();
-            handleClientAreaChange();
+            if (S60->handleStatusPaneResizeNotifications)
+                handleClientAreaChange();
         }
         if (IsFocused() && IsVisible()) {
             qwidget->d_func()->setWindowIcon_sys(true);
