@@ -53,8 +53,11 @@ static CFbsBitmap *rasterizeBitmap(CFbsBitmap *bitmap, TDisplayMode newMode)
         return 0;
     }
     QScopedPointer<CFbsBitmap> newBitmap(new CFbsBitmap);
-    if (newBitmap->Create(bitmap->SizeInPixels(), newMode) != KErrNone) {
-        qWarning("QVolatileImage: Failed to create new bitmap");
+    const TSize size = bitmap->SizeInPixels();
+    TInt err = newBitmap->Create(size, newMode);
+    if (err != KErrNone) {
+        qWarning("QVolatileImage: Failed to create new bitmap (w %d h %d dispmode %d err %d)",
+                 size.iWidth, size.iHeight, newMode, err);
         return 0;
     }
     CFbsBitmapDevice *bitmapDevice = 0;
@@ -97,6 +100,7 @@ static inline TDisplayMode format2TDisplayMode(QImage::Format format)
         mode = Q_SYMBIAN_ECOLOR16MAP;
         break;
     default:
+        qWarning("QVolatileImage: Unknown image format %d", format);
         mode = ENone;
         break;
     }
@@ -109,8 +113,9 @@ static CFbsBitmap *imageToBitmap(const QImage &image)
         return 0;
     }
     CFbsBitmap *bitmap = new CFbsBitmap;
-    if (bitmap->Create(TSize(image.width(), image.height()),
-                       format2TDisplayMode(image.format())) == KErrNone) {
+    TInt err = bitmap->Create(TSize(image.width(), image.height()),
+                              format2TDisplayMode(image.format()));
+    if (err == KErrNone) {
         bitmap->BeginDataAccess();
         uchar *dptr = reinterpret_cast<uchar *>(bitmap->DataAddress());
         int bmpLineLen = bitmap->DataStride();
@@ -128,7 +133,8 @@ static CFbsBitmap *imageToBitmap(const QImage &image)
         }
         bitmap->EndDataAccess();
     } else {
-        qWarning("QVolatileImage: Failed to create source bitmap");
+        qWarning("QVolatileImage: Failed to create source bitmap (w %d h %d fmt %d err %d)",
+                 image.width(), image.height(), image.format(), err);
         delete bitmap;
         bitmap = 0;
     }
@@ -155,8 +161,9 @@ static CFbsBitmap *convertData(const QVolatileImageData &source, QImage::Format 
 static CFbsBitmap *duplicateBitmap(const CFbsBitmap &sourceBitmap)
 {
     CFbsBitmap *bitmap = new CFbsBitmap;
-    if (bitmap->Duplicate(sourceBitmap.Handle()) != KErrNone) {
-        qWarning("QVolatileImage: Failed to duplicate source bitmap");
+    TInt err = bitmap->Duplicate(sourceBitmap.Handle());
+    if (err != KErrNone) {
+        qWarning("QVolatileImage: Failed to duplicate source bitmap (%d)", err);
         delete bitmap;
         bitmap = 0;
     }
@@ -166,8 +173,10 @@ static CFbsBitmap *duplicateBitmap(const CFbsBitmap &sourceBitmap)
 static CFbsBitmap *createBitmap(int w, int h, QImage::Format format)
 {
     CFbsBitmap *bitmap = new CFbsBitmap;
-    if (bitmap->Create(TSize(w, h), format2TDisplayMode(format)) != KErrNone) {
-        qWarning("QVolatileImage: Failed to create source bitmap %d,%d (%d)", w, h, format);
+    TInt err = bitmap->Create(TSize(w, h), format2TDisplayMode(format));
+    if (err != KErrNone) {
+        qWarning("QVolatileImage: Failed to create source bitmap (w %d h %d fmt %d err %d)",
+                 w, h, format, err);
         delete bitmap;
         bitmap = 0;
     }
