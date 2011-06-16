@@ -138,7 +138,7 @@ public:
     }
 
 #if defined(Q_OS_SYMBIAN)
-    virtual QVolatileImage toVolatileImage() const { return QVolatileImage(); }
+    virtual QVolatileImage toVolatileImage() const;
     virtual void* toNativeType(NativeType type);
     virtual void fromNativeType(void* pixmap, NativeType type);
 #endif

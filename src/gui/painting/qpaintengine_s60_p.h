@@ -65,7 +65,7 @@ class QS60PaintEngine : public QRasterPaintEngine
     Q_DECLARE_PRIVATE(QS60PaintEngine)
 
 public:
-    QS60PaintEngine(QPaintDevice *device, QS60PixmapData* data);
+    QS60PaintEngine(QPaintDevice *device, QS60PixmapData *data = 0);
     bool begin(QPaintDevice *device);
     bool end();
 

@@ -1159,4 +1159,6 @@ EXPORTS
 	??4QIPv6Address@@QAEAAV0@ABV0@@Z @ 1158 NONAME ABSENT ; class QIPv6Address & QIPv6Address::operator=(class QIPv6Address const &)
 	??_EQNetworkAddressEntry@@QAE@I@Z @ 1159 NONAME ABSENT ; QNetworkAddressEntry::~QNetworkAddressEntry(unsigned int)
 	??_EQNetworkCookie@@QAE@I@Z @ 1160 NONAME ABSENT ; QNetworkCookie::~QNetworkCookie(unsigned int)
+	?cleanup@QNetworkConfigurationManagerPrivate@@QAEXXZ @ 1161 NONAME ; void QNetworkConfigurationManagerPrivate::cleanup(void)
+	?initialize@QNetworkConfigurationManagerPrivate@@QAEXXZ @ 1162 NONAME ; void QNetworkConfigurationManagerPrivate::initialize(void)
 

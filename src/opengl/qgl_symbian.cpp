@@ -437,7 +437,6 @@ void* QGLPixmapData::toNativeType(NativeType type)
             m_source = QVolatileImage(w, h, QImage::Format_ARGB32_Premultiplied);
         return m_source.duplicateNativeImage();
     }
-
     return 0;
 }
 
