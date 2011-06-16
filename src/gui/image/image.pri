@@ -72,8 +72,8 @@ else:mac {
     SOURCES += image/qpixmap_mac.cpp
 }
 else:symbian {
-    HEADERS += image/qpixmap_s60_p.h
-    SOURCES += image/qpixmap_s60.cpp
+    HEADERS += image/qpixmap_raster_symbian_p.h
+    SOURCES += image/qpixmap_raster_symbian.cpp
 }
 
 !symbian|contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2) {

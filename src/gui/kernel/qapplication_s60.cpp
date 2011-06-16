@@ -1917,7 +1917,7 @@ void qt_cleanup()
         qt_S60Beep = 0;
     }
     QFontCache::cleanup(); // Has to happen now, since QFontEngineS60 has FBS handles
-    QPixmapCache::clear(); // Has to happen now, since QS60PixmapData has FBS handles
+    QPixmapCache::clear(); // Has to happen now, since QSymbianRasterPixmapData has FBS handles
 
     qt_cleanup_symbianFontDatabase();
 // S60 structure and window server session are freed in eventdispatcher destructor as they are needed there

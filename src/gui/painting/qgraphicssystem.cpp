@@ -51,7 +51,7 @@
 # include <private/qpixmap_mac_p.h>
 #endif
 #ifdef Q_OS_SYMBIAN
-# include <private/qpixmap_s60_p.h>
+# include <private/qpixmap_raster_symbian_p.h>
 # include <private/qgraphicssystemex_symbian_p.h>
 #else
 # include <private/qgraphicssystemex_p.h>
@@ -75,7 +75,7 @@ QPixmapData *QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixelType typ
 #elif defined(Q_WS_MAC)
     return new QMacPixmapData(type);
 #elif defined(Q_OS_SYMBIAN)
-    return new QS60PixmapData(type);    
+    return new QSymbianRasterPixmapData(type);    
 #elif !defined(Q_WS_QWS)
 #error QGraphicsSystem::createDefaultPixmapData() not implemented
 #endif

@@ -46,7 +46,7 @@
 #include <private/qapplication_p.h>
 #include "qimage.h"
 #include <private/qt_s60_p.h>
-#include <private/qpixmap_s60_p.h>
+#include <private/qpixmap_raster_symbian_p.h>
 
 #include <e32base.h>
 #include <e32std.h>

@@ -63,7 +63,7 @@
 #include <qhash.h>
 
 #if defined(Q_OS_SYMBIAN)
-#include <private/qpaintengine_s60_p.h>
+#include <private/qpaintengine_raster_symbian_p.h>
 #else
 #include <private/qpaintengine_raster_p.h>
 #endif
@@ -5711,7 +5711,7 @@ QPaintEngine *QImage::paintEngine() const
 
     if (!d->paintEngine) {
 #ifdef Q_OS_SYMBIAN
-        d->paintEngine = new QS60PaintEngine(const_cast<QImage *>(this));
+        d->paintEngine = new QSymbianRasterPaintEngine(const_cast<QImage *>(this));
 #else
         d->paintEngine = new QRasterPaintEngine(const_cast<QImage *>(this));
 #endif

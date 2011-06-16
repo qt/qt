@@ -44,7 +44,7 @@
 #include <QtGui/qpaintdevice.h>
 #include <private/qwidget_p.h>
 #include <private/qwindowsurface_s60_p.h>
-#include <private/qpixmap_s60_p.h>
+#include <private/qpixmap_raster_symbian_p.h>
 #include <private/qt_s60_p.h>
 #include <private/qapplication_p.h>
 #include <private/qdrawhelper_p.h>
@@ -91,7 +91,7 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
     CFbsBitmap *bitmap = q_check_ptr(new CFbsBitmap);	// CBase derived object needs check on new
     qt_symbian_throwIfError( bitmap->Create( TSize(0, 0), mode ) );
 
-    QS60PixmapData *data = new QS60PixmapData(QPixmapData::PixmapType);
+    QSymbianRasterPixmapData *data = new QSymbianRasterPixmapData(QPixmapData::PixmapType);
     if (data) {
         data->fromSymbianBitmap(bitmap, true);
         d_ptr->device = QPixmap(data);
@@ -132,7 +132,7 @@ void QS60WindowSurface::beginPaint(const QRegion &rgn)
 
     QWidgetPrivate *windowPrivate = qt_widget_private(window());
     if (!windowPrivate->isOpaque || blitWriteAlpha(windowPrivate)) {
-        QS60PixmapData *pixmapData = static_cast<QS60PixmapData *>(d_ptr->device.data_ptr().data());
+        QSymbianRasterPixmapData *pixmapData = static_cast<QSymbianRasterPixmapData *>(d_ptr->device.data_ptr().data());
 
         TDisplayMode mode = displayMode(false);
         if (pixmapData->cfbsBitmap->DisplayMode() != mode)
@@ -170,7 +170,7 @@ QImage* QS60WindowSurface::buffer(const QWidget *widget)
         return 0;
 
     const QPoint off = offset(widget);
-    QImage *img = &(static_cast<QS60PixmapData *>(d_ptr->device.data_ptr().data())->image);
+    QImage *img = &(static_cast<QSymbianRasterPixmapData *>(d_ptr->device.data_ptr().data())->image);
 
     QRect rect(off, widget->size());
     rect &= QRect(QPoint(), img->size());
@@ -218,7 +218,7 @@ bool QS60WindowSurface::scroll(const QRegion &area, int dx, int dy)
     if (d_ptr->device.isNull())
         return false;
 
-    QS60PixmapData *data = static_cast<QS60PixmapData*>(d_ptr->device.data_ptr().data());
+    QSymbianRasterPixmapData *data = static_cast<QSymbianRasterPixmapData*>(d_ptr->device.data_ptr().data());
     data->scroll(dx, dy, rect);
 
     return true;
@@ -234,7 +234,7 @@ void QS60WindowSurface::setGeometry(const QRect& rect)
     if (rect == geometry())
         return;
 
-    QS60PixmapData *data = static_cast<QS60PixmapData*>(d_ptr->device.data_ptr().data());
+    QSymbianRasterPixmapData *data = static_cast<QSymbianRasterPixmapData*>(d_ptr->device.data_ptr().data());
     data->resize(rect.width(), rect.height());
 
     QWindowSurface::setGeometry(rect);
@@ -242,7 +242,7 @@ void QS60WindowSurface::setGeometry(const QRect& rect)
 
 CFbsBitmap* QS60WindowSurface::symbianBitmap() const
 {
-    QS60PixmapData *data = static_cast<QS60PixmapData*>(d_ptr->device.data_ptr().data());
+    QSymbianRasterPixmapData *data = static_cast<QSymbianRasterPixmapData*>(d_ptr->device.data_ptr().data());
     return data->cfbsBitmap;
 }
 

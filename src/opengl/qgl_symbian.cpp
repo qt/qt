@@ -39,11 +39,10 @@
 **
 ****************************************************************************/
 
-
 #include "qgl.h"
 #include <fbs.h>
 #include <private/qt_s60_p.h>
-#include <private/qpixmap_s60_p.h>
+#include <private/qpixmap_raster_symbian_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
 #include <private/qgl_p.h>
 #include <private/qpaintengine_opengl_p.h>
