@@ -1014,6 +1014,10 @@ QFontEngine *QFontDatabase::findFont(int script, const QFontPrivate *d, const QF
         const QSymbianTypeFaceExtras *typeFaceExtras =
                 dbExtras->extras(fontFamily, request.weight > QFont::Normal, request.style != QFont::StyleNormal);
 
+        // We need a valid pixelSize, e.g. for lineThickness()
+        if (request.pixelSize < 0)
+            request.pixelSize = request.pointSize * d->dpi / 72;
+
         fe = new QFontEngineS60(request, typeFaceExtras);
 #else // QT_NO_FREETYPE
         Q_UNUSED(d)
