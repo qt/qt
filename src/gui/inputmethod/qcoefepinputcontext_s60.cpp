@@ -912,8 +912,14 @@ void QCoeFepInputContext::translateInputWidget()
     qreal dy = -(qMin(maxY, (cursor.bottom() - vkbRect.top() / 2)));
 
     // Do not allow transform above screen top.
-    if (m_transformation.height() + dy > 0)
+    if (m_transformation.height() + dy > 0) {
+        // If we already have some transformation, remove it.
+        if (m_transformation.height() < 0) {
+            rootItem->resetTransform();
+            translateInputWidget();
+        }
         return;
+    }
 
     rootItem->setTransform(QTransform::fromTranslate(0, dy), true);
 }
