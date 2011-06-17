@@ -176,7 +176,7 @@ QString QAccessibleButton::text(Text t, int child) const
         break;
     }
     if (str.isEmpty())
-        str = QAccessibleWidgetEx::text(t, child);;
+        str = QAccessibleWidgetEx::text(t, child);
     return qt_accStripAmp(str);
 }
 
@@ -396,7 +396,7 @@ QString QAccessibleToolButton::text(Text t, int child) const
     QString str;
     switch (t) {
     case Name:
-        str = toolButton()->text();
+        str = toolButton()->accessibleName();
         if (str.isEmpty())
             str = toolButton()->text();
         break;

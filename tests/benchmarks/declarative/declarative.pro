@@ -10,6 +10,6 @@ SUBDIRS += \
            script \
            qmltime
 
-contains(QT_CONFIG, opengl): SUBDIRS += painting
+contains(QT_CONFIG, opengl): SUBDIRS += painting qmlshadersplugin
 
 include(../trusted-benchmarks.pri)

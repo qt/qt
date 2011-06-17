@@ -458,7 +458,6 @@ void QDeclarativeTextEdit::setSelectedTextColor(const QColor &color)
 /*!
     \qmlproperty enumeration TextEdit::horizontalAlignment
     \qmlproperty enumeration TextEdit::verticalAlignment
-    \qmlproperty enumeration TextEdit::effectiveHorizontalAlignment
 
     Sets the horizontal and vertical alignment of the text within the TextEdit item's
     width and height. By default, the text alignment follows the natural alignment
@@ -480,10 +479,10 @@ void QDeclarativeTextEdit::setSelectedTextColor(const QColor &color)
     \o TextEdit.AlignVCenter
     \endlist
 
-    When using the attached property LayoutMirroring::enabled to mirror application
+    When using the attached property \l {LayoutMirroring::enabled} to mirror application
     layouts, the horizontal alignment of text will also be mirrored. However, the property
     \c horizontalAlignment will remain unchanged. To query the effective horizontal alignment
-    of TextEdit, use the read-only property \c effectiveHorizontalAlignment.
+    of TextEdit, use the property \l {LayoutMirroring::enabled}.
 */
 QDeclarativeTextEdit::HAlignment QDeclarativeTextEdit::hAlign() const
 {
@@ -538,8 +537,6 @@ bool QDeclarativeTextEditPrivate::setHAlign(QDeclarativeTextEdit::HAlignment ali
         QDeclarativeTextEdit::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
         hAlign = alignment;
         emit q->horizontalAlignmentChanged(alignment);
-        if (oldEffectiveHAlign != q->effectiveHAlign())
-            emit q->effectiveHorizontalAlignmentChanged();
         return true;
     }
     return false;
@@ -562,7 +559,6 @@ void QDeclarativeTextEditPrivate::mirrorChange()
         if (!hAlignImplicit && (hAlign == QDeclarativeTextEdit::AlignRight || hAlign == QDeclarativeTextEdit::AlignLeft)) {
             updateDefaultTextOption();
             q->updateSize();
-            emit q->effectiveHorizontalAlignmentChanged();
         }
     }
 }

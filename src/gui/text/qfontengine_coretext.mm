@@ -100,7 +100,12 @@ QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const QCFString &name, const 
 
     QCFType<CTFontDescriptorRef> descriptor = CTFontDescriptorCreateWithNameAndSize(name, fontDef.pixelSize);
     QCFType<CTFontRef> baseFont = CTFontCreateWithFontDescriptor(descriptor, fontDef.pixelSize, &transform);
-    ctfont = CTFontCreateCopyWithSymbolicTraits(baseFont, fontDef.pixelSize, &transform, symbolicTraits, symbolicTraits);
+    ctfont = NULL;
+    // There is a side effect in Core Text: if we apply 0 as symbolic traits to a font in normal weight,
+    // we will get the light version of that font (while the way supposed to work doesn't:
+    // setting kCTFontWeightTrait to some value between -1.0 to 0.0 has no effect on font selection)
+    if (fontDef.weight != QFont::Normal || symbolicTraits)
+        ctfont = CTFontCreateCopyWithSymbolicTraits(baseFont, fontDef.pixelSize, &transform, symbolicTraits, symbolicTraits);
 
     // CTFontCreateCopyWithSymbolicTraits returns NULL if we ask for a trait that does
     // not exist for the given font. (for example italic)
@@ -111,17 +116,11 @@ QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const QCFString &name, const 
     init(kerning);
 }
 
-QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(CGFontRef cgFontRef, const QFontDef &fontDef, bool kerning)
+QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(CTFontRef ctFontRef, const QFontDef &fontDef, bool kerning)
     : QFontEngineMulti(0)
 {
     this->fontDef = fontDef;
-
-    transform = CGAffineTransformIdentity;
-    if (fontDef.stretch != 100) {
-        transform = CGAffineTransformMakeScale(float(fontDef.stretch) / float(100), 1);
-    }
-
-    ctfont = CTFontCreateWithGraphicsFont(cgFontRef, fontDef.pixelSize, &transform, NULL);
+    ctfont = (CTFontRef) CFRetain(ctFontRef);
     init(kerning);
 }
 
@@ -144,6 +143,9 @@ void QCoreTextFontEngineMulti::init(bool kerning)
     }
 
     QCoreTextFontEngine *fe = new QCoreTextFontEngine(ctfont, fontDef);
+    fontDef.family = fe->fontDef.family;
+    fontDef.styleName = fe->fontDef.styleName;
+    transform = fe->transform;
     fe->ref.ref();
     engines.append(fe);
 }
@@ -400,7 +402,7 @@ void QCoreTextFontEngineMulti::loadEngine(int)
 
 extern int qt_antialiasing_threshold; // from qapplication.cpp
 
-static inline CGAffineTransform transformFromFontDef(const QFontDef &fontDef)
+CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef)
 {
     CGAffineTransform transform = CGAffineTransformIdentity;
     if (fontDef.stretch != 100)
@@ -411,7 +413,7 @@ static inline CGAffineTransform transformFromFontDef(const QFontDef &fontDef)
 QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def)
 {
     fontDef = def;
-    transform = transformFromFontDef(fontDef);
+    transform = qt_transform_from_fontdef(fontDef);
     ctfont = font;
     CFRetain(ctfont);
     cgFont = CTFontCopyGraphicsFont(font, NULL);
@@ -421,7 +423,7 @@ QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def)
 QCoreTextFontEngine::QCoreTextFontEngine(CGFontRef font, const QFontDef &def)
 {
     fontDef = def;
-    transform = transformFromFontDef(fontDef);
+    transform = qt_transform_from_fontdef(fontDef);
     cgFont = font;
     // Keep reference count balanced
     CFRetain(cgFont);
@@ -458,6 +460,9 @@ void QCoreTextFontEngine::init()
 
     QCFString family = CTFontCopyFamilyName(ctfont);
     fontDef.family = family;
+
+    QCFString styleName = (CFStringRef) CTFontCopyAttribute(ctfont, kCTFontStyleNameAttribute);
+    fontDef.styleName = styleName;
 
     synthesisFlags = 0;
     CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(ctfont);
@@ -725,10 +730,10 @@ void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *position
     }
 }
 
-QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, int /*margin*/, bool aa)
+QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, int margin, bool aa)
 {
     const glyph_metrics_t br = boundingBox(glyph);
-    QImage im(qRound(br.width)+2, qRound(br.height)+2, QImage::Format_RGB32);
+    QImage im(qRound(br.width) + margin * 2, qRound(br.height) + margin * 2, QImage::Format_RGB32);
     im.fill(0);
 
     CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
@@ -740,9 +745,8 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
                                              8, im.bytesPerLine(), colorspace,
                                              cgflags);
     CGContextSetFontSize(ctx, fontDef.pixelSize);
-    CGContextSetShouldAntialias(ctx, aa ||
-                                (fontDef.pointSize > qt_antialiasing_threshold
-                                 && !(fontDef.styleStrategy & QFont::NoAntialias)));
+    CGContextSetShouldAntialias(ctx, (aa || fontDef.pointSize > qt_antialiasing_threshold)
+                                 && !(fontDef.styleStrategy & QFont::NoAntialias));
     CGContextSetShouldSmoothFonts(ctx, aa);
     CGAffineTransform oldTextMatrix = CGContextGetTextMatrix(ctx);
     CGAffineTransform cgMatrix = CGAffineTransformMake(1, 0, 0, 1, 0, 0);
@@ -760,8 +764,8 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
 
     CGContextSetFont(ctx, cgFont);
 
-    qreal pos_x = -br.x.toReal() + subPixelPosition.toReal();
-    qreal pos_y = im.height() + br.y.toReal() - 1;
+    qreal pos_x = -br.x.toReal() + subPixelPosition.toReal() + margin;
+    qreal pos_y = im.height() + br.y.toReal() - margin;
     CGContextSetTextPosition(ctx, pos_x, pos_y);
 
     CGSize advance;

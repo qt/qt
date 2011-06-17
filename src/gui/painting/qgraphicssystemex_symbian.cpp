@@ -44,9 +44,38 @@
 #include "private/qbackingstore_p.h"
 #include "private/qapplication_p.h"
 
-#include <QDebug>
+#include <e32property.h>
 
 QT_BEGIN_NAMESPACE
+
+static bool bcm2727Initialized = false;
+static bool bcm2727 = false;
+
+bool QSymbianGraphicsSystemEx::hasBCM2727()
+{
+    if (bcm2727Initialized)
+        return bcm2727;
+
+    const TUid KIvePropertyCat = {0x2726beef};
+    enum TIvePropertyChipType {
+        EVCBCM2727B1 = 0x00000000,
+        EVCBCM2763A0 = 0x04000100,
+        EVCBCM2763B0 = 0x04000102,
+        EVCBCM2763C0 = 0x04000103,
+        EVCBCM2763C1 = 0x04000104,
+        EVCBCMUnknown = 0x7fffffff
+    };
+
+    TInt chipType = EVCBCMUnknown;
+    if (RProperty::Get(KIvePropertyCat, 0, chipType) == KErrNone) {
+        if (chipType == EVCBCM2727B1)
+            bcm2727 = true;
+    }
+
+    bcm2727Initialized = true;
+
+    return bcm2727;
+}
 
 void QSymbianGraphicsSystemEx::releaseCachedGpuResources()
 {
@@ -62,11 +91,6 @@ void QSymbianGraphicsSystemEx::releaseAllGpuResources()
         if (QTLWExtra *topExtra = qt_widget_private(widget)->maybeTopData())
             topExtra->backingStore.destroy();
     }
-}
-
-bool QSymbianGraphicsSystemEx::hasBCM2727()
-{
-    return !QApplicationPrivate::instance()->useTranslucentEGLSurfaces;
 }
 
 void QSymbianGraphicsSystemEx::forceToRaster(QWidget *window)

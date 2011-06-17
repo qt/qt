@@ -41,6 +41,8 @@
 
 #include "qxlibscreen.h"
 
+#include <X11/extensions/Xfixes.h>
+
 #include "qxlibcursor.h"
 #include "qxlibwindow.h"
 #include "qxlibkeyboard.h"

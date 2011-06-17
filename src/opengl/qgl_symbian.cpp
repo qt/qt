@@ -183,9 +183,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext) // almost same as
         d->ownsEglContext = true;
         d->eglContext->setApi(QEgl::OpenGL);
 
-        QGraphicsSystemEx *ex = QApplicationPrivate::graphicsSystem()->platformExtension();
-        QSymbianGraphicsSystemEx *symex = static_cast<QSymbianGraphicsSystemEx*>(ex);
-        if (symex && !symex->hasBCM2727()) {
+        if (!QSymbianGraphicsSystemEx::hasBCM2727()) {
             // Most likely we have hw support for multisampling
             // so let's enable it.
             d->glFormat.setSampleBuffers(1);
