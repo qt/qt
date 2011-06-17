@@ -193,6 +193,11 @@ void QSoftKeyManager::sendKeyEvent()
 
 void QSoftKeyManager::updateSoftKeys()
 {
+#ifdef Q_WS_S60
+    // Do not adjust softkeys if application is not the topmost one
+    if (S60->wsSession().GetFocusWindowGroup() != S60->windowGroup().WindowGroupId())
+        return;
+#endif
     QSoftKeyManager::instance()->d_func()->pendingUpdate = true;
     QEvent *event = new QEvent(QEvent::UpdateSoftKeys);
     QApplication::postEvent(QSoftKeyManager::instance(), event);
