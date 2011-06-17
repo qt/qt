@@ -43,7 +43,7 @@
     </message>
     <message>
         <source>Cannot open collection file: %1</source>
-        <translation>コレクションファイルをオープンできません: %1</translation>
+        <translation>コレクションファイルを開けません: %1</translation>
     </message>
     <message>
         <source>Cannot create tables in file %1!</source>
@@ -67,7 +67,7 @@
     </message>
     <message>
         <source>Cannot open database &apos;%1&apos; to optimize!</source>
-        <translation>最適化用にデータベース &apos;%1&apos; をオープンできません!</translation>
+        <translation>最適化用にデータベース &apos;%1&apos; を開けません!</translation>
     </message>
     <message>
         <source>Cannot create directory: %1</source>
@@ -83,7 +83,7 @@
     </message>
     <message>
         <source>Cannot open documentation file %1!</source>
-        <translation>ドキュメントファイル %1 をオープンできません!</translation>
+        <translation>ドキュメントファイル %1 を開けません!</translation>
     </message>
     <message>
         <source>The namespace %1 was not registered!</source>
@@ -99,14 +99,14 @@
     <message>
         <source>Cannot open database &apos;%1&apos; &apos;%2&apos;: %3</source>
         <extracomment>The placeholders are: %1 - The name of the database which cannot be opened %2 - The unique id for the connection %3 - The actual error string</extracomment>
-        <translation>データベース &apos;%1&apos; &apos;%2&apos; がオープンできません: %3</translation>
+        <translation>データベース &apos;%1&apos; &apos;%2&apos; を開けません: %3</translation>
     </message>
 </context>
 <context>
     <name>QHelpEngineCore</name>
     <message>
         <source>Cannot open documentation file %1: %2!</source>
-        <translation>ドキュメントファイル %1 をオープンできません: %2!</translation>
+        <translation>ドキュメントファイル %1 を開けません: %2!</translation>
     </message>
     <message>
         <source>The specified namespace does not exist!</source>
@@ -133,7 +133,7 @@
     </message>
     <message>
         <source>Cannot open data base file %1!</source>
-        <translation>データベースファイル %1 をオープンできません!</translation>
+        <translation>データベースファイル %1 を開けません!</translation>
     </message>
     <message>
         <source>Cannot register namespace %1!</source>
@@ -177,7 +177,7 @@
     </message>
     <message>
         <source>Cannot open file %1! Skipping it.</source>
-        <translation>ファイル %1 をオープンできません! スキップします。</translation>
+        <translation>ファイル %1 を開けません! スキップします。</translation>
     </message>
     <message>
         <source>The filter %1 is already registered!</source>
@@ -209,7 +209,7 @@
     </message>
     <message>
         <source>File &apos;%1&apos; cannot be opened.</source>
-        <translation>ファイル &apos;%1&apos; をオープンできません。</translation>
+        <translation>ファイル &apos;%1&apos; を開けません。</translation>
     </message>
     <message>
         <source>File &apos;%1&apos; contains an invalid link to file &apos;%2&apos;</source>
@@ -256,7 +256,7 @@
     </message>
     <message>
         <source>The input file %1 could not be opened!</source>
-        <translation>入力ファイル %1 がオープンできません!</translation>
+        <translation>入力ファイル %1 を開けません!</translation>
     </message>
 </context>
 <context>

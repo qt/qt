@@ -206,7 +206,6 @@ public:
     void mirrorChange() {
         Q_Q(QDeclarativeGridView);
         regenerate();
-        emit q->effectiveLayoutDirectionChanged();
     }
 
     qreal position() const {
@@ -818,7 +817,9 @@ void QDeclarativeGridViewPrivate::createHighlight()
     if (highlight) {
         if (trackedItem == highlight)
             trackedItem = 0;
-        delete highlight->item;
+        if (highlight->item->scene())
+            highlight->item->scene()->removeItem(highlight->item);
+        highlight->item->deleteLater();
         delete highlight;
         highlight = 0;
         delete highlightXAnimator;
@@ -1802,9 +1803,12 @@ void QDeclarativeGridView::setHighlightRangeMode(HighlightRangeMode mode)
   on the \l GridView::flow property.
   \endlist
 
-  \bold Note: If GridView::flow is set to GridView.LeftToRight, this is not to be confused if
-  GridView::layoutDirection is set to Qt.RightToLeft. The GridView.LeftToRight flow value simply
-  indicates that the flow is horizontal.
+  When using the attached property \l {LayoutMirroring::enabled} for locale layouts,
+  the layout direction of the grid view will be mirrored. However, the actual property
+  \c layoutDirection will remain unchanged. You can use the property
+  \l {LayoutMirroring::enabled} to determine whether the direction has been mirrored.
+
+  \sa {LayoutMirroring}{LayoutMirroring}
 */
 
 Qt::LayoutDirection QDeclarativeGridView::layoutDirection() const
@@ -1820,20 +1824,8 @@ void QDeclarativeGridView::setLayoutDirection(Qt::LayoutDirection layoutDirectio
         d->layoutDirection = layoutDirection;
         d->regenerate();
         emit layoutDirectionChanged();
-        emit effectiveLayoutDirectionChanged();
     }
 }
-
-/*!
-    \qmlproperty enumeration GridView::effectiveLayoutDirection
-    This property holds the effective layout direction of the grid.
-
-    When using the attached property \l {LayoutMirroring::enabled}{LayoutMirroring::enabled} for locale layouts,
-    the visual layout direction of the grid will be mirrored. However, the
-    property \l {GridView::layoutDirection}{layoutDirection} will remain unchanged.
-
-    \sa GridView::layoutDirection, {LayoutMirroring}{LayoutMirroring}
-*/
 
 Qt::LayoutDirection QDeclarativeGridView::effectiveLayoutDirection() const
 {

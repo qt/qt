@@ -174,7 +174,7 @@ void tst_qdeclarativeqt::rect()
     QCOMPARE(qvariant_cast<QRectF>(object->property("test2")), QRectF(-10, 13, 100, 109.6));
     QCOMPARE(qvariant_cast<QRectF>(object->property("test3")), QRectF());
     QCOMPARE(qvariant_cast<QRectF>(object->property("test4")), QRectF());
-    QCOMPARE(qvariant_cast<QRectF>(object->property("test5")), QRectF());
+    QCOMPARE(qvariant_cast<QRectF>(object->property("test5")), QRectF(10, 13, 100, -109));
 
     delete object;
 }

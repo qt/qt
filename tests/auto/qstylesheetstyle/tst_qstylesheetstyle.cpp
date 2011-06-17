@@ -1608,7 +1608,12 @@ class ChangeEventWidget : public QWidget
             static bool recurse = false;
             if (!recurse) {
                 recurse = true;
+
+#ifdef Q_OS_SYMBIAN
+                QStyle *style = new QWindowsStyle();
+#else
                 QStyle *style = new QMotifStyle;
+#endif
                 style->setParent(this);
                 setStyle(style);
                 recurse = false;

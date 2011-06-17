@@ -615,6 +615,9 @@ void QApplication::setMainWidget(QWidget *mainWidget)
 
 void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::MouseEvent *e)
 {
+    if (!e->widget)
+       return;
+
     // qDebug() << "handleMouseEvent" << tlw << ev.pos() << ev.globalPos() << hex << ev.buttons();
     static QWeakPointer<QWidget> implicit_mouse_grabber;
 
@@ -771,6 +774,10 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
 
 void QApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::WheelEvent *e)
 {
+
+    if (!e->widget)
+        return;
+
 //    QPoint localPoint = ev.pos();
     QPoint globalPoint = e->globalPos;
 //    bool trustLocalPoint = !!tlw; //is there something the local point can be local to?
@@ -845,12 +852,18 @@ void QApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyEven
 
 void QApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e)
 {
+    if (!e->enter)
+        return;
+
     QApplicationPrivate::dispatchEnterLeave(e->enter.data(),0);
     qt_last_mouse_receiver = e->enter.data();
 }
 
 void QApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::LeaveEvent *e)
 {
+    if (!e->leave)
+        return;
+
     QApplicationPrivate::dispatchEnterLeave(0,qt_last_mouse_receiver);
 
     if (e->leave.data() && !e->leave.data()->isAncestorOf(qt_last_mouse_receiver)) //(???) this should not happen
@@ -861,6 +874,9 @@ void QApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Leave
 
 void QApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e)
 {
+    if (!e->activated)
+        return;
+
     QApplication::setActiveWindow(e->activated.data());
 }
 

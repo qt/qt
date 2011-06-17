@@ -86,7 +86,7 @@ FocusScope {
                     hoverEnabled: true
 
                     onClicked: {
-                        GridView.view.currentIndex = index
+                        container.GridView.view.currentIndex = index
                         container.forceActiveFocus()
                     }
                 }
