@@ -326,7 +326,7 @@ void QS60MainAppUi::HandleScreenDeviceChangedL()
     // resize due to status pane change.
     // Eventually when layout is ready, Symbian framework calls
     // HandleResourceChangeL(KEikDynamicLayoutVariantSwitch) which triggers
-    // resize to Qt window and to its EGL surface. 
+    // resize to Qt window and to its EGL surface.
     S60->handleStatusPaneResizeNotifications = false;
     QS60MainAppUiBase::HandleScreenDeviceChangedL();
     S60->handleStatusPaneResizeNotifications = true;
