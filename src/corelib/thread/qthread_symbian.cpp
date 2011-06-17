@@ -335,7 +335,15 @@ void *QThreadPrivate::start(void *arg)
     createEventDispatcher(data);
 
     emit thr->started();
-    thr->run();
+    TRAPD(err, {
+        try {
+            thr->run();
+        } catch (const std::exception& ex) {
+            qWarning("QThreadPrivate::start: Thread exited on exception %s", ex.what());
+        }
+    });
+    if (err)
+        qWarning("QThreadPrivate::start: Thread exited on leave %d", err);
 
     QThreadPrivate::finish(arg);
 
