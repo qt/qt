@@ -1168,6 +1168,4 @@ EXPORTS
 	_ZTV35QNetworkConfigurationManagerPrivate @ 1167 NONAME
 	_ZThn8_N19QBearerEnginePluginD0Ev @ 1168 NONAME
 	_ZThn8_N19QBearerEnginePluginD1Ev @ 1169 NONAME
-	_ZN35QNetworkConfigurationManagerPrivate10initializeEv @ 1170 NONAME
-	_ZN35QNetworkConfigurationManagerPrivate7cleanupEv @ 1171 NONAME
 
