@@ -19,7 +19,7 @@ HTML.postheader = \
     "    </div>\n" \
     "    <div id=\"shortCut\">\n" \
     "      <ul>\n" \
-    "        <li class=\"shortCut-topleft-inactive\"><span><a href=\"index.html\">Qt 4.7</a></span></li>\n" \
+    "        <li class=\"shortCut-topleft-inactive\"><span><a href=\"index.html\">Qt 4.8</a></span></li>\n" \
     "        <li class=\"shortCut-topleft-active\"><a href=\"http://doc.qt.nokia.com\">ALL VERSIONS" \
     "        </a></li>\n" \
     "      </ul>\n" \

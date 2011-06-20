@@ -78,6 +78,10 @@ int main(int argc, char *argv[])
     scriptFile.close();
 //! [3]
 
+#ifdef Q_OS_SYMBIAN
+    contents.replace("button.show()", "button.showMaximized()");
+#endif
+
 //! [4]
     QScriptValue result = engine.evaluate(contents, fileName);
 //! [4]

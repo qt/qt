@@ -177,7 +177,7 @@
         \o \l{Deploying an Application on Windows}{Qt for Windows}
         \o \l{Deploying an Application on Mac OS X}{Qt for Mac OS X}
         \o \l{Deploying Qt for Embedded Linux Applications}{Qt for Embedded Linux}
-        \o \l{Deploying an Application on the Symbian platform}{Qt for the Symbian platform}
+        \o \l{Deploying an Application on the Symbian Platform}{Qt for the Symbian platform}
     \endlist
 
     \sa Installation {Platform-Specific Documentation}
