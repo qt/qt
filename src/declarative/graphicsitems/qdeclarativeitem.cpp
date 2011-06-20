@@ -898,7 +898,6 @@ void QDeclarativeItemPrivate::setLayoutMirror(bool mirror)
             _anchors->d_func()->fillChanged();
             _anchors->d_func()->centerInChanged();
             _anchors->d_func()->updateHorizontalAnchors();
-            emit _anchors->mirroredChanged();
         }
         mirrorChange();
         if (attachedLayoutDirection) {

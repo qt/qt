@@ -220,20 +220,33 @@ bool QNetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieLis
                 continue; // not accepted
         }
 
-        QList<QNetworkCookie>::Iterator it = d->allCookies.begin(),
-                                       end = d->allCookies.end();
-        for ( ; it != end; ++it)
+        for (int i = 0; i < d->allCookies.size(); ++i) {
             // does this cookie already exist?
-            if (cookie.name() == it->name() &&
-                cookie.domain() == it->domain() &&
-                cookie.path() == it->path()) {
+            const QNetworkCookie &current = d->allCookies.at(i);
+            if (cookie.name() == current.name() &&
+                cookie.domain() == current.domain() &&
+                cookie.path() == current.path()) {
                 // found a match
-                d->allCookies.erase(it);
+                d->allCookies.removeAt(i);
                 break;
             }
+        }
 
         // did not find a match
         if (!isDeletion) {
+            int countForDomain = 0;
+            for (int i = d->allCookies.size() - 1; i >= 0; --i) {
+                // Start from the end and delete the oldest cookies to keep a maximum count of 50.
+                const QNetworkCookie &current = d->allCookies.at(i);
+                if (isParentDomain(cookie.domain(), current.domain())
+                    || isParentDomain(current.domain(), cookie.domain())) {
+                    if (countForDomain >= 49)
+                        d->allCookies.removeAt(i);
+                    else
+                        ++countForDomain;
+                }
+            }
+
             d->allCookies += cookie;
             ++added;
         }

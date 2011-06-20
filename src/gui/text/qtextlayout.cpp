@@ -1011,6 +1011,35 @@ QScriptItem &QTextLineItemIterator::next()
     return *si;
 }
 
+static QFixed offsetInLigature(const unsigned short *logClusters,
+                               const QGlyphLayout &glyphs,
+                               int pos, int max, int glyph_pos)
+{
+    int offsetInCluster = 0;
+    for (int i = pos - 1; i >= 0; i--) {
+        if (logClusters[i] == glyph_pos)
+            offsetInCluster++;
+        else
+            break;
+    }
+
+    // in the case that the offset is inside a (multi-character) glyph,
+    // interpolate the position.
+    if (offsetInCluster > 0) {
+        int clusterLength = 0;
+        for (int i = pos - offsetInCluster; i < max; i++) {
+            if (logClusters[i] == glyph_pos)
+                clusterLength++;
+            else
+                break;
+        }
+        if (clusterLength)
+            return glyphs.advances_x[glyph_pos] * offsetInCluster / clusterLength;
+    }
+
+    return 0;
+}
+
 bool QTextLineItemIterator::getSelectionBounds(QFixed *selectionX, QFixed *selectionWidth) const
 {
     *selectionX = *selectionWidth = 0;
@@ -1050,8 +1079,19 @@ bool QTextLineItemIterator::getSelectionBounds(QFixed *selectionX, QFixed *selec
                 swidth += glyphs.effectiveAdvance(g);
         }
 
-        *selectionX = x + soff;
-        *selectionWidth = swidth;
+        // If the starting character is in the middle of a ligature,
+        // selection should only contain the right part of that ligature
+        // glyph, so we need to get the width of the left part here and
+        // add it to *selectionX
+        QFixed leftOffsetInLigature = offsetInLigature(logClusters, glyphs, from,
+                                                       to, start_glyph);
+        *selectionX = x + soff + leftOffsetInLigature;
+        *selectionWidth = swidth - leftOffsetInLigature;
+        // If the ending character is also part of a ligature, swidth does
+        // not contain that part yet, we also need to find out the width of
+        // that left part
+        *selectionWidth += offsetInLigature(logClusters, glyphs, to,
+                                            eng->length(item), end_glyph);
     }
     return true;
 }
@@ -2465,16 +2505,8 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
         if(pos == l)
             x += si->width;
     } else {
-        int offsetInCluster = 0;
-        for (int i=pos-1; i >= 0; i--) {
-            if (logClusters[i] == glyph_pos)
-                offsetInCluster++;
-            else
-                break;
-        }
-
+        int end = qMin(lineEnd, si->position + l) - si->position;
         if (reverse) {
-            int end = qMin(lineEnd, si->position + l) - si->position;
             int glyph_end = end == l ? si->num_glyphs : logClusters[end];
             for (int i = glyph_end - 1; i >= glyph_pos; i--)
                 x += glyphs.effectiveAdvance(i);
@@ -2484,17 +2516,7 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
             for (int i = glyph_start; i < glyph_pos; i++)
                 x += glyphs.effectiveAdvance(i);
         }
-        if (offsetInCluster > 0) { // in the case that the offset is inside a (multi-character) glyph, interpolate the position.
-            int clusterLength = 0;
-            for (int i=pos - offsetInCluster; i < line.length; i++) {
-                if (logClusters[i] == glyph_pos)
-                    clusterLength++;
-                else
-                    break;
-            }
-            if (clusterLength)
-                x+= glyphs.advances_x[glyph_pos] * offsetInCluster / clusterLength;
-        }
+        x += offsetInLigature(logClusters, glyphs, pos, end, glyph_pos);
     }
 
     *cursorPos = pos + si->position;
@@ -2600,6 +2622,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
             }
 
             int glyph_pos = -1;
+            QFixed edge;
             // has to be inside run
             if (cpos == QTextLine::CursorOnCharacter) {
                 if (si.analysis.bidiLevel % 2) {
@@ -2610,6 +2633,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                             if (pos < x)
                                 break;
                             glyph_pos = gs;
+                            edge = pos;
                             break;
                         }
                         pos -= glyphs.effectiveAdvance(gs);
@@ -2622,6 +2646,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                             if (pos > x)
                                 break;
                             glyph_pos = gs;
+                            edge = pos;
                         }
                         pos += glyphs.effectiveAdvance(gs);
                         ++gs;
@@ -2634,6 +2659,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                     while (gs <= ge) {
                         if (glyphs.attributes[gs].clusterStart && qAbs(x-pos) < dist) {
                             glyph_pos = gs;
+                            edge = pos;
                             dist = qAbs(x-pos);
                         }
                         pos -= glyphs.effectiveAdvance(gs);
@@ -2643,6 +2669,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                     while (gs <= ge) {
                         if (glyphs.attributes[gs].clusterStart && qAbs(x-pos) < dist) {
                             glyph_pos = gs;
+                            edge = pos;
                             dist = qAbs(x-pos);
                         }
                         pos += glyphs.effectiveAdvance(gs);
@@ -2650,15 +2677,12 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                     }
                 }
                 if (qAbs(x-pos) < dist)
-                    return si.position + end;
+                    return eng->positionInLigature(&si, end, x, pos, -1,
+                                                   cpos == QTextLine::CursorOnCharacter);
             }
             Q_ASSERT(glyph_pos != -1);
-            int j;
-            for (j = 0; j < eng->length(item); ++j)
-                if (logClusters[j] == glyph_pos)
-                    break;
-//             qDebug("at pos %d (in run: %d)", si.position + j, j);
-            return si.position + j;
+            return eng->positionInLigature(&si, end, x, edge, glyph_pos,
+                                           cpos == QTextLine::CursorOnCharacter);
         }
     }
     // right of last item

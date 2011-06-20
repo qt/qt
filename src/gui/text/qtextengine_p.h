@@ -594,6 +594,8 @@ public:
     void shapeLine(const QScriptLine &line);
     QFixed leadingSpaceWidth(const QScriptLine &line);
 
+    int positionInLigature(const QScriptItem *si, int end, QFixed x, QFixed edge, int glyph_pos, bool cursorOnCharacter);
+
 private:
     void setBoundary(int strPos) const;
     void addRequiredBoundaries() const;
@@ -608,6 +610,7 @@ private:
     void splitItem(int item, int pos) const;
 
     void resolveAdditionalFormats() const;
+    int getClusterLength(unsigned short *logClusters, const HB_CharAttributes *attributes, int from, int to, int glyph_pos, int *start);
 };
 
 class QStackTextEngine : public QTextEngine {

@@ -45,14 +45,15 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <mach/mach_time.h>
-#elif defined(Q_OS_UNIX)
-#include <sys/time.h>
-#include <time.h>
-#include <unistd.h>
 #elif defined(Q_OS_SYMBIAN)
 #include <e32std.h>
 #include <sys/time.h>
 #include <hal.h>
+#include <hal_data.h>
+#elif defined(Q_OS_UNIX)
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
 #elif defined(Q_OS_WIN)
 #include <windows.h>
 #endif
@@ -83,6 +84,29 @@ qint64 QPerformanceTimer::elapsed() const
     uint64_t cpu_time = mach_absolute_time();
     return absoluteToNSecs(cpu_time - t1);
 }
+
+////////////////////////////// Symbian //////////////////////////////
+#elif defined(Q_OS_SYMBIAN)
+
+static qint64 getTimeFromTick(quint64 elapsed)
+{
+    static TInt freq = 0;
+    if (!freq)
+        HAL::Get(HALData::EFastCounterFrequency, freq);
+
+    return (elapsed * 1000000000) / freq;
+}
+
+void QPerformanceTimer::start()
+{
+    t1 = User::FastCounter();
+}
+
+qint64 QPerformanceTimer::elapsed() const
+{
+    return getTimeFromTick(User::FastCounter() - t1);
+}
+
 
 ////////////////////////////// Unix //////////////////////////////
 #elif defined(Q_OS_UNIX)
@@ -156,29 +180,6 @@ qint64 QPerformanceTimer::elapsed() const
     frac = frac - t2;
 
     return sec * Q_INT64_C(1000000000) + frac;
-}
-
-////////////////////////////// Symbian //////////////////////////////
-#elif defined(Q_OS_SYMBIAN)
-
-static qint64 getTimeFromTick(quint64 elapsed)
-{
-    static TInt freq;
-    if (!freq)
-        HAL::Get(HALData::EFastCounterFrequency, freq);
-
-    // ### not sure on units
-    return elapsed / freq;
-}
-
-void QPerformanceTimer::start()
-{
-    t1 = User::FastCounter();
-}
-
-qint64 QPerformanceTimer::elapsed() const
-{
-    return getTimeFromTick(User::FastCounter() - t1);
 }
 
 ////////////////////////////// Windows //////////////////////////////
