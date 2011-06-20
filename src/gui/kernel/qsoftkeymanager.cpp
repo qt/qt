@@ -48,9 +48,6 @@
 
 #ifdef Q_WS_S60
 #include "private/qsoftkeymanager_s60_p.h"
-#endif
-
-#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
 #include "private/qt_s60_p.h"
 #endif
 
