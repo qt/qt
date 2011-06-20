@@ -64,7 +64,7 @@
     Maximum intensity as percentages
 */
 /*! \var XQVibra::MinIntensity
-    Minumum intensity as percentages
+    Minimum intensity as percentages
 */
 
 /*!
@@ -91,7 +91,7 @@ XQVibra::~XQVibra()
     This enum defines the possible errors for a XQVibra object.
 */
 /*! \var XQVibra::Error XQVibra::NoError
-    No error occured.
+    No error occurred.
 */
 /*! \var XQVibra::Error XQVibra::OutOfMemoryError
     Not enough memory.
