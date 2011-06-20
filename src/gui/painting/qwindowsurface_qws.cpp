@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -806,6 +806,10 @@ QWSMemorySurface::QWSMemorySurface(QWidget *w)
 
 QWSMemorySurface::~QWSMemorySurface()
 {
+#ifndef QT_NO_QWS_MULTIPROCESS
+    if (memlock != QWSDisplay::Data::getClientLock())
+        delete memlock;
+#endif
 }
 
 
@@ -852,9 +856,9 @@ void QWSMemorySurface::setLock(int lockId)
 {
     if (memlock && memlock->id() == lockId)
         return;
-    delete memlock;
+    if (memlock != QWSDisplay::Data::getClientLock())
+        delete memlock;
     memlock = (lockId == -1 ? 0 : new QWSLock(lockId));
-    return;
 }
 #endif // QT_NO_QWS_MULTIPROCESS
 
@@ -946,37 +950,39 @@ void QWSLocalMemSurface::setGeometry(const QRect &rect)
     }
 
     uchar *deleteLater = 0;
-    // In case of a Hide event we need to delete the memory after sending the
-    // event to the server in order to let the server animate the event.
-    if (size.isEmpty()) {
-        deleteLater = mem;
-        mem = 0;
-    }
 
     if (img.size() != size) {
-        delete[] mem;
         if (size.isEmpty()) {
+            if (memsize) {
+                // In case of a Hide event we need to delete the memory after sending the
+                // event to the server in order to let the server animate the event.
+                deleteLater = mem;
+                memsize = 0;
+            }
             mem = 0;
             img = QImage();
         } else {
             const QImage::Format format = preferredImageFormat(win);
             const int bpl = nextMulOf4(bytesPerPixel(format) * size.width());
-            const int memsize = bpl * size.height();
-            mem = new uchar[memsize];
+            const int imagesize = bpl * size.height();
+            if (memsize < imagesize) {
+                delete[] mem;
+                memsize = imagesize;
+                mem = new uchar[memsize];
+            }
             img = QImage(mem, size.width(), size.height(), bpl, format);
             setImageMetrics(img, win);
         }
     }
 
     QWSWindowSurface::setGeometry(rect);
+
     delete[] deleteLater;
 }
 
 QByteArray QWSLocalMemSurface::permanentState() const
 {
-    QByteArray array;
-    array.resize(sizeof(uchar*) + 3 * sizeof(int) +
-                 sizeof(SurfaceFlags));
+    QByteArray array(sizeof(uchar*) + 3 * sizeof(int) + sizeof(SurfaceFlags), Qt::Uninitialized);
 
     char *ptr = array.data();
 
@@ -997,6 +1003,11 @@ QByteArray QWSLocalMemSurface::permanentState() const
 
 void QWSLocalMemSurface::setPermanentState(const QByteArray &data)
 {
+    if (memsize) {
+        delete[] mem;
+        memsize = 0;
+    }
+
     int width;
     int height;
     QImage::Format format;
@@ -1023,6 +1034,10 @@ void QWSLocalMemSurface::setPermanentState(const QByteArray &data)
 
 void QWSLocalMemSurface::releaseSurface()
 {
+    if (memsize) {
+        delete[] mem;
+        memsize = 0;
+    }
     mem = 0;
     img = QImage();
 }
@@ -1064,17 +1079,15 @@ bool QWSSharedMemSurface::setMemory(int memId)
 void QWSSharedMemSurface::setDirectRegion(const QRegion &r, int id)
 {
     QWSMemorySurface::setDirectRegion(r, id);
-    if(mem.address())
+    if (mem.address())
         *(uint *)mem.address() = id;
 }
 
 const QRegion QWSSharedMemSurface::directRegion() const
 {
-    QWSSharedMemory *cmem = const_cast<QWSSharedMemory *>(&mem);
-    if (cmem->address() && ((int*)cmem->address())[0] == directRegionId())
+    if (mem.address() && *(uint *)mem.address() == uint(directRegionId())
         return QWSMemorySurface::directRegion();
-    else
-        return QRegion();
+    return QRegion();
 }
 #endif
 
@@ -1117,8 +1130,6 @@ void QWSSharedMemSurface::setGeometry(const QRect &rect)
             mem.detach();
             img = QImage();
         } else {
-            mem.detach();
-
             QWidget *win = window();
             const QImage::Format format = preferredImageFormat(win);
             const int bpl = nextMulOf4(bytesPerPixel(format) * size.width());
@@ -1127,9 +1138,12 @@ void QWSSharedMemSurface::setGeometry(const QRect &rect)
 #else
             const int imagesize = bpl * size.height();
 #endif
-            if (!mem.create(imagesize)) {
-                perror("QWSSharedMemSurface::setGeometry allocating shared memory");
-                qFatal("Error creating shared memory of size %d", imagesize);
+            if (mem.size() < imagesize) {
+                mem.detach();
+                if (!mem.create(imagesize)) {
+                    perror("QWSSharedMemSurface::setGeometry allocating shared memory");
+                    qFatal("Error creating shared memory of size %d", imagesize);
+                }
             }
 #ifdef QT_QWS_CLIENTBLIT
             *((uint *)mem.address()) = 0;
@@ -1147,8 +1161,7 @@ void QWSSharedMemSurface::setGeometry(const QRect &rect)
 
 QByteArray QWSSharedMemSurface::permanentState() const
 {
-    QByteArray array;
-    array.resize(6 * sizeof(int));
+    QByteArray array(6 * sizeof(int), Qt::Uninitialized);
 
     int *ptr = reinterpret_cast<int*>(array.data());
 
@@ -1222,8 +1235,8 @@ bool QWSOnScreenSurface::isValid() const
 
 QByteArray QWSOnScreenSurface::permanentState() const
 {
-    QByteArray array;
-    array.resize(sizeof(int));
+    QByteArray array(sizeof(int), Qt::Uninitialized);
+
     int *ptr = reinterpret_cast<int*>(array.data());
     ptr[0] = QApplication::desktop()->screenNumber(window());
     return array;
@@ -1263,8 +1276,7 @@ QWSYellowSurface::~QWSYellowSurface()
 
 QByteArray QWSYellowSurface::permanentState() const
 {
-    QByteArray array;
-    array.resize(2 * sizeof(int));
+    QByteArray array(2 * sizeof(int), Qt::Uninitialized);
 
     int *ptr = reinterpret_cast<int*>(array.data());
     ptr[0] = surfaceSize.width();

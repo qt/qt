@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -226,7 +226,17 @@ Rectangle {
     Component {
         id: viewDelegate
         Item {
-            width: (listView.effectiveLayoutDirection == Qt.LeftToRight  ? (index == 48 - 1) : (index == 0)) ? 40 : 50
+            function effectiveLayoutDirection() {
+                if (LayoutMirroring.enabled)
+                    if (listView.layoutDirection == Qt.LeftToRight)
+                        return Qt.RightToLeft;
+                    else
+                        return Qt.LeftToRight;
+                else
+                    return listView.layoutDirection;
+            }
+
+            width: (effectiveLayoutDirection() == Qt.LeftToRight ? (index == 48 - 1) : (index == 0)) ? 40 : 50
             Rectangle {
                 width: 40; height: 40
                 color: Qt.rgba(0.5+(48 - index)*Math.random()/48,

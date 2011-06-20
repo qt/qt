@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -41,24 +41,30 @@
 
 #include "qsharedmemory.h"
 #include "qsharedmemory_p.h"
-#include "qsystemsemaphore.h"
-#include <qdebug.h>
 
-QT_BEGIN_NAMESPACE
+#include <qdebug.h>
 
 #ifndef QT_NO_SHAREDMEMORY
 
-QSharedMemoryPrivate::QSharedMemoryPrivate() : QObjectPrivate(),
-        memory(0), size(0), error(QSharedMemory::NoError),
-           systemSemaphore(QString()), lockedByMe(false), hand(0)
+//#define QSHAREDMEMORY_DEBUG
+
+QT_BEGIN_NAMESPACE
+
+QSharedMemoryPrivate::QSharedMemoryPrivate()
+    : QObjectPrivate(), memory(0), size(0), error(QSharedMemory::NoError),
+#ifndef QT_NO_SYSTEMSEMAPHORE
+      systemSemaphore(QString()), lockedByMe(false),
+#endif
+      hand(0)
 {
 }
 
 void QSharedMemoryPrivate::setErrorString(const QString &function)
 {
-    BOOL windowsError = GetLastError();
+    DWORD windowsError = GetLastError();
     if (windowsError == 0)
         return;
+
     switch (windowsError) {
     case ERROR_ALREADY_EXISTS:
         error = QSharedMemory::AlreadyExists;
@@ -89,19 +95,20 @@ void QSharedMemoryPrivate::setErrorString(const QString &function)
     default:
         errorString = QSharedMemory::tr("%1: unknown error %2").arg(function).arg(windowsError);
         error = QSharedMemory::UnknownError;
-#if defined QSHAREDMEMORY_DEBUG
+#ifdef QSHAREDMEMORY_DEBUG
         qDebug() << errorString << "key" << key;
 #endif
+        break;
     }
 }
 
 HANDLE QSharedMemoryPrivate::handle()
 {
     if (!hand) {
-        QString function = QLatin1String("QSharedMemory::handle");
+        // don't allow making handles on empty keys
         if (nativeKey.isEmpty()) {
             error = QSharedMemory::KeyError;
-            errorString = QSharedMemory::tr("%1: unable to make key").arg(function);
+            errorString = QSharedMemory::tr("%1: key is empty").arg(QLatin1String("QSharedMemory::handle"));
             return false;
         }
 #ifndef Q_OS_WINCE
@@ -111,43 +118,34 @@ HANDLE QSharedMemoryPrivate::handle()
         // attach as it seems.
         hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, 0, (wchar_t*)nativeKey.utf16());
 #endif
-        if (!hand) {
-            setErrorString(function);
-            return false;
-        }
+        if (!hand)
+            setErrorString(QLatin1String("QSharedMemory::handle"));
     }
+
     return hand;
 }
 
-bool QSharedMemoryPrivate::cleanHandle()
+void QSharedMemoryPrivate::cleanHandle()
 {
-    if (hand != 0 && !CloseHandle(hand)) {
-        hand = 0;
+    if (hand != 0 && !CloseHandle(hand))
         setErrorString(QLatin1String("QSharedMemory::cleanHandle"));
-        return false;
-    }
     hand = 0;
-    return true;
 }
 
 bool QSharedMemoryPrivate::create(int size)
 {
-    QString function = QLatin1String("QSharedMemory::create");
     if (nativeKey.isEmpty()) {
         error = QSharedMemory::KeyError;
-        errorString = QSharedMemory::tr("%1: key error").arg(function);
+        errorString = QSharedMemory::tr("%1: key is empty").arg(QLatin1String("QSharedMemory::create"));
         return false;
     }
 
     // Create the file mapping.
     hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, size, (wchar_t*)nativeKey.utf16());
-    setErrorString(function);
+    setErrorString(QLatin1String("QSharedMemory::create"));
 
     // hand is valid when it already exists unlike unix so explicitly check
-    if (error == QSharedMemory::AlreadyExists || !hand)
-        return false;
-
-    return true;
+    return !(error == QSharedMemory::AlreadyExists || !hand);
 }
 
 bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
@@ -167,7 +165,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
         // Windows doesn't set an error code on this one,
         // it should only be a kernel memory error.
         error = QSharedMemory::UnknownError;
-        errorString = QSharedMemory::tr("%1: size query failed").arg(QLatin1String("QSharedMemory::attach: "));
+        errorString = QSharedMemory::tr("%1: size query failed").arg(QLatin1String("QSharedMemory::attach"));
         return false;
     }
     size = info.RegionSize;
@@ -186,10 +184,11 @@ bool QSharedMemoryPrivate::detach()
     size = 0;
 
     // close handle
-    return cleanHandle();
+    cleanHandle();
+
+    return true;
 }
 
-#endif //QT_NO_SHAREDMEMORY
-
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_SHAREDMEMORY

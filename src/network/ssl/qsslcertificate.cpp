@@ -7,29 +7,29 @@
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -127,7 +127,7 @@
 QT_BEGIN_NAMESPACE
 
 // forward declaration
-static QMap<QString, QString> _q_mapFromOnelineName(char *name);
+static QMap<QString, QString> _q_mapFromX509Name(X509_NAME *name);
 
 /*!
     Constructs a QSslCertificate by reading \a format encoded data
@@ -219,17 +219,19 @@ bool QSslCertificate::isNull() const
     Returns true if this certificate is valid; otherwise returns
     false.
 
-    Note: Currently, this function only checks that the current
+    Note: Currently, this function checks that the current
     data-time is within the date-time range during which the
-    certificate is considered valid. No other checks are
-    currently performed.
+    certificate is considered valid, and checks that the
+    certificate is not in a blacklist of fraudulent certificates.
 
     \sa isNull()
 */
 bool QSslCertificate::isValid() const
 {
     const QDateTime currentTime = QDateTime::currentDateTime();
-    return currentTime >= d->notValidBefore && currentTime <= d->notValidAfter;
+    return currentTime >= d->notValidBefore &&
+            currentTime <= d->notValidAfter &&
+            ! QSslCertificatePrivate::isBlacklisted(*this);
 }
 
 /*!
@@ -322,7 +324,7 @@ QString QSslCertificate::issuerInfo(SubjectInfo info) const
     // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)
         d->issuerInfo =
-                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_issuer_name(d->x509), 0, 0));
+                _q_mapFromX509Name(q_X509_get_issuer_name(d->x509));
 
     return d->issuerInfo.value(_q_SubjectInfoToString(info));
 }
@@ -339,7 +341,7 @@ QString QSslCertificate::issuerInfo(const QByteArray &tag) const
     // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)
         d->issuerInfo =
-                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_issuer_name(d->x509), 0, 0));
+                _q_mapFromX509Name(q_X509_get_issuer_name(d->x509));
 
     return d->issuerInfo.value(QString::fromLatin1(tag));
 }
@@ -358,7 +360,7 @@ QString QSslCertificate::subjectInfo(SubjectInfo info) const
     // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
         d->subjectInfo =
-                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_subject_name(d->x509), 0, 0));
+                _q_mapFromX509Name(q_X509_get_subject_name(d->x509));
 
     return d->subjectInfo.value(_q_SubjectInfoToString(info));
 }
@@ -374,7 +376,7 @@ QString QSslCertificate::subjectInfo(const QByteArray &tag) const
     // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
         d->subjectInfo =
-                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_subject_name(d->x509), 0, 0));
+                _q_mapFromX509Name(q_X509_get_subject_name(d->x509));
 
     return d->subjectInfo.value(QString::fromLatin1(tag));
 }
@@ -664,37 +666,17 @@ QByteArray QSslCertificatePrivate::QByteArray_from_X509(X509 *x509, QSsl::Encodi
     return BEGINCERTSTRING "\n" + tmp + ENDCERTSTRING "\n";
 }
 
-static QMap<QString, QString> _q_mapFromOnelineName(char *name)
+static QMap<QString, QString> _q_mapFromX509Name(X509_NAME *name)
 {
     QMap<QString, QString> info;
-    QString infoStr = QString::fromLocal8Bit(name);
-    q_CRYPTO_free(name);
-
-    // ### The right-hand encoding seems to allow hex (Regulierungsbeh\xC8orde)
-    //entry.replace(QLatin1String("\\x"), QLatin1String("%"));
-    //entry = QUrl::fromPercentEncoding(entry.toLatin1());
-    // ### See RFC-4630 for more details!
-
-    QRegExp rx(QLatin1String("/([A-Za-z]+)=(.+)"));
-
-    int pos = 0;
-    while ((pos = rx.indexIn(infoStr, pos)) != -1) {
-        const QString name = rx.cap(1);
-
-        QString value = rx.cap(2);
-        const int valuePos = rx.pos(2);
-
-        const int next = rx.indexIn(value);
-        if (next == -1) {
-            info.insert(name, value);
-            break;
-        }
-
-        value = value.left(next);
-        info.insert(name, value);
-        pos = valuePos + value.length();
+    for (int i = 0; i < q_X509_NAME_entry_count(name); ++i) {
+        X509_NAME_ENTRY *e = q_X509_NAME_get_entry(name, i);
+        const char *obj = q_OBJ_nid2sn(q_OBJ_obj2nid(q_X509_NAME_ENTRY_get_object(e)));
+        unsigned char *data = 0;
+        int size = q_ASN1_STRING_to_UTF8(&data, q_X509_NAME_ENTRY_get_data(e));
+        info[QString::fromUtf8(obj)] = QString::fromUtf8((char*)data, size);
+        q_CRYPTO_free(data);
     }
-
     return info;
 }
 
@@ -796,6 +778,30 @@ QList<QSslCertificate> QSslCertificatePrivate::certificatesFromDer(const QByteAr
     }
 
     return certificates;
+}
+
+// These certificates are known to be fraudulent and were created during the comodo
+// compromise. See http://www.comodo.com/Comodo-Fraud-Incident-2011-03-23.html
+static const char *certificate_blacklist[] = {
+    "04:7e:cb:e9:fc:a5:5f:7b:d0:9e:ae:36:e1:0c:ae:1e",
+    "f5:c8:6a:f3:61:62:f1:3a:64:f5:4f:6d:c9:58:7c:06",
+    "d7:55:8f:da:f5:f1:10:5b:b2:13:28:2b:70:77:29:a3",
+    "39:2a:43:4f:0e:07:df:1f:8a:a3:05:de:34:e0:c2:29",
+    "3e:75:ce:d4:6b:69:30:21:21:88:30:ae:86:a8:2a:71",
+    "e9:02:8b:95:78:e4:15:dc:1a:71:0a:2b:88:15:44:47",
+    "92:39:d5:34:8f:40:d1:69:5a:74:54:70:e1:f2:3f:43",
+    "b0:b7:13:3e:d0:96:f9:b5:6f:ae:91:c8:74:bd:3a:c0",
+    "d8:f3:5f:4e:b7:87:2b:2d:ab:06:92:e3:15:38:2f:b0",
+    0
+};
+
+bool QSslCertificatePrivate::isBlacklisted(const QSslCertificate &certificate)
+{
+    for (int a = 0; certificate_blacklist[a] != 0; a++) {
+        if (certificate.serialNumber() == certificate_blacklist[a])
+            return true;
+    }
+    return false;
 }
 
 #ifndef QT_NO_DEBUG_STREAM

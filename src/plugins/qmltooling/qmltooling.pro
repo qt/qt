@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
 
-SUBDIRS = tcpserver
-
+SUBDIRS = qmldbg_tcp qmldbg_inspector
+symbian:SUBDIRS += qmldbg_ost

@@ -7,20 +7,20 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of this
-** file.
+** Foundation and appearing in the file included in the packaging of
+** this file.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -64,7 +64,7 @@
     can have named properties. For instance to create an point object with
     the properties x and y one would write the following Qt Script code:
 
-    \snippet doc/src/snippets/code/doc_src_porting-qsa.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_porting-qsa.js 0
 
     The object \c point in this case is constructed as a plain object and
     we assign two properties, \c x and \c y, to it with the values 12 and
@@ -73,17 +73,17 @@
     global namespace of the script engine. Similarly, global functions are
     named properties of the global object; for example:
 
-    \snippet doc/src/snippets/code/doc_src_porting-qsa.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_porting-qsa.js 1
 
     An equivalent construction that illustrates that the function is a
     property of the global object is the following assignment:
 
-    \snippet doc/src/snippets/code/doc_src_porting-qsa.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_porting-qsa.js 2
 
     Since functions are objects, they can be assigned to objects as
     properties, becoming member functions:
 
-    \snippet doc/src/snippets/code/doc_src_porting-qsa.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_porting-qsa.js 3
 
     In the code above, we see the first subtle difference between
     QSA and Qt Script. In QSA one would write the point class like this:
@@ -99,7 +99,7 @@
     All the code above runs with QSA except the assignment of a function
     to \c{point.manhattanLength}, which we repeat here for clarity:
     
-    \snippet doc/src/snippets/code/doc_src_porting-qsa.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_porting-qsa.js 5
 
     This is because, in QSA, the value of \c this is decided based on
     the location of the declaration of the function it is used in. In the
@@ -129,7 +129,7 @@
     function with the newly created object as the \c this pointer.
     So, in a sense, it is equivalent to:
 
-    \snippet doc/src/snippets/code/doc_src_porting-qsa.qdoc 8
+    \snippet doc/src/snippets/code/doc_src_porting-qsa.js 8
 
     This is similar to the manhattenLength() example above. Again, the
     main difference between QSA and Qt Script is that one has to
@@ -149,7 +149,7 @@
 
     one could write this in Qt Script as:
 
-    \snippet doc/src/snippets/code/doc_src_porting-qsa.qdoc 10
+    \snippet doc/src/snippets/code/doc_src_porting-qsa.js 10
 
     In QSA, the member functions were part of the class declaration,
     and were therefore shared between all instances of a given class.
@@ -173,7 +173,7 @@
     To make the \c toString() function part of the prototype, we write
     code like this:
 
-    \snippet doc/src/snippets/code/doc_src_porting-qsa.qdoc 11
+    \snippet doc/src/snippets/code/doc_src_porting-qsa.js 11
 
     Here, we made the \c toString() function part of the prototype so
     that, when we call \c{car.toString()} it will be resolved via the
@@ -195,7 +195,7 @@
     without any special members, but it is possible to replace this
     object with another prototype object.
 
-    \snippet doc/src/snippets/code/doc_src_porting-qsa.qdoc 13
+    \snippet doc/src/snippets/code/doc_src_porting-qsa.js 13
 
     In the code above, we have a constructor, \c{GasolineCar}, which
     calls the "base class" implementation of the constructor to
@@ -223,7 +223,7 @@
     as static members as properties of the constructor function. For
     example:
 
-    \snippet doc/src/snippets/code/doc_src_porting-qsa.qdoc 15
+    \snippet doc/src/snippets/code/doc_src_porting-qsa.js 15
 
     Note that in QSA, static member variables were also accessible in
     instances of the given class. In Qt Script, with the approach
@@ -374,7 +374,7 @@
     the interpreter using their object names as the names of the
     variables.
 
-    \snippet doc/src/snippets/code/doc_src_porting-qsa.qdoc 16
+    \snippet doc/src/snippets/code/doc_src_porting-qsa.cpp 16
 
     The code above adds the button to the global namespace under the name
     "button". One obvious limitation here is that there is potential for
@@ -382,7 +382,7 @@
     provides a more flexible way of adding QObjects to the scripting
     environment.
 
-    \snippet doc/src/snippets/code/doc_src_porting-qsa.qdoc 17
+    \snippet doc/src/snippets/code/doc_src_porting-qsa.cpp 17
 
     In the code above we create a QPushButton and wrap it in a script
     value using the function, QScriptEngine::newQObject(). This gives us
@@ -404,14 +404,14 @@
     Below is listed some code from the filter example in the QSA
     package.
 
-    \snippet doc/src/snippets/code/doc_src_porting-qsa.qdoc 18
+    \snippet doc/src/snippets/code/doc_src_porting-qsa.cpp 18
 
     The equivalent in Qt Script is written in much the same way as
     constructors are written in scripts. We register a callback C++
     function under the name "ImageSource" in the global namespace and
     return the QObject from this function:
 
-    \snippet doc/src/snippets/code/doc_src_porting-qsa.qdoc 19
+    \snippet doc/src/snippets/code/doc_src_porting-qsa.cpp 19
 
     In the Qt Script case we use the same approach that we use to expose
     a QObject, namely via QScriptEngine::newQObject(). This function also

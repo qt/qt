@@ -7,29 +7,29 @@
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -120,6 +120,10 @@ void QHttpNetworkConnectionPrivate::init()
     for (int i = 0; i < channelCount; i++) {
         channels[i].setConnection(this->q_func());
         channels[i].ssl = encrypt;
+#ifndef QT_NO_BEARERMANAGEMENT
+        //push session down to channels
+        channels[i].networkSession = networkSession;
+#endif
         channels[i].init();
     }
 }
@@ -257,7 +261,17 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
     // set the host
     value = request.headerField("host");
     if (value.isEmpty()) {
-        QByteArray host = QUrl::toAce(hostName);
+        QHostAddress add;
+        QByteArray host;
+        if(add.setAddress(hostName)) {
+            if(add.protocol() == QAbstractSocket::IPv6Protocol) {
+                host = "[" + hostName.toAscii() + "]";//format the ipv6 in the standard way
+            } else {
+                host = QUrl::toAce(hostName);
+            }
+        } else {
+            host = QUrl::toAce(hostName);
+        }
 
         int port = request.url().port();
         if (port != -1) {
@@ -513,6 +527,15 @@ bool QHttpNetworkConnectionPrivate::dequeueRequest(QAbstractSocket *socket)
         return true;
     }
     return false;
+}
+
+QHttpNetworkRequest QHttpNetworkConnectionPrivate::predictNextRequest()
+{
+    if (!highPriorityQueue.isEmpty())
+        return highPriorityQueue.last().first;
+    if (!lowPriorityQueue.isEmpty())
+        return lowPriorityQueue.last().first;
+    return QHttpNetworkRequest();
 }
 
 // this is called from _q_startNextRequest and when a request has been sent down a socket from the channel
@@ -830,6 +853,23 @@ void QHttpNetworkConnectionPrivate::readMoreLater(QHttpNetworkReply *reply)
     }
 }
 
+#ifndef QT_NO_BEARERMANAGEMENT
+QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt, QObject *parent, QSharedPointer<QNetworkSession> networkSession)
+    : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt)), parent)
+{
+    Q_D(QHttpNetworkConnection);
+    d->networkSession = networkSession;
+    d->init();
+}
+
+QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QString &hostName, quint16 port, bool encrypt, QObject *parent, QSharedPointer<QNetworkSession> networkSession)
+     : QObject(*(new QHttpNetworkConnectionPrivate(connectionCount, hostName, port, encrypt)), parent)
+{
+    Q_D(QHttpNetworkConnection);
+    d->networkSession = networkSession;
+    d->init();
+}
+#else
 QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt, QObject *parent)
     : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt)), parent)
 {
@@ -843,6 +883,7 @@ QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QS
     Q_D(QHttpNetworkConnection);
     d->init();
 }
+#endif
 
 QHttpNetworkConnection::~QHttpNetworkConnection()
 {

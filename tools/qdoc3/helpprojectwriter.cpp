@@ -7,29 +7,29 @@
 ** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -48,6 +48,7 @@
 #include "config.h"
 #include "node.h"
 #include "tree.h"
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -347,6 +348,14 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                     typedefDetails[2] = HtmlGenerator::fullDocumentLocation(enumNode);
 
                 project.keywords.append(typedefDetails);
+            }
+            break;
+
+        case Node::Variable:
+            {
+                QString location = HtmlGenerator::fullDocumentLocation(node);
+                project.files.insert(location.left(location.lastIndexOf(QLatin1Char('#'))));
+                project.keywords.append(keywordDetails(node));
             }
             break;
 
@@ -694,6 +703,8 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                 }
             } else {
                 // Find a contents node and navigate from there, using the NextLink values.
+                QSet<QString> visited;
+
                 foreach (const Node *node, subproject.nodes) {
                     QString nextTitle = node->links().value(Node::NextLink).first;
                     if (!nextTitle.isEmpty() &&
@@ -707,9 +718,10 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                         while (nextPage) {
                             writeNode(project, writer, nextPage);
                             nextTitle = nextPage->links().value(Node::NextLink).first;
-                            if(nextTitle.isEmpty())
+                            if (nextTitle.isEmpty() || visited.contains(nextTitle))
                                 break;
                             nextPage = const_cast<FakeNode *>(tree->findFakeNodeByTitle(nextTitle));
+                            visited.insert(nextTitle);
                         }
                         break;
                     }

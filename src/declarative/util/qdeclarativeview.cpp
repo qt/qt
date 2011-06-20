@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -49,6 +49,7 @@
 #include <qdeclarativeguard_p.h>
 
 #include <private/qdeclarativedebugtrace_p.h>
+#include <private/qdeclarativeinspectorservice_p.h>
 
 #include <qscriptvalueiterator.h>
 #include <qdebug.h>
@@ -72,7 +73,6 @@
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(frameRateDebug, QML_SHOW_FRAMERATE)
-extern Q_GUI_EXPORT bool qt_applefontsmoothing_enabled;
 
 class QDeclarativeScene : public QGraphicsScene
 {
@@ -194,9 +194,9 @@ void QDeclarativeViewPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem, 
     \since 4.7
     \brief The QDeclarativeView class provides a widget for displaying a Qt Declarative user interface.
 
-    QDeclarativeItem objects can be placed on a standard QGraphicsScene and 
-    displayed with QGraphicsView. QDeclarativeView is a QGraphicsView subclass 
-    provided as a convenience for displaying QML files, and connecting between 
+    QDeclarativeItem objects can be placed on a standard QGraphicsScene and
+    displayed with QGraphicsView. QDeclarativeView is a QGraphicsView subclass
+    provided as a convenience for displaying QML files, and connecting between
     QML and C++ Qt objects.
 
     QDeclarativeView provides:
@@ -236,7 +236,7 @@ void QDeclarativeViewPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem, 
     If you're using your own QGraphicsScene-based scene with QDeclarativeView, remember to
     enable scene's sticky focus mode and to set itemIndexMethod to QGraphicsScene::NoIndex.
 
-    \sa {Integrating QML with existing Qt UI code}, {Using QML in C++ Applications}
+    \sa {Integrating QML Code with Existing Qt UI Code}, {Using QML Bindings in C++ Applications}
 */
 
 
@@ -250,7 +250,7 @@ void QDeclarativeViewPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem, 
 
 /*!
   \fn QDeclarativeView::QDeclarativeView(QWidget *parent)
-  
+
   Constructs a QDeclarativeView with the given \a parent.
 */
 QDeclarativeView::QDeclarativeView(QWidget *parent)
@@ -300,6 +300,8 @@ void QDeclarativeViewPrivate::init()
     q->viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
     q->viewport()->setAttribute(Qt::WA_NoSystemBackground);
 #endif
+
+    QDeclarativeInspectorService::instance()->addView(q);
 }
 
 /*!
@@ -307,6 +309,7 @@ void QDeclarativeViewPrivate::init()
  */
 QDeclarativeView::~QDeclarativeView()
 {
+    QDeclarativeInspectorService::instance()->removeView(this);
 }
 
 /*! \property QDeclarativeView::source
@@ -559,7 +562,6 @@ void QDeclarativeView::continueExecute()
     emit statusChanged(status());
 }
 
-
 /*!
   \internal
 */
@@ -704,17 +706,10 @@ void QDeclarativeView::paintEvent(QPaintEvent *event)
     QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Painting);
 
     int time = 0;
-    if (frameRateDebug()) 
+    if (frameRateDebug())
         time = d->frameTimer.restart();
 
-#ifdef Q_WS_MAC
-    bool oldSmooth = qt_applefontsmoothing_enabled;
-    qt_applefontsmoothing_enabled = false;
-#endif
     QGraphicsView::paintEvent(event);
-#ifdef Q_WS_MAC
-    qt_applefontsmoothing_enabled = oldSmooth;
-#endif
 
     QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Painting);
 

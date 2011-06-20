@@ -7,20 +7,20 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of this
-** file.
+** Foundation and appearing in the file included in the packaging of
+** this file.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -131,14 +131,14 @@
     In the case shown in the diagram, the piece of information represented
     by \bold{a} can be obtained using the standard model/view API:
 
-    \snippet doc/src/snippets/code/doc_src_examples_editabletreemodel.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_examples_editabletreemodel.cpp 0
 
     Since each items holds pieces of data for each column in a given row,
     there can be many model indexes that map to the same \c TreeItem object.
     For example, the information represented by \bold{b} can be obtained
     using the following code:
 
-    \snippet doc/src/snippets/code/doc_src_examples_editabletreemodel.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_examples_editabletreemodel.cpp 1
 
     The same underlying \c TreeItem would be accessed to obtain information
     for the other model indexes in the same row as \bold{b}.

@@ -7,26 +7,30 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of this
-** file.
+** Foundation and appearing in the file included in the packaging of
+** this file.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 /*!
 \page qdeclarativenetwork.html
+\ingroup qml-features
+\previouspage {Dynamic Object Management in QML}{Dynamic Object Management}
+\nextpage {QML Internationalization}{Internationalization}
+\contentspage QML Features
 \title Network Transparency
 
 QML supports network transparency by using URLs (rather than file names) for all
@@ -57,7 +61,7 @@ Network transparency is supported throughout QML, for example:
 Even QML types themselves can be on the network - if the \l {QML Viewer} is used to load
 \tt http://example.com/mystuff/Hello.qml and that content refers to a type "World", the engine
 will load \tt http://example.com/mystuff/qmldir and resolve the type just as it would for a local file.
-For example if the qmldir file contains the line "World World.qml", it will load 
+For example if the qmldir file contains the line "World World.qml", it will load
 \tt http://example.com/mystuff/World.qml
 Any other resources that \tt Hello.qml referred to, usually by a relative URL, would
 similarly be loaded from the network.

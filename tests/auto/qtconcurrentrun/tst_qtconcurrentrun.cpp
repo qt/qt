@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -67,6 +67,8 @@ private slots:
 #if 0
     void createFunctor();
 #endif
+    void functor();
+    void lambda();
 };
 
 #if 0
@@ -443,6 +445,71 @@ void tst_QtConcurrentRun::createFunctor()
     qDebug() << e;
 }
 #endif
+
+struct Functor {
+    int operator()() { return 42; }
+    double operator()(double a, double b) { return a/b; }
+    int operator()(int a, int b) { return a/b; }
+    void operator()(int) { }
+    void operator()(int, int, int) { }
+    void operator()(int, int, int, int) { }
+    void operator()(int, int, int, int, int) { }
+    void operator()(int, int, int, int, int, int) { }
+};
+
+void tst_QtConcurrentRun::functor()
+{
+    //this test functor without result_type,  decltype need to be supported by the compiler
+#ifndef Q_COMPILER_DECLTYPE
+    QSKIP("Compiler do not suport decltype", SkipAll);
+#else
+    Functor f;
+    {
+        QFuture<int> fut = QtConcurrent::run(f);
+        QCOMPARE(fut.result(), 42);
+    }
+    {
+        QFuture<double> fut = QtConcurrent::run(f, 8.5, 1.8);
+        QCOMPARE(fut.result(), (8.5/1.8));
+    }
+    {
+        QFuture<int> fut = QtConcurrent::run(f, 19, 3);
+        QCOMPARE(fut.result(), int(19/3));
+    }
+    {
+        QtConcurrent::run(f, 1).waitForFinished();
+        QtConcurrent::run(f, 1,2).waitForFinished();
+        QtConcurrent::run(f, 1,2,3).waitForFinished();
+        QtConcurrent::run(f, 1,2,3,4).waitForFinished();
+        QtConcurrent::run(f, 1,2,3,4,5).waitForFinished();
+    }
+#endif
+}
+
+
+void tst_QtConcurrentRun::lambda()
+{
+#ifndef Q_COMPILER_LAMBDA
+    QSKIP("Compiler do not suport lambda", SkipAll);
+#else
+
+    QCOMPARE(QtConcurrent::run([](){ return 45; }).result(), 45);
+    QCOMPARE(QtConcurrent::run([](int a){ return a+15; }, 12).result(), 12+15);
+    QCOMPARE(QtConcurrent::run([](int a, double b){ return a + b; }, 12, 15).result(), double(12+15));
+    QCOMPARE(QtConcurrent::run([](int a , int, int, int, int b){ return a + b; }, 1, 2, 3, 4, 5).result(), 1 + 5);
+
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    {
+        QString str { "Hello World Foo" };
+        QFuture<QStringList> f1 = QtConcurrent::run([&](){ return str.split(' '); });
+        auto r = f1.result();
+        QCOMPARE(r, QStringList({"Hello", "World", "Foo"}));
+    }
+#endif
+
+#endif
+}
+
 
 #include "tst_qtconcurrentrun.moc"
 

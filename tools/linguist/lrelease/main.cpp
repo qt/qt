@@ -7,29 +7,29 @@
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -40,7 +40,9 @@
 ****************************************************************************/
 
 #include "translator.h"
-#include "profileevaluator.h"
+
+#include <profileparser.h>
+#include <profileevaluator.h>
 
 #ifndef QT_BOOTSTRAPPED
 #include <QtCore/QCoreApplication>
@@ -55,11 +57,11 @@
 #include <QtCore/QStringList>
 #include <QtCore/QTextStream>
 
-#include <iostream>
-
 QT_USE_NAMESPACE
 
 #ifdef QT_BOOTSTRAPPED
+static QString binDir;
+
 static void initBinaryDir(
 #ifndef Q_OS_WIN
         const char *argv0
@@ -81,6 +83,12 @@ class LR {
 static void printOut(const QString & out)
 {
     QTextStream stream(stdout);
+    stream << out;
+}
+
+static void printErr(const QString & out)
+{
+    QTextStream stream(stderr);
     stream << out;
 }
 
@@ -119,7 +127,7 @@ static bool loadTsFile(Translator &tor, const QString &tsFileName, bool /* verbo
     ConversionData cd;
     bool ok = tor.load(tsFileName, cd, QLatin1String("auto"));
     if (!ok) {
-        std::cerr << qPrintable(LR::tr("lrelease error: %1").arg(cd.error()));
+        printErr(LR::tr("lrelease error: %1").arg(cd.error()));
     } else {
         if (!cd.errors().isEmpty())
             printOut(cd.error());
@@ -143,17 +151,17 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
 
     QFile file(qmFileName);
     if (!file.open(QIODevice::WriteOnly)) {
-        std::cerr << qPrintable(LR::tr("lrelease error: cannot create '%1': %2\n")
+        printErr(LR::tr("lrelease error: cannot create '%1': %2\n")
                                 .arg(qmFileName, file.errorString()));
         return false;
     }
 
     tor.normalizeTranslations(cd);
-    bool ok = tor.release(&file, cd);
+    bool ok = saveQM(tor, file, cd);
     file.close();
 
     if (!ok) {
-        std::cerr << qPrintable(LR::tr("lrelease error: cannot save '%1': %2")
+        printErr(LR::tr("lrelease error: cannot save '%1': %2")
                                 .arg(qmFileName, cd.error()));
     } else if (!cd.errors().isEmpty()) {
         printOut(cd.error());
@@ -180,6 +188,40 @@ static bool releaseTsFile(const QString& tsFileName,
 
     return releaseTranslator(tor, qmFileName, cd, removeIdentical);
 }
+
+static void print(const QString &fileName, int lineNo, const QString &msg)
+{
+    if (lineNo)
+        printErr(QString::fromLatin1("%2(%1): %3").arg(lineNo).arg(fileName, msg));
+    else
+        printErr(msg);
+}
+
+class ParseHandler : public ProFileParserHandler {
+public:
+    virtual void parseError(const QString &fileName, int lineNo, const QString &msg)
+        { if (verbose) print(fileName, lineNo, msg); }
+
+    bool verbose;
+};
+
+class EvalHandler : public ProFileEvaluatorHandler {
+public:
+    virtual void configError(const QString &msg)
+        { printErr(msg); }
+    virtual void evalError(const QString &fileName, int lineNo, const QString &msg)
+        { if (verbose) print(fileName, lineNo, msg); }
+    virtual void fileMessage(const QString &msg)
+        { printErr(msg); }
+
+    virtual void aboutToEval(ProFile *, ProFile *, EvalFileType) {}
+    virtual void doneWithEval(ProFile *) {}
+
+    bool verbose;
+};
+
+static ParseHandler parseHandler;
+static EvalHandler evalHandler;
 
 int main(int argc, char **argv)
 {
@@ -268,27 +310,36 @@ int main(int argc, char **argv)
         if (inputFile.endsWith(QLatin1String(".pro"), Qt::CaseInsensitive)
             || inputFile.endsWith(QLatin1String(".pri"), Qt::CaseInsensitive)) {
             QFileInfo fi(inputFile);
-            ProFile pro(fi.absoluteFilePath());
 
-            ProFileEvaluator visitor;
-            visitor.setVerbose(cd.isVerbose());
+            parseHandler.verbose = evalHandler.verbose = cd.isVerbose();
+            ProFileOption option;
+#ifdef QT_BOOTSTRAPPED
+            option.initProperties(binDir + QLatin1String("/qmake"));
+#else
+            option.initProperties(app.applicationDirPath() + QLatin1String("/qmake"));
+#endif
+            ProFileParser parser(0, &parseHandler);
+            ProFileEvaluator visitor(&option, &parser, &evalHandler);
 
-            if (!visitor.queryProFile(&pro)) {
-                std::cerr << qPrintable(LR::tr(
+            ProFile *pro;
+            if (!(pro = parser.parsedProFile(QDir::cleanPath(fi.absoluteFilePath())))) {
+                printErr(LR::tr(
                           "lrelease error: cannot read project file '%1'.\n")
                           .arg(inputFile));
                 continue;
             }
-            if (!visitor.accept(&pro)) {
-                std::cerr << qPrintable(LR::tr(
+            if (!visitor.accept(pro)) {
+                printErr(LR::tr(
                           "lrelease error: cannot process project file '%1'.\n")
                           .arg(inputFile));
+                pro->deref();
                 continue;
             }
+            pro->deref();
 
             QStringList translations = visitor.values(QLatin1String("TRANSLATIONS"));
             if (translations.isEmpty()) {
-                std::cerr << qPrintable(LR::tr(
+                printErr(LR::tr(
                           "lrelease warning: Met no 'TRANSLATIONS' entry in project file '%1'\n")
                           .arg(inputFile));
             } else {
@@ -319,8 +370,6 @@ int main(int argc, char **argv)
 #ifdef Q_OS_WIN
 # include <windows.h>
 #endif
-
-static QString binDir;
 
 static void initBinaryDir(
 #ifndef Q_OS_WIN
@@ -375,17 +424,5 @@ static void initBinaryDir(
         binDir = fi.canonicalPath();
 #endif
 }
-
-QT_BEGIN_NAMESPACE
-
-// The name is hard-coded in QLibraryInfo
-QString qmake_libraryInfoFile()
-{
-    if (binDir.isEmpty())
-        return QString();
-    return QDir(binDir).filePath(QString::fromLatin1("qt.conf"));
-}
-
-QT_END_NAMESPACE
 
 #endif // QT_BOOTSTRAPPED

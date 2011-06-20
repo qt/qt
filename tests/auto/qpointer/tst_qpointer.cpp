@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -39,11 +39,8 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
-#include <QApplication>
-#include <QDebug>
 #include <QPointer>
 #include <QWidget>
 
@@ -51,17 +48,9 @@ class tst_QPointer : public QObject
 {
     Q_OBJECT
 public:
-    tst_QPointer();
-    ~tst_QPointer();
-
     inline tst_QPointer *me() const
     { return const_cast<tst_QPointer *>(this); }
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
 private slots:
     void constructors();
     void destructor();
@@ -71,28 +60,8 @@ private slots:
     void dereference_operators();
     void disconnect();
     void castDuringDestruction();
-    void data() const;
-    void dataSignature() const;
     void threadSafety();
 };
-
-tst_QPointer::tst_QPointer()
-{ }
-
-tst_QPointer::~tst_QPointer()
-{ }
-
-void tst_QPointer::initTestCase()
-{ }
-
-void tst_QPointer::cleanupTestCase()
-{ }
-
-void tst_QPointer::init()
-{ }
-
-void tst_QPointer::cleanup()
-{ }
 
 void tst_QPointer::constructors()
 {
@@ -106,11 +75,20 @@ void tst_QPointer::constructors()
 
 void tst_QPointer::destructor()
 {
+    // Make two QPointer's to the same object
     QObject *object = new QObject;
-    QPointer<QObject> p = object;
-    QCOMPARE(p, QPointer<QObject>(object));
+    QPointer<QObject> p1 = object;
+    QPointer<QObject> p2 = object;
+    // Check that they point to the correct object
+    QCOMPARE(p1, QPointer<QObject>(object));
+    QCOMPARE(p2, QPointer<QObject>(object));
+    QCOMPARE(p1, p2);
+    // Destroy the guarded object
     delete object;
-    QCOMPARE(p, QPointer<QObject>(0));
+    // Check that both pointers were zeroed
+    QCOMPARE(p1, QPointer<QObject>(0));
+    QCOMPARE(p2, QPointer<QObject>(0));
+    QCOMPARE(p1, p2);
 }
 
 void tst_QPointer::assignment_operators()
@@ -118,19 +96,21 @@ void tst_QPointer::assignment_operators()
     QPointer<QObject> p1;
     QPointer<QObject> p2;
 
+    // Test assignment with a QObject-derived object pointer
     p1 = this;
     p2 = p1;
-
     QCOMPARE(p1, QPointer<QObject>(this));
     QCOMPARE(p2, QPointer<QObject>(this));
     QCOMPARE(p1, QPointer<QObject>(p2));
 
+    // Test assignment with a null pointer
     p1 = 0;
     p2 = p1;
     QCOMPARE(p1, QPointer<QObject>(0));
     QCOMPARE(p2, QPointer<QObject>(0));
     QCOMPARE(p1, QPointer<QObject>(p2));
 
+    // Test assignment with a real QObject pointer
     QObject *object = new QObject;
 
     p1 = object;
@@ -139,10 +119,15 @@ void tst_QPointer::assignment_operators()
     QCOMPARE(p2, QPointer<QObject>(object));
     QCOMPARE(p1, QPointer<QObject>(p2));
 
-    delete object;
-    QCOMPARE(p1, QPointer<QObject>(0));
-    QCOMPARE(p2, QPointer<QObject>(0));
+    // Test assignment with the same pointer that's already guarded
+    p1 = object;
+    p2 = p1;
+    QCOMPARE(p1, QPointer<QObject>(object));
+    QCOMPARE(p2, QPointer<QObject>(object));
     QCOMPARE(p1, QPointer<QObject>(p2));
+
+    // Cleanup
+    delete object;
 }
 
 void tst_QPointer::equality_operators()
@@ -196,19 +181,28 @@ void tst_QPointer::isNull()
 void tst_QPointer::dereference_operators()
 {
     QPointer<tst_QPointer> p1 = this;
+    QPointer<tst_QPointer> p2;
 
+    // operator->() -- only makes sense if not null
     QObject *object = p1->me();
-    QVERIFY(object == this);
+    QCOMPARE(object, this);
 
+    // operator*() -- only makes sense if not null
     QObject &ref = *p1;
-    QVERIFY(&ref == this);
+    QCOMPARE(&ref, this);
 
-    object = static_cast<QObject *>(p1);
-    QVERIFY(object == this);
+    // operator T*()
+    QCOMPARE(static_cast<QObject *>(p1), this);
+    QCOMPARE(static_cast<QObject *>(p2), static_cast<QObject *>(0));
+
+    // data()
+    QCOMPARE(p1.data(), this);
+    QCOMPARE(p2.data(), static_cast<QObject *>(0));
 }
 
 void tst_QPointer::disconnect()
 {
+    // Verify that pointer remains guarded when all signals are disconencted.
     QPointer<QObject> p1 = new QObject;
     QVERIFY(!p1.isNull());
     p1->disconnect();
@@ -311,38 +305,6 @@ void tst_QPointer::castDuringDestruction()
 
     {
         delete new DerivedParent();
-    }
-}
-
-void tst_QPointer::data() const
-{
-    /* Check value of a default constructed object. */
-    {
-        QPointer<QObject> p;
-        QCOMPARE(p.data(), static_cast<QObject *>(0));
-    }
-
-    /* Check value of a default constructed object. */
-    {
-        QObject *const object = new QObject();
-        QPointer<QObject> p(object);
-        QCOMPARE(p.data(), object);
-    }
-}
-
-void tst_QPointer::dataSignature() const
-{
-    /* data() should be const. */
-    {
-        const QPointer<QObject> p;
-        p.data();
-    }
-
-    /* The return type should be T. */
-    {
-        const QPointer<QWidget> p;
-        /* If the types differs, the QCOMPARE will fail to instansiate. */
-        QCOMPARE(p.data(), static_cast<QWidget *>(0));
     }
 }
 

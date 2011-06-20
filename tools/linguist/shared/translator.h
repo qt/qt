@@ -7,29 +7,29 @@
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -118,6 +118,17 @@ public:
     TranslatorSaveMode m_saveMode;
 };
 
+class TMMKey {
+public:
+    TMMKey(const TranslatorMessage &msg)
+        { context = msg.context(); source = msg.sourceText(); comment = msg.comment(); }
+    bool operator==(const TMMKey &o) const
+        { return context == o.context && source == o.source && comment == o.comment; }
+    QString context, source, comment;
+};
+Q_DECLARE_TYPEINFO(TMMKey, Q_MOVABLE_TYPE);
+inline uint qHash(const TMMKey &key) { return qHash(key.context) ^ qHash(key.source) ^ qHash(key.comment); }
+
 class Translator
 {
 public:
@@ -125,14 +136,12 @@ public:
 
     bool load(const QString &filename, ConversionData &err, const QString &format /* = "auto" */);
     bool save(const QString &filename, ConversionData &err, const QString &format /* = "auto" */) const;
-    bool release(QFile *iod, ConversionData &cd) const;
 
     int find(const TranslatorMessage &msg) const;
-    TranslatorMessage find(const QString &context,
+    int find(const QString &context,
         const QString &comment, const TranslatorMessage::References &refs) const;
 
-    bool contains(const QString &context) const;
-    TranslatorMessage find(const QString &context) const;
+    int find(const QString &context) const;
 
     void replaceSorted(const TranslatorMessage &msg);
     void extend(const TranslatorMessage &msg); // Only for single-location messages
@@ -171,7 +180,6 @@ public:
     void setSourceLanguageCode(const QString &languageCode) { m_sourceLanguage = languageCode; }
     static QString guessLanguageCodeFromFileName(const QString &fileName);
     QList<TranslatorMessage> messages() const;
-    QList<TranslatorMessage> translatedMessages() const;
     static QStringList normalizedTranslations(const TranslatorMessage &m, int numPlurals);
     void normalizeTranslations(ConversionData &cd);
     QStringList normalizedTranslations(const TranslatorMessage &m, ConversionData &cd, bool *ok) const;
@@ -179,6 +187,7 @@ public:
     int messageCount() const { return m_messages.size(); }
     TranslatorMessage &message(int i) { return m_messages[i]; }
     const TranslatorMessage &message(int i) const { return m_messages.at(i); }
+    const TranslatorMessage &constMessage(int i) const { return m_messages.at(i); }
     void dump() const;
 
     // additional file format specific data
@@ -212,6 +221,11 @@ public:
     };
 
 private:
+    void insert(int idx, const TranslatorMessage &msg);
+    void addIndex(int idx, const TranslatorMessage &msg) const;
+    void delIndex(int idx) const;
+    void ensureIndexed() const;
+
     typedef QList<TranslatorMessage> TMM;       // int stores the sequence position.
 
     TMM m_messages;
@@ -230,10 +244,17 @@ private:
     QString m_language;
     QString m_sourceLanguage;
     ExtraData m_extra;
+
+    mutable bool m_indexOk;
+    mutable QHash<QString, int> m_ctxCmtIdx;
+    mutable QHash<QString, int> m_idMsgIdx;
+    mutable QHash<TMMKey, int> m_msgIdx;
 };
 
 bool getNumerusInfo(QLocale::Language language, QLocale::Country country,
                     QByteArray *rules, QStringList *forms, const char **gettextRules);
+
+bool saveQM(const Translator &translator, QIODevice &dev, ConversionData &cd);
 
 /*
   This is a quick hack. The proper way to handle this would be

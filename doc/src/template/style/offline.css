@@ -26,13 +26,13 @@
     {
         text-decoration: none;
     }
-    li
-    {
-        list-style: none;
-    }
     ol li
     {
         list-style: decimal;
+    }
+    ul li
+    {
+        list-style: none;
     }
     caption, th
     {
@@ -76,6 +76,8 @@
     {
         margin-left: 0.5em;
         margin-right: 0.5em;
+        font-family: sans-serif;
+        line-height: normal
     }
     a
     {
@@ -124,13 +126,13 @@
     }
     th
     {
-        padding: 0.5em 1.5em 0.5em 1.5em;
+        padding: 0.5em 1.5em 0.5em 1em;
         background-color: #E1E1E1;
         border-left: 1px solid #E6E6E6;
     }
     td
     {
-        padding: 0.25em 1.5em 0.25em 2em;
+        padding: 0.25em 1.5em 0.25em 1em;
     }
 
     td.rightAlign
@@ -141,13 +143,13 @@
     {
         border-left: 1px solid #E6E6E6;
         background-color: #F6F6F6;
-        color: #66666E;
+        color: black;
     }
     table tr.even
     {
         border-left: 1px solid #E6E6E6;
         background-color: #ffffff;
-        color: #66666E;
+        color: #202020;
     }
 
     div.float-left
@@ -239,10 +241,6 @@
         margin-bottom: 0.5em
     }
 
-    .naviNextPrevious
-    {
-        display: none
-    }
     .header .breadcrumb
     {
         font-size: 90%;
@@ -309,19 +307,19 @@
     .content h1
     {
         font-weight: bold;
-        font-size: 150%
+        font-size: 130%
     }
 
     .content h2
     {
         font-weight: bold;
-        font-size: 135%;
+        font-size: 120%;
         width: 100%;
     }
     .content h3
     {
         font-weight: bold;
-        font-size: 120%;
+        font-size: 110%;
         width: 100%;
     }
     .content table p
@@ -469,6 +467,11 @@
     }
     .annotated td {
         padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+
+    .toc
+    {
+        font-size: 80%
     }
 
     .header .content .toc ul

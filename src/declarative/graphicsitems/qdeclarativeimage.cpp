@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -136,12 +136,10 @@ void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
     Q_Q(QDeclarativeImage);
     pix.setPixmap(pixmap);
 
-    q->setImplicitWidth(pix.width());
-    q->setImplicitHeight(pix.height());
+    q->pixmapChange();
     status = pix.isNull() ? QDeclarativeImageBase::Null : QDeclarativeImageBase::Ready;
 
     q->update();
-    q->pixmapChange();
 }
 
 /*!
@@ -377,6 +375,9 @@ qreal QDeclarativeImage::paintedHeight() const
     If the source is a non-scalable image (eg. JPEG), the loaded image will
     be no greater than this property specifies. For some formats (currently only JPEG),
     the whole image will never actually be loaded into memory.
+
+    Since QtQuick 1.1 the sourceSize can be cleared to the natural size of the image
+    by setting sourceSize to \c undefined.
  
     \note \e {Changing this property dynamically causes the image source to be reloaded,
     potentially even from the network, if it is not in the disk cache.}
@@ -387,8 +388,11 @@ void QDeclarativeImage::updatePaintedGeometry()
     Q_D(QDeclarativeImage);
 
     if (d->fillMode == PreserveAspectFit) {
-        if (!d->pix.width() || !d->pix.height())
+        if (!d->pix.width() || !d->pix.height()) {
+            setImplicitWidth(0);
+            setImplicitHeight(0);
             return;
+        }
         qreal w = widthValid() ? width() : d->pix.width();
         qreal widthScale = w / qreal(d->pix.width());
         qreal h = heightValid() ? height() : d->pix.height();
@@ -402,9 +406,13 @@ void QDeclarativeImage::updatePaintedGeometry()
         }
         if (widthValid() && !heightValid()) {
             setImplicitHeight(d->paintedHeight);
+        } else {
+            setImplicitHeight(d->pix.height());
         }
         if (heightValid() && !widthValid()) {
             setImplicitWidth(d->paintedWidth);
+        } else {
+            setImplicitWidth(d->pix.width());
         }
     } else if (d->fillMode == PreserveAspectCrop) {
         if (!d->pix.width() || !d->pix.height())
@@ -563,6 +571,13 @@ void QDeclarativeImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWi
 
 void QDeclarativeImage::pixmapChange()
 {
+    Q_D(QDeclarativeImage);
+    // PreserveAspectFit calculates the implicit size differently so we
+    // don't call our superclass pixmapChange(), since that would
+    // result in the implicit size being set incorrectly, then updated
+    // in updatePaintedGeometry()
+    if (d->fillMode != PreserveAspectFit)
+        QDeclarativeImageBase::pixmapChange();
     updatePaintedGeometry();
 }
 

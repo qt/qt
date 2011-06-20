@@ -7,29 +7,29 @@
 ** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -47,6 +47,18 @@
 #include "qxlibstatic.h"
 #include "qxlibdisplay.h"
 
+#if !defined(QT_NO_OPENGL)
+#if !defined(QT_OPENGL_ES_2)
+#include "qglxintegration.h"
+#include "qglxconvenience.h"
+#else
+#include "../eglconvenience/qeglconvenience.h"
+#include "../eglconvenience/qeglplatformcontext.h"
+#include "../eglconvenience/qxlibeglintegration.h"
+#endif  //QT_OPENGL_ES_2
+#endif //QT_NO_OPENGL
+
+
 #include <QtGui/QWindowSystemInterface>
 #include <QSocketNotifier>
 #include <QApplication>
@@ -54,16 +66,6 @@
 
 #include <QtGui/private/qwindowsurface_p.h>
 #include <QtGui/private/qapplication_p.h>
-
-#if !defined(QT_NO_OPENGL)
-#if !defined(QT_OPENGL_ES_2)
-#include "qglxintegration.h"
-#else
-#include "../eglconvenience/qeglconvenience.h"
-#include "../eglconvenience/qeglplatformcontext.h"
-#include "../eglconvenience/qxlibeglintegration.h"
-#endif  //QT_OPENGL_ES_2
-#endif //QT_NO_OPENGL
 
 //#define MYX11_DEBUG
 
@@ -79,17 +81,18 @@ QXlibWindow::QXlibWindow(QWidget *window)
     int w = window->width();
     int h = window->height();
 
-    if(window->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
-            && QApplicationPrivate::platformIntegration()->hasOpenGL() ) {
 #if !defined(QT_NO_OPENGL)
+    if(window->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
+            && QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)
+            || window->platformWindowFormat().alpha()) {
 #if !defined(QT_OPENGL_ES_2)
-        XVisualInfo *visualInfo = QGLXContext::findVisualInfo(mScreen,window->platformWindowFormat());
+        XVisualInfo *visualInfo = qglx_findVisualInfo(mScreen->display()->nativeDisplay(),mScreen->xScreenNumber(),window->platformWindowFormat());
 #else
         QPlatformWindowFormat windowFormat = correctColorBuffers(window->platformWindowFormat());
 
-        EGLDisplay eglDisplay = eglGetDisplay(mScreen->display()->nativeDisplay());
+        EGLDisplay eglDisplay = mScreen->eglDisplay();
         EGLConfig eglConfig = q_configFromQPlatformWindowFormat(eglDisplay,windowFormat);
-        VisualID id = QXlibEglIntegration::getCompatibleVisualId(mScreen->display()->nativeDisplay(),eglConfig);
+        VisualID id = QXlibEglIntegration::getCompatibleVisualId(mScreen->display()->nativeDisplay(), eglDisplay, eglConfig);
 
         XVisualInfo visualInfoTemplate;
         memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
@@ -100,18 +103,28 @@ QXlibWindow::QXlibWindow(QWidget *window)
         visualInfo = XGetVisualInfo(mScreen->display()->nativeDisplay(), VisualIDMask, &visualInfoTemplate, &matchingCount);
 #endif //!defined(QT_OPENGL_ES_2)
         if (visualInfo) {
-            Colormap cmap = XCreateColormap(mScreen->display()->nativeDisplay(),mScreen->rootWindow(),visualInfo->visual,AllocNone);
+            mDepth = visualInfo->depth;
+            mFormat = (mDepth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+            mVisual = visualInfo->visual;
+            Colormap cmap = XCreateColormap(mScreen->display()->nativeDisplay(), mScreen->rootWindow(), visualInfo->visual, AllocNone);
 
             XSetWindowAttributes a;
+            a.background_pixel = WhitePixel(mScreen->display()->nativeDisplay(), mScreen->xScreenNumber());
+            a.border_pixel = BlackPixel(mScreen->display()->nativeDisplay(), mScreen->xScreenNumber());
             a.colormap = cmap;
             x_window = XCreateWindow(mScreen->display()->nativeDisplay(), mScreen->rootWindow(),x, y, w, h,
                                      0, visualInfo->depth, InputOutput, visualInfo->visual,
-                                     CWColormap, &a);
+                                     CWBackPixel|CWBorderPixel|CWColormap, &a);
         } else {
             qFatal("no window!");
         }
+    } else
 #endif //!defined(QT_NO_OPENGL)
-    } else {
+    {
+        mDepth = mScreen->depth();
+        mFormat = (mDepth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+        mVisual = mScreen->defaultVisual();
+
         x_window = XCreateSimpleWindow(mScreen->display()->nativeDisplay(), mScreen->rootWindow(),
                                        x, y, w, h, 0 /*border_width*/,
                                        mScreen->blackPixel(), mScreen->whitePixel());
@@ -136,7 +149,7 @@ QXlibWindow::QXlibWindow(QWidget *window)
     int n = 0;
     protocols[n++] = QXlibStatic::atom(QXlibStatic::WM_DELETE_WINDOW);        // support del window protocol
     protocols[n++] = QXlibStatic::atom(QXlibStatic::WM_TAKE_FOCUS);                // support take focus window protocol
-    protocols[n++] = QXlibStatic::atom(QXlibStatic::_NET_WM_PING);                // support _NET_WM_PING protocol
+//    protocols[n++] = QXlibStatic::atom(QXlibStatic::_NET_WM_PING);                // support _NET_WM_PING protocol
 #ifndef QT_NO_XSYNC
     protocols[n++] = QXlibStatic::atom(QXlibStatic::_NET_WM_SYNC_REQUEST);        // support _NET_WM_SYNC_REQUEST protocol
 #endif // QT_NO_XSYNC
@@ -655,7 +668,7 @@ void QXlibWindow::setCursor(const Cursor &cursor)
 
 QPlatformGLContext *QXlibWindow::glContext() const
 {
-    if (!QApplicationPrivate::platformIntegration()->hasOpenGL())
+    if (!QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
         return 0;
     if (!mGLContext) {
         QXlibWindow *that = const_cast<QXlibWindow *>(this);
@@ -663,7 +676,7 @@ QPlatformGLContext *QXlibWindow::glContext() const
 #if !defined(QT_OPENGL_ES_2)
         that->mGLContext = new QGLXContext(x_window, mScreen,widget()->platformWindowFormat());
 #else
-        EGLDisplay display = eglGetDisplay(mScreen->display()->nativeDisplay());
+        EGLDisplay display = mScreen->eglDisplay();
 
         QPlatformWindowFormat windowFormat = correctColorBuffers(widget()->platformWindowFormat());
 

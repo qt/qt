@@ -41,7 +41,11 @@
 #ifndef PREVIEWER_H
 #define PREVIEWER_H
 
-#include "ui_previewer.h"
+#if defined Q_OS_SYMBIAN || defined Q_WS_HILDON || defined Q_WS_MAEMO_5 || defined Q_WS_SIMULATOR
+    #include "ui_previewer_mobiles.h"
+#else
+    #include "ui_previewer.h"
+#endif
 
 //! [0]
 class Previewer : public QWidget, public Ui::Form

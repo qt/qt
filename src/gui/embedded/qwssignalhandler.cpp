@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -43,24 +43,13 @@
 
 #ifndef QT_NO_QWS_SIGNALHANDLER
 
+#include "qlock_p.h"
+#include "qwslock_p.h"
+
 #include <sys/types.h>
-#ifndef QT_NO_QWS_MULTIPROCESS
-#  include <sys/ipc.h>
-#  include <sys/sem.h>
-#endif
 #include <signal.h>
 
 QT_BEGIN_NAMESPACE
-
-#ifndef Q_OS_BSD4
-union semun {
-    int val;
-    struct semid_ds *buf;
-    unsigned short *array;
-    struct seminfo  *__buf;
-};
-#endif
-
 
 class QWSSignalHandlerPrivate : public QWSSignalHandler
 {
@@ -95,42 +84,33 @@ QWSSignalHandler::QWSSignalHandler()
 
 QWSSignalHandler::~QWSSignalHandler()
 {
-#ifndef QT_NO_QWS_MULTIPROCESS
-    while (!semaphores.isEmpty())
-        removeSemaphore(semaphores.last());
-#endif
+    clear();
 }
 
-#ifndef QT_NO_QWS_MULTIPROCESS
-void QWSSignalHandler::removeSemaphore(int semno)
+void QWSSignalHandler::clear()
 {
-    const int index = semaphores.lastIndexOf(semno);
-    if (index != -1) {
-        semun semval;
-        semval.val = 0;
-        semctl(semaphores.at(index), 0, IPC_RMID, semval);
-        semaphores.remove(index);
-    }
+#if !defined(QT_NO_QWS_MULTIPROCESS)
+    // it is safe to call d-tors directly here since, on normal exit,
+    // lists should be empty; otherwise, we don't care about semi-alive objects
+    // and the only important thing here is to unregister the system semaphores.
+    while (!locks.isEmpty())
+        locks.takeLast()->~QLock();
+    while (!wslocks.isEmpty())
+        wslocks.takeLast()->~QWSLock();
+#endif
+    objects.clear();
 }
-#endif // QT_NO_QWS_MULTIPROCESS
 
 void QWSSignalHandler::handleSignal(int signum)
 {
     QWSSignalHandler *h = instance();
-
-    signal(signum, h->oldHandlers[signum]);
-
-#ifndef QT_NO_QWS_MULTIPROCESS
-    semun semval;
-    semval.val = 0;
-    for (int i = 0; i < h->semaphores.size(); ++i)
-        semctl(h->semaphores.at(i), 0, IPC_RMID, semval);
-#endif
-
-    h->objects.clear();
+    if (h) {
+        signal(signum, h->oldHandlers[signum]);
+        h->clear();
+    }
     raise(signum);
 }
 
 QT_END_NAMESPACE
 
-#endif // QT_QWS_NO_SIGNALHANDLER
+#endif // QT_NO_QWS_SIGNALHANDLER

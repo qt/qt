@@ -455,6 +455,41 @@
 */
 
 /*!
+    \externalpage https://developer.mozilla.org/en/JavaScript/Reference/Reserved_Words
+    \title JavaScript Reserved Words
+*/
+
+/*!
     \externalpage http://publicsuffix.org/
     \title publicsuffix.org
+*/
+
+/*!
+    \externalpage http://wiki.forum.nokia.com/index.php/Capabilities
+    \title Symbian Capabilities
+*/
+
+/*!
+    \externalpage http://wiki.forum.nokia.com/
+    \title Forum Nokia Wiki
+*/
+
+/*!
+    \externalpage http://wiki.forum.nokia.com/index.php/UID_Q&As_(Symbian_Signed)
+    \title UID Q&As (Symbian Signed)
+*/
+
+/*!
+    \externalpage http://www.symbiansigned.com
+    \title Symbian Signed
+*/
+
+/*!
+    \externalpage http://accessibility.linuxfoundation.org/a11yspecs/ia2/docs/html/_accessible_event_i_d_8idl.html
+    \title AccessibleEventID.idl File Reference
+*/
+
+/*!
+    \externalpage http://msdn.microsoft.com/en-us/library/dd318066.aspx
+    \title Microsoft Active Accessibility Event Constants
 */

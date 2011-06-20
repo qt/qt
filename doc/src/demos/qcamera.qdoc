@@ -1,0 +1,68 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page qcamera_example.html
+    \title QCamera Example
+    \example demos/mobile/qcamera
+
+    This Qt C++ application demonstrates how to use Multimedia, Messaging and Contacts modules from \l{external: Qt Mobility Manual}{Qt Mobility}.
+
+    \image qcameraexample.png
+
+    The application shows the viewfinder picture from the device camera and allows the user to capture images. Captured images are stored into the gallery and can be sent as an MMS message to a friend. Application listens for incoming MMS messages in the Inbox folder. If the MMS message contains a picture, the application asks the user whether he or she wants to add the picture as an avatar of the sender. The person's general contact information has to exist in the device phonebook in order to store the avatar in it.
+
+    The application uses own MyVideoSurface video surface derived from QAbstractVideoSurface for showing camera view finder pictures. A video surface presents a continuous stream of identically formatted frames.
+
+    \snippet demos/mobile/qcamera/cameraexample.cpp 0
+
+    The application handles Graphics Out Of Memory (GOOM) events in it's QApplication::symbianEventFilter() method.
+
+    \snippet demos/mobile/qcamera/main.cpp 0
+
+    \section1 Required capabilities
+
+    Application can be self-signed.
+
+    After enabling Qt Mobility Messaging module (MESSAGING_ENABLED flag in .pro file)
+    from the project file is ReadDeviceData WriteDeviceData capabilities also needed and
+    application have to be Developer Signed. Enabling Messaging adds MMS sending feature for the application.
+
+    \section1 Compatibility
+
+    Qt SDK 1.1
+
+    Qt 4.7.2 for Symbian
+
+    QtMobility 1.1.1
+
+    Tested on: Nokia N8, Nokia E7
+
+    Developed with:	Qt SDK 1.1
+
+
+*/

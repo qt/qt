@@ -7,113 +7,152 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of this
-** file.
+** Foundation and appearing in the file included in the packaging of
+** this file.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 /*!
-    \page index.html
-    \keyword Qt Reference Documentation
+\page index.html
+\keyword Qt Reference Documentation
 
-          \div {indexbox guide}
-            \div {heading}
-              Qt Developer Guide 
-	    \enddiv
-            \div {indexboxcont indexboxbar}
-              \div {section indexIcon} \emptyspan
-              \enddiv
-              \div {section}
-                Qt is a cross-platform application and UI
-                framework. Using Qt, you can write web-enabled
-                applications once and deploy them across desktop,
-                mobile and embedded operating systems without
-                rewriting the source code.
-              \enddiv
-              \div {section sectionlist}
-                \list
-                  \o \l{Getting Started Guides}{Getting started}
-                  \o \l{Installation}{Installation}
-                  \o \l{how-to-learn-qt.html}{How to learn Qt}
-                  \o \l{tutorials.html}{Tutorials}
-                  \o \l{Qt Examples}{Examples}
-                  \o \l{qt4-7-intro.html}{What's new in Qt 4.7}
-                \endlist
-             \enddiv
+\div {class="indexbox tools"}
+    \div {class="indexboxcont indexboxbar"}
+        \div {class="sectionlist normallist"}
+            \div {class="heading"}
+                What is Qt
             \enddiv
-          \enddiv
-          \div {indexbox api}
-            \div {heading}
-              Qt API 
-	    \enddiv
-            \div {indexboxcont indexboxbar }
-              \div {sectionlist tricol}
-                \list
-                    \o \l{All Classes}{All Classes}
-                    \o \l{All Functions}{All Functions}
-                    \o \l{All Modules}{All Modules}
-                    \o \l{All Namespaces}{All Namespaces}
-                    \o \l{Global Qt Declarations}{Global Declarations}
-                    \o \l{Qt Licenses and Credits}{Licenses and Credits}
-                \endlist
-              \enddiv
-              \div {sectionlist  tricol}
-                \list
-                    \o \l{Programming with Qt}
-                    \o \l{UI Design with Qt}
-                    \o \l{Cross-Platform and Platform-Specific Development}
-                    \o \l{Qt and Key Technologies}
-                    \o \l{Best Practice Guides}
-                \endlist
-              \enddiv
-              \div {sectionlist}
-                \list
-                    \o \l{qtquick.html}{Qt Quick}
-                    \o \l{qdeclarativeintroduction.html}{Introduction to QML}
-                    \o \l{qdeclarativeelements.html}{QML Elements}
-                    \o \l{qdeclarativeexamples.html}{QML Examples and Demos}
-                \endlist
-              \enddiv
+            \list
+            \o \l{Qt Whitepaper}{Qt C++ Framework}
+            \o \l{Intro to Qt Quick}{Qt Quick}
+            \o \l{external: Qt Mobility Manual}{Qt Mobility}
+            \o \l{Qt WebKit}
+            \endlist
+        \enddiv
+        \div {class="sectionlist normallist"}
+            \list
+            \o \l{external: Qt SDK Manual}{Qt SDK}
+            \o \l{Qt Creator Whitepaper}{Qt Creator}
+            \o \l{external: Qt Simulator Manual}{Qt Simulator}
+            \endlist
+            \list
+            \o \l{Supported Platforms}{Platform Support}
+            \o \l{What's New in Qt 4.7} - latest release
+            \endlist
+        \enddiv
+        \div {class="sectionlist normallist"}
+            \div {class="heading"}
+                Qt in Action
             \enddiv
-          \enddiv
-          \div {indexbox tools}
-            \div {heading}
-              Qt Tools 
-	    \enddiv
-            \div {indexboxcont}
-              \div {section indexIcon} \emptyspan
-	      \enddiv
-              \div {section}
-                Qt offers a selection of development tools for
-                different tasks. Use Qt Creator for project and code
-                management as well as building powerfull UIs.
-              \enddiv
-              \div {section sectionlist}
-                \list
-                  \o \l{http://doc.qt.nokia.com/qtcreator-2.0/index.html}{Qt Creator}
-                  \o \l{designer-manual.html}{Qt Designer}
-                  \o \l{linguist-manual.html}{Qt Linguist}
-                  \o \l{assistant-manual.html}{Qt Assistant}
-                  \o \l{qmake-manual.html}{Qt qmake}
-                  \o \l{http://doc.qt.nokia.com/qtsimulator-1.0/index.html}{Qt Simulator}
-                  \o \l{http://qt.nokia.com/developer/eclipse-integration}{Eclipse Integration}
-                  \o \l{http://qt.nokia.com/products/appdev}{Add-On Products and Services}
-                  \o \l{qvfb.html}{Virtual Framebuffer}
-                \endlist
-              \enddiv
+            \list
+            \o \l{Qt Demonstrations}{Application Gallery}
+            \o \l{Tutorials}{Step-by-Step Tutorials}
+            \o \l{Qt Examples}{Qt Example Code}
+            \o \l{QML Examples and Demos}
+            \endlist
+        \enddiv
+    \enddiv
+\enddiv
+\div {class="indexbox tools"}
+    \div {class="indexboxcont indexboxbar"}
+        \div {class="sectionlist normallist"}
+            \div {class="heading"}
+                Develop with Qt
             \enddiv
-          \enddiv
+            \list
+            \o \l{Develop with Qt}{Steps to Programming Qt Applications}
+            \o \l{qt-creator-configure-target}{Configure Qt and Creator for Platforms}
+            \o \l{qt-technologies}{Qt Features and Technologies}
+            \o \l{qt-utilities}{Utilities and Testing}
+            \o \l{qt-deployment}{Deploying and Publishing Applications to Ovi Store}
+            \endlist
+            \list
+            \o \l{Getting Started Guides}{Qt and Qt Quick Programming Tutorials}
+            \endlist
+        \enddiv
+        \div {class="sectionlist normallist"}
+            \div {class="heading"}
+                UI Creation with Qt
+            \enddiv
+
+            \list
+            \o \l{qt-ui-creation}{Create UI with Qt}
+            \o \l{qt-rendering-painting-system}{Qt's Rendering and Painting Systems}
+            \o \l{Qt Quick} - develop fluid UIs with QML
+            \o \l{Widgets and Layouts} - elements for C++ interfaces
+            \o \l{external: Designer in Creator}{Designing UI in Creator}
+            \endlist
+        \enddiv
+        \div {class="sectionlist normallist"}
+            \div {class="heading"}
+                Featured Articles
+            \enddiv
+            \list
+            \o \l{Scalability}{How to Create Scalable Applications}
+            \o \l{external: Setting Up Development Environment for Symbian}{Setting Up Development Environment for Symbian}
+            \o \l{external: Setting Up Development Environment for Maemo}{Setting Up Development Environment for Maemo}
+            \o \l{qt-mobile-demos}{Mobile Applications and Demos}
+            \o \l{QtWebKit Guide}{QtWebKit Developer Guide}
+            \endlist
+            \list
+            \o \l{Qt Development: The Steps from Challenge to Achievement}{The Steps from Challenge to Achievement}
+            A case analysis of a business development problem and a search for
+innovative solutions using Qt.
+            \endlist
+        \enddiv
+    \enddiv
+\enddiv
+\div {class="indexbox tools"}
+    \div {class="heading"}
+        Reference
+    \enddiv
+    \div {class="indexboxcont indexboxbar"}
+        \div {class="sectionlist normallist"}
+            \div {class="heading"}
+                Qt API
+            \enddiv
+            \list
+            \o \l{All Classes}{All Classes}
+            \o \l{All Functions}{All Functions}
+            \o \l{All Modules}{All Modules}
+            \o \l{All Namespaces}{All Namespaces}
+            \o \l{Global Qt Declarations}{Global Declarations}
+            \endlist
+        \enddiv
+        \div {class="sectionlist normallist"}
+            \list
+            \o \l{QML Elements}
+            \o \l{external: Qt Mobility Manual}{Qt Mobility APIs}
+            \o \l{external: Qt Mobility QML Plugins}{Mobility QML Plugins}
+            \endlist
+            \list
+            \o \l{Qt Licenses and Credits}
+            \endlist
+        \enddiv
+        \div {class="sectionlist normallist"}
+            \div {class="heading"}
+                Qt Manuals
+            \enddiv
+            \list
+            \o \l{external: Qt Creator Manual}{Qt Creator}
+            \o \l{external: Qt Simulator Manual}{Qt Simulator}
+            \o \l{linguist-manual.html}{Qt Linguist}
+            \o \l{assistant-manual.html}{Qt Assistant}
+            \endlist
+        \enddiv
+    \enddiv
+\enddiv
 */

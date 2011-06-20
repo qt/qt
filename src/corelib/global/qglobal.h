@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -425,14 +425,11 @@ namespace QT_NAMESPACE {}
 
 #if defined(Q_CC_MSVC) && _MSC_VER >= 1600
 #      define Q_COMPILER_RVALUE_REFS
-#      define Q_COMPILER_INITIALIZER_LISTS
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_LAMBDA
-//#      define Q_COMPILER_VARIADIC_TEMPLATES
-//#      define Q_COMPILER_CLASS_ENUM
-//#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
-//#      define Q_COMPILER_UNICODE_STRINGS
-//#      define Q_COMPILER_EXTERN_TEMPLATES
+#      define Q_COMPILER_DECLTYPE
+//  MSCV has std::initilizer_list, but do not support the braces initialization
+//#      define Q_COMPILER_INITIALIZER_LISTS
 #  endif
 
 
@@ -497,6 +494,10 @@ namespace QT_NAMESPACE {}
 #    define Q_TYPEOF(expr)    __typeof__(expr)
 #    define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
 #  endif
+#  if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)
+#    define Q_LIKELY(expr)    __builtin_expect(!!(expr), true)
+#    define Q_UNLIKELY(expr)  __builtin_expect(!!(expr), false)
+#  endif
 /* GCC 3.1 and GCC 3.2 wrongly define _SB_CTYPE_MACROS on HP-UX */
 #  if defined(Q_OS_HPUX) && __GNUC__ == 3 && __GNUC_MINOR__ >= 1
 #    define Q_WRONG_SB_CTYPE_MACROS
@@ -520,6 +521,7 @@ namespace QT_NAMESPACE {}
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
        /* C++0x features supported in GCC 4.3: */
 #      define Q_COMPILER_RVALUE_REFS
+#      define Q_COMPILER_DECLTYPE
 #    endif
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 404
        /* C++0x features supported in GCC 4.4: */
@@ -759,6 +761,7 @@ namespace QT_NAMESPACE {}
 #    endif
 #    if __HP_aCC-0 >= 062000
 #      define Q_DECL_EXPORT     __attribute__((visibility("default")))
+#      define Q_DECL_HIDDEN     __attribute__((visibility("hidden")))
 #      define Q_DECL_IMPORT     Q_DECL_EXPORT
 #    endif
 #  else
@@ -773,10 +776,10 @@ namespace QT_NAMESPACE {}
 #elif defined(__WINSCW__) && !defined(Q_CC_NOKIAX86)
 #  define Q_CC_NOKIAX86
 
-
 #else
 #  error "Qt has not been tested with this compiler - talk to qt-bugs@trolltech.com"
 #endif
+
 
 #ifdef Q_CC_INTEL
 #  if __INTEL_COMPILER < 1200
@@ -786,6 +789,7 @@ namespace QT_NAMESPACE {}
 #    if __INTEL_COMPILER >= 1100
 #      define Q_COMPILER_RVALUE_REFS
 #      define Q_COMPILER_EXTERN_TEMPLATES
+#      define Q_COMPILER_DECLTYPE
 #    elif __INTEL_COMPILER >= 1200
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #      define Q_COMPILER_AUTO_TYPE
@@ -799,6 +803,13 @@ namespace QT_NAMESPACE {}
 #ifndef Q_PACKED
 #  define Q_PACKED
 #  undef Q_NO_PACKED_REFERENCE
+#endif
+
+#ifndef Q_LIKELY
+#  define Q_LIKELY(x) (x)
+#endif
+#ifndef Q_UNLIKELY
+#  define Q_UNLIKELY(x) (x)
 #endif
 
 #ifndef Q_CONSTRUCTOR_FUNCTION
@@ -1238,6 +1249,7 @@ class QDataStream;
 #if defined(Q_OS_LINUX) && defined(Q_CC_RVCT)
 #  define Q_DECL_EXPORT     __attribute__((visibility("default")))
 #  define Q_DECL_IMPORT     __attribute__((visibility("default")))
+#  define Q_DECL_HIDDEN     __attribute__((visibility("hidden")))
 #endif
 
 #ifndef Q_DECL_EXPORT
@@ -1245,6 +1257,7 @@ class QDataStream;
 #    define Q_DECL_EXPORT __declspec(dllexport)
 #  elif defined(QT_VISIBILITY_AVAILABLE)
 #    define Q_DECL_EXPORT __attribute__((visibility("default")))
+#    define Q_DECL_HIDDEN __attribute__((visibility("hidden")))
 #  endif
 #  ifndef Q_DECL_EXPORT
 #    define Q_DECL_EXPORT
@@ -1257,6 +1270,10 @@ class QDataStream;
 #    define Q_DECL_IMPORT
 #  endif
 #endif
+#ifndef Q_DECL_HIDDEN
+#  define Q_DECL_HIDDEN
+#endif
+
 
 /*
    Create Qt DLL if QT_DLL is defined (Windows and Symbian only)
@@ -1406,6 +1423,7 @@ class QDataStream;
 #    define Q_DECLARATIVE_EXPORT
 #    define Q_OPENGL_EXPORT
 #    define Q_MULTIMEDIA_EXPORT
+#    define Q_OPENVG_EXPORT
 #    define Q_XML_EXPORT
 #    define Q_XMLPATTERNS_EXPORT
 #    define Q_SCRIPT_EXPORT
@@ -1599,7 +1617,9 @@ public:
         SV_SF_1 = SV_9_4,
         SV_SF_2 = 40,
         SV_SF_3 = 50,
-        SV_SF_4 = 60
+        SV_SF_4 = 60,  // Deprecated
+        SV_API_5_3 = 70,
+        SV_API_5_4 = 80
     };
     static SymbianVersion symbianVersion();
     enum S60Version {
@@ -1608,9 +1628,10 @@ public:
         SV_S60_3_1 = SV_9_2,
         SV_S60_3_2 = SV_9_3,
         SV_S60_5_0 = SV_9_4,
-        //versions beyond 5.0 are to be confirmed - it is better to use symbian version
-        SV_S60_5_1 = SV_SF_2,
-        SV_S60_5_2 = SV_SF_3
+        SV_S60_5_1 = SV_SF_2,  // Deprecated
+        SV_S60_5_2 = SV_SF_3,
+        SV_S60_5_3 = SV_API_5_3,
+        SV_S60_5_4 = SV_API_5_4
     };
     static S60Version s60Version();
 #endif
@@ -2517,8 +2538,22 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #define Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS
 #endif
 
+#ifdef SYMBIAN_GRAPHICS_FIXNATIVEORIENTATION
+#define Q_SYMBIAN_SUPPORTS_FIXNATIVEORIENTATION
+#endif
+
 //Symbian does not support data imports from a DLL
 #define Q_NO_DATA_RELOCATION
+
+// Winscw compiler is unable to compile QtConcurrent.
+#ifdef Q_CC_NOKIAX86
+#ifndef QT_NO_CONCURRENT
+#define QT_NO_CONCURRENT
+#endif
+#ifndef QT_NO_QFUTURE
+#define QT_NO_QFUTURE
+#endif
+#endif
 
 QT_END_NAMESPACE
 // forward declare std::exception
@@ -2727,6 +2762,19 @@ QT_LICENSED_MODULE(DBus)
 #    define Q_OF_ELF
 #  endif
 #endif
+
+#if !(defined(Q_WS_WIN) && !defined(Q_WS_WINCE)) \
+    && !(defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)) \
+    && !(defined(Q_WS_X11) && !defined(QT_NO_FREETYPE)) \
+    && !(defined(Q_WS_QPA))
+#  define QT_NO_RAWFONT
+#endif
+
+namespace QtPrivate {
+//like std::enable_if
+template <bool B, typename T = void> struct QEnableIf;
+template <typename T> struct QEnableIf<true, T> { typedef T Type; };
+}
 
 QT_END_NAMESPACE
 QT_END_HEADER

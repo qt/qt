@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -124,6 +124,7 @@ public:
         manifestWriter.writeNamespace(manifestNS, QString::fromLatin1("manifest"));
         manifestWriter.writeStartDocument();
         manifestWriter.writeStartElement(manifestNS, QString::fromLatin1("manifest"));
+        manifestWriter.writeAttribute(manifestNS, QString::fromLatin1("version"), QString::fromLatin1("1.2"));
         addFile(QString::fromLatin1("/"), QString::fromLatin1("application/vnd.oasis.opendocument.text"));
         addFile(QString::fromLatin1("content.xml"), QString::fromLatin1("text/xml"));
     }
@@ -590,6 +591,7 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, QTextCharFor
         QString value;
         switch (format.verticalAlignment()) {
         case QTextCharFormat::AlignMiddle:
+        case QTextCharFormat::AlignBaseline:
         case QTextCharFormat::AlignNormal: value = QString::fromLatin1("0%"); break;
         case QTextCharFormat::AlignSuperScript: value = QString::fromLatin1("super"); break;
         case QTextCharFormat::AlignSubScript: value = QString::fromLatin1("sub"); break;
@@ -786,6 +788,7 @@ bool QTextOdfWriter::writeAll()
     writer.writeNamespace(svgNS, QString::fromLatin1("svg"));
     writer.writeStartDocument();
     writer.writeStartElement(officeNS, QString::fromLatin1("document-content"));
+    writer.writeAttribute(officeNS, QString::fromLatin1("version"), QString::fromLatin1("1.2"));
 
     // add fragments. (for character formats)
     QTextDocumentPrivate::FragmentIterator fragIt = m_document->docHandle()->begin();

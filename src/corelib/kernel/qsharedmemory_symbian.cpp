@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -41,19 +41,21 @@
 
 #include "qsharedmemory.h"
 #include "qsharedmemory_p.h"
-#include "qsystemsemaphore.h"
+
 #include "qcore_symbian_p.h"
 #include <qdebug.h>
-
-QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SHAREDMEMORY
 
 #define QSHAREDMEMORY_DEBUG
 
-QSharedMemoryPrivate::QSharedMemoryPrivate() : QObjectPrivate(),
-        memory(0), size(0), error(QSharedMemory::NoError),
-           systemSemaphore(QString()), lockedByMe(false)
+QT_BEGIN_NAMESPACE
+
+QSharedMemoryPrivate::QSharedMemoryPrivate()
+    : QObjectPrivate(), memory(0), size(0), error(QSharedMemory::NoError),
+#ifndef QT_NO_SYSTEMSEMAPHORE
+      systemSemaphore(QString()), lockedByMe(false)
+#endif
 {
 }
 
@@ -61,6 +63,7 @@ void QSharedMemoryPrivate::setErrorString(const QString &function, TInt errorCod
 {
     if (errorCode == KErrNone)
         return;
+
     switch (errorCode) {
     case KErrAlreadyExists:
         error = QSharedMemory::AlreadyExists;
@@ -88,40 +91,43 @@ void QSharedMemoryPrivate::setErrorString(const QString &function, TInt errorCod
 #if defined QSHAREDMEMORY_DEBUG
         qDebug() << errorString << "key" << key;
 #endif
+        break;
     }
 }
 
 key_t QSharedMemoryPrivate::handle()
 {
+    // don't allow making handles on empty keys
+    if (nativeKey.isEmpty()) {
+        error = QSharedMemory::KeyError;
+        errorString = QSharedMemory::tr("%1: key is empty").arg(QLatin1String("QSharedMemory::handle"));
+        return 0;
+    }
+
     // Not really cost effective to check here if shared memory is attachable, as it requires
     // exactly the same call as attaching, so always assume handle is valid and return failure
     // from attach.
     return 1;
 }
 
-bool QSharedMemoryPrivate::cleanHandle()
+void QSharedMemoryPrivate::cleanHandle()
 {
     chunk.Close();
-    return true;
 }
 
 bool QSharedMemoryPrivate::create(int size)
 {
-    QString function = QLatin1String("QSharedMemory::create");
-    if (nativeKey.isEmpty()) {
-        error = QSharedMemory::KeyError;
-        errorString = QSharedMemory::tr("%1: key error").arg(function);
+    if (!handle())
         return false;
-    }
 
     TPtrC ptr(qt_QString2TPtrC(nativeKey));
 
     TInt err = chunk.CreateGlobal(ptr, size, size);
 
-    setErrorString(function, err);
-
-    if (err != KErrNone)
+    if (err != KErrNone) {
+        setErrorString(QLatin1String("QSharedMemory::create"), err);
         return false;
+    }
 
     // Zero out the created chunk
     Mem::FillZ(chunk.Base(), chunk.Size());
@@ -133,12 +139,8 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode /* mode */)
 {
     // Grab a pointer to the memory block
     if (!chunk.Handle()) {
-        QString function = QLatin1String("QSharedMemory::handle");
-        if (nativeKey.isEmpty()) {
-            error = QSharedMemory::KeyError;
-            errorString = QSharedMemory::tr("%1: unable to make key").arg(function);
+        if (!handle())
             return false;
-        }
 
         TPtrC ptr(qt_QString2TPtrC(nativeKey));
 
@@ -147,7 +149,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode /* mode */)
         err = chunk.OpenGlobal(ptr, false);
 
         if (err != KErrNone) {
-            setErrorString(function, err);
+            setErrorString(QLatin1String("QSharedMemory::attach"), err);
             return false;
         }
     }
@@ -168,6 +170,6 @@ bool QSharedMemoryPrivate::detach()
     return true;
 }
 
-#endif //QT_NO_SHAREDMEMORY
-
 QT_END_NAMESPACE
+
+#endif //QT_NO_SHAREDMEMORY

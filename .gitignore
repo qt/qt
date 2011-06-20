@@ -7,6 +7,7 @@ examples/*/*/*
 examples/*/*/*[.]app
 !examples/declarative/*
 !examples/tutorials/*
+!examples/tutorials/*/*
 !examples/ja_JP/*/*
 demos/*/*
 !demos/spectrum/*
@@ -50,8 +51,8 @@ Makefile*
 !qmake/Makefile.unix
 *.prl
 *.app
-*.pro.user
-*.qmlproject.user
+*.pro.user*
+*.qmlproject.user*
 *.gcov
 bin/Qt*.dll
 bin/assistant*
@@ -201,6 +202,7 @@ release
 tmp
 doc-build
 doc/html/*
+tools/qdoc3/doc/html/*
 doc/qch
 doc-build
 .rcc
@@ -244,6 +246,8 @@ d_exc_*.stk
 *.d
 
 qtc-debugging-helper
+qtc-qmldump
+qtc-qmldbg
 src/corelib/lib
 src/network/lib
 src/xml/lib/

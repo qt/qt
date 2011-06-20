@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -68,6 +68,14 @@ class QPlatformWindow;
 class Q_GUI_EXPORT QWindowSurface
 {
 public:
+    enum WindowSurfaceFeature {
+        PartialUpdates               = 0x00000001, // Supports doing partial updates.
+        PreservedContents            = 0x00000002, // Supports doing flush without first doing a repaint.
+        StaticContents               = 0x00000004, // Supports having static content regions when being resized.
+        AllFeatures                  = 0xffffffff  // For convenience
+    };
+    Q_DECLARE_FLAGS(WindowSurfaceFeatures, WindowSurfaceFeature)
+
     QWindowSurface(QWidget *window, bool setDefaultSurface = true);
     virtual ~QWindowSurface();
 
@@ -100,8 +108,8 @@ public:
     virtual QPoint offset(const QWidget *widget) const;
     inline QRect rect(const QWidget *widget) const;
 
-    virtual bool hasStaticContentsSupport() const;
-    virtual bool hasPartialUpdateSupport() const;
+    bool hasFeature(WindowSurfaceFeature feature) const;
+    virtual WindowSurfaceFeatures features() const;
 
     void setStaticContents(const QRegion &region);
     QRegion staticContents() const;
@@ -113,9 +121,16 @@ private:
     QWindowSurfacePrivate *d_ptr;
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWindowSurface::WindowSurfaceFeatures)
+
 inline QRect QWindowSurface::rect(const QWidget *widget) const
 {
     return widget->rect().translated(offset(widget));
+}
+
+inline bool QWindowSurface::hasFeature(WindowSurfaceFeature feature) const
+{
+    return (features() & feature) != 0;
 }
 
 QT_END_NAMESPACE

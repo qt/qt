@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -43,6 +43,12 @@
 #include <QtNetwork/QtNetwork>
 
 #include <time.h>
+
+#ifndef QT_NO_BEARERMANAGEMENT
+#include <QtNetwork/qnetworkconfigmanager.h>
+#include <QtNetwork/qnetworkconfiguration.h>
+#include <QtNetwork/qnetworksession.h>
+#endif
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -64,6 +70,7 @@ public:
     QHostAddress serverIpAddress();
 
 private slots:
+    void initTestCase();
     void hostTest();
     void dnsResolution_data();
     void dnsResolution();
@@ -91,6 +98,12 @@ private slots:
 
     // ssl supported test
     void supportsSsl();
+private:
+#ifndef QT_NO_BEARERMANAGEMENT
+    QNetworkConfigurationManager *netConfMan;
+    QNetworkConfiguration networkConfiguration;
+    QScopedPointer<QNetworkSession> networkSession;
+#endif
 };
 
 class Chat
@@ -354,6 +367,26 @@ QHostAddress tst_NetworkSelfTest::serverIpAddress()
     return cachedIpAddress;
 }
 
+void tst_NetworkSelfTest::initTestCase()
+{
+#ifndef QT_NO_BEARERMANAGEMENT
+    netConfMan = new QNetworkConfigurationManager(this);
+    netConfMan->updateConfigurations();
+    connect(netConfMan, SIGNAL(updateCompleted()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    networkConfiguration = netConfMan->defaultConfiguration();
+    if (networkConfiguration.isValid()) {
+        networkSession.reset(new QNetworkSession(networkConfiguration));
+        if (!networkSession->isOpen()) {
+            networkSession->open();
+            QVERIFY(networkSession->waitForOpened(30000));
+        }
+    } else {
+        QVERIFY(!(netConfMan->capabilities() & QNetworkConfigurationManager::NetworkSessionRequired));
+    }
+#endif
+}
+
 void tst_NetworkSelfTest::hostTest()
 {
     // this is a localhost self-test
@@ -469,7 +502,8 @@ void tst_NetworkSelfTest::fileLineEndingTest()
 
 static QList<Chat> ftpChat(const QByteArray &userSuffix = QByteArray())
 {
-    return QList<Chat>() << Chat::expect("220")
+    QList<Chat> rv;
+    rv << Chat::expect("220")
             << Chat::discardUntil("\r\n")
             << Chat::send("USER anonymous" + userSuffix + "\r\n")
             << Chat::expect("331")
@@ -504,10 +538,15 @@ static QList<Chat> ftpChat(const QByteArray &userSuffix = QByteArray())
 //            << Chat::send("SIZE nonASCII/german_\344\366\374\304\326\334\337\r\n")
 //            << Chat::expect("213 40\r\n")
 
-            << Chat::send("QUIT\r\n")
-            << Chat::expect("221")
-            << Chat::discardUntil("\r\n")
-            << Chat::RemoteDisconnect;
+            << Chat::send("QUIT\r\n");
+#ifdef Q_OS_SYMBIAN
+    if (userSuffix.length() == 0) // received but unacknowledged packets are discarded by TCP RST, so this doesn't work with frox proxy
+#endif
+        rv  << Chat::expect("221")
+            << Chat::discardUntil("\r\n");
+
+    rv << Chat::RemoteDisconnect;
+    return rv;
 }
 
 void tst_NetworkSelfTest::ftpServer()

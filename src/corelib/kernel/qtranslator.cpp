@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -47,6 +47,7 @@
 
 #include "qfileinfo.h"
 #include "qstring.h"
+#include "qstringlist.h"
 #include "qcoreapplication.h"
 #include "qcoreapplication_p.h"
 #include "qdatastream.h"
@@ -55,6 +56,7 @@
 #include "qalgorithms.h"
 #include "qhash.h"
 #include "qtranslator_p.h"
+#include "qlocale.h"
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(Q_OS_INTEGRITY)
 #define QT_USE_MMAP
@@ -236,6 +238,7 @@ public:
     uint contextLength;
     uint numerusRulesLength;
 
+    bool do_load(const QString &filename);
     bool do_load(const uchar *data, int len);
     QString do_translate(const char *context, const char *sourceText, const char *comment,
                          int n) const;
@@ -354,10 +357,15 @@ QTranslator::~QTranslator()
 }
 
 /*!
-    Loads \a filename + \a suffix (".qm" if the \a suffix is
-    not specified), which may be an absolute file name or relative
-    to \a directory. Returns true if the translation is successfully
-    loaded; otherwise returns false.
+
+    Loads \a filename + \a suffix (".qm" if the \a suffix is not
+    specified), which may be an absolute file name or relative to \a
+    directory. Returns true if the translation is successfully loaded;
+    otherwise returns false.
+
+    If \a directory is not specified, the directory of the
+    application's executable is used (i.e., as
+    \l{QCoreApplication::}{applicationDirPath()}). 
 
     The previous contents of this translator object are discarded.
 
@@ -435,7 +443,12 @@ bool QTranslator::load(const QString & filename, const QString & directory,
     }
 
     // realname is now the fully qualified name of a readable file.
+    return d->do_load(realname);
+}
 
+bool QTranslatorPrivate::do_load(const QString &realname)
+{
+    QTranslatorPrivate *d = this;
     bool ok = false;
 
 #ifdef QT_USE_MMAP
@@ -495,6 +508,148 @@ bool QTranslator::load(const QString & filename, const QString & directory,
     }
 
     return d->do_load(reinterpret_cast<const uchar *>(d->unmapPointer), d->unmapLength);
+}
+
+static QString find_translation(const QLocale & locale,
+                                const QString & filename,
+                                const QString & prefix,
+                                const QString & directory,
+                                const QString & suffix)
+{
+    QString path;
+    if (QFileInfo(filename).isRelative()) {
+        path = directory;
+        if (!path.isEmpty() && !path.endsWith(QLatin1Char('/')))
+            path += QLatin1Char('/');
+    }
+
+    QFileInfo fi;
+    QString realname;
+    QStringList fuzzyLocales;
+
+    // see http://www.unicode.org/reports/tr35/#LanguageMatching for inspiration
+
+    QStringList languages = locale.uiLanguages();
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    for (int i = languages.size()-1; i >= 0; --i) {
+        QString lang = languages.at(i);
+        QString lowerLang = lang.toLower();
+        if (lang != lowerLang)
+            languages.insert(i+1, lowerLang);
+    }
+#endif
+
+    // try explicit locales names first
+    foreach (QString localeName, languages) {
+        localeName.replace(QLatin1Char('-'), QLatin1Char('_'));
+
+        realname = path + filename + prefix + localeName + (suffix.isNull() ? QLatin1String(".qm") : suffix);
+        fi.setFile(realname);
+        if (fi.isReadable() && fi.isFile())
+            return realname;
+
+        realname = path + filename + prefix + localeName;
+        fi.setFile(realname);
+        if (fi.isReadable() && fi.isFile())
+            return realname;
+
+        fuzzyLocales.append(localeName);
+    }
+
+    // start guessing
+    foreach (QString localeName, fuzzyLocales) {
+        for (;;) {
+            int rightmost = localeName.lastIndexOf(QLatin1Char('_'));
+            // no truncations? fail
+            if (rightmost <= 0)
+                break;
+            localeName.truncate(rightmost);
+
+            realname = path + filename + prefix + localeName + (suffix.isNull() ? QLatin1String(".qm") : suffix);
+            fi.setFile(realname);
+            if (fi.isReadable() && fi.isFile())
+                return realname;
+
+            realname = path + filename + prefix + localeName;
+            fi.setFile(realname);
+            if (fi.isReadable() && fi.isFile())
+                return realname;
+        }
+    }
+
+    if (!suffix.isNull()) {
+        realname = path + filename + suffix;
+        fi.setFile(realname);
+        if (fi.isReadable() && fi.isFile())
+            return realname;
+    }
+
+    realname = path + filename + prefix;
+    fi.setFile(realname);
+    if (fi.isReadable() && fi.isFile())
+        return realname;
+
+    realname = path + filename;
+    fi.setFile(realname);
+    if (fi.isReadable() && fi.isFile())
+        return realname;
+
+    return QString();
+}
+
+/*!
+    \since 4.8
+
+    Loads \a filename + \a prefix + \l{QLocale::uiLanguages()}{ui language
+    name} + \a suffix (".qm" if the \a suffix is not specified), which may be
+    an absolute file name or relative to \a directory. Returns true if the
+    translation is successfully loaded; otherwise returns false.
+
+    The previous contents of this translator object are discarded.
+
+    If the file name does not exist, other file names are tried
+    in the following order:
+
+    \list 1
+    \o File name without \a suffix appended.
+    \o File name with ui language part after a "_" character stripped and \a suffix.
+    \o File name with ui language part stripped without \a suffix appended.
+    \o File name with ui language part stripped further, etc.
+    \endlist
+
+    For example, an application running in the locale with the following
+    \l{QLocale::uiLanguages()}{ui languages} - "es", "fr-CA", "de" might call
+    load(QLocale::system(), "foo", ".", "/opt/foolib", ".qm"). load() would
+    replace '-' (dash) with '_' (underscore) in the ui language and then try to
+    open the first existing readable file from this list:
+
+    \list 1
+    \o \c /opt/foolib/foo.es.qm
+    \o \c /opt/foolib/foo.es
+    \o \c /opt/foolib/foo.fr_CA.qm
+    \o \c /opt/foolib/foo.fr_CA
+    \o \c /opt/foolib/foo.de.qm
+    \o \c /opt/foolib/foo.de
+    \o \c /opt/foolib/foo.fr.qm
+    \o \c /opt/foolib/foo.fr
+    \o \c /opt/foolib/foo.qm
+    \o \c /opt/foolib/foo.
+    \o \c /opt/foolib/foo
+    \endlist
+
+    On operating systems where file system is case sensitive, QTranslator also
+    tries to load a lower-cased version of the locale name.
+*/
+bool QTranslator::load(const QLocale & locale,
+                       const QString & filename,
+                       const QString & prefix,
+                       const QString & directory,
+                       const QString & suffix)
+{
+    Q_D(QTranslator);
+    d->clear();
+    QString fname = find_translation(locale, filename, prefix, directory, suffix);
+    return !fname.isEmpty() && d->do_load(fname);
 }
 
 /*!
@@ -687,7 +842,7 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
         numerus = numerusHelper(n, numerusRulesArray, numerusRulesLength);
 
     for (;;) {
-        quint32 h = elfHash(QByteArray(sourceText) + comment);
+        quint32 h = elfHash(QByteArray(QByteArray(sourceText) + comment).constData());
 
         const uchar *start = offsetArray;
         const uchar *end = start + ((numItems-1) << 3);

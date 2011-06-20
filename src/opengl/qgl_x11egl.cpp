@@ -7,29 +7,29 @@
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -105,10 +105,18 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
         return;
     }
 
+    XSetWindowAttributes attr;
+    unsigned long mask;
+    attr.background_pixel = 0;
+    attr.border_pixel = 0;
+    attr.colormap = XCreateColormap(X11->display, DefaultRootWindow(X11->display), vi->visual, AllocNone);
+    attr.event_mask = StructureNotifyMask | ExposureMask;
+    mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
+
     d->window = XCreateWindow(X11->display, RootWindow(X11->display, screen),
                               0, 0, 1, 1, 0,
                               vi->depth, InputOutput, vi->visual,
-                              0, 0);
+                              mask, &attr);
 
     d->surface = eglCreateWindowSurface(d->display, config, (EGLNativeWindowType) d->window, NULL);
 
@@ -232,7 +240,8 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     if (devType == QInternal::Widget) {
         if (d->eglSurface != EGL_NO_SURFACE)
             eglDestroySurface(d->eglContext->display(), d->eglSurface);
-        d->eglSurface = QEgl::createSurface(device(), d->eglContext->config());
+        // extraWindowSurfaceCreationProps default to NULL unless were specifically set before
+        d->eglSurface = QEgl::createSurface(device(), d->eglContext->config(), d->extraWindowSurfaceCreationProps);
         XFlush(X11->display);
         setWindowCreated(true);
     }
@@ -246,6 +255,20 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     }
 
     return true;
+}
+
+void *QGLContext::chooseVisual()
+{
+    qFatal("QGLContext::chooseVisual - this method must not be called as Qt is built with EGL support");
+    return 0;
+}
+
+void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
+{
+    Q_UNUSED(f);
+    Q_UNUSED(bufDepth);
+    qFatal("QGLContext::tryVisual - this method must not be called as Qt is built with EGL support");
+    return 0;
 }
 
 void QGLWidget::resizeEvent(QResizeEvent *)

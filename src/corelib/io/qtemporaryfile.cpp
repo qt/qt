@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -49,11 +49,8 @@
 #include "private/qabstractfileengine_p.h"
 #include "private/qfsfileengine_p.h"
 
-#include <stdlib.h>
 #if !defined(Q_OS_WINCE)
 #  include <errno.h>
-#  include <sys/stat.h>
-#  include <sys/types.h>
 #endif
 
 #include <stdlib.h>
@@ -64,19 +61,8 @@
 # include "private/qcore_unix_p.h"      // overrides QT_OPEN
 #endif
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-# include <process.h>
-# if defined(_MSC_VER) && _MSC_VER >= 1400
-#  include <share.h>
-# endif
-#endif
-
-#if defined(Q_OS_WINCE)
-#  include <types.h>
-#endif
-
-#if defined(Q_OS_VXWORKS)
-#  include <taskLib.h>
+#if defined(QT_BUILD_CORE_LIB)
+#include "qcoreapplication.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -109,167 +95,75 @@ QT_BEGIN_NAMESPACE
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-static int _gettemp(char *path, int *doopen, int domkdir, int slen)
+
+/*!
+    \internal
+
+    Generates a unique file path and returns a native handle to the open file.
+    \a path is used as a template when generating unique paths,
+    \a placeholderStart and \a placeholderEnd delimit the sub-string that will
+    be randomized.
+
+    Returns an open handle to the newly created file if successful, an invalid
+    handle otherwise. In both cases, the string in \a path will be changed and
+    contain the generated path name.
+*/
+static int createFileFromTemplate(char *const path,
+        char *const placeholderStart, char *const placeholderEnd)
 {
-    char *start, *trv, *suffp;
-    QT_STATBUF sbuf;
-    int rval;
-#if defined(Q_OS_WIN)
-    int pid;
-#else
-    pid_t pid;
+    Q_ASSERT(placeholderEnd > placeholderStart);
+
+    // Initialize placeholder with random chars + PID.
+    {
+        char *rIter = placeholderEnd;
+
+#if defined(QT_BUILD_CORE_LIB)
+        qint64 pid = QCoreApplication::applicationPid();
+        do {
+            *--rIter = (pid % 10) + '0';
+            pid /= 10;
+        } while (rIter != placeholderStart && pid != 0);
 #endif
 
-    if (doopen && domkdir) {
-        errno = EINVAL;
-        return 0;
-    }
-
-    for (trv = path; *trv; ++trv)
-        ;
-    trv -= slen;
-    suffp = trv;
-    --trv;
-    if (trv < path) {
-        errno = EINVAL;
-        return 0;
-    }
-#if defined(Q_OS_WIN) && defined(_MSC_VER) && _MSC_VER >= 1400
-    pid = _getpid();
-#elif defined(Q_OS_VXWORKS)
-    pid = (pid_t) taskIdCurrent;
-#else
-    pid = getpid();
-#endif
-    while (trv >= path && *trv == 'X' && pid != 0) {
-        *trv-- = (pid % 10) + '0';
-        pid /= 10;
-    }
-
-#ifndef S_ISDIR
-#  define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
-#endif
-
-    while (trv >= path && *trv == 'X') {
-        char c;
-
-        // CHANGE arc4random() -> random()
-        pid = (qrand() & 0xffff) % (26+26);
-        if (pid < 26)
-            c = pid + 'A';
-        else
-            c = (pid - 26) + 'a';
-        *trv-- = c;
-    }
-    start = trv + 1;
-
-    /*
-     * check the target directory; if you have six X's and it
-     * doesn't exist this runs for a *very* long time.
-     */
-    if (doopen || domkdir) {
-        for (;; --trv) {
-            if (trv <= path)
-                break;
-            if (*trv == '/') {
-                *trv = '\0';
-#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE)
-                if (trv - path == 2 && path[1] == ':') {
-                    // Special case for Windows drives
-                    // (e.g., "C:" => "C:\").
-                    // ### Better to use a Windows
-                    // call for this.
-                    char drive[] = "c:\\";
-                    drive[0] = path[0];
-                    rval = QT_STAT(drive, &sbuf);
-                } else
-#endif
-                    rval = QT_STAT(path, &sbuf);
-                *trv = '/';
-                if (rval != 0)
-                    return 0;
-                if (!S_ISDIR(sbuf.st_mode)) {
-                    errno = ENOTDIR;
-                    return 0;
-                }
-                break;
-            }
+        while (rIter != placeholderStart) {
+            char ch = char((qrand() & 0xffff) % (26 + 26));
+            if (ch < 26)
+                *--rIter = ch + 'A';
+            else
+                *--rIter = ch - 26 + 'a';
         }
     }
 
     for (;;) {
-        if (doopen) {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && defined(_MSC_VER) && _MSC_VER >= 1400
-            if (_sopen_s(doopen, path, QT_OPEN_CREAT|O_EXCL|QT_OPEN_RDWR|QT_OPEN_BINARY
-#  ifdef QT_LARGEFILE_SUPPORT
-                                       |QT_OPEN_LARGEFILE
-#  endif
-                         , _SH_DENYNO, _S_IREAD | _S_IWRITE)== 0)
-#else // WIN && !CE
-#  if defined(Q_OS_WINCE)
-            QString targetPath;
-            if (QDir::isAbsolutePath(QString::fromLatin1(path)))
-                targetPath = QLatin1String(path);
-            else
-                targetPath = QDir::currentPath().append(QLatin1Char('/')) + QLatin1String(path);
-
-            if ((*doopen =
-                QT_OPEN(targetPath.toLocal8Bit(), O_CREAT|O_EXCL|O_RDWR
-#  else // CE
-            // this is Unix or older MSVC
-            if ((*doopen =
-                QT_OPEN(path, QT_OPEN_CREAT|O_EXCL|QT_OPEN_RDWR
-#  endif
-#  ifdef QT_LARGEFILE_SUPPORT
-                           |QT_OPEN_LARGEFILE
-#  endif
-#  if defined(Q_OS_WINCE)
-                           |_O_BINARY
-#  elif defined(Q_OS_WIN)
-                           |O_BINARY
-#  endif
-                     , 0600)) >= 0)
-#endif // WIN && !CE
-            {
-                return 1;
-            }
-            if (errno != EEXIST)
-                return 0;
-        } else if (domkdir) {
-#ifdef Q_OS_WIN
-            if (QT_MKDIR(path) == 0)
-#else
-            if (QT_MKDIR(path, 0700) == 0)
-#endif
-                return 1;
-            if (errno != EEXIST)
-                return 0;
-        }
+        // Atomically create file and obtain handle
 #ifndef Q_OS_WIN
-        else if (QT_LSTAT(path, &sbuf))
-            return (errno == ENOENT) ? 1 : 0;
+        {
+            int fd = QT_OPEN(path, QT_OPEN_CREAT | O_EXCL | QT_OPEN_RDWR | QT_OPEN_LARGEFILE, 0600);
+            if (fd != -1)
+                return fd;
+            if (errno != EEXIST)
+                return -1;
+        }
 #else
         if (!QFileInfo(QLatin1String(path)).exists())
             return 1;
 #endif
 
         /* tricky little algorwwithm for backward compatibility */
-        for (trv = start;;) {
-            if (!*trv)
-                return 0;
-            if (*trv == 'Z') {
-                if (trv == suffp)
-                    return 0;
-                *trv++ = 'a';
+        for (char *iter = placeholderStart;;) {
+            // Character progression: [0-9] => 'a' ... 'z' => 'A' .. 'Z'
+            // String progression: "ZZaiC" => "aabiC"
+            if (*iter == 'Z') {
+                *iter++ = 'a';
+                if (iter == placeholderEnd)
+                    return -1;
             } else {
-                if (isdigit(*trv))
-                    *trv = 'a';
-                else if (*trv == 'z') /* inc from z to A */
-                    *trv = 'A';
+                if (isdigit(*iter))
+                    *iter = 'a';
+                else if (*iter == 'z') /* inc from z to A */
+                    *iter = 'A';
                 else {
-                    if (trv == suffp)
-                        return 0;
-                    ++*trv;
+                    ++*iter;
                 }
                 break;
             }
@@ -277,14 +171,6 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
     }
     /*NOTREACHED*/
 }
-
-#ifndef Q_WS_WIN
-static int qt_mkstemps(char *path, int slen)
-{
-    int fd = 0;
-    return (_gettemp(path, &fd, 0, slen) ? fd : -1);
-}
-#endif
 
 //************* QTemporaryFileEngine
 class QTemporaryFileEngine : public QFSFileEngine
@@ -363,14 +249,49 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
         return QFSFileEngine::open(openMode);
 
     QString qfilename = d->fileEntry.filePath();
-    if(!qfilename.contains(QLatin1String("XXXXXX")))
-        qfilename += QLatin1String(".XXXXXX");
 
-    int suffixLength = qfilename.length() - (qfilename.lastIndexOf(QLatin1String("XXXXXX"), -1, Qt::CaseSensitive) + 6);
-    char *filename = qstrdup(qfilename.toLocal8Bit());
+    // Find placeholder string.
+    uint phPos = qfilename.length();
+    uint phLength = 0;
 
-#ifndef Q_WS_WIN
-    int fd = qt_mkstemps(filename, suffixLength);
+    while (phPos != 0) {
+        --phPos;
+
+        if (qfilename[phPos] == QLatin1Char('X')) {
+            ++phLength;
+            continue;
+        }
+
+        if (qfilename[phPos] == QLatin1Char('/')
+                || phLength >= 6) {
+            ++phPos;
+            break;
+        }
+
+        phLength = 0;
+    }
+
+    QStringRef prefix, suffix;
+    if (phLength < 6) {
+        qfilename += QLatin1Char('.');
+        prefix = QStringRef(&qfilename);
+        phLength = 6;
+    } else {
+        prefix = qfilename.leftRef(phPos);
+        suffix = qfilename.midRef(phPos + phLength);
+    }
+
+    QByteArray filename = prefix.toLocal8Bit();
+    phPos = filename.length();
+    if (suffix.isEmpty())
+        filename.resize(phPos + phLength);
+    else
+        filename.insert(phPos + phLength, suffix.toLocal8Bit());
+
+    char *path = filename.data();
+
+#ifndef Q_OS_WIN
+    int fd = createFileFromTemplate(path, path + phPos, path + phPos + phLength);
     if (fd != -1) {
         // First open the fd as an external file descriptor to
         // initialize the engine properly.
@@ -380,26 +301,22 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
             d->closeFileHandle = true;
 
             // Restore the file names (open() resets them).
-            d->fileEntry = QFileSystemEntry(QString::fromLocal8Bit(filename)); //note that filename is NOT a native path
+            d->fileEntry = QFileSystemEntry(QString::fromLocal8Bit(path, filename.length())); //note that filename is NOT a native path
             filePathIsTemplate = false;
-            delete [] filename;
             return true;
         }
 
         QT_CLOSE(fd);
     }
-    delete [] filename;
     setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError, qt_error_string(errno));
     return false;
 #else
-    if (!_gettemp(filename, 0, 0, suffixLength)) {
-        delete [] filename;
+    if (createFileFromTemplate(path, path + phPos, path + phPos + phLength) == -1) {
         return false;
     }
 
     QString template_ = d->fileEntry.filePath();
-    d->fileEntry = QFileSystemEntry(QString::fromLocal8Bit(filename));
-    delete [] filename;
+    d->fileEntry = QFileSystemEntry(QString::fromLocal8Bit(path, filename.length()));
 
     if (QFSFileEngine::open(openMode)) {
         filePathIsTemplate = false;

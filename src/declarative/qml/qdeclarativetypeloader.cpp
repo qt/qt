@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -434,7 +434,7 @@ void QDeclarativeDataBlob::notifyComplete(QDeclarativeDataBlob *blob)
 
 /*!
 \class QDeclarativeDataLoader
-\brief The QDeclarativeDataLoader class abstracts loading files and their dependecies over the network.
+\brief The QDeclarativeDataLoader class abstracts loading files and their dependencies over the network.
 \internal
 
 The QDeclarativeDataLoader class is provided for the exclusive use of the QDeclarativeTypeLoader class.
@@ -453,9 +453,11 @@ are required before processing can fully complete.
 To complete processing, the QDeclarativeDataBlob::done() callback is invoked.  done() is called when
 one of these three preconditions are met.
 
-1.  The QDeclarativeDataBlob has no dependencies.
-2.  The QDeclarativeDataBlob has an error set.
-3.  All the QDeclarativeDataBlob's dependencies are themselves "done()".
+\list 1
+\o The QDeclarativeDataBlob has no dependencies.
+\o The QDeclarativeDataBlob has an error set.
+\o All the QDeclarativeDataBlob's dependencies are themselves "done()".
+\endlist
 
 Thus QDeclarativeDataBlob::done() will always eventually be called, even if the blob has an error set.
 */
@@ -616,20 +618,35 @@ void QDeclarativeDataLoader::setData(QDeclarativeDataBlob *blob, const QByteArra
 }
 
 /*!
-\class QDeclarativeTypeLoader
+Constructs a new type loader that uses the given \a engine.
 */
 QDeclarativeTypeLoader::QDeclarativeTypeLoader(QDeclarativeEngine *engine)
 : QDeclarativeDataLoader(engine)
 {
 }
 
+/*!
+Destroys the type loader, first clearing the cache of any information about
+loaded files.
+*/
 QDeclarativeTypeLoader::~QDeclarativeTypeLoader()
 {
     clearCache();
 }
 
 /*!
-Return a QDeclarativeTypeData for \a url.  The QDeclarativeTypeData may be cached.
+\enum QDeclarativeTypeLoader::Option
+
+This enum defines the options that control the way type data is handled.
+
+\value None             The default value, indicating that no other options
+                        are enabled.
+\value PreserveParser   The parser used to handle the type data is preserved
+                        after the data has been parsed.
+*/
+
+/*!
+Returns a QDeclarativeTypeData for the specified \a url.  The QDeclarativeTypeData may be cached.
 */
 QDeclarativeTypeData *QDeclarativeTypeLoader::get(const QUrl &url)
 {
@@ -650,8 +667,10 @@ QDeclarativeTypeData *QDeclarativeTypeLoader::get(const QUrl &url)
 }
 
 /*!
-Return a QDeclarativeTypeData for \a data with the provided base \a url.  The 
+Returns a QDeclarativeTypeData for the given \a data with the provided base \a url.  The 
 QDeclarativeTypeData will not be cached.
+
+The specified \a options control how the loader handles type data.
 */
 QDeclarativeTypeData *QDeclarativeTypeLoader::get(const QByteArray &data, const QUrl &url, Options options)
 {
@@ -661,7 +680,7 @@ QDeclarativeTypeData *QDeclarativeTypeLoader::get(const QByteArray &data, const 
 }
 
 /*!
-Return a QDeclarativeScriptData for \a url.  The QDeclarativeScriptData may be cached.
+Returns a QDeclarativeScriptData for \a url.  The QDeclarativeScriptData may be cached.
 */
 QDeclarativeScriptData *QDeclarativeTypeLoader::getScript(const QUrl &url)
 {
@@ -682,7 +701,7 @@ QDeclarativeScriptData *QDeclarativeTypeLoader::getScript(const QUrl &url)
 }
 
 /*!
-Return a QDeclarativeQmldirData for \a url.  The QDeclarativeQmldirData may be cached.
+Returns a QDeclarativeQmldirData for \a url.  The QDeclarativeQmldirData may be cached.
 */
 QDeclarativeQmldirData *QDeclarativeTypeLoader::getQmldir(const QUrl &url)
 {
@@ -702,6 +721,10 @@ QDeclarativeQmldirData *QDeclarativeTypeLoader::getQmldir(const QUrl &url)
     return qmldirData;
 }
 
+/*!
+Clears cached information about loaded files, including any type data, scripts
+and qmldir information.
+*/
 void QDeclarativeTypeLoader::clearCache()
 {
     for (TypeCache::Iterator iter = m_typeCache.begin(); iter != m_typeCache.end(); ++iter) 

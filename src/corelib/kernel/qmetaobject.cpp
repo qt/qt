@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -218,12 +218,20 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
 */
 int QMetaObject::static_metacall(Call cl, int idx, void **argv) const
 {
-    if (priv(d.data)->revision < 2)
-        return 0;
-    const QMetaObjectExtraData *extra = (const QMetaObjectExtraData*)(d.extradata);
-    if (!extra || !extra->static_metacall)
-        return 0;
-    return extra->static_metacall(cl, idx, argv);
+    const QMetaObjectExtraData *extra = reinterpret_cast<const QMetaObjectExtraData *>(d.extradata);
+    if (priv(d.data)->revision >= 6) {
+        if (!extra || !extra->static_metacall)
+            return 0;
+        extra->static_metacall(0, cl, idx, argv);
+        return -1;
+    } else if (priv(d.data)->revision >= 2) {
+        if (!extra || !extra->static_metacall)
+            return 0;
+        typedef int (*OldMetacall)(QMetaObject::Call, int, void **);
+        OldMetacall o = reinterpret_cast<OldMetacall>(extra->static_metacall);
+        return o(cl, idx, argv);
+    }
+    return 0;
 }
 
 /*!
@@ -639,20 +647,21 @@ int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject,
 */
 int QMetaObject::indexOfSlot(const char *slot) const
 {
-    int i = QMetaObjectPrivate::indexOfSlot(this, slot, false);
+    const QMetaObject *m = this;
+    int i = QMetaObjectPrivate::indexOfSlotRelative(&m, slot, false);
     if (i < 0)
-        i = QMetaObjectPrivate::indexOfSlot(this, slot, true);
-    return i;
-}
-
-int QMetaObjectPrivate::indexOfSlot(const QMetaObject *m,
-                                    const char *slot,
-                                    bool normalizeStringData)
-{
-    int i = indexOfMethodRelative<MethodSlot>(&m, slot, normalizeStringData);
+        i = QMetaObjectPrivate::indexOfSlotRelative(&m, slot, true);
     if (i >= 0)
         i += m->methodOffset();
     return i;
+}
+
+// same as indexOfSignalRelative but for slots.
+int QMetaObjectPrivate::indexOfSlotRelative(const QMetaObject **m,
+                                    const char *slot,
+                                    bool normalizeStringData)
+{
+    return indexOfMethodRelative<MethodSlot>(m, slot, normalizeStringData);
 }
 
 static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, const char *name)
@@ -1616,9 +1625,19 @@ bool QMetaMethod::invoke(QObject *object,
         val9.data()
     };
     // recompute the methodIndex by reversing the arithmetic in QMetaObject::property()
-    int methodIndex = ((handle - priv(mobj->d.data)->methodData) / 5) + mobj->methodOffset();
+    int idx_relative = ((handle - priv(mobj->d.data)->methodData) / 5);
+    int idx_offset =  mobj->methodOffset();
+    QObjectPrivate::StaticMetaCallFunction callFunction =
+        (QMetaObjectPrivate::get(mobj)->revision >= 6 && mobj->d.extradata)
+        ? reinterpret_cast<const QMetaObjectExtraData *>(mobj->d.extradata)->static_metacall : 0;
+
     if (connectionType == Qt::DirectConnection) {
-        return QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, methodIndex, param) < 0;
+        if (callFunction) {
+            callFunction(object, QMetaObject::InvokeMetaMethod, idx_relative, param);
+            return true;
+        } else {
+            return QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, idx_relative + idx_offset, param) < 0;
+        }
     } else if (connectionType == Qt::QueuedConnection) {
         if (returnValue.data()) {
             qWarning("QMetaMethod::invoke: Unable to invoke methods with return values in "
@@ -1652,7 +1671,7 @@ bool QMetaMethod::invoke(QObject *object,
             }
         }
 
-        QCoreApplication::postEvent(object, new QMetaCallEvent(methodIndex,
+        QCoreApplication::postEvent(object, new QMetaCallEvent(idx_offset, idx_relative, callFunction,
                                                         0, -1, nargs, types, args));
     } else { // blocking queued connection
 #ifndef QT_NO_THREAD
@@ -1663,7 +1682,7 @@ bool QMetaMethod::invoke(QObject *object,
         }
 
         QSemaphore semaphore;
-        QCoreApplication::postEvent(object, new QMetaCallEvent(methodIndex,
+        QCoreApplication::postEvent(object, new QMetaCallEvent(idx_offset, idx_relative, callFunction,
                                                         0, -1, 0, 0, param, &semaphore));
         semaphore.acquire();
 #endif // QT_NO_THREAD

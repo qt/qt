@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -44,6 +44,7 @@
 #include <QtCore/QHash>
 #include <QtCore/QList>
 #include <QtCore/QTimer>
+#include <QtCore/QDebug>
 
 
 DynamicTreeModel::DynamicTreeModel(QObject *parent)
@@ -66,9 +67,11 @@ QModelIndex DynamicTreeModel::index(int row, int column, const QModelIndex &pare
   const qint64 grandParent = findParentId(parent.internalId());
   if (grandParent >= 0) {
     QList<QList<qint64> > parentTable = m_childItems.value(grandParent);
-    Q_ASSERT(parent.column() < parentTable.size());
+    if (parent.column() >= parentTable.size())
+        qFatal("%s: parent.column() must be less than parentTable.size()", Q_FUNC_INFO);
     QList<qint64> parentSiblings = parentTable.at(parent.column());
-    Q_ASSERT(parent.row() < parentSiblings.size());
+    if (parent.row() >= parentSiblings.size())
+        qFatal("%s: parent.row() must be less than parentSiblings.size()", Q_FUNC_INFO);
   }
 
   if (childIdColumns.size() == 0)
@@ -189,7 +192,8 @@ QModelIndex ModelChangeCommand::findIndex(QList<int> rows)
   while (i.hasNext())
   {
     parent = m_model->index(i.next(), col, parent);
-    Q_ASSERT(parent.isValid());
+    if (!parent.isValid())
+        qFatal("%s: parent must be valid", Q_FUNC_INFO);
   }
   return parent;
 }

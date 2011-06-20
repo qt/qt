@@ -19,7 +19,7 @@ HTML.postheader = \
     "    </div>\n" \
     "    <div id=\"shortCut\">\n" \
     "      <ul>\n" \
-    "        <li class=\"shortCut-topleft-inactive\"><span><a href=\"index.html\">Qt 4.7</a></span></li>\n" \
+    "        <li class=\"shortCut-topleft-inactive\"><span><a href=\"index.html\">Qt 4.8</a></span></li>\n" \
     "        <li class=\"shortCut-topleft-active\"><a href=\"http://doc.qt.nokia.com\">ALL VERSIONS" \
     "        </a></li>\n" \
     "      </ul>\n" \
@@ -40,8 +40,7 @@ HTML.postheader = \
     "                        <li><a href=\"qt-basic-concepts.html\">Programming with Qt</a></li>  \n" \
     "                        <li><a href=\"qtquick.html\">Device UIs &amp; Qt Quick</a></li>  \n" \
     "                        <li><a href=\"qt-gui-concepts.html\">UI Design with Qt</a></li>  \n" \
-    "                        <li><a href=\"developing-with-qt.html\">Cross-platform and Platform-specific</a></li>  \n" \
-    "                        <li><a href=\"platform-specific.html\">Platform-specific info</a></li>  \n" \
+    "                        <li><a href=\"supported-platforms.html\">Supported Platforms</a></li>  \n" \
     "                        <li><a href=\"technology-apis.html\">Qt and Key Technologies</a></li>  \n" \
     "                        <li><a href=\"best-practices.html\">How-To's and Best Practices</a></li>  \n" \
     "              </ul> \n" \
@@ -101,8 +100,7 @@ HTML.postheader = \
     "               <li class=\"defaultLink\"><a href=\"qt-basic-concepts.html\">Programming with Qt</a></li> \n" \
     "               <li class=\"defaultLink\"><a href=\"qtquick.html\">Device UIs &amp; Qt Quick</a></li> \n" \
     "               <li class=\"defaultLink\"><a href=\"qt-gui-concepts.html\">UI Design with Qt</a></li> \n" \
-    "               <li class=\"defaultLink\"><a href=\"developing-with-qt.html\">Cross-platform and Platform-specific</a></li> \n" \
-    "               <li class=\"defaultLink\"><a href=\"platform-specific.html\">Platform-specific info</a></li> \n" \
+    "               <li class=\"defaultLink\"><a href=\"supported-platforms.html\">Supported Platforms</a></li>  \n" \
     "               <li class=\"defaultLink\"><a href=\"technology-apis.html\">Qt and Key Technologies</a></li> \n" \
     "               <li class=\"defaultLink\"><a href=\"best-practices.html\">How-To's and Best Practices</a></li> \n" \
     "            </ul>  \n" \
@@ -196,37 +194,3 @@ HTML.footer = \
     "  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);\n" \
     "  })();\n" \
     "  </script>\n"
-
-
-# Files not referenced in any qdoc file.
-# See also extraimages.HTML
-qhp.Qt.extraFiles = index.html \
-                    images/bg_l.png \
-                    images/bg_l_blank.png \
-                    images/bg_ll_blank.png \
-                    images/bg_ul_blank.png \
-                    images/header_bg.png \
-                    images/bg_r.png \
-                    images/box_bg.png \
-                    images/breadcrumb.png \
-                    images/bullet_gt.png \
-                    images/bullet_dn.png \
-                    images/bullet_sq.png \
-                    images/bullet_up.png \
-                    images/arrow_down.png \
-                    images/feedbackground.png \
-                    images/horBar.png \
-                    images/page.png \
-                    images/page_bg.png \
-                    images/sprites-combined.png \
-                    images/spinner.gif \
-                    scripts/functions.js \
-                    scripts/jquery.js \
-                    scripts/narrow.js \
-                    scripts/superfish.js \
-                    style/narrow.css \
-                    style/superfish.css \
-                    style/style_ie6.css \
-                    style/style_ie7.css \
-                    style/style_ie8.css \
-                    style/style.css

@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -91,6 +91,7 @@ private slots:
     void sourceSize_QTBUG_14303();
     void sourceSize_QTBUG_16389();
     void nullPixmapPaint();
+    void resetSourceSize();
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
 
@@ -247,14 +248,22 @@ void tst_qdeclarativeimage::preserveAspectRatio()
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/aspectratio.qml"));
     QDeclarativeImage *image = qobject_cast<QDeclarativeImage*>(canvas->rootObject());
     QVERIFY(image != 0);
+    QCOMPARE(image->property("widthChange").toInt(), 1);
+    QCOMPARE(image->property("heightChange").toInt(), 1);
     image->setWidth(80.0);
+    QCOMPARE(image->property("widthChange").toInt(), 2);
+    QCOMPARE(image->property("heightChange").toInt(), 2);
     QCOMPARE(image->width(), 80.);
     QCOMPARE(image->height(), 80.);
 
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/aspectratio.qml"));
     image = qobject_cast<QDeclarativeImage*>(canvas->rootObject());
-    image->setHeight(60.0);
     QVERIFY(image != 0);
+    QCOMPARE(image->property("widthChange").toInt(), 1);
+    QCOMPARE(image->property("heightChange").toInt(), 1);
+    image->setHeight(60.0);
+    QCOMPARE(image->property("widthChange").toInt(), 2);
+    QCOMPARE(image->property("heightChange").toInt(), 2);
     QCOMPARE(image->height(), 60.);
     QCOMPARE(image->width(), 60.);
     delete canvas;
@@ -691,6 +700,27 @@ void tst_qdeclarativeimage::nullPixmapPaint()
     qInstallMsgHandler(previousMsgHandler);
     QVERIFY(numberOfWarnings == 0);
     delete image;
+}
+
+void tst_qdeclarativeimage::resetSourceSize()
+{
+    QString src = QUrl::fromLocalFile(SRCDIR "/data/heart200.png").toString();
+    QString componentStr = "import QtQuick 1.1\nImage { function reset() { sourceSize = undefined }\nsource: \"" + src + "\"; sourceSize: Qt.size(100,100) }";
+
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->pixmap().width(), 100);
+    QCOMPARE(obj->pixmap().height(), 100);
+    QCOMPARE(obj->sourceSize().height(), 100);
+    QCOMPARE(obj->sourceSize().width(), 100);
+
+    QMetaObject::invokeMethod(obj, "reset");
+    QCOMPARE(obj->pixmap().width(), 200);
+    QCOMPARE(obj->pixmap().height(), 200);
+    QCOMPARE(obj->sourceSize().height(), 200);
+    QCOMPARE(obj->sourceSize().width(), 200);
 }
 
 void tst_qdeclarativeimage::testQtQuick11Attributes()

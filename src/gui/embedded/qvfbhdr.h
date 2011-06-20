@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -53,36 +53,37 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 #ifndef QT_QWS_TEMP_DIR
-#define QT_QWS_TEMP_DIR "/tmp"
+#  define QT_QWS_TEMP_DIR QLatin1String("/tmp")
 #endif
 
 #ifdef QT_PRIVATE_QWS
-#define QT_VFB_DATADIR(DISPLAY) QString("%1/qtembedded-%2-%3") \
-                                .arg(QT_QWS_TEMP_DIR).arg(getuid()).arg(DISPLAY)
-
+#define QT_VFB_DATADIR(DISPLAY)       QString::fromLatin1("%1/qtembedded-%2-%3") \
+                                      .arg(QT_QWS_TEMP_DIR).arg(getuid()).arg(DISPLAY)
 #define QT_VFB_MOUSE_PIPE(DISPLAY)    QT_VFB_DATADIR(DISPLAY) \
-                                      .append("/qtvfb_mouse")
+                                      .append(QLatin1String("/qtvfb_mouse"))
 #define QT_VFB_KEYBOARD_PIPE(DISPLAY) QT_VFB_DATADIR(DISPLAY) \
-                                      .append("/qtvfb_keyboard")
+                                      .append(QLatin1String("/qtvfb_keyboard"))
 #define QT_VFB_MAP(DISPLAY)           QT_VFB_DATADIR(DISPLAY) \
-                                      .append("/qtvfb_map")
+                                      .append(QLatin1String("/qtvfb_map"))
 #define QT_VFB_SOUND_PIPE(DISPLAY)    QT_VFB_DATADIR(DISPLAY) \
-                                      .append("/qt_soundserver")
+                                      .append(QLatin1String("/qt_soundserver"))
 #define QTE_PIPE(DISPLAY)             QT_VFB_DATADIR(DISPLAY) \
-                                      .append("/QtEmbedded")
+                                      .append(QLatin1String("/QtEmbedded"))
 #define QTE_PIPE_QVFB(DISPLAY)        QTE_PIPE(DISPLAY)
 #else
-#define QT_VFB_DATADIR(DISPLAY) QString("%1/qtembedded-%2") \
-                                .arg(QT_QWS_TEMP_DIR).arg(DISPLAY)
-#define QT_VFB_MOUSE_PIPE(DISPLAY)    QString("/tmp/.qtvfb_mouse-%1").arg(DISPLAY)
-#define QT_VFB_KEYBOARD_PIPE(DISPLAY) QString("/tmp/.qtvfb_keyboard-%1").arg(DISPLAY)
-#define QT_VFB_MAP(DISPLAY)           QString("/tmp/.qtvfb_map-%1").arg(DISPLAY)
-#define QT_VFB_SOUND_PIPE(DISPLAY)    QString("/tmp/.qt_soundserver-%1").arg(DISPLAY)
-#define QTE_PIPE(DISPLAY)             QT_VFB_DATADIR(DISPLAY)   \
-                                      .append("/QtEmbedded-%1") \
-                                      .arg(DISPLAY)
-#define QTE_PIPE_QVFB(DISPLAY)        QString("/tmp/qtembedded-%1/QtEmbedded-%1") \
-                                      .arg(DISPLAY)
+#define QT_VFB_DATADIR(DISPLAY)       QString::fromLatin1("%1/qtembedded-%2") \
+                                      .arg(QT_QWS_TEMP_DIR).arg(DISPLAY)
+#define QT_VFB_MOUSE_PIPE(DISPLAY)    QString::fromLatin1("%1/.qtvfb_mouse-%2") \
+                                      .arg(QT_QWS_TEMP_DIR).arg(DISPLAY)
+#define QT_VFB_KEYBOARD_PIPE(DISPLAY) QString::fromLatin1("%1/.qtvfb_keyboard-%2") \
+                                      .arg(QT_QWS_TEMP_DIR).arg(DISPLAY)
+#define QT_VFB_MAP(DISPLAY)           QString::fromLatin1("%1/.qtvfb_map-%2") \
+                                      .arg(QT_QWS_TEMP_DIR).arg(DISPLAY)
+#define QT_VFB_SOUND_PIPE(DISPLAY)    QString::fromLatin1("%1/.qt_soundserver-%2") \
+                                      .arg(QT_QWS_TEMP_DIR).arg(DISPLAY)
+#define QTE_PIPE(DISPLAY)             QT_VFB_DATADIR(DISPLAY) \
+                                      .append(QLatin1String("/QtEmbedded-%1")).arg(DISPLAY)
+#define QTE_PIPE_QVFB(DISPLAY)        QTE_PIPE(DISPLAY)
 #endif
 
 struct QVFbHeader

@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -139,7 +139,8 @@ public:
 
     virtual ~Data()
     {
-        Q_ASSERT_X(generation > 0, "tst_QSharedPointer", "Double deletion!");
+        if (generation <= 0)
+            qFatal("tst_qsharedpointer: Double deletion!");
         generation = 0;
         ++destructorCounter;
     }
@@ -283,8 +284,8 @@ void tst_QSharedPointer::operators()
     QSharedPointer<char> p1;
     QSharedPointer<char> p2(new char);
     qptrdiff diff = p2.data() - p1.data();
-    Q_ASSERT(p1.data() != p2.data());
-    Q_ASSERT(diff != 0);
+    QVERIFY(p1.data() != p2.data());
+    QVERIFY(diff != 0);
 
     // operator-
     QCOMPARE(p2 - p1.data(), diff);
@@ -698,7 +699,7 @@ void tst_QSharedPointer::noSharedPointerFromWeakQObject()
     QSharedPointer<QObject> strong = weak.toStrongRef();
     QVERIFY(strong.isNull());
 
-    // is something went wrong, we'll probably crash here
+    // if something went wrong, we'll probably crash here
 }
 
 void tst_QSharedPointer::weakQObjectFromSharedPointer()
@@ -867,8 +868,8 @@ void tst_QSharedPointer::differentPointers()
     {
         DiffPtrDerivedData *aData = new DiffPtrDerivedData;
         Data *aBase = aData;
-        Q_ASSERT(aData == aBase);
-        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
+        QVERIFY(aData == aBase);
+        QVERIFY(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
 
         QSharedPointer<Data> baseptr = QSharedPointer<Data>(aData);
         QSharedPointer<DiffPtrDerivedData> ptr = qSharedPointerCast<DiffPtrDerivedData>(baseptr);
@@ -885,8 +886,8 @@ void tst_QSharedPointer::differentPointers()
     {
         DiffPtrDerivedData *aData = new DiffPtrDerivedData;
         Data *aBase = aData;
-        Q_ASSERT(aData == aBase);
-        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
+        QVERIFY(aData == aBase);
+        QVERIFY(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
 
         QSharedPointer<DiffPtrDerivedData> ptr = QSharedPointer<DiffPtrDerivedData>(aData);
         QSharedPointer<Data> baseptr = ptr;
@@ -908,8 +909,8 @@ void tst_QSharedPointer::virtualBaseDifferentPointers()
     {
         VirtualDerived *aData = new VirtualDerived;
         Data *aBase = aData;
-        Q_ASSERT(aData == aBase);
-        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
+        QVERIFY(aData == aBase);
+        QVERIFY(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
 
         QSharedPointer<VirtualDerived> ptr = QSharedPointer<VirtualDerived>(aData);
         QSharedPointer<Data> baseptr = qSharedPointerCast<Data>(ptr);
@@ -928,8 +929,8 @@ void tst_QSharedPointer::virtualBaseDifferentPointers()
     {
         VirtualDerived *aData = new VirtualDerived;
         Data *aBase = aData;
-        Q_ASSERT(aData == aBase);
-        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
+        QVERIFY(aData == aBase);
+        QVERIFY(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
 
         QSharedPointer<VirtualDerived> ptr = QSharedPointer<VirtualDerived>(aData);
         QSharedPointer<Data> baseptr = ptr;
@@ -1605,7 +1606,7 @@ void hashAndMapTest()
     QVERIFY(it != c.find(Key()));
 
     if (Ordered) {
-        Q_ASSERT(k0 < k1);
+        QVERIFY(k0 < k1);
 
         it = c.begin();
         QCOMPARE(it.key(), k0);
@@ -1747,7 +1748,6 @@ void tst_QSharedPointer::invalidConstructs_data()
            "QSharedPointer<Data> b;\n"
            "if (a + b) return;";
 
-#if QT_VERSION >= 0x040600
     // two objects with the same pointer
     QTest::newRow("same-pointer")
         << &QTest::QExternalTest::tryRunFail
@@ -1761,7 +1761,6 @@ void tst_QSharedPointer::invalidConstructs_data()
         << "Data *aData = new Data;\n"
            "QSharedPointer<Data> ptr1 = QSharedPointer<Data>(aData);"
            "ptr1 = QSharedPointer<Data>(aData);";
-#endif
 
     // any type of cast for unrelated types:
     // (we have no reinterpret_cast)

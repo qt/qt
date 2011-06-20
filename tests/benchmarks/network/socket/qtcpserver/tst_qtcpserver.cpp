@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -54,6 +54,10 @@
 #include <qplatformdefs.h>
 #include <qhostinfo.h>
 
+#include <QNetworkConfiguration>
+#include <QNetworkConfigurationManager>
+#include <QNetworkSession>
+
 #include <QNetworkProxy>
 Q_DECLARE_METATYPE(QNetworkProxy)
 Q_DECLARE_METATYPE(QList<QNetworkProxy>)
@@ -75,16 +79,42 @@ public:
 public slots:
     void initTestCase_data();
     void init();
+    void initTestCase();
     void cleanup();
 private slots:
     void ipv4LoopbackPerformanceTest();
     void ipv6LoopbackPerformanceTest();
     void ipv4PerformanceTest();
+private:
+#ifndef QT_NO_BEARERMANAGEMENT
+    QNetworkConfigurationManager *netConfMan;
+    QNetworkConfiguration networkConfiguration;
+    QSharedPointer<QNetworkSession> networkSession;
+#endif
 };
 
 tst_QTcpServer::tst_QTcpServer()
 {
-    Q_SET_DEFAULT_IAP
+}
+
+void tst_QTcpServer::initTestCase()
+{
+#ifndef QT_NO_BEARERMANAGEMENT
+    netConfMan = new QNetworkConfigurationManager(this);
+    netConfMan->updateConfigurations();
+    connect(netConfMan, SIGNAL(updateCompleted()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    networkConfiguration = netConfMan->defaultConfiguration();
+    if (networkConfiguration.isValid()) {
+        networkSession = QSharedPointer<QNetworkSession>(new QNetworkSession(networkConfiguration));
+        if (!networkSession->isOpen()) {
+            networkSession->open();
+            QVERIFY(networkSession->waitForOpened(30000));
+        }
+    } else {
+        QVERIFY(!(netConfMan->capabilities() & QNetworkConfigurationManager::NetworkSessionRequired));
+    }
+#endif
 }
 
 tst_QTcpServer::~tst_QTcpServer()
@@ -98,6 +128,7 @@ void tst_QTcpServer::initTestCase_data()
 
     QTest::newRow("WithoutProxy") << false << 0;
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
+    QTest::newRow("WithHttpProxy") << true << int(QNetworkProxy::HttpProxy);
 }
 
 void tst_QTcpServer::init()
@@ -179,9 +210,6 @@ void tst_QTcpServer::ipv6LoopbackPerformanceTest()
     QSKIP("WinCE WM: Not yet supported", SkipAll);
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Symbian: IPv6 is not yet supported", SkipAll);
-#endif
     QTcpServer server;
     if (!server.listen(QHostAddress::LocalHostIPv6, 0)) {
         QVERIFY(server.serverError() == QAbstractSocket::UnsupportedSocketOperationError);
@@ -235,6 +263,11 @@ void tst_QTcpServer::ipv4PerformanceTest()
 
     QTcpServer server;
     QVERIFY(server.listen(probeSocket.localAddress(), 0));
+
+    QFETCH_GLOBAL(int, proxyType);
+    //For http proxy, only the active connection can be proxied and not the server socket
+    if (proxyType == QNetworkProxy::HttpProxy)
+        QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::HttpProxy, QtNetworkSettings::serverName(), 3128));
 
     QTcpSocket clientA;
     clientA.connectToHost(server.serverAddress(), server.serverPort());

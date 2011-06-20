@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -74,8 +74,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-Q_GUI_EXPORT extern int qt_defaultDpi();
 
 // ################ should probably add frameFormatChange notification!
 
@@ -2998,10 +2996,19 @@ void QTextDocumentLayout::resizeInlineObject(QTextInlineObject item, int posInDo
 
     QSizeF inlineSize = (pos == QTextFrameFormat::InFlow ? intrinsic : QSizeF(0, 0));
     item.setWidth(inlineSize.width());
-    if (f.verticalAlignment() == QTextCharFormat::AlignMiddle) {
+
+    QFontMetrics m(f.font());
+    switch (f.verticalAlignment())
+    {
+    case QTextCharFormat::AlignMiddle:
         item.setDescent(inlineSize.height() / 2);
         item.setAscent(inlineSize.height() / 2 - 1);
-    } else {
+        break;
+    case QTextCharFormat::AlignBaseline:
+        item.setDescent(m.descent());
+        item.setAscent(inlineSize.height() - m.descent() - 1);
+        break;
+    default:
         item.setDescent(0);
         item.setAscent(inlineSize.height() - 1);
     }
@@ -3083,6 +3090,7 @@ void QTextDocumentLayoutPrivate::ensureLayouted(QFixed y) const
     if (currentLazyLayoutPosition == -1)
         return;
     const QSizeF oldSize = q->dynamicDocumentSize();
+    Q_UNUSED(oldSize);
 
     if (checkPoints.isEmpty())
         layoutStep();

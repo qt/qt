@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -1012,10 +1012,29 @@ QFontEngineX11FT::QFontEngineX11FT(FcPattern *pattern, const QFontDef &fd, int s
         }
     }
 
+    if (fd.hintingPreference != QFont::PreferDefaultHinting) {
+        switch (fd.hintingPreference) {
+        case QFont::PreferNoHinting:
+            default_hint_style = HintNone;
+            break;
+        case QFont::PreferVerticalHinting:
+            default_hint_style = HintLight;
+            break;
+        case QFont::PreferFullHinting:
+        default:
+            default_hint_style = HintFull;
+            break;
+        }
+    }
 #ifdef FC_HINT_STYLE
-    {
+    else {
         int hint_style = 0;
-        if (FcPatternGetInteger (pattern, FC_HINT_STYLE, 0, &hint_style) == FcResultNoMatch)
+        // Try to use Xft.hintstyle from XDefaults first if running in GNOME, to match
+        // the behavior of cairo
+        if (X11->fc_hint_style > -1 && X11->desktopEnvironment == DE_GNOME)
+            hint_style = X11->fc_hint_style;
+        else if (FcPatternGetInteger (pattern, FC_HINT_STYLE, 0, &hint_style) == FcResultNoMatch
+                 && X11->fc_hint_style > -1)
             hint_style = X11->fc_hint_style;
 
         switch (hint_style) {
@@ -1175,6 +1194,22 @@ bool QFontEngineX11FT::uploadGlyphToServer(QGlyphSet *set, uint glyphid, Glyph *
 #else
     return false;
 #endif
+}
+
+QFontEngine *QFontEngineX11FT::cloneWithSize(qreal pixelSize) const
+{
+    QFontDef fontDef;
+    fontDef.pixelSize = pixelSize;
+    QFontEngineX11FT *fe = new QFontEngineX11FT(fontDef);
+    if (!fe->initFromFontEngine(this)) {
+        delete fe;
+        return 0;
+    } else {
+#ifndef QT_NO_XRENDER
+        fe->xglyph_format = xglyph_format;
+#endif
+        return fe;
+    }
 }
 
 #endif // QT_NO_FONTCONFIG

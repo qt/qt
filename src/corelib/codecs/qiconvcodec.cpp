@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -173,6 +173,7 @@ QString QIconvCodec::convertToUnicode(const char* chars, int len, ConverterState
     int invalidCount = 0;
     int remainingCount = 0;
     char *remainingBuffer = 0;
+    IconvState *temporaryState = 0;
     IconvState **pstate;
 
     if (convState) {
@@ -193,11 +194,11 @@ QString QIconvCodec::convertToUnicode(const char* chars, int len, ConverterState
             // we're running after the Q_GLOBAL_STATIC has been deleted
             // or before the QCoreApplication initialization
             // bad programmer, no cookie for you
-            return QString::fromLatin1(chars, len);
+            pstate = &temporaryState;
+        } else {
+            // stateless conversion -- use thread-local data
+            pstate = &toUnicodeState()->localData();
         }
-
-        // stateless conversion -- use thread-local data
-        pstate = &toUnicodeState()->localData();
     }
 
     if (!*pstate) {
@@ -280,6 +281,7 @@ QString QIconvCodec::convertToUnicode(const char* chars, int len, ConverterState
                 iconv(state->cd, 0, &inBytesLeft, 0, &outBytesLeft);
             }
 
+            delete temporaryState;
             return QString::fromLatin1(chars, len);
         }
     } while (inBytesLeft != 0);
@@ -294,6 +296,7 @@ QString QIconvCodec::convertToUnicode(const char* chars, int len, ConverterState
         iconv(state->cd, 0, &inBytesLeft, 0, &outBytesLeft);
     }
 
+    delete temporaryState;
     return s;
 }
 
@@ -337,30 +340,22 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
     char **inBytesPtr = &inBytes;
 #endif
 
+    IconvState *temporaryState = 0;
     QThreadStorage<QIconvCodec::IconvState *> *ts = fromUnicodeState();
-    if (!qt_locale_initialized || !ts) {
-        // we're running after the Q_GLOBAL_STATIC has been deleted
-        // or before the QCoreApplication initialization
-        // bad programmer, no cookie for you
-        if (!len)
-            // this is a special case - zero-sized string should be
-            // translated to empty but not-null QByteArray.
-            return QByteArray("");
-        return QString::fromRawData(uc, len).toLatin1();
-    }
-    IconvState *&state = ts->localData();
+    IconvState *&state = (qt_locale_initialized && ts) ? ts->localData() : temporaryState;
     if (!state) {
-        state = new IconvState(QIconvCodec::createIconv_t(0, UTF16));
-        if (state->cd == reinterpret_cast<iconv_t>(-1)) {
-            if (!setByteOrder(state->cd)) {
+        iconv_t cd = QIconvCodec::createIconv_t(0, UTF16);
+        if (cd != reinterpret_cast<iconv_t>(-1)) {
+            if (!setByteOrder(cd)) {
                 perror("QIconvCodec::convertFromUnicode: using Latin-1 for conversion, iconv failed for BOM");
 
-                iconv_close(state->cd);
-                state->cd = reinterpret_cast<iconv_t>(-1);
+                iconv_close(cd);
+                cd = reinterpret_cast<iconv_t>(-1);
 
                 return QString(uc, len).toLatin1();
             }
         }
+        state = new IconvState(cd);
     }
     if (state->cd == reinterpret_cast<iconv_t>(-1)) {
         static int reported = 0;
@@ -368,6 +363,7 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
             fprintf(stderr,
                     "QIconvCodec::convertFromUnicode: using Latin-1 for conversion, iconv_open failed\n");
         }
+        delete temporaryState;
         return QString(uc, len).toLatin1();
     }
  
@@ -430,6 +426,7 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
                     // reset to initial state
                     iconv(state->cd, 0, &inBytesLeft, 0, &outBytesLeft);
 
+                    delete temporaryState;
                     return QString(uc, len).toLatin1();
                 }
             }
@@ -445,6 +442,7 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
     if (convState)
         convState->invalidChars = invalidCount;
 
+    delete temporaryState;
     return ba;
 }
 

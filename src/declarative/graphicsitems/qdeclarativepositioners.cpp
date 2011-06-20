@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -597,7 +597,12 @@ QDeclarativeRow::QDeclarativeRow(QDeclarativeItem *parent)
     the right anchor remains to the right of the row.
     \endlist
 
-    \sa Grid::layoutDirection, Flow::layoutDirection, {declarative/righttoleft/layoutdirection}{Layout directions example}
+    When using the attached property \l {LayoutMirroring::enabled} for locale layouts,
+    the visual layout direction of the row positioner will be mirrored. However, the
+    property \c layoutDirection will remain unchanged. You can use the property
+    \l {LayoutMirroring::enabled} to determine whether the direction has been mirrored.
+
+    \sa Grid::layoutDirection, Flow::layoutDirection, {declarative/righttoleft/layoutdirection}{Layout directions example}, {LayoutMirroring}{LayoutMirroring}
 */
 Qt::LayoutDirection QDeclarativeRow::layoutDirection() const
 {
@@ -609,22 +614,15 @@ void QDeclarativeRow::setLayoutDirection(Qt::LayoutDirection layoutDirection)
     QDeclarativeBasePositionerPrivate *d = static_cast<QDeclarativeBasePositionerPrivate* >(QDeclarativeBasePositionerPrivate::get(this));
     if (d->layoutDirection != layoutDirection) {
         d->layoutDirection = layoutDirection;
+        // For RTL layout the positioning changes when the width changes.
+        if (d->layoutDirection == Qt::RightToLeft)
+            d->addItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
+        else
+            d->removeItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
         prePositioning();
         emit layoutDirectionChanged();
-        emit effectiveLayoutDirectionChanged();
     }
 }
-
-/*!
-    \qmlproperty enumeration Row::effectiveLayoutDirection
-    This property holds the effective layout direction of the row positioner.
-
-    When using the attached property \l {LayoutMirroring::enabled}{LayoutMirroring::enabled} for locale layouts,
-    the visual layout direction of the row positioner will be mirrored. However, the
-    property \l {Row::layoutDirection}{layoutDirection} will remain unchanged.
-
-    \sa Row::layoutDirection, {LayoutMirroring}{LayoutMirroring}
-*/
 
 Qt::LayoutDirection QDeclarativeRow::effectiveLayoutDirection() const
 {
@@ -895,7 +893,12 @@ void QDeclarativeGrid::setFlow(Flow flow)
     \l Grid::flow property.
     \endlist
 
-    \sa Flow::layoutDirection, Row::layoutDirection, {declarative/righttoleft/layoutdirection}{Layout directions example}
+    When using the attached property \l {LayoutMirroring::enabled} for locale layouts,
+    the visual layout direction of the grid positioner will be mirrored. However, the
+    property \c layoutDirection will remain unchanged. You can use the property
+    \l {LayoutMirroring::enabled} to determine whether the direction has been mirrored.
+
+    \sa Flow::layoutDirection, Row::layoutDirection, {declarative/righttoleft/layoutdirection}{Layout directions example}, {LayoutMirroring}{LayoutMirroring}
 */
 Qt::LayoutDirection QDeclarativeGrid::layoutDirection() const
 {
@@ -907,22 +910,15 @@ void QDeclarativeGrid::setLayoutDirection(Qt::LayoutDirection layoutDirection)
     QDeclarativeBasePositionerPrivate *d = static_cast<QDeclarativeBasePositionerPrivate*>(QDeclarativeBasePositionerPrivate::get(this));
     if (d->layoutDirection != layoutDirection) {
         d->layoutDirection = layoutDirection;
+        // For RTL layout the positioning changes when the width changes.
+        if (d->layoutDirection == Qt::RightToLeft)
+            d->addItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
+        else
+            d->removeItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
         prePositioning();
-        emit layoutDirectionChanged();
-        emit effectiveLayoutDirectionChanged();
+        emit layoutDirectionChanged();;
     }
 }
-
-/*!
-    \qmlproperty enumeration Grid::effectiveLayoutDirection
-    This property holds the effective layout direction of the grid positioner.
-
-    When using the attached property \l {LayoutMirroring::enabled}{LayoutMirroring::enabled} for locale layouts,
-    the visual layout direction of the grid positioner will be mirrored. However, the
-    property \l {Grid::layoutDirection}{layoutDirection} will remain unchanged.
-
-    \sa Grid::layoutDirection, {LayoutMirroring}{LayoutMirroring}
-*/
 
 Qt::LayoutDirection QDeclarativeGrid::effectiveLayoutDirection() const
 {
@@ -1255,7 +1251,12 @@ void QDeclarativeFlow::setFlow(Flow flow)
     \l Flow::flow property.
     \endlist
 
-    \sa Grid::layoutDirection, Row::layoutDirection, {declarative/righttoleft/layoutdirection}{Layout directions example}
+    When using the attached property \l {LayoutMirroring::enabled} for locale layouts,
+    the visual layout direction of the flow positioner will be mirrored. However, the
+    property \c layoutDirection will remain unchanged. You can use the property
+    \l {LayoutMirroring::enabled} to determine whether the direction has been mirrored.
+
+    \sa Grid::layoutDirection, Row::layoutDirection, {declarative/righttoleft/layoutdirection}{Layout directions example}, {LayoutMirroring}{LayoutMirroring}
 */
 
 Qt::LayoutDirection QDeclarativeFlow::layoutDirection() const
@@ -1271,20 +1272,8 @@ void QDeclarativeFlow::setLayoutDirection(Qt::LayoutDirection layoutDirection)
         d->layoutDirection = layoutDirection;
         prePositioning();
         emit layoutDirectionChanged();
-        emit effectiveLayoutDirectionChanged();
     }
 }
-
-/*!
-    \qmlproperty enumeration Flow::effectiveLayoutDirection
-    This property holds the effective layout direction of the flow positioner.
-
-    When using the attached property \l {LayoutMirroring::enabled}{LayoutMirroring::enabled} for locale layouts,
-    the visual layout direction of the grid positioner will be mirrored. However, the
-    property \l {Flow::layoutDirection}{layoutDirection} will remain unchanged.
-
-    \sa Flow::layoutDirection, {LayoutMirroring}{LayoutMirroring}
-*/
 
 Qt::LayoutDirection QDeclarativeFlow::effectiveLayoutDirection() const
 {

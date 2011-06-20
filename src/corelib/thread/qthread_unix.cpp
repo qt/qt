@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -48,16 +48,7 @@
 #  include "../kernel/qeventdispatcher_glib_p.h"
 #endif
 
-#ifdef Q_OS_SYMBIAN
-#include <private/qeventdispatcher_symbian_p.h>
-#else
 #include <private/qeventdispatcher_unix_p.h>
-#endif
-
-#ifdef Q_OS_SYMBIAN
-#include <hal.h>
-#include <hal_data.h>
-#endif
 
 #include "qthreadstorage.h"
 
@@ -67,12 +58,6 @@
 
 #include <sched.h>
 #include <errno.h>
-
-// You only find these enumerations on Symbian^3 onwards, so we need to provide our own
-// to remain compatible with older releases. They won't be called by pre-Sym^3 SDKs.
-
-// HALData::ENumCpus
-#define QT_HALData_ENumCpus 119
 
 #ifdef Q_OS_BSD4
 #include <sys/sysctl.h>
@@ -148,7 +133,16 @@ static void destroy_current_thread_data(void *p)
     // this destructor function, so we need to set it back to the
     // right value...
     pthread_setspecific(current_thread_data_key, p);
-    reinterpret_cast<QThreadData *>(p)->deref();
+    QThreadData *data = static_cast<QThreadData *>(p);
+    if (data->isAdopted) {
+        QThread *thread = data->thread;
+        Q_ASSERT(thread);
+        QThreadPrivate *thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
+        Q_ASSERT(!thread_p->finished);
+        thread_p->finish(thread);
+    }
+    data->deref();
+
     // ... but we must reset it to zero before returning so we aren't
     // called again (POSIX allows implementations to call destructor
     // functions repeatedly until all values are zero)
@@ -174,15 +168,10 @@ Q_DESTRUCTOR_FUNCTION(destroy_current_thread_data_key)
 
 
 // Utility functions for getting, setting and clearing thread specific data.
-// In Symbian, TLS access is significantly faster than pthread_getspecific.
-// However Symbian does not have the thread destruction cleanup functionality
-// that pthread has, so pthread_setspecific is also used.
 static QThreadData *get_thread_data()
 {
 #ifdef HAVE_TLS
     return currentThreadData;
-#elif defined Q_OS_SYMBIAN
-    return reinterpret_cast<QThreadData *>(Dll::Tls());
 #else
     pthread_once(&current_thread_data_once, create_current_thread_data_key);
     return reinterpret_cast<QThreadData *>(pthread_getspecific(current_thread_data_key));
@@ -193,8 +182,6 @@ static void set_thread_data(QThreadData *data)
 {
 #ifdef HAVE_TLS
     currentThreadData = data;
-#elif defined Q_OS_SYMBIAN
-    qt_symbian_throwIfError(Dll::SetTls(data));
 #endif
     pthread_once(&current_thread_data_once, create_current_thread_data_key);
     pthread_setspecific(current_thread_data_key, data);
@@ -204,26 +191,9 @@ static void clear_thread_data()
 {
 #ifdef HAVE_TLS
     currentThreadData = 0;
-#elif defined Q_OS_SYMBIAN
-    Dll::FreeTls();
 #endif
     pthread_setspecific(current_thread_data_key, 0);
 }
-
-
-#ifdef Q_OS_SYMBIAN
-static void init_symbian_thread_handle(RThread &thread)
-{
-    thread = RThread();
-    TThreadId threadId = thread.Id();
-    thread.Open(threadId);
-
-    // Make thread handle accessible process wide
-    RThread originalCloser = thread;
-    thread.Duplicate(thread, EOwnerProcess);
-    originalCloser.Close();
-}
-#endif
 
 QThreadData *QThreadData::current()
 {
@@ -251,6 +221,8 @@ QThreadData *QThreadData::current()
             }
             data->deref();
         }
+        data->isAdopted = true;
+        data->threadId = (Qt::HANDLE)pthread_self();
         if (!QCoreApplicationPrivate::theMainThread)
             QCoreApplicationPrivate::theMainThread = data->thread;
     }
@@ -262,9 +234,6 @@ void QAdoptedThread::init()
 {
     Q_D(QThread);
     d->thread_id = pthread_self();
-#ifdef Q_OS_SYMBIAN
-    init_symbian_thread_handle(d->data->symbian_thread_handle);
-#endif
 }
 
 /*
@@ -292,11 +261,7 @@ void QThreadPrivate::createEventDispatcher(QThreadData *data)
         data->eventDispatcher = new QEventDispatcherGlib;
     else
 #endif
-#ifdef Q_OS_SYMBIAN
-        data->eventDispatcher = new QEventDispatcherSymbian;
-#else
-        data->eventDispatcher = new QEventDispatcherUNIX;
-#endif
+    data->eventDispatcher = new QEventDispatcherUNIX;
     data->eventDispatcher->startingUp();
 }
 
@@ -304,11 +269,8 @@ void QThreadPrivate::createEventDispatcher(QThreadData *data)
 
 void *QThreadPrivate::start(void *arg)
 {
-    // Symbian Open C supports neither thread cancellation nor cleanup_push.
-#ifndef Q_OS_SYMBIAN
     pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
     pthread_cleanup_push(QThreadPrivate::finish, arg);
-#endif
 
     QThread *thr = reinterpret_cast<QThread *>(arg);
     QThreadData *data = QThreadData::get2(thr);
@@ -318,23 +280,7 @@ void *QThreadPrivate::start(void *arg)
         thr->setPriority(QThread::Priority(thr->d_func()->priority & ~ThreadPriorityResetFlag));
     }
 
-#ifdef Q_OS_SYMBIAN
-    // Because Symbian Open C does not provide a way to convert between
-    // RThread and pthread_t, we must delay initialization of the RThread
-    // handle when creating a thread, until we are running in the new thread.
-    // Here, we pick up the current thread and assign that to the handle.
-    init_symbian_thread_handle(data->symbian_thread_handle);
-
-    // On symbian, threads other than the main thread are non critical by default
-    // This means a worker thread can crash without crashing the application - to
-    // use this feature, we would need to use RThread::Logon in the main thread
-    // to catch abnormal thread exit and emit the finished signal.
-    // For the sake of cross platform consistency, we set the thread as process critical
-    // - advanced users who want the symbian behaviour can change the critical
-    // attribute of the thread again once the app gains control in run()
-    User::SetCritical(User::EProcessCritical);
-#endif
-
+    data->threadId = (Qt::HANDLE)pthread_self();
     set_thread_data(data);
 
     data->ref();
@@ -347,35 +293,21 @@ void *QThreadPrivate::start(void *arg)
     createEventDispatcher(data);
 
     emit thr->started();
-#ifndef Q_OS_SYMBIAN
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     pthread_testcancel();
-#endif
     thr->run();
 
-#ifdef Q_OS_SYMBIAN
-    QThreadPrivate::finish(arg);
-#else
     pthread_cleanup_pop(1);
-#endif
 
     return 0;
 }
 
-#ifdef Q_OS_SYMBIAN
-void QThreadPrivate::finish(void *arg, bool lockAnyway, bool closeNativeHandle)
-#else
 void QThreadPrivate::finish(void *arg)
-#endif
 {
     QThread *thr = reinterpret_cast<QThread *>(arg);
     QThreadPrivate *d = thr->d_func();
 
-#ifdef Q_OS_SYMBIAN
-    QMutexLocker locker(lockAnyway ? &d->mutex : 0);
-#else
     QMutexLocker locker(&d->mutex);
-#endif
 
     d->isInFinish = true;
     d->priority = QThread::InheritPriority;
@@ -400,10 +332,6 @@ void QThreadPrivate::finish(void *arg)
     }
 
     d->thread_id = 0;
-#ifdef Q_OS_SYMBIAN
-    if (closeNativeHandle)
-        d->data->symbian_thread_handle.Close();
-#endif
     d->running = false;
     d->finished = true;
 
@@ -461,21 +389,6 @@ int QThread::idealThreadCount()
 #elif defined(Q_OS_INTEGRITY)
     // as of aug 2008 Integrity only supports one single core CPU
     cores = 1;
-#elif defined(Q_OS_SYMBIAN)
-    if (QSysInfo::symbianVersion() >= QSysInfo::SV_SF_3) {
-        TInt inumcpus;
-        TInt err;
-        err = HAL::Get((HALData::TAttribute)QT_HALData_ENumCpus, inumcpus);
-        if (err != KErrNone) {
-            cores = 1;
-        } else if ( inumcpus <= 0 ) {
-            cores = 1;
-        } else {
-            cores = inumcpus;
-        }
-    } else {
-        cores = 1;
-    }
 #elif defined(Q_OS_VXWORKS)
     // VxWorks
 #  if defined(QT_VXWORKS_HAS_CPUSET)
@@ -616,8 +529,7 @@ void QThread::start(Priority priority)
 
     d->priority = priority;
 
-#if defined(QT_HAS_THREAD_PRIORITY_SCHEDULING) && !defined(Q_OS_SYMBIAN)
-// ### Need to implement thread sheduling and priorities for symbian os. Implementation removed for now
+#if defined(QT_HAS_THREAD_PRIORITY_SCHEDULING)
     switch (priority) {
     case InheritPriority:
         {
@@ -659,12 +571,6 @@ void QThread::start(Priority priority)
     }
 #endif // QT_HAS_THREAD_PRIORITY_SCHEDULING
 
-#ifdef Q_OS_SYMBIAN
-    if (d->stackSize == 0)
-        // The default stack size on Symbian is very small, making even basic
-        // operations like file I/O fail, so we increase it by default.
-        d->stackSize = 0x14000; // Maximum stack size on Symbian.
-#endif
 
     if (d->stackSize > 0) {
 #if defined(_POSIX_THREAD_ATTR_STACKSIZE) && (_POSIX_THREAD_ATTR_STACKSIZE-0 > 0)
@@ -690,9 +596,7 @@ void QThread::start(Priority priority)
     if (code == EPERM) {
         // caller does not have permission to set the scheduling
         // parameters/policy
-#ifndef Q_OS_SYMBIAN
         pthread_attr_setinheritsched(&attr, PTHREAD_INHERIT_SCHED);
-#endif
         code =
             pthread_create(&d->thread_id, &attr, QThreadPrivate::start, this);
     }
@@ -705,9 +609,6 @@ void QThread::start(Priority priority)
         d->running = false;
         d->finished = false;
         d->thread_id = 0;
-#ifdef Q_OS_SYMBIAN
-        d->data->symbian_thread_handle.Close();
-#endif
     }
 }
 
@@ -719,7 +620,6 @@ void QThread::terminate()
     if (!d->thread_id)
         return;
 
-#ifndef Q_OS_SYMBIAN
     int code = pthread_cancel(d->thread_id);
     if (code) {
         qWarning("QThread::start: Thread termination error: %s",
@@ -727,26 +627,6 @@ void QThread::terminate()
     } else {
         d->terminated = true;
     }
-#else
-    if (!d->running)
-        return;
-    if (!d->terminationEnabled) {
-        d->terminatePending = true;
-        return;
-    }
-
-    d->terminated = true;
-    // "false, false" meaning:
-    // 1. lockAnyway = false. Don't lock the mutex because it's already locked
-    //    (see above).
-    // 2. closeNativeSymbianHandle = false. We don't want to close the thread handle,
-    //    because we need it here to terminate the thread.
-    QThreadPrivate::finish(this, false, false);
-    d->data->symbian_thread_handle.Terminate(KErrNone);
-    d->data->symbian_thread_handle.Close();
-#endif
-
-
 }
 
 bool QThread::wait(unsigned long time)
@@ -763,18 +643,6 @@ bool QThread::wait(unsigned long time)
         return true;
 
     while (d->running) {
-#ifdef Q_OS_SYMBIAN
-        // Check if thread still exists. Needed because kernel will kill it without notification
-        // before global statics are deleted at application exit.
-        if (d->data->symbian_thread_handle.Handle()
-            && d->data->symbian_thread_handle.ExitType() != EExitPending) {
-            // Cannot call finish here as wait is typically called from another thread.
-            // It won't be necessary anyway, as we should never get here under normal operations;
-            // all QThreads are EProcessCritical and therefore cannot normally exit
-            // undetected (i.e. panic) as long as all thread control is via QThread.
-            return true;
-        }
-#endif
         if (!d->thread_done.wait(locker.mutex(), time))
             return false;
     }
@@ -786,25 +654,11 @@ void QThread::setTerminationEnabled(bool enabled)
     QThread *thr = currentThread();
     Q_ASSERT_X(thr != 0, "QThread::setTerminationEnabled()",
                "Current thread was not started with QThread.");
-#ifndef Q_OS_SYMBIAN
+
     Q_UNUSED(thr)
     pthread_setcancelstate(enabled ? PTHREAD_CANCEL_ENABLE : PTHREAD_CANCEL_DISABLE, NULL);
     if (enabled)
         pthread_testcancel();
-#else
-    QThreadPrivate *d = thr->d_func();
-    QMutexLocker locker(&d->mutex);
-    d->terminationEnabled = enabled;
-    if (enabled && d->terminatePending) {
-        d->terminated = true;
-        // "false" meaning:
-        // -  lockAnyway = false. Don't lock the mutex because it's already locked
-        //    (see above).
-        QThreadPrivate::finish(thr, false);
-        locker.unlock(); // don't leave the mutex locked!
-        pthread_exit(NULL);
-    }
-#endif
 }
 
 void QThread::setPriority(Priority priority)

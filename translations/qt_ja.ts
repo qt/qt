@@ -75,7 +75,7 @@
     </message>
     <message>
         <source>Accessibility</source>
-        <translation>アクセシビリティ</translation>
+        <translation>ユーザー補助</translation>
     </message>
 </context>
 <context>
@@ -136,7 +136,7 @@ libgstreamer-plugins-base はインストールされていますか。</transla
     </message>
     <message>
         <source>Could not open media source.</source>
-        <translation>メディアソースを開くことができません。</translation>
+        <translation>メディアソースを開けませんでした。</translation>
     </message>
     <message>
         <source>Invalid source type.</source>
@@ -148,11 +148,11 @@ libgstreamer-plugins-base はインストールされていますか。</transla
     </message>
     <message>
         <source>Could not open audio device. The device is already in use.</source>
-        <translation>オーディオデバイスを開くことができません。デバイスは既に他のプロセスにより使用されています。</translation>
+        <translation>オーディオデバイスを開けませんでした。デバイスは既に他のプロセスにより使用されています。</translation>
     </message>
     <message>
         <source>Could not decode media source.</source>
-        <translation>メディアソースを開くことができません。見つからないか、未知の形式です。</translation>
+        <translation>メディアソースを開けませんでした。見つからないか、未知の形式です。</translation>
     </message>
 </context>
 <context>
@@ -320,6 +320,10 @@ libgstreamer-plugins-base はインストールされていますか。</transla
         <source>Playback complete</source>
         <translation>再生が終了しました</translation>
     </message>
+    <message>
+        <source>Download error</source>
+        <translation>ダウンロードエラー</translation>
+    </message>
 </context>
 <context>
     <name>Phonon::MMF::AbstractVideoPlayer</name>
@@ -439,6 +443,10 @@ libgstreamer-plugins-base はインストールされていますか。</transla
         <source>Error opening source: media type could not be determined</source>
         <translation>ソースのオープン時にエラーが発生しました: メディアのタイプが不明です</translation>
     </message>
+    <message>
+        <source>Failed to set requested IAP</source>
+        <translation>要求されたIAPのセットに失敗しました</translation>
+    </message>
 </context>
 <context>
     <name>Phonon::MMF::StereoWidening</name>
@@ -511,7 +519,7 @@ libgstreamer-plugins-base はインストールされていますか。</transla
     </message>
     <message>
         <source>Open </source>
-        <translation>オープン</translation>
+        <translation>開く</translation>
     </message>
     <message>
         <source>Select a Directory</source>
@@ -559,7 +567,7 @@ libgstreamer-plugins-base はインストールされていますか。</transla
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation>OK(&amp;O)</translation>
+        <translation>&amp;OK</translation>
     </message>
     <message>
         <source>Look &amp;in:</source>
@@ -607,7 +615,7 @@ libgstreamer-plugins-base はインストールされていますか。</transla
     </message>
     <message>
         <source>Read-only</source>
-        <translation>読み込み専用</translation>
+        <translation>読み取り専用</translation>
     </message>
     <message>
         <source>Write-only</source>
@@ -643,7 +651,7 @@ libgstreamer-plugins-base はインストールされていますか。</transla
     </message>
     <message>
         <source>Open</source>
-        <translation>オープン</translation>
+        <translation>開く</translation>
     </message>
     <message>
         <source>Save As</source>
@@ -651,7 +659,7 @@ libgstreamer-plugins-base はインストールされていますか。</transla
     </message>
     <message>
         <source>&amp;Open</source>
-        <translation>オープン(&amp;O)</translation>
+        <translation>開く(&amp;O)</translation>
     </message>
     <message>
         <source>&amp;Save</source>
@@ -1168,7 +1176,7 @@ to
     <name>QComboBox</name>
     <message>
         <source>Open</source>
-        <translation>オープン</translation>
+        <translation>開く</translation>
     </message>
     <message>
         <source>False</source>
@@ -1214,6 +1222,11 @@ to
         <source>%1: out of resources</source>
         <comment>QSystemSemaphore</comment>
         <translation>%1: リソース不足です</translation>
+    </message>
+    <message>
+        <source>%1: permission denied</source>
+        <comment>QSystemSemaphore</comment>
+        <translation>%1: 許可されていません</translation>
     </message>
     <message>
         <source>%1: unknown error %2</source>
@@ -1290,11 +1303,11 @@ to
     <name>QDeclarativeAbstractAnimation</name>
     <message>
         <source>Cannot animate non-existent property &quot;%1&quot;</source>
-        <translation>存在しないプロパティ &quot;%1&quot; はアニメーション出来ません</translation>
+        <translation>存在しないプロパティ &quot;%1&quot; はアニメーションできません</translation>
     </message>
     <message>
         <source>Cannot animate read-only property &quot;%1&quot;</source>
-        <translation>読込専用のプロパティ &quot;%1&quot; はアニメーション出来ません</translation>
+        <translation>読込専用のプロパティ &quot;%1&quot; はアニメーションできません</translation>
     </message>
     <message>
         <source>Animation is an abstract class</source>
@@ -1320,7 +1333,7 @@ to
     </message>
     <message>
         <source>Cannot anchor to an item that isn&apos;t a parent or sibling.</source>
-        <translation>親でも兄弟でもない要素にはアンカー出来ません。</translation>
+        <translation>親でも兄弟でもない要素にはアンカーできません。</translation>
     </message>
     <message>
         <source>Possible anchor loop detected on vertical anchor.</source>
@@ -1336,15 +1349,15 @@ to
     </message>
     <message>
         <source>Cannot anchor to a null item.</source>
-        <translation>空の要素にはアンカー出来ません。</translation>
+        <translation>空の要素にはアンカーできません。</translation>
     </message>
     <message>
         <source>Cannot anchor a horizontal edge to a vertical edge.</source>
-        <translation>横方向のエッジから縦方向のエッジへはアンカー出来ません。</translation>
+        <translation>横方向のエッジから縦方向のエッジへはアンカーできません。</translation>
     </message>
     <message>
         <source>Cannot anchor item to self.</source>
-        <translation>自分自身へはアンカー出来ません。</translation>
+        <translation>自分自身へはアンカーできません。</translation>
     </message>
     <message>
         <source>Cannot specify top, bottom, and vcenter anchors.</source>
@@ -1356,7 +1369,7 @@ to
     </message>
     <message>
         <source>Cannot anchor a vertical edge to a horizontal edge.</source>
-        <translation>縦方向のエッジから横方向のエッジへはアンカー出来ません。</translation>
+        <translation>縦方向のエッジから横方向のエッジへはアンカーできません。</translation>
     </message>
 </context>
 <context>
@@ -1364,6 +1377,13 @@ to
     <message>
         <source>Qt was built without support for QMovie</source>
         <translation>Qt は QMovie のサポートを外してビルドされています</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeApplication</name>
+    <message>
+        <source>Application is an abstract class</source>
+        <translation>Application は抽象クラスです</translation>
     </message>
 </context>
 <context>
@@ -1494,12 +1514,20 @@ to
         <translation>仕様が空であるコンポーネントは作成できません</translation>
     </message>
     <message>
+        <source>&quot;%1.%2&quot; is not available in %3 %4.%5.</source>
+        <translation>%3 %4.%5 で &quot;%1.%2&quot; は利用できません。</translation>
+    </message>
+    <message>
+        <source>&quot;%1.%2&quot; is not available due to component versioning.</source>
+        <translation>コンポーネントのバージョンの問題により &quot;%1.%2&quot; は利用できません。</translation>
+    </message>
+    <message>
         <source>Incorrectly specified signal assignment</source>
         <translation>仕様と異なるシグナルが割り当てられています</translation>
     </message>
     <message>
         <source>Cannot assign a value to a signal (expecting a script to be run)</source>
-        <translation>値をシグナルに割り当てることはできません(ただし、スクリプトは除きます)</translation>
+        <translation>値はシグナルに割り当てできません(ただし、スクリプトは除きます)</translation>
     </message>
     <message>
         <source>Empty signal assignment</source>
@@ -1551,7 +1579,7 @@ to
     </message>
     <message>
         <source>Cannot assign a value directly to a grouped property</source>
-        <translation>グループ化されたプロパティに直接値を割り当てることはできません</translation>
+        <translation>グループ化されたプロパティに直接値を割り当てできません</translation>
     </message>
     <message>
         <source>Invalid property use</source>
@@ -1563,15 +1591,15 @@ to
     </message>
     <message>
         <source>Single property assignment expected</source>
-        <translation>プロパティに複数の値は割り当てられません</translation>
+        <translation>プロパティに複数の値は割り当てできません</translation>
     </message>
     <message>
         <source>Unexpected object assignment</source>
-        <translation>オブジェクトを割り当てることはできません</translation>
+        <translation>オブジェクトを割り当てできません</translation>
     </message>
     <message>
         <source>Cannot assign object to list</source>
-        <translation>オブジェクトをリストに割り当てることはできません</translation>
+        <translation>オブジェクトをリストに割り当てできません</translation>
     </message>
     <message>
         <source>Can only assign one binding to lists</source>
@@ -1579,19 +1607,23 @@ to
     </message>
     <message>
         <source>Cannot assign primitives to lists</source>
-        <translation>プリミティブをリストに割り当てることはできません</translation>
+        <translation>プリミティブをリストに割り当てできません</translation>
     </message>
     <message>
         <source>Cannot assign multiple values to a script property</source>
-        <translation>複数の値をスクリプトプロパティに割り当てることはできません</translation>
+        <translation>複数の値をスクリプトプロパティに割り当てできません</translation>
     </message>
     <message>
         <source>Invalid property assignment: script expected</source>
         <translation>無効なプロパティの値: スクリプトを指定してください</translation>
     </message>
     <message>
+        <source>Cannot assign multiple values to a singular property</source>
+        <translation>複数の値を単数プロパティに割り当てできません</translation>
+    </message>
+    <message>
         <source>Cannot assign object to property</source>
-        <translation>オブジェクトをプロパティに割り当てることはできません</translation>
+        <translation>オブジェクトをプロパティに割り当てできません</translation>
     </message>
     <message>
         <source>&quot;%1&quot; cannot operate on &quot;%2&quot;</source>
@@ -1647,7 +1679,7 @@ to
     </message>
     <message>
         <source>Cannot override FINAL property</source>
-        <translation>FINAL プロパティを上書きすることはできません</translation>
+        <translation>FINAL プロパティは上書きできません</translation>
     </message>
     <message>
         <source>Invalid property type</source>
@@ -1675,19 +1707,27 @@ to
     </message>
     <message>
         <source>No property alias location</source>
-        <translation>プロパティのエイリアスのパスがありません</translation>
+        <translation>プロパティのエイリアスへのパスがありません</translation>
     </message>
     <message>
         <source>Invalid alias location</source>
         <translation>無効なエイリアスのパス</translation>
     </message>
     <message>
+        <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt;, &lt;id&gt;.&lt;property&gt; or &lt;id&gt;.&lt;value property&gt;.&lt;property&gt;</source>
+        <translation>無効なエイリアスの参照です。エイリアスの参照先は &lt;ID&gt;, &lt;ID&gt;.&lt;プロパティ&gt; もしくは &lt;ID&gt;.&lt;値プロパティ&gt;.&lt;プロパティ&gt; のいずれかでなくてはいけません</translation>
+    </message>
+    <message>
+        <source>Alias property exceeds alias bounds</source>
+        <translation>エイリアスプロパティがエイリアスの境界を越えています</translation>
+    </message>
+    <message>
         <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
-        <translation>無効なエイリアスの参照です。エイリアスの参照先は &lt;ID&gt; もしくは &lt;ID&gt;.&lt;プロパティ&gt; でなくてはいけません</translation>
+        <translation type="obsolete">無効なエイリアスの参照です。エイリアスの参照先は &lt;ID&gt; もしくは &lt;ID&gt;.&lt;プロパティ&gt; でなくてはいけません</translation>
     </message>
     <message>
         <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
-        <translation>無効なエイリアスの参照です。 ID &quot;%1&quot; が見つかりません</translation>
+        <translation>無効なエイリアスの参照です。ID &quot;%1&quot; が見つかりません</translation>
     </message>
 </context>
 <context>
@@ -1695,6 +1735,10 @@ to
     <message>
         <source>Invalid empty URL</source>
         <translation>空の URL は無効です</translation>
+    </message>
+    <message>
+        <source>createObject: value is not an object</source>
+        <translation>createObject: 値がオブジェクトではありません</translation>
     </message>
 </context>
 <context>
@@ -1776,6 +1820,10 @@ to
 <context>
     <name>QDeclarativeImportDatabase</name>
     <message>
+        <source>cannot load module &quot;%1&quot;: File name case mismatch for &quot;%2&quot;</source>
+        <translation>モジュール &quot;%1&quot; がロードできません: ファイル名の大文字小文字が &quot;%2&quot; に合っていません</translation>
+    </message>
+    <message>
         <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
         <translation>&quot;%1&quot; モジュールの定義 &quot;%2&quot; が読めません</translation>
     </message>
@@ -1831,19 +1879,34 @@ to
         <source>is not a type</source>
         <translation>は型ではありません</translation>
     </message>
+    <message>
+        <source>File name case mismatch for &quot;%2&quot;</source>
+        <translation>ファイル名の大文字小文字が &quot;%2&quot; に合っていません</translation>
+    </message>
 </context>
 <context>
     <name>QDeclarativeKeyNavigationAttached</name>
     <message>
         <source>KeyNavigation is only available via attached properties</source>
-        <translation>KeyNavigation はアタッチド・プロパティ(Attached Property: 型名.プロパティ名)の形式でのみ利用できます</translation>
+        <translation>KeyNavigation はアタッチされたプロパティ(Attached Property: 型名.プロパティ名)の形式でのみ利用できます</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeKeysAttached</name>
     <message>
         <source>Keys is only available via attached properties</source>
-        <translation>Keys はアタッチド・プロパティ(Attached Property: 型名.プロパティ名)の形式でのみ利用できます</translation>
+        <translation>Keys はアタッチされたプロパティ(Attached Property: 型名.プロパティ名)の形式でのみ利用できます</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeLayoutMirroringAttached</name>
+    <message>
+        <source>LayoutDirection attached property only works with Items</source>
+        <translation>アタッチされたプロパティ LayoutDirection はアイテムでのみ利用できます</translation>
+    </message>
+    <message>
+        <source>LayoutMirroring is only available via attached properties</source>
+        <translation>LayoutMirroring はアタッチされたプロパティ(Attached Property: 型名.プロパティ名)の形式でのみ利用できます</translation>
     </message>
 </context>
 <context>
@@ -2146,7 +2209,7 @@ to
     </message>
     <message>
         <source>Cannot assign object type %1 with no default method</source>
-        <translation>型 %1 のオブジェクトをデフォルトメソッドなしに割り当てることはできません</translation>
+        <translation>デフォルトメソッドの無い型 %1 のオブジェクトは割り当てできません</translation>
     </message>
     <message>
         <source>Cannot connect mismatched signal/slot %1 %vs. %2</source>
@@ -2220,7 +2283,7 @@ to
     <name>QDialog</name>
     <message>
         <source>What&apos;s This?</source>
-        <translation>ヒント?</translation>
+        <translation>ヒント</translation>
     </message>
     <message>
         <source>Done</source>
@@ -2267,7 +2330,7 @@ to
     </message>
     <message>
         <source>Open</source>
-        <translation>オープン</translation>
+        <translation>開く</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
@@ -2323,7 +2386,7 @@ to
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation>OK(&amp;O)</translation>
+        <translation>&amp;OK</translation>
     </message>
 </context>
 <context>
@@ -2397,7 +2460,7 @@ to
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation>OK(&amp;O)</translation>
+        <translation>&amp;OK</translation>
     </message>
 </context>
 <context>
@@ -2420,7 +2483,7 @@ to
     </message>
     <message>
         <source>Cannot open for output</source>
-        <translation>コピー先のファイルをオープンできません</translation>
+        <translation>コピー先のファイルを開けません</translation>
     </message>
     <message>
         <source>Failure to write block</source>
@@ -2451,7 +2514,7 @@ to
     </message>
     <message>
         <source>&amp;Open</source>
-        <translation>オープン(&amp;O)</translation>
+        <translation>開く(&amp;O)</translation>
     </message>
     <message>
         <source>&amp;Save</source>
@@ -2459,7 +2522,7 @@ to
     </message>
     <message>
         <source>Open</source>
-        <translation>オープン</translation>
+        <translation>開く</translation>
     </message>
     <message>
         <source>%1 already exists.
@@ -2477,7 +2540,7 @@ Please verify the correct file name was given.</source>
     </message>
     <message>
         <source>My Computer</source>
-        <translation>マイ コンピュータ</translation>
+        <translation>マイコンピュータ</translation>
     </message>
     <message>
         <source>%1
@@ -2692,7 +2755,7 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <source>My Computer</source>
-        <translation>マイ コンピュータ</translation>
+        <translation>マイコンピュータ</translation>
     </message>
     <message>
         <source>Computer</source>
@@ -2732,7 +2795,7 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <source>Italic</source>
-        <translation>イタリック</translation>
+        <translation>斜体</translation>
     </message>
     <message>
         <source>Oblique</source>
@@ -3207,7 +3270,7 @@ Do you want to delete it anyway?</source>
     <name>QIBaseDriver</name>
     <message>
         <source>Error opening database</source>
-        <translation>データベースのオープンでエラーが発生しました</translation>
+        <translation>データベースのオープン時にエラーが発生しました</translation>
     </message>
     <message>
         <source>Could not start transaction</source>
@@ -3234,7 +3297,7 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <source>Unable to open BLOB</source>
-        <translation>バイナリラージオブジェクトをオープンできません</translation>
+        <translation>バイナリラージオブジェクトを開けません</translation>
     </message>
     <message>
         <source>Unable to read BLOB</source>
@@ -3390,11 +3453,11 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <source>Cannot load library %1: %2</source>
-        <translation>ライブラリ &apos;%1&apos; を読み込むことができません: %2</translation>
+        <translation>ライブラリ &apos;%1&apos; を読み込めません: %2</translation>
     </message>
     <message>
         <source>Cannot unload library %1: %2</source>
-        <translation>ライブラリ %1 を解放することができません: %2</translation>
+        <translation>ライブラリ %1 を解放できません: %2</translation>
     </message>
     <message>
         <source>Cannot resolve symbol &quot;%1&quot; in %2: %3</source>
@@ -3502,7 +3565,7 @@ Do you want to delete it anyway?</source>
     <name>QMYSQLDriver</name>
     <message>
         <source>Unable to open database &apos;</source>
-        <translation>データベースをオープンできません &apos;</translation>
+        <translation>データベースを開けません &apos;</translation>
     </message>
     <message>
         <source>Unable to connect</source>
@@ -3659,7 +3722,7 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <source>Open</source>
-        <translation>オープン</translation>
+        <translation>開く</translation>
     </message>
     <message>
         <source>Execute</source>
@@ -3833,7 +3896,7 @@ Do you want to delete it anyway?</source>
     <name>QNetworkAccessCacheBackend</name>
     <message>
         <source>Error opening %1</source>
-        <translation>オープンのエラー %1</translation>
+        <translation>オープン時のエラー %1</translation>
     </message>
 </context>
 <context>
@@ -3870,7 +3933,7 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <source>Error opening %1: %2</source>
-        <translation>%1 をオープンする時にエラーが発生しました: %2</translation>
+        <translation>%1 のオープン時にエラーが発生しました: %2</translation>
     </message>
     <message>
         <source>Write error writing to %1: %2</source>
@@ -3878,7 +3941,7 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <source>Cannot open %1: Path is a directory</source>
-        <translation>%1 をオープンできません。指定されたパスはディレクトリです</translation>
+        <translation>%1 を開けません。指定されたパスはディレクトリです</translation>
     </message>
     <message>
         <source>Read error reading from %1: %2</source>
@@ -3893,7 +3956,7 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <source>Cannot open %1: is a directory</source>
-        <translation>%1 をオープンできません。指定されたパスはディレクトリです</translation>
+        <translation>%1 を開けません。指定されたパスはディレクトリです</translation>
     </message>
     <message>
         <source>Logging in to %1 failed: authentication required</source>
@@ -4623,7 +4686,7 @@ Please choose a different file name.</source>
     <name>QPrintPreviewDialog</name>
     <message>
         <source>Page Setup</source>
-        <translation>ページの設定</translation>
+        <translation>ページ設定</translation>
     </message>
     <message>
         <source>%1%</source>
@@ -4691,7 +4754,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Page setup</source>
-        <translation>ページの設定</translation>
+        <translation>ページ設定</translation>
     </message>
     <message>
         <source>Close</source>
@@ -4847,11 +4910,11 @@ Please choose a different file name.</source>
     <name>QProcess</name>
     <message>
         <source>Could not open input redirection for reading</source>
-        <translation>標準入力リダイレクトを読み込みのためにオープンすることができません</translation>
+        <translation>標準入力リダイレクトを読み込みのために開けませんでした</translation>
     </message>
     <message>
         <source>Could not open output redirection for writing</source>
-        <translation>標準出力リダイレクトを書き込みのためにオープンすることができません</translation>
+        <translation>標準出力リダイレクトを書き込みのために開けませんでした</translation>
     </message>
     <message>
         <source>Resource error (fork failure): %1</source>
@@ -4893,7 +4956,7 @@ Please choose a different file name.</source>
     <name>QPushButton</name>
     <message>
         <source>Open</source>
-        <translation>オープン</translation>
+        <translation>開く</translation>
     </message>
 </context>
 <context>
@@ -4954,7 +5017,7 @@ Please choose a different file name.</source>
     <name>QSQLite2Driver</name>
     <message>
         <source>Error opening database</source>
-        <translation>データベースのオープンでエラーが発生しました</translation>
+        <translation>データベースのオープン時にエラーが発生しました</translation>
     </message>
     <message>
         <source>Unable to begin transaction</source>
@@ -4984,11 +5047,11 @@ Please choose a different file name.</source>
     <name>QSQLiteDriver</name>
     <message>
         <source>Error opening database</source>
-        <translation>データベースのオープンでエラーが発生しました</translation>
+        <translation>データベースのオープン時にエラーが発生しました</translation>
     </message>
     <message>
         <source>Error closing database</source>
-        <translation>データベースのクローズでエラーが発生しました</translation>
+        <translation>データベースのクローズ時にエラーが発生しました</translation>
     </message>
     <message>
         <source>Unable to begin transaction</source>
@@ -5495,11 +5558,11 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Pause</source>
-        <translation>Pause</translation>
+        <translation>一時停止</translation>
     </message>
     <message>
         <source>Print</source>
-        <translation>Print</translation>
+        <translation>印刷</translation>
     </message>
     <message>
         <source>SysReq</source>
@@ -6113,11 +6176,11 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Insert</source>
-        <translation>Insert</translation>
+        <translation>挿入</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation>Delete</translation>
+        <translation>削除</translation>
     </message>
     <message>
         <source>Escape</source>
@@ -6129,7 +6192,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Select</source>
-        <translation>Select</translation>
+        <translation>選択</translation>
     </message>
     <message>
         <source>Yes</source>
@@ -6430,7 +6493,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Select</source>
-        <translation>セレクト</translation>
+        <translation>選択</translation>
     </message>
     <message>
         <source>Done</source>
@@ -6552,6 +6615,10 @@ Please choose a different file name.</source>
     <message>
         <source>Error during SSL handshake: %1</source>
         <translation>SSL ハンドシェーク時にエラーが発生しました: %1</translation>
+    </message>
+    <message>
+        <source>The peer certificate is blacklisted</source>
+        <translation>通信相手の証明書がブラックリストに載っています</translation>
     </message>
     <message>
         <source>No error</source>
@@ -6760,7 +6827,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Open</source>
-        <translation>オープン</translation>
+        <translation>開く</translation>
     </message>
 </context>
 <context>
@@ -6906,7 +6973,7 @@ Please choose a different file name.</source>
     <message>
         <source>Choose File</source>
         <comment>title for file button used in HTML forms</comment>
-        <translation>ファイルを選ぶ</translation>
+        <translation>ファイルを選択</translation>
     </message>
     <message>
         <source>No file selected</source>
@@ -7061,7 +7128,7 @@ Please choose a different file name.</source>
     <message>
         <source>Italic</source>
         <comment>Italic context menu item</comment>
-        <translation>イタリック</translation>
+        <translation>斜体</translation>
     </message>
     <message>
         <source>Underline</source>
@@ -7141,7 +7208,7 @@ Please choose a different file name.</source>
     <message>
         <source>Slider</source>
         <comment>Media controller element</comment>
-        <translation>スライダ</translation>
+        <translation>スライダー</translation>
     </message>
     <message>
         <source>Slider Thumb</source>
@@ -7586,7 +7653,7 @@ Please choose a different file name.</source>
     <name>QWhatsThisAction</name>
     <message>
         <source>What&apos;s This?</source>
-        <translation>ヒント?</translation>
+        <translation>ヒント</translation>
     </message>
 </context>
 <context>

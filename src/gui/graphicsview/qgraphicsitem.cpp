@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -421,7 +421,7 @@
     \omitvalue ItemStopsFocusHandling \omit Same as
     ItemStopsClickFocusPropagation, but also suppresses focus-out. This flag
     allows you to completely take over focus handling.
-    This flag was introduced in Qt 4.7.
+    This flag was introduced in Qt 4.7. \endomit
 */
 
 /*!
@@ -579,19 +579,21 @@
     QGraphicsItem pointer). The return value is unused; you cannot adjust
     anything in this notification.
 
-    \value ItemSceneChange The item is moved to a new scene. This notification
-    is also sent when the item is added to its initial scene, and when it is
-    removed. The value argument is the new scene (i.e., a QGraphicsScene
+    \value ItemSceneChange The item is moved to a new scene. This notification is
+    also sent when the item is added to its initial scene, and when it is removed.
+    The item's scene() is the old scene (or 0 if the item has not been added to a
+    scene yet). The value argument is the new scene (i.e., a QGraphicsScene
     pointer), or a null pointer if the item is removed from a scene. Do not
-    override this change by passing this item to QGraphicsScene::addItem() as
-    this notification is delivered; instead, you can return the new scene from
+    override this change by passing this item to QGraphicsScene::addItem() as this
+    notification is delivered; instead, you can return the new scene from
     itemChange(). Use this feature with caution; objecting to a scene change can
     quickly lead to unwanted recursion.
 
-    \value ItemSceneHasChanged The item's scene has changed. The value
-    argument is the new scene (i.e., a pointer to a QGraphicsScene). Do not
-    call setScene() in itemChange() as this notification is delivered. The
-    return value is ignored.
+    \value ItemSceneHasChanged The item's scene has changed. The item's scene() is
+    the new scene. This notification is also sent when the item is added to its
+    initial scene, and when it is removed.The value argument is the new scene
+    (i.e., a pointer to a QGraphicsScene). Do not call setScene() in itemChange()
+    as this notification is delivered. The return value is ignored.
 
     \value ItemCursorChange The item's cursor changes. The value argument is
     the new cursor (i.e., a QCursor). Do not call setCursor() in itemChange()

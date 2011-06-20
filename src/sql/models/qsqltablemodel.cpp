@@ -7,29 +7,29 @@
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -138,11 +138,24 @@ void QSqlTableModelPrivate::revertInsertedRow()
 void QSqlTableModelPrivate::clearEditBuffer()
 {
     editBuffer = rec;
+    clearGenerated(editBuffer);
 }
 
 void QSqlTableModelPrivate::clearCache()
 {
     cache.clear();
+}
+
+void QSqlTableModelPrivate::clearGenerated(QSqlRecord &rec)
+{
+    for (int i = rec.count() - 1; i >= 0; i--)
+        rec.setGenerated(i, false);
+}
+
+void QSqlTableModelPrivate::setGeneratedValue(QSqlRecord &rec, int c, QVariant v)
+{
+    rec.setValue(c, v);
+    rec.setGenerated(c, true);
 }
 
 void QSqlTableModelPrivate::revertCachedRow(int row)
@@ -201,7 +214,7 @@ bool QSqlTableModelPrivate::exec(const QString &stmt, bool prepStatement,
         }
         int i;
         for (i = 0; i < rec.count(); ++i) {
-            if (rec.isGenerated(i) && rec.value(i).type() != QVariant::Invalid)
+            if (rec.isGenerated(i))
                 editQuery.addBindValue(rec.value(i));
         }
         for (i = 0; i < whereValues.count(); ++i) {
@@ -435,26 +448,22 @@ QVariant QSqlTableModel::data(const QModelIndex &index, int role) const
     case OnFieldChange:
     case OnRowChange:
         if (index.row() == d->insertIndex) {
-            QVariant val;
             if (item.column() < 0 || item.column() >= d->rec.count())
-                return val;
-            val = d->editBuffer.value(index.column());
-            if (val.type() == QVariant::Invalid)
-                val = QVariant(d->rec.field(item.column()).type());
-            return val;
+                return QVariant();
+            return d->editBuffer.value(index.column());
         }
         if (d->editIndex == item.row()) {
-            QVariant var = d->editBuffer.value(item.column());
-            if (var.isValid())
-                return var;
+            if (d->editBuffer.isGenerated(item.column()))
+                return d->editBuffer.value(item.column());
         }
         break;
-    case OnManualSubmit: {
-        const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
-        const QVariant var = row.rec.value(item.column());
-        if (var.isValid() || row.op == QSqlTableModelPrivate::Insert)
-            return var;
-        break; }
+    case OnManualSubmit:
+        if (d->cache.contains(index.row())) {
+            const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
+            if (row.rec.isGenerated(item.column()) || row.op == QSqlTableModelPrivate::Insert)
+                return row.rec.value(item.column());
+        }
+        break;
     }
 
     // We need to handle row mapping here, but not column mapping
@@ -503,13 +512,13 @@ bool QSqlTableModel::isDirty(const QModelIndex &index) const
         case OnFieldChange:
             return false;
         case OnRowChange:
-            return index.row() == d->editIndex && d->editBuffer.value(index.column()).isValid();
+            return index.row() == d->editIndex && d->editBuffer.isGenerated(index.column());
         case OnManualSubmit: {
             const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
             return row.op == QSqlTableModelPrivate::Insert
                    || row.op == QSqlTableModelPrivate::Delete
                    || (row.op == QSqlTableModelPrivate::Update
-                       && row.rec.value(index.column()).isValid());
+                       && row.rec.isGenerated(index.column()));
         }
     }
     return false;
@@ -538,11 +547,11 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
     switch (d->strategy) {
     case OnFieldChange: {
         if (index.row() == d->insertIndex) {
-            d->editBuffer.setValue(index.column(), value);
+            QSqlTableModelPrivate::setGeneratedValue(d->editBuffer, index.column(), value);
             return true;
         }
         d->clearEditBuffer();
-        d->editBuffer.setValue(index.column(), value);
+        QSqlTableModelPrivate::setGeneratedValue(d->editBuffer, index.column(), value);
         isOk = updateRowInTable(index.row(), d->editBuffer);
         if (isOk)
             select();
@@ -550,7 +559,7 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
         break; }
     case OnRowChange:
         if (index.row() == d->insertIndex) {
-            d->editBuffer.setValue(index.column(), value);
+            QSqlTableModelPrivate::setGeneratedValue(d->editBuffer, index.column(), value);
             return true;
         }
         if (d->editIndex != index.row()) {
@@ -558,7 +567,7 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
                 submit();
             d->clearEditBuffer();
         }
-        d->editBuffer.setValue(index.column(), value);
+        QSqlTableModelPrivate::setGeneratedValue(d->editBuffer, index.column(), value);
         d->editIndex = index.row();
         emit dataChanged(index, index);
         break;
@@ -567,9 +576,10 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
         if (row.op == QSqlTableModelPrivate::None) {
             row.op = QSqlTableModelPrivate::Update;
             row.rec = d->rec;
+            QSqlTableModelPrivate::clearGenerated(row.rec);
             row.primaryValues = d->primaryValues(indexInQuery(index).row());
         }
-        row.rec.setValue(index.column(), value);
+        QSqlTableModelPrivate::setGeneratedValue(row.rec, index.column(), value);
         emit dataChanged(index, index);
         break; }
     }
@@ -996,7 +1006,8 @@ QString QSqlTableModel::orderByClause() const
 }
 
 /*!
-    Returns the index of the field \a fieldName.
+    Returns the index of the field \a fieldName, or -1 if no corresponding field
+    exists in the model.
 */
 int QSqlTableModel::fieldIndex(const QString &fieldName) const
 {
@@ -1330,6 +1341,7 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
         if (mrow.op == QSqlTableModelPrivate::None) {
             mrow.op = QSqlTableModelPrivate::Update;
             mrow.rec = d->rec;
+            QSqlTableModelPrivate::clearGenerated(mrow.rec);
             mrow.primaryValues = d->primaryValues(indexInQuery(createIndex(row, 0)).row());
         }
         QString fieldName;
@@ -1338,10 +1350,11 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
             if (d->db.driver()->isIdentifierEscaped(fieldName, QSqlDriver::FieldName))
                 fieldName = d->db.driver()->stripDelimiters(fieldName, QSqlDriver::FieldName);
             int idx = mrow.rec.indexOf(fieldName);
-            if (idx == -1)
+            if (idx == -1) {
                 isOk = false;
-            else
-                mrow.rec.setValue(idx, record.value(i));
+            } else {
+                QSqlTableModelPrivate::setGeneratedValue(mrow.rec, idx, record.value(i));
+            }
         }
 
         if (isOk)

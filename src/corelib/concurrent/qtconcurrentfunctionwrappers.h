@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -162,6 +162,118 @@ private:
 };
 
 } // namespace QtConcurrent.
+
+namespace QtPrivate {
+
+template <typename T>
+const T& createFunctionWrapper(const T& t)
+{
+    return t;
+}
+
+template <typename T, typename U>
+QtConcurrent::FunctionWrapper1<T, U> createFunctionWrapper(T (*func)(U))
+{
+    return QtConcurrent::FunctionWrapper1<T, U>(func);
+}
+
+template <typename T, typename C>
+QtConcurrent::MemberFunctionWrapper<T, C> createFunctionWrapper(T (C::*func)())
+{
+    return QtConcurrent::MemberFunctionWrapper<T, C>(func);
+}
+
+template <typename T, typename C, typename U>
+QtConcurrent::MemberFunctionWrapper1<T, C, U> createFunctionWrapper(T (C::*func)(U))
+{
+    return QtConcurrent::MemberFunctionWrapper1<T, C, U>(func);
+}
+
+template <typename T, typename C>
+QtConcurrent::ConstMemberFunctionWrapper<T, C> createFunctionWrapper(T (C::*func)() const)
+{
+    return QtConcurrent::ConstMemberFunctionWrapper<T, C>(func);
+}
+
+template <typename Functor, bool foo = HasResultType<Functor>::Value>
+struct LazyResultType { typedef typename Functor::result_type Type; };
+template <typename Functor>
+struct LazyResultType<Functor, false> { typedef void Type; };
+
+template <class T>
+struct ReduceResultType;
+
+template <class U, class V>
+struct ReduceResultType<void(*)(U&,V)>
+{
+    typedef U ResultType;
+};
+
+template <class T, class C, class U>
+struct ReduceResultType<T(C::*)(U)>
+{
+    typedef C ResultType;
+};
+
+template <class InputSequence, class MapFunctor>
+struct MapResultType
+{
+    typedef typename LazyResultType<MapFunctor>::Type ResultType;
+};
+
+template <class U, class V>
+struct MapResultType<void, U (*)(V)>
+{
+    typedef U ResultType;
+};
+
+template <class T, class C>
+struct MapResultType<void, T(C::*)() const>
+{
+    typedef T ResultType;
+};
+
+#ifndef QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
+
+template <template <typename> class InputSequence, typename MapFunctor, typename T>
+struct MapResultType<InputSequence<T>, MapFunctor>
+{
+    typedef InputSequence<typename LazyResultType<MapFunctor>::Type> ResultType;
+};
+
+template <template <typename> class InputSequence, class T, class U, class V>
+struct MapResultType<InputSequence<T>, U (*)(V)>
+{
+    typedef InputSequence<U> ResultType;
+};
+
+template <template <typename> class InputSequence, class T, class U, class C>
+struct MapResultType<InputSequence<T>, U(C::*)() const>
+{
+    typedef InputSequence<U> ResultType;
+};
+
+#endif // QT_NO_TEMPLATE_TEMPLATE_PARAMETER
+
+template <class MapFunctor>
+struct MapResultType<QStringList, MapFunctor>
+{
+    typedef QList<typename LazyResultType<MapFunctor>::Type> ResultType;
+};
+
+template <class U, class V>
+struct MapResultType<QStringList, U (*)(V)>
+{
+    typedef QList<U> ResultType;
+};
+
+template <class U, class C>
+struct MapResultType<QStringList, U(C::*)() const>
+{
+    typedef QList<U> ResultType;
+};
+
+} // namespace QtPrivate.
 
 #endif //qdoc
 

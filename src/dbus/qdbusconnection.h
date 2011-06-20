@@ -7,29 +7,29 @@
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -111,8 +111,12 @@ public:
         UnregisterNode,
         UnregisterTree
     };
-
     Q_DECLARE_FLAGS(RegisterOptions, RegisterOption)
+
+    enum ConnectionCapability {
+        UnixFileDescriptorPassing = 0x0001
+    };
+    Q_DECLARE_FLAGS(ConnectionCapabilities, ConnectionCapability)
 
     QDBusConnection(const QString &name);
     QDBusConnection(const QDBusConnection &other);
@@ -124,6 +128,7 @@ public:
     QString baseService() const;
     QDBusError lastError() const;
     QString name() const;
+    ConnectionCapabilities connectionCapabilities() const;
 
     bool send(const QDBusMessage &message) const;
     bool callWithCallback(const QDBusMessage &message, QObject *receiver,
@@ -163,9 +168,13 @@ public:
 
     QDBusConnectionInterface *interface() const;
 
+    void *internalPointer() const;
+
     static QDBusConnection connectToBus(BusType type, const QString &name);
     static QDBusConnection connectToBus(const QString &address, const QString &name);
+    static QDBusConnection connectToPeer(const QString &address, const QString &name);
     static void disconnectFromBus(const QString &name);
+    static void disconnectFromPeer(const QString &name);
 
     static QDBusConnection sessionBus();
     static QDBusConnection systemBus();

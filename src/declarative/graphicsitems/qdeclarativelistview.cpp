@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -298,7 +298,6 @@ public:
     void mirrorChange() {
         Q_Q(QDeclarativeListView);
         regenerate();
-        emit q->effectiveLayoutDirectionChanged();
     }
 
     bool isRightToLeft() const {
@@ -733,6 +732,7 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
     if (doBuffer && (bufferMode & BufferBefore))
         fillFrom = bufferFrom;
 
+    bool haveValidItems = false;
     int modelIndex = visibleIndex;
     qreal itemEnd = visiblePos-1;
     if (!visibleItems.isEmpty()) {
@@ -741,9 +741,33 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         int i = visibleItems.count() - 1;
         while (i > 0 && visibleItems.at(i)->index == -1)
             --i;
-        if (visibleItems.at(i)->index != -1)
+        if (visibleItems.at(i)->index != -1) {
+            haveValidItems = true;
             modelIndex = visibleItems.at(i)->index + 1;
+        }
     }
+
+    if (haveValidItems && (fillFrom > itemEnd+averageSize+spacing
+        || fillTo < visiblePos - averageSize - spacing)) {
+        // We've jumped more than a page.  Estimate which items are now
+        // visible and fill from there.
+        int count = (fillFrom - itemEnd) / (averageSize + spacing);
+        for (int i = 0; i < visibleItems.count(); ++i)
+            releaseItem(visibleItems.at(i));
+        visibleItems.clear();
+        modelIndex += count;
+        if (modelIndex >= model->count()) {
+            count -= modelIndex - model->count() + 1;
+            modelIndex = model->count() - 1;
+        } else if (modelIndex < 0) {
+            count -= modelIndex;
+            modelIndex = 0;
+        }
+        visibleIndex = modelIndex;
+        visiblePos = itemEnd + count * (averageSize + spacing) + 1;
+        itemEnd = visiblePos-1;
+    }
+
     bool changed = false;
     FxListItem *item = 0;
     qreal pos = itemEnd + 1;
@@ -918,7 +942,9 @@ void QDeclarativeListViewPrivate::createHighlight()
     if (highlight) {
         if (trackedItem == highlight)
             trackedItem = 0;
-        delete highlight->item;
+        if (highlight->item->scene())
+            highlight->item->scene()->removeItem(highlight->item);
+        highlight->item->deleteLater();
         delete highlight;
         highlight = 0;
         delete highlightPosAnimator;
@@ -1354,6 +1380,7 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
     } else {
         QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
     }
+    data.inOvershoot = false;
     fixupMode = Normal;
 }
 
@@ -1428,10 +1455,10 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
                 data.flickTarget = isRightToLeft() ? -data.flickTarget+size() : data.flickTarget;
                 if (overShoot) {
                     if (data.flickTarget >= minExtent) {
-                        overshootDist = overShootDistance(v, vSize);
+                        overshootDist = overShootDistance(vSize);
                         data.flickTarget += overshootDist;
                     } else if (data.flickTarget <= maxExtent) {
-                        overshootDist = overShootDistance(v, vSize);
+                        overshootDist = overShootDistance(vSize);
                         data.flickTarget -= overshootDist;
                     }
                 }
@@ -1451,10 +1478,10 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             } else if (overShoot) {
                 data.flickTarget = data.move.value() - dist;
                 if (data.flickTarget >= minExtent) {
-                    overshootDist = overShootDistance(v, vSize);
+                    overshootDist = overShootDistance(vSize);
                     data.flickTarget += overshootDist;
                 } else if (data.flickTarget <= maxExtent) {
-                    overshootDist = overShootDistance(v, vSize);
+                    overshootDist = overShootDistance(vSize);
                     data.flickTarget -= overshootDist;
                 }
             }
@@ -1790,6 +1817,7 @@ void QDeclarativeListView::setDelegate(QDeclarativeComponent *delegate)
         d->ownModel = true;
     }
     if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model)) {
+        int oldCount = dataModel->count();
         dataModel->setDelegate(delegate);
         if (isComponentComplete()) {
             for (int i = 0; i < d->visibleItems.count(); ++i)
@@ -1808,6 +1836,8 @@ void QDeclarativeListView::setDelegate(QDeclarativeComponent *delegate)
             }
             d->updateViewport();
         }
+        if (oldCount != dataModel->count())
+            emit countChanged();
     }
     emit delegateChanged();
 }
@@ -2118,9 +2148,11 @@ void QDeclarativeListView::setOrientation(QDeclarativeListView::Orientation orie
         if (d->orient == QDeclarativeListView::Vertical) {
             setContentWidth(-1);
             setFlickableDirection(VerticalFlick);
+            setContentX(0);
         } else {
             setContentHeight(-1);
             setFlickableDirection(HorizontalFlick);
+            setContentY(0);
         }
         d->regenerate();
         emit orientationChanged();
@@ -2138,7 +2170,12 @@ void QDeclarativeListView::setOrientation(QDeclarativeListView::Orientation orie
   \o Qt.RightToLeft - Items will be laid out from right to let.
   \endlist
 
-  \sa ListView::effectiveLayoutDirection
+  When using the attached property \l {LayoutMirroring::enabled} for locale layouts,
+  the layout direction of the horizontal list will be mirrored. However, the actual property
+  \c layoutDirection will remain unchanged. You can use the property
+  \l {LayoutMirroring::enabled} to determine whether the direction has been mirrored.
+
+  \sa {LayoutMirroring}{LayoutMirroring}
 */
 
 Qt::LayoutDirection QDeclarativeListView::layoutDirection() const
@@ -2154,20 +2191,8 @@ void QDeclarativeListView::setLayoutDirection(Qt::LayoutDirection layoutDirectio
         d->layoutDirection = layoutDirection;
         d->regenerate();
         emit layoutDirectionChanged();
-        emit effectiveLayoutDirectionChanged();
     }
 }
-
-/*!
-    \qmlproperty enumeration ListView::effectiveLayoutDirection
-    This property holds the effective layout direction of the horizontal list.
-
-    When using the attached property \l {LayoutMirroring::enabled}{LayoutMirroring::enabled} for locale layouts,
-    the visual layout direction of the horizontal list will be mirrored. However, the
-    property \l {ListView::layoutDirection}{layoutDirection} will remain unchanged.
-
-    \sa ListView::layoutDirection, {LayoutMirroring}{LayoutMirroring}
-*/
 
 Qt::LayoutDirection QDeclarativeListView::effectiveLayoutDirection() const
 {
@@ -2277,10 +2302,18 @@ void QDeclarativeListView::setCacheBuffer(int b)
     depending on the "size" property of the model item. The \c sectionHeading
     delegate component provides the light blue bar that marks the beginning of
     each section.
+
        
     \snippet examples/declarative/modelviews/listview/sections.qml 0
 
     \image qml-listview-sections-example.png
+
+    \note Adding sections to a ListView does not automatically re-order the
+    list items by the section criteria.
+    If the model is not ordered by section, then it is possible that
+    the sections created will not be unique; each boundary between
+    differing sections will result in a section header being created
+    even if that section exists elsewhere.
 
     \sa {declarative/modelviews/listview}{ListView examples}
 */
@@ -2581,7 +2614,7 @@ void QDeclarativeListView::viewportMoved()
         d->inFlickCorrection = true;
         // Near an end and it seems that the extent has changed?
         // Recalculate the flick so that we don't end up in an odd position.
-        if (yflick()) {
+        if (yflick() && !d->vData.inOvershoot) {
             if (d->vData.velocity > 0) {
                 const qreal minY = minYExtent();
                 if ((minY - d->vData.move.value() < height()/2 || d->vData.flickTarget - d->vData.move.value() < height()/2)
@@ -2597,7 +2630,7 @@ void QDeclarativeListView::viewportMoved()
             }
         }
 
-        if (xflick()) {
+        if (xflick() && !d->hData.inOvershoot) {
             if (d->hData.velocity > 0) {
                 const qreal minX = minXExtent();
                 if ((minX - d->hData.move.value() < width()/2 || d->hData.flickTarget - d->hData.move.value() < width()/2)
@@ -2767,7 +2800,7 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
         return;
 
     if (d->model && d->model->count() && d->interactive) {
-        if ((!d->isRightToLeft() && event->key() == Qt::Key_Left)
+        if ((d->orient == QDeclarativeListView::Horizontal && !d->isRightToLeft() && event->key() == Qt::Key_Left)
                     || (d->orient == QDeclarativeListView::Horizontal && d->isRightToLeft() && event->key() == Qt::Key_Right)
                     || (d->orient == QDeclarativeListView::Vertical && event->key() == Qt::Key_Up)) {
             if (currentIndex() > 0 || (d->wrap && !event->isAutoRepeat())) {
@@ -2778,7 +2811,7 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
                 event->accept();
                 return;
             }
-        } else if ((!d->isRightToLeft() && event->key() == Qt::Key_Right)
+        } else if ((d->orient == QDeclarativeListView::Horizontal && !d->isRightToLeft() && event->key() == Qt::Key_Right)
                     || (d->orient == QDeclarativeListView::Horizontal && d->isRightToLeft() && event->key() == Qt::Key_Left)
                     || (d->orient == QDeclarativeListView::Vertical && event->key() == Qt::Key_Down)) {
             if (currentIndex() < d->model->count() - 1 || (d->wrap && !event->isAutoRepeat())) {
@@ -3370,9 +3403,9 @@ void QDeclarativeListView::itemsRemoved(int modelIndex, int count)
         }
     }
 
-    if (removedVisible && !haveVisibleIndex) {
+    if (!haveVisibleIndex) {
         d->timeline.clear();
-        if (d->itemCount == 0) {
+        if (removedVisible && d->itemCount == 0) {
             d->visibleIndex = 0;
             d->visiblePos = d->header ? d->header->size() : 0;
             d->setPosition(0);

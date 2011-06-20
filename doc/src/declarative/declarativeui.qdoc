@@ -7,20 +7,20 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of this
-** file.
+** Foundation and appearing in the file included in the packaging of
+** this file.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -31,12 +31,10 @@
 \ingroup qt-gui-concepts
 
 \brief Qt Quick provides a declarative framework for building highly
-dynamic, custom user interfaces.
-
-\section1 Introduction
+dynamic user interfaces.
 
 Qt Quick is a collection of technologies that are designed to help
-developers create the kind of intuitive, modern-looking, fluid user
+developers create the kind of intuitive, modern, fluid user
 interfaces that are increasingly used on mobile phones, media players,
 set-top boxes and other portable devices.
 
@@ -45,74 +43,68 @@ language for describing user interfaces and a language runtime. A collection
 of C++ APIs is used to integrate these high level features with classic
 Qt applications.
 
-\section2 QML, Elements and the Qt Declarative Module
-
-User interfaces and their behavior are described using QML, an extension to
-\l{About JavaScript}{JavaScript} that lets developers and designers
-use a declarative syntax to specify each user interface in terms of
-\l{QML Elements}{QML elements}. These elements are a sophisticated set of
-graphical and behavioral building blocks that can be combined together in
-\l{QML Documents}{QML documents} to build components ranging in complexity
-from simple buttons and sliders, to complete Internet-enabled applications.
-
-QML improves the integration between JavaScript and Qt's existing
-QObject-based type system, adds support for automatic
-\l{Property Binding}{property bindings} and provides
-\l{Network Transparency}{network transparency} at the language level.
-
-The Qt Declarative module implements the interface between the QML language
-and the elements available to it. It also provides a C++ API that can be
-used to load and interact with QML files from within Qt applications.
-
-Qt Quick builds on \l{QML for Qt programmers}{Qt's existing strengths}.
-QML can be be used to incrementally extend an existing application or
-to build completely new applications.  QML is fully
-\l{Extending QML in C++}{extensible from C++} through the Qt Declarative
-Module.
-
 \section1 Getting Started
 
 \list
-\o \l{What's new in Qt Quick}
-\o \l{Introduction to the QML language}
-\o \l{QML for Qt Programmers}
+\o \l{Intro to Qt Quick}{Introduction to Qt Quick}
+\o \l{QML for Qt Programmers}{QML Programming for Qt Programmers}
 \o \l{Getting Started Programming with QML}
-\o \l{Intro to Qt Quick}
-\endlist
 
-\list
-\o \l{QML Tutorial}{Tutorial: "Hello World"}
-\o \l{QML Advanced Tutorial}{Tutorial: "Same Game"}
+\o \l{What's new in Qt Quick}{What's New in the Qt Quick Release}
 \o \l{QML Examples and Demos}
 \endlist
 
-\section1 QML Concepts
+\section1 QML Features
 
 \list
-\o \l{QML Documents}
+\o \l{QML Basic Elements}{Basic Elements}
+\o \l{QML Basic Types}{Data Types}
 \o \l{Property Binding}
-\o \l{Anchor-Based Layout in QML}
-\o \l{Writing QML Components: Properties, Methods and Signals}
-\o \l{QML Scope}
-\o \l{QML Modules}
+\o \l{Using QML Positioner and Repeater Items}{Component Layouts}
+\o \l{Anchor-based Layout in QML}{Layouts using Anchors}
+\o \l{QML Mouse Events}{Mouse Events}
+\o \l{QML Text Handling and Validators}{Text Handling and Validators}
+\o \l{Keyboard Focus in QML}{Keyboard Focus}
+\o \l{QML Signal and Handler Event System}{Signal and Handler Event System}
+\o \l{Importing Reusable Components}
+\o \l{QML States}{States}
+\o \l{QML Animation and Transitions}{Animation and Transitions}
+\o \l{QML Data Models}{Structuring Data with Models}
+\o \l{Presenting Data with Views}
+\o \l{Extending QML Functionalities using C++}
+\o \l{Using QML Bindings in C++ Applications}
+\o \l{Integrating QML Code with Existing Qt UI Code}
+\o \l{Dynamic Object Management in QML}{Dynamic Object Management}
+\o \l{Network Transparency}{Loading Resources in QML}
+\o \l{QML Internationalization}{Internationalization}
 \endlist
 
-\section1 User Interaction
+\section1 QML Add-Ons
 
 \list
-\o \l{Keyboard Focus in QML}
-\o \l{QML States}
-\o \l{QML Animation}
+\o \l{QtWebKit QML Module}
+\o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/qml-plugins.html}{Mobility QML Plugins}
 \endlist
 
-\section1 Handling Data
+\section1 Qt Quick Tools
 
 \list
-\o \l{QML Basic Types}{QML Basic Data Types}
-\o \l{Using QML Positioner and Repeater Items}
-\o \l{QML Data Models}
-\o \l{Presenting Data with QML}
-\o \l{Network Transparency}
+\o \l{Debugging QML}
+\o \l{external: Developing Qt Quick Applications with Creator}{Developing with Qt Creator}
+\o \l{QML Viewer}
+\endlist
+
+\section1 Reference
+
+\list
+\o \l{Introduction to the QML language}{QML Syntax}
+\o \l{QML Elements}
+\o \l{Qt Declarative Module}
+\o \l{QML Basic Types}{QML Data Types}
+\o \l{QML Coding Conventions}
+\o \l{external: Qt Creator Manual}{Qt Creator Manual}
+\o \l{Programming with Qt}
+\o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/index.html}{Qt Mobility Documentation}
 \endlist
 
 \section1 Architecture
@@ -120,33 +112,40 @@ Module.
 \list
 \o \l{Qt Declarative UI Runtime}
 \o \l{Integrating JavaScript}
-\o \l{Dynamic Object Management in QML}
-\endlist
-
-\section1 Using QML with C++
-
-\list
-\o \l{Qt Declarative UI Runtime}
-\o \l{Using QML in C++ Applications}
-\o \l{Integrating QML with existing Qt UI code}
-\o \l{Tutorial: Writing QML extensions with C++}
-\o \l{Extending QML in C++}
-\endlist
-
-\section1 Reference
-
-\list
-\o \l{QML Elements}
-\o \l{QML Basic Types}
+\o \l{QML Scope}
+\o \l{QML Modules}
+\o \l{QML Documents}
 \o \l{QML Global Object}
 \o \l{QML Internationalization}
 \o \l{QML Right-to-left User Interfaces}
 \o \l{QML Security}
 \o \l{Qt Declarative Module}
-\o \l{Debugging QML}
-\o \l{QML Viewer}
-\o \l{QML Performance}
-\o \l{QML Coding Conventions}
+\endlist
+
+\section1 Examples
+
+\list
+\o \l{QML Tutorial}{"Hello World" Tutorial}
+\o \l{Getting Started Programming with QML}
+\o \l{QML Advanced Tutorial}{Tutorial: "Same Game"}
+\o \l{Tutorial: Writing QML extensions with C++}
+\o \l{QML Examples and Demos}
+
+\o Forum Nokia:
+\l{http://wiki.forum.nokia.com/index.php/Qt_Quick_examples_for_porting}{Qt Quick
+examples for porting}
+\endlist
+
+\section1 Best Practices
+
+\list
+\o \l{QML Best Practices: Coding Conventions}{Coding Tips}
+\o \l{QML Performance}{Performance Tips}
+\endlist
+
+\section1 License Information
+\list
+\o \l{Qt Quick Licensing Information}
 \endlist
 
 \section1 Online Examples

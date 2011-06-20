@@ -76,12 +76,9 @@ contains(QT_CONFIG, private_tests) {
            qdeclarativeworkerscript \
            qdeclarativexmllistmodel \
            qpacketprotocol
+}
 
-contains(QT_CONFIG, webkit) {
-    SUBDIRS += \
-           qdeclarativewebview
-}
-}
+contains(QT_CONFIG, opengl): SUBDIRS += qmlshadersplugin
 
 # Tests which should run in Pulse
 PULSE_TESTS = $$SUBDIRS

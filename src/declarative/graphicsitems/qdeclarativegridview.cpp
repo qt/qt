@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -197,6 +197,7 @@ public:
         if (q->isComponentComplete()) {
             clear();
             updateGrid();
+            setPosition(0);
             q->refill();
             updateCurrent(currentIndex);
         }
@@ -205,7 +206,6 @@ public:
     void mirrorChange() {
         Q_Q(QDeclarativeGridView);
         regenerate();
-        emit q->effectiveLayoutDirectionChanged();
     }
 
     qreal position() const {
@@ -583,6 +583,26 @@ void QDeclarativeGridViewPrivate::refill(qreal from, qreal to, bool doBuffer)
             --i;
         modelIndex = visibleItems.at(i)->index + 1;
     }
+
+    if (visibleItems.count() && (fillFrom > rowPos + rowSize()*2
+        || fillTo < rowPosAt(visibleIndex) - rowSize())) {
+        // We've jumped more than a page.  Estimate which items are now
+        // visible and fill from there.
+        int count = (fillFrom - (rowPos + rowSize())) / (rowSize()) * columns;
+        for (int i = 0; i < visibleItems.count(); ++i)
+            releaseItem(visibleItems.at(i));
+        visibleItems.clear();
+        modelIndex += count;
+        if (modelIndex >= model->count())
+            modelIndex = model->count() - 1;
+        else if (modelIndex < 0)
+            modelIndex = 0;
+        modelIndex = modelIndex / columns * columns;
+        visibleIndex = modelIndex;
+        colPos = colPosAt(visibleIndex);
+        rowPos = rowPosAt(visibleIndex);
+    }
+
     int colNum = colPos / colSize();
 
     FxGridItem *item = 0;
@@ -689,7 +709,6 @@ void QDeclarativeGridViewPrivate::updateGrid()
             q->setContentHeight(endPosition() - startPosition());
         else
             q->setContentWidth(lastPosition() - originPosition());
-        setPosition(0);
     }
 }
 
@@ -798,7 +817,9 @@ void QDeclarativeGridViewPrivate::createHighlight()
     if (highlight) {
         if (trackedItem == highlight)
             trackedItem = 0;
-        delete highlight->item;
+        if (highlight->item->scene())
+            highlight->item->scene()->removeItem(highlight->item);
+        highlight->item->deleteLater();
         delete highlight;
         highlight = 0;
         delete highlightXAnimator;
@@ -1115,6 +1136,7 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
     } else {
         QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
     }
+    data.inOvershoot = false;
     fixupMode = Normal;
 }
 
@@ -1196,7 +1218,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             accel = v2 / (2.0f * qAbs(dist));
         } else {
             data.flickTarget = velocity > 0 ? minExtent : maxExtent;
-            overshootDist = overShoot ? overShootDistance(v, vSize) : 0;
+            overshootDist = overShoot ? overShootDistance(vSize) : 0;
         }
         timeline.reset(data.move);
         timeline.accel(data.move, v, accel, maxDistance + overshootDist);
@@ -1246,7 +1268,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 
     \snippet doc/src/snippets/declarative/gridview/ContactModel.qml 0
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage gridview-simple.png
     \enddiv
 
@@ -1262,7 +1284,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     \codeline
     \snippet doc/src/snippets/declarative/gridview/gridview.qml classdocs simple
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage gridview-highlight.png
     \enddiv
 
@@ -1478,6 +1500,7 @@ void QDeclarativeGridView::setDelegate(QDeclarativeComponent *delegate)
         d->ownModel = true;
     }
     if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model)) {
+        int oldCount = dataModel->count();
         dataModel->setDelegate(delegate);
         if (isComponentComplete()) {
             for (int i = 0; i < d->visibleItems.count(); ++i)
@@ -1495,6 +1518,8 @@ void QDeclarativeGridView::setDelegate(QDeclarativeComponent *delegate)
             }
             d->moveReason = QDeclarativeGridViewPrivate::Other;
         }
+        if (oldCount != dataModel->count())
+            emit countChanged();
         emit delegateChanged();
     }
 }
@@ -1775,12 +1800,15 @@ void QDeclarativeGridView::setHighlightRangeMode(HighlightRangeMode mode)
   \o Qt.LeftToRight (default) - Items will be laid out starting in the top, left corner. The flow is
   dependent on the \l GridView::flow property.
   \o Qt.RightToLeft - Items will be laid out starting in the top, right corner. The flow is dependent
-  on the \l GridView:flow property.
+  on the \l GridView::flow property.
   \endlist
 
-  \bold Note: If GridView::flow is set to GridView.LeftToRight, this is not to be confused if
-  GridView::layoutDirection is set to Qt.RightToLeft. The GridView.LeftToRight flow value simply
-  indicates that the flow is horizontal.
+  When using the attached property \l {LayoutMirroring::enabled} for locale layouts,
+  the layout direction of the grid view will be mirrored. However, the actual property
+  \c layoutDirection will remain unchanged. You can use the property
+  \l {LayoutMirroring::enabled} to determine whether the direction has been mirrored.
+
+  \sa {LayoutMirroring}{LayoutMirroring}
 */
 
 Qt::LayoutDirection QDeclarativeGridView::layoutDirection() const
@@ -1796,20 +1824,8 @@ void QDeclarativeGridView::setLayoutDirection(Qt::LayoutDirection layoutDirectio
         d->layoutDirection = layoutDirection;
         d->regenerate();
         emit layoutDirectionChanged();
-        emit effectiveLayoutDirectionChanged();
     }
 }
-
-/*!
-    \qmlproperty enumeration GridView::effectiveLayoutDirection
-    This property holds the effective layout direction of the grid.
-
-    When using the attached property \l {LayoutMirroring::enabled}{LayoutMirroring::enabled} for locale layouts,
-    the visual layout direction of the grid will be mirrored. However, the
-    property \l {GridView::layoutDirection}{layoutDirection} will remain unchanged.
-
-    \sa GridView::layoutDirection, {LayoutMirroring}{LayoutMirroring}
-*/
 
 Qt::LayoutDirection QDeclarativeGridView::effectiveLayoutDirection() const
 {
@@ -2229,7 +2245,7 @@ qreal QDeclarativeGridView::maxXExtent() const
     qreal extent;
     qreal highlightStart;
     qreal highlightEnd;
-    qreal lastItemPosition;
+    qreal lastItemPosition = 0;
     if (d->isRightToLeftTopToBottom()){
         highlightStart = d->highlightRangeStartValid ? d->highlightRangeEnd : d->size();
         highlightEnd = d->highlightRangeEndValid ? d->highlightRangeStart : d->size();

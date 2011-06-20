@@ -7,29 +7,29 @@
 ** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -51,6 +51,7 @@ QString Atom::INDEX_         ("index");
 QString Atom::ITALIC_        ("italic");
 QString Atom::LINK_          ("link");
 QString Atom::PARAMETER_     ("parameter");
+QString Atom::SPAN_          ("span");
 QString Atom::SUBSCRIPT_     ("subscript");
 QString Atom::SUPERSCRIPT_   ("superscript");
 QString Atom::TELETYPE_      ("teletype");
@@ -107,7 +108,8 @@ QString Atom::UPPERROMAN_    ("upperroman");
   \value CodeOld
   \value CodeQuoteArgument
   \value CodeQuoteCommand
-  \value Div
+  \value DivLeft
+  \value DivRight
   \value EndQmlText
   \value FormatElse
   \value FormatEndif
@@ -180,11 +182,9 @@ static const struct {
     { "CodeOld", Atom::CodeOld },
     { "CodeQuoteArgument", Atom::CodeQuoteArgument },
     { "CodeQuoteCommand", Atom::CodeQuoteCommand },
-    { "Div", Atom::Div },
-    { "EndDiv", Atom::EndDiv },
-#ifdef QDOC_QML
+    { "DivLeft", Atom::DivLeft },
+    { "DivRight", Atom::DivRight },
     { "EndQmlText", Atom::EndQmlText },
-#endif
     { "FootnoteLeft", Atom::FootnoteLeft },
     { "FootnoteRight", Atom::FootnoteRight },
     { "FormatElse", Atom::FormatElse },
@@ -197,6 +197,8 @@ static const struct {
     { "Image", Atom::Image },
     { "ImageText", Atom::ImageText },
     { "InlineImage", Atom::InlineImage },
+    { "JavaScript", Atom::JavaScript },
+    { "EndJavaScript", Atom::EndJavaScript },
     { "LegaleseLeft", Atom::LegaleseLeft },
     { "LegaleseRight", Atom::LegaleseRight },
     { "LineBreak", Atom::LineBreak },
@@ -212,10 +214,8 @@ static const struct {
     { "Nop", Atom::Nop },
     { "ParaLeft", Atom::ParaLeft },
     { "ParaRight", Atom::ParaRight },
-#ifdef QDOC_QML
     { "Qml", Atom::Qml},
     { "QmlText", Atom::QmlText },
-#endif
     { "QuotationLeft", Atom::QuotationLeft },
     { "QuotationRight", Atom::QuotationRight },
     { "RawString", Atom::RawString },

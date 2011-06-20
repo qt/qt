@@ -7,29 +7,29 @@
 ** This file is part of the QtOpenVG module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -51,6 +51,7 @@
 #include <QImageReader>
 #include <QtGui/private/qimage_p.h>
 #include <QtGui/private/qnativeimagehandleprovider_p.h>
+#include <QtGui/private/qfont_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -377,7 +378,7 @@ VGImage QVGPixmapData::toVGImage()
         QVGImagePool::instance()->useImage(this);
     }
 
-    if (!source.isNull() && recreate) {
+    if (!source.isNull() && (recreate || source.paintingActive())) {
         source.beginDataAccess();
         vgImageSubData
             (vgImage,
@@ -458,7 +459,7 @@ void QVGPixmapData::hibernate()
     if (skipHibernate)
         return;
 
-    forceToImage();
+    forceToImage(false); // no readback allowed here
     destroyImageAndContext();
 }
 
@@ -469,9 +470,6 @@ void QVGPixmapData::reclaimImages()
     forceToImage();
     destroyImages();
 }
-
-Q_GUI_EXPORT int qt_defaultDpiX();
-Q_GUI_EXPORT int qt_defaultDpiY();
 
 int QVGPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
@@ -502,12 +500,13 @@ int QVGPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 
 // Ensures that the pixmap is backed by some valid data and forces the data to
 // be re-uploaded to the VGImage when toVGImage() is called next time.
-void QVGPixmapData::forceToImage()
+void QVGPixmapData::forceToImage(bool allowReadback)
 {
     if (!isValid())
         return;
 
-    ensureReadback(false);
+    if (allowReadback)
+        ensureReadback(false);
 
     if (source.isNull())
         source = QVolatileImage(w, h, sourceFormat());

@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -72,7 +72,7 @@ static void initWritingSystems(QtFontFamily *family, ATSFontRef atsFont)
         qFromBigEndian<quint32>(os2Table.data() + 54)
     };
     quint32 codePageRange[2] = { qFromBigEndian<quint32>(os2Table.data() + 78), qFromBigEndian<quint32>(os2Table.data() + 82) };
-    QList<QFontDatabase::WritingSystem> systems = determineWritingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
+    QList<QFontDatabase::WritingSystem> systems = qt_determine_writing_systems_from_truetype_bits(unicodeRange, codePageRange);
 #if 0
     QCFString name;
     ATSFontGetName(atsFont, kATSOptionFlagsDefault, &name);
@@ -244,6 +244,68 @@ static const char *styleHint(const QFontDef &request)
     return stylehint;
 }
 
+static inline float weightToFloat(unsigned int weight)
+{
+    return (weight - 50) / 100.0;
+}
+
+static QFontEngine *loadFromDatabase(const QFontDef &req, const QFontPrivate *d)
+{
+#if defined(QT_MAC_USE_COCOA)
+    QCFString fontName = NULL;
+#else
+    ATSFontFamilyRef familyRef = 0;
+    ATSFontRef fontRef = 0;
+#endif
+
+    QStringList family_list = familyList(req);
+
+    const char *stylehint = styleHint(req);
+    if (stylehint)
+        family_list << QLatin1String(stylehint);
+
+    // add QFont::defaultFamily() to the list, for compatibility with previous versions
+    family_list << QApplication::font().defaultFamily();
+
+    QMutexLocker locker(fontDatabaseMutex());
+    QFontDatabasePrivate *db = privateDb();
+    if (!db->count)
+        initializeDb();
+    for (int i = 0; i < family_list.size(); ++i) {
+        for (int k = 0; k < db->count; ++k) {
+            if (db->families[k]->name.compare(family_list.at(i), Qt::CaseInsensitive) == 0) {
+                QByteArray family_name = db->families[k]->name.toUtf8();
+#if defined(QT_MAC_USE_COCOA)
+                QCFType<CTFontRef> ctFont = CTFontCreateWithName(QCFString(db->families[k]->name), 12, NULL);
+                if (ctFont) {
+                    fontName = CTFontCopyFullName(ctFont);
+                    goto found;
+                }
+#else
+                familyRef = ATSFontFamilyFindFromName(QCFString(db->families[k]->name), kATSOptionFlagsDefault);
+                if (familyRef) {
+                    fontRef = ATSFontFindFromName(QCFString(db->families[k]->name), kATSOptionFlagsDefault);
+                    goto found;
+                }
+#endif
+            }
+        }
+    }
+found:
+#ifdef QT_MAC_USE_COCOA
+    if (fontName)
+        return new QCoreTextFontEngineMulti(fontName, req, d->kerning);
+#else
+    if (familyRef) {
+        QCFString actualName;
+        if (ATSFontFamilyGetName(familyRef, kATSOptionFlagsDefault, &actualName) == noErr)
+            req.family = actualName;
+        return new QFontEngineMacMulti(familyRef, req, fontDef, d->kerning);
+    }
+#endif
+    return NULL;
+}
+
 void QFontDatabase::load(const QFontPrivate *d, int script)
 {
     // sanity checks
@@ -284,69 +346,38 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
         return; // the font info and fontdef should already be filled
     }
 
-    //find the font
-    QStringList family_list = familyList(req);
-
-    const char *stylehint = styleHint(req);
-    if (stylehint)
-        family_list << QLatin1String(stylehint);
-
-    // add QFont::defaultFamily() to the list, for compatibility with
-    // previous versions
-    family_list << QApplication::font().defaultFamily();
-
+    QFontEngine *engine = NULL;
 #if defined(QT_MAC_USE_COCOA)
-    QCFString fontName = NULL, familyName = NULL;
-#else
-    ATSFontFamilyRef familyRef = 0;
-    ATSFontRef fontRef = 0;
-#endif
+    // Shortcut to get the font directly without going through the font database
+    if (!req.family.isEmpty() && !req.styleName.isEmpty()) {
+        QCFString expectedFamily = QCFString(req.family);
+        QCFString expectedStyle = QCFString(req.styleName);
 
-    QMutexLocker locker(fontDatabaseMutex());
-    QFontDatabasePrivate *db = privateDb();
-    if (!db->count)
-        initializeDb();
-    for(int i = 0; i < family_list.size(); ++i) {
-        for (int k = 0; k < db->count; ++k) {
-            if (db->families[k]->name.compare(family_list.at(i), Qt::CaseInsensitive) == 0) {
-                QByteArray family_name = db->families[k]->name.toUtf8();
-#if defined(QT_MAC_USE_COCOA)
-                QCFType<CTFontRef> ctFont = CTFontCreateWithName(QCFString(db->families[k]->name), 12, NULL);
-                if (ctFont) {
-                    fontName = CTFontCopyFullName(ctFont);
-                    familyName = CTFontCopyFamilyName(ctFont);
-                    goto FamilyFound;
-                }
-#else
-                familyRef = ATSFontFamilyFindFromName(QCFString(db->families[k]->name), kATSOptionFlagsDefault);
-                if (familyRef) {
-                    fontRef = ATSFontFindFromName(QCFString(db->families[k]->name), kATSOptionFlagsDefault);
-                    goto FamilyFound;
-                }
-#endif
+        QCFType<CFMutableDictionaryRef> attributes = CFDictionaryCreateMutable(NULL, 0,
+            &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        CFDictionaryAddValue(attributes, kCTFontFamilyNameAttribute, expectedFamily);
+        CFDictionaryAddValue(attributes, kCTFontStyleNameAttribute, expectedStyle);
+
+        QCFType<CTFontDescriptorRef> descriptor = CTFontDescriptorCreateWithAttributes(attributes);
+        CGAffineTransform transform = qt_transform_from_fontdef(req);
+        QCFType<CTFontRef> ctFont = CTFontCreateWithFontDescriptor(descriptor, req.pixelSize, &transform);
+        if (ctFont) {
+            QCFString familyName = CTFontCopyFamilyName(ctFont);
+            // Only accept the font if the family name is exactly the same as we specified
+            if (CFEqual(expectedFamily, familyName)) {
+                engine = new QCoreTextFontEngineMulti(ctFont, req, d->kerning);
             }
         }
     }
-FamilyFound:
-    //fill in the engine's font definition
-    QFontDef fontDef = d->request; //copy..
-    if(fontDef.pointSize < 0)
-        fontDef.pointSize = qt_mac_pointsize(fontDef, d->dpi);
-    else
-        fontDef.pixelSize = qt_mac_pixelsize(fontDef, d->dpi);
-
-#ifdef QT_MAC_USE_COCOA
-    fontDef.family = familyName;
-    QFontEngine *engine = new QCoreTextFontEngineMulti(fontName, fontDef, d->kerning);
-#else
-    QCFString actualName;
-    if (ATSFontFamilyGetName(familyRef, kATSOptionFlagsDefault, &actualName) == noErr)
-        fontDef.family = actualName;
-    QFontEngine *engine = new QFontEngineMacMulti(familyRef, fontRef, fontDef, d->kerning);
 #endif
-    d->engineData->engine = engine;
-    engine->ref.ref(); //a ref for the engineData->engine
-    QFontCache::instance()->insertEngine(key, engine);
+    if (!engine)
+        engine = loadFromDatabase(req, d);
+
+    if (engine) {
+        d->engineData->engine = engine;
+        engine->ref.ref();
+        QFontCache::instance()->insertEngine(key, engine);
+    }
 }
 
 static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)

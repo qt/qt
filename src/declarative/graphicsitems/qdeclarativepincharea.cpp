@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -136,6 +136,14 @@ QT_BEGIN_NAMESPACE
     Setting this property to false in the \c PinchArea::onPinchStarted handler
     will result in no further pinch events being generated, and the gesture
     ignored.
+*/
+
+/*!
+    \qmlproperty int PinchEvent::pointCount
+
+    Holds the number of points currently touched.  The PinchArea will not react
+    until two touch points have initited a gesture, but will remain active until
+    all touch points have been released.
 */
 
 QDeclarativePinch::QDeclarativePinch()
@@ -295,7 +303,7 @@ bool QDeclarativePinchArea::event(QEvent *event)
 void QDeclarativePinchArea::updatePinch()
 {
     Q_D(QDeclarativePinchArea);
-    if (d->touchPoints.count() != 2) {
+    if (d->touchPoints.count() == 0) {
         if (d->inPinch) {
             d->stealMouse = false;
             setKeepMouseGrab(false);
@@ -308,127 +316,141 @@ void QDeclarativePinchArea::updatePinch()
             pe.setPreviousScale(d->pinchLastScale);
             pe.setStartPoint1(mapFromScene(d->sceneStartPoint1));
             pe.setStartPoint2(mapFromScene(d->sceneStartPoint2));
-            pe.setPoint1(d->lastPoint1);
-            pe.setPoint2(d->lastPoint2);
+            pe.setPoint1(mapFromScene(d->lastPoint1));
+            pe.setPoint2(mapFromScene(d->lastPoint2));
             emit pinchFinished(&pe);
             d->pinchStartDist = 0;
+            d->pinchActivated = false;
             if (d->pinch && d->pinch->target())
                 d->pinch->setActive(false);
         }
         return;
     }
-    if (d->touchPoints.at(0).state() & Qt::TouchPointPressed
-        || d->touchPoints.at(1).state() & Qt::TouchPointPressed) {
-        d->sceneStartPoint1 = d->touchPoints.at(0).scenePos();
-        d->sceneStartPoint2 = d->touchPoints.at(1).scenePos();
+    QTouchEvent::TouchPoint touchPoint1 = d->touchPoints.at(0);
+    QTouchEvent::TouchPoint touchPoint2 = d->touchPoints.at(d->touchPoints. count() >= 2 ? 1 : 0);
+    if (d->touchPoints.count() == 2
+        && (touchPoint1.state() & Qt::TouchPointPressed || touchPoint2.state() & Qt::TouchPointPressed)) {
+        d->id1 = touchPoint1.id();
+        d->sceneStartPoint1 = touchPoint1.scenePos();
+        d->sceneStartPoint2 = touchPoint2.scenePos();
         d->inPinch = false;
         d->pinchRejected = false;
-    } else if (!d->pinchRejected){
-        QDeclarativeItem *grabber = scene() ? qobject_cast<QDeclarativeItem*>(scene()->mouseGrabberItem()) : 0;
-        if (grabber == this || !grabber || !grabber->keepMouseGrab()) {
-            const int dragThreshold = QApplication::startDragDistance();
-            QPointF p1 = d->touchPoints.at(0).scenePos();
-            QPointF p2 = d->touchPoints.at(1).scenePos();
-            qreal dx = p1.x() - p2.x();
-            qreal dy = p1.y() - p2.y();
-            qreal dist = sqrt(dx*dx + dy*dy);
-            QPointF sceneCenter = (p1 + p2)/2;
-            qreal angle = QLineF(p1, p2).angle();
-            if (angle > 180)
-                angle -= 360;
-            if (!d->inPinch) {
-                if (qAbs(p1.x()-d->sceneStartPoint1.x()) > dragThreshold
-                        || qAbs(p1.y()-d->sceneStartPoint1.y()) > dragThreshold
-                        || qAbs(p2.x()-d->sceneStartPoint2.x()) > dragThreshold
-                        || qAbs(p2.y()-d->sceneStartPoint2.y()) > dragThreshold) {
-                    d->sceneStartCenter = sceneCenter;
-                    d->sceneLastCenter = sceneCenter;
-                    d->pinchStartCenter = mapFromScene(sceneCenter);
-                    d->pinchStartDist = dist;
-                    d->pinchStartAngle = angle;
-                    d->pinchLastScale = 1.0;
-                    d->pinchLastAngle = angle;
-                    d->pinchRotation = 0.0;
-                    d->lastPoint1 = d->touchPoints.at(0).pos();
-                    d->lastPoint2 = d->touchPoints.at(1).pos();
-                    QDeclarativePinchEvent pe(d->pinchStartCenter, 1.0, angle, 0.0);
-                    pe.setStartCenter(d->pinchStartCenter);
-                    pe.setPreviousCenter(d->pinchStartCenter);
-                    pe.setPreviousAngle(d->pinchLastAngle);
-                    pe.setPreviousScale(d->pinchLastScale);
-                    pe.setStartPoint1(mapFromScene(d->sceneStartPoint1));
-                    pe.setStartPoint2(mapFromScene(d->sceneStartPoint2));
-                    pe.setPoint1(d->lastPoint1);
-                    pe.setPoint2(d->lastPoint2);
-                    emit pinchStarted(&pe);
-                    if (pe.accepted()) {
-                        d->inPinch = true;
-                        d->stealMouse = true;
-                        QGraphicsScene *s = scene();
-                        if (s && s->mouseGrabberItem() != this)
-                            grabMouse();
-                        setKeepMouseGrab(true);
-                        if (d->pinch && d->pinch->target()) {
-                            d->pinchStartPos = pinch()->target()->pos();
-                            d->pinchStartScale = d->pinch->target()->scale();
-                            d->pinchStartRotation = d->pinch->target()->rotation();
-                            d->pinch->setActive(true);
-                        }
-                    } else {
-                        d->pinchRejected = true;
-                    }
-                }
-            } else if (d->pinchStartDist > 0) {
-                qreal scale = dist / d->pinchStartDist;
-                qreal da = d->pinchLastAngle - angle;
-                if (da > 180)
-                    da -= 360;
-                else if (da < -180)
-                    da += 360;
-                d->pinchRotation += da;
-                QPointF pinchCenter = mapFromScene(sceneCenter);
-                QDeclarativePinchEvent pe(pinchCenter, scale, angle, d->pinchRotation);
+        d->pinchActivated = true;
+    } else if (d->pinchActivated && !d->pinchRejected) {
+        const int dragThreshold = QApplication::startDragDistance();
+        QPointF p1 = touchPoint1.scenePos();
+        QPointF p2 = touchPoint2.scenePos();
+        qreal dx = p1.x() - p2.x();
+        qreal dy = p1.y() - p2.y();
+        qreal dist = sqrt(dx*dx + dy*dy);
+        QPointF sceneCenter = (p1 + p2)/2;
+        qreal angle = QLineF(p1, p2).angle();
+        if (d->touchPoints.count() == 1) {
+            // If we only have one point then just move the center
+            if (d->id1 == touchPoint1.id())
+                sceneCenter = d->sceneLastCenter + touchPoint1.scenePos() - d->lastPoint1;
+            else
+                sceneCenter = d->sceneLastCenter + touchPoint2.scenePos() - d->lastPoint2;
+            angle = d->pinchLastAngle;
+        }
+        d->id1 = touchPoint1.id();
+        if (angle > 180)
+            angle -= 360;
+        if (!d->inPinch) {
+            if (d->touchPoints.count() >= 2
+                    && (qAbs(p1.x()-d->sceneStartPoint1.x()) > dragThreshold
+                    || qAbs(p1.y()-d->sceneStartPoint1.y()) > dragThreshold
+                    || qAbs(p2.x()-d->sceneStartPoint2.x()) > dragThreshold
+                    || qAbs(p2.y()-d->sceneStartPoint2.y()) > dragThreshold)) {
+                d->sceneStartCenter = sceneCenter;
+                d->sceneLastCenter = sceneCenter;
+                d->pinchStartCenter = mapFromScene(sceneCenter);
+                d->pinchStartDist = dist;
+                d->pinchStartAngle = angle;
+                d->pinchLastScale = 1.0;
+                d->pinchLastAngle = angle;
+                d->pinchRotation = 0.0;
+                d->lastPoint1 = p1;
+                d->lastPoint2 = p2;
+                QDeclarativePinchEvent pe(d->pinchStartCenter, 1.0, angle, 0.0);
                 pe.setStartCenter(d->pinchStartCenter);
-                pe.setPreviousCenter(mapFromScene(d->sceneLastCenter));
+                pe.setPreviousCenter(d->pinchStartCenter);
                 pe.setPreviousAngle(d->pinchLastAngle);
                 pe.setPreviousScale(d->pinchLastScale);
                 pe.setStartPoint1(mapFromScene(d->sceneStartPoint1));
                 pe.setStartPoint2(mapFromScene(d->sceneStartPoint2));
-                pe.setPoint1(d->touchPoints.at(0).pos());
-                pe.setPoint2(d->touchPoints.at(1).pos());
-                d->pinchLastScale = scale;
-                d->sceneLastCenter = sceneCenter;
-                d->pinchLastAngle = angle;
-                d->lastPoint1 = d->touchPoints.at(0).pos();
-                d->lastPoint2 = d->touchPoints.at(1).pos();
-                emit pinchUpdated(&pe);
-                if (d->pinch && d->pinch->target()) {
-                    qreal s = d->pinchStartScale * scale;
-                    s = qMin(qMax(pinch()->minimumScale(),s), pinch()->maximumScale());
-                    pinch()->target()->setScale(s);
-                    QPointF pos = sceneCenter - d->sceneStartCenter + d->pinchStartPos;
-                    if (pinch()->axis() & QDeclarativePinch::XAxis) {
-                        qreal x = pos.x();
-                        if (x < pinch()->xmin())
-                            x = pinch()->xmin();
-                        else if (x > pinch()->xmax())
-                            x = pinch()->xmax();
-                        pinch()->target()->setX(x);
+                pe.setPoint1(mapFromScene(d->lastPoint1));
+                pe.setPoint2(mapFromScene(d->lastPoint2));
+                pe.setPointCount(d->touchPoints.count());
+                emit pinchStarted(&pe);
+                if (pe.accepted()) {
+                    d->inPinch = true;
+                    d->stealMouse = true;
+                    QGraphicsScene *s = scene();
+                    if (s && s->mouseGrabberItem() != this)
+                        grabMouse();
+                    setKeepMouseGrab(true);
+                    if (d->pinch && d->pinch->target()) {
+                        d->pinchStartPos = pinch()->target()->pos();
+                        d->pinchStartScale = d->pinch->target()->scale();
+                        d->pinchStartRotation = d->pinch->target()->rotation();
+                        d->pinch->setActive(true);
                     }
-                    if (pinch()->axis() & QDeclarativePinch::YAxis) {
-                        qreal y = pos.y();
-                        if (y < pinch()->ymin())
-                            y = pinch()->ymin();
-                        else if (y > pinch()->ymax())
-                            y = pinch()->ymax();
-                        pinch()->target()->setY(y);
-                    }
-                    if (d->pinchStartRotation >= pinch()->minimumRotation()
-                            && d->pinchStartRotation <= pinch()->maximumRotation()) {
-                        qreal r = d->pinchRotation + d->pinchStartRotation;
-                        r = qMin(qMax(pinch()->minimumRotation(),r), pinch()->maximumRotation());
-                        pinch()->target()->setRotation(r);
-                    }
+                } else {
+                    d->pinchRejected = true;
+                }
+            }
+        } else if (d->pinchStartDist > 0) {
+            qreal scale = dist ? dist / d->pinchStartDist : d->pinchLastScale;
+            qreal da = d->pinchLastAngle - angle;
+            if (da > 180)
+                da -= 360;
+            else if (da < -180)
+                da += 360;
+            d->pinchRotation += da;
+            QPointF pinchCenter = mapFromScene(sceneCenter);
+            QDeclarativePinchEvent pe(pinchCenter, scale, angle, d->pinchRotation);
+            pe.setStartCenter(d->pinchStartCenter);
+            pe.setPreviousCenter(mapFromScene(d->sceneLastCenter));
+            pe.setPreviousAngle(d->pinchLastAngle);
+            pe.setPreviousScale(d->pinchLastScale);
+            pe.setStartPoint1(mapFromScene(d->sceneStartPoint1));
+            pe.setStartPoint2(mapFromScene(d->sceneStartPoint2));
+            pe.setPoint1(touchPoint1.pos());
+            pe.setPoint2(touchPoint2.pos());
+            pe.setPointCount(d->touchPoints.count());
+            d->pinchLastScale = scale;
+            d->sceneLastCenter = sceneCenter;
+            d->pinchLastAngle = angle;
+            d->lastPoint1 = touchPoint1.scenePos();
+            d->lastPoint2 = touchPoint2.scenePos();
+            emit pinchUpdated(&pe);
+            if (d->pinch && d->pinch->target()) {
+                qreal s = d->pinchStartScale * scale;
+                s = qMin(qMax(pinch()->minimumScale(),s), pinch()->maximumScale());
+                pinch()->target()->setScale(s);
+                QPointF pos = sceneCenter - d->sceneStartCenter + d->pinchStartPos;
+                if (pinch()->axis() & QDeclarativePinch::XAxis) {
+                    qreal x = pos.x();
+                    if (x < pinch()->xmin())
+                        x = pinch()->xmin();
+                    else if (x > pinch()->xmax())
+                        x = pinch()->xmax();
+                    pinch()->target()->setX(x);
+                }
+                if (pinch()->axis() & QDeclarativePinch::YAxis) {
+                    qreal y = pos.y();
+                    if (y < pinch()->ymin())
+                        y = pinch()->ymin();
+                    else if (y > pinch()->ymax())
+                        y = pinch()->ymax();
+                    pinch()->target()->setY(y);
+                }
+                if (d->pinchStartRotation >= pinch()->minimumRotation()
+                        && d->pinchStartRotation <= pinch()->maximumRotation()) {
+                    qreal r = d->pinchRotation + d->pinchStartRotation;
+                    r = qMin(qMax(pinch()->minimumRotation(),r), pinch()->maximumRotation());
+                    pinch()->target()->setRotation(r);
                 }
             }
         }
