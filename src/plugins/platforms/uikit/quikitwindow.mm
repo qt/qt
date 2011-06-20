@@ -67,9 +67,8 @@ public:
         mFormat.setBlueBufferSize(8);
         mFormat.setAlphaBufferSize(8);
         mFormat.setStencilBufferSize(8);
+        mFormat.setSamples(0);
         mFormat.setSampleBuffers(false);
-        mFormat.setSamples(1);
-//        mFormat.setSwapInterval(?)
         mFormat.setDoubleBuffer(true);
         mFormat.setDepth(true);
         mFormat.setRgba(true);
@@ -335,9 +334,8 @@ QUIKitWindow::QUIKitWindow(QWidget *tlw) :
     mScreen = static_cast<QUIKitScreen *>(QPlatformScreen::platformScreenForWidget(tlw));
     CGRect screenBounds = [mScreen->uiScreen() bounds];
     QRect geom(screenBounds.origin.x, screenBounds.origin.y, screenBounds.size.width, screenBounds.size.height);
-    setGeometry(geom);
-    mView = [[EAGLView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
-    // TODO ensure the native window if the application is already running
+    QPlatformWindow::setGeometry(geom);
+    mView = [[EAGLView alloc] initWithFrame:CGRectMake(geom.x(), geom.y(), geom.width(), geom.height())];
 }
 
 QUIKitWindow::~QUIKitWindow()

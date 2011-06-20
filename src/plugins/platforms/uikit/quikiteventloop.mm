@@ -72,7 +72,8 @@
     Q_UNUSED(application)
     foreach (QWidget *widget, qApp->topLevelWidgets()) {
         QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->platformWindow());
-        platformWindow->ensureNativeWindow();
+        if (platformWindow) platformWindow->ensureNativeWindow();
+        else qDebug() << "Failed to get platform window: " << widget;
     }
     return YES;
 }
@@ -156,15 +157,15 @@ bool QUIKitSoftwareInputHandler::eventFilter(QObject *obj, QEvent *event)
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
         QWidget *widget = qobject_cast<QWidget *>(obj);
         if (widget) {
-            QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->platformWindow());
-            [platformWindow->nativeView() becomeFirstResponder];
+            QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->window()->platformWindow());
+            if (platformWindow) [platformWindow->nativeView() becomeFirstResponder];
             return true;
         }
     } else if (event->type() == QEvent::CloseSoftwareInputPanel) {
         QWidget *widget = qobject_cast<QWidget *>(obj);
         if (widget) {
-            QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->platformWindow());
-            [platformWindow->nativeView() resignFirstResponder];
+            QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->window()->platformWindow());
+            if (platformWindow) [platformWindow->nativeView() resignFirstResponder];
             return true;
         }
     }
