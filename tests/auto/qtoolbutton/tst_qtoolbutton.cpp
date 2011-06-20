@@ -231,7 +231,7 @@ void tst_QToolButton::task176137_autoRepeatOfAction()
 
 void tst_QToolButton::sendMouseClick()
 {
-    QTest::mouseClick(w, Qt::LeftButton, 0, QPoint(7,7));
+    QTest::mouseClick(w, Qt::LeftButton, 0);
 }
 
 QTEST_MAIN(tst_QToolButton)

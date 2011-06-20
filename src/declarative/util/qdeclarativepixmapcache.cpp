@@ -584,6 +584,7 @@ public:
 
     void unreferencePixmap(QDeclarativePixmapData *);
     void referencePixmap(QDeclarativePixmapData *);
+    void flushCache();
 
 protected:
     virtual void timerEvent(QTimerEvent *);
@@ -680,6 +681,14 @@ void QDeclarativePixmapStore::timerEvent(QTimerEvent *)
         killTimer(m_timerId);
         m_timerId = -1;
     }
+}
+
+/*
+    Remove all unreferenced pixmaps from the cache.
+*/
+void QDeclarativePixmapStore::flushCache()
+{
+    shrinkCache(m_unreferencedCost);
 }
 
 QDeclarativePixmapReply::QDeclarativePixmapReply(QDeclarativePixmapData *d)
@@ -1073,6 +1082,11 @@ bool QDeclarativePixmap::connectDownloadProgress(QObject *object, int method)
     }
 
     return QMetaObject::connect(d->reply, QDeclarativePixmapReply::downloadProgressIndex, object, method);
+}
+
+void QDeclarativePixmap::flushCache()
+{
+    pixmapStore()->flushCache();
 }
 
 QT_END_NAMESPACE

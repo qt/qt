@@ -65,6 +65,8 @@
 #include <signal.h>
 #endif
 
+QString pluginImportPath;
+
 void collectReachableMetaObjects(const QMetaObject *meta, QSet<const QMetaObject *> *metas)
 {
     if (! meta || metas->contains(meta))
@@ -194,7 +196,7 @@ QSet<const QMetaObject *> collectReachableMetaObjects(const QString &importCode,
         code += " {}\n";
 
         QDeclarativeComponent c(engine);
-        c.setData(code, QUrl("typeinstance"));
+        c.setData(code, QUrl::fromLocalFile(pluginImportPath + "/typeinstance.qml"));
 
         QObject *object = c.create();
         if (object)
@@ -334,6 +336,10 @@ private:
         qml->writeStartObject("Property");
 
         qml->writeScriptBinding(QLatin1String("name"), enquote(QString::fromUtf8(prop.name())));
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 7, 4))
+        if (int revision = prop.revision())
+            qml->writeScriptBinding(QLatin1String("revision"), QString::number(revision));
+#endif
         writeTypeProperties(prop.typeName(), prop.isWritable());
 
         qml->writeEndObject();
@@ -361,6 +367,11 @@ private:
             qml->writeStartObject(QLatin1String("Method"));
 
         qml->writeScriptBinding(QLatin1String("name"), enquote(name));
+
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 7, 4))
+        if (int revision = meth.revision())
+            qml->writeScriptBinding(QLatin1String("revision"), QString::number(revision));
+#endif
 
         const QString typeName = convertToId(meth.typeName());
         if (! typeName.isEmpty())
@@ -451,7 +462,6 @@ int main(int argc, char *argv[])
 
     QString pluginImportUri;
     QString pluginImportVersion;
-    QString pluginImportPath;
     bool relocatable = true;
     bool pathImport = false;
     if (args.size() >= 3) {
@@ -488,7 +498,7 @@ int main(int argc, char *argv[])
                 qWarning() << "Incorrect number of positional arguments";
                 return EXIT_INVALIDARGUMENTS;
             }
-            pluginImportPath = positionalArgs[1];
+            pluginImportPath = QDir::fromNativeSeparators(positionalArgs[1]);
             if (positionalArgs.size() == 3)
                 pluginImportVersion = positionalArgs[2];
         }
@@ -500,7 +510,7 @@ int main(int argc, char *argv[])
         engine->addImportPath(pluginImportPath);
 
     // find all QMetaObjects reachable from the builtin module
-    QByteArray importCode("import QtQuick 1.0\n");
+    QByteArray importCode("import QtQuick 1.1\n");
     QSet<const QMetaObject *> defaultReachable = collectReachableMetaObjects(importCode, engine);
 
     // this will hold the meta objects we want to dump information of
@@ -514,7 +524,7 @@ int main(int argc, char *argv[])
             importCode += QString("import %0 %1\n").arg(pluginImportUri, pluginImportVersion).toAscii();
         } else {
             // pluginImportVersion can be empty
-            importCode += QString("import \"%1\" %2\n").arg(pluginImportPath, pluginImportVersion).toAscii();
+            importCode += QString("import \".\" %2\n").arg(pluginImportVersion).toAscii();
         }
 
         // create a component with these imports to make sure the imports are valid
@@ -524,7 +534,7 @@ int main(int argc, char *argv[])
             code += "QtObject {}";
             QDeclarativeComponent c(engine);
 
-            c.setData(code, QUrl("typelist"));
+            c.setData(code, QUrl::fromLocalFile(pluginImportPath + "/typelist.qml"));
             c.create();
             if (!c.errors().isEmpty()) {
                 foreach (const QDeclarativeError &error, c.errors())

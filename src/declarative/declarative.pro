@@ -26,7 +26,7 @@ include(debugger/debugger.pri)
 
 symbian: {
     TARGET.UID3=0x2001E623
-    LIBS += -lefsrv
+    LIBS += -lefsrv -lhal
 
     contains(QT_CONFIG, freetype) {
         DEFINES += QT_NO_FONTCONFIG

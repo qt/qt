@@ -1,4 +1,5 @@
-<!DOCTYPE QPH><QPH language="ja">
+<!DOCTYPE QPH>
+<QPH language="ja">
 <phrase>
     <source>About</source>
     <target>について</target>
@@ -1017,5 +1018,17 @@
 <phrase>
     <source>Yes</source>
     <target>はい</target>
+</phrase>
+<phrase>
+    <source>&amp;Next</source>
+    <target>次を検索(&amp;N)</target>
+</phrase>
+<phrase>
+    <source>List View</source>
+    <target>一覧表示</target>
+</phrase>
+<phrase>
+    <source>&amp;Run</source>
+    <target>実行(&amp;R)</target>
 </phrase>
 </QPH>

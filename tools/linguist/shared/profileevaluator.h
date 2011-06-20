@@ -42,52 +42,104 @@
 #ifndef PROFILEEVALUATOR_H
 #define PROFILEEVALUATOR_H
 
+#include "proparser_global.h"
 #include "proitems.h"
-#include "abstractproitemvisitor.h"
 
-#include <QtCore/QIODevice>
 #include <QtCore/QHash>
 #include <QtCore/QStringList>
-#include <QtCore/QStack>
-
-#if (!defined(__GNUC__) || __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ > 3)) && !defined(__SUNPRO_CC)
-# define HAVE_TEMPLATE_CLASS_FRIENDS
+#ifndef QT_BOOTSTRAPPED
+# include <QtCore/QProcess>
+#endif
+#ifdef PROEVALUATOR_THREAD_SAFE
+# include <QtCore/QMutex>
+# include <QtCore/QWaitCondition>
 #endif
 
 QT_BEGIN_NAMESPACE
 
-class ProFileEvaluator
+struct ProFileOption;
+class ProFileParser;
+
+class PROPARSER_EXPORT ProFileEvaluatorHandler
 {
-#ifdef HAVE_TEMPLATE_CLASS_FRIENDS
-private:
-#else
 public:
-#endif
+    // qmake/project configuration error
+    virtual void configError(const QString &msg) = 0;
+    // Some error during evaluation
+    virtual void evalError(const QString &filename, int lineNo, const QString &msg) = 0;
+    // error() and message() from .pro file
+    virtual void fileMessage(const QString &msg) = 0;
+
+    enum EvalFileType { EvalProjectFile, EvalIncludeFile, EvalConfigFile, EvalFeatureFile, EvalAuxFile };
+    virtual void aboutToEval(ProFile *parent, ProFile *proFile, EvalFileType type) = 0;
+    virtual void doneWithEval(ProFile *parent) = 0;
+};
+
+
+class PROPARSER_EXPORT ProFileEvaluator
+{
     class Private;
 
 public:
+    class FunctionDef {
+    public:
+        FunctionDef(ProFile *pro, int offset) : m_pro(pro), m_offset(offset) { m_pro->ref(); }
+        FunctionDef(const FunctionDef &o) : m_pro(o.m_pro), m_offset(o.m_offset) { m_pro->ref(); }
+        ~FunctionDef() { m_pro->deref(); }
+        FunctionDef &operator=(const FunctionDef &o)
+        {
+            if (this != &o) {
+                m_pro->deref();
+                m_pro = o.m_pro;
+                m_pro->ref();
+                m_offset = o.m_offset;
+            }
+            return *this;
+        }
+        ProFile *pro() const { return m_pro; }
+        const ushort *tokPtr() const { return m_pro->tokPtr() + m_offset; }
+    private:
+        ProFile *m_pro;
+        int m_offset;
+    };
+
+    struct FunctionDefs {
+        QHash<ProString, FunctionDef> testFunctions;
+        QHash<ProString, FunctionDef> replaceFunctions;
+    };
+
     enum TemplateType {
         TT_Unknown = 0,
         TT_Application,
         TT_Library,
         TT_Script,
+        TT_Aux,
         TT_Subdirs
     };
 
-    ProFileEvaluator();
-    virtual ~ProFileEvaluator();
+    // Call this from a concurrency-free context
+    static void initialize();
 
-    ProFileEvaluator::TemplateType templateType();
-    virtual bool contains(const QString &variableName) const;
-    void setVerbose(bool on); // Default is false
+    ProFileEvaluator(ProFileOption *option, ProFileParser *parser, ProFileEvaluatorHandler *handler);
+    ~ProFileEvaluator();
+
+    ProFileEvaluator::TemplateType templateType() const;
+#ifdef PROEVALUATOR_CUMULATIVE
     void setCumulative(bool on); // Default is true!
+#endif
     void setOutputDir(const QString &dir); // Default is empty
 
-    bool queryProFile(ProFile *pro);
-    bool accept(ProFile *pro);
+    enum LoadFlag {
+        LoadProOnly = 0,
+        LoadPreFiles = 1,
+        LoadPostFiles = 2,
+        LoadAll = LoadPreFiles|LoadPostFiles
+    };
+    Q_DECLARE_FLAGS(LoadFlags, LoadFlag)
+    bool accept(ProFile *pro, LoadFlags flags = LoadAll);
 
-    void addVariables(const QHash<QString, QStringList> &variables);
-    void addProperties(const QHash<QString, QString> &properties);
+    bool contains(const QString &variableName) const;
+    QString value(const QString &variableName) const;
     QStringList values(const QString &variableName) const;
     QStringList values(const QString &variableName, const ProFile *pro) const;
     QStringList absolutePathValues(const QString &variable, const QString &baseDirectory) const;
@@ -96,20 +148,82 @@ public:
             const ProFile *pro) const;
     QString propertyValue(const QString &val) const;
 
-    // for our descendents
-    virtual ProFile *parsedProFile(const QString &fileName);
-    virtual void releaseParsedProFile(ProFile *proFile);
-    virtual void logMessage(const QString &msg);
-    virtual void errorMessage(const QString &msg); // .pro parse errors
-    virtual void fileMessage(const QString &msg); // error() and message() from .pro file
-
 private:
     Private *d;
 
-#ifdef HAVE_TEMPLATE_CLASS_FRIENDS
-    template<typename T> friend class QTypeInfo;
+    friend struct ProFileOption;
+};
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(ProFileEvaluator::LoadFlags)
+
+// This struct is from qmake, but we are not using everything.
+struct PROPARSER_EXPORT ProFileOption
+{
+    ProFileOption();
+    ~ProFileOption();
+
+    //simply global convenience
+    //QString libtool_ext;
+    //QString pkgcfg_ext;
+    //QString prf_ext;
+    //QString prl_ext;
+    //QString ui_ext;
+    //QStringList h_ext;
+    //QStringList cpp_ext;
+    //QString h_moc_ext;
+    //QString cpp_moc_ext;
+    //QString obj_ext;
+    //QString lex_ext;
+    //QString yacc_ext;
+    //QString h_moc_mod;
+    //QString cpp_moc_mod;
+    //QString lex_mod;
+    //QString yacc_mod;
+    QString dir_sep;
+    QString dirlist_sep;
+    QString qmakespec;
+    QString cachefile;
+    QHash<QString, QString> properties;
+#ifndef QT_BOOTSTRAPPED
+    QProcessEnvironment environment;
+#endif
+    QString sysroot;
+
+    //QString pro_ext;
+    //QString res_ext;
+
+    // -nocache, -cache, -spec, QMAKESPEC
+    // -set persistent value
+    void setCommandLineArguments(const QStringList &args);
+#ifdef PROEVALUATOR_INIT_PROPS
+    bool initProperties(const QString &qmake);
+#endif
+
+  private:
+    friend class ProFileEvaluator;
+    friend class ProFileEvaluator::Private;
+
+    void applyHostMode();
+    QString getEnv(const QString &) const;
+
+    QHash<ProString, ProStringList> base_valuemap; // Cached results of qmake.conf, .qmake.cache & default_pre.prf
+    ProFileEvaluator::FunctionDefs base_functions;
+    QStringList feature_roots;
+    QString qmakespec_name;
+    QString precmds, postcmds;
+    enum HOST_MODE { HOST_UNKNOWN_MODE, HOST_UNIX_MODE, HOST_WIN_MODE, HOST_MACX_MODE };
+    HOST_MODE host_mode;
+    enum TARG_MODE { TARG_UNKNOWN_MODE, TARG_UNIX_MODE, TARG_WIN_MODE, TARG_MACX_MODE,
+                     TARG_SYMBIAN_MODE };
+    TARG_MODE target_mode;
+#ifdef PROEVALUATOR_THREAD_SAFE
+    QMutex mutex;
+    QWaitCondition cond;
+    bool base_inProgress;
 #endif
 };
+
+Q_DECLARE_TYPEINFO(ProFileEvaluator::FunctionDef, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 

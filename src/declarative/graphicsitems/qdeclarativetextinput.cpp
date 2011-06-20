@@ -236,11 +236,11 @@ void QDeclarativeTextInput::setFont(const QFont &font)
 
     if (oldFont != d->font) {
         d->control->setFont(d->font);
+        updateSize();
+        updateCursorRectangle();
         if(d->cursorItem){
             d->cursorItem->setHeight(QFontMetrics(d->font).height());
-            moveCursor();
         }
-        updateSize();
     }
     emit fontChanged(d->sourceFont);
 }
@@ -326,7 +326,6 @@ void QDeclarativeTextInput::setSelectedTextColor(const QColor &color)
 
 /*!
     \qmlproperty enumeration TextInput::horizontalAlignment
-    \qmlproperty enumeration TextInput::effectiveHorizontalAlignment
 
     Sets the horizontal alignment of the text within the TextInput item's
     width and height. By default, the text alignment follows the natural alignment
@@ -342,10 +341,10 @@ void QDeclarativeTextInput::setSelectedTextColor(const QColor &color)
     The valid values for \c horizontalAlignment are \c TextInput.AlignLeft, \c TextInput.AlignRight and
     \c TextInput.AlignHCenter.
 
-    When using the attached property LayoutMirroring::enabled to mirror application
+    When using the attached property \l {LayoutMirroring::enabled} to mirror application
     layouts, the horizontal alignment of text will also be mirrored. However, the property
     \c horizontalAlignment will remain unchanged. To query the effective horizontal alignment
-    of TextInput, use the read-only property \c effectiveHorizontalAlignment.
+    of TextInput, use the property \l {LayoutMirroring::enabled}.
 */
 QDeclarativeTextInput::HAlignment QDeclarativeTextInput::hAlign() const
 {
@@ -359,8 +358,7 @@ void QDeclarativeTextInput::setHAlign(HAlignment align)
     bool forceAlign = d->hAlignImplicit && d->effectiveLayoutMirror;
     d->hAlignImplicit = false;
     if (d->setHAlign(align, forceAlign) && isComponentComplete()) {
-        updateRect();
-        d->updateHorizontalScroll();
+        updateCursorRectangle();
     }
 }
 
@@ -369,8 +367,7 @@ void QDeclarativeTextInput::resetHAlign()
     Q_D(QDeclarativeTextInput);
     d->hAlignImplicit = true;
     if (d->determineHorizontalAlignment() && isComponentComplete()) {
-        updateRect();
-        d->updateHorizontalScroll();
+        updateCursorRectangle();
     }
 }
 
@@ -400,8 +397,6 @@ bool QDeclarativeTextInputPrivate::setHAlign(QDeclarativeTextInput::HAlignment a
         QDeclarativeTextInput::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
         hAlign = alignment;
         emit q->horizontalAlignmentChanged(alignment);
-        if (oldEffectiveHAlign != q->effectiveHAlign())
-            emit q->effectiveHorizontalAlignmentChanged();
         return true;
     }
     return false;
@@ -423,9 +418,8 @@ void QDeclarativeTextInputPrivate::mirrorChange()
     Q_Q(QDeclarativeTextInput);
     if (q->isComponentComplete()) {
         if (!hAlignImplicit && (hAlign == QDeclarativeTextInput::AlignRight || hAlign == QDeclarativeTextInput::AlignLeft)) {
-            q->updateRect();
+            q->updateCursorRectangle();
             updateHorizontalScroll();
-            emit q->effectiveHorizontalAlignmentChanged();
         }
     }
 }
@@ -683,7 +677,7 @@ void QDeclarativeTextInput::setAutoScroll(bool b)
     d->autoScroll = b;
     //We need to repaint so that the scrolling is taking into account.
     updateSize(true);
-    d->updateHorizontalScroll();
+    updateCursorRectangle();
     emit autoScrollChanged(d->autoScroll);
 }
 
@@ -947,10 +941,6 @@ void QDeclarativeTextInput::setCursorDelegate(QDeclarativeComponent* c)
     d->cursorComponent = c;
     if(!c){
         //note that the components are owned by something else
-        disconnect(d->control, SIGNAL(cursorPositionChanged(int,int)),
-                this, SLOT(moveCursor()));
-        disconnect(d->control, SIGNAL(updateMicroFocus()),
-                this, SLOT(moveCursor()));
         delete d->cursorItem;
     }else{
         d->startCreatingCursor();
@@ -962,10 +952,6 @@ void QDeclarativeTextInput::setCursorDelegate(QDeclarativeComponent* c)
 void QDeclarativeTextInputPrivate::startCreatingCursor()
 {
     Q_Q(QDeclarativeTextInput);
-    q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
-               q, SLOT(moveCursor()), Qt::UniqueConnection);
-    q->connect(control, SIGNAL(updateMicroFocus()),
-            q, SLOT(moveCursor()), Qt::UniqueConnection);
     if(cursorComponent->isReady()){
         q->createCursor();
     }else if(cursorComponent->isLoading()){
@@ -999,15 +985,6 @@ void QDeclarativeTextInput::createCursor()
     d->cursorItem->setParentItem(this);
     d->cursorItem->setX(d->control->cursorToX());
     d->cursorItem->setHeight(d->control->height()-1); // -1 to counter QLineControl's +1 which is not consistent with Text.
-}
-
-void QDeclarativeTextInput::moveCursor()
-{
-    Q_D(QDeclarativeTextInput);
-    if(!d->cursorItem)
-        return;
-    d->updateHorizontalScroll();
-    d->cursorItem->setX(d->control->cursorToX() - d->hscroll);
 }
 
 /*!
@@ -1118,8 +1095,6 @@ void QDeclarativeTextInput::inputMethodEvent(QInputMethodEvent *ev)
             ev->ignore();
         } else {
             d->control->processInputMethodEvent(ev);
-            updateSize();
-            d->updateHorizontalScroll();
         }
     }
     if (!ev->isAccepted())
@@ -1297,7 +1272,7 @@ void QDeclarativeTextInput::geometryChanged(const QRectF &newGeometry,
     Q_D(QDeclarativeTextInput);
     if (newGeometry.width() != oldGeometry.width()) {
         updateSize();
-        d->updateHorizontalScroll();
+        updateCursorRectangle();
     }
     QDeclarativePaintedItem::geometryChanged(newGeometry, oldGeometry);
 }
@@ -1643,7 +1618,6 @@ void QDeclarativeTextInput::moveCursorSelection(int position)
 {
     Q_D(QDeclarativeTextInput);
     d->control->moveCursor(position, true);
-    d->updateHorizontalScroll();
 }
 
 /*!
@@ -1901,7 +1875,7 @@ void QDeclarativeTextInputPrivate::init()
     canPaste = !control->isReadOnly() && QApplication::clipboard()->text().length() != 0;
 #endif // QT_NO_CLIPBOARD
     q->connect(control, SIGNAL(updateMicroFocus()),
-               q, SLOT(updateMicroFocus()));
+               q, SLOT(updateCursorRectangle()));
     q->connect(control, SIGNAL(displayTextChanged(QString)),
                q, SLOT(updateRect()));
     q->updateSize();
@@ -1917,9 +1891,7 @@ void QDeclarativeTextInputPrivate::init()
 void QDeclarativeTextInput::cursorPosChanged()
 {
     Q_D(QDeclarativeTextInput);
-    d->updateHorizontalScroll();
-    updateRect();//TODO: Only update rect between pos's
-    updateMicroFocus();
+    updateCursorRectangle();
     emit cursorPositionChanged();
     d->control->resetCursorBlinkTimer();
 
@@ -1933,6 +1905,17 @@ void QDeclarativeTextInput::cursorPosChanged()
             emit selectionEndChanged();
         }
     }
+}
+
+void QDeclarativeTextInput::updateCursorRectangle()
+{
+    Q_D(QDeclarativeTextInput);
+    d->updateHorizontalScroll();
+    updateRect();//TODO: Only update rect between pos's
+    updateMicroFocus();
+    emit cursorRectangleChanged();
+    if (d->cursorItem)
+        d->cursorItem->setX(d->control->cursorToX() - d->hscroll);
 }
 
 void QDeclarativeTextInput::selectionChanged()

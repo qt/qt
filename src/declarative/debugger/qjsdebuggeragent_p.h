@@ -145,6 +145,8 @@ public:
     QJSDebuggerAgent(QDeclarativeEngine *engine, QObject *parent = 0);
     ~QJSDebuggerAgent();
 
+    bool isInitialized() const;
+
     void setBreakpoints(const JSAgentBreakpoints &);
     void setWatchExpressions(const QStringList &);
 
