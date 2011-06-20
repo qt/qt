@@ -946,7 +946,6 @@ void QFontEngineMultiFT::loadEngine(int at)
         fontEngine = engineForPattern(match, request, screen);
         QFontCache::instance()->insertEngine(key, fontEngine);
     }
-    FcPatternDestroy(match);
     fontEngine->ref.ref();
     engines[at] = fontEngine;
 }
