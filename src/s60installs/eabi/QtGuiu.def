@@ -12749,4 +12749,8 @@ EXPORTS
 	_ZTI17QGraphicsSystemEx @ 12748 NONAME
 	_ZTI24QSymbianGraphicsSystemEx @ 12749 NONAME
 	_ZTV24QSymbianGraphicsSystemEx @ 12750 NONAME
+	_ZN11QTextEngine16getClusterLengthEPtPK17HB_CharAttributesiiiPi @ 12751 NONAME
+	_ZN11QTextEngine18positionInLigatureEPK11QScriptItemi6QFixedS3_ib @ 12752 NONAME
+	_ZN14QPaintEngineEx18drawStaticTextItemEP15QStaticTextItem @ 12753 NONAME
+	_ZNK14QPaintEngineEx23supportsTransformationsEfRK10QTransform @ 12754 NONAME
 
