@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -80,6 +80,10 @@
 #if defined(Q_WS_MAC) && !defined(QT_NO_EFFECTS)
 #   include <private/qcore_mac_p.h>
 #   include <private/qt_cocoa_helpers_mac_p.h>
+#endif
+
+#ifdef Q_WS_S60
+#   include "private/qt_s60_p.h"
 #endif
 
 
@@ -172,6 +176,14 @@ void QMenuPrivate::init()
     q->addAction(selectAction);
     q->addAction(cancelAction);
 #endif
+
+#ifdef Q_WS_S60
+    if (S60->avkonComponentsSupportTransparency) {
+        bool noSystemBackground = q->testAttribute(Qt::WA_NoSystemBackground);
+        q->setAttribute(Qt::WA_TranslucentBackground); // also sets WA_NoSystemBackground
+        q->setAttribute(Qt::WA_NoSystemBackground, noSystemBackground); // restore system background attribute
+    }
+#endif
 }
 
 int QMenuPrivate::scrollerHeight() const
@@ -228,6 +240,12 @@ QList<QPointer<QWidget> > QMenuPrivate::calcCausedStack() const
 void QMenuPrivate::updateActionRects() const
 {
     Q_Q(const QMenu);
+    updateActionRects(popupGeometry(q));
+}
+
+void QMenuPrivate::updateActionRects(const QRect &screen) const
+{
+    Q_Q(const QMenu);
     if (!itemsDirty)
         return;
 
@@ -237,20 +255,10 @@ void QMenuPrivate::updateActionRects() const
     actionRects.resize(actions.count());
     actionRects.fill(QRect());
 
-    //let's try to get the last visible action
-    int lastVisibleAction = actions.count() - 1;
-    for(;lastVisibleAction >= 0; --lastVisibleAction) {
-        const QAction *action = actions.at(lastVisibleAction);
-        if (action->isVisible()) {
-            //removing trailing separators
-            if (action->isSeparator() && collapsibleSeparators)
-                continue;
-            break;
-        }
-    }
+    int lastVisibleAction = getLastVisibleAction();
 
     int max_column_width = 0,
-        dh = popupGeometry(q).height(),
+        dh = screen.height(),
         y = 0;
     QStyle *style = q->style();
     QStyleOption opt;
@@ -351,7 +359,6 @@ void QMenuPrivate::updateActionRects() const
     const int min_column_width = q->minimumWidth() - (sfcMargin + leftmargin + rightmargin + 2 * (fw + hmargin));
     max_column_width = qMax(min_column_width, max_column_width);
 
-
     //calculate position
     const int base_y = vmargin + fw + topmargin +
         (scroll ? scroll->scrollOffset : 0) +
@@ -381,6 +388,34 @@ void QMenuPrivate::updateActionRects() const
     }
     itemsDirty = 0;
 }
+
+QSize QMenuPrivate::adjustMenuSizeForScreen(const QRect &screen)
+{
+    Q_Q(QMenu);
+    QSize ret = screen.size();
+    itemsDirty = true;
+    updateActionRects(screen);
+    const int fw = q->style()->pixelMetric(QStyle::PM_MenuPanelWidth, 0, q);
+    ret.setWidth(actionRects.at(getLastVisibleAction()).right() + fw);
+    return ret;
+}
+
+int QMenuPrivate::getLastVisibleAction() const
+{
+    //let's try to get the last visible action
+    int lastVisibleAction = actions.count() - 1;
+    for (;lastVisibleAction >= 0; --lastVisibleAction) {
+        const QAction *action = actions.at(lastVisibleAction);
+        if (action->isVisible()) {
+            //removing trailing separators
+            if (action->isSeparator() && collapsibleSeparators)
+                continue;
+            break;
+        }
+    }
+    return lastVisibleAction;
+}
+
 
 QRect QMenuPrivate::actionRect(QAction *act) const
 {
@@ -1813,9 +1848,20 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     else
 #endif
     screen = d->popupGeometry(QApplication::desktop()->screenNumber(p));
-
     const int desktopFrame = style()->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, 0, this);
     bool adjustToDesktop = !window()->testAttribute(Qt::WA_DontShowOnScreen);
+
+    // if the screens have very different geometries and the menu is too big, we have to recalculate
+    if (size.height() > screen.height() || size.width() > screen.width()) {
+        size = d->adjustMenuSizeForScreen(screen);
+        adjustToDesktop = true;
+    }
+    // Layout is not right, we might be able to save horizontal space
+    if (d->ncols >1 && size.height() < screen.height()) {
+        size = d->adjustMenuSizeForScreen(screen);
+        adjustToDesktop = true;
+    }
+
 #ifdef QT_KEYPAD_NAVIGATION
     if (!atAction && QApplication::keypadNavigationEnabled()) {
         // Try to have one item activated
@@ -1906,6 +1952,27 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
             } else {
                 // Too big for screen, bias to see bottom of menu (for some reason)
                 pos.setY(screen.bottom() - size.height() + 1);
+            }
+        }
+    }
+    const int subMenuOffset = style()->pixelMetric(QStyle::PM_SubMenuOverlap, 0, this);
+    const QSize menuSize(sizeHint());
+    QMenu *caused = qobject_cast<QMenu*>(d_func()->causedPopup.widget);
+    if (caused && caused->geometry().width() + menuSize.width() + subMenuOffset < screen.width()) {
+        QRect parentActionRect(caused->d_func()->actionRect(caused->d_func()->currentAction));
+        const QPoint actionTopLeft = caused->mapToGlobal(parentActionRect.topLeft());
+        parentActionRect.moveTopLeft(actionTopLeft);
+        if (isRightToLeft()) {
+            if ((pos.x() + menuSize.width() > parentActionRect.left() - subMenuOffset)
+                && (pos.x() < parentActionRect.right()))
+            {
+                    pos.rx() = parentActionRect.right();
+            }
+        } else {
+            if ((pos.x() < parentActionRect.right() + subMenuOffset)
+                && (pos.x() + menuSize.width() > parentActionRect.left()))
+            {
+                    pos.rx() = parentActionRect.left() - menuSize.width();
             }
         }
     }
@@ -2941,28 +3008,8 @@ void QMenu::internalDelayedPopup()
     const QRect actionRect(d->actionRect(d->currentAction));
     const QSize menuSize(d->activeMenu->sizeHint());
     const QPoint rightPos(mapToGlobal(QPoint(actionRect.right() + subMenuOffset + 1, actionRect.top())));
-    const QPoint leftPos(mapToGlobal(QPoint(actionRect.left() - subMenuOffset - menuSize.width(), actionRect.top())));
 
     QPoint pos(rightPos);
-    QMenu *caused = qobject_cast<QMenu*>(d->activeMenu->d_func()->causedPopup.widget);
-
-    const QRect availGeometry(d->popupGeometry(caused));
-    if (isRightToLeft()) {
-        pos = leftPos;
-        if ((caused && caused->x() < x()) || pos.x() < availGeometry.left()) {
-            if(rightPos.x() + menuSize.width() < availGeometry.right())
-                pos = rightPos;
-            else
-                pos.rx() = availGeometry.left();
-        }
-    } else {
-        if ((caused && caused->x() > x()) || pos.x() + menuSize.width() > availGeometry.right()) {
-            if(leftPos.x() < availGeometry.left())
-                pos.rx() = availGeometry.right() - menuSize.width();
-            else
-                pos = leftPos;
-        }
-    }
 
     //calc sloppy focus buffer
     if (style()->styleHint(QStyle::SH_Menu_SloppySubMenus, 0, this)) {

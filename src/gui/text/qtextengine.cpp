@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -856,6 +856,21 @@ void QTextEngine::shapeLine(const QScriptLine &line)
     }
 }
 
+#if !defined(QT_ENABLE_HARFBUZZ_FOR_MAC) && defined(Q_WS_MAC)
+static bool enableHarfBuzz()
+{
+    static enum { Yes, No, Unknown } status = Unknown;
+
+    if (status == Unknown) {
+        QByteArray v = qgetenv("QT_ENABLE_HARFBUZZ");
+        bool value = !v.isEmpty() && v != "0" && v != "false";
+        if (value) status = Yes;
+        else status = No;
+    }
+    return status == Yes;
+}
+#endif
+
 void QTextEngine::shapeText(int item) const
 {
     Q_ASSERT(item < layoutData->items.size());
@@ -865,7 +880,24 @@ void QTextEngine::shapeText(int item) const
         return;
 
 #if defined(Q_WS_MAC)
-    shapeTextMac(item);
+#if !defined(QT_ENABLE_HARFBUZZ_FOR_MAC)
+    if (enableHarfBuzz()) {
+#endif
+        QFontEngine *actualFontEngine = fontEngine(si, &si.ascent, &si.descent, &si.leading);
+        if (actualFontEngine->type() == QFontEngine::Multi)
+            actualFontEngine = static_cast<QFontEngineMulti *>(actualFontEngine)->engine(0);
+
+        HB_Face face = actualFontEngine->harfbuzzFace();
+        HB_Script script = (HB_Script) si.analysis.script;
+        if (face->supported_scripts[script])
+            shapeTextWithHarfbuzz(item);
+        else
+            shapeTextMac(item);
+#if !defined(QT_ENABLE_HARFBUZZ_FOR_MAC)
+    } else {
+        shapeTextMac(item);
+    }
+#endif
 #elif defined(Q_WS_WINCE)
     shapeTextWithCE(item);
 #else
@@ -1242,6 +1274,10 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
             actualFontEngine = static_cast<QFontEngineMulti *>(font)->engine(engineIdx);
         }
 
+        si.ascent = qMax(actualFontEngine->ascent(), si.ascent);
+        si.descent = qMax(actualFontEngine->descent(), si.descent);
+        si.leading = qMax(actualFontEngine->leading(), si.leading);
+
         shaper_item.font = actualFontEngine->harfbuzzFont();
         shaper_item.face = actualFontEngine->harfbuzzFace();
 
@@ -1304,6 +1340,7 @@ static void init(QTextEngine *e)
     e->ignoreBidi = false;
     e->cacheGlyphs = false;
     e->forceJustification = false;
+    e->visualMovement = false;
 
     e->layoutData = 0;
 
@@ -1565,6 +1602,8 @@ bool QTextEngine::isRightToLeft() const
     default:
         break;
     }
+    if (!layoutData)
+        itemize();
     // this places the cursor in the right position depending on the keyboard layout
     if (layoutData->string.isEmpty())
         return QApplication::keyboardInputDirection() == Qt::RightToLeft;
@@ -2737,6 +2776,251 @@ QFixed QTextEngine::leadingSpaceWidth(const QScriptLine &line)
     return width(line.from + pos, line.length - pos);
 }
 
+QFixed QTextEngine::alignLine(const QScriptLine &line)
+{
+    QFixed x = 0;
+    justify(line);
+    // if width is QFIXED_MAX that means we used setNumColumns() and that implicitly makes this line left aligned.
+    if (!line.justified && line.width != QFIXED_MAX) {
+        int align = option.alignment();
+        if (align & Qt::AlignLeft)
+            x -= leadingSpaceWidth(line);
+        if (align & Qt::AlignJustify && isRightToLeft())
+            align = Qt::AlignRight;
+        if (align & Qt::AlignRight)
+            x = line.width - (line.textAdvance + leadingSpaceWidth(line));
+        else if (align & Qt::AlignHCenter)
+            x = (line.width - (line.textAdvance + leadingSpaceWidth(line)))/2;
+    }
+    return x;
+}
+
+QFixed QTextEngine::offsetInLigature(const QScriptItem *si, int pos, int max, int glyph_pos)
+{
+    unsigned short *logClusters = this->logClusters(si);
+    const QGlyphLayout &glyphs = shapedGlyphs(si);
+
+    int offsetInCluster = 0;
+    for (int i = pos - 1; i >= 0; i--) {
+        if (logClusters[i] == glyph_pos)
+            offsetInCluster++;
+        else
+            break;
+    }
+
+    // in the case that the offset is inside a (multi-character) glyph,
+    // interpolate the position.
+    if (offsetInCluster > 0) {
+        int clusterLength = 0;
+        for (int i = pos - offsetInCluster; i < max; i++) {
+            if (logClusters[i] == glyph_pos)
+                clusterLength++;
+            else
+                break;
+        }
+        if (clusterLength)
+            return glyphs.advances_x[glyph_pos] * offsetInCluster / clusterLength;
+    }
+
+    return 0;
+}
+
+// Scan in logClusters[from..to-1] for glyph_pos
+int QTextEngine::getClusterLength(unsigned short *logClusters,
+                                  const HB_CharAttributes *attributes,
+                                  int from, int to, int glyph_pos, int *start)
+{
+    int clusterLength = 0;
+    for (int i = from; i < to; i++) {
+        if (logClusters[i] == glyph_pos && attributes[i].charStop) {
+            if (*start < 0)
+                *start = i;
+            clusterLength++;
+        }
+        else if (clusterLength)
+            break;
+    }
+    return clusterLength;
+}
+
+int QTextEngine::positionInLigature(const QScriptItem *si, int end,
+                                    QFixed x, QFixed edge, int glyph_pos,
+                                    bool cursorOnCharacter)
+{
+    unsigned short *logClusters = this->logClusters(si);
+    int clusterStart = -1;
+    int clusterLength = 0;
+
+    if (si->analysis.script != QUnicodeTables::Common &&
+        si->analysis.script != QUnicodeTables::Greek) {
+        if (glyph_pos == -1)
+            return si->position + end;
+        else {
+            int i;
+            for (i = 0; i < end; i++)
+                if (logClusters[i] == glyph_pos)
+                    break;
+            return si->position + i;
+        }
+    }
+
+    if (glyph_pos == -1 && end > 0)
+        glyph_pos = logClusters[end - 1];
+    else {
+        if (x <= edge)
+            glyph_pos--;
+    }
+
+    const HB_CharAttributes *attrs = attributes();
+    clusterLength = getClusterLength(logClusters, attrs, 0, end, glyph_pos, &clusterStart);
+
+    if (clusterLength) {
+        const QGlyphLayout &glyphs = shapedGlyphs(si);
+        QFixed glyphWidth = glyphs.effectiveAdvance(glyph_pos);
+        // the approximate width of each individual element of the ligature
+        QFixed perItemWidth = glyphWidth / clusterLength;
+        QFixed left = x > edge ? edge : edge - glyphWidth;
+        int n = ((x - left) / perItemWidth).floor().toInt();
+        QFixed dist = x - left - n * perItemWidth;
+        int closestItem = dist > (perItemWidth / 2) ? n + 1 : n;
+        if (cursorOnCharacter && closestItem > 0)
+            closestItem--;
+        int pos = si->position + clusterStart + closestItem;
+        // Jump to the next charStop
+        while (!attrs[pos].charStop && pos < end)
+            pos++;
+        return pos;
+    }
+    return si->position + end;
+}
+
+int QTextEngine::previousLogicalPosition(int oldPos) const
+{
+    const HB_CharAttributes *attrs = attributes();
+    if (!attrs || oldPos < 0)
+        return oldPos;
+
+    if (oldPos <= 0)
+        return 0;
+    oldPos--;
+    while (oldPos && !attrs[oldPos].charStop)
+        oldPos--;
+    return oldPos;
+}
+
+int QTextEngine::nextLogicalPosition(int oldPos) const
+{
+    const HB_CharAttributes *attrs = attributes();
+    int len = block.isValid() ? block.length() - 1
+                              : layoutData->string.length();
+    Q_ASSERT(len <= layoutData->string.length());
+    if (!attrs || oldPos < 0 || oldPos >= len)
+        return oldPos;
+
+    oldPos++;
+    while (oldPos < len && !attrs[oldPos].charStop)
+        oldPos++;
+    return oldPos;
+}
+
+int QTextEngine::lineNumberForTextPosition(int pos)
+{
+    if (!layoutData)
+        itemize();
+    if (pos == layoutData->string.length() && lines.size())
+        return lines.size() - 1;
+    for (int i = 0; i < lines.size(); ++i) {
+        const QScriptLine& line = lines[i];
+        if (line.from + line.length > pos)
+            return i;
+    }
+    return -1;
+}
+
+void QTextEngine::insertionPointsForLine(int lineNum, QVector<int> &insertionPoints)
+{
+    QTextLineItemIterator iterator(this, lineNum);
+    bool rtl = isRightToLeft();
+    bool lastLine = lineNum >= lines.size() - 1;
+
+    while (!iterator.atEnd()) {
+        iterator.next();
+        const QScriptItem *si = &layoutData->items[iterator.item];
+        if (si->analysis.bidiLevel % 2) {
+            int i = iterator.itemEnd - 1, min = iterator.itemStart;
+            if (lastLine && (rtl ? iterator.atBeginning() : iterator.atEnd()))
+                i++;
+            for (; i >= min; i--)
+                insertionPoints.push_back(i);
+        } else {
+            int i = iterator.itemStart, max = iterator.itemEnd;
+            if (lastLine && (rtl ? iterator.atBeginning() : iterator.atEnd()))
+                max++;
+            for (; i < max; i++)
+                insertionPoints.push_back(i);
+        }
+    }
+}
+
+int QTextEngine::endOfLine(int lineNum)
+{
+    QVector<int> insertionPoints;
+    insertionPointsForLine(lineNum, insertionPoints);
+
+    if (insertionPoints.size() > 0)
+        return insertionPoints.last();
+    return 0;
+}
+
+int QTextEngine::beginningOfLine(int lineNum)
+{
+    QVector<int> insertionPoints;
+    insertionPointsForLine(lineNum, insertionPoints);
+
+    if (insertionPoints.size() > 0)
+        return insertionPoints.first();
+    return 0;
+}
+
+int QTextEngine::positionAfterVisualMovement(int pos, QTextCursor::MoveOperation op)
+{
+    if (!layoutData)
+        itemize();
+
+    bool moveRight = (op == QTextCursor::Right);
+    bool alignRight = isRightToLeft();
+    if (!layoutData->hasBidi)
+        return moveRight ^ alignRight ? nextLogicalPosition(pos) : previousLogicalPosition(pos);
+
+    int lineNum = lineNumberForTextPosition(pos);
+    Q_ASSERT(lineNum >= 0);
+
+    QVector<int> insertionPoints;
+    insertionPointsForLine(lineNum, insertionPoints);
+    int i, max = insertionPoints.size();
+    for (i = 0; i < max; i++)
+        if (pos == insertionPoints[i]) {
+            if (moveRight) {
+                if (i + 1 < max)
+                    return insertionPoints[i + 1];
+            } else {
+                if (i > 0)
+                    return insertionPoints[i - 1];
+            }
+
+            if (moveRight ^ alignRight) {
+                if (lineNum + 1 < lines.size())
+                    return alignRight ? endOfLine(lineNum + 1) : beginningOfLine(lineNum + 1);
+            }
+            else {
+                if (lineNum > 0)
+                    return alignRight ? beginningOfLine(lineNum - 1) : endOfLine(lineNum - 1);
+            }
+        }
+
+    return pos;
+}
+
 QStackTextEngine::QStackTextEngine(const QString &string, const QFont &f)
     : QTextEngine(string, f),
       _layoutData(string, _memory, MemSize)
@@ -2841,5 +3125,127 @@ glyph_metrics_t glyph_metrics_t::transformed(const QTransform &matrix) const
     return m;
 }
 
+QTextLineItemIterator::QTextLineItemIterator(QTextEngine *_eng, int _lineNum, const QPointF &pos,
+                                             const QTextLayout::FormatRange *_selection)
+    : eng(_eng),
+      line(eng->lines[_lineNum]),
+      si(0),
+      lineNum(_lineNum),
+      lineEnd(line.from + line.length),
+      firstItem(eng->findItem(line.from)),
+      lastItem(eng->findItem(lineEnd - 1)),
+      nItems((firstItem >= 0 && lastItem >= firstItem)? (lastItem-firstItem+1) : 0),
+      logicalItem(-1),
+      item(-1),
+      visualOrder(nItems),
+      levels(nItems),
+      selection(_selection)
+{
+    pos_x = x = QFixed::fromReal(pos.x());
+
+    x += line.x;
+
+    x += eng->alignLine(line);
+
+    for (int i = 0; i < nItems; ++i)
+        levels[i] = eng->layoutData->items[i+firstItem].analysis.bidiLevel;
+    QTextEngine::bidiReorder(nItems, levels.data(), visualOrder.data());
+
+    eng->shapeLine(line);
+}
+
+QScriptItem &QTextLineItemIterator::next()
+{
+    x += itemWidth;
+
+    ++logicalItem;
+    item = visualOrder[logicalItem] + firstItem;
+    itemLength = eng->length(item);
+    si = &eng->layoutData->items[item];
+    if (!si->num_glyphs)
+        eng->shape(item);
+
+    if (si->analysis.flags >= QScriptAnalysis::TabOrObject) {
+        itemWidth = si->width;
+        return *si;
+    }
+
+    unsigned short *logClusters = eng->logClusters(si);
+    QGlyphLayout glyphs = eng->shapedGlyphs(si);
+
+    itemStart = qMax(line.from, si->position);
+    glyphsStart = logClusters[itemStart - si->position];
+    if (lineEnd < si->position + itemLength) {
+        itemEnd = lineEnd;
+        glyphsEnd = logClusters[itemEnd-si->position];
+    } else {
+        itemEnd = si->position + itemLength;
+        glyphsEnd = si->num_glyphs;
+    }
+    // show soft-hyphen at line-break
+    if (si->position + itemLength >= lineEnd
+        && eng->layoutData->string.at(lineEnd - 1) == 0x00ad)
+        glyphs.attributes[glyphsEnd - 1].dontPrint = false;
+
+    itemWidth = 0;
+    for (int g = glyphsStart; g < glyphsEnd; ++g)
+        itemWidth += glyphs.effectiveAdvance(g);
+
+    return *si;
+}
+
+bool QTextLineItemIterator::getSelectionBounds(QFixed *selectionX, QFixed *selectionWidth) const
+{
+    *selectionX = *selectionWidth = 0;
+
+    if (!selection)
+        return false;
+
+    if (si->analysis.flags >= QScriptAnalysis::TabOrObject) {
+        if (si->position >= selection->start + selection->length
+            || si->position + itemLength <= selection->start)
+            return false;
+
+        *selectionX = x;
+        *selectionWidth = itemWidth;
+    } else {
+        unsigned short *logClusters = eng->logClusters(si);
+        QGlyphLayout glyphs = eng->shapedGlyphs(si);
+
+        int from = qMax(itemStart, selection->start) - si->position;
+        int to = qMin(itemEnd, selection->start + selection->length) - si->position;
+        if (from >= to)
+            return false;
+
+        int start_glyph = logClusters[from];
+        int end_glyph = (to == eng->length(item)) ? si->num_glyphs : logClusters[to];
+        QFixed soff;
+        QFixed swidth;
+        if (si->analysis.bidiLevel %2) {
+            for (int g = glyphsEnd - 1; g >= end_glyph; --g)
+                soff += glyphs.effectiveAdvance(g);
+            for (int g = end_glyph - 1; g >= start_glyph; --g)
+                swidth += glyphs.effectiveAdvance(g);
+        } else {
+            for (int g = glyphsStart; g < start_glyph; ++g)
+                soff += glyphs.effectiveAdvance(g);
+            for (int g = start_glyph; g < end_glyph; ++g)
+                swidth += glyphs.effectiveAdvance(g);
+        }
+
+        // If the starting character is in the middle of a ligature,
+        // selection should only contain the right part of that ligature
+        // glyph, so we need to get the width of the left part here and
+        // add it to *selectionX
+        QFixed leftOffsetInLigature = eng->offsetInLigature(si, from, to, start_glyph);
+        *selectionX = x + soff + leftOffsetInLigature;
+        *selectionWidth = swidth - leftOffsetInLigature;
+        // If the ending character is also part of a ligature, swidth does
+        // not contain that part yet, we also need to find out the width of
+        // that left part
+        *selectionWidth += eng->offsetInLigature(si, to, eng->length(item), end_glyph);
+    }
+    return true;
+}
 
 QT_END_NAMESPACE

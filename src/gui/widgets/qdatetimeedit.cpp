@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -2538,20 +2538,32 @@ void QDateTimeEditPrivate::syncCalendarWidget()
 }
 
 QCalendarPopup::QCalendarPopup(QWidget * parent, QCalendarWidget *cw)
-    : QWidget(parent, Qt::Popup), calendar(0)
+    : QWidget(parent, Qt::Popup)
 {
     setAttribute(Qt::WA_WindowPropagation);
 
     dateChanged = false;
     if (!cw) {
-        cw = new QCalendarWidget(this);
+        verifyCalendarInstance();
+    } else {
+        setCalendarWidget(cw);
+    }
+}
+
+QCalendarWidget *QCalendarPopup::verifyCalendarInstance()
+{
+    if (calendar.isNull()) {
+        QCalendarWidget *cw = new QCalendarWidget(this);
         cw->setVerticalHeaderFormat(QCalendarWidget::NoVerticalHeader);
 #ifdef QT_KEYPAD_NAVIGATION
         if (QApplication::keypadNavigationEnabled())
             cw->setHorizontalHeaderFormat(QCalendarWidget::SingleLetterDayNames);
 #endif
+        setCalendarWidget(cw);
+        return cw;
+    } else {
+        return calendar.data();
     }
-    setCalendarWidget(cw);
 }
 
 void QCalendarPopup::setCalendarWidget(QCalendarWidget *cw)
@@ -2563,28 +2575,29 @@ void QCalendarPopup::setCalendarWidget(QCalendarWidget *cw)
         widgetLayout->setMargin(0);
         widgetLayout->setSpacing(0);
     }
-    delete calendar;
-    calendar = cw;
-    widgetLayout->addWidget(calendar);
+    delete calendar.data();
+    calendar = QWeakPointer<QCalendarWidget>(cw);
+    widgetLayout->addWidget(cw);
 
-    connect(calendar, SIGNAL(activated(QDate)), this, SLOT(dateSelected(QDate)));
-    connect(calendar, SIGNAL(clicked(QDate)), this, SLOT(dateSelected(QDate)));
-    connect(calendar, SIGNAL(selectionChanged()), this, SLOT(dateSelectionChanged()));
+    connect(cw, SIGNAL(activated(QDate)), this, SLOT(dateSelected(QDate)));
+    connect(cw, SIGNAL(clicked(QDate)), this, SLOT(dateSelected(QDate)));
+    connect(cw, SIGNAL(selectionChanged()), this, SLOT(dateSelectionChanged()));
 
-    calendar->setFocus();
+    cw->setFocus();
 }
 
 
 void QCalendarPopup::setDate(const QDate &date)
 {
     oldDate = date;
-    calendar->setSelectedDate(date);
+    verifyCalendarInstance()->setSelectedDate(date);
 }
 
 void QCalendarPopup::setDateRange(const QDate &min, const QDate &max)
 {
-    calendar->setMinimumDate(min);
-    calendar->setMaximumDate(max);
+    QCalendarWidget *cw = verifyCalendarInstance();
+    cw->setMinimumDate(min);
+    cw->setMaximumDate(max);
 }
 
 void QCalendarPopup::mousePressEvent(QMouseEvent *event)
@@ -2620,7 +2633,7 @@ bool QCalendarPopup::event(QEvent *event)
 void QCalendarPopup::dateSelectionChanged()
 {
     dateChanged = true;
-    emit newDateSelected(calendar->selectedDate());
+    emit newDateSelected(verifyCalendarInstance()->selectedDate());
 }
 void QCalendarPopup::dateSelected(const QDate &date)
 {

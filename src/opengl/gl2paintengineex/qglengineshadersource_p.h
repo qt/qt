@@ -7,29 +7,29 @@
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -241,6 +241,7 @@ static const char* const qglslPositionWithRadialGradientBrushVertexShader = "\n\
     uniform   mediump vec2      halfViewportSize; \n\
     uniform   highp   mat3      brushTransform; \n\
     uniform   highp   vec2      fmp; \n\
+    uniform   highp   vec3      bradius; \n\
     varying   highp   float     b; \n\
     varying   highp   vec2      A; \n\
     void setPosition(void) \n\
@@ -253,7 +254,7 @@ static const char* const qglslPositionWithRadialGradientBrushVertexShader = "\n\
         mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \n\
         gl_Position = vec4(gl_Position.xy * invertedHTexCoordsZ, 0.0, invertedHTexCoordsZ); \n\
         A = hTexCoords.xy * invertedHTexCoordsZ; \n\
-        b = 2.0 * dot(A, fmp); \n\
+        b = bradius.x + 2.0 * dot(A, fmp); \n\
     }\n";
 
 static const char* const qglslAffinePositionWithRadialGradientBrushVertexShader
@@ -263,13 +264,22 @@ static const char* const qglslRadialGradientBrushSrcFragmentShader = "\n\
     uniform           sampler2D brushTexture; \n\
     uniform   highp   float     fmp2_m_radius2; \n\
     uniform   highp   float     inverse_2_fmp2_m_radius2; \n\
+    uniform   highp   float     sqrfr; \n\
     varying   highp   float     b; \n\
     varying   highp   vec2      A; \n\
+    uniform   highp   vec3      bradius; \n\
     lowp vec4 srcPixel() \n\
     { \n\
-        highp float c = -dot(A, A); \n\
-        highp vec2 val = vec2((-b + sqrt(b*b - 4.0*fmp2_m_radius2*c)) * inverse_2_fmp2_m_radius2, 0.5); \n\
-        return texture2D(brushTexture, val); \n\
+        highp float c = sqrfr-dot(A, A); \n\
+        highp float det = b*b - 4.0*fmp2_m_radius2*c; \n\
+        lowp vec4 result = vec4(0.0); \n\
+        if (det >= 0.0) { \n\
+            highp float detSqrt = sqrt(det); \n\
+            highp float w = max((-b - detSqrt) * inverse_2_fmp2_m_radius2, (-b + detSqrt) * inverse_2_fmp2_m_radius2); \n\
+            if (bradius.y + w * bradius.z >= 0.0) \n\
+                result = texture2D(brushTexture, vec2(w, 0.5)); \n\
+        } \n\
+        return result; \n\
     }\n";
 
 

@@ -7,20 +7,20 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of this
-** file.
+** Foundation and appearing in the file included in the packaging of
+** this file.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1120,6 +1120,44 @@
 
     \tableofcontents{3}
 
+
+    \target BACKUP_REGISTRATION_FILE_MAEMO
+    \section1 BACKUP_REGISTRATION_FILE_MAEMO
+
+    \e {This is only used on the Maemo platform.}
+
+    This variable is used to specify the backup registration file to use with
+    \c enable_backup \c CONFIG value for Maemo platform. The default value is:
+    \c{$$_PRO_FILE_PWD_/backup_registration/maemo/$$basename(TARGET).conf}.
+
+    Unfortunately it is not possible to have a common registration file for Maemo like there is
+    for Symbian, so the developer must always provide one if the platform default backup support is
+    not sufficient.
+
+    For documentation about how to create backup registration files and how the device
+    backup works in general, see:
+    (\l{http://wiki.maemo.org/Documentation/Maemo_5_Developer_Guide/Generic_Platform_Components/Using_Backup_Application}{Using Backup Application})
+
+    \target BACKUP_REGISTRATION_FILE_SYMBIAN
+    \section1 BACKUP_REGISTRATION_FILE_SYMBIAN
+
+    \e {This is only used on the Symbian platform.}
+
+    This variable is used to specify the backup registration file to use with
+    \c enable_backup \c CONFIG value for Symbian platform. The default value is
+    determined as follows:
+
+    If a custom registration file \c{$$_PRO_FILE_PWD_/backup_registration/symbian/backup_registration.xml}
+    exists, it is used. Otherwise, the common registration file \c{$$[QT_INSTALL_DATA]/mkspecs/common/symbian/backup_registration.xml}
+    is used. This common registration file will define backing up of application binaries,
+    resources, and all files under application private directory. Also note that \c{C:/Data}
+    contents are backed up by default on Symbian devices, so no registration is needed for any
+    files found there.
+
+    For documentation about how to create backup registration files and how the device
+    backup works in general, see:
+    (\l{http://library.forum.nokia.com/index.jsp?topic=/S60_5th_Edition_Cpp_Developers_Library/GUID-35228542-8C95-4849-A73F-2B4F082F0C44/sdk/doc_source/guide/Connectivity-subsystem-guide/Connectivity/PC_Connectivity_How-To_Write_Backup_Aware_Software.html}{How-To Write Backup-aware Software})
+
     \target BLD_INF_RULES
     \section1 BLD_INF_RULES
 
@@ -1253,11 +1291,12 @@
         automatically be added to the project.
     \row \o console \o The target is a Win32 console application (app only). The
         proper include paths, compiler flags and libraries will
-        automatically be added to the
-        project.
+        automatically be added to the project.
     \row \o shared \o{1,3} The target is a shared object/DLL. The proper
         include paths, compiler flags and libraries will automatically be
-        added to the project.
+        added to the project. Note that \c dll can also be used on all platforms;
+        a shared library file with the appropriate suffix for the target platform
+        (dll, so, dylib) will be created.
     \row \o dll \o
     \row \o dylib \o
     \row \o static \o{1,2} The target is a static library (lib only).  The proper
@@ -1339,6 +1378,17 @@
          to work. E.g. \c{myapp_en.ts}.
          \bold{Note:} All languages supported by Qt are not supported by Symbian,
          so some \c{.ts} files may be ignored by qmake.
+    \endtable
+
+    These options only have an effect on Symbian and Maemo platforms:
+
+    \table 95%
+    \header \o Option \o Description
+    \row \o enable_backup \o Generates deployment for backup registration file
+         to enable backing up the application during device backup.
+         See \l{#BACKUP_REGISTRATION_FILE_MAEMO}{BACKUP_REGISTRATION_FILE_MAEMO}
+         and \l{#BACKUP_REGISTRATION_FILE_SYMBIAN}{BACKUP_REGISTRATION_FILE_SYMBIAN}
+         for more information about backup.
     \endtable
 
     These options have an effect on Linux/Unix platforms:
@@ -1718,6 +1768,9 @@
     executable. If you need to install executable files, you can unset the
     files' executable flags.
 
+    Note that \c qmake will skip files that are executable. If you need to install
+    executable files, you can unset the files' executable flags.
+
     \target LEXIMPLS
     \section1 LEXIMPLS
 
@@ -1807,6 +1860,8 @@
     information for building a project.  The value of this variable is
     typically handled by \l{qmake Manual#qmake}{\c qmake} or
     \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    \bold{Note:} On the Symbian platform, this variable is ignored.
 
     \bold{Note:} On the Symbian platform, this variable is ignored.
 
@@ -3506,11 +3561,11 @@
 
     This can be useful to optionally enable or disable features. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 157
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 157
 
     And then, in the code:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 158
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 158
 
     \section1 basename(variablename)
 

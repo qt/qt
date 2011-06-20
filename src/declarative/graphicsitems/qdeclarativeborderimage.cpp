@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -240,22 +240,20 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
     BorderImage can handle any image format supported by Qt, loaded from any
     URL scheme supported by Qt.
 
-    It can also handle .sci files, which are a QML-specific format. A .sci
-    file uses a simple text-based format that specifies the borders, the
-    image file and the tile rules.
+    This property can also be used to refer to .sci files, which are
+    written in a QML-specific, text-based format that specifies the
+    borders, the image file and the tile rules for a given border image.
 
     The following .sci file sets the borders to 10 on each side for the
     image \c picture.png:
 
-    \qml
-    BorderImage {
-        border.left: 10
-        border.top: 10
-        border.bottom: 10
-        border.right: 10
-        source: "picture.png"
-    }
-    \endqml
+    \code
+    border.left: 10
+    border.top: 10
+    border.bottom: 10
+    border.right: 10
+    source: "picture.png"
+    \endcode
 
     The URL may be absolute, or relative to the URL of the component.
 

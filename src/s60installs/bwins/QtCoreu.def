@@ -1000,7 +1000,7 @@ EXPORTS
 	?addDays@QDate@@QBE?AV1@H@Z @ 999 NONAME ; class QDate QDate::addDays(int) const
 	?addDays@QDateTime@@QBE?AV1@H@Z @ 1000 NONAME ; class QDateTime QDateTime::addDays(int) const
 	?addDefaultAnimation@QStateMachine@@QAEXPAVQAbstractAnimation@@@Z @ 1001 NONAME ; void QStateMachine::addDefaultAnimation(class QAbstractAnimation *)
-	?addDeferredActiveObject@QEventDispatcherSymbian@@QAEXPAVQActiveObject@@@Z @ 1002 NONAME ; void QEventDispatcherSymbian::addDeferredActiveObject(class QActiveObject *)
+	?addDeferredActiveObject@QEventDispatcherSymbian@@QAEXPAVQActiveObject@@@Z @ 1002 NONAME ABSENT ; void QEventDispatcherSymbian::addDeferredActiveObject(class QActiveObject *)
 	?addEncodedQueryItem@QUrl@@QAEXABVQByteArray@@0@Z @ 1003 NONAME ; void QUrl::addEncodedQueryItem(class QByteArray const &, class QByteArray const &)
 	?addExtraNamespaceDeclaration@QXmlStreamReader@@QAEXABVQXmlStreamNamespaceDeclaration@@@Z @ 1004 NONAME ; void QXmlStreamReader::addExtraNamespaceDeclaration(class QXmlStreamNamespaceDeclaration const &)
 	?addExtraNamespaceDeclarations@QXmlStreamReader@@QAEXABV?$QVector@VQXmlStreamNamespaceDeclaration@@@@@Z @ 1005 NONAME ; void QXmlStreamReader::addExtraNamespaceDeclarations(class QVector<class QXmlStreamNamespaceDeclaration> const &)
@@ -2940,7 +2940,7 @@ EXPORTS
 	?qt_qFindChildren_helper@@YAXPBVQObject@@ABVQString@@PBVQRegExp@@ABUQMetaObject@@PAV?$QList@PAX@@@Z @ 2939 NONAME ; void qt_qFindChildren_helper(class QObject const *, class QString const &, class QRegExp const *, struct QMetaObject const &, class QList<void *> *)
 	?qt_regexp_toCanonical@@YA?AVQString@@ABV1@W4PatternSyntax@QRegExp@@@Z @ 2940 NONAME ; class QString qt_regexp_toCanonical(class QString const &, enum QRegExp::PatternSyntax)
 	?qt_register_signal_spy_callbacks@@YAXABUQSignalSpyCallbackSet@@@Z @ 2941 NONAME ; void qt_register_signal_spy_callbacks(struct QSignalSpyCallbackSet const &)
-	?qt_resolveS60PluginFunc@@YAP6AHXZH@Z @ 2942 NONAME ; int (*)(void) qt_resolveS60PluginFunc(int)
+	?qt_resolveS60PluginFunc@@YAP6AHXZH@Z @ 2942 NONAME ABSENT ; int (*)(void) qt_resolveS60PluginFunc(int)
 	?qt_s60GetRFs@@YAAAVRFs@@XZ @ 2943 NONAME ; class RFs & qt_s60GetRFs(void)
 	?qt_safe_select@@YAHHPAUfd_set@@00PBUtimeval@@@Z @ 2944 NONAME ; int qt_safe_select(int, struct fd_set *, struct fd_set *, struct fd_set *, struct timeval const *)
 	?qt_symbianLocaleName@@YA?AVQByteArray@@H@Z @ 2945 NONAME ; class QByteArray qt_symbianLocaleName(int)
@@ -3062,7 +3062,7 @@ EXPORTS
 	?removeColumn@QAbstractItemModel@@QAE_NHABVQModelIndex@@@Z @ 3061 NONAME ; bool QAbstractItemModel::removeColumn(int, class QModelIndex const &)
 	?removeColumns@QAbstractItemModel@@UAE_NHHABVQModelIndex@@@Z @ 3062 NONAME ; bool QAbstractItemModel::removeColumns(int, int, class QModelIndex const &)
 	?removeDefaultAnimation@QStateMachine@@QAEXPAVQAbstractAnimation@@@Z @ 3063 NONAME ; void QStateMachine::removeDefaultAnimation(class QAbstractAnimation *)
-	?removeDeferredActiveObject@QEventDispatcherSymbian@@QAEXPAVQActiveObject@@@Z @ 3064 NONAME ; void QEventDispatcherSymbian::removeDeferredActiveObject(class QActiveObject *)
+	?removeDeferredActiveObject@QEventDispatcherSymbian@@QAEXPAVQActiveObject@@@Z @ 3064 NONAME ABSENT ; void QEventDispatcherSymbian::removeDeferredActiveObject(class QActiveObject *)
 	?removeEncodedQueryItem@QUrl@@QAEXABVQByteArray@@@Z @ 3065 NONAME ; void QUrl::removeEncodedQueryItem(class QByteArray const &)
 	?removeEventFilter@QObject@@QAEXPAV1@@Z @ 3066 NONAME ; void QObject::removeEventFilter(class QObject *)
 	?removeFormat@QMimeData@@QAEXABVQString@@@Z @ 3067 NONAME ; void QMimeData::removeFormat(class QString const &)
@@ -4484,8 +4484,8 @@ EXPORTS
 	?selectThread@QEventDispatcherSymbian@@AAEAAVQSelectThread@@XZ @ 4483 NONAME ; class QSelectThread & QEventDispatcherSymbian::selectThread(void)
 	?qt_symbian_SetupThreadHeap@@YAHHAAUSStdEpocThreadCreateInfo@@@Z @ 4484 NONAME ; int qt_symbian_SetupThreadHeap(int, struct SStdEpocThreadCreateInfo &)
 	?objectNameChanged@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@@ZA @ 4485 NONAME ; void (*QAbstractDeclarativeData::objectNameChanged)(class QAbstractDeclarativeData *, class QObject *)
-	?queueDeferredActiveObjectsCompletion@QEventDispatcherSymbian@@QAEXXZ @ 4486 NONAME ; void QEventDispatcherSymbian::queueDeferredActiveObjectsCompletion(void)
-	?reactivateDeferredActiveObjects@QEventDispatcherSymbian@@UAEXXZ @ 4487 NONAME ; void QEventDispatcherSymbian::reactivateDeferredActiveObjects(void)
+	?queueDeferredActiveObjectsCompletion@QEventDispatcherSymbian@@QAEXXZ @ 4486 NONAME ABSENT ; void QEventDispatcherSymbian::queueDeferredActiveObjectsCompletion(void)
+	?reactivateDeferredActiveObjects@QEventDispatcherSymbian@@UAEXXZ @ 4487 NONAME ABSENT ; void QEventDispatcherSymbian::reactivateDeferredActiveObjects(void)
 	?contains@QString@@QBE?AVQBool@@ABVQStringRef@@W4CaseSensitivity@Qt@@@Z @ 4488 NONAME ; class QBool QString::contains(class QStringRef const &, enum Qt::CaseSensitivity) const
 	?swap@QRegExp@@QAEXAAV1@@Z @ 4489 NONAME ; void QRegExp::swap(class QRegExp &)
 	?indexOf@QStringRef@@QBEHABVQString@@HW4CaseSensitivity@Qt@@@Z @ 4490 NONAME ; int QStringRef::indexOf(class QString const &, int, enum Qt::CaseSensitivity) const
@@ -4612,17 +4612,17 @@ EXPORTS
 	?reactivateAndComplete@QActiveObject@@QAEXXZ @ 4611 NONAME ; void QActiveObject::reactivateAndComplete(void)
 	?defaultConnection@QSymbianSocketManager@@QBEPAVRConnection@@XZ @ 4612 NONAME ; class RConnection * QSymbianSocketManager::defaultConnection(void) const
 	?qt_symbianGetSocketServer@@YAAAVRSocketServ@@XZ @ 4613 NONAME ; class RSocketServ & qt_symbianGetSocketServer(void)
-	?maybeQueueForLater@QActiveObject@@QAE_NXZ @ 4614 NONAME ; bool QActiveObject::maybeQueueForLater(void)
+	?maybeQueueForLater@QActiveObject@@QAE_NXZ @ 4614 NONAME ABSENT ; bool QActiveObject::maybeQueueForLater(void)
 	??_EQActiveObject@@UAE@I@Z @ 4615 NONAME ; QActiveObject::~QActiveObject(unsigned int)
 	?lookupSocket@QSymbianSocketManager@@QBE_NHAAVRSocket@@@Z @ 4616 NONAME ; bool QSymbianSocketManager::lookupSocket(int, class RSocket &) const
-	?wait@QActiveObject@@SA_NPAVCActive@@H@Z @ 4617 NONAME ; bool QActiveObject::wait(class CActive *, int)
+	?wait@QActiveObject@@SA_NPAVCActive@@H@Z @ 4617 NONAME ABSENT ; bool QActiveObject::wait(class CActive *, int)
 	?instance@QSymbianSocketManager@@SAAAV1@XZ @ 4618 NONAME ; class QSymbianSocketManager & QSymbianSocketManager::instance(void)
 	??0QSymbianSocketManager@@QAE@XZ @ 4619 NONAME ; QSymbianSocketManager::QSymbianSocketManager(void)
 	?create@QNonContiguousByteDeviceFactory@@SAPAVQNonContiguousByteDevice@@V?$QSharedPointer@VQRingBuffer@@@@@Z @ 4620 NONAME ; class QNonContiguousByteDevice * QNonContiguousByteDeviceFactory::create(class QSharedPointer<class QRingBuffer>)
 	??1QSymbianSocketManager@@QAE@XZ @ 4621 NONAME ; QSymbianSocketManager::~QSymbianSocketManager(void)
 	?isResetDisabled@QNonContiguousByteDevice@@QAE_NXZ @ 4622 NONAME ; bool QNonContiguousByteDevice::isResetDisabled(void)
 	??1QActiveObject@@UAE@XZ @ 4623 NONAME ; QActiveObject::~QActiveObject(void)
-	?wait@QActiveObject@@SA_NV?$QList@PAVCActive@@@@H@Z @ 4624 NONAME ; bool QActiveObject::wait(class QList<class CActive *>, int)
+	?wait@QActiveObject@@SA_NV?$QList@PAVCActive@@@@H@Z @ 4624 NONAME ABSENT ; bool QActiveObject::wait(class QList<class CActive *>, int)
 	?maybeDeferSocketEvent@QActiveObject@@QAE_NXZ @ 4625 NONAME ; bool QActiveObject::maybeDeferSocketEvent(void)
 	?lookupSocket@QSymbianSocketManager@@QBEHABVRSocket@@@Z @ 4626 NONAME ; int QSymbianSocketManager::lookupSocket(class RSocket const &) const
 	?areSocketEventsBlocked@QEventDispatcherSymbian@@QBE_NXZ @ 4627 NONAME ; bool QEventDispatcherSymbian::areSocketEventsBlocked(void) const
@@ -4844,4 +4844,41 @@ EXPORTS
 	?staticMetaObjectExtraData@QEventTransition@@0UQMetaObjectExtraData@@B @ 4843 NONAME ; struct QMetaObjectExtraData const QEventTransition::staticMetaObjectExtraData
 	?qt_static_metacall@QEventLoop@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 4844 NONAME ; void QEventLoop::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?keys@QProcessEnvironment@@QBE?AVQStringList@@XZ @ 4845 NONAME ; class QStringList QProcessEnvironment::keys(void) const
+	?qt_static_metacall@QFutureWatcherBase@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 4846 NONAME ; void QFutureWatcherBase::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?progressValueChanged@QFutureWatcherBase@@IAEXH@Z @ 4847 NONAME ; void QFutureWatcherBase::progressValueChanged(int)
+	?qt_metacast@QFutureWatcherBase@@UAEPAXPBD@Z @ 4848 NONAME ; void * QFutureWatcherBase::qt_metacast(char const *)
+	?qIsEffectiveTLD@@YA_NABVQString@@@Z @ 4849 NONAME ; bool qIsEffectiveTLD(class QString const &)
+	?tr@QFutureWatcherBase@@SA?AVQString@@PBD0@Z @ 4850 NONAME ; class QString QFutureWatcherBase::tr(char const *, char const *)
+	?trolltechConf@QCoreApplicationPrivate@@SAPAVQSettings@@XZ @ 4851 NONAME ; class QSettings * QCoreApplicationPrivate::trolltechConf(void)
+	?pause@QFutureWatcherBase@@QAEXXZ @ 4852 NONAME ; void QFutureWatcherBase::pause(void)
+	?topLevelDomain@QUrl@@QBE?AVQString@@XZ @ 4853 NONAME ; class QString QUrl::topLevelDomain(void) const
+	?togglePaused@QFutureWatcherBase@@QAEXXZ @ 4854 NONAME ; void QFutureWatcherBase::togglePaused(void)
+	?toRfc4122@QUuid@@QBE?AVQByteArray@@XZ @ 4855 NONAME ; class QByteArray QUuid::toRfc4122(void) const
+	?progressRangeChanged@QFutureWatcherBase@@IAEXHH@Z @ 4856 NONAME ; void QFutureWatcherBase::progressRangeChanged(int, int)
+	?cancel@QFutureWatcherBase@@QAEXXZ @ 4857 NONAME ; void QFutureWatcherBase::cancel(void)
+	?tr@QFutureWatcherBase@@SA?AVQString@@PBD0H@Z @ 4858 NONAME ; class QString QFutureWatcherBase::tr(char const *, char const *, int)
+	?toByteArray@QUuid@@QBE?AVQByteArray@@XZ @ 4859 NONAME ; class QByteArray QUuid::toByteArray(void) const
+	?runningAnimationCount@QUnifiedTimer@@QAEHXZ @ 4860 NONAME ; int QUnifiedTimer::runningAnimationCount(void)
+	?getStaticMetaObject@QFutureWatcherBase@@SAABUQMetaObject@@XZ @ 4861 NONAME ; struct QMetaObject const & QFutureWatcherBase::getStaticMetaObject(void)
+	?trUtf8@QFutureWatcherBase@@SA?AVQString@@PBD0H@Z @ 4862 NONAME ; class QString QFutureWatcherBase::trUtf8(char const *, char const *, int)
+	?staticMetaObjectExtraData@QFutureWatcherBase@@0UQMetaObjectExtraData@@B @ 4863 NONAME ; struct QMetaObjectExtraData const QFutureWatcherBase::staticMetaObjectExtraData
+	?qt_metacall@QFutureWatcherBase@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 4864 NONAME ; int QFutureWatcherBase::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?resumed@QFutureWatcherBase@@IAEXXZ @ 4865 NONAME ; void QFutureWatcherBase::resumed(void)
+	?setPaused@QFutureWatcherBase@@QAEX_N@Z @ 4866 NONAME ; void QFutureWatcherBase::setPaused(bool)
+	?canceled@QFutureWatcherBase@@IAEXXZ @ 4867 NONAME ; void QFutureWatcherBase::canceled(void)
+	?progressTextChanged@QFutureWatcherBase@@IAEXABVQString@@@Z @ 4868 NONAME ; void QFutureWatcherBase::progressTextChanged(class QString const &)
+	?fromRfc4122@QUuid@@SA?AU1@ABVQByteArray@@@Z @ 4869 NONAME ; struct QUuid QUuid::fromRfc4122(class QByteArray const &)
+	?staticMetaObject@QFutureWatcherBase@@2UQMetaObject@@B @ 4870 NONAME ; struct QMetaObject const QFutureWatcherBase::staticMetaObject
+	?trUtf8@QFutureWatcherBase@@SA?AVQString@@PBD0@Z @ 4871 NONAME ; class QString QFutureWatcherBase::trUtf8(char const *, char const *)
+	?d_func@QFutureWatcherBase@@ABEPBVQFutureWatcherBasePrivate@@XZ @ 4872 NONAME ; class QFutureWatcherBasePrivate const * QFutureWatcherBase::d_func(void) const
+	?metaObject@QFutureWatcherBase@@UBEPBUQMetaObject@@XZ @ 4873 NONAME ; struct QMetaObject const * QFutureWatcherBase::metaObject(void) const
+	?d_func@QFutureWatcherBase@@AAEPAVQFutureWatcherBasePrivate@@XZ @ 4874 NONAME ; class QFutureWatcherBasePrivate * QFutureWatcherBase::d_func(void)
+	?qTopLevelDomain@@YA?AVQString@@ABV1@@Z @ 4875 NONAME ; class QString qTopLevelDomain(class QString const &)
+	??0QUuid@@QAE@ABVQByteArray@@@Z @ 4876 NONAME ; QUuid::QUuid(class QByteArray const &)
+	?resultReadyAt@QFutureWatcherBase@@IAEXH@Z @ 4877 NONAME ; void QFutureWatcherBase::resultReadyAt(int)
+	?paused@QFutureWatcherBase@@IAEXXZ @ 4878 NONAME ; void QFutureWatcherBase::paused(void)
+	?finished@QFutureWatcherBase@@IAEXXZ @ 4879 NONAME ; void QFutureWatcherBase::finished(void)
+	?resume@QFutureWatcherBase@@QAEXXZ @ 4880 NONAME ; void QFutureWatcherBase::resume(void)
+	?resultsReadyAt@QFutureWatcherBase@@IAEXHH@Z @ 4881 NONAME ; void QFutureWatcherBase::resultsReadyAt(int, int)
+	?started@QFutureWatcherBase@@IAEXXZ @ 4882 NONAME ; void QFutureWatcherBase::started(void)
 

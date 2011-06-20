@@ -84,6 +84,10 @@
 <context>
     <name>DataModel</name>
     <message>
+        <source>The translation file &apos;%1&apos; will not be loaded because it is empty.</source>
+        <translation>翻訳ファイル &apos;%1&apos; が空のためロードできません。</translation>
+    </message>
+    <message>
         <source>&lt;qt&gt;Duplicate messages found in &apos;%1&apos;:</source>
         <translation>&lt;qt&gt;&apos;%1&apos; に重複したメッセージが見つかりました:</translation>
     </message>
@@ -345,7 +349,7 @@ Return value:
     2 on read failures
     3 on write failures
 </source>
-        <translation type="unfinished">
+        <translation>
 使い方:
     lconvert [オプション] &lt;入力ファイル&gt; [&lt;入力ファイル&gt;...]
 
@@ -365,8 +369,8 @@ lconvert は Qt Linguist ツールチェインの一部です。
     -i &lt;入力ファイル&gt;
     --input-file &lt;入力ファイル&gt;
            入力ファイルを指定します。&lt;入力ファイル&gt; の指定はダッシュ記号で始まっていてもよいです。
-           This option can be used several times to merge inputs.
-           May be &apos;-&apos; (標準入力) for use in a pipe.
+           このオプションはマージする入力ファイルを指定する際に複数回使用できます。
+           パイプで利用する場合には &apos;-&apos; で標準入力を指定します。
 
     -o &lt;出力ファイル&gt;
     --output-file &lt;出力ファイル&gt;
@@ -382,29 +386,30 @@ lconvert は Qt Linguist ツールチェインの一部です。
            出力形式を指定します。-if を参照してください。
 
     --input-codec &lt;コーデック&gt;
-           Specify encoding for QM and PO input files. Default is &apos;Latin1&apos;
-           for QM and &apos;UTF-8&apos; for PO files. UTF-8 is always tried as well for
-           QM, corresponding to the possible use of the trUtf8() function.
+           QM や PO ファイルのエンコーディングを指定します。デフォルトでは
+           QM ファイルでは &apos;Latin1&apos; を PO ファイルでは &apos;UTF-8&apos; を使用します。
+           QM ファイルでは通常 trUtf8() 関数が組み合わせて利用されるため、
+           UTF-8 の利用も試みます。
 
     --output-codec &lt;コーデック&gt;
-           Specify encoding for PO output files.デフォルトは &apos;UTF-8&apos; です。
+           PO 出力ファイルのエンコーディングを指定します。デフォルトは &apos;UTF-8&apos; です。
 
     --drop-tags &lt;正規表現&gt;
-           Drop named extra tags when writing TS or XLIFF files.
-           May be specified repeatedly.
+           TS ファイルや XLIFF ファイルに出力する際に名前付き拡張タグを削除します。
+           複数回指定可能です。
 
     --drop-translations
-           Drop existing translations and reset the status to &apos;unfinished&apos;.
-           注意: --no-obsolete と同等です。
+           既存の翻訳を削除してステータスを&apos;未完了&apos;にリセットします。
+           注意: --no-obsolete の指定を含みます。
 
     --source-language &lt;language&gt;[_&lt;region&gt;]
-           Specify/override the language of the source strings. Defaults to
-           POSIX if not specified and the file does not name it yet.
+           ソーステキストの言語を指定もしくは上書きします。
+           未指定でファイルにも記述されていない場合、POSIX をデフォルトで使用します。
 
     --target-language &lt;language&gt;[_&lt;region&gt;]
-           Specify/override the language of the translation.
-           The target language is guessed from the file name if this option
-           is not specified and the file contents name no language yet.
+           翻訳で使用される言語を指定もしくは上書きします。
+           オプションやファイル内で言語が指定されていない場合は、
+           ファイル名から言語を推測します。
 
     --no-obsolete
            未使用のメッセージを取り除きます。
@@ -416,14 +421,14 @@ lconvert は Qt Linguist ツールチェインの一部です。
            出力する TS ファイル内のコンテキストをアルファベット順にソートします。
 
     --locations {absolute|relative|none}
-           Override how source code references are saved in TS files.
-           Default is absolute.
+           TS ファイル内に保存されているソースコードへの参照を上書きします。
+           デフォルトは absolute (絶対パス) です。
 
     --no-ui-lines
            UI ファイルを参照している行番号を取り除きます。
 
     --verbose
-           be a bit more verbose
+           より詳しいログを出力します。
 
 長すぎるオプションの指定はダッシュ記号で括る事で1つにできます。
 
@@ -489,13 +494,14 @@ Options:
     -version
            Display the version of lrelease and exit
 </source>
-        <translation type="unfinished">使い方:
+        <translation>使い方:
     lrelease [オプション] project-file
     lrelease [オプション] ts-files [-qm qm-file]
 
-lrelease is part of Qt&apos;s Linguist tool chain. It can be used as a
-stand-alone tool to convert XML-based translations files in the TS
-format into the &apos;compiled&apos; QM format used by QTranslator objects.
+lrelease は Qt Linguist ツールチェインの一部です。
+XMLベースの翻訳ファイルであるTSフォーマットを
+QTranslatorで利用可能な「コンパイル済み」のQMフォーマットに
+変換する事ができるスタンドアロンのツールです。
 
 オプション:
     -help  このヘルプを表示して終了します
@@ -506,13 +512,13 @@ format into the &apos;compiled&apos; QM format used by QTranslator objects.
     -nounfinished
            未完了の翻訳をインクルードしません
     -removeidentical
-           If the translated text is the same as
-           the source text, do not include the message
+           翻訳後の文字列がソースと同じ場合、
+           メッセージをQMファイルに組み込みません
     -markuntranslated &lt;プレフィクス&gt;
-           If a message has no real translation, use the source text
-           prefixed with the given string instead
+           メッセージが翻訳されていない場合、ソースの文字列に
+           &lt;プレフィックス&gt;を追加した文字列を代わりに使用します
     -silent
-           完了した事を通知しません
+           実行内容を表示しません
     -version
            lrelease のバージョンを表示して終了します
 </translation>
@@ -823,62 +829,62 @@ Options:
     @lst-file
            Read additional file names (one per line) from lst-file.
 </source>
-        <translation type="unfinished">使い方:
+        <translation>使い方:
     lupdate [オプション] [プロジェクトファイル]...
     lupdate [オプション] [source-file|path|@lst-file]... -ts ts-files|@lst-file
 
-lupdate は Qt&apos; Linguist ツールチェインの一部です。Qt UI ファイル、C++ 、Java、
+lupdate は Qt Linguist ツールチェインの一部です。Qt UI ファイル、C++ 、Java、
 JavaScript/QtScript のソースコードからメッセージを抽出します。
-Extracted messages are stored in textual translation source files (typically
-Qt TS XML). 新しく追加されたり変更されたメッセージは既存の TS ファイル内のメッセージから
-マージされます。
+抽出されたメッセージは原文として翻訳ソースファイル(通常は Qt TS XML)に保存されます。
+新しく追加されたり変更されたメッセージは既存の TS ファイル内のメッセージからマージされます。
 
 オプション:
     -help  このヘルプを表示して終了します。
     -no-obsolete
-           すべての未使用の文字列を取り除きます。
+        すべての未使用の文字列を取り除きます。
     -extensions &lt;ext&gt;[,&lt;ext&gt;]...
-           与えられた拡張子のファイルだけ処理します。
-           拡張子のリストはカンマで区切り、空白スペースを含んではいけません。
-           デフォルト: &apos;%1&apos;
+        与えられた拡張子のファイルだけを処理します。
+        拡張子のリストはカンマで区切り、空白スペースを含んではいけません。
+        デフォルト: &apos;%1&apos;
     -pluralonly
-           複数形のメッセージだけインクルードします。
+        複数形のメッセージだけインクルードします。
     -silent
-           完了した事を通知しません
+        完了した事を通知しません
     -no-sort
-           TS ファイル内のコンテキストをソートしません。
+        TS ファイル内のコンテキストをソートしません。
     -no-recursive
-           ディレクトリ内を再帰的に処理しません。
+        ディレクトリ内を再帰的に処理しません。
     -recursive
-           ディレクトリ内を再帰的に処理します。(デフォルト)
+        ディレクトリ内を再帰的に処理します。(デフォルト)
     -I &lt;includepath&gt; or -I&lt;includepath&gt;
-           Additional location to look for include files.
-           May be specified multiple times.
+        include ファイルを検索するパスを追加します。
+        複数回の指定が可能です。
     -locations {absolute|relative|none}
-           Specify/override how source code references are saved in TS files.
-           Default is absolute.
+        TS ファイルに保存されるソースコードの参照方法を指定/上書きします。
+        デフォルトは absolute (絶対パス)です。
     -no-ui-lines
-           UI ファイルを参照する行番号を記録しません。
+        UI ファイルを参照する行番号を記録しません。
     -disable-heuristic {sametext|similartext|number}
-           Disable the named merge heuristic. Can be specified multiple times.
+        指定された手法のあいまいマージを行いません。複数回の指定が可能です。
     -pro &lt;ファイル名&gt;
-           .pro ファイルの名前を指定します。Useful for files with .pro file syntax but
-           different file suffix. Projects are recursed into and merged.
+        .pro ファイルの名前を指定します。.pro ファイルの書式に従いながら、
+        拡張子が異なる場合に有用です。
+        プロジェクトは再帰的に検索し、複数指定時はマージされます。
     -source-language &lt;language&gt;[_&lt;region&gt;]
-           Specify the language of the source strings for new files.
-           Defaults to POSIX if not specified.
+        新しくファイルを作成する場合のソース文字列の言語を指定します。
+        指定されない場合のデフォルトは POSIX です。
     -target-language &lt;language&gt;[_&lt;region&gt;]
-           Specify the language of the translations for new files.
-           Guessed from the file name if not specified.
+        新しくファイルを作成する場合の翻訳言語を指定します。
+        指定されない場合はファイル名から推測されます。
     -ts &lt;ts-file&gt;...
-           出力ファイルを指定します。This will override the TRANSLATIONS
-           and nullify the CODECFORTR from possibly specified project files.
+        出力ファイルを指定します。プロジェクトファイルで指定された
+        TRANSLATIONS と CODECFORTR は無視されます。
     -codecfortr &lt;codec&gt;
-           Specify the codec assumed for tr() calls. Effective only with -ts.
+        tr() の呼び出し時に想定されるコーデックを指定します。-ts オプションを指定した場合にのみ有効です。
     -version
-           lupdate のバージョン情報を表示して終了します。
+        lupdate のバージョン情報を表示して終了します。
     @lst-file
-           Read additional file names (one per line) from lst-file.
+        lst-file を使って追加で読み込むファイル名(1行に1ファイル)を指定します。
 </translation>
     </message>
     <message>

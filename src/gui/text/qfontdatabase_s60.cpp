@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -152,7 +152,6 @@ public:
     COpenFontRasterizer *m_rasterizer;
     mutable QList<const QSymbianTypeFaceExtras *> m_extras;
 
-    mutable QHash<QString, const QSymbianTypeFaceExtras *> m_extrasHash;
     mutable QSet<QString> m_applicationFontFamilies;
 };
 
@@ -255,8 +254,9 @@ void QSymbianFontDatabaseExtrasImplementation::clear()
             static_cast<const QSymbianFontDatabaseExtrasImplementation*>(db->symbianExtras);
     if (!dbExtras)
         return; // initializeDb() has never been called
+    QSymbianTypeFaceExtrasHash &extrasHash = S60->fontData();
     if (QSymbianTypeFaceExtras::symbianFontTableApiAvailable()) {
-        qDeleteAll(dbExtras->m_extrasHash);
+        qDeleteAll(extrasHash);
     } else {
         typedef QList<const QSymbianTypeFaceExtras *>::iterator iterator;
         for (iterator p = dbExtras->m_extras.begin(); p != dbExtras->m_extras.end(); ++p) {
@@ -265,11 +265,16 @@ void QSymbianFontDatabaseExtrasImplementation::clear()
         }
         dbExtras->m_extras.clear();
     }
-    dbExtras->m_extrasHash.clear();
+    extrasHash.clear();
 }
 
 void qt_cleanup_symbianFontDatabase()
 {
+    static bool cleanupDone = false;
+    if (cleanupDone)
+        return;
+    cleanupDone = true;
+
     QFontDatabasePrivate *db = privateDb();
     if (!db)
         return;
@@ -320,9 +325,12 @@ COpenFont* OpenFontFromBitmapFont(const CBitmapFont* aBitmapFont)
 const QSymbianTypeFaceExtras *QSymbianFontDatabaseExtrasImplementation::extras(const QString &aTypeface,
                                                                                bool bold, bool italic) const
 {
+    QSymbianTypeFaceExtrasHash &extrasHash = S60->fontData();
+    if (extrasHash.isEmpty() && QThread::currentThread() != QApplication::instance()->thread())
+        S60->addThreadLocalReleaseFunc(clear);
     const QString typeface = qt_symbian_fontNameWithAppFontMarker(aTypeface);
     const QString searchKey = typeface + QString::number(int(bold)) + QString::number(int(italic));
-    if (!m_extrasHash.contains(searchKey)) {
+    if (!extrasHash.contains(searchKey)) {
         TFontSpec searchSpec(qt_QString2TPtrC(typeface), 1);
         if (bold)
             searchSpec.iFontStyle.SetStrokeWeight(EStrokeWeightBold);
@@ -336,7 +344,7 @@ const QSymbianTypeFaceExtras *QSymbianFontDatabaseExtrasImplementation::extras(c
             QScopedPointer<CFont, CFontFromScreenDeviceReleaser> sFont(font);
             QSymbianTypeFaceExtras *extras = new QSymbianTypeFaceExtras(font);
             sFont.take();
-            m_extrasHash.insert(searchKey, extras);
+            extrasHash.insert(searchKey, extras);
         } else {
             const TInt err = m_store->GetNearestFontToDesignHeightInPixels(font, searchSpec);
             Q_ASSERT(err == KErrNone && font);
@@ -350,20 +358,20 @@ const QSymbianTypeFaceExtras *QSymbianFontDatabaseExtrasImplementation::extras(c
             const TOpenFontFaceAttrib* const attrib = openFont->FaceAttrib();
             const QString foundKey =
                     QString((const QChar*)attrib->FullName().Ptr(), attrib->FullName().Length());
-            if (!m_extrasHash.contains(foundKey)) {
+            if (!extrasHash.contains(foundKey)) {
                 QScopedPointer<CFont, CFontFromFontStoreReleaser> sFont(font);
                 QSymbianTypeFaceExtras *extras = new QSymbianTypeFaceExtras(font, openFont);
                 sFont.take();
                 m_extras.append(extras);
-                m_extrasHash.insert(searchKey, extras);
-                m_extrasHash.insert(foundKey, extras);
+                extrasHash.insert(searchKey, extras);
+                extrasHash.insert(foundKey, extras);
             } else {
                 m_store->ReleaseFont(font);
-                m_extrasHash.insert(searchKey, m_extrasHash.value(foundKey));
+                extrasHash.insert(searchKey, extrasHash.value(foundKey));
             }
         }
     }
-    return m_extrasHash.value(searchKey);
+    return extrasHash.value(searchKey);
 }
 
 void QSymbianFontDatabaseExtrasImplementation::removeAppFontData(
@@ -956,7 +964,7 @@ bool QFontDatabase::removeAllApplicationFonts()
 
 bool QFontDatabase::supportsThreadedFontRendering()
 {
-    return false;
+    return QSymbianTypeFaceExtras::symbianFontTableApiAvailable();
 }
 
 static

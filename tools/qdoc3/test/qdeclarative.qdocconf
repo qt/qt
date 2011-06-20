@@ -6,7 +6,7 @@ include(qt-defines.qdocconf)
 
 project                 = Qml
 description             = Qml Reference Documentation
-url                     = http://qt.nokia.com/doc/4.7/
+url                     = http://qt.nokia.com/doc/4.8/
 qmlonly                 = true
 
 edition.Console.modules = QtCore QtDBus QtNetwork QtScript QtSql QtXml \
@@ -29,9 +29,9 @@ qhp.Qml.indexTitle          = Qml Reference
 # See also extraimages.HTML
 qhp.Qml.extraFiles            = images/bg_l.png \
                              images/bg_l_blank.png \
-							 images/bg_ll_blank.png \
-							 images/bg_ul_blank.png \
-							 images/header_bg.png \
+                             images/bg_ll_blank.png \
+                             images/bg_ul_blank.png \
+                             images/header_bg.png \
                              images/bg_r.png \
                              images/box_bg.png \
                              images/breadcrumb.png \

@@ -43,7 +43,11 @@
 
 #include <QtGui/QWidget>
 #include <QWebFrame>
-#include "ui_formextractor.h"
+#if defined Q_OS_SYMBIAN || defined Q_WS_HILDON || defined Q_WS_MAEMO_5 || defined Q_WS_SIMULATOR
+    #include "ui_formextractor_mobiles.h"
+#else
+    #include "ui_formextractor.h"
+#endif
 
 class FormExtractor : public QWidget
 {

@@ -40,10 +40,10 @@ HEADERS += \
 	text/qtextodfwriter_p.h \
 	text/qstatictext_p.h \
 	text/qstatictext.h \
-        text/qglyphs.h \
-        text/qglyphs_p.h \
         text/qrawfont.h \
-        text/qrawfont_p.h
+        text/qrawfont_p.h \
+    text/qglyphrun.h \
+    text/qglyphrun_p.h
 
 SOURCES += \
 	text/qfont.cpp \
@@ -74,8 +74,8 @@ SOURCES += \
 	text/qzip.cpp \
 	text/qtextodfwriter.cpp \
 	text/qstatictext.cpp \
-        text/qglyphs.cpp \
-        text/qrawfont.cpp
+        text/qrawfont.cpp \
+    text/qglyphrun.cpp
 
 win32 {
 	SOURCES += \
@@ -114,6 +114,9 @@ unix:x11 {
         OBJECTIVE_SOURCES += \
                 text/qfontengine_coretext.mm \
                 text/qfontengine_mac.mm
+        contains(QT_CONFIG, harfbuzz) {
+            DEFINES += QT_ENABLE_HARFBUZZ_FOR_MAC
+        }
 }
 
 embedded {
@@ -136,7 +139,8 @@ qpa {
 	SOURCES += \
                 text/qfont_qpa.cpp \
                 text/qfontengine_qpa.cpp \
-                text/qplatformfontdatabase_qpa.cpp
+                text/qplatformfontdatabase_qpa.cpp \
+                text/qrawfont_qpa.cpp
 
 	HEADERS += \
                 text/qplatformfontdatabase_qpa.h

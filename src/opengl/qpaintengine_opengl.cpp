@@ -7,29 +7,29 @@
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -2119,6 +2119,7 @@ void QOpenGLPaintEnginePrivate::fillPath(const QPainterPath &path)
     updateGLMatrix();
 }
 
+Q_GUI_EXPORT bool qt_isExtendedRadialGradient(const QBrush &brush);
 
 static inline bool needsEmulation(Qt::BrushStyle style)
 {
@@ -2129,9 +2130,11 @@ static inline bool needsEmulation(Qt::BrushStyle style)
 
 void QOpenGLPaintEnginePrivate::updateUseEmulation()
 {
-    use_emulation = !use_fragment_programs
-                    && ((has_pen && needsEmulation(pen_brush_style))
-                        || (has_brush && needsEmulation(brush_style)));
+    use_emulation = (!use_fragment_programs
+                     && ((has_pen && needsEmulation(pen_brush_style))
+                         || (has_brush && needsEmulation(brush_style))))
+                    || (has_pen && qt_isExtendedRadialGradient(cpen.brush()))
+                    || (has_brush && qt_isExtendedRadialGradient(cbrush));
 }
 
 void QOpenGLPaintEngine::updatePen(const QPen &pen)
@@ -5447,50 +5450,7 @@ void QOpenGLPaintEngine::transformChanged()
     updateMatrix(state()->matrix);
 }
 
-static QPainterPath painterPathFromVectorPath(const QVectorPath &path)
-{
-    const qreal *points = path.points();
-    const QPainterPath::ElementType *types = path.elements();
-
-    QPainterPath p;
-    if (types) {
-        int id = 0;
-        for (int i=0; i<path.elementCount(); ++i) {
-            switch(types[i]) {
-            case QPainterPath::MoveToElement:
-                p.moveTo(QPointF(points[id], points[id+1]));
-                id+=2;
-                break;
-            case QPainterPath::LineToElement:
-                p.lineTo(QPointF(points[id], points[id+1]));
-                id+=2;
-                break;
-            case QPainterPath::CurveToElement: {
-                QPointF p1(points[id], points[id+1]);
-                QPointF p2(points[id+2], points[id+3]);
-                QPointF p3(points[id+4], points[id+5]);
-                p.cubicTo(p1, p2, p3);
-                id+=6;
-                break;
-            }
-            case QPainterPath::CurveToDataElement:
-                ;
-                break;
-            }
-        }
-    } else {
-        p.moveTo(QPointF(points[0], points[1]));
-        int id = 2;
-        for (int i=1; i<path.elementCount(); ++i) {
-            p.lineTo(QPointF(points[id], points[id+1]));
-            id+=2;
-        }
-    }
-    if (path.hints() & QVectorPath::WindingFill)
-        p.setFillRule(Qt::WindingFill);
-
-    return p;
-}
+Q_GUI_EXPORT QPainterPath qt_painterPathFromVectorPath(const QVectorPath &path);
 
 void QOpenGLPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 {
@@ -5499,11 +5459,11 @@ void QOpenGLPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
     if (brush.style() == Qt::NoBrush)
         return;
 
-    if (!d->use_fragment_programs && needsEmulation(brush.style())) {
+    if ((!d->use_fragment_programs && needsEmulation(brush.style())) || qt_isExtendedRadialGradient(brush)) {
         QPainter *p = painter();
         QBrush oldBrush = p->brush();
         p->setBrush(brush);
-        qt_draw_helper(p->d_ptr.data(), painterPathFromVectorPath(path), QPainterPrivate::FillDraw);
+        qt_draw_helper(p->d_ptr.data(), qt_painterPathFromVectorPath(path), QPainterPrivate::FillDraw);
         p->setBrush(oldBrush);
         return;
     }
@@ -5520,7 +5480,7 @@ void QOpenGLPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
         drawRects(&r, 1);
         updatePen(old_pen);
     } else {
-        d->fillPath(painterPathFromVectorPath(path));
+        d->fillPath(qt_painterPathFromVectorPath(path));
     }
 
     updateBrush(old_brush, state()->brushOrigin);

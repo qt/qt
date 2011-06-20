@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -130,6 +130,9 @@ public:
         endState->complete();
     }
     static void append_animation(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list, QDeclarativeAbstractAnimation *a);
+    static int animation_count(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list);
+    static QDeclarativeAbstractAnimation* animation_at(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list, int pos);
+    static void clear_animations(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list);
     QList<QDeclarativeAbstractAnimation *> animations;
 };
 
@@ -139,6 +142,28 @@ void QDeclarativeTransitionPrivate::append_animation(QDeclarativeListProperty<QD
     q->d_func()->animations.append(a);
     q->d_func()->group.addAnimation(a->qtAnimation());
     a->setDisableUserControl();
+}
+
+int QDeclarativeTransitionPrivate::animation_count(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list)
+{
+    QDeclarativeTransition *q = static_cast<QDeclarativeTransition *>(list->object);
+    return q->d_func()->animations.count();
+}
+
+QDeclarativeAbstractAnimation* QDeclarativeTransitionPrivate::animation_at(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list, int pos)
+{
+    QDeclarativeTransition *q = static_cast<QDeclarativeTransition *>(list->object);
+    return q->d_func()->animations.at(pos);
+}
+
+void QDeclarativeTransitionPrivate::clear_animations(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list)
+{
+    QDeclarativeTransition *q = static_cast<QDeclarativeTransition *>(list->object);
+    while (q->d_func()->animations.count()) {
+        QDeclarativeAbstractAnimation *firstAnim = q->d_func()->animations.at(0);
+        q->d_func()->group.removeAnimation(firstAnim->qtAnimation());
+        q->d_func()->animations.removeAll(firstAnim);
+    }
 }
 
 void ParallelAnimationWrapper::updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)
@@ -309,7 +334,10 @@ void QDeclarativeTransition::setToState(const QString &t)
 QDeclarativeListProperty<QDeclarativeAbstractAnimation> QDeclarativeTransition::animations()
 {
     Q_D(QDeclarativeTransition);
-    return QDeclarativeListProperty<QDeclarativeAbstractAnimation>(this, &d->animations, QDeclarativeTransitionPrivate::append_animation);
+    return QDeclarativeListProperty<QDeclarativeAbstractAnimation>(this, &d->animations, QDeclarativeTransitionPrivate::append_animation,
+                                                                   QDeclarativeTransitionPrivate::animation_count,
+                                                                   QDeclarativeTransitionPrivate::animation_at,
+                                                                   QDeclarativeTransitionPrivate::clear_animations);
 }
 
 QT_END_NAMESPACE

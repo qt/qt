@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -2100,7 +2100,6 @@ bool QDockAreaLayoutInfo::updateTabBar() const
     bool gap = false;
 
     int tab_idx = 0;
-    bool changed = false;
     for (int i = 0; i < item_list.count(); ++i) {
         const QDockAreaLayoutItem &item = item_list.at(i);
         if (item.skip())
@@ -2121,7 +2120,6 @@ bool QDockAreaLayoutInfo::updateTabBar() const
             tabBar->setTabToolTip(tab_idx, title);
 #endif
             tabBar->setTabData(tab_idx, id);
-            changed = true;
         } else if (qvariant_cast<quintptr>(tabBar->tabData(tab_idx)) != id) {
             if (tab_idx + 1 < tabBar->count()
                     && qvariant_cast<quintptr>(tabBar->tabData(tab_idx + 1)) == id)
@@ -2133,7 +2131,6 @@ bool QDockAreaLayoutInfo::updateTabBar() const
 #endif
                 tabBar->setTabData(tab_idx, id);
             }
-            changed = true;
         }
 
         if (title != tabBar->tabText(tab_idx)) {
@@ -2141,7 +2138,6 @@ bool QDockAreaLayoutInfo::updateTabBar() const
 #ifndef QT_NO_TOOLTIP
             tabBar->setTabToolTip(tab_idx, title);
 #endif
-            changed = true;
         }
 
         ++tab_idx;
@@ -2149,7 +2145,6 @@ bool QDockAreaLayoutInfo::updateTabBar() const
 
     while (tab_idx < tabBar->count()) {
         tabBar->removeTab(tab_idx);
-        changed = true;
     }
 
     tabBar->blockSignals(blocked);

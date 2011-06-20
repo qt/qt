@@ -7,29 +7,29 @@
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -106,6 +106,8 @@ private slots:
 
     void moreToFromUnicode_data();
     void moreToFromUnicode();
+
+    void shiftJis();
 };
 
 void tst_QTextCodec::toUnicode_data()
@@ -428,7 +430,7 @@ void tst_QTextCodec::flagCodepointFFFF() const
     QString input(ch);
 
     QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
-    Q_ASSERT(codec);
+    QVERIFY(codec);
 
     const QByteArray asDecoded(codec->fromUnicode(input));
     QCOMPARE(asDecoded, QByteArray("?"));
@@ -465,7 +467,7 @@ void tst_QTextCodec::flagF7808080() const
 
 
     QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
-    Q_ASSERT(codec);
+    QVERIFY(codec);
 
     //QVERIFY(!codec->canEncode(QChar(0x1C0000)));
 
@@ -482,7 +484,7 @@ void tst_QTextCodec::flagEFBFBF() const
     invalidInput[2] = char(0xBF);
 
     const QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
-    Q_ASSERT(codec);
+    QVERIFY(codec);
 
     {
         //QVERIFY(!codec->canEncode(QChar(0xFFFF)));
@@ -1627,7 +1629,7 @@ void tst_QTextCodec::utf8bom()
     QFETCH(QString, result);
 
     QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
-    Q_ASSERT(codec);
+    QVERIFY(codec);
 
     QCOMPARE(codec->toUnicode(data.constData(), data.length(), 0), result);
 
@@ -2234,6 +2236,19 @@ void tst_QTextCodec::moreToFromUnicode()
     QString uStr = c->toUnicode(testData);
     QByteArray cStr = c->fromUnicode(uStr);
     QCOMPARE(testData, cStr);
+}
+
+void tst_QTextCodec::shiftJis()
+{
+    QByteArray backslashTilde("\\~");
+    QTextCodec* codec = QTextCodec::codecForName("shift_jis");
+    QString string = codec->toUnicode(backslashTilde);
+    QCOMPARE(string.length(), 2);
+    QCOMPARE(string.at(0), QChar(QLatin1Char('\\')));
+    QCOMPARE(string.at(1), QChar(QLatin1Char('~')));
+
+    QByteArray encoded = codec->fromUnicode(string);
+    QCOMPARE(encoded, backslashTilde);
 }
 
 struct DontCrashAtExit {

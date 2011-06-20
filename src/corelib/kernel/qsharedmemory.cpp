@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -247,14 +247,14 @@ void QSharedMemory::setNativeKey(const QString &key)
     if (isAttached())
         detach();
     d->cleanHandle();
-    d->key = QString();
+    d->key.clear();
     d->nativeKey = key;
 }
 
 bool QSharedMemoryPrivate::initKey()
 {
-    if (!cleanHandle())
-        return false;
+    cleanHandle();
+
 #ifndef QT_NO_SYSTEMSEMAPHORE
     systemSemaphore.setKey(QString(), 1);
     systemSemaphore.setKey(key, 1);
@@ -285,7 +285,7 @@ bool QSharedMemoryPrivate::initKey()
         return false;
     }
 #endif
-    errorString = QString();
+    errorString.clear();
     error = QSharedMemory::NoError;
     return true;
 }
@@ -342,27 +342,23 @@ bool QSharedMemory::create(int size, AccessMode mode)
     if (!d->initKey())
         return false;
 
+    if (size <= 0) {
+        d->error = QSharedMemory::InvalidSize;
+        d->errorString = QSharedMemory::tr("%1: create size is less then 0").arg(QLatin1String("QSharedMemory::create"));
+        return false;
+    }
+
 #ifndef QT_NO_SYSTEMSEMAPHORE
 #ifndef Q_OS_WIN
     // Take ownership and force set initialValue because the semaphore
     // might have already existed from a previous crash.
     d->systemSemaphore.setKey(d->key, 1, QSystemSemaphore::Create);
 #endif
-#endif
 
-    QString function = QLatin1String("QSharedMemory::create");
-#ifndef QT_NO_SYSTEMSEMAPHORE
     QSharedMemoryLocker lock(this);
-    if (!d->key.isNull() && !d->tryLocker(&lock, function))
+    if (!d->key.isNull() && !d->tryLocker(&lock, QLatin1String("QSharedMemory::create")))
         return false;
 #endif
-
-    if (size <= 0) {
-        d->error = QSharedMemory::InvalidSize;
-        d->errorString =
-	    QSharedMemory::tr("%1: create size is less then 0").arg(function);
-        return false;
-    }
 
     if (!d->create(size))
         return false;

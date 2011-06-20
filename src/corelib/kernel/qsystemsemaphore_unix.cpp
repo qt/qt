@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -42,9 +42,9 @@
 #include "qsystemsemaphore.h"
 #include "qsystemsemaphore_p.h"
 
+#include <qcoreapplication.h>
 #include <qdebug.h>
 #include <qfile.h>
-#include <qcoreapplication.h>
 
 #ifndef QT_NO_SYSTEMSEMAPHORE
 
@@ -62,11 +62,13 @@
 #define EIDRM EINVAL
 #endif
 
+//#define QSYSTEMSEMAPHORE_DEBUG
+
 QT_BEGIN_NAMESPACE
 
 QSystemSemaphorePrivate::QSystemSemaphorePrivate() :
-        semaphore(-1), createdFile(false),
-        createdSemaphore(false), unix_key(-1), error(QSystemSemaphore::NoError)
+    unix_key(-1), semaphore(-1), createdFile(false),
+    createdSemaphore(false), error(QSystemSemaphore::NoError)
 {
 }
 
@@ -95,33 +97,33 @@ void QSystemSemaphorePrivate::setErrorString(const QString &function)
     default:
         errorString = QCoreApplication::translate("QSystemSemaphore", "%1: unknown error %2").arg(function).arg(errno);
         error = QSystemSemaphore::UnknownError;
-#if defined QSYSTEMSEMAPHORE_DEBUG
+#ifdef QSYSTEMSEMAPHORE_DEBUG
         qDebug() << errorString << "key" << key << "errno" << errno << EINVAL;
 #endif
+        break;
     }
 }
 
 /*!
     \internal
 
-    Setup unix_key
- */
+    Initialise the semaphore
+*/
 key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
 {
-    if (key.isEmpty()){
-        errorString = QCoreApplication::tr("%1: key is empty", "QSystemSemaphore").arg(QLatin1String("QSystemSemaphore::handle:"));
+    if (-1 != unix_key)
+        return unix_key;
+
+    if (key.isEmpty()) {
+        errorString = QCoreApplication::tr("%1: key is empty", "QSystemSemaphore").arg(QLatin1String("QSystemSemaphore::handle"));
         error = QSystemSemaphore::KeyError;
         return -1;
     }
 
     // ftok requires that an actual file exists somewhere
-    if (-1 != unix_key)
-        return unix_key;
-
-    // Create the file needed for ftok
     int built = QSharedMemoryPrivate::createUnixKeyFile(fileName);
     if (-1 == built) {
-        errorString = QCoreApplication::tr("%1: unable to make key", "QSystemSemaphore").arg(QLatin1String("QSystemSemaphore::handle:"));
+        errorString = QCoreApplication::tr("%1: unable to make key", "QSystemSemaphore").arg(QLatin1String("QSystemSemaphore::handle"));
         error = QSystemSemaphore::KeyError;
         return -1;
     }
@@ -130,7 +132,7 @@ key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
     // Get the unix key for the created file
     unix_key = ftok(QFile::encodeName(fileName).constData(), 'Q');
     if (-1 == unix_key) {
-        errorString = QCoreApplication::tr("%1: ftok failed", "QSystemSemaphore").arg(QLatin1String("QSystemSemaphore::handle:"));
+        errorString = QCoreApplication::tr("%1: ftok failed", "QSystemSemaphore").arg(QLatin1String("QSystemSemaphore::handle"));
         error = QSystemSemaphore::KeyError;
         return -1;
     }
@@ -145,14 +147,13 @@ key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
             cleanHandle();
             return -1;
         }
+        if (mode == QSystemSemaphore::Create) {
+            createdSemaphore = true;
+            createdFile = true;
+        }
     } else {
         createdSemaphore = true;
         // Force cleanup of file, it is possible that it can be left over from a crash
-        createdFile = true;
-    }
-
-    if (mode == QSystemSemaphore::Create) {
-        createdSemaphore = true;
         createdFile = true;
     }
 
@@ -173,8 +174,8 @@ key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
 /*!
     \internal
 
-    Cleanup the unix_key
- */
+    Clean up the semaphore
+*/
 void QSystemSemaphorePrivate::cleanHandle()
 {
     unix_key = -1;
@@ -189,8 +190,8 @@ void QSystemSemaphorePrivate::cleanHandle()
         if (-1 != semaphore) {
             if (-1 == semctl(semaphore, 0, IPC_RMID, 0)) {
                 setErrorString(QLatin1String("QSystemSemaphore::cleanHandle"));
-#if defined QSYSTEMSEMAPHORE_DEBUG
-                qDebug() << QLatin1String("QSystemSemaphore::cleanHandle semctl failed.");
+#ifdef QSYSTEMSEMAPHORE_DEBUG
+                qDebug("QSystemSemaphore::cleanHandle semctl failed.");
 #endif
             }
             semaphore = -1;
@@ -201,7 +202,7 @@ void QSystemSemaphorePrivate::cleanHandle()
 
 /*!
     \internal
- */
+*/
 bool QSystemSemaphorePrivate::modifySemaphore(int count)
 {
     if (-1 == handle())
@@ -223,7 +224,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
             return modifySemaphore(count);
         }
         setErrorString(QLatin1String("QSystemSemaphore::modifySemaphore"));
-#if defined QSYSTEMSEMAPHORE_DEBUG
+#ifdef QSYSTEMSEMAPHORE_DEBUG
         qDebug() << QLatin1String("QSystemSemaphore::modify failed") << count << semctl(semaphore, 0, GETVAL) << errno << EIDRM << EINVAL;
 #endif
         return false;
@@ -231,7 +232,6 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
 
     return true;
 }
-
 
 QT_END_NAMESPACE
 

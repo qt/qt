@@ -58,7 +58,7 @@ SUBDIRS=\
     qfontdialog \
     qfontmetrics \
     qformlayout \
-    qglyphs \
+    qglyphrun \
     qgraphicsanchorlayout \
     qgraphicsanchorlayout1 \
     qgraphicseffect \
@@ -84,6 +84,7 @@ SUBDIRS=\
     qheaderview \
     qicoimageformat \
     qicon \
+    qidentityproxymodel \
     qimageiohandler \
     qimagereader \
     qimagewriter \
@@ -141,7 +142,6 @@ SUBDIRS=\
     qregion \
     qscrollarea \
     qscrollbar \
-    qscroller \
     qsharedpointer_and_qwidget \
     qshortcut \
     qsidebar \

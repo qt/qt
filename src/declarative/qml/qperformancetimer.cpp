@@ -7,29 +7,29 @@
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -45,14 +45,15 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <mach/mach_time.h>
-#elif defined(Q_OS_UNIX)
-#include <sys/time.h>
-#include <time.h>
-#include <unistd.h>
 #elif defined(Q_OS_SYMBIAN)
 #include <e32std.h>
 #include <sys/time.h>
 #include <hal.h>
+#include <hal_data.h>
+#elif defined(Q_OS_UNIX)
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
 #elif defined(Q_OS_WIN)
 #include <windows.h>
 #endif
@@ -83,6 +84,29 @@ qint64 QPerformanceTimer::elapsed() const
     uint64_t cpu_time = mach_absolute_time();
     return absoluteToNSecs(cpu_time - t1);
 }
+
+////////////////////////////// Symbian //////////////////////////////
+#elif defined(Q_OS_SYMBIAN)
+
+static qint64 getTimeFromTick(quint64 elapsed)
+{
+    static TInt freq = 0;
+    if (!freq)
+        HAL::Get(HALData::EFastCounterFrequency, freq);
+
+    return (elapsed * 1000000000) / freq;
+}
+
+void QPerformanceTimer::start()
+{
+    t1 = User::FastCounter();
+}
+
+qint64 QPerformanceTimer::elapsed() const
+{
+    return getTimeFromTick(User::FastCounter() - t1);
+}
+
 
 ////////////////////////////// Unix //////////////////////////////
 #elif defined(Q_OS_UNIX)
@@ -156,29 +180,6 @@ qint64 QPerformanceTimer::elapsed() const
     frac = frac - t2;
 
     return sec * Q_INT64_C(1000000000) + frac;
-}
-
-////////////////////////////// Symbian //////////////////////////////
-#elif defined(Q_OS_SYMBIAN)
-
-static qint64 getTimeFromTick(quint64 elapsed)
-{
-    static TInt freq;
-    if (!freq)
-        HAL::Get(HALData::EFastCounterFrequency, freq);
-
-    // ### not sure on units
-    return elapsed / freq;
-}
-
-void QPerformanceTimer::start()
-{
-    t1 = User::FastCounter();
-}
-
-qint64 QPerformanceTimer::elapsed() const
-{
-    return getTimeFromTick(User::FastCounter() - t1);
 }
 
 ////////////////////////////// Windows //////////////////////////////
