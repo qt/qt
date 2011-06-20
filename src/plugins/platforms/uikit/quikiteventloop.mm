@@ -73,7 +73,6 @@
     foreach (QWidget *widget, qApp->topLevelWidgets()) {
         QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->platformWindow());
         if (platformWindow) platformWindow->ensureNativeWindow();
-        else qDebug() << "Failed to get platform window: " << widget;
     }
     return YES;
 }
@@ -81,8 +80,6 @@
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     Q_UNUSED(application)
-    // TODO this isn't called for some reason
-    qDebug() << "quit";
     qApp->quit();
 }
 

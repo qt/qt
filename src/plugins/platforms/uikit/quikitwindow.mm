@@ -289,37 +289,25 @@ private:
 
 - (void)insertText:(NSString *)text
 {
-    QKeyEvent *ev;
+    QString string = QString::fromUtf8([text UTF8String]);
     int key = 0;
     if ([text isEqualToString:@"\n"])
         key = (int)Qt::Key_Return;
-    ev = new QKeyEvent(QEvent::KeyPress,
-                       key,
-                       Qt::NoModifier,
-                       QString::fromUtf8([text UTF8String])
-                       );
-    qApp->postEvent(qApp->focusWidget(), ev);
-    ev = new QKeyEvent(QEvent::KeyRelease,
-                       key,
-                       Qt::NoModifier,
-                       QString::fromUtf8([text UTF8String])
-                       );
-    qApp->postEvent(qApp->focusWidget(), ev);
+
+    // Send key event to window system interface
+    QWindowSystemInterface::handleKeyEvent(
+        0, QEvent::KeyPress, key, Qt::NoModifier, string, false, int(string.length()));
+    QWindowSystemInterface::handleKeyEvent(
+        0, QEvent::KeyRelease, key, Qt::NoModifier, string, false, int(string.length()));
 }
 
 - (void)deleteBackward
 {
-    QKeyEvent *ev;
-    ev = new QKeyEvent(QEvent::KeyPress,
-                       (int)Qt::Key_Backspace,
-                       Qt::NoModifier
-                       );
-    qApp->postEvent(qApp->focusWidget(), ev);
-    ev = new QKeyEvent(QEvent::KeyRelease,
-                       (int)Qt::Key_Backspace,
-                       Qt::NoModifier
-                       );
-    qApp->postEvent(qApp->focusWidget(), ev);
+    // Send key event to window system interface
+    QWindowSystemInterface::handleKeyEvent(
+        0, QEvent::KeyPress, (int)Qt::Key_Backspace, Qt::NoModifier);
+    QWindowSystemInterface::handleKeyEvent(
+        0, QEvent::KeyRelease, (int)Qt::Key_Backspace, Qt::NoModifier);
 }
 
 @end
