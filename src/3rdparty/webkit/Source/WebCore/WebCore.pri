@@ -369,6 +369,7 @@ defineTest(prependWebCoreLib) {
     }
     
     CONFIG -= explicitlib
+    CONFIG -= staticlib
     export(QMAKE_LIBDIR)
     export(POST_TARGETDEPS)
     export(CONFIG)

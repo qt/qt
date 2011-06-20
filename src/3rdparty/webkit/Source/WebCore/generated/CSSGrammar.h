@@ -1,24 +1,26 @@
 #ifndef CSSGRAMMAR_H
 #define CSSGRAMMAR_H
-/* A Bison parser, made by GNU Bison 2.4.3.  */
+/* A Bison parser, made by GNU Bison 2.3.  */
 
 /* Skeleton interface for Bison's Yacc-like parsers in C
-   
-      Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2009, 2010 Free Software Foundation, Inc.
-   
-   This program is free software: you can redistribute it and/or modify
+
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
+
+   This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-   
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor,
+   Boston, MA 02110-1301, USA.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -29,10 +31,9 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-   
+
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
-
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -122,16 +123,95 @@
      UNICODERANGE = 336
    };
 #endif
+/* Tokens.  */
+#define TOKEN_EOF 0
+#define LOWEST_PREC 258
+#define UNIMPORTANT_TOK 259
+#define WHITESPACE 260
+#define SGML_CD 261
+#define INCLUDES 262
+#define DASHMATCH 263
+#define BEGINSWITH 264
+#define ENDSWITH 265
+#define CONTAINS 266
+#define STRING 267
+#define IDENT 268
+#define NTH 269
+#define HEX 270
+#define IDSEL 271
+#define IMPORT_SYM 272
+#define PAGE_SYM 273
+#define MEDIA_SYM 274
+#define FONT_FACE_SYM 275
+#define CHARSET_SYM 276
+#define NAMESPACE_SYM 277
+#define WEBKIT_RULE_SYM 278
+#define WEBKIT_DECLS_SYM 279
+#define WEBKIT_KEYFRAME_RULE_SYM 280
+#define WEBKIT_KEYFRAMES_SYM 281
+#define WEBKIT_VALUE_SYM 282
+#define WEBKIT_MEDIAQUERY_SYM 283
+#define WEBKIT_SELECTOR_SYM 284
+#define TOPLEFTCORNER_SYM 285
+#define TOPLEFT_SYM 286
+#define TOPCENTER_SYM 287
+#define TOPRIGHT_SYM 288
+#define TOPRIGHTCORNER_SYM 289
+#define BOTTOMLEFTCORNER_SYM 290
+#define BOTTOMLEFT_SYM 291
+#define BOTTOMCENTER_SYM 292
+#define BOTTOMRIGHT_SYM 293
+#define BOTTOMRIGHTCORNER_SYM 294
+#define LEFTTOP_SYM 295
+#define LEFTMIDDLE_SYM 296
+#define LEFTBOTTOM_SYM 297
+#define RIGHTTOP_SYM 298
+#define RIGHTMIDDLE_SYM 299
+#define RIGHTBOTTOM_SYM 300
+#define ATKEYWORD 301
+#define IMPORTANT_SYM 302
+#define MEDIA_ONLY 303
+#define MEDIA_NOT 304
+#define MEDIA_AND 305
+#define REMS 306
+#define QEMS 307
+#define EMS 308
+#define EXS 309
+#define PXS 310
+#define CMS 311
+#define MMS 312
+#define INS 313
+#define PTS 314
+#define PCS 315
+#define DEGS 316
+#define RADS 317
+#define GRADS 318
+#define TURNS 319
+#define MSECS 320
+#define SECS 321
+#define HERTZ 322
+#define KHERTZ 323
+#define DIMEN 324
+#define INVALIDDIMEN 325
+#define PERCENTAGE 326
+#define FLOATTOKEN 327
+#define INTEGER 328
+#define URI 329
+#define FUNCTION 330
+#define ANYFUNCTION 331
+#define NOTFUNCTION 332
+#define CALCFUNCTION 333
+#define MINFUNCTION 334
+#define MAXFUNCTION 335
+#define UNICODERANGE 336
+
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-{
-
-/* Line 1685 of yacc.c  */
 #line 63 "../Source/WebCore/css/CSSGrammar.y"
-
+{
     bool boolean;
     char character;
     int integer;
@@ -154,17 +234,14 @@ typedef union YYSTYPE
     WebKitCSSKeyframeRule* keyframeRule;
     WebKitCSSKeyframesRule* keyframesRule;
     float val;
-
-
-
-/* Line 1685 of yacc.c  */
-#line 160 "/Source/WebCore/generated/CSSGrammar.tab.h"
-} YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
+}
+/* Line 1529 of yacc.c.  */
+#line 238 "/Source/WebCore/generated/CSSGrammar.tab.h"
+	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
+# define YYSTYPE_IS_TRIVIAL 1
 #endif
-
 
 
 

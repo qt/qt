@@ -1,3 +1,70 @@
+2011-06-09  Gavin Barraclough  <barraclough@apple.com>
+
+        Reviewed by Geoff Garen.
+
+        Bug 62405 - Fix integer overflow in Array.prototype.push
+
+        Fix geoff's review comments re static_cast.
+
+        * runtime/ArrayPrototype.cpp:
+        (JSC::arrayProtoFuncPush):
+
+2011-06-09  Gavin Barraclough  <barraclough@apple.com>
+
+        Reviewed by Oliver Hunt.
+
+        Bug 62405 - Fix integer overflow in Array.prototype.push
+
+        There are three integer overflows here, leading to safe (not a security risk)
+        but incorrect (non-spec-compliant) behaviour.
+
+        Two overflows occur when calculating the new length after pushing (one in the
+        fast version of push in JSArray, one in the generic version in ArrayPrototype).
+        The other occurs calculating indices to write to when multiple items are pushed.
+
+        These errors result in three test-262 failures.
+
+        * runtime/ArrayPrototype.cpp:
+        (JSC::arrayProtoFuncPush):
+        * runtime/JSArray.cpp:
+        (JSC::JSArray::put):
+        (JSC::JSArray::push):
+
+2011-06-08  Ademar de Souza Reis Jr.  <ademar.reis@openbossa.org>
+
+        Reviewed by Andreas Kling.
+
+        Webkit on SPARC Solaris has wrong endian
+        https://bugs.webkit.org/show_bug.cgi?id=29407
+
+        Bug 57256 fixed one crash on misaligned reads on sparc/solaris, but
+        there are more ocurrences of the same code pattern in webkit.
+
+        This patch includes the check on these other parts of the code.
+
+        This is a speculative fix, I don't have a sparc machine to test and
+        don't know which kind of test would trigger a crash (but it's quite
+        obvious that it's the same code duplicated in different files).
+
+        * runtime/UString.h:
+        (JSC::UStringHash::equal):
+        * wtf/text/StringHash.h:
+        (WTF::StringHash::equal):
+
+2011-06-08  Yael Aharon  <yael.aharon@nokia.com>
+
+        Reviewed by Andreas Kling.
+
+        [Qt] Build fix for building QtWebKit inside of Qt.
+        https://bugs.webkit.org/show_bug.cgi?id=62280
+
+        Remove CONFIG=staticlib, because it causes the configure script to add -ljavascriptcore
+        into QtWebKit.prl.
+
+        No new tests, as this is just a build fix.
+
+        * JavaScriptCore.pri:
+
 2011-06-03  Alexis Menard  <alexis.menard@openbossa.org>
 
         Reviewed by Benjamin Poulain.

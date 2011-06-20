@@ -1,4 +1,4 @@
-/* C++ code produced by gperf version 3.0.4 */
+/* C++ code produced by gperf version 3.0.3 */
 /* Command-line: gperf --key-positions='*' -D -s 2 /Source/WebCore/platform/ColorData.gperf  */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \

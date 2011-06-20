@@ -106,10 +106,10 @@ void RenderMathMLSubSup::addChild(RenderObject* child, RenderObject* beforeChild
 void RenderMathMLSubSup::stretchToHeight(int height)
 {
     RenderObject* base = firstChild();
-    if (!base)
+    if (!base || !base->firstChild())
         return;
     
-    if (base->firstChild()->isRenderMathMLBlock()) {
+    if (base->firstChild() && base->firstChild()->isRenderMathMLBlock()) {
         RenderMathMLBlock* block = toRenderMathMLBlock(base->firstChild());
         block->stretchToHeight(static_cast<int>(gSubSupStretch * height));
         
@@ -185,6 +185,9 @@ int RenderMathMLSubSup::baselinePosition(FontBaseline, bool firstLine, LineDirec
     switch (m_kind) {
     case SubSup:
         base = base->firstChild();
+        if (!base)
+            break;
+
         if (m_scripts && base->isBoxModelObject()) {
             RenderBoxModelObject* box = toRenderBoxModelObject(base);
             

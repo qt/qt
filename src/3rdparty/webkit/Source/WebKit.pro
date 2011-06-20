@@ -22,9 +22,7 @@ contains(QT_CONFIG, declarative) {
     exists($$PWD/WebKit/qt/declarative): SUBDIRS += WebKit/qt/declarative
 }
 
-!symbian {
-    exists($$PWD/WebKit/qt/tests): SUBDIRS += WebKit/qt/tests
-}
+exists($$PWD/WebKit/qt/tests): SUBDIRS += WebKit/qt/tests
 
 build-qtscript {
     SUBDIRS += \

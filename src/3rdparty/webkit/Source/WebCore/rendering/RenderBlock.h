@@ -147,8 +147,8 @@ public:
     RenderInline* inlineElementContinuation() const;
     RenderBlock* blockElementContinuation() const;
 
-    RenderBoxModelObject* continuation() const { return RenderBoxModelObject::continuation(); }
-    void setContinuation(RenderBoxModelObject* o) { RenderBoxModelObject::setContinuation(o); }
+    using RenderBoxModelObject::continuation;
+    using RenderBoxModelObject::setContinuation;
 
     // This function is a convenience helper for creating an anonymous block that inherits its
     // style from this RenderBlock.
