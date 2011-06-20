@@ -56,6 +56,10 @@
 #include <QtGui/qpixmap.h>
 #include <QtCore/qatomic.h>
 
+#ifdef Q_OS_SYMBIAN
+#include <QtGui/private/qvolatileimage_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QImageReader;
@@ -134,6 +138,7 @@ public:
     }
 
 #if defined(Q_OS_SYMBIAN)
+    virtual QVolatileImage toVolatileImage() const { return QVolatileImage(); }
     virtual void* toNativeType(NativeType type);
     virtual void fromNativeType(void* pixmap, NativeType type);
 #endif

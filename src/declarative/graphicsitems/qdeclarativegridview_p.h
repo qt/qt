@@ -75,7 +75,6 @@ class Q_AUTOTEST_EXPORT QDeclarativeGridView : public QDeclarativeFlickable
 
     Q_PROPERTY(Flow flow READ flow WRITE setFlow NOTIFY flowChanged)
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged REVISION 1)
-    Q_PROPERTY(Qt::LayoutDirection effectiveLayoutDirection READ effectiveLayoutDirection NOTIFY effectiveLayoutDirectionChanged REVISION 1)
     Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled NOTIFY keyNavigationWrapsChanged)
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer NOTIFY cacheBufferChanged)
     Q_PROPERTY(int cellWidth READ cellWidth WRITE setCellWidth NOTIFY cellWidthChanged)
@@ -194,7 +193,6 @@ Q_SIGNALS:
     void delegateChanged();
     void flowChanged();
     Q_REVISION(1) void layoutDirectionChanged();
-    Q_REVISION(1) void effectiveLayoutDirectionChanged();
     void keyNavigationWrapsChanged();
     void cacheBufferChanged();
     void snapModeChanged();

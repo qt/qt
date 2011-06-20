@@ -1291,9 +1291,9 @@ bool QSslSocketBackendPrivate::startHandshake()
         sslErrors.clear();
     }
 
-    // if we have a max read buffer size, reset the plain socket's to 1k
+    // if we have a max read buffer size, reset the plain socket's to 32k
     if (readBufferMaxSize)
-        plainSocket->setReadBufferSize(1024);
+        plainSocket->setReadBufferSize(32768);
 
     connectionEncrypted = true;
     emit q->encrypted();

@@ -247,43 +247,14 @@ QGLPixmapData::QGLPixmapData(PixelType type)
     , m_dirty(false)
     , m_hasFillColor(false)
     , m_hasAlpha(false)
-    , inLRU(false)
-    , failedToAlloc(false)
-    , inTexturePool(false)
 {
     setSerialNumber(++qt_gl_pixmap_serial);
     m_glDevice.setPixmapData(this);
-
-    qt_gl_register_pixmap(this);
 }
 
 QGLPixmapData::~QGLPixmapData()
 {
     delete m_engine;
-
-    destroyTexture();
-    qt_gl_unregister_pixmap(this);
-}
-
-void QGLPixmapData::destroyTexture()
-{
-    if (inTexturePool) {
-        QGLTexturePool *pool = QGLTexturePool::instance();
-        if (m_texture.id)
-            pool->releaseTexture(this, m_texture.id);
-    } else {
-        if (m_texture.id) {
-            QGLWidget *shareWidget = qt_gl_share_widget();
-            if (shareWidget) {
-                QGLShareContextScope ctx(shareWidget->context());
-                glDeleteTextures(1, &m_texture.id);
-            }
-        }
-    }
-    m_texture.id = 0;
-    inTexturePool = false;
-
-    releaseNativeImageHandle();
 }
 
 QPixmapData *QGLPixmapData::createCompatiblePixmapData() const
@@ -298,11 +269,13 @@ bool QGLPixmapData::isValid() const
 
 bool QGLPixmapData::isValidContext(const QGLContext *ctx) const
 {
-    if (ctx == m_ctx)
-        return true;
-
-    const QGLContext *share_ctx = qt_gl_share_widget()->context();
-    return ctx == share_ctx || QGLContext::areSharing(ctx, share_ctx);
+    // On Symbian, we usually want to treat QGLPixmapData as
+    // raster pixmap data because that's well known and tested
+    // execution path which is used on other platforms as well.
+    // That's why if source pixels are valid we return false
+    // to simulate raster pixmaps. Only QPixmaps created from
+    // SgImage will enable usage of QGLPixmapData.
+    return false;
 }
 
 void QGLPixmapData::resize(int width, int height)
@@ -353,27 +326,25 @@ void QGLPixmapData::ensureCreated() const
     if (!m_source.isNull() && m_source.format() == QImage::Format_RGB16)
         type = GL_UNSIGNED_SHORT_5_6_5;
 
-    m_texture.options &= ~QGLContext::MemoryManagedBindOption;
-
     if (!m_texture.id) {
-        m_texture.id = QGLTexturePool::instance()->createTextureForPixmap(
+        m_texture.id = QGLTexturePool::instance()->createTexture(
                                                                 target,
                                                                 0, internal_format,
                                                                 w, h,
                                                                 external_format,
                                                                 type,
-                                                                const_cast<QGLPixmapData*>(this));
+                                                                &m_texture);
         if (!m_texture.id) {
-            failedToAlloc = true;
+            m_texture.failedToAlloc = true;
             return;
         }
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-        inTexturePool = true;
-    } else if (inTexturePool) {
+        m_texture.inTexturePool = true;
+    } else if (m_texture.inTexturePool) {
         glBindTexture(target, m_texture.id);
-        QGLTexturePool::instance()->useTexture(const_cast<QGLPixmapData*>(this));
+        QGLTexturePool::instance()->useTexture(&m_texture);
     }
 
     if (!m_source.isNull() && m_texture.id) {
@@ -753,15 +724,8 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
 
 bool QGLPixmapData::useFramebufferObjects() const
 {
-#ifdef Q_OS_SYMBIAN
-    // We don't want to use FBOs on Symbian
+    // We don't use FBOs on Symbian for now
     return false;
-#else
-    return QGLFramebufferObject::hasOpenGLFramebufferObjects()
-           && QGLFramebufferObject::hasOpenGLFramebufferBlit()
-           && qt_gl_preferGL2Engine()
-           && (w * h > 32*32); // avoid overhead of FBOs for small pixmaps
-#endif
 }
 
 QPaintEngine* QGLPixmapData::paintEngine() const
@@ -845,40 +809,6 @@ QGLTexture* QGLPixmapData::texture() const
     return &m_texture;
 }
 
-void QGLPixmapData::detachTextureFromPool()
-{
-    if (inTexturePool) {
-        QGLTexturePool::instance()->detachTexture(this);
-        inTexturePool = false;
-    }
-}
-
-void QGLPixmapData::hibernate()
-{
-    // If the image was imported (e.g, from an SgImage under Symbian), then
-    // skip the hibernation, there is no sense in copying it back to main
-    // memory because the data is most likely shared between several processes.
-    bool skipHibernate = (m_texture.id && m_source.isNull());
-#if defined(Q_OS_SYMBIAN)
-    // However we have to proceed normally if the image was retrieved via
-    // a handle provider.
-    skipHibernate &= !nativeImageHandleProvider;
-#endif
-    if (skipHibernate)
-        return;
-
-    forceToImage();
-    destroyTexture();
-}
-
-void QGLPixmapData::reclaimTexture()
-{
-    if (!inTexturePool)
-        return;
-    forceToImage();
-    destroyTexture();
-}
-
 Q_GUI_EXPORT int qt_defaultDpiX();
 Q_GUI_EXPORT int qt_defaultDpiY();
 
@@ -926,6 +856,31 @@ void QGLPixmapData::forceToImage()
     }
 
     m_dirty = true;
+}
+
+void QGLPixmapData::destroyTexture()
+{
+    // Destroy SgImage texture
+}
+
+void QGLPixmapData::detachTextureFromPool()
+{
+    QGLTexturePool::instance()->detachTexture(&m_texture);
+}
+
+void QGLPixmapData::hibernate()
+{
+    destroyTexture();
+}
+
+void QGLPixmapData::reclaimTexture()
+{
+    if (!m_texture.inTexturePool)
+        return;
+
+    forceToImage();
+
+    destroyTexture();
 }
 
 QGLPaintDevice *QGLPixmapData::glDevice() const

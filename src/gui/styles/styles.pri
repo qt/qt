@@ -172,7 +172,11 @@ contains( styles, s60 ):contains(QT_CONFIG, s60) {
     symbian {
         SOURCES += styles/qs60style_s60.cpp
         LIBS += -legul -lbmpanim
-        LIBS += -laknicon -laknskins -laknskinsrv -lfontutils
+        contains(CONFIG, is_using_gnupoc) {
+            LIBS += -laknicon -laknskins -laknskinsrv -lfontutils
+        } else {
+            LIBS += -lAknIcon -lAKNSKINS -lAKNSKINSRV -lFontUtils
+        }
     } else {
         SOURCES += styles/qs60style_simulated.cpp
         RESOURCES += styles/qstyle_s60_simulated.qrc

@@ -563,7 +563,7 @@ void tst_QHeaderView::sectionSize()
     QFETCH(int, lastVisibleSectionSize);
     QFETCH(int, persistentSectionSize);
 
-#ifdef Q_OS_WINCE
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     // We test on a device with doubled pixels. Therefore we need to specify
     // different boundaries.
     initialDefaultSize = qMax(view->minimumSectionSize(), 30);
@@ -676,6 +676,16 @@ void tst_QHeaderView::visualIndexAt()
     QFETCH(QList<int>, coordinate);
     QFETCH(QList<int>, visual);
 
+#ifdef Q_OS_SYMBIAN
+    // Some Symbian devices have larger minimum section size than what is expected.
+    // Need to do this here instead of visualIndexAt_data() as view pointer doesn't
+    // seem to be valid there.
+    int minSize = view->minimumSectionSize();
+    if (minSize > 30) {
+        coordinate.clear();
+        coordinate << -1 << 0 << minSize + 1 << (minSize * 3) + 1 << 99999;
+    }
+#endif
     view->setStretchLastSection(true);
     topLevel->show();
 
