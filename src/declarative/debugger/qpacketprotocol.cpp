@@ -164,12 +164,16 @@ public Q_SLOTS:
 
     void readyToRead()
     {
+        bool gotPackets = false;
         while (true) {
-            // Need to get trailing data
+            // Get size header (if not in progress)
             if (-1 == inProgressSize) {
                 // We need a size header of sizeof(qint32)
-                if (sizeof(qint32) > (uint)dev->bytesAvailable())
-                    return;
+                if (sizeof(qint32) > (uint)dev->bytesAvailable()) {
+                    if (gotPackets)
+                        emit readyRead();
+                    return; // no more data available
+                }
 
                 // Read size header
                 int read = dev->read((char *)&inProgressSize, sizeof(qint32));
@@ -200,9 +204,12 @@ public Q_SLOTS:
                     inProgress.clear();
 
                     waitingForPacket = false;
-                    emit readyRead();
-                } else
-                    return;
+                    gotPackets = true;
+                } else {
+                    if (gotPackets)
+                        emit readyRead();
+                    return; // packet in progress is not yet complete
+                }
             }
         }
     }

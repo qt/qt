@@ -125,7 +125,13 @@ void QTcpServerConnection::disconnect()
 bool QTcpServerConnection::waitForMessage()
 {
     Q_D(QTcpServerConnection);
-    return d->protocol->waitForReadyRead(-1);
+    if (d->protocol->packetsAvailable() > 0) {
+        QPacket packet = d->protocol->read();
+        d->debugServer->receiveMessage(packet.data());
+        return true;
+    } else {
+        return d->protocol->waitForReadyRead(-1);
+    }
 }
 
 void QTcpServerConnection::setPort(int port, bool block)
@@ -145,10 +151,11 @@ void QTcpServerConnection::listen()
 
     d->tcpServer = new QTcpServer(this);
     QObject::connect(d->tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
-    if (d->tcpServer->listen(QHostAddress::Any, d->port))
+    if (d->tcpServer->listen(QHostAddress::Any, d->port)) {
         qWarning("QDeclarativeDebugServer: Waiting for connection on port %d...", d->port);
-    else
+    } else {
         qWarning("QDeclarativeDebugServer: Unable to listen on port %d", d->port);
+    }
 }
 
 
@@ -158,10 +165,10 @@ void QTcpServerConnection::readyRead()
     if (!d->protocol)
         return;
 
-    QPacket packet = d->protocol->read();
-
-    QByteArray content = packet.data();
-    d->debugServer->receiveMessage(content);
+    while (d->protocol->packetsAvailable() > 0) {
+        QPacket packet = d->protocol->read();
+        d->debugServer->receiveMessage(packet.data());
+    }
 }
 
 void QTcpServerConnection::newConnection()
