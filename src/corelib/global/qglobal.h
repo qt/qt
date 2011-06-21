@@ -2746,13 +2746,6 @@ QT_LICENSED_MODULE(DBus)
 #  define QT_NO_CONCURRENT_FILTER
 #endif
 
-#ifdef Q_OS_QNX
-// QNX doesn't have SYSV style shared memory. Multiprocess QWS apps
-// and shared fonts are not available
-#  define QT_NO_QWS_MULTIPROCESS
-#  define QT_NO_QWS_SHARE_FONTS
-#endif
-
 #if defined (__ELF__)
 #  if defined (Q_OS_LINUX) || defined (Q_OS_SOLARIS) || defined (Q_OS_FREEBSD) || defined (Q_OS_OPENBSD) || defined (Q_OS_IRIX)
 #    define Q_OF_ELF
