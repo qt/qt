@@ -39,4 +39,4 @@
 **
 ****************************************************************************/
 
-#include "../../qnx-g++/qplatformdefs.h"
+#include "../../../common/qnx/qplatformdefs.h"
