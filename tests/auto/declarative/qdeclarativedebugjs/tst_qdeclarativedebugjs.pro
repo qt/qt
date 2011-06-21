@@ -1,8 +1,12 @@
 load(qttest_p4)
-contains(QT_CONFIG,declarative): QT += declarative script
+contains(QT_CONFIG,declarative): QT += declarative network script
 macx:CONFIG -= app_bundle
 
-SOURCES += tst_qdeclarativescriptdebugging.cpp
+HEADERS += ../shared/debugutil_p.h
+
+SOURCES += tst_qdeclarativedebugjs.cpp \
+           ../shared/debugutil.cpp
+
 INCLUDEPATH += ../shared
 
 # QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
@@ -15,6 +19,8 @@ symbian: {
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
+
+OTHER_FILES = data/backtrace1.js data/backtrace1.qml
 
 CONFIG += parallel_test
 
