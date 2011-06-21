@@ -99,6 +99,7 @@
 #endif
 
 #ifdef Q_OS_QNX
+#  include <sys/neutrino.h>
 #  include <pthread.h>
 #  include <sched.h>
 #endif
@@ -359,6 +360,11 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
 #endif
 
 #ifdef Q_OS_QNX
+    // make the kernel attempt to emulate an instruction with a misaligned access
+    // if the attempt fails, it faults with a SIGBUS
+    int tv = -1;
+    ThreadCtl(_NTO_TCTL_ALIGN_FAULT, &tv);
+
     // without Round Robin drawn intensive apps will hog the cpu
     // and make the system appear frozen
     int sched_policy;
