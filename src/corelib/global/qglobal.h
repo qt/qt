@@ -173,7 +173,6 @@ namespace QT_NAMESPACE {}
      RELIANT  - Reliant UNIX
      DYNIX    - DYNIX/ptx
      QNX      - QNX
-     QNX6     - QNX RTP 6.1
      LYNX     - LynxOS
      BSD4     - Any BSD 4.4 system
      UNIX     - Any UNIX BSD/SYSV system
