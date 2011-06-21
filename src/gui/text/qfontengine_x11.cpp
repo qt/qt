@@ -946,6 +946,7 @@ void QFontEngineMultiFT::loadEngine(int at)
         fontEngine = engineForPattern(match, request, screen);
         QFontCache::instance()->insertEngine(key, fontEngine);
     }
+    FcPatternDestroy(match);
     fontEngine->ref.ref();
     engines[at] = fontEngine;
 }
@@ -1113,17 +1114,14 @@ QFontEngineX11FT::QFontEngineX11FT(FcPattern *pattern, const QFontDef &fd, int s
     }
 #endif
 
-    if (!init(face_id, antialias, defaultFormat)) {
-        FcPatternDestroy(pattern);
+    if (!init(face_id, antialias, defaultFormat))
         return;
-    }
 
     if (!freetype->charset) {
         FcCharSet *cs;
         FcPatternGetCharSet (pattern, FC_CHARSET, 0, &cs);
         freetype->charset = FcCharSetCopy(cs);
     }
-    FcPatternDestroy(pattern);
 }
 
 QFontEngineX11FT::~QFontEngineX11FT()
