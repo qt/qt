@@ -315,7 +315,21 @@ TRect QS60MainAppUi::ApplicationRect() const
 */
 void QS60MainAppUi::HandleScreenDeviceChangedL()
 {
+    // This function triggers AppUi relayout which also generates
+    // HandleStatusPaneSizeChange(). We don't want to handle
+    // status pane resizes at this point because it causes
+    // Qt window resize and thus EGL surface resize in the middle of
+    // incomplete layout process causing unnecessary overhead.
+    // To prevent status pane resize handling while layout is still
+    // in progress, we guard relayouting with handleStatusPaneResizeNotifications
+    // flag. QSymbianControl checks this flag before doing Qt window
+    // resize due to status pane change.
+    // Eventually when layout is ready, Symbian framework calls
+    // HandleResourceChangeL(KEikDynamicLayoutVariantSwitch) which triggers
+    // resize to Qt window and to its EGL surface.
+    S60->handleStatusPaneResizeNotifications = false;
     QS60MainAppUiBase::HandleScreenDeviceChangedL();
+    S60->handleStatusPaneResizeNotifications = true;
 }
 
 /*!

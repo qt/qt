@@ -361,7 +361,8 @@ bool QCoeFepInputContext::symbianFilterEvent(QWidget *keyWidget, const QSymbianE
     }
 
     if (event->type() == QSymbianEvent::ResourceChangeEvent
-         && event->resourceChangeType() == KEikMessageFadeAllWindows) {
+         && (event->resourceChangeType() == KEikMessageFadeAllWindows
+         || event->resourceChangeType() == KEikDynamicLayoutVariantSwitch)) {
         reset();
     }
 
@@ -462,7 +463,10 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
         }
     } else {
         if (m_splitViewResizeBy)
-            gv->resize(gv->rect().width(), m_splitViewResizeBy);
+            if (m_splitViewPreviousWindowStates & Qt::WindowFullScreen)
+                gv->resize(gv->rect().width(), qApp->desktop()->height());
+            else
+                gv->resize(gv->rect().width(), m_splitViewResizeBy);
     }
     // Resizing might have led to widget losing its original windowstate.
     // Restore previous window state.
@@ -908,8 +912,14 @@ void QCoeFepInputContext::translateInputWidget()
     qreal dy = -(qMin(maxY, (cursor.bottom() - vkbRect.top() / 2)));
 
     // Do not allow transform above screen top.
-    if (m_transformation.height() + dy > 0)
+    if (m_transformation.height() + dy > 0) {
+        // If we already have some transformation, remove it.
+        if (m_transformation.height() < 0) {
+            rootItem->resetTransform();
+            translateInputWidget();
+        }
         return;
+    }
 
     rootItem->setTransform(QTransform::fromTranslate(0, dy), true);
 }

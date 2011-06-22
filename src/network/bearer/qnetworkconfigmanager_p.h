@@ -91,6 +91,8 @@ public:
     void enablePolling();
     void disablePolling();
 
+    void initialize();
+    void cleanup();
 public slots:
     void updateConfigurations();
 
@@ -105,6 +107,7 @@ Q_SIGNALS:
 
 private:
     QTimer *pollTimer;
+    QThread *bearerThread;
 
     QMutex mutex;
 
