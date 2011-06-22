@@ -16,5 +16,3 @@ listWidget.currentItemChanged.connect(
     }
 );
 //! [1]
-
-listWidget.show();

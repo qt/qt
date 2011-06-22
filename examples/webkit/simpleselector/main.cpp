@@ -47,7 +47,11 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     Window window;
     window.setUrl(QUrl("http://www.webkit.org"));
-    window.show();
+    #if defined Q_OS_SYMBIAN || defined Q_WS_HILDON || defined Q_WS_MAEMO_5 || defined Q_WS_SIMULATOR
+        window.showMaximized();
+    #else
+        window.show();
+    #endif
     return app.exec();
 }
 //! [main program]

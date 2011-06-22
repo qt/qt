@@ -2000,7 +2000,7 @@ struct DDSFormat {
     If you're using double buffering you can swap the screen contents
     with the off-screen buffer using swapBuffers().
 
-    Please note that QGLContext is not thread safe.
+    Please note that QGLContext is not \l{thread-safe}.
 */
 
 /*!
@@ -3273,18 +3273,13 @@ bool QGLContext::areSharing(const QGLContext *context1, const QGLContext *contex
     \fn QColor QGLContext::overlayTransparentColor() const
 
     If this context is a valid context in an overlay plane, returns
-    the plane's transparent color. Otherwise returns an \link
-    QColor::isValid() invalid \endlink color.
-
-    The returned color's \link QColor::pixel() pixel \endlink value is
-    the index of the transparent color in the colormap of the overlay
-    plane. (Naturally, the color's RGB values are meaningless.)
+    the plane's transparent color. Otherwise returns an
+    \{QColor::isValid()}{invalid} color.
 
     The returned QColor object will generally work as expected only
     when passed as the argument to QGLWidget::qglColor() or
     QGLWidget::qglClearColor(). Under certain circumstances it can
-    also be used to draw transparent graphics with a QPainter. See the
-    examples/opengl/overlay_x11 example for details.
+    also be used to draw transparent graphics with a QPainter.
 */
 
 

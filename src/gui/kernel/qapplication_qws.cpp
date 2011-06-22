@@ -2184,6 +2184,11 @@ void qt_init(QApplicationPrivate *priv, int type)
     qws_screen_is_interlaced = read_bool_env_var("QWS_INTERLACE",false);
 
     const char *display = ::getenv("QWS_DISPLAY");
+
+#ifdef QT_QWS_DEFAULT_DRIVER_NAME
+    if (!display) display = QT_QWS_DEFAULT_DRIVER_NAME;
+#endif
+
     if (display)
         qws_display_spec = display; // since we setenv later!
 

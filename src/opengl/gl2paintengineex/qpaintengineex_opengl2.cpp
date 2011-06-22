@@ -90,6 +90,12 @@
 
 QT_BEGIN_NAMESPACE
 
+inline static bool isPowerOfTwo(int x)
+{
+    // Assumption: x >= 1
+    return x == (x & -x);
+}
+
 #if defined(Q_WS_WIN)
 extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif
@@ -201,6 +207,15 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
 
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         ctx->d_func()->bindTexture(texImage, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
+#if !defined(QT_NO_DEBUG) && defined(QT_OPENGL_ES_2)
+        QGLFunctions funcs(QGLContext::currentContext());
+        bool npotSupported = funcs.hasOpenGLFeature(QGLFunctions::NPOTTextures);
+        bool isNpot = !isPowerOfTwo(texImage.size().width())
+            || !isPowerOfTwo(texImage.size().height());
+        if (isNpot && !npotSupported) {
+            qWarning("GL2 Paint Engine: This system does not support the REPEAT wrap mode for non-power-of-two textures.");
+        }
+#endif
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
     else if (style >= Qt::LinearGradientPattern && style <= Qt::ConicalGradientPattern) {
@@ -233,6 +248,15 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         QGLTexture *tex = ctx->d_func()->bindTexture(currentBrushPixmap, GL_TEXTURE_2D, GL_RGBA,
                                                      QGLContext::InternalBindOption |
                                                      QGLContext::CanFlipNativePixmapBindOption);
+#if !defined(QT_NO_DEBUG) && defined(QT_OPENGL_ES_2)
+        QGLFunctions funcs(QGLContext::currentContext());
+        bool npotSupported = funcs.hasOpenGLFeature(QGLFunctions::NPOTTextures);
+        bool isNpot = !isPowerOfTwo(currentBrushPixmap.size().width())
+            || !isPowerOfTwo(currentBrushPixmap.size().height());
+        if (isNpot && !npotSupported) {
+            qWarning("GL2 Paint Engine: This system does not support the REPEAT wrap mode for non-power-of-two textures.");
+        }
+#endif
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
         textureInvertedY = tex->options & QGLContext::InvertedYBindOption ? -1 : 1;
     }
@@ -1782,6 +1806,15 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
             glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
             glBindTexture(GL_TEXTURE_2D, cache->texture());
+#if !defined(QT_NO_DEBUG) && defined(QT_OPENGL_ES_2)
+            QGLFunctions funcs(QGLContext::currentContext());
+            bool npotSupported = funcs.hasOpenGLFeature(QGLFunctions::NPOTTextures);
+            bool isNpot = !isPowerOfTwo(cache->width())
+                || !isPowerOfTwo(cache->height());
+            if (isNpot && !npotSupported) {
+                qWarning("GL2 Paint Engine: This system does not support the REPEAT wrap mode for non-power-of-two textures.");
+            }
+#endif
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
