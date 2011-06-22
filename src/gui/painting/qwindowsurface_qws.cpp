@@ -1065,10 +1065,12 @@ bool QWSSharedMemSurface::setMemory(int memId)
         return true;
 
     mem.detach();
-    if (!mem.attach(memId)) {
+
+    if (memId != -1 && !mem.attach(memId)) {
+#ifndef QT_NO_DEBUG
         perror("QWSSharedMemSurface: attaching to shared memory");
-        qCritical("QWSSharedMemSurface: Error attaching to"
-                  " shared memory 0x%x", memId);
+        qCritical("QWSSharedMemSurface: Error attaching to shared memory 0x%x", memId);
+#endif
         return false;
     }
 

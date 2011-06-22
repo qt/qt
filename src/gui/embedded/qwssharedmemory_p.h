@@ -77,7 +77,10 @@ public:
 private:
     int shmId;
     void *shmBase;
-    int shmSize;
+    mutable int shmSize;
+#ifdef QT_POSIX_IPC
+    int hand;
+#endif
 };
 
 #endif // QT_NO_QWS_MULTIPROCESS

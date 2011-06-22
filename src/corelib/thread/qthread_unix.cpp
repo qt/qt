@@ -479,6 +479,11 @@ void QThread::usleep(unsigned long usecs)
 // sched_priority is OUT only
 static bool calculateUnixPriority(int priority, int *sched_policy, int *sched_priority)
 {
+#ifdef Q_OS_QNX
+    // without Round Robin drawn intensive apps will hog the cpu
+    // and make the system appear frozen
+   *sched_policy = SCHED_RR;
+#endif
 #ifdef SCHED_IDLE
     if (priority == QThread::IdlePriority) {
         *sched_policy = SCHED_IDLE;
