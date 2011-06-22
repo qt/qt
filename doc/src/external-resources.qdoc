@@ -7,20 +7,20 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of
-** this file.
+** Foundation and appearing in the file included in the packaging of this
+** file.
 **
-** Other Usage
-** Alternatively, this file may be used in accordance with the terms
-** and conditions contained in a signed written agreement between you
-** and Nokia.
-**
-**
-**
-**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -482,4 +482,14 @@
 /*!
     \externalpage http://www.symbiansigned.com
     \title Symbian Signed
+*/
+
+/*!
+    \externalpage http://accessibility.linuxfoundation.org/a11yspecs/ia2/docs/html/_accessible_event_i_d_8idl.html
+    \title AccessibleEventID.idl File Reference
+*/
+
+/*!
+    \externalpage http://msdn.microsoft.com/en-us/library/dd318066.aspx
+    \title Microsoft Active Accessibility Event Constants
 */
