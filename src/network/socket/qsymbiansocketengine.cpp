@@ -196,8 +196,14 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
 #ifdef QNATIVESOCKETENGINE_DEBUG
         qDebug() << "QSymbianSocketEnginePrivate::createNewSocket - _q_networksession was set" << err;
 #endif
-    } else
-        err = nativeSocket.Open(socketServer, family, type, protocol); //TODO: FIXME - deprecated API, make sure we always have a connection instead
+    } else {
+#ifdef QNATIVESOCKETENGINE_DEBUG
+        qDebug() << "QSymbianSocketEnginePrivate::createNewSocket - _q_networksession was not set, using implicit connection";
+#endif
+        // using implicit connection allows localhost connections without starting any RConnection, see QTBUG-16155 and QTBUG-16843
+        // when a remote address is used, socket server will start the system default connection if there is no route.
+        err = nativeSocket.Open(socketServer, family, type, protocol);
+    }
 
     if (err != KErrNone) {
         switch (err) {
@@ -564,12 +570,12 @@ bool QSymbianSocketEngine::connectToHostByName(const QString &name, quint16 port
     If there's a connection activity on the socket, process it. Then
     notify our parent if there really was activity.
 */
-void QSymbianSocketEngine::connectionNotification()
+void QSymbianSocketEngine::connectionComplete()
 {
-    // FIXME check if we really need to do it like that in Symbian
     Q_D(QSymbianSocketEngine);
     Q_ASSERT(state() == QAbstractSocket::ConnectingState);
 
+    // as it was a non blocking connect, call again to find the result.
     connectToHost(d->peerAddress, d->peerPort);
     if (state() != QAbstractSocket::ConnectingState) {
         // we changed states
@@ -906,7 +912,6 @@ qint64 QSymbianSocketEngine::writeDatagram(const char *data, qint64 len,
     return sentBytes();
 }
 
-// FIXME check where the native socket engine called that..
 bool QSymbianSocketEnginePrivate::fetchConnectionParameters()
 {
     localPort = 0;
@@ -990,9 +995,15 @@ void QSymbianSocketEngine::close()
         d->asyncSelect = 0;
     }
 
-    //TODO: call nativeSocket.Shutdown(EImmediate) in some cases?
+    //RSocket::Shutdown(EImmediate) performs a fast disconnect. For TCP,
+    //this would mean sending RST rather than FIN so we don't do that.
+    //Qt's disconnectFromHost() API doesn't expose this choice.
+    //RSocket::Close will internally do a normal shutdown of the socket.
     if (d->socketType == QAbstractSocket::UdpSocket) {
-        //TODO: Close hangs without this, but only for UDP - why?
+        //RSocket::Close has been observed to block for a long time with
+        //UDP sockets. Doing an immediate shutdown first works around this
+        //problem. Since UDP is connectionless, there should be no difference
+        //at the network interface.
         TRequestStatus stat;
         d->nativeSocket.Shutdown(RSocket::EImmediate, stat);
         User::WaitForRequest(stat);
@@ -1189,7 +1200,6 @@ int QSymbianSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool 
 #endif
     }
     if (err) {
-        //TODO: avoidable cast?
         //set the error here, because read won't always return the same error again as select.
         const_cast<QSymbianSocketEnginePrivate*>(this)->setError(err);
         //restart asynchronous notifier (only one IOCTL allowed at a time)
@@ -1265,7 +1275,7 @@ bool QSymbianSocketEnginePrivate::multicastGroupMembershipHelper(const QHostAddr
 
 QNetworkInterface QSymbianSocketEngine::multicastInterface() const
 {
-    //TODO
+    //### symbian 3 has no API equivalent to this
     const Q_D(QSymbianSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::multicastInterface(), QNetworkInterface());
     Q_CHECK_TYPE(QSymbianSocketEngine::multicastInterface(), QAbstractSocket::UdpSocket, QNetworkInterface());
@@ -1274,7 +1284,8 @@ QNetworkInterface QSymbianSocketEngine::multicastInterface() const
 
 bool QSymbianSocketEngine::setMulticastInterface(const QNetworkInterface &iface)
 {
-    //TODO - this is possibly a unix'ism as the RConnection on which the socket was created is probably controlling this
+    //### symbian 3 has no API equivalent to this
+    //this is possibly a unix'ism as the RConnection on which the socket was created is probably controlling this
     Q_D(QSymbianSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setMulticastInterface(), false);
     Q_CHECK_TYPE(QSymbianSocketEngine::setMulticastInterface(), QAbstractSocket::UdpSocket, false);
@@ -1711,7 +1722,7 @@ void QAsyncSelect::run()
     if (engine && engine->isWriteNotificationEnabled()
         && ((m_selectBuf() & KSockSelectWrite) || iStatus != KErrNone)) {
         if (engine->state() == QAbstractSocket::ConnectingState)
-            engine->connectionNotification();
+            engine->connectionComplete();
         else
             engine->writeNotification();
     }
