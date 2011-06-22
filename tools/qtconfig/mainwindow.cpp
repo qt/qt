@@ -75,7 +75,9 @@
 #include <phonon/phononnamespace.h>
 #endif
 
+#ifdef Q_WS_X11
 #include <QtGui/private/qt_x11_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -263,10 +265,15 @@ MainWindow::MainWindow()
     connect(ui->buttonMainColor, SIGNAL(colorChanged(QColor)), SLOT(buildPalette()));
     connect(ui->buttonWindowColor, SIGNAL(colorChanged(QColor)), SLOT(buildPalette()));
 
+#ifdef Q_WS_X11
     if (X11->desktopEnvironment == DE_KDE)
         ui->colorConfig->hide();
     else
         ui->kdeNoteLabel->hide();
+#else
+    ui->colorConfig->hide();
+    ui->kdeNoteLabel->hide();
+#endif
 
     QFontDatabase db;
     QStringList families = db.families();
@@ -384,7 +391,7 @@ MainWindow::MainWindow()
       ui->inputStyleCombo->setCurrentIndex(ui->inputStyleCombo->findText(settingsInputStyle));
 #else
     ui->inputStyleCombo->hide();
-    ui->inputStyleComboLabel->hide();
+    ui->inputStyleLabel->hide();
 #endif
 
 #if defined(Q_WS_X11) && !defined(QT_NO_XIM)
@@ -407,7 +414,7 @@ MainWindow::MainWindow()
     ui->inputMethodCombo->setCurrentIndex(inputMethodComboIndex);
 #else
     ui->inputMethodCombo->hide();
-    ui->inputMethodComboLabel->hide();
+    ui->inputMethodLabel->hide();
 #endif
 
     ui->fontEmbeddingCheckBox->setChecked(settings.value(QLatin1String("embedFonts"), true)

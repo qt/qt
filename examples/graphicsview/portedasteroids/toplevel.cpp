@@ -44,21 +44,20 @@
  * Part of the KDE project
  */
 //	--- toplevel.cpp ---
-#include <q3accel.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlcdnumber.h>
-#include <qpushbutton.h>
+#include <QAction>
+#include <QLabel>
+#include <QLayout>
+#include <QLCDNumber>
+#include <QPushButton>
 
-#include <qapplication.h>
-//Added by qt3to4:
-#include <Q3HBoxLayout>
+#include <QApplication>
+#include <QHBoxLayout>
 #include <QShowEvent>
-#include <Q3Frame>
+#include <QFrame>
 #include <QPixmap>
 #include <QHideEvent>
 #include <QKeyEvent>
-#include <Q3VBoxLayout>
+#include <QVBoxLayout>
 
 #include "toplevel.h"
 #include "ledmeter.h"
@@ -110,18 +109,28 @@ const char *soundDefaults[] =
 };
 
 
-KAstTopLevel::KAstTopLevel( QWidget *parent, const char *name )
-    : Q3MainWindow( parent, name, 0 )
+KAstTopLevel::KAstTopLevel( QWidget *parent)
+    : QMainWindow(parent)
 {
     QWidget *border = new QWidget( this );
-    border->setBackgroundColor( Qt::black );
+
+    QPalette palette;
+    palette.setColor(border->backgroundRole(), Qt::black);
+    border->setPalette(palette);
+
     setCentralWidget( border );
 
-    Q3VBoxLayout *borderLayout = new Q3VBoxLayout( border );
+    QVBoxLayout *borderLayout = new QVBoxLayout( border );
     borderLayout->addStretch( 1 );
 
     QWidget *mainWin = new QWidget( border );
+#if defined(Q_WS_MAEMO_5)
+    mainWin->setFixedSize(800, 430);
+#elif defined(Q_OS_SYMBIAN)
+    mainWin->setFixedSize(640, 340);
+#else
     mainWin->setFixedSize(640, 480);
+#endif
     borderLayout->addWidget( mainWin, 0, Qt::AlignHCenter );
 
     borderLayout->addStretch( 1 );
@@ -133,15 +142,18 @@ KAstTopLevel::KAstTopLevel( QWidget *parent, const char *name )
     connect( view, SIGNAL(rocksRemoved()), SLOT(slotRocksRemoved()) );
     connect( view, SIGNAL(updateVitals()), SLOT(slotUpdateVitals()) );
 
-    Q3VBoxLayout *vb = new Q3VBoxLayout( mainWin );
-    Q3HBoxLayout *hb = new Q3HBoxLayout;
-    Q3HBoxLayout *hbd = new Q3HBoxLayout;
+    QVBoxLayout *vb = new QVBoxLayout( mainWin );
+    QHBoxLayout *hb = new QHBoxLayout;
+    QHBoxLayout *hbd = new QHBoxLayout;
     vb->addLayout( hb );
 
+#if defined(Q_OS_SYMBIAN)
+    QFont labelFont( "helvetica", 8 );
+#else
     QFont labelFont( "helvetica", 24 );
-    QColorGroup grp( Qt::darkGreen, Qt::black, QColor( 128, 128, 128 ),
-	    QColor( 64, 64, 64 ), Qt::black, Qt::darkGreen, Qt::black );
-    QPalette pal( grp, grp, grp );
+#endif
+
+    QPalette pal(Qt::darkGreen, Qt::black, QColor( 128, 128, 128 ), QColor( 64, 64, 64 ), Qt::black, Qt::darkGreen, Qt::black);
 
     mainWin->setPalette( pal );
 
@@ -155,7 +167,7 @@ KAstTopLevel::KAstTopLevel( QWidget *parent, const char *name )
     hb->addWidget( label );
 
     scoreLCD = new QLCDNumber( 6, mainWin );
-    scoreLCD->setFrameStyle( Q3Frame::NoFrame );
+    scoreLCD->setFrameStyle( QFrame::NoFrame );
     scoreLCD->setSegmentStyle( QLCDNumber::Flat );
     scoreLCD->setFixedWidth( 150 );
     scoreLCD->setPalette( pal );
@@ -169,7 +181,7 @@ KAstTopLevel::KAstTopLevel( QWidget *parent, const char *name )
     hb->addWidget( label );
 
     levelLCD = new QLCDNumber( 2, mainWin );
-    levelLCD->setFrameStyle( Q3Frame::NoFrame );
+    levelLCD->setFrameStyle( QFrame::NoFrame );
     levelLCD->setSegmentStyle( QLCDNumber::Flat );
     levelLCD->setFixedWidth( 70 );
     levelLCD->setPalette( pal );
@@ -183,7 +195,7 @@ KAstTopLevel::KAstTopLevel( QWidget *parent, const char *name )
     hb->addWidget( label );
 
     shipsLCD = new QLCDNumber( 1, mainWin );
-    shipsLCD->setFrameStyle( Q3Frame::NoFrame );
+    shipsLCD->setFrameStyle( QFrame::NoFrame );
     shipsLCD->setSegmentStyle( QLCDNumber::Flat );
     shipsLCD->setFixedWidth( 40 );
     shipsLCD->setPalette( pal );
@@ -196,7 +208,11 @@ KAstTopLevel::KAstTopLevel( QWidget *parent, const char *name )
 // -- bottom layout:
     vb->addLayout( hbd );
 
+#if defined(Q_OS_SYMBIAN)
+    QFont smallFont( "helvetica", 6 );
+#else
     QFont smallFont( "helvetica", 14 );
+#endif
     hbd->addSpacing( 10 );
 
     QString sprites_prefix = ":/trolltech/examples/graphicsview/portedasteroids/sprites/";
@@ -224,7 +240,7 @@ KAstTopLevel::KAstTopLevel( QWidget *parent, const char *name )
     hbd->addWidget( label );
 
     brakesLCD = new QLCDNumber( 1, mainWin );
-    brakesLCD->setFrameStyle( Q3Frame::NoFrame );
+    brakesLCD->setFrameStyle( QFrame::NoFrame );
     brakesLCD->setSegmentStyle( QLCDNumber::Flat );
     brakesLCD->setPalette( pal );
     brakesLCD->setFixedHeight( 20 );
@@ -240,7 +256,7 @@ KAstTopLevel::KAstTopLevel( QWidget *parent, const char *name )
     hbd->addWidget( label );
 
     shieldLCD = new QLCDNumber( 1, mainWin );
-    shieldLCD->setFrameStyle( Q3Frame::NoFrame );
+    shieldLCD->setFrameStyle( QFrame::NoFrame );
     shieldLCD->setSegmentStyle( QLCDNumber::Flat );
     shieldLCD->setPalette( pal );
     shieldLCD->setFixedHeight( 20 );
@@ -256,7 +272,7 @@ KAstTopLevel::KAstTopLevel( QWidget *parent, const char *name )
     hbd->addWidget( label );
 
     shootLCD = new QLCDNumber( 1, mainWin );
-    shootLCD->setFrameStyle( Q3Frame::NoFrame );
+    shootLCD->setFrameStyle( QFrame::NoFrame );
     shootLCD->setSegmentStyle( QLCDNumber::Flat );
     shootLCD->setPalette( pal );
     shootLCD->setFixedHeight( 20 );
@@ -271,7 +287,7 @@ KAstTopLevel::KAstTopLevel( QWidget *parent, const char *name )
     hbd->addWidget( label );
 
     powerMeter = new KALedMeter( mainWin );
-    powerMeter->setFrameStyle( Q3Frame::Box | Q3Frame::Plain );
+    powerMeter->setFrameStyle( QFrame::Box | QFrame::Plain );
     powerMeter->setRange( MAX_POWER_LEVEL );
     powerMeter->addColorRange( 10, Qt::darkRed );
     powerMeter->addColorRange( 20, QColor(160, 96, 0) );
@@ -294,6 +310,15 @@ KAstTopLevel::KAstTopLevel( QWidget *parent, const char *name )
     actions.insert( Qt::Key_P, Pause );
     actions.insert( Qt::Key_L, Launch );
     actions.insert( Qt::Key_N, NewGame );
+
+#if defined(Q_OS_SYMBIAN)
+    actions.insert( 122, Teleport );
+    actions.insert( 120, Brake );
+    actions.insert( 115, Shield );
+    actions.insert( 112, Pause );
+    actions.insert( 108, Launch );
+    actions.insert( 110, NewGame );
+#endif
 
     view->showText( tr( "Press N to start playing" ), Qt::yellow );
 }
@@ -431,14 +456,14 @@ void KAstTopLevel::keyReleaseEvent( QKeyEvent *event )
 
 void KAstTopLevel::showEvent( QShowEvent *e )
 {
-    Q3MainWindow::showEvent( e );
+    QMainWindow::showEvent( e );
     view->pause( FALSE );
     view->setFocus();
 }
 
 void KAstTopLevel::hideEvent( QHideEvent *e )
 {
-    Q3MainWindow::hideEvent( e );
+    QMainWindow::hideEvent( e );
     view->pause( TRUE );
 }
 

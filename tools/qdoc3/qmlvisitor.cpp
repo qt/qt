@@ -67,15 +67,15 @@ QmlDocVisitor::~QmlDocVisitor()
 {
 }
 
-QDeclarativeJS::AST::SourceLocation QmlDocVisitor::precedingComment(unsigned offset) const
+QDeclarativeJS::AST::SourceLocation QmlDocVisitor::precedingComment(quint32 offset) const
 {
     QDeclarativeJS::AST::SourceLocation currentLoc;
 
     foreach (const QDeclarativeJS::AST::SourceLocation &loc, engine->comments()) {
-        if (loc.begin() > lastEndOffset && loc.end() < offset)
-            currentLoc = loc;
-        else
+        if (loc.begin() >= offset)
             break;
+        else if (loc.begin() > lastEndOffset && loc.end() < offset)
+            currentLoc = loc;
     }
     if (currentLoc.isValid()) {
         QString comment = document.mid(currentLoc.offset, currentLoc.length);
@@ -195,7 +195,7 @@ bool QmlDocVisitor::visit(QDeclarativeJS::AST::UiPublicMember *member)
                     qmlPropGroup->setDefault();
                 QmlPropertyNode *qmlPropNode = new QmlPropertyNode(qmlPropGroup, name, type, false);
                 qmlPropNode->setWritable(!member->isReadonlyMember);
-                applyDocumentation(member->firstSourceLocation(), qmlPropNode);
+                applyDocumentation(member->firstSourceLocation(), qmlPropGroup);
             }
         }
         break;
@@ -204,7 +204,6 @@ bool QmlDocVisitor::visit(QDeclarativeJS::AST::UiPublicMember *member)
         return false;
     }
 
-    //current->doc = precedingComment(member->firstSourceLocation().begin());
     return true;
 }
 

@@ -76,7 +76,6 @@ QT_BEGIN_NAMESPACE
 
 #if defined(Q_OS_SYMBIAN)
 void qt_symbianUpdateSystemPrivate();
-void qt_symbianInitSystemLocale();
 #endif
 
 #ifndef QT_NO_SYSTEMLOCALE
@@ -470,9 +469,6 @@ static const QSystemLocale *systemLocale()
 {
     if (_systemLocale)
         return _systemLocale;
-#if defined(Q_OS_SYMBIAN)
-    qt_symbianInitSystemLocale();
-#endif
     return QSystemLocale_globalSystemLocale();
 }
 
@@ -937,7 +933,7 @@ QLocale::Country QLocale::country() const
     name() will not contain it for compatibility reasons. Use bcp47Name() instead
     if you need a full locale name.
 
-    \sa QLocale(const QString &), language(), script(), country(), bcp47Name()
+    \sa QLocale(), language(), script(), country(), bcp47Name()
 */
 
 QString QLocale::name() const

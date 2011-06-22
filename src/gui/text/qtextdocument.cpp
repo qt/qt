@@ -600,7 +600,7 @@ Qt::CursorMoveStyle QTextDocument::defaultCursorMoveStyle() const
 /*!
     \since 4.8
 
-    Set the default cursor movement style.
+    Sets the default cursor movement style to the given \a style.
 */
 void QTextDocument::setDefaultCursorMoveStyle(Qt::CursorMoveStyle style)
 {
@@ -2553,7 +2553,7 @@ void QTextHtmlExporter::emitBlockAttributes(const QTextBlock &block)
 
     const bool emptyBlock = block.begin().atEnd();
     if (emptyBlock) {
-        html += QLatin1String("-qt-paragraph-type:empty;");
+        html += QLatin1String("-qt-paragraph-type:empty; height:1em;");
     }
 
     emitMargins(QString::number(format.topMargin()),

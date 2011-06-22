@@ -1040,7 +1040,6 @@ void QDeclarativeText::setStyleColor(const QColor &color)
 /*!
     \qmlproperty enumeration Text::horizontalAlignment
     \qmlproperty enumeration Text::verticalAlignment
-    \qmlproperty enumeration Text::effectiveHorizontalAlignment
 
     Sets the horizontal and vertical alignment of the text within the Text items
     width and height. By default, the text is vertically aligned to the top. Horizontal
@@ -1056,10 +1055,10 @@ void QDeclarativeText::setStyleColor(const QColor &color)
     need to either modify the Item::anchors, or set horizontalAlignment to Text.AlignHCenter and bind the width to 
     that of the parent.
 
-    When using the attached property LayoutMirroring::enabled to mirror application
+    When using the attached property \l {LayoutMirroring::enabled} to mirror application
     layouts, the horizontal alignment of text will also be mirrored. However, the property
     \c horizontalAlignment will remain unchanged. To query the effective horizontal alignment
-    of Text, use the read-only property \c effectiveHorizontalAlignment.
+    of Text, use the property \l {LayoutMirroring::enabled}.
 */
 QDeclarativeText::HAlignment QDeclarativeText::hAlign() const
 {
@@ -1109,10 +1108,7 @@ bool QDeclarativeTextPrivate::setHAlign(QDeclarativeText::HAlignment alignment, 
     if (hAlign != alignment || forceAlign) {
         QDeclarativeText::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
         hAlign = alignment;
-
         emit q->horizontalAlignmentChanged(hAlign);
-        if (oldEffectiveHAlign != q->effectiveHAlign())
-            emit q->effectiveHorizontalAlignmentChanged();
         return true;
     }
     return false;
@@ -1134,7 +1130,6 @@ void QDeclarativeTextPrivate::mirrorChange()
     if (q->isComponentComplete()) {
         if (!hAlignImplicit && (hAlign == QDeclarativeText::AlignRight || hAlign == QDeclarativeText::AlignLeft)) {
             updateLayout();
-            emit q->effectiveHorizontalAlignmentChanged();
         }
     }
 }

@@ -41,12 +41,10 @@
 
 
 #include <QtTest/QTest>
-#include <QtTest/QTestEventLoop>
 
 #include <qcoreapplication.h>
 #include <qdebug.h>
 #include <qnetworkproxy.h>
-#include <QThread>
 #include <QNetworkConfiguration>
 #include <QNetworkConfigurationManager>
 #include <QNetworkSession>
@@ -78,7 +76,6 @@ public:
     };
 
 private slots:
-    void systemProxyForQueryCalledFromThread();
     void systemProxyForQuery() const;
 #ifndef QT_NO_BEARERMANAGEMENT
     void fromConfigurations();
@@ -136,32 +133,6 @@ void tst_QNetworkProxyFactory::systemProxyForQuery() const
 
     if (!pass)
         QFAIL("One or more system proxy lookup failures occurred.");
-}
-
-class QSPFQThread : public QThread
-{
-protected:
-    virtual void run()
-    {
-        proxies = QNetworkProxyFactory::systemProxyForQuery(query);
-    }
-public:
-    QNetworkProxyQuery query;
-    QList<QNetworkProxy> proxies;
-};
-
-//regression test for QTBUG-18799
-void tst_QNetworkProxyFactory::systemProxyForQueryCalledFromThread()
-{
-    QUrl url(QLatin1String("http://qt.nokia.com"));
-    QNetworkProxyQuery query(url);
-    QSPFQThread thread;
-    thread.query = query;
-    connect(&thread, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    thread.start();
-    QTestEventLoop::instance().enterLoop(5);
-    QVERIFY(thread.isFinished());
-    QCOMPARE(thread.proxies, QNetworkProxyFactory::systemProxyForQuery(query));
 }
 
 #ifndef QT_NO_BEARERMANAGEMENT

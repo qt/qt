@@ -43,7 +43,11 @@
 
 #include <QMainWindow>
 
-#include "ui_schema.h"
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    #include "ui_schema_mobiles.h"
+#else
+    #include "ui_schema.h"
+#endif
 
 //! [0]
 class MainWindow : public QMainWindow,

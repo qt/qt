@@ -771,9 +771,6 @@ QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
   All required image providers should be added to the engine before any
   QML sources files are loaded.
 
-  Note that images loaded from a QDeclarativeImageProvider are cached
-  by QPixmapCache, similar to any image loaded by QML.
-
   \sa removeImageProvider()
 */
 void QDeclarativeEngine::addImageProvider(const QString &providerId, QDeclarativeImageProvider *provider)
@@ -1715,9 +1712,6 @@ QScriptValue QDeclarativeEnginePrivate::rect(QScriptContext *ctxt, QScriptEngine
     qsreal y = ctxt->argument(1).toNumber();
     qsreal w = ctxt->argument(2).toNumber();
     qsreal h = ctxt->argument(3).toNumber();
-
-    if (w < 0 || h < 0)
-        return engine->nullValue();
 
     return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(QVariant::fromValue(QRectF(x, y, w, h)));
 }

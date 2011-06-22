@@ -116,8 +116,6 @@ private:
 };
 
 #ifdef Q_OS_SYMBIAN
-typedef TDriveNumber (*SystemDriveFunc)(RFs&);
-static SystemDriveFunc PtrGetSystemDrive = 0;
 static CApaCommandLine* apaCommandLine = 0;
 static char *apaTail = 0;
 static QVector<char *> *apaArgv = 0;
@@ -1950,10 +1948,7 @@ QString QCoreApplication::applicationDirPath()
         }
         if (err != KErrNone || (driveInfo.iDriveAtt & KDriveAttRom) || (driveInfo.iMediaAtt
             & KMediaAttWriteProtected)) {
-            if(!PtrGetSystemDrive)
-                PtrGetSystemDrive = reinterpret_cast<SystemDriveFunc>(qt_resolveS60PluginFunc(S60Plugin_GetSystemDrive));
-            Q_ASSERT(PtrGetSystemDrive);
-            drive = PtrGetSystemDrive(fs);
+            drive = fs.GetSystemDrive();
             fs.DriveToChar(drive, driveChar);
         }
 
