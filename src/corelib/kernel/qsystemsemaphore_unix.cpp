@@ -216,7 +216,7 @@ bool QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
                 maxTries = 3;
             } else {
                 // Race condition: if it no longer exists at the next sem_open
-                // call, we won't realise we created it, so we'll leak it later.
+                // call, we won't realize we created it, so we'll leak it later.
                 oflag &= ~O_EXCL;
                 maxTries = 2;
             }
