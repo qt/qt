@@ -1,3 +1,232 @@
+2011-06-20  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Alexey Proskuryakov.
+
+        ASSERT in WebCore::HTMLToken::appendToAttributeName when visiting www.nba.com
+        https://bugs.webkit.org/show_bug.cgi?id=61774
+
+        This ASSERT triggers for the same underlying issue that causes
+        Bug 62971: When we tokenize a </script> tag, we don't realize that
+        we've already consumed the "</script>" from the input stream when we
+        extracted the previous token.  That causes the source tracker to be
+        out-of-sync, triggering the incorrect view-source highlighting and this
+        ASSERT.
+
+        For now, let's just silence the assert while we work on Bug 62971.
+
+        Test: fast/parser/attributes-on-close-script.html
+
+        * html/parser/HTMLToken.h:
+        (WebCore::HTMLToken::appendToAttributeName):
+        (WebCore::AtomicHTMLToken::initializeAttributes):
+
+2011-06-16  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        RefPtr frame since it can get removed in
+        FrameLoader::finishedParsing.
+        https://bugs.webkit.org/show_bug.cgi?id=62812
+
+        Tests: already tested by fast/parser/document-write-into-initial-document.html.
+
+        * dom/Document.cpp:
+        (WebCore::Document::finishedParsing):
+
+2011-06-07  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Dan Bernstein.
+
+        Replicate WidthIterator.cpp fix from r88139.
+        https://bugs.webkit.org/show_bug.cgi?id=62238
+
+        No new tests. Covered by existing layout tests on XP debug bots.
+
+        * platform/graphics/win/UniscribeController.cpp:
+        (WebCore::UniscribeController::advance):
+
+2011-06-01  Abhishek Arya  <inferno@chromium.org>
+
+        Unreviewed.
+
+        Coding style nit. Move ec=0 initialization, change
+        recommended by Alexey in bug.
+        https://bugs.webkit.org/show_bug.cgi?id=60831
+
+        * dom/Document.cpp:
+        (WebCore::Document::setBody):
+
+2011-06-01  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Alexey Proskuryakov.
+
+        Fix setting of document.body
+        https://bugs.webkit.org/show_bug.cgi?id=60831
+
+        1. Only allowing setting to an element if it has a body tag.
+        2. If element is from another document, import it.
+
+        Test: fast/dom/document-set-body.html
+
+        * dom/Document.cpp:
+        (WebCore::Document::setBody):
+
+2011-06-01  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Antti Koivisto.
+
+        Do not use the pushed style selector if it is not equal to the
+        parent document's style selector. It usually means that it is
+        in a bad state, e.g. already cleared.
+        https://bugs.webkit.org/show_bug.cgi?id=61737
+
+        * dom/Element.cpp:
+        (WebCore::StyleSelectorParentPusher::~StyleSelectorParentPusher):
+
+2011-06-17  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Dave Hyatt.
+
+        When we lose ability to propagate floats, need to find topmost
+        parent with that overhanging float, and then iterate over its
+        sibling blocks to remove the float.
+        https://bugs.webkit.org/show_bug.cgi?id=62875
+
+        Test: fast/block/float/float-not-removed-from-next-sibling5.html
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::styleDidChange):
+        (WebCore::RenderBlock::hasOverhangingFloat):
+        * rendering/RenderBlock.h:
+
+2011-05-10  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Simon Fraser.
+
+        Add containsFloats call to hasOverhangingFloats.
+        https://bugs.webkit.org/show_bug.cgi?id=60537
+
+        Test: fast/block/float/no-overhanging-float-crash.html
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::repaintOverhangingFloats):
+        * rendering/RenderBlock.h:
+        (WebCore::RenderBlock::hasOverhangingFloats):
+
+2011-05-05  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Dave Hyatt.
+
+        When style changes for a RenderBlock and we lose our ability to intrude into
+        floats in the next siblings block (e.g a position change), make sure to mark
+        our childs with floats for layout and iterate through our next sibling block
+        chain to see which ones contain the float that also exists in our floating
+        objects list and clear those using markAllDescendantsWithFloatsForLayout.
+        https://bugs.webkit.org/show_bug.cgi?id=56299
+
+        Tests: fast/block/float/float-not-removed-from-next-sibling-crash.html
+               fast/block/float/float-not-removed-from-next-sibling.html
+               fast/block/float/float-not-removed-from-next-sibling2.html
+               fast/block/float/float-not-removed-from-next-sibling3.html
+               fast/block/float/float-not-removed-from-next-sibling4.html
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::styleWillChange):
+        (WebCore::RenderBlock::styleDidChange):
+        (WebCore::RenderBlock::markSiblingsWithFloatsForLayout):
+        * rendering/RenderBlock.h:
+
+2011-06-16  Gabor Loki  <loki@webkit.org>
+
+        [Qt] Unreviewed, build fix after r89118.
+
+        * dom/XMLDocumentParserQt.cpp:
+        (WebCore::XMLDocumentParser::initializeParserContext):
+
+2011-06-16  Jeffrey Pfau  <jpfau@apple.com>
+
+        Reviewed by Alexey Proskuryakov.
+
+        Using null bytes when setting innerHTML in XTHML results in assertion and a crash due to null-pointer dereference
+        https://bugs.webkit.org/show_bug.cgi?id=61053
+
+        XML parsing in-memory XML chunks now passes around a string object instead of a C string, ensuring null characters are properly handled.
+
+        Tests: fast/parser/xhtml-innerhtml-null-byte-first.xhtml
+               fast/parser/xhtml-innerhtml-null-byte.xhtml
+
+        * dom/XMLDocumentParser.h:
+        * dom/XMLDocumentParserLibxml2.cpp:
+        (WebCore::XMLParserContext::createMemoryParser):
+        (WebCore::XMLDocumentParser::initializeParserContext):
+        (WebCore::XMLDocumentParser::appendFragmentSource):
+
+2011-06-15  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Antti Koivisto.
+
+        Revert speculative fix in r84151. It caused some issues with
+        stylesheet lifetimes.
+        https://bugs.webkit.org/show_bug.cgi?id=62586
+
+        Tests: fast/dom/body-clone-link-decl-parent-crash.html
+               fast/dom/styled-clone-inline-style-decl-parent-crash.html
+               fast/dom/styled-not-in-document-clone-inline-style-decl-parent-crash.html
+
+        * dom/Document.cpp:
+        (WebCore::Document::removedLastRef):
+
+2011-06-15  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Alexey Proskuryakov.
+
+        Frequent crashes due to null frame below ApplicationCacheHost::scheduleLoadFallbackResourceFromApplicationCache
+        https://bugs.webkit.org/show_bug.cgi?id=62764
+
+        This is an non-reproducible high volume crash, so no test :(. 
+
+        * loader/DocumentLoader.cpp:
+        (WebCore::DocumentLoader::detachFromFrame):
+        Be conservative and stop loading when we detach a document loader from a frame.
+
+2011-06-14  Jeffrey Pfau  <jpfau@apple.com>
+
+        Reviewed by David Hyatt.
+
+        Null dereference in WebCore::RenderBlock::splitFlow regarding use of multicol, inline-block, and spanning elements
+        https://bugs.webkit.org/show_bug.cgi?id=60028
+
+        Ensure that the parent block of a spanning element, if it is not itself
+        a multicol element, is not inline.
+
+        Test: fast/multicol/span/span-as-nested-inline-block-child.html
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::columnsBlockForSpanningElement):
+
+2011-06-14  Viatcheslav Ostapenko  <ostapenko.viatcheslav@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] [Symbian] GraphicsLayer: support plugins on symbian
+        https://bugs.webkit.org/show_bug.cgi?id=57418
+
+        Implement graphics layer for plugins on Symbian.
+
+        * plugins/PluginView.h:
+        * plugins/qt/PluginViewQt.cpp:
+        (WebCore::PluginView::shouldUseAcceleratedCompositing):
+        (WebCore::PluginView::platformStart):
+        * plugins/symbian/PluginViewSymbian.cpp:
+        (WebCore::PluginGraphicsLayerQt::PluginGraphicsLayerQt):
+        (WebCore::PluginGraphicsLayerQt::~PluginGraphicsLayerQt):
+        (WebCore::PluginGraphicsLayerQt::paint):
+        (WebCore::PluginView::shouldUseAcceleratedCompositing):
+        (WebCore::PluginView::paint):
+        (WebCore::PluginView::invalidateRect):
+        (WebCore::PluginView::platformStart):
+        (WebCore::PluginView::platformLayer):
+
 2011-06-16  Sheriff Bot  <webkit.review.bot@gmail.com>
 
         Unreviewed, rolling out r88796.

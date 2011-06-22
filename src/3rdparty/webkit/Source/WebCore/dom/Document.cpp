@@ -569,12 +569,6 @@ void Document::removedLastRef()
 #if ENABLE(FULLSCREEN_API)
         m_fullScreenElement = 0;
 #endif
-        m_styleSelector.clear();
-        m_styleSheets.clear();
-        m_elemSheet.clear();
-        m_mappedElementSheet.clear();
-        m_pageUserSheet.clear();
-        m_pageGroupUserSheets.clear();
 
         // removeAllChildren() doesn't always unregister IDs,
         // so tear down scope information upfront to avoid having stale references in the map.
@@ -1990,9 +1984,18 @@ HTMLElement* Document::body() const
 
 void Document::setBody(PassRefPtr<HTMLElement> newBody, ExceptionCode& ec)
 {
-    if (!newBody || !documentElement()) { 
+    if (!newBody || !documentElement() || !newBody->hasTagName(bodyTag)) { 
         ec = HIERARCHY_REQUEST_ERR;
         return;
+    }
+
+    if (newBody->document() && newBody->document() != this) {
+        ec = 0;
+        RefPtr<Node> node = importNode(newBody.get(), true, ec);
+        if (ec)
+            return;
+        
+        newBody = toHTMLElement(node.get());
     }
 
     HTMLElement* b = body();
@@ -4220,7 +4223,7 @@ void Document::finishedParsing()
     if (!m_documentTiming.domContentLoadedEventEnd)
         m_documentTiming.domContentLoadedEventEnd = currentTime();
 
-    if (Frame* f = frame()) {
+    if (RefPtr<Frame> f = frame()) {
         // FrameLoader::finishedParsing() might end up calling Document::implicitClose() if all
         // resource loads are complete. HTMLObjectElements can start loading their resources from
         // post attach callbacks triggered by recalcStyle().  This means if we parse out an <object>
@@ -4232,7 +4235,7 @@ void Document::finishedParsing()
 
         f->loader()->finishedParsing();
 
-        InspectorInstrumentation::domContentLoadedEventFired(f, url());
+        InspectorInstrumentation::domContentLoadedEventFired(f.get(), url());
     }
 }
 

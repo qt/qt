@@ -77,6 +77,8 @@ typedef WTF::HashSet<RenderBlock*> DelayedUpdateScrollInfoSet;
 static int gDelayUpdateScrollInfo = 0;
 static DelayedUpdateScrollInfoSet* gDelayedUpdateScrollInfoSet = 0;
 
+bool RenderBlock::s_canPropagateFloatIntoSibling = false;
+
 // Our MarginInfo state used when laying out block children.
 RenderBlock::MarginInfo::MarginInfo(RenderBlock* block, int beforeBorderPadding, int afterBorderPadding)
     : m_atBeforeSideOfBlock(true)
@@ -193,6 +195,8 @@ void RenderBlock::destroy()
 
 void RenderBlock::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)
 {
+    s_canPropagateFloatIntoSibling = style() ? !isFloatingOrPositioned() && !avoidsFloats() : false;
+
     setReplaced(newStyle->isDisplayInlineType());
     
     if (style() && parent() && diff == StyleDifferenceLayout && style()->position() != newStyle->position()) {
@@ -255,6 +259,36 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
     if (!isAnonymous() && document()->usesBeforeAfterRules() && canHaveChildren()) {
         updateBeforeAfterContent(BEFORE);
         updateBeforeAfterContent(AFTER);
+    }
+
+    // After our style changed, if we lose our ability to propagate floats into next sibling
+    // blocks, then we need to find the top most parent containing that overhanging float and
+    // then mark its descendants with floats for layout and clear all floats from its next
+    // sibling blocks that exist in our floating objects list. See bug 56299 and 62875.
+    bool canPropagateFloatIntoSibling = !isFloatingOrPositioned() && !avoidsFloats();
+    if (diff == StyleDifferenceLayout && s_canPropagateFloatIntoSibling && !canPropagateFloatIntoSibling && hasOverhangingFloats()) {
+        RenderBlock* parentBlock = this;
+        FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
+        FloatingObjectSetIterator end = floatingObjectSet.end();
+
+        for (RenderObject* curr = parent(); curr && !curr->isRenderView(); curr = curr->parent()) {
+            if (curr->isRenderBlock()) {
+                RenderBlock* currBlock = toRenderBlock(curr);
+
+                if (currBlock->hasOverhangingFloats()) {
+                    for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
+                        RenderBox* renderer = (*it)->renderer();
+                        if (currBlock->hasOverhangingFloat(renderer)) {
+                            parentBlock = currBlock;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+              
+        parentBlock->markAllDescendantsWithFloatsForLayout();
+        parentBlock->markSiblingsWithFloatsForLayout();
     }
 }
 
@@ -617,7 +651,7 @@ RenderBlock* RenderBlock::columnsBlockForSpanningElement(RenderObject* newChild)
         && !newChild->isInline() && !isAnonymousColumnSpanBlock()) {
         if (style()->specifiesColumns())
             columnsBlockAncestor = this;
-        else if (parent() && parent()->isRenderBlock())
+        else if (!isInline() && parent() && parent()->isRenderBlock())
             columnsBlockAncestor = toRenderBlock(parent())->containingColumnsBlock(false);
     }
     return columnsBlockAncestor;
@@ -2205,30 +2239,26 @@ void RenderBlock::markForPaginationRelayoutIfNeeded()
 void RenderBlock::repaintOverhangingFloats(bool paintAllDescendants)
 {
     // Repaint any overhanging floats (if we know we're the one to paint them).
-    if (hasOverhangingFloats()) {
-        // We think that we must be in a bad state if m_floatingObjects is nil at this point, so 
-        // we assert on Debug builds and nil-check Release builds.
-        ASSERT(m_floatingObjects);
-        if (!m_floatingObjects)
-            return;
+    // Otherwise, bail out.
+    if (!hasOverhangingFloats())
+        return;
 
-        // FIXME: Avoid disabling LayoutState. At the very least, don't disable it for floats originating
-        // in this block. Better yet would be to push extra state for the containers of other floats.
-        view()->disableLayoutState();
-        FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
-        FloatingObjectSetIterator end = floatingObjectSet.end();
-        for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-            FloatingObject* r = *it;
-            // Only repaint the object if it is overhanging, is not in its own layer, and
-            // is our responsibility to paint (m_shouldPaint is set). When paintAllDescendants is true, the latter
-            // condition is replaced with being a descendant of us.
-            if (logicalBottomForFloat(r) > logicalHeight() && ((paintAllDescendants && r->m_renderer->isDescendantOf(this)) || r->m_shouldPaint) && !r->m_renderer->hasSelfPaintingLayer()) {
-                r->m_renderer->repaint();
-                r->m_renderer->repaintOverhangingFloats();
-            }
+    // FIXME: Avoid disabling LayoutState. At the very least, don't disable it for floats originating
+    // in this block. Better yet would be to push extra state for the containers of other floats.
+    view()->disableLayoutState();
+    FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
+    FloatingObjectSetIterator end = floatingObjectSet.end();
+    for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
+        FloatingObject* r = *it;
+        // Only repaint the object if it is overhanging, is not in its own layer, and
+        // is our responsibility to paint (m_shouldPaint is set). When paintAllDescendants is true, the latter
+        // condition is replaced with being a descendant of us.
+        if (logicalBottomForFloat(r) > logicalHeight() && ((paintAllDescendants && r->m_renderer->isDescendantOf(this)) || r->m_shouldPaint) && !r->m_renderer->hasSelfPaintingLayer()) {
+            r->m_renderer->repaint();
+            r->m_renderer->repaintOverhangingFloats();
         }
-        view()->enableLayoutState();
     }
+    view()->enableLayoutState();
 }
  
 void RenderBlock::paint(PaintInfo& paintInfo, int tx, int ty)
@@ -3725,6 +3755,19 @@ int RenderBlock::addOverhangingFloats(RenderBlock* child, int logicalLeftOffset,
     return lowestFloatLogicalBottom;
 }
 
+bool RenderBlock::hasOverhangingFloat(RenderBox* renderer)
+{
+    if (!m_floatingObjects || hasColumns() || !parent())
+        return false;
+
+    FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
+    FloatingObjectSetIterator it = floatingObjectSet.find<RenderBox*, FloatingObjectHashTranslator>(renderer);
+    if (it == floatingObjectSet.end())
+        return false;
+
+    return logicalBottomForFloat(*it) > logicalHeight();
+}
+
 void RenderBlock::addIntrudingFloats(RenderBlock* prev, int logicalLeftOffset, int logicalTopOffset)
 {
     // If the parent or previous sibling doesn't have any floats to add, don't bother.
@@ -3798,6 +3841,30 @@ void RenderBlock::markAllDescendantsWithFloatsForLayout(RenderBox* floatToRemove
             RenderBlock* childBlock = toRenderBlock(child);
             if ((floatToRemove ? childBlock->containsFloat(floatToRemove) : childBlock->containsFloats()) || childBlock->shrinkToAvoidFloats())
                 childBlock->markAllDescendantsWithFloatsForLayout(floatToRemove, inLayout);
+        }
+    }
+}
+
+void RenderBlock::markSiblingsWithFloatsForLayout()
+{
+    FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
+    FloatingObjectSetIterator end = floatingObjectSet.end();
+    for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
+        if (logicalBottomForFloat(*it) > logicalHeight()) {
+            RenderBox* floatingBox = (*it)->renderer();
+
+            RenderObject* next = nextSibling();
+            while (next) {
+                if (next->isRenderBlock() && !next->isFloatingOrPositioned() && !toRenderBlock(next)->avoidsFloats()) {
+                    RenderBlock* nextBlock = toRenderBlock(next);
+                    if (nextBlock->containsFloat(floatingBox))
+                        nextBlock->markAllDescendantsWithFloatsForLayout(floatingBox);
+                    else
+                        break;
+                }
+
+                next = next->nextSibling();
+            }
         }
     }
 }
