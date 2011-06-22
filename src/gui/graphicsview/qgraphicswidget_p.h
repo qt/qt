@@ -81,6 +81,7 @@ public:
           polished(0),
           inSetPos(0),
           autoFillBackground(0),
+          refCountInvokeRelayout(0),
           focusPolicy(Qt::NoFocus),
           focusNext(0),
           focusPrev(0),
@@ -106,6 +107,7 @@ public:
     QGraphicsLayout *layout;
     void setLayoutDirection_helper(Qt::LayoutDirection direction);
     void resolveLayoutDirection();
+    void _q_relayout();
 
     // Style
     QPalette palette;
@@ -179,11 +181,14 @@ public:
             return false;
         return (attributes & (1 << bit)) != 0;
     }
+    // 32 bits
+    quint32 refCountInvokeRelayout : 16;
     quint32 attributes : 10;
     quint32 inSetGeometry : 1;
     quint32 polished: 1;
     quint32 inSetPos : 1;
     quint32 autoFillBackground : 1;
+    quint32 padding : 2;    // feel free to use
 
     // Focus
     Qt::FocusPolicy focusPolicy;
