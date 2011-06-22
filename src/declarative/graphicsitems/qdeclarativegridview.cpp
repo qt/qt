@@ -1800,7 +1800,7 @@ void QDeclarativeGridView::setHighlightRangeMode(HighlightRangeMode mode)
   \o Qt.LeftToRight (default) - Items will be laid out starting in the top, left corner. The flow is
   dependent on the \l GridView::flow property.
   \o Qt.RightToLeft - Items will be laid out starting in the top, right corner. The flow is dependent
-  on the \l GridView:flow property.
+  on the \l GridView::flow property.
   \endlist
 
   When using the attached property \l {LayoutMirroring::enabled} for locale layouts,

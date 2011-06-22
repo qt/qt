@@ -9,4 +9,9 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS loopback.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/network/loopback
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: {
+    TARGET.CAPABILITY = NetworkServices
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+}
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+
