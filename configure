@@ -3272,14 +3272,14 @@ fi
 # process CFG_MAC_ARCHS
 if [ "$PLATFORM_MAC" = "yes" ]; then
 #   check -arch arguments for validity.
-    ALLOWED="x86 ppc x86_64 ppc64 i386"
+    ALLOWED="x86 ppc x86_64 ppc64 i386 arm armv6 armv7"
     # Save the list so we can re-write it using only valid values
     CFG_MAC_ARCHS_IN="$CFG_MAC_ARCHS"
     CFG_MAC_ARCHS=
     for i in $CFG_MAC_ARCHS_IN
     do 
         if echo "$ALLOWED" | grep -w -v "$i" > /dev/null 2>&1; then
-            echo "Unknown architecture: \"$i\". Supported architectures: x86[i386] ppc x86_64 ppc64";
+            echo "Unknown architecture: \"$i\". Supported architectures: x86[i386] ppc x86_64 ppc64 arm armv6 armv7";
             exit 2;
         fi
         if [ "$i" = "i386" -o "$i" = "x86" ]; then

@@ -29,8 +29,8 @@
   \example xmlpatterns/schema
   \title XML Schema Validation Example
 
-  This example shows how to use QtXmlPatterns to validate XML with
-  a W3C XML Schema.
+  The XML Schema Validation example shows how to use QtXmlPatterns to
+  validate XML with a W3C XML Schema.
 
   \tableofcontents
 

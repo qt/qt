@@ -1,0 +1,27 @@
+<html>
+<head>
+<title>Simple Web Plugin</title>
+</head>
+
+<body>
+<h1>Simple Web Plugin</h1>
+
+<p>
+  This plugin displays comma-separated value (CSV) files in Web pages using
+  a subclass of Qt's
+  <a href="http://doc.trolltech.com/4.4/qtableview.html">QTableView</a>
+  widget.
+</p>
+
+<!-- [embedded object] -->
+<object type="text/csv;header=present;charset=utf8"
+        data="qrc:/data/accounts.csv"
+        width="100%" height="300"></object>
+<!-- [embedded object] -->
+
+<p>
+  The above table shows some sample data rendered by the plugin.
+</p>
+
+</body>
+</html>
