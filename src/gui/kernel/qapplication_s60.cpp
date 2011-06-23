@@ -930,6 +930,15 @@ TKeyResponse QSymbianControl::sendSymbianKeyEvent(const TKeyEvent &keyEvent, QEv
     }
 
     Qt::KeyboardModifiers mods = mapToQtModifiers(keyEvent.iModifiers);
+
+    TInt code = keyEvent.iCode;
+
+    if (mods == Qt::ControlModifier) {
+        //only support ctrl+a .. ctrl+z, 0x40 is the key value before Qt::Key_A
+        if (code > 0 && code < 27)
+            keyCode = 0x40 + code;
+    }	
+           
     QKeyEventEx qKeyEvent(type, keyCode, mods, qt_keymapper_private()->translateKeyEvent(keyCode, mods),
             (keyEvent.iRepeats != 0), 1, keyEvent.iScanCode, s60Keysym, keyEvent.iModifiers);
     QWidget *widget;
