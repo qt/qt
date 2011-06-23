@@ -901,20 +901,35 @@ void QCoeFepInputContext::translateInputWidget()
 
     m_transformation = (rootItem->transform().isTranslating()) ? QRectF(0,0, gv->width(), rootItem->transform().dy()) : QRectF();
 
-    // Do nothing if the cursor is visible in the splitview area.
-    if (splitViewRect.contains(cursorP.boundingRect()))
+    // Adjust cursor bounding rect to be lower, so that view translates if the cursor gets near
+    // the splitview border.
+    QRect cursorRect = cursorP.boundingRect().adjusted(0, cursor.height(), 0, cursor.height());
+    if (splitViewRect.contains(cursorRect))
         return;
 
-    // New Y position should be ideally at the center of the splitview area.
-    // If that would expose unpainted canvas, limit the tranformation to the visible scene bottom.
+    // New Y position should be ideally just above the keyboard.
+    // If that would expose unpainted canvas, limit the tranformation to the visible scene rect or
+    // to the focus item's shape/clip path.
 
-    const qreal maxY = gv->sceneRect().bottom() - splitViewRect.bottom() + m_transformation.height();
-    qreal dy = -(qMin(maxY, (cursor.bottom() - vkbRect.top() / 2)));
+    const QPainterPath path = gv->scene()->focusItem()->isClipped() ?
+        gv->scene()->focusItem()->clipPath() : gv->scene()->focusItem()->shape();
+    const qreal itemHeight = path.boundingRect().height();
 
-    // Do not allow transform above screen top.
-    if (m_transformation.height() + dy > 0) {
+    // Limit the maximum translation so that underlaying window content is not exposed.
+    qreal maxY = gv->sceneRect().bottom() - splitViewRect.bottom();
+    maxY = m_transformation.height() ? (qMin(itemHeight, maxY) + m_transformation.height()) : maxY;
+    if (maxY < 0)
+        maxY = 0;
+
+    // Translation should happen row-by-row, but initially it needs to ensure that cursor is visible.
+    const qreal translation = m_transformation.height() ?
+        cursor.height() : (cursorRect.bottom() - vkbRect.top());
+    const qreal dy = -(qMin(maxY, translation));
+
+    // Do not allow transform above screen top, nor beyond scenerect
+    if (m_transformation.height() + dy > 0 || gv->sceneRect().bottom() + m_transformation.height() < 0) {
         // If we already have some transformation, remove it.
-        if (m_transformation.height() < 0) {
+        if (m_transformation.height() < 0 || gv->sceneRect().bottom() + m_transformation.height() < 0) {
             rootItem->resetTransform();
             translateInputWidget();
         }
