@@ -1941,12 +1941,12 @@ void QDeclarativeTextInput::selectionChanged()
 void QDeclarativeTextInput::q_textChanged()
 {
     Q_D(QDeclarativeTextInput);
+    emit textChanged();
+    emit displayTextChanged();
     updateSize();
     d->determineHorizontalAlignment();
     d->updateHorizontalScroll();
     updateMicroFocus();
-    emit textChanged();
-    emit displayTextChanged();
     if(hasAcceptableInput() != d->oldValidity){
         d->oldValidity = hasAcceptableInput();
         emit acceptableInputChanged();

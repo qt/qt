@@ -75,6 +75,11 @@
 #include <qresource.h>
 #endif
 
+#ifdef Q_OS_QNX
+// ### using QFontEngineQPF leads to artifacts on QNX
+#  define QT_NO_QWS_SHARE_FONTS
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_LIBRARY

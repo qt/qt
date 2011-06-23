@@ -78,6 +78,8 @@ protected:
     virtual void messageReceived(const QByteArray &);
 
 private:
+    void updateStatus();
+
     static QDeclarativeInspectorInterface *loadInspectorPlugin();
 
     QList<QDeclarativeView*> m_views;
