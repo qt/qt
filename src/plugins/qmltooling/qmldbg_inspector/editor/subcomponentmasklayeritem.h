@@ -39,33 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEINSPECTORPLUGIN_H
-#define QDECLARATIVEINSPECTORPLUGIN_H
+#ifndef SUBCOMPONENTMASKLAYERITEM_H
+#define SUBCOMPONENTMASKLAYERITEM_H
 
-#include <QtCore/QPointer>
-#include <QtDeclarative/private/qdeclarativeinspectorinterface_p.h>
+#include <QtGui/QGraphicsPolygonItem>
 
 namespace QmlJSDebugger {
 
-class AbstractViewInspector;
+class QDeclarativeViewInspector;
 
-class QDeclarativeInspectorPlugin : public QObject, public QDeclarativeInspectorInterface
+class SubcomponentMaskLayerItem : public QGraphicsPolygonItem
 {
-    Q_OBJECT
-    Q_DISABLE_COPY(QDeclarativeInspectorPlugin)
-    Q_INTERFACES(QDeclarativeInspectorInterface)
-
 public:
-    QDeclarativeInspectorPlugin();
-    ~QDeclarativeInspectorPlugin();
-
-    void activate();
-    void deactivate();
+    explicit SubcomponentMaskLayerItem(QDeclarativeViewInspector *inspector,
+                                       QGraphicsItem *parentItem = 0);
+    int type() const;
+    void setCurrentItem(QGraphicsItem *item);
+    void setBoundingBox(const QRectF &boundingBox);
+    QGraphicsItem *currentItem() const;
+    QRectF itemRect() const;
 
 private:
-    QPointer<AbstractViewInspector> m_inspector;
+    QDeclarativeViewInspector *m_inspector;
+    QGraphicsItem *m_currentItem;
+    QGraphicsRectItem *m_borderRect;
+    QRectF m_itemPolyRect;
 };
 
 } // namespace QmlJSDebugger
 
-#endif // QDECLARATIVEINSPECTORPLUGIN_H
+#endif // SUBCOMPONENTMASKLAYERITEM_H

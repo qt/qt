@@ -39,33 +39,62 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEINSPECTORPLUGIN_H
-#define QDECLARATIVEINSPECTORPLUGIN_H
+#ifndef QDECLARATIVEVIEWINSPECTOR_H
+#define QDECLARATIVEVIEWINSPECTOR_H
 
-#include <QtCore/QPointer>
-#include <QtDeclarative/private/qdeclarativeinspectorinterface_p.h>
+#include <private/qdeclarativeglobal_p.h>
+
+#include "qmlinspectorconstants.h"
+#include "abstractviewinspector.h"
+
+#include <QtCore/QScopedPointer>
+#include <QtDeclarative/QDeclarativeView>
 
 namespace QmlJSDebugger {
 
-class AbstractViewInspector;
+class AbstractLiveEditTool;
+class QDeclarativeViewInspectorPrivate;
 
-class QDeclarativeInspectorPlugin : public QObject, public QDeclarativeInspectorInterface
+class QDeclarativeViewInspector : public AbstractViewInspector
 {
     Q_OBJECT
-    Q_DISABLE_COPY(QDeclarativeInspectorPlugin)
-    Q_INTERFACES(QDeclarativeInspectorInterface)
 
 public:
-    QDeclarativeInspectorPlugin();
-    ~QDeclarativeInspectorPlugin();
+    explicit QDeclarativeViewInspector(QDeclarativeView *view, QObject *parent = 0);
+    ~QDeclarativeViewInspector();
 
-    void activate();
-    void deactivate();
+    // AbstractViewInspector
+    void changeCurrentObjects(const QList<QObject*> &objects);
+    void reloadView();
+    void reparentQmlObject(QObject *object, QObject *newParent);
+    void changeTool(InspectorProtocol::Tool tool);
+    QWidget *viewWidget() const { return declarativeView(); }
+    QDeclarativeEngine *declarativeEngine() const;
+
+    void setSelectedItems(QList<QGraphicsItem *> items);
+    QList<QGraphicsItem *> selectedItems() const;
+
+    QDeclarativeView *declarativeView() const;
+
+    QRectF adjustToScreenBoundaries(const QRectF &boundingRectInSceneSpace);
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+
+    bool leaveEvent(QEvent *);
+    bool mouseMoveEvent(QMouseEvent *event);
+
+    AbstractLiveEditTool *currentTool() const;
 
 private:
-    QPointer<AbstractViewInspector> m_inspector;
+    Q_DISABLE_COPY(QDeclarativeViewInspector)
+
+    inline QDeclarativeViewInspectorPrivate *d_func() { return data.data(); }
+    QScopedPointer<QDeclarativeViewInspectorPrivate> data;
+    friend class QDeclarativeViewInspectorPrivate;
+    friend class AbstractLiveEditTool;
 };
 
 } // namespace QmlJSDebugger
 
-#endif // QDECLARATIVEINSPECTORPLUGIN_H
+#endif // QDECLARATIVEVIEWINSPECTOR_H

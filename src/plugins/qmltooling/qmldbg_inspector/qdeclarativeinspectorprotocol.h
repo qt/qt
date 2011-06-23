@@ -47,11 +47,7 @@
 #include <QtCore/QMetaEnum>
 #include <QtCore/QObject>
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
+namespace QmlJSDebugger {
 
 class InspectorProtocol : public QObject
 {
@@ -136,8 +132,6 @@ inline QDebug operator<< (QDebug dbg, InspectorProtocol::Tool tool)
     return dbg;
 }
 
-QT_END_NAMESPACE
-
-QT_END_HEADER
+} // namespace QmlJSDebugger
 
 #endif // QDECLARATIVEINSPECTORPROTOCOL_H

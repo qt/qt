@@ -39,33 +39,69 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEINSPECTORPLUGIN_H
-#define QDECLARATIVEINSPECTORPLUGIN_H
+#ifndef ZOOMTOOL_H
+#define ZOOMTOOL_H
 
-#include <QtCore/QPointer>
-#include <QtDeclarative/private/qdeclarativeinspectorinterface_p.h>
+#include "abstractliveedittool.h"
+#include "liverubberbandselectionmanipulator.h"
+
+QT_FORWARD_DECLARE_CLASS(QAction)
 
 namespace QmlJSDebugger {
 
-class AbstractViewInspector;
-
-class QDeclarativeInspectorPlugin : public QObject, public QDeclarativeInspectorInterface
+class ZoomTool : public AbstractLiveEditTool
 {
     Q_OBJECT
-    Q_DISABLE_COPY(QDeclarativeInspectorPlugin)
-    Q_INTERFACES(QDeclarativeInspectorInterface)
 
 public:
-    QDeclarativeInspectorPlugin();
-    ~QDeclarativeInspectorPlugin();
+    enum ZoomDirection {
+        ZoomIn,
+        ZoomOut
+    };
 
-    void activate();
-    void deactivate();
+    explicit ZoomTool(QDeclarativeViewInspector *view);
+
+    virtual ~ZoomTool();
+
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *event);
+
+    void hoverMoveEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
+
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *keyEvent);
+    void itemsAboutToRemoved(const QList<QGraphicsItem*> &) {}
+
+    void clear();
+
+protected:
+    void selectedItemsChanged(const QList<QGraphicsItem*> &) {}
+
+private slots:
+    void zoomTo100();
+    void zoomIn();
+    void zoomOut();
 
 private:
-    QPointer<AbstractViewInspector> m_inspector;
+    qreal nextZoomScale(ZoomDirection direction) const;
+    void scaleView(const QPointF &centerPos);
+
+private:
+    bool m_dragStarted;
+    QPoint m_mousePos; // in view coords
+    QPointF m_dragBeginPos;
+    QAction *m_zoomTo100Action;
+    QAction *m_zoomInAction;
+    QAction *m_zoomOutAction;
+    LiveRubberBandSelectionManipulator *m_rubberbandManipulator;
+
+    qreal m_smoothZoomMultiplier;
+    qreal m_currentScale;
 };
 
 } // namespace QmlJSDebugger
 
-#endif // QDECLARATIVEINSPECTORPLUGIN_H
+#endif // ZOOMTOOL_H

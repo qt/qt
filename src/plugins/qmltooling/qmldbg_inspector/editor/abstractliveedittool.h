@@ -39,39 +39,66 @@
 **
 ****************************************************************************/
 
-#ifndef SUBCOMPONENTMASKLAYERITEM_H
-#define SUBCOMPONENTMASKLAYERITEM_H
+#ifndef ABSTRACTLIVEEDITTOOL_H
+#define ABSTRACTLIVEEDITTOOL_H
 
-#include <QtGui/QGraphicsPolygonItem>
-
-QT_BEGIN_HEADER
+#include <QtCore/QList>
+#include "../abstracttool.h"
 
 QT_BEGIN_NAMESPACE
+class QMouseEvent;
+class QGraphicsItem;
+class QDeclarativeItem;
+class QKeyEvent;
+class QGraphicsScene;
+class QGraphicsObject;
+class QWheelEvent;
+class QDeclarativeView;
+QT_END_NAMESPACE
 
-QT_MODULE(Declarative)
+namespace QmlJSDebugger {
 
 class QDeclarativeViewInspector;
 
-class SubcomponentMaskLayerItem : public QGraphicsPolygonItem
+class AbstractLiveEditTool : public AbstractTool
 {
+    Q_OBJECT
 public:
-    explicit SubcomponentMaskLayerItem(QDeclarativeViewInspector *inspector,
-                                       QGraphicsItem *parentItem = 0);
-    int type() const;
-    void setCurrentItem(QGraphicsItem *item);
-    void setBoundingBox(const QRectF &boundingBox);
-    QGraphicsItem *currentItem() const;
-    QRectF itemRect() const;
+    AbstractLiveEditTool(QDeclarativeViewInspector *inspector);
+
+    virtual ~AbstractLiveEditTool();
+
+    void leaveEvent(QEvent *) {}
+
+    virtual void itemsAboutToRemoved(const QList<QGraphicsItem*> &itemList) = 0;
+
+    virtual void clear() = 0;
+
+    void updateSelectedItems();
+    QList<QGraphicsItem*> items() const;
+
+    bool topItemIsMovable(const QList<QGraphicsItem*> &itemList);
+    bool topItemIsResizeHandle(const QList<QGraphicsItem*> &itemList);
+    bool topSelectedItemIsMovable(const QList<QGraphicsItem*> &itemList);
+
+    QString titleForItem(QGraphicsItem *item);
+
+    static QList<QGraphicsObject*> toGraphicsObjectList(const QList<QGraphicsItem*> &itemList);
+    static QGraphicsItem* topMovableGraphicsItem(const QList<QGraphicsItem*> &itemList);
+    static QDeclarativeItem* topMovableDeclarativeItem(const QList<QGraphicsItem*> &itemList);
+    static QDeclarativeItem *toQDeclarativeItem(QGraphicsItem *item);
+
+protected:
+    virtual void selectedItemsChanged(const QList<QGraphicsItem*> &objectList) = 0;
+
+    QDeclarativeViewInspector *inspector() const;
+    QDeclarativeView *view() const;
+    QGraphicsScene *scene() const;
 
 private:
-    QDeclarativeViewInspector *m_inspector;
-    QGraphicsItem *m_currentItem;
-    QGraphicsRectItem *m_borderRect;
-    QRectF m_itemPolyRect;
+    QList<QGraphicsItem*> m_itemList;
 };
 
-QT_END_NAMESPACE
+}
 
-QT_END_HEADER
-
-#endif // SUBCOMPONENTMASKLAYERITEM_H
+#endif // ABSTRACTLIVEEDITTOOL_H

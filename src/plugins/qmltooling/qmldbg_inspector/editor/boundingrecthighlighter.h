@@ -39,49 +39,77 @@
 **
 ****************************************************************************/
 
-#ifndef TOOLBARCOLORBOX_H
-#define TOOLBARCOLORBOX_H
+#ifndef BOUNDINGRECTHIGHLIGHTER_H
+#define BOUNDINGRECTHIGHLIGHTER_H
 
-#include <QtGui/QLabel>
-#include <QtGui/QColor>
-#include <QtCore/QPoint>
+#include "livelayeritem.h"
 
-QT_FORWARD_DECLARE_CLASS(QContextMenuEvent)
-QT_FORWARD_DECLARE_CLASS(QAction)
+#include <QtCore/QObject>
+#include <QtCore/QWeakPointer>
 
-QT_BEGIN_HEADER
+QT_FORWARD_DECLARE_CLASS(QGraphicsItem)
+QT_FORWARD_DECLARE_CLASS(QPainter)
+QT_FORWARD_DECLARE_CLASS(QWidget)
+QT_FORWARD_DECLARE_CLASS(QStyleOptionGraphicsItem)
+QT_FORWARD_DECLARE_CLASS(QTimer)
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
-QT_MODULE(Declarative)
+class QDeclarativeViewInspector;
+class BoundingBox;
 
-class ToolBarColorBox : public QLabel
+class BoundingRectHighlighter : public LiveLayerItem
 {
     Q_OBJECT
-
 public:
-    explicit ToolBarColorBox(QWidget *parent = 0);
-    void setColor(const QColor &color);
+    explicit BoundingRectHighlighter(QDeclarativeViewInspector *view);
+    ~BoundingRectHighlighter();
+    void clear();
+    void highlight(QList<QGraphicsObject*> items);
+    void highlight(QGraphicsObject* item);
 
-protected:
-    void contextMenuEvent(QContextMenuEvent *ev);
-    void mousePressEvent(QMouseEvent *ev);
-    void mouseMoveEvent(QMouseEvent *ev);
 private slots:
-    void copyColorToClipboard();
+    void refresh();
+    void itemDestroyed(QObject *);
 
 private:
-    QPixmap createDragPixmap(int size = 24) const;
+    BoundingBox *boxFor(QGraphicsObject *item) const;
+    void highlightAll();
+    BoundingBox *createBoundingBox(QGraphicsObject *itemToHighlight);
+    void removeBoundingBox(BoundingBox *box);
+    void freeBoundingBox(BoundingBox *box);
 
 private:
-    bool m_dragStarted;
-    QPoint m_dragBeginPoint;
-    QAction *m_copyHexColor;
-    QColor m_color;
+    Q_DISABLE_COPY(BoundingRectHighlighter)
+
+    QDeclarativeViewInspector *m_view;
+    QList<BoundingBox* > m_boxes;
+    QList<BoundingBox* > m_freeBoxes;
 };
 
-QT_END_NAMESPACE
+class BoundingBox : public QObject
+{
+    Q_OBJECT
+public:
+    explicit BoundingBox(QGraphicsObject *itemToHighlight, QGraphicsItem *parentItem,
+                         QObject *parent = 0);
+    ~BoundingBox();
+    QWeakPointer<QGraphicsObject> highlightedObject;
+    QGraphicsPolygonItem *highlightPolygon;
+    QGraphicsPolygonItem *highlightPolygonEdge;
 
-QT_END_HEADER
+private:
+    Q_DISABLE_COPY(BoundingBox)
 
-#endif // TOOLBARCOLORBOX_H
+};
+
+class BoundingBoxPolygonItem : public QGraphicsPolygonItem
+{
+public:
+    explicit BoundingBoxPolygonItem(QGraphicsItem *item);
+    int type() const;
+};
+
+} // namespace QmlJSDebugger
+
+#endif // BOUNDINGRECTHIGHLIGHTER_H

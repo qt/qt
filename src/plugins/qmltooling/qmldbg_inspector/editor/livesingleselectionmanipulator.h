@@ -39,33 +39,51 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEINSPECTORPLUGIN_H
-#define QDECLARATIVEINSPECTORPLUGIN_H
+#ifndef LIVESINGLESELECTIONMANIPULATOR_H
+#define LIVESINGLESELECTIONMANIPULATOR_H
 
-#include <QtCore/QPointer>
-#include <QtDeclarative/private/qdeclarativeinspectorinterface_p.h>
+#include <QtCore/QPointF>
+#include <QtCore/QList>
+
+QT_FORWARD_DECLARE_CLASS(QGraphicsItem)
 
 namespace QmlJSDebugger {
 
-class AbstractViewInspector;
+class QDeclarativeViewInspector;
 
-class QDeclarativeInspectorPlugin : public QObject, public QDeclarativeInspectorInterface
+class LiveSingleSelectionManipulator
 {
-    Q_OBJECT
-    Q_DISABLE_COPY(QDeclarativeInspectorPlugin)
-    Q_INTERFACES(QDeclarativeInspectorInterface)
-
 public:
-    QDeclarativeInspectorPlugin();
-    ~QDeclarativeInspectorPlugin();
+    LiveSingleSelectionManipulator(QDeclarativeViewInspector *editorView);
 
-    void activate();
-    void deactivate();
+    enum SelectionType {
+        ReplaceSelection,
+        AddToSelection,
+        RemoveFromSelection,
+        InvertSelection
+    };
+
+    void begin(const QPointF& beginPoint);
+    void update(const QPointF& updatePoint);
+    void end(const QPointF& updatePoint);
+
+    void select(SelectionType selectionType, const QList<QGraphicsItem*> &items,
+                bool selectOnlyContentItems);
+    void select(SelectionType selectionType, bool selectOnlyContentItems);
+
+    void clear();
+
+    QPointF beginPoint() const;
+
+    bool isActive() const;
 
 private:
-    QPointer<AbstractViewInspector> m_inspector;
+    QList<QGraphicsItem*> m_oldSelectionList;
+    QPointF m_beginPoint;
+    QDeclarativeViewInspector *m_editorView;
+    bool m_isActive;
 };
 
 } // namespace QmlJSDebugger
 
-#endif // QDECLARATIVEINSPECTORPLUGIN_H
+#endif // LIVESINGLESELECTIONMANIPULATOR_H
