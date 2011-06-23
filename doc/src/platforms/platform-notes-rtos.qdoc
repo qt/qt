@@ -160,7 +160,7 @@
     X11 embedded server is not recommended due to missing support for X11 extensions,
     resulting in poor rendering quality.
 
-    Qt for QNX contains experimental screen and input drivers based on QNX's
+    Qt for QNX contains screen and input drivers based on QNX's
     \c devi-hid and \c io-display. For more information, check the class documentation
     for QQnxScreen, QWSQnxKeyboardHandler and QQnxMouseHandler. See the
     \l{Porting Qt for Embedded Linux to a New Architecture} document for information
@@ -170,7 +170,7 @@
 
     \section1 Supported Versions
 
-    Qt has been tested on QNX 6.4 on i386 and PowerPC targets with QNX's default
+    Qt has been tested on QNX 6.5 on i386, ARM/ARM-v7 and PowerPC targets with QNX's default
     gcc compiler.
 
     \section1 Limitations
@@ -179,16 +179,12 @@
 
     \table
     \header \o Function \o Notes
-    \row \o QProcess
-         \o Not available - QNX doesn't support mixing threads and processes.
-    \row \o QSharedMemory
-         \o Not available - QNX doesn't support SYSV style shared memory.
-    \row \o QSystemSemaphore
-         \o Not available - QNX doesn't support SYSV style system semaphores.
-    \row \o QWS Multi Process
-         \o QT_NO_QWS_MULTIPROCESS is always on due to missing shared memory support.
     \row \o Phonon
          \o There is no standard audio backend, which could be integrated into Phonon.
+    \row \o QtMultimedia
+         \o There is no standard backend, which could be integrated into QtMultimedia.
+    \row \o QtDBus
+         \o The the QtDBus library is not available on QNX.
     \row \o Qt3Support
          \o The Qt3Support library is not available on QNX.
     \endtable
@@ -203,24 +199,25 @@
     i386 QNX target:
 
     \code
-    configure -xplatform unsupported/qws/qnx-i386-g++ -embedded i386 -no-gfx-linuxfb -no-mouse-linuxtp -no-kbd-tty -no-qt3support -qt-gfx-qnx -qt-mouse-qnx -qt-kbd-qnx -no-exceptions
+    configure -xplatform unsupported/qws/qnx-i386-g++ -embedded x86 -no-gfx-linuxfb -no-mouse-linuxtp -no-kbd-tty -no-qt3support -qt-mouse-qnx -qt-kbd-qnx -qt-gfx-qnx -depths 16,24,32,generic -no-exceptions
     \endcode
 
     \list
     \o \c{-xplatform unsupported/qws/qnx-i386-g++} - selects the i386-g++ mkspec for QNX
-    \o \c{-embedded i386} - builds the embedded version of Qt and sets the architecture to i386
+    \o \c{-embedded x86} - builds the embedded version of Qt and sets the architecture to i386
     \o \c{-no-gfx-linuxfb},  \c{-no-mouse-linuxtp} and \c{-no-kbd-tty} are Linux specific and won't work on QNX
     \o \c{-no-qt3support} - required since the Qt3 support classes are not supported on QNX
     \o \c{-no-exceptions} - reduces the size of the library by disabling exception support
-    \o \c{-qt-gfx-qnx} - enables the experimental \c{io-graphics} based display driver
-    \o \c{-qt-mouse-qnx} - enables the experimental \c{devi-hig} based mouse driver
-    \o \c{-qt-kbd-qnx} - enables the experimental \c{devi-hig} based keyboard driver
+    \o \c{-qt-mouse-qnx} - enables the \c{devi-hid} based mouse driver
+    \o \c{-qt-kbd-qnx} - enables the \c{devi-hid} based keyboard driver
+    \o \c{-qt-gfx-qnx} - enables the \c{io-graphics} based screen driver
+    \o \c{-depths 16,24,32,generic} - enables all modes supported by the QNX screen driver
     \endlist
 
     \section1 General Notes
 
     \list
-    \o To enable the experimental QNX display and input drivers, \c{io-display} needs to be
+    \o To enable the QNX screen and input drivers, \c{io-display} needs to be
        up and running. The \c devi-hid based Qt input drivers require \c devi-hid to run
        in resource mode without Photon support. To enable a standard mouse and keyboard
        combination, run \c devi-hid as follows: \c{/usr/photon/bin/devi-hid -Pr kbd mouse}.
@@ -235,8 +232,8 @@
        with a newer version, or disable the TIFF plugin entierly by appending
        \c{QT_CONFIG += no-tiff} to \c{.qmake.cache} after configuring Qt.
 
-    \o Some of the tools, examples and demos do not compile due to dependencies on QProcess
-       or other classes that are not available on QNX.
+    \o Some of the tools, examples and demos do not compile due to dependencies on classes
+       that are not available on QNX.
     \endlist
 
     \section1 Platform Regressions
@@ -244,6 +241,14 @@
     Qt for QNX's behavior is mostly identical with \l{Qt for Embedded Linux}. However,
     some regressions were spotted in QDateTime computation around year 0 and year 1970,
     which have been tracked back to faulty time zone data on some QNX versions.
+
+    QString::localeAwareCompare() only works for C locale.
+
+    QTranslator's default locale-based fallback mechanism doesn't work.
+
+    QSystemSemaphore: Due to POSIX semaphores limitations, the semaphore operations aren't
+    automatically undone when the process terminates. This potentially may lead to unexpected
+    lock-ups in applications which does use the SysV semaphores behavior.
 */
 
 /*!
