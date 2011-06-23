@@ -5112,6 +5112,19 @@ if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     fi
 fi
 
+# check IPC support
+if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipc_sysv "ipc_sysv" $L_FLAGS $I_FLAGS $l_FLAGS ; then
+    # SYSV IPC is not supported - check POSIX IPC
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipc_posix "ipc_posix" $L_FLAGS $I_FLAGS $l_FLAGS ; then
+        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_POSIX_IPC"
+    else
+        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SYSTEMSEMAPHORE QT_NO_SHAREDMEMORY"
+        if [ "$PLATFORM_QWS" = "yes" ]; then
+            QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SEMAPHORE QT_NO_QWS_MULTIPROCESS QT_NO_QWS_SHARE_FONTS"
+        fi
+    fi
+fi
+
 # detect zlib
 if [ "$CFG_ZLIB" = "no" ]; then
     # Note: Qt no longer support builds without zlib
