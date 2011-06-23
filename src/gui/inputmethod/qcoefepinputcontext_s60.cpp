@@ -697,11 +697,6 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     }
     else if (anynumbermodes) {
         flags |= EAknEditorNumericInputMode;
-        if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0
-            && ((hints & ImhFormattedNumbersOnly) || (hints & ImhDialableCharactersOnly))) {
-            //workaround - the * key does not launch the symbols menu, making it impossible to use these modes unless text mode is enabled.
-            flags |= EAknEditorTextInputMode;
-        }
     }
     else if (anytextmodes) {
         flags |= EAknEditorTextInputMode;
@@ -781,8 +776,6 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     } else if (hints & ImhEmailCharactersOnly) {
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_EMAIL_ADDR_SPECIAL_CHARACTER_TABLE_DIALOG);
     } else if (needsCharMap) {
-        m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
-    } else if ((hints & ImhFormattedNumbersOnly) || (hints & ImhDialableCharactersOnly)) {
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
     } else {
         m_fepState->SetSpecialCharacterTableResourceId(0);
