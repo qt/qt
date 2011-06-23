@@ -80,6 +80,8 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
     return result;
 #elif defined(Q_OS_SYMBIAN)
     return result.left(KMaxKernelName);
+#elif defined(QT_POSIX_IPC)
+    return QLatin1Char('/') + result;
 #else
     return QDir::tempPath() + QLatin1Char('/') + result;
 #endif
@@ -116,6 +118,9 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
   release the shared memory segment. But if that last thread or
   process crashes without running the QSharedMemory destructor, the
   shared memory segment survives the crash.
+
+  \o QNX: Due to possible race conditions in the POSIX IPC implementation, create()
+  should be called prior to any attach() calls (even across multiple threads).
 
   \o HP-UX: Only one attach to a shared memory segment is allowed per
   process. This means that QSharedMemory should not be used across
