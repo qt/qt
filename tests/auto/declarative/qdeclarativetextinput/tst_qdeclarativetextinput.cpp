@@ -2431,15 +2431,20 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
     QTest::qWaitForWindowShown(&view);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
+    QSignalSpy cursorRectangleSpy(&input, SIGNAL(cursorRectangleChanged()));
+    int cursorRectangleChanges = 0;
+
     // test the text is scrolled so the preedit is visible.
     ic.sendPreeditText(preeditText.mid(0, 3), 1);
     QVERIFY(input.positionAt(0) != 0);
     QVERIFY(input.cursorRectangle().left() < input.boundingRect().width());
+    QCOMPARE(cursorRectangleSpy.count(), ++cursorRectangleChanges);
 
     // test the text is scrolled back when the preedit is removed.
     ic.sendEvent(QInputMethodEvent());
     QCOMPARE(input.positionAt(0), 0);
     QCOMPARE(input.positionAt(input.width()), 5);
+    QCOMPARE(cursorRectangleSpy.count(), ++cursorRectangleChanges);
 
     // some tolerance for different fonts.
 #ifdef Q_OS_LINUX
@@ -2455,26 +2460,31 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
         ic.sendPreeditText(preeditText, i + 1);
         QVERIFY(input.cursorRectangle().right() >= fm.width(preeditText.at(i)) - error);
         QVERIFY(input.positionToRectangle(0).x() < x);
+        QCOMPARE(cursorRectangleSpy.count(), ++cursorRectangleChanges);
         x = input.positionToRectangle(0).x();
     }
     for (int i = 1; i >= 0; --i) {
         ic.sendPreeditText(preeditText, i + 1);
         QVERIFY(input.cursorRectangle().right() >= fm.width(preeditText.at(i)) - error);
         QVERIFY(input.positionToRectangle(0).x() > x);
+        QCOMPARE(cursorRectangleSpy.count(), ++cursorRectangleChanges);
         x = input.positionToRectangle(0).x();
     }
 
     // Test incrementing the preedit cursor doesn't cause further
     // scrolling when right most text is visible.
     ic.sendPreeditText(preeditText, preeditText.length() - 3);
+    QCOMPARE(cursorRectangleSpy.count(), ++cursorRectangleChanges);
     x = input.positionToRectangle(0).x();
     for (int i = 2; i >= 0; --i) {
         ic.sendPreeditText(preeditText, preeditText.length() - i);
         QCOMPARE(input.positionToRectangle(0).x(), x);
+        QCOMPARE(cursorRectangleSpy.count(), ++cursorRectangleChanges);
     }
     for (int i = 1; i <  3; ++i) {
         ic.sendPreeditText(preeditText, preeditText.length() - i);
         QCOMPARE(input.positionToRectangle(0).x(), x);
+        QCOMPARE(cursorRectangleSpy.count(), ++cursorRectangleChanges);
     }
 
     // Test disabling auto scroll.

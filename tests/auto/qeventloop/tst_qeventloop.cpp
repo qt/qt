@@ -602,10 +602,12 @@ public slots:
         QTcpSocket *serverSocket = server->nextPendingConnection();
         serverSocket->write(data, size);
         serverSocket->flush();
-        QTest::qSleep(200); //allow the TCP/IP stack time to loopback the data, so our socket is ready to read
-        QCoreApplication::processEvents(QEventLoop::ExcludeSocketNotifiers);
+        QEventLoop loop;
+        QTimer::singleShot(200, &loop, SLOT(quit())); //allow the TCP/IP stack time to loopback the data, so our socket is ready to read
+        loop.exec(QEventLoop::ExcludeSocketNotifiers);
         testResult = dataArrived;
-        QCoreApplication::processEvents(); //check the deferred event is processed
+        QTimer::singleShot(200, &loop, SLOT(quit()));
+        loop.exec(); //check the deferred event is processed
         serverSocket->close();
         QThread::currentThread()->exit(0);
     }
@@ -631,6 +633,9 @@ public:
 
 void tst_QEventLoop::processEventsExcludeSocket()
 {
+#if defined(Q_WS_QWS)
+    QSKIP("Socket message seems to be leaking through QEventLoop::exec(ExcludeSocketNotifiers) on qws (QTBUG-19699)", SkipAll);
+#endif
     SocketTestThread thread;
     thread.start();
     QVERIFY(thread.wait());

@@ -48,6 +48,11 @@ static QSystemLocale *QSystemLocale_globalSystemLocale();
 QT_END_NAMESPACE
 #endif
 
+#if !defined(QWS) && defined(Q_OS_MAC)
+#   include "private/qcore_mac_p.h"
+#   include <CoreFoundation/CoreFoundation.h>
+#endif
+
 #include "qplatformdefs.h"
 
 #include "qdatastream.h"
@@ -65,10 +70,6 @@ QT_END_NAMESPACE
 #   include "qt_windows.h"
 #   include <time.h>
 #endif
-#if !defined(QWS) && defined(Q_OS_MAC)
-#   include "private/qcore_mac_p.h"
-#   include <CoreFoundation/CoreFoundation.h>
-#endif
 #include "private/qnumeric_p.h"
 #include "private/qsystemlibrary_p.h"
 
@@ -76,7 +77,6 @@ QT_BEGIN_NAMESPACE
 
 #if defined(Q_OS_SYMBIAN)
 void qt_symbianUpdateSystemPrivate();
-void qt_symbianInitSystemLocale();
 #endif
 
 #ifndef QT_NO_SYSTEMLOCALE
@@ -470,9 +470,6 @@ static const QSystemLocale *systemLocale()
 {
     if (_systemLocale)
         return _systemLocale;
-#if defined(Q_OS_SYMBIAN)
-    qt_symbianInitSystemLocale();
-#endif
     return QSystemLocale_globalSystemLocale();
 }
 
@@ -942,19 +939,32 @@ QLocale::Country QLocale::country() const
 
 QString QLocale::name() const
 {
-    Language l = language();
+    const QLocalePrivate *dd = d();
 
-    QString result = d()->languageCode();
+    if (dd->m_language_id == QLocale::AnyLanguage)
+        return QString();
+    if (dd->m_language_id == QLocale::C)
+        return QLatin1String("C");
 
-    if (l == C)
-        return result;
+    const unsigned char *c = language_code_list + 3*(uint(dd->m_language_id));
 
-    Country c = country();
-    if (c == AnyCountry)
-        return result;
+    QString result(7, Qt::Uninitialized);
+    ushort *data = (ushort *)result.unicode();
+    const ushort *begin = data;
 
-    result.append(QLatin1Char('_'));
-    result.append(d()->countryCode());
+    *data++ = ushort(c[0]);
+    *data++ = ushort(c[1]);
+    if (c[2] != 0)
+        *data++ = ushort(c[2]);
+    if (dd->m_country_id != AnyCountry) {
+        *data++ = '_';
+        const unsigned char *c = country_code_list + 3*(uint(dd->m_country_id));
+        *data++ = ushort(c[0]);
+        *data++ = ushort(c[1]);
+        if (c[2] != 0)
+            *data++ = ushort(c[2]);
+    }
+    result.resize(data - begin);
 
     return result;
 }

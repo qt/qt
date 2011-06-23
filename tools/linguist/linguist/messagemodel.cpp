@@ -375,7 +375,7 @@ bool DataModel::release(const QString &fileName, bool verbose, bool ignoreUnfini
     cd.m_verbose = verbose;
     cd.m_ignoreUnfinished = ignoreUnfinished;
     cd.m_saveMode = mode;
-    bool ok = tor.release(&file, cd);
+    bool ok = saveQM(tor, file, cd);
     if (!ok)
         QMessageBox::warning(parent, QObject::tr("Qt Linguist"), cd.error());
     return ok;
