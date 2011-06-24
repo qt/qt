@@ -41,7 +41,6 @@
 
 #include "qlock_p.h"
 
-
 #ifdef QT_NO_QWS_MULTIPROCESS
 
 QT_BEGIN_NAMESPACE
@@ -83,7 +82,7 @@ QT_END_NAMESPACE
 #else // QT_NO_QWS_MULTIPROCESS
 
 #if defined(Q_OS_DARWIN)
-#  define Q_NO_SEMAPHORE
+#  define QT_NO_SEMAPHORE
 #endif
 
 #include "qwssignalhandler_p.h"
@@ -91,11 +90,13 @@ QT_END_NAMESPACE
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
-#if defined(Q_NO_SEMAPHORE)
+#if defined(QT_NO_SEMAPHORE)
 #  include <sys/stat.h>
 #  include <sys/file.h>
-#else
+#elif !defined(QT_POSIX_IPC)
 #  include <sys/sem.h>
+#else
+#  include <semaphore.h>
 #endif
 #include <string.h>
 #include <errno.h>
@@ -109,17 +110,24 @@ QT_BEGIN_NAMESPACE
 class QLockData
 {
 public:
-#ifdef Q_NO_SEMAPHORE
+#if defined(QT_NO_SEMAPHORE) || defined(QT_POSIX_IPC)
     QByteArray file;
-#endif // Q_NO_SEMAPHORE
+#endif
+#if !defined(QT_POSIX_IPC)
     int id;
+#else
+    sem_t *id;    // Read mode resource counter
+    sem_t *rsem;  // Read mode lock
+    sem_t *wsem;  // Write mode lock
+#endif
     int count;
     bool owned;
 };
 
+
 /*!
     \class QLock
-    \brief The QLock class is a wrapper for a System V shared semaphore.
+    \brief The QLock class is a wrapper for a system shared semaphore.
 
     \ingroup qws
 
@@ -148,7 +156,7 @@ QLock::QLock(const QString &filename, char id, bool create)
 {
     data = new QLockData;
     data->count = 0;
-#ifdef Q_NO_SEMAPHORE
+#if defined(QT_NO_SEMAPHORE)
     data->file = filename.toLocal8Bit() + id;
     for (int x = 0; x < 2; ++x) {
         data->id = QT_OPEN(data->file.constData(), O_RDWR | (x ? O_CREAT : 0), S_IRWXU);
@@ -157,7 +165,7 @@ QLock::QLock(const QString &filename, char id, bool create)
             break;
         }
     }
-#else
+#elif !defined(QT_POSIX_IPC)
     key_t semkey = ftok(filename.toLocal8Bit().constData(), id);
     data->id = semget(semkey, 0, 0);
     data->owned = create;
@@ -169,6 +177,28 @@ QLock::QLock(const QString &filename, char id, bool create)
         data->id = semget(semkey, 1, IPC_CREAT | 0600);
         arg.val = MAX_LOCKS;
         semctl(data->id, 0, SETVAL, arg);
+    }
+#else
+    data->file = filename.toLocal8Bit() + id;
+    data->owned = create;
+
+    char ids[3] = { 'c', 'r', 'w' };
+    sem_t **sems[3] = { &data->id, &data->rsem, &data->wsem };
+    unsigned short initialValues[3] = { MAX_LOCKS, 1, 1 };
+    for (int i = 0; i < 3; ++i) {
+        QByteArray file = data->file + ids[i];
+        do {
+            *sems[i] = sem_open(file.constData(), 0, 0666, 0);
+        } while (*sems[i] == SEM_FAILED && errno == EINTR);
+        if (create) {
+            if (*sems[i] != SEM_FAILED) {
+                sem_close(*sems[i]);
+                sem_unlink(file.constData());
+            }
+            do {
+                *sems[i] = sem_open(file.constData(), O_CREAT, 0666, initialValues[i]);
+            } while (*sems[i] == SEM_FAILED && errno == EINTR);
+        }
     }
 #endif
     if (!isValid()) {
@@ -193,17 +223,32 @@ QLock::~QLock()
 
     while (locked())
         unlock();
-#ifdef Q_NO_SEMAPHORE
+
+#if defined(QT_NO_SEMAPHORE)
     if (isValid())
         QT_CLOSE(data->id);
+#elif defined(QT_POSIX_IPC)
+    if (data->id != SEM_FAILED)
+        sem_close(data->id);
+    if (data->rsem != SEM_FAILED)
+        sem_close(data->rsem);
+    if (data->wsem != SEM_FAILED)
+        sem_close(data->wsem);
 #endif
+
     if (data->owned) {
-#ifdef Q_NO_SEMAPHORE
+#if defined(QT_NO_SEMAPHORE)
         unlink(data->file.constData());
-#else
+#elif !defined(QT_POSIX_IPC)
         qt_semun semval;
         semval.val = 0;
         semctl(data->id, 0, IPC_RMID, semval);
+#else
+        char ids[3] = { 'c', 'r', 'w' };
+        for (int i = 0; i < 3; ++i) {
+            QByteArray file = data->file + ids[i];
+            sem_unlink(file.constData());
+        }
 #endif
     }
     delete data;
@@ -216,7 +261,11 @@ QLock::~QLock()
 */
 bool QLock::isValid() const
 {
+#if !defined(QT_POSIX_IPC)
     return data && data->id != -1;
+#else
+    return data && data->id != SEM_FAILED && data->rsem != SEM_FAILED && data->wsem != SEM_FAILED;
+#endif
 }
 
 /*!
@@ -232,21 +281,48 @@ bool QLock::isValid() const
 */
 void QLock::lock(Type t)
 {
+    if (!isValid())
+        return;
+
     if (!data->count) {
         type = t;
 
         int rv;
-#ifdef Q_NO_SEMAPHORE
+#if defined(QT_NO_SEMAPHORE)
         int op = type == Write ? LOCK_EX : LOCK_SH;
 
         EINTR_LOOP(rv, flock(data->id, op));
-#else
+#elif !defined(QT_POSIX_IPC)
         sembuf sops;
         sops.sem_num = 0;
         sops.sem_op = type == Write ? -MAX_LOCKS : -1;
         sops.sem_flg = SEM_UNDO;
 
         EINTR_LOOP(rv, semop(data->id, &sops, 1));
+#else
+        if (type == Write) {
+            EINTR_LOOP(rv, sem_wait(data->rsem));
+            if (rv != -1) {
+                EINTR_LOOP(rv, sem_wait(data->wsem));
+                if (rv == -1)
+                    sem_post(data->rsem);
+            }
+        } else {
+            EINTR_LOOP(rv, sem_wait(data->wsem));
+            if (rv != -1) {
+                EINTR_LOOP(rv, sem_trywait(data->rsem));
+                if (rv != -1 || errno == EAGAIN) {
+                    EINTR_LOOP(rv, sem_wait(data->id));
+                    if (rv == -1) {
+                        int semval;
+                        sem_getvalue(data->id, &semval);
+                        if (semval == MAX_LOCKS)
+                            sem_post(data->rsem);
+                    }
+                }
+                rv = sem_post(data->wsem);
+            }
+        }
 #endif
         if (rv == -1) {
             qDebug("QLock::lock(): %s", strerror(errno));
@@ -265,19 +341,37 @@ void QLock::lock(Type t)
 */
 void QLock::unlock()
 {
-    if (data->count) {
+    if (!isValid())
+        return;
+
+    if (data->count > 0) {
         data->count--;
         if (!data->count) {
             int rv;
-#ifdef Q_NO_SEMAPHORE
+#if defined(QT_NO_SEMAPHORE)
             EINTR_LOOP(rv, flock(data->id, LOCK_UN));
-#else
+#elif !defined(QT_POSIX_IPC)
             sembuf sops;
             sops.sem_num = 0;
             sops.sem_op = type == Write ? MAX_LOCKS : 1;
             sops.sem_flg = SEM_UNDO;
 
             EINTR_LOOP(rv, semop(data->id, &sops, 1));
+#else
+            if (type == Write) {
+                sem_post(data->wsem);
+                rv = sem_post(data->rsem);
+            } else {
+                EINTR_LOOP(rv, sem_wait(data->wsem));
+                if (rv != -1) {
+                    sem_post(data->id);
+                    int semval;
+                    sem_getvalue(data->id, &semval);
+                    if (semval == MAX_LOCKS)
+                        sem_post(data->rsem);
+                    rv = sem_post(data->wsem);
+                }
+            }
 #endif
             if (rv == -1)
                 qDebug("QLock::unlock(): %s", strerror(errno));

@@ -434,7 +434,7 @@ void QDeclarativeDataBlob::notifyComplete(QDeclarativeDataBlob *blob)
 
 /*!
 \class QDeclarativeDataLoader
-\brief The QDeclarativeDataLoader class abstracts loading files and their dependecies over the network.
+\brief The QDeclarativeDataLoader class abstracts loading files and their dependencies over the network.
 \internal
 
 The QDeclarativeDataLoader class is provided for the exclusive use of the QDeclarativeTypeLoader class.
@@ -453,9 +453,11 @@ are required before processing can fully complete.
 To complete processing, the QDeclarativeDataBlob::done() callback is invoked.  done() is called when
 one of these three preconditions are met.
 
-1.  The QDeclarativeDataBlob has no dependencies.
-2.  The QDeclarativeDataBlob has an error set.
-3.  All the QDeclarativeDataBlob's dependencies are themselves "done()".
+\list 1
+\o The QDeclarativeDataBlob has no dependencies.
+\o The QDeclarativeDataBlob has an error set.
+\o All the QDeclarativeDataBlob's dependencies are themselves "done()".
+\endlist
 
 Thus QDeclarativeDataBlob::done() will always eventually be called, even if the blob has an error set.
 */
@@ -616,13 +618,17 @@ void QDeclarativeDataLoader::setData(QDeclarativeDataBlob *blob, const QByteArra
 }
 
 /*!
-\class QDeclarativeTypeLoader
+Constructs a new type loader that uses the given \a engine.
 */
 QDeclarativeTypeLoader::QDeclarativeTypeLoader(QDeclarativeEngine *engine)
 : QDeclarativeDataLoader(engine)
 {
 }
 
+/*!
+Destroys the type loader, first clearing the cache of any information about
+loaded files.
+*/
 QDeclarativeTypeLoader::~QDeclarativeTypeLoader()
 {
     clearCache();
@@ -674,7 +680,7 @@ QDeclarativeTypeData *QDeclarativeTypeLoader::get(const QByteArray &data, const 
 }
 
 /*!
-Return a QDeclarativeScriptData for \a url.  The QDeclarativeScriptData may be cached.
+Returns a QDeclarativeScriptData for \a url.  The QDeclarativeScriptData may be cached.
 */
 QDeclarativeScriptData *QDeclarativeTypeLoader::getScript(const QUrl &url)
 {
@@ -695,7 +701,7 @@ QDeclarativeScriptData *QDeclarativeTypeLoader::getScript(const QUrl &url)
 }
 
 /*!
-Return a QDeclarativeQmldirData for \a url.  The QDeclarativeQmldirData may be cached.
+Returns a QDeclarativeQmldirData for \a url.  The QDeclarativeQmldirData may be cached.
 */
 QDeclarativeQmldirData *QDeclarativeTypeLoader::getQmldir(const QUrl &url)
 {
@@ -715,6 +721,10 @@ QDeclarativeQmldirData *QDeclarativeTypeLoader::getQmldir(const QUrl &url)
     return qmldirData;
 }
 
+/*!
+Clears cached information about loaded files, including any type data, scripts
+and qmldir information.
+*/
 void QDeclarativeTypeLoader::clearCache()
 {
     for (TypeCache::Iterator iter = m_typeCache.begin(); iter != m_typeCache.end(); ++iter) 

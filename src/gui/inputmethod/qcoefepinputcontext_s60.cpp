@@ -141,6 +141,16 @@ QCoeFepInputContext::~QCoeFepInputContext()
 
 void QCoeFepInputContext::reset()
 {
+    Qt::InputMethodHints currentHints = Qt::ImhNone;
+    if (focusWidget()) {
+        QWidget *proxy = focusWidget()->focusProxy();
+        currentHints = proxy ? proxy->inputMethodHints() : focusWidget()->inputMethodHints();
+    }
+    // Store a copy of preedit text, if prediction is active and input context is reseted.
+    // This is to ensure that we can replace preedit string after losing focus to FEP manager's
+    // internal sub-windows.
+    if (m_cachedPreeditString.isEmpty() && !(currentHints & Qt::ImhNoPredictiveText))
+        m_cachedPreeditString = m_preeditString;
     commitCurrentString(true);
 }
 
@@ -175,6 +185,8 @@ void QCoeFepInputContext::setFocusWidget(QWidget *w)
 
 void QCoeFepInputContext::widgetDestroyed(QWidget *w)
 {
+    m_cachedPreeditString.clear();
+
     // Make sure that the input capabilities of whatever new widget got focused are queried.
     CCoeControl *ctrl = w->effectiveWinId();
     if (ctrl->IsFocused()) {
@@ -351,6 +363,11 @@ bool QCoeFepInputContext::symbianFilterEvent(QWidget *keyWidget, const QSymbianE
             if (visibleFlags & TWsVisibilityChangedEvent::ENotVisible)
                 resetSplitViewWidget(true);
         }
+    }
+
+    if (event->type() == QSymbianEvent::ResourceChangeEvent
+         && event->resourceChangeType() == KEikMessageFadeAllWindows) {
+        reset();
     }
 
     return false;
@@ -629,6 +646,7 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
 {
     using namespace Qt;
 
+    reset();
     commitTemporaryPreeditString();
 
     const bool anynumbermodes = hints & (ImhDigitsOnly | ImhFormattedNumbersOnly | ImhDialableCharactersOnly);
@@ -855,6 +873,8 @@ void QCoeFepInputContext::ensureInputCapabilitiesChanged()
 void QCoeFepInputContext::translateInputWidget()
 {
     QGraphicsView *gv = qobject_cast<QGraphicsView *>(S60->splitViewLastWidget);
+    if (!gv)
+        return;
     QRect splitViewRect = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
 
     QRectF cursor = gv->scene()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
@@ -901,6 +921,8 @@ void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
     QWidget *w = focusWidget();
     if (!w)
         return;
+
+    m_cachedPreeditString.clear();
 
     commitTemporaryPreeditString();
 
@@ -958,7 +980,10 @@ void QCoeFepInputContext::UpdateFepInlineTextL(const TDesC& aNewInlineText,
                                                    QVariant()));
     QString newPreeditString = qt_TDesC2QString(aNewInlineText);
     QInputMethodEvent event(newPreeditString, attributes);
-    if (newPreeditString.isEmpty() && m_preeditString.isEmpty()) {
+    if (!m_cachedPreeditString.isEmpty()) {
+        event.setCommitString(QLatin1String(""), -m_cachedPreeditString.length(), m_cachedPreeditString.length());
+        m_cachedPreeditString.clear();
+    } else if (newPreeditString.isEmpty() && m_preeditString.isEmpty()) {
         // In Symbian world this means "erase last character".
         event.setCommitString(QLatin1String(""), -1, 1);
     }
@@ -1148,7 +1173,18 @@ void QCoeFepInputContext::commitCurrentString(bool cancelFepTransaction)
 
     m_hasTempPreeditString = false;
 
-    if (cancelFepTransaction) {
+    //Only cancel FEP transactions with prediction, when there is still active window.
+    Qt::InputMethodHints currentHints = Qt::ImhNone;
+    if (focusWidget()) {
+        if (focusWidget()->focusProxy())
+            currentHints = focusWidget()->focusProxy()->inputMethodHints();
+        else
+            currentHints = focusWidget()->inputMethodHints();
+    }
+    bool predictive = !(currentHints & Qt::ImhNoPredictiveText);
+    bool widgetAndWindowAvailable = QApplication::activeWindow() && focusWidget();
+
+    if (cancelFepTransaction && ((predictive && widgetAndWindowAvailable) || !predictive)) {
         CCoeFep* fep = CCoeEnv::Static()->Fep();
         if (fep)
             fep->CancelTransaction();

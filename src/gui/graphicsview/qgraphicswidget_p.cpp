@@ -233,6 +233,18 @@ void QGraphicsWidgetPrivate::resolveLayoutDirection()
     }
 }
 
+/* private slot */
+void QGraphicsWidgetPrivate::_q_relayout()
+{
+    --refCountInvokeRelayout;
+    if (refCountInvokeRelayout == 0) {
+        Q_Q(QGraphicsWidget);
+        bool wasResized = q->testAttribute(Qt::WA_Resized);
+        q->resize(q->size()); // this will restrict the size
+        q->setAttribute(Qt::WA_Resized, wasResized);
+    }
+}
+
 QPalette QGraphicsWidgetPrivate::naturalWidgetPalette() const
 {
     Q_Q(const QGraphicsWidget);
@@ -902,5 +914,7 @@ void QGraphicsWidgetPrivate::setGeometryFromSetPos()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qgraphicswidget.cpp"
 
 #endif //QT_NO_GRAPHICSVIEW

@@ -44,6 +44,8 @@
 #include "qstroker_p.h"
 #include "qbezier_p.h"
 #include <private/qpainterpath_p.h>
+#include <private/qfontengine_p.h>
+#include <private/qstatictext_p.h>
 
 #include <qvarlengtharray.h>
 #include <qdebug.h>
@@ -831,7 +833,7 @@ void QPaintEngineEx::drawEllipse(const QRectF &r)
 
     int point_count = 0;
     x.points[0] = qt_curves_for_arc(r, 0, -360, x.points + 1, &point_count);
-    QVectorPath vp((qreal *) pts, point_count, qpaintengineex_ellipse_types, QVectorPath::EllipseHint);
+    QVectorPath vp((qreal *) pts, point_count + 1, qpaintengineex_ellipse_types, QVectorPath::EllipseHint);
     draw(vp);
 }
 
@@ -1057,5 +1059,48 @@ Q_GUI_EXPORT QPainterPath qt_painterPathFromVectorPath(const QVectorPath &path)
     return p;
 }
 
+void QPaintEngineEx::drawStaticTextItem(QStaticTextItem *staticTextItem)
+{
+    QPainterPath path;
+#ifndef Q_WS_MAC
+    path.setFillRule(Qt::WindingFill);
+#endif
+
+    if (staticTextItem->numGlyphs == 0)
+        return;
+
+    QFontEngine *fontEngine = staticTextItem->fontEngine();
+    fontEngine->addGlyphsToPath(staticTextItem->glyphs, staticTextItem->glyphPositions,
+                                staticTextItem->numGlyphs, &path, 0);
+    if (!path.isEmpty()) {
+        QPainterState *s = state();
+        QPainter::RenderHints oldHints = s->renderHints;
+        bool changedHints = false;
+        if (bool(oldHints & QPainter::TextAntialiasing)
+            && !bool(fontEngine->fontDef.styleStrategy & QFont::NoAntialias)
+            && !bool(oldHints & QPainter::Antialiasing)) {
+            s->renderHints |= QPainter::Antialiasing;
+            renderHintsChanged();
+            changedHints = true;
+        }
+
+        fill(qtVectorPathForPath(path), s->pen.color());
+
+        if (changedHints) {
+            s->renderHints = oldHints;
+            renderHintsChanged();
+        }
+    }
+}
+
+bool QPaintEngineEx::supportsTransformations(qreal pixelSize, const QTransform &m) const
+{
+    Q_UNUSED(pixelSize);
+
+    if (!m.isAffine())
+        return true;
+
+    return false;
+}
 
 QT_END_NAMESPACE

@@ -115,6 +115,8 @@ Qt for Mac OS X
 
 Qt for Embedded Linux
 ---------------------
+ - Added support for QNX 6.5 with multi-process support, and much improved mouse,
+   keyboard and screen drivers.
 
 
 Qt for Windows CE

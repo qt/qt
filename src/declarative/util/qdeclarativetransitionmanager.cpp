@@ -56,12 +56,12 @@ class QDeclarativeTransitionManagerPrivate
 {
 public:
     QDeclarativeTransitionManagerPrivate()
-    : state(0), transition(0) {}
+        : state(0) {}
 
     void applyBindings();
     typedef QList<QDeclarativeSimpleAction> SimpleActionList;
     QDeclarativeState *state;
-    QDeclarativeTransition *transition;
+    QDeclarativeGuard<QDeclarativeTransition> transition;
     QDeclarativeStateOperation::ActionList bindingsList;
     SimpleActionList completeList;
 };
@@ -253,7 +253,7 @@ void QDeclarativeTransitionManager::cancel()
 {
     if (d->transition) {
         // ### this could potentially trigger a complete in rare circumstances
-        d->transition->stop();  
+        d->transition->stop();
         d->transition = 0;
     }
 

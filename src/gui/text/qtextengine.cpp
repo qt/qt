@@ -319,6 +319,26 @@ static void appendItems(QScriptAnalysis *analysis, int &start, int &stop, const 
     start = stop;
 }
 
+static QChar::Direction skipBoundryNeutrals(QScriptAnalysis *analysis,
+                                            const ushort *unicode, int length,
+                                            int &sor, int &eor, QBidiControl &control)
+{
+    QChar::Direction dir;
+    int level = sor > 0 ? analysis[sor - 1].bidiLevel : control.level;
+    while (sor < length) {
+        dir = QChar::direction(unicode[sor]);
+        // Keep skipping DirBN as if it doesn't exist
+        if (dir != QChar::DirBN)
+            break;
+        analysis[sor++].bidiLevel = level;
+    }
+
+    eor = sor;
+    if (eor == length)
+        dir = control.basicDirection();
+
+    return dir;
+}
 
 // creates the next QScript items.
 static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiControl &control)
@@ -430,8 +450,7 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
                 case QChar::DirAN:
                     if (eor >= 0) {
                         appendItems(analysis, sor, eor, control, dir);
-                        dir = eor < length ? QChar::direction(unicode[eor]) : control.basicDirection();
-                        status.eor = dir;
+                        status.eor = dir = skipBoundryNeutrals(analysis, unicode, length, sor, eor, control);
                     } else {
                         eor = current; status.eor = dir;
                     }
@@ -455,8 +474,7 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
                             }
                             eor = current - 1;
                             appendItems(analysis, sor, eor, control, dir);
-                            dir = eor < length ? QChar::direction(unicode[eor]) : control.basicDirection();
-                            status.eor = dir;
+                            status.eor = dir = skipBoundryNeutrals(analysis, unicode, length, sor, eor, control);
                         } else {
                             if(status.eor != QChar::DirL) {
                                 appendItems(analysis, sor, eor, control, dir);
@@ -856,7 +874,7 @@ void QTextEngine::shapeLine(const QScriptLine &line)
     }
 }
 
-#if !defined(QT_ENABLE_HARFBUZZ_FOR_MAC)
+#if !defined(QT_ENABLE_HARFBUZZ_FOR_MAC) && defined(Q_WS_MAC)
 static bool enableHarfBuzz()
 {
     static enum { Yes, No, Unknown } status = Unknown;
@@ -2823,6 +2841,75 @@ QFixed QTextEngine::offsetInLigature(const QScriptItem *si, int pos, int max, in
     }
 
     return 0;
+}
+
+// Scan in logClusters[from..to-1] for glyph_pos
+int QTextEngine::getClusterLength(unsigned short *logClusters,
+                                  const HB_CharAttributes *attributes,
+                                  int from, int to, int glyph_pos, int *start)
+{
+    int clusterLength = 0;
+    for (int i = from; i < to; i++) {
+        if (logClusters[i] == glyph_pos && attributes[i].charStop) {
+            if (*start < 0)
+                *start = i;
+            clusterLength++;
+        }
+        else if (clusterLength)
+            break;
+    }
+    return clusterLength;
+}
+
+int QTextEngine::positionInLigature(const QScriptItem *si, int end,
+                                    QFixed x, QFixed edge, int glyph_pos,
+                                    bool cursorOnCharacter)
+{
+    unsigned short *logClusters = this->logClusters(si);
+    int clusterStart = -1;
+    int clusterLength = 0;
+
+    if (si->analysis.script != QUnicodeTables::Common &&
+        si->analysis.script != QUnicodeTables::Greek) {
+        if (glyph_pos == -1)
+            return si->position + end;
+        else {
+            int i;
+            for (i = 0; i < end; i++)
+                if (logClusters[i] == glyph_pos)
+                    break;
+            return si->position + i;
+        }
+    }
+
+    if (glyph_pos == -1 && end > 0)
+        glyph_pos = logClusters[end - 1];
+    else {
+        if (x <= edge)
+            glyph_pos--;
+    }
+
+    const HB_CharAttributes *attrs = attributes();
+    clusterLength = getClusterLength(logClusters, attrs, 0, end, glyph_pos, &clusterStart);
+
+    if (clusterLength) {
+        const QGlyphLayout &glyphs = shapedGlyphs(si);
+        QFixed glyphWidth = glyphs.effectiveAdvance(glyph_pos);
+        // the approximate width of each individual element of the ligature
+        QFixed perItemWidth = glyphWidth / clusterLength;
+        QFixed left = x > edge ? edge : edge - glyphWidth;
+        int n = ((x - left) / perItemWidth).floor().toInt();
+        QFixed dist = x - left - n * perItemWidth;
+        int closestItem = dist > (perItemWidth / 2) ? n + 1 : n;
+        if (cursorOnCharacter && closestItem > 0)
+            closestItem--;
+        int pos = si->position + clusterStart + closestItem;
+        // Jump to the next charStop
+        while (!attrs[pos].charStop && pos < end)
+            pos++;
+        return pos;
+    }
+    return si->position + end;
 }
 
 int QTextEngine::previousLogicalPosition(int oldPos) const

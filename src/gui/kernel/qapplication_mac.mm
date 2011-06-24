@@ -714,6 +714,7 @@ void qt_event_request_showsheet(QWidget *w)
 {
     Q_ASSERT(qt_mac_is_macsheet(w));
 #ifdef QT_MAC_USE_COCOA
+    w->repaint();
     [NSApp beginSheet:qt_mac_window_for(w) modalForWindow:qt_mac_window_for(w->parentWidget())
         modalDelegate:nil didEndSelector:nil contextInfo:0];
 #else
@@ -2622,8 +2623,6 @@ OSStatus QApplicationPrivate::globalAppleEventProcessor(const AppleEvent *ae, Ap
     Return true if you want to stop the event from being processed.
     Return false for normal event dispatching. The default
     implementation returns false.
-
-    \sa macEventFilter(void *nsevent)
 */
 bool QApplication::macEventFilter(EventHandlerCallRef, EventRef)
 {
