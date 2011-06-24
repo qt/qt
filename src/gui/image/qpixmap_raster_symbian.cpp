@@ -45,13 +45,13 @@
 #include <private/qapplication_p.h>
 #include <private/qgraphicssystem_p.h>
 #include <private/qt_s60_p.h>
-#include <private/qpaintengine_s60_p.h>
 #include <private/qfont_p.h>
+#include <private/qpaintengine_raster_symbian_p.h>
 
 #include "qpixmap.h"
 #include "qpixmap_raster_p.h"
 #include <qwidget.h>
-#include "qpixmap_s60_p.h"
+#include "qpixmap_raster_symbian_p.h"
 #include "qnativeimage_p.h"
 #include "qbitmap.h"
 #include "qimage.h"
@@ -65,10 +65,10 @@ const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
                                      0x10, 0x20, 0x40, 0x80 };
 
 static bool cleanup_function_registered = false;
-static QS60PixmapData *firstPixmap = 0;
+static QSymbianRasterPixmapData *firstPixmap = 0;
 
 // static
-void QS60PixmapData::qt_symbian_register_pixmap(QS60PixmapData *pd)
+void QSymbianRasterPixmapData::qt_symbian_register_pixmap(QSymbianRasterPixmapData *pd)
 {
     if (!cleanup_function_registered) {
         qAddPostRoutine(qt_symbian_release_pixmaps);
@@ -83,7 +83,7 @@ void QS60PixmapData::qt_symbian_register_pixmap(QS60PixmapData *pd)
 }
 
 // static
-void QS60PixmapData::qt_symbian_unregister_pixmap(QS60PixmapData *pd)
+void QSymbianRasterPixmapData::qt_symbian_unregister_pixmap(QSymbianRasterPixmapData *pd)
 {
     if (pd->next)
         pd->next->prev = pd->prev;
@@ -94,10 +94,10 @@ void QS60PixmapData::qt_symbian_unregister_pixmap(QS60PixmapData *pd)
 }
 
 // static
-void QS60PixmapData::qt_symbian_release_pixmaps()
+void QSymbianRasterPixmapData::qt_symbian_release_pixmaps()
 {
-    // Scan all QS60PixmapData objects in the system and destroy them.
-    QS60PixmapData *pd = firstPixmap;
+    // Scan all QSymbianRasterPixmapData objects in the system and destroy them.
+    QSymbianRasterPixmapData *pd = firstPixmap;
     while (pd != 0) {
         pd->release();
         pd = pd->next;
@@ -393,7 +393,7 @@ QPixmap QPixmap::fromSymbianCFbsBitmap(CFbsBitmap *bitmap)
     return pixmap;
 }
 
-QS60PixmapData::QS60PixmapData(PixelType type) : QRasterPixmapData(type),
+QSymbianRasterPixmapData::QSymbianRasterPixmapData(PixelType type) : QRasterPixmapData(type),
     symbianBitmapDataAccess(new QSymbianBitmapDataAccess),
     cfbsBitmap(0),
     pengine(0),
@@ -405,14 +405,14 @@ QS60PixmapData::QS60PixmapData(PixelType type) : QRasterPixmapData(type),
     qt_symbian_register_pixmap(this);
 }
 
-QS60PixmapData::~QS60PixmapData()
+QSymbianRasterPixmapData::~QSymbianRasterPixmapData()
 {
     release();
     delete symbianBitmapDataAccess;
     qt_symbian_unregister_pixmap(this);
 }
 
-void QS60PixmapData::resize(int width, int height)
+void QSymbianRasterPixmapData::resize(int width, int height)
 {
     if (width <= 0 || height <= 0) {
         w = width;
@@ -446,7 +446,7 @@ void QS60PixmapData::resize(int width, int height)
     }
 }
 
-void QS60PixmapData::release()
+void QSymbianRasterPixmapData::release()
 {
     if (cfbsBitmap) {
         QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
@@ -464,7 +464,7 @@ void QS60PixmapData::release()
 /*!
  * Takes ownership of bitmap. Used by window surface
  */
-void QS60PixmapData::fromSymbianBitmap(CFbsBitmap* bitmap, bool lockFormat)
+void QSymbianRasterPixmapData::fromSymbianBitmap(CFbsBitmap* bitmap, bool lockFormat)
 {
     Q_ASSERT(bitmap);
 
@@ -496,9 +496,9 @@ void QS60PixmapData::fromSymbianBitmap(CFbsBitmap* bitmap, bool lockFormat)
     }
 }
 
-QImage QS60PixmapData::toImage(const QRect &r) const
+QImage QSymbianRasterPixmapData::toImage(const QRect &r) const
 {
-    QS60PixmapData *that = const_cast<QS60PixmapData*>(this);
+    QSymbianRasterPixmapData *that = const_cast<QSymbianRasterPixmapData*>(this);
     that->beginDataAccess();
     QImage copy = that->image.copy(r);
     that->endDataAccess();
@@ -506,7 +506,7 @@ QImage QS60PixmapData::toImage(const QRect &r) const
     return copy;
 }
 
-void QS60PixmapData::fromImage(const QImage &img, Qt::ImageConversionFlags flags)
+void QSymbianRasterPixmapData::fromImage(const QImage &img, Qt::ImageConversionFlags flags)
 {
     release();
 
@@ -588,13 +588,13 @@ void QS60PixmapData::fromImage(const QImage &img, Qt::ImageConversionFlags flags
 	}
 }
 
-void QS60PixmapData::copy(const QPixmapData *data, const QRect &rect)
+void QSymbianRasterPixmapData::copy(const QPixmapData *data, const QRect &rect)
 {
-    const QS60PixmapData *s60Data = static_cast<const QS60PixmapData*>(data);
+    const QSymbianRasterPixmapData *s60Data = static_cast<const QSymbianRasterPixmapData*>(data);
     fromImage(s60Data->toImage(rect), Qt::AutoColor | Qt::OrderedAlphaDither);
 }
 
-bool QS60PixmapData::scroll(int dx, int dy, const QRect &rect)
+bool QSymbianRasterPixmapData::scroll(int dx, int dy, const QRect &rect)
 {
     beginDataAccess();
     bool res = QRasterPixmapData::scroll(dx, dy, rect);
@@ -602,7 +602,10 @@ bool QS60PixmapData::scroll(int dx, int dy, const QRect &rect)
     return res;
 }
 
-int QS60PixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
+Q_GUI_EXPORT int qt_defaultDpiX();
+Q_GUI_EXPORT int qt_defaultDpiY();
+
+int QSymbianRasterPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
     if (!cfbsBitmap)
         return 0;
@@ -633,7 +636,7 @@ int QS60PixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 
 }
 
-void QS60PixmapData::fill(const QColor &color)
+void QSymbianRasterPixmapData::fill(const QColor &color)
 {
     if (color.alpha() != 255) {
         QImage im(width(), height(), QImage::Format_ARGB32_Premultiplied);
@@ -647,7 +650,7 @@ void QS60PixmapData::fill(const QColor &color)
     }
 }
 
-void QS60PixmapData::setMask(const QBitmap &mask)
+void QSymbianRasterPixmapData::setMask(const QBitmap &mask)
 {
     if (mask.size().isEmpty()) {
         if (image.depth() != 1) {
@@ -678,7 +681,7 @@ void QS60PixmapData::setMask(const QBitmap &mask)
     }
 }
 
-void QS60PixmapData::setAlphaChannel(const QPixmap &alphaChannel)
+void QSymbianRasterPixmapData::setAlphaChannel(const QPixmap &alphaChannel)
 {
     QImage img(toImage());
     img.setAlphaChannel(alphaChannel.toImage());
@@ -686,21 +689,21 @@ void QS60PixmapData::setAlphaChannel(const QPixmap &alphaChannel)
     fromImage(img, Qt::OrderedDither | Qt::OrderedAlphaDither);
 }
 
-QImage QS60PixmapData::toImage() const
+QImage QSymbianRasterPixmapData::toImage() const
 {
     return toImage(QRect());
 }
 
-QPaintEngine* QS60PixmapData::paintEngine() const
+QPaintEngine* QSymbianRasterPixmapData::paintEngine() const
 {
     if (!pengine) {
-        QS60PixmapData *that = const_cast<QS60PixmapData*>(this);
-        that->pengine = new QS60PaintEngine(&that->image, that);
+        QSymbianRasterPixmapData *that = const_cast<QSymbianRasterPixmapData*>(this);
+        that->pengine = new QSymbianRasterPaintEngine(&that->image, that);
     }
     return pengine;
 }
 
-void QS60PixmapData::beginDataAccess()
+void QSymbianRasterPixmapData::beginDataAccess()
 {
     if(!cfbsBitmap)
         return;
@@ -740,12 +743,12 @@ void QS60PixmapData::beginDataAccess()
     is_null = (w <= 0 || h <= 0);
 
     if (pengine) {
-        QS60PaintEngine *engine = static_cast<QS60PaintEngine *>(pengine);
+        QSymbianRasterPaintEngine *engine = static_cast<QSymbianRasterPaintEngine *>(pengine);
         engine->prepare(&image);
     }
 }
 
-void QS60PixmapData::endDataAccess(bool readOnly) const
+void QSymbianRasterPixmapData::endDataAccess(bool readOnly) const
 {
     Q_UNUSED(readOnly);
 
@@ -812,7 +815,7 @@ RSgImage *QPixmap::toSymbianRSgImage() const
     return sgImage;
 }
 
-void* QS60PixmapData::toNativeType(NativeType type)
+void* QSymbianRasterPixmapData::toNativeType(NativeType type)
 {
     if (type == QPixmapData::SgImage) {
         return 0;
@@ -895,7 +898,7 @@ void* QS60PixmapData::toNativeType(NativeType type)
     return 0;
 }
 
-void QS60PixmapData::fromNativeType(void* pixmap, NativeType nativeType)
+void QSymbianRasterPixmapData::fromNativeType(void* pixmap, NativeType nativeType)
 {
     if (nativeType == QPixmapData::SgImage) {
         return;
@@ -1005,7 +1008,7 @@ void QS60PixmapData::fromNativeType(void* pixmap, NativeType nativeType)
     }
 }
 
-void QS60PixmapData::convertToDisplayMode(int mode)
+void QSymbianRasterPixmapData::convertToDisplayMode(int mode)
 {
     const TDisplayMode displayMode = static_cast<TDisplayMode>(mode);
     if (!cfbsBitmap || cfbsBitmap->DisplayMode() == displayMode)
@@ -1032,9 +1035,9 @@ void QS60PixmapData::convertToDisplayMode(int mode)
     UPDATE_BUFFER();
 }
 
-QPixmapData *QS60PixmapData::createCompatiblePixmapData() const
+QPixmapData *QSymbianRasterPixmapData::createCompatiblePixmapData() const
 {
-    return new QS60PixmapData(pixelType());
+    return new QSymbianRasterPixmapData(pixelType());
 }
 
 QT_END_NAMESPACE

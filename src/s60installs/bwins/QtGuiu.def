@@ -5028,6 +5028,7 @@ EXPORTS
 	?hasSelection@QItemSelectionModel@@QBE_NXZ @ 5027 NONAME ; bool QItemSelectionModel::hasSelection(void) const
 	?hasSelection@QTextCursor@@QBE_NXZ @ 5028 NONAME ; bool QTextCursor::hasSelection(void) const
 	?hasStaticContents@QWindowSurface@@IBE_NXZ @ 5029 NONAME ; bool QWindowSurface::hasStaticContents(void) const
+	?hasStaticContentsSupport@QWindowSurface@@QBE_NXZ @ 5030 NONAME ABSENT ; bool QWindowSurface::hasStaticContentsSupport(void) const
 	?hasStaticContentsSupport@QWindowSurface@@UBE_NXZ @ 5030 NONAME ABSENT ; bool QWindowSurface::hasStaticContentsSupport(void) const
 	?hasThemeIcon@QIcon@@SA_NABVQString@@@Z @ 5031 NONAME ; bool QIcon::hasThemeIcon(class QString const &)
 	?hasTracking@QAbstractSlider@@QBE_NXZ @ 5032 NONAME ; bool QAbstractSlider::hasTracking(void) const
@@ -12853,6 +12854,7 @@ EXPORTS
 	?updateAll@QGraphicsViewPrivate@@QAEXXZ @ 12852 NONAME ; void QGraphicsViewPrivate::updateAll(void)
 	?updateMicroFocus@QGraphicsItem@@IAEXXZ @ 12853 NONAME ; void QGraphicsItem::updateMicroFocus(void)
 	?populate@QTextureGlyphCache@@QAEXPAVQFontEngine@@HPBIPBUQFixedPoint@@@Z @ 12854 NONAME ABSENT ; void QTextureGlyphCache::populate(class QFontEngine *, int, unsigned int const *, struct QFixedPoint const *)
+	?hasPartialUpdateSupport@QWindowSurface@@QBE_NXZ @ 12855 NONAME ABSENT ; bool QWindowSurface::hasPartialUpdateSupport(void) const
 	?hasPartialUpdateSupport@QWindowSurface@@UBE_NXZ @ 12855 NONAME ABSENT ; bool QWindowSurface::hasPartialUpdateSupport(void) const
 	?scroll@QRuntimePixmapData@@UAE_NHHABVQRect@@@Z @ 12856 NONAME ; bool QRuntimePixmapData::scroll(int, int, class QRect const &)
 	?qt_draw_glyphs@@YAXPAVQPainter@@PBIPBVQPointF@@H@Z @ 12857 NONAME ABSENT ; void qt_draw_glyphs(class QPainter *, unsigned int const *, class QPointF const *, int)
@@ -14034,12 +14036,11 @@ EXPORTS
 	?releaseAllGpuResources@QSymbianGraphicsSystemEx@@UAEXXZ @ 14033 NONAME ; void QSymbianGraphicsSystemEx::releaseAllGpuResources(void)
 	?cursorMoveStyle@QLineControl@@QBE?AW4CursorMoveStyle@Qt@@XZ @ 14034 NONAME ; enum Qt::CursorMoveStyle QLineControl::cursorMoveStyle(void) const
 	?hasBCM2727@QSymbianGraphicsSystemEx@@UAE_NXZ @ 14035 NONAME ABSENT ; bool QSymbianGraphicsSystemEx::hasBCM2727(void)
-	?hasStaticContentsSupport@QWindowSurface@@QBE_NXZ @ 14036 NONAME ABSENT ; bool QWindowSurface::hasStaticContentsSupport(void) const
-	?hasPartialUpdateSupport@QWindowSurface@@QBE_NXZ @ 14037 NONAME ABSENT ; bool QWindowSurface::hasPartialUpdateSupport(void) const
 	??0QSymbianGraphicsSystemEx@@QAE@XZ @ 14038 NONAME ABSENT ; QSymbianGraphicsSystemEx::QSymbianGraphicsSystemEx(void)
 	?hasBCM2727@QSymbianGraphicsSystemEx@@SA_NXZ @ 14039 NONAME ; bool QSymbianGraphicsSystemEx::hasBCM2727(void)
 	?getClusterLength@QTextEngine@@AAEHPAGPBUHB_CharAttributes@@HHHPAH@Z @ 14040 NONAME ; int QTextEngine::getClusterLength(unsigned short *, struct HB_CharAttributes const *, int, int, int, int *)
 	?positionInLigature@QTextEngine@@QAEHPBUQScriptItem@@HUQFixed@@1H_N@Z @ 14041 NONAME ; int QTextEngine::positionInLigature(struct QScriptItem const *, int, struct QFixed, struct QFixed, int, bool)
 	?supportsTransformations@QPaintEngineEx@@UBE_NMABVQTransform@@@Z @ 14042 NONAME ; bool QPaintEngineEx::supportsTransformations(float, class QTransform const &) const
 	?drawStaticTextItem@QPaintEngineEx@@UAEXPAVQStaticTextItem@@@Z @ 14043 NONAME ; void QPaintEngineEx::drawStaticTextItem(class QStaticTextItem *)
-
+	?constImageRef@QVolatileImage@@QBEABVQImage@@XZ @ 14044 NONAME ; class QImage const & QVolatileImage::constImageRef(void) const
+	?toVolatileImage@QPixmapData@@UBE?AVQVolatileImage@@XZ @ 14045 NONAME ; class QVolatileImage QPixmapData::toVolatileImage(void) const
