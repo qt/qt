@@ -12753,4 +12753,5 @@ EXPORTS
 	_ZN11QTextEngine18positionInLigatureEPK11QScriptItemi6QFixedS3_ib @ 12752 NONAME
 	_ZN14QPaintEngineEx18drawStaticTextItemEP15QStaticTextItem @ 12753 NONAME
 	_ZNK14QPaintEngineEx23supportsTransformationsEfRK10QTransform @ 12754 NONAME
-
+	_ZNK11QPixmapData15toVolatileImageEv @ 12755 NONAME
+	_ZNK14QVolatileImage13constImageRefEv @ 12756 NONAME
