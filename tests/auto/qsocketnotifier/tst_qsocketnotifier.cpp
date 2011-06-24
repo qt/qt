@@ -55,9 +55,9 @@
 #endif
 #ifdef Q_OS_UNIX
 #include <private/qnet_unix_p.h>
+#include <sys/select.h>
 #endif
 #include <limits>
-#include <sys/select.h>
 
 class tst_QSocketNotifier : public QObject
 {
