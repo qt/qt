@@ -190,7 +190,8 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
                     if (loglevel > 1)
                         qDebug() << "      found device file:" << info.fileName() << endl;
 #ifdef Q_OS_MAC
-                    friendlyName = eligibleInterfacesInfo[eligibleInterfaces.indexOf(iface)].product;
+                    InterfaceInfo info = eligibleInterfacesInfo[eligibleInterfaces.indexOf(iface)];
+                    friendlyName = info.manufacturer + " " + info.product;
 #endif
                     usable = true;
                     break;
