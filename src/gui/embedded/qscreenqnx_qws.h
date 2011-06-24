@@ -66,6 +66,7 @@ public:
     void shutdownDevice();
     void setMode(int,int,int);
     bool supportsDepth(int) const;
+    void blank(bool on);
 
     void exposeRegion(QRegion r, int changing);
 
