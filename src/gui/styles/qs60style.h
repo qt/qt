@@ -57,7 +57,9 @@ enum {
     PM_FrameCornerHeight,
     PM_BoldLineWidth,
     PM_ThinLineWidth,
-    PM_MessageBoxHeight
+    PM_MessageBoxHeight,
+    PM_CbaIconWidth,
+    PM_CbaIconHeight
     };
 
 class QS60StylePrivate;

@@ -57,7 +57,7 @@
 #include <private/qnet_unix_p.h>
 #endif
 #include <limits>
-#include <select.h>
+#include <sys/select.h>
 
 class tst_QSocketNotifier : public QObject
 {
@@ -180,7 +180,7 @@ void tst_QSocketNotifier::unexpectedDisconnection()
         // we have to wait until sequence value changes
         // as any event can make us jump out processing
         QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
-        QVERIFY(timer.isActive); //escape if test would hang
+        QVERIFY(timer.isActive()); //escape if test would hang
     }  while(tester.sequence <= 0);
 
     QVERIFY(readEnd1.state() == QAbstractSocket::ConnectedState);
@@ -294,7 +294,7 @@ void tst_QSocketNotifier::posixSockets()
 
         QTestEventLoop::instance().enterLoop(3);
         QCOMPARE(readSpy.count(), 1);
-        QCOMPARE(writeSpy.count(), 0);
+        writeSpy.clear(); //depending on OS, write notifier triggers on creation or not.
         QCOMPARE(errorSpy.count(), 0);
 
         char buffer[100];
@@ -315,18 +315,17 @@ void tst_QSocketNotifier::posixSockets()
 
 void tst_QSocketNotifier::bogusFds()
 {
-#ifndef Q_OS_WIN
+#ifndef Q_OS_SYMBIAN
+    //behaviour of QSocketNotifier with an invalid fd is totally different across OS
+    //main point of this test was to check symbian backend doesn't crash
+    QSKIP("test only for symbian", SkipAll);
+#else
     QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Internal error");
-#endif
     QSocketNotifier max(std::numeric_limits<int>::max(), QSocketNotifier::Read);
     QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Invalid socket specified");
-#ifndef Q_OS_WIN
     QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Internal error");
-#endif
     QSocketNotifier min(std::numeric_limits<int>::min(), QSocketNotifier::Write);
-#ifndef Q_OS_WIN
     QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Internal error");
-#endif
     //bogus magic number is the first pseudo socket descriptor from symbian socket engine.
     QSocketNotifier bogus(0x40000000, QSocketNotifier::Exception);
     QSocketNotifier largestlegal(FD_SETSIZE - 1, QSocketNotifier::Read);
@@ -350,6 +349,7 @@ void tst_QSocketNotifier::bogusFds()
     QCOMPARE(minspy.count(), 0);
     QCOMPARE(bogspy.count(), 0);
     QCOMPARE(llspy.count(), 0);
+#endif
 }
 
 QTEST_MAIN(tst_QSocketNotifier)
