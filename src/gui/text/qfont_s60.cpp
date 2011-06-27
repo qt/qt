@@ -42,7 +42,7 @@
 #include "qfont.h"
 #include "qfont_p.h"
 #include <private/qt_s60_p.h>
-#include <private/qpixmap_s60_p.h>
+#include <private/qpixmap_raster_symbian_p.h>
 #include "qmutex.h"
 
 QT_BEGIN_NAMESPACE
