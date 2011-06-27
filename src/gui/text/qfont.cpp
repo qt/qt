@@ -147,6 +147,7 @@ bool QFontDef::exactMatch(const QFontDef &other) const
             && weight        == other.weight
             && style        == other.style
             && this_family   == other_family
+            && (styleName.isEmpty() || other.styleName.isEmpty() || styleName == other.styleName)
             && (this_foundry.isEmpty()
                 || other_foundry.isEmpty()
                 || this_foundry == other_foundry)
