@@ -1,3 +1,285 @@
+2011-06-15  Jer Noble  <jer.noble@apple.com>
+
+        Reviewed by Timothy Hatcher.
+
+        Full-screen live streams have status text in wrong location
+        https://bugs.webkit.org/show_bug.cgi?id=62733
+
+        Fix a misspelling in the user-agent stylesheet for full-screen mode.
+
+        * css/fullscreenQuickTime.css:
+        (video:-webkit-full-screen::-webkit-media-controls-status-display):
+
+2011-06-27  Caio Marcelo de Oliveira Filho  <caio.oliveira@openbossa.org>
+
+        Reviewed by Andreas Kling.
+
+        [Qt] tst_QWebFrame::overloadedSlots() fails
+        https://bugs.webkit.org/show_bug.cgi?id=37319
+
+        This patch is based on Noam Rosenthal original patch in the same bug.
+
+        When hinted with QWebElement metatype, we qualify the conversion
+        from JSElement as a "perfect match".
+
+        The test was failing because the wrong slot was called, since the QWebElement
+        match was taken as equal to the others and not chosen when the metacall happened.
+
+        * bridge/qt/qt_runtime.cpp:
+        (JSC::Bindings::convertValueToQVariant): Identify the conversion between JSElement
+        to QWebElement as a "perfect match" (dist = 0). Add comments to explain the reason
+        why we have the implicit conversion.
+
+2011-06-27  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Simon Fraser.
+
+        Fix removal of overhanging floats on style changes to absolute/fixed position.
+        https://bugs.webkit.org/show_bug.cgi?id=63355
+
+        1. If we are not currently positioned.
+        2. And we are not floating. (If we are floating, then this will be automatically
+           done in RenderBox::styleWillChange as part of removeFloatingOrPositionedChildFromBlockLists) 
+        3. And we have overhanging floats from previous sibling blocks.
+        4. And our new new style tells that we will have absolute or fixed position.
+
+        Then, we mark all our descendants with floats for layout. This will make sure that
+        overhanging floats are removed. Also, it is important to do that since if that previous
+        sibling block goes away, it is not able to tell us that to remove those floats thinking 
+        that being a positioned block, we should have removed them already.
+
+        Tests: fast/block/float/intruding-float-add-in-sibling-block-on-static-position.html
+               fast/block/float/intruding-float-add-in-sibling-block-on-static-position2.html
+               fast/block/float/intruding-float-remove-from-sibling-block-on-absolute-position.html
+               fast/block/float/intruding-float-remove-from-sibling-block-on-absolute-position2.html
+               fast/block/float/intruding-float-remove-from-sibling-block-on-fixed-position.html
+               fast/block/float/intruding-float-remove-from-sibling-block-on-fixed-position2.html
+               fast/block/float/overhanging-float-add-in-static-position-block.html
+               fast/block/float/overhanging-float-add-in-static-position-block2.html
+               fast/block/float/overhanging-float-remove-from-absolute-position-block.html
+               fast/block/float/overhanging-float-remove-from-absolute-position-block2.html
+               fast/block/float/overhanging-float-remove-from-fixed-position-block.html
+               fast/block/float/overhanging-float-remove-from-fixed-position-block2.html
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::styleWillChange):
+
+2011-06-27  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Reviewed by Kent Tamura.
+
+        Crash in TextIterator
+        https://bugs.webkit.org/show_bug.cgi?id=63334
+
+        Fix a crash in TextIterator. Keep m_sortedTextBoxes and renderer consistent
+        and check !m_offset when handling first letter.
+
+        Also add more assertions to help detecting similar bugs.
+
+        Test: editing/text-iterator/first-letter-rtl-crash.html
+
+        * editing/TextIterator.cpp:
+        (WebCore::TextIterator::handleTextNode):
+        (WebCore::TextIterator::emitText):
+
+2011-06-27  Huang Dongsung  <luxtella@company100.net>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        TiledBackingStore endlessly creates and destroys tiles due to an off-by-one
+        error.
+        https://bugs.webkit.org/show_bug.cgi?id=62422
+
+        REGRESSION(r77286): Remove bottomRight().
+        REGRESSION(r77312): Change the logic to get the bottom right point.
+        REGRESSION(r77928): Cause off-by-one error in TiledBackingStore.
+        REGRESSION(r78783): Cause off-by-one error in TiledDrawingAreaProxy.
+        REGRESSION(r78785): Cause off-by-one error in TiledDrawingAreaProxy.
+
+        If the viewport width equals the contents width, especially in the mobile
+        device, TiledBackingStore endlessly creates and deletes the rightmost
+        column and bottom row of tiles.
+        In the detail, dropTilesOutsideRect() in TiledBackingStore::createTiles()
+        deletes tiles and setTile(coordinate, Tile::create(this, coordinate)) creates
+        tiles infinitely.
+        Modified TiledDrawingAreaProxy also.
+
+        * platform/graphics/TiledBackingStore.cpp:
+        (WebCore::innerBottomRight):
+        (WebCore::TiledBackingStore::invalidate):
+        (WebCore::TiledBackingStore::paint):
+        (WebCore::TiledBackingStore::createTiles):
+
+2011-06-27  Alexis Menard  <alexis.menard@openbossa.org>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Remove Phonon MediaPlayer from the tree.
+        https://bugs.webkit.org/show_bug.cgi?id=63448
+
+        Remove Phonon mediaplayer as it is unused, not finished and
+        unmaintained.
+
+        * WebCore.gypi:
+        * WebCore.pri:
+        * WebCore.pro:
+        * features.pri:
+        * platform/graphics/MediaPlayer.cpp:
+        * platform/graphics/qt/MediaPlayerPrivatePhonon.cpp: Removed.
+        * platform/graphics/qt/MediaPlayerPrivatePhonon.h: Removed.
+
+2011-06-10  Darin Adler  <darin@apple.com>
+
+        Reviewed by Eric Carlson.
+
+        REGRESSION: Fullscreen video controller can't be dragged
+        https://bugs.webkit.org/show_bug.cgi?id=62462
+
+        No regression test because we don't have machinery for testing the fullscreen
+        mode. We may find a way to add this in the future.
+
+        * html/shadow/MediaControlElements.cpp:
+        (WebCore::MediaControlPanelElement::MediaControlPanelElement): Initialize new
+        booleans related to dragging.
+        (WebCore::MediaControlPanelElement::startDrag): Added. Starts drag if dragging
+        is allowed and a drag isn't already in progress.
+        (WebCore::MediaControlPanelElement::continueDrag): Added. Moves the window if
+        dragging is already in progress.
+        (WebCore::MediaControlPanelElement::endDrag): Added. Ends the capture that is
+        done during the dragging process.
+        (WebCore::MediaControlPanelElement::setPosition): Added. Positions the panel
+        using explicit top/left.
+        (WebCore::MediaControlPanelElement::resetPosition): Added. Removes the positioning
+        done by setPosition.
+        (WebCore::MediaControlPanelElement::defaultEventHandler): Added. Calls startDrag,
+        continueDrag, and endDrag in response to mouse events.
+        (WebCore::MediaControlPanelElement::setCanBeDragged): Added.
+        * html/shadow/MediaControlElements.h: Added new function and data members
+        as mentioned above.
+
+        * html/shadow/MediaControlRootElement.cpp:
+        (WebCore::MediaControlRootElement::enteredFullscreen): Call setCanBeDragged(true)
+        so you can drag the panel while in fullscreen.
+        (WebCore::MediaControlRootElement::exitedFullscreen): Call setCanBeDragged(false)
+        so you can't drag the panel while not in fullscreen. Also call resetPosition so
+        position changes from dragging don't affect the panel in other contexts.
+
+2011-06-24  Dimitri Glazkov  <dglazkov@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        REGRESSION (r77740): Shadow DOM pseudo elements aren't matching when combined with descendant selectors
+        https://bugs.webkit.org/show_bug.cgi?id=63373
+
+        * css/CSSStyleSelector.cpp:
+        (WebCore::CSSStyleSelector::pushParentStackFrame): Changed to use parentOrHostElement.
+        (WebCore::CSSStyleSelector::pushParent): Ditto.
+        * dom/Node.cpp:
+        (WebCore::Node::parentOrHostElement): Added.
+        * dom/Node.h:
+
+2011-06-24  Alexey Proskuryakov  <ap@apple.com>
+
+        Rubber-stamped by Maciej Stachowiak.
+
+        REGRESSION (r88984): Infinite recursion in DocumentLoader::detachFromFrame/stopLoading
+
+        No new tests, as there is no known way to reproduce this (but we'll keep investigating, as
+        the rollout will re-introduce the older less frequent crash).
+
+        * loader/DocumentLoader.cpp: (WebCore::DocumentLoader::detachFromFrame): Rollout the fix
+        for bug 62764.
+
+2011-06-24  Alexis Menard  <alexis.menard@openbossa.org>
+
+        Unreviewed build fix.
+
+        Build fix on Linux when using the GStreamer backend.
+
+        No new tests, just a build fix.
+
+        * platform/graphics/gstreamer/PlatformVideoWindowQt.cpp:
+        (FullScreenVideoWindow::keyPressEvent):
+
+2011-06-23  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        RefPtr m_style in MediaQueryEvaluator in case of callers like
+        MediaQueryMatcher::prepareEvaluator that do not retain its reference.
+        https://bugs.webkit.org/show_bug.cgi?id=63264
+
+        Test: fast/css/media-query-evaluator-crash.html
+
+        * css/MediaQueryEvaluator.cpp:
+        (WebCore::MediaQueryEvaluator::eval):
+        * css/MediaQueryEvaluator.h:
+
+2011-06-22  Annie Sullivan  <sullivan@chromium.org>
+
+        Reviewed by Ryosuke Niwa.
+
+        REGRESSION: Hitting enter in the middle of this span causes the cursor to go to the end of the span
+        https://bugs.webkit.org/show_bug.cgi?id=61594
+
+        When the tree is split at the cursor in InsertParagraphSeparatorCommand, it is possible for the position
+        split at to be at the end of a text node. The code assumes the position is at the start of the node, so
+        pass the correct node into splitTreeToNode() in that case.
+
+        Tests: editing/inserting/return-key-before-br-in-span.html
+               editing/inserting/return-key-middle-of-span.html
+
+        * editing/InsertParagraphSeparatorCommand.cpp:
+        (WebCore::InsertParagraphSeparatorCommand::doApply):
+
+2011-05-24  Matthew Delaney  <mdelaney@apple.com>
+
+        Reviewed by Simon Fraser.
+
+        Clamp coordinates to integers for canvas create/getImageData routines
+        https://bugs.webkit.org/show_bug.cgi?id=61135
+
+        Test: fast/canvas/canvas-getImageData-largeNonintegralDimensions.html
+
+        * html/HTMLCanvasElement.cpp:
+        (WebCore::HTMLCanvasElement::convertLogicalToDevice): clamp to ints
+        * html/canvas/CanvasRenderingContext2D.cpp:
+        (WebCore::CanvasRenderingContext2D::createImageData):
+        (WebCore::CanvasRenderingContext2D::getImageData):
+        * platform/graphics/cg/ImageBufferDataCG.cpp:
+        (WebCore::ImageBufferData::getData):
+
+2011-06-09  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Eric Seidel.
+
+        Running script from attach can remove elements from the stack of open elements
+        https://bugs.webkit.org/show_bug.cgi?id=62160
+
+        When the tree build runs script synchronously, that script can remove
+        arbitrary elements from the stack of open elements.  We need to hold a
+        reference to |parent| in attach instead of rely upon the reference in
+        the stack of open elements.
+
+        Test: fast/parser/document-write-onload-clear.html
+
+        * html/parser/HTMLConstructionSite.cpp:
+        (WebCore::HTMLConstructionSite::attach):
+
+2011-06-09  Mike Lawther  <mikelawther@chromium.org>
+
+        Reviewed by Kent Tamura.
+
+        Parsing issue with -webkit-calc
+        https://bugs.webkit.org/show_bug.cgi?id=62276
+
+        Set the CSSParserString for the calc functions.
+
+        Test: css3/calc/regression-62276.html
+
+        * css/CSSParser.cpp:
+        (WebCore::CSSParser::lex):
+
 2011-06-20  Adam Barth  <abarth@webkit.org>
 
         Reviewed by Alexey Proskuryakov.

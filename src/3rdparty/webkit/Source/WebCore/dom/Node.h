@@ -219,6 +219,7 @@ public:
     bool isInShadowTree();
     // Node's parent, shadow tree host, or SVG use.
     ContainerNode* parentOrHostNode() const;
+    Element* parentOrHostElement() const;
     // Use when it's guaranteed to that shadowHost is 0 and svgShadowHost is 0.
     ContainerNode* parentNodeGuaranteedHostFree() const;
 
