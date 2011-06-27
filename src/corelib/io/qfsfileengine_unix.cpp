@@ -925,6 +925,7 @@ QString QFSFileEngine::owner(FileOwner own) const
         return QFileSystemEngine::resolveUserName(ownerId(own));
     return QFileSystemEngine::resolveGroupName(ownerId(own));
 #else
+    Q_UNUSED(own)
     return QString();
 #endif
 }
