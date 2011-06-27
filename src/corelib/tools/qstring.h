@@ -639,6 +639,7 @@ private:
     static Data *fromAscii_helper(const char *str, int size = -1);
     void replace_helper(uint *indices, int nIndices, int blen, const QChar *after, int alen);
     friend class QCharRef;
+    friend class QCFString;
     friend class QTextCodec;
     friend class QStringRef;
     friend struct QAbstractConcatenable;

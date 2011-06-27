@@ -213,7 +213,7 @@ static void q3process_cleanup()
     Q3ProcessPrivate::procManager = 0;
 }
 
-#ifdef Q_OS_QNX6
+#ifdef Q_OS_QNX
 #define BAILOUT qt_safe_close(tmpSocket);qt_safe_close(socketFD[1]);return -1;
 int qnx6SocketPairReplacement (int socketFD[2]) {
     int tmpSocket;
@@ -270,7 +270,7 @@ Q3ProcessManager::Q3ProcessManager() : sn(0)
     // The SIGCHLD handler writes to a socket to tell the manager that
     // something happened. This is done to get the processing in sync with the
     // event reporting.
-#ifndef Q_OS_QNX6
+#ifndef Q_OS_QNX
     if ( ::socketpair( AF_UNIX, SOCK_STREAM, 0, sigchldFd ) ) {
 #else
     if ( qnx6SocketPairReplacement (sigchldFd) ) {
@@ -670,14 +670,14 @@ bool Q3Process::start( QStringList *env )
     int sStderr[2];
 
     // open sockets for piping
-#ifndef Q_OS_QNX6
+#ifndef Q_OS_QNX
     if ( (comms & Stdin) && ::socketpair( AF_UNIX, SOCK_STREAM, 0, sStdin ) == -1 ) {
 #else
     if ( (comms & Stdin) && qnx6SocketPairReplacement(sStdin) == -1 ) {
 #endif
 	return false;
     }
-#ifndef Q_OS_QNX6
+#ifndef Q_OS_QNX
     if ( (comms & Stderr) && ::socketpair( AF_UNIX, SOCK_STREAM, 0, sStderr ) == -1 ) {
 #else
     if ( (comms & Stderr) && qnx6SocketPairReplacement(sStderr) == -1 ) {
@@ -688,7 +688,7 @@ bool Q3Process::start( QStringList *env )
 	}
 	return false;
     }
-#ifndef Q_OS_QNX6
+#ifndef Q_OS_QNX
     if ( (comms & Stdout) && ::socketpair( AF_UNIX, SOCK_STREAM, 0, sStdout ) == -1 ) {
 #else
     if ( (comms & Stdout) && qnx6SocketPairReplacement(sStdout) == -1 ) {
@@ -782,11 +782,7 @@ bool Q3Process::start( QStringList *env )
 	    ::fcntl( fd[1], F_SETFD, FD_CLOEXEC ); // close on exec shows success
 
 	if ( env == 0 ) { // inherit environment and start process
-#ifndef Q_OS_QNX4
 	    ::execvp( arglist[0], (char*const*)arglist ); // ### cast not nice
-#else
-	    ::execvp( arglist[0], (char const*const*)arglist ); // ### cast not nice
-#endif
 	} else { // start process with environment settins as specified in env
 	    // construct the environment for exec
 	    int numEntries = env->count();
@@ -843,11 +839,7 @@ bool Q3Process::start( QStringList *env )
 		    }
 		}
 	    }
-#ifndef Q_OS_QNX4
 	    ::execve( arglist[0], (char*const*)arglist, (char*const*)envlist ); // ### casts not nice
-#else
-	    ::execve( arglist[0], (char const*const*)arglist,(char const*const*)envlist ); // ### casts not nice
-#endif
 	}
 	if ( fd[1] ) {
 	    char buf = 0;

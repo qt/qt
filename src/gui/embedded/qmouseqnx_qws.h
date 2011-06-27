@@ -70,6 +70,8 @@ private Q_SLOTS:
 private:
     QSocketNotifier *mouseNotifier;
     int mouseFD;
+    int mouseButtons;
+    bool absolutePositioning;
 };
 
 QT_END_NAMESPACE

@@ -48,7 +48,12 @@
 #define SRCDIR ""
 #endif
 
+#if !defined(QWS) && defined(Q_OS_MAC)
+#include "private/qcore_mac_p.h"
+#endif
+
 #ifdef Q_OS_UNIX
+#include <sys/ipc.h>
 #include <sys/mman.h>
 #include <unistd.h>
 #endif
@@ -76,6 +81,18 @@ private slots:
     void fromLatin1Alternatives() const;
     void fromUtf8Alternatives_data() const;
     void fromUtf8Alternatives() const;
+
+#if !defined(QWS) && defined(Q_OS_MAC)
+    void QCFString_data() const;
+    void QCFString_toCFStringRef_data() const;
+    void QCFString_toCFStringRef() const;
+    void QCFString_operatorCFStringRef_data() const;
+    void QCFString_operatorCFStringRef() const;
+    void QCFString_toQString_data() const;
+    void QCFString_toQString() const;
+    void QCFString_operatorQString_data() const;
+    void QCFString_operatorQString() const;
+#endif // !defined(QWS) && defined(Q_OS_MAC)
 };
 
 void tst_QString::equals() const
@@ -2595,6 +2612,89 @@ void tst_QString::fromUtf8Alternatives() const
         fromUtf8Alternatives_internal(function, dst, false);
     }
 }
+
+#if !defined(QWS) && defined(Q_OS_MAC)
+void tst_QString::QCFString_data() const
+{
+    QTest::addColumn<QString>("string");
+
+    QString base(QLatin1String("I'm some cool string"));
+    QTest::newRow("base") << base;
+
+    base = base.repeated(25);
+    QTest::newRow("25 bases") << base;
+
+    QTest::newRow("raw 25 bases") << QString::fromRawData(base.constData(), base.size());
+}
+
+void tst_QString::QCFString_toCFStringRef_data() const
+{
+    QCFString_data();
+}
+
+void tst_QString::QCFString_toCFStringRef() const
+{
+    QFETCH(QString, string);
+
+    QBENCHMARK {
+        CFStringRef cfstr = QCFString::toCFStringRef(string);
+        CFRelease(cfstr);
+    }
+}
+
+void tst_QString::QCFString_operatorCFStringRef_data() const
+{
+    QCFString_data();
+}
+
+void tst_QString::QCFString_operatorCFStringRef() const
+{
+    QFETCH(QString, string);
+
+    CFStringRef cfstr;
+    QBENCHMARK {
+        QCFString qcfstr(string);
+        cfstr = qcfstr;
+    }
+}
+
+void tst_QString::QCFString_toQString_data() const
+{
+    QCFString_data();
+}
+
+void tst_QString::QCFString_toQString() const
+{
+    QFETCH(QString, string);
+
+    QCFString qcfstr(string);
+
+    QString qstr;
+    QBENCHMARK {
+        qstr = QCFString::toQString(qcfstr);
+    }
+    QVERIFY(qstr == string);
+}
+
+void tst_QString::QCFString_operatorQString_data() const
+{
+    QCFString_data();
+}
+
+void tst_QString::QCFString_operatorQString() const
+{
+    QFETCH(QString, string);
+
+    QCFString qcfstr_base(string);
+
+    QString qstr;
+    QBENCHMARK {
+        QCFString qcfstr(qcfstr_base);
+        qstr = qcfstr;
+    }
+    QVERIFY(qstr == string);
+}
+#endif // !defined(QWS) && defined(Q_OS_MAC)
 
 QTEST_MAIN(tst_QString)
 

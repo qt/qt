@@ -70,12 +70,6 @@ class QGLFramebufferObject;
 class QGLFramebufferObjectFormat;
 class QGLPixmapData;
 
-#ifdef QGL_USE_TEXTURE_POOL
-void qt_gl_register_pixmap(QGLPixmapData *pd);
-void qt_gl_unregister_pixmap(QGLPixmapData *pd);
-void qt_gl_hibernate_pixmaps();
-#endif
-
 #ifdef Q_OS_SYMBIAN
 class QNativeImageHandleProvider;
 #endif
@@ -143,7 +137,7 @@ public:
     GLuint bind(bool copyBack = true) const;
     QGLTexture *texture() const;
 
-#ifdef QGL_USE_TEXTURE_POOL
+#ifdef Q_OS_SYMBIAN
     void destroyTexture();
     // Detach this image from the image pool.
     void detachTextureFromPool();
@@ -158,9 +152,8 @@ public:
     // texture objects to reuse storage.
     void reclaimTexture();
     void forceToImage();
-#endif
 
-#ifdef Q_OS_SYMBIAN
+    QVolatileImage toVolatileImage() const { return m_source; }
     QImage::Format idealFormat(QImage &image, Qt::ImageConversionFlags flags);
     void* toNativeType(NativeType type);
     void fromNativeType(void* pixmap, NativeType type);
@@ -217,23 +210,6 @@ private:
     mutable bool m_hasAlpha;
 
     mutable QGLPixmapGLPaintDevice m_glDevice;
-
-#ifdef QGL_USE_TEXTURE_POOL
-    QGLPixmapData *nextLRU;
-    QGLPixmapData *prevLRU;
-    mutable bool inLRU;
-    mutable bool failedToAlloc;
-    mutable bool inTexturePool;
-
-    QGLPixmapData *next;
-    QGLPixmapData *prev;
-
-    friend class QGLTexturePool;
-
-    friend void qt_gl_register_pixmap(QGLPixmapData *pd);
-    friend void qt_gl_unregister_pixmap(QGLPixmapData *pd);
-    friend void qt_gl_hibernate_pixmaps();
-#endif
 
     friend class QGLPixmapGLPaintDevice;
     friend class QMeeGoPixmapData;

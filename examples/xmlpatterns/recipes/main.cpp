@@ -47,7 +47,11 @@ int main(int argc, char* argv[])
     Q_INIT_RESOURCE(recipes);
     QApplication app(argc, argv);
     QueryMainWindow* const queryWindow = new QueryMainWindow;
+#ifdef Q_OS_SYMBIAN
+    queryWindow->showMaximized();
+#else
     queryWindow->show();
+#endif
     return app.exec();
 }
 //! [0]
