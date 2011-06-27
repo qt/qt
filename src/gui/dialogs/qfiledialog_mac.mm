@@ -553,9 +553,6 @@ void QFileDialogPrivate::QNSOpenSavePanelDelegate_filterSelected(int menuIndex)
     emit q_func()->filterSelected(nameFilters.at(menuIndex));
 }
 
-extern OSErr qt_mac_create_fsref(const QString &, FSRef *); // qglobal.cpp
-extern void qt_mac_to_pascal_string(QString s, Str255 str, TextEncoding encoding=0, int len=-1); // qglobal.cpp
-
 void QFileDialogPrivate::setDirectory_sys(const QString &directory)
 {
 #ifndef QT_MAC_USE_COCOA

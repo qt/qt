@@ -114,7 +114,6 @@ extern int qt_mac_pixmap_get_bytes_per_line(const QPixmap *);
 extern RgnHandle qt_mac_get_rgn(); //qregion_mac.cpp
 extern void qt_mac_dispose_rgn(RgnHandle); //qregion_mac.cpp
 extern QRegion qt_mac_convert_mac_region(RgnHandle); //qregion_mac.cpp
-extern void qt_mac_to_pascal_string(QString s, Str255 str, TextEncoding encoding=0, int len=-1);  //qglobal.cpp
 
 /*
     QGLTemporaryContext implementation

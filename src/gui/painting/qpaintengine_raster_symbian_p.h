@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPAINTENGINE_S60_P_H
-#define QPAINTENGINE_S60_P_H
+#ifndef QPAINTENGINE_RASTER_SYMBIAN_P_H
+#define QPAINTENGINE_RASTER_SYMBIAN_P_H
 
 //
 //  W A R N I N G
@@ -57,15 +57,15 @@
 
 QT_BEGIN_NAMESPACE
 
-class QS60PaintEnginePrivate;
-class QS60PixmapData;
+class QSymbianRasterPaintEnginePrivate;
+class QSymbianRasterPixmapData;
 
-class QS60PaintEngine : public QRasterPaintEngine
+class QSymbianRasterPaintEngine : public QRasterPaintEngine
 {
-    Q_DECLARE_PRIVATE(QS60PaintEngine)
+    Q_DECLARE_PRIVATE(QSymbianRasterPaintEngine)
 
 public:
-    QS60PaintEngine(QPaintDevice *device, QS60PixmapData* data);
+    QSymbianRasterPaintEngine(QPaintDevice *device, QSymbianRasterPixmapData *data = 0);
     bool begin(QPaintDevice *device);
     bool end();
 
@@ -76,9 +76,9 @@ public:
     void prepare(QImage* image);
 
 private:
-    QS60PixmapData *pixmapData;
+    QSymbianRasterPixmapData *pixmapData;
 };
 
 QT_END_NAMESPACE
 
-#endif // QPAINTENGINE_S60_P_H
+#endif // QPAINTENGINE_RASTER_SYMBIAN_P_H
