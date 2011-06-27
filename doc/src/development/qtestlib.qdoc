@@ -181,6 +181,9 @@
     outputs the possible command line arguments and give some useful help.
     \o \c -functions \BR
     outputs all test functions available in the test.
+    \o \c -datatags \BR
+    outputs all data tags available in the test.
+    A global data tag is preceded by ' __global__ '.
     \o \c -o \e filename \BR
     write output to the specified file, rather than to standard output
     \o \c -silent \BR
