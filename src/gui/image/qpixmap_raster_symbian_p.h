@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPIXMAPDATA_S60_P_H
-#define QPIXMAPDATA_S60_P_H
+#ifndef QPIXMAP_RASTER_SYMBIAN_P_H
+#define QPIXMAP_RASTER_SYMBIAN_P_H
 
 //
 //  W A R N I N G
@@ -81,11 +81,11 @@ private:
     bool wasLocked;
 };
 
-class QS60PixmapData : public QRasterPixmapData
+class QSymbianRasterPixmapData : public QRasterPixmapData
 {
 public:
-    QS60PixmapData(PixelType type);
-    ~QS60PixmapData();
+    QSymbianRasterPixmapData(PixelType type);
+    ~QSymbianRasterPixmapData();
 
     QPixmapData *createCompatiblePixmapData() const;
 
@@ -122,20 +122,19 @@ private:
 
     bool formatLocked;
 
-    QS60PixmapData *next;
-    QS60PixmapData *prev;
+    QSymbianRasterPixmapData *next;
+    QSymbianRasterPixmapData *prev;
 
-    static void qt_symbian_register_pixmap(QS60PixmapData *pd);
-    static void qt_symbian_unregister_pixmap(QS60PixmapData *pd);
+    static void qt_symbian_register_pixmap(QSymbianRasterPixmapData *pd);
+    static void qt_symbian_unregister_pixmap(QSymbianRasterPixmapData *pd);
     static void qt_symbian_release_pixmaps();
 
     friend class QPixmap;
     friend class QS60WindowSurface;
-    friend class QS60PaintEngine;
+    friend class QSymbianRasterPaintEngine;
     friend class QS60Data;
 };
 
 QT_END_NAMESPACE
 
-#endif // QPIXMAPDATA_S60_P_H
-
+#endif // QPIXMAP_RASTER_SYMBIAN_P_H

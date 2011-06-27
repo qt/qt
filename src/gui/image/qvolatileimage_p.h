@@ -87,6 +87,7 @@ public:
     bool ensureFormat(QImage::Format format);
     QImage toImage() const;
     QImage &imageRef();
+    const QImage &constImageRef() const;
     QPaintEngine *paintEngine();
     void setAlphaChannel(const QPixmap &alphaChannel);
     void fill(uint pixelValue);

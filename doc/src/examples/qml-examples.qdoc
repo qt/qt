@@ -714,3 +714,13 @@
 
     \image qml-xmlhttprequest-example.png
 */
+
+/*!
+    \title Labs: Shader Effects
+    \example declarative/shadereffects
+
+    This example shows how to create visual effects by using OpenGL shading language together with QML using \l ShaderEffectItem and \l ShaderEffectSource APIs.
+
+    \image qml-shadereffects-example.png
+*/
+

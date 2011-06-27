@@ -876,3 +876,4 @@ EXPORTS
 	?qt_static_metacall@QGLShaderProgram@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 875 NONAME ; void QGLShaderProgram::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?platformExtension@QGLGraphicsSystem@@UAEPAVQGraphicsSystemEx@@XZ @ 876 NONAME ; class QGraphicsSystemEx * QGLGraphicsSystem::platformExtension(void)
 	?releaseCachedGpuResources@QGLGraphicsSystem@@UAEXXZ @ 877 NONAME ; void QGLGraphicsSystem::releaseCachedGpuResources(void)
+	?toVolatileImage@QGLPixmapData@@UBE?AVQVolatileImage@@XZ @ 878 NONAME ; class QVolatileImage QGLPixmapData::toVolatileImage(void) const
