@@ -9,3 +9,8 @@ SOURCES += bench_qdir_tree.cpp
 RESOURCES += bench_qdir_tree.qrc
 
 QT -= gui
+
+symbian: {
+    TARGET.CAPABILITY = NetworkServices
+    INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE
+}
