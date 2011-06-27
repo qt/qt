@@ -117,7 +117,7 @@ embedded {
         contains( gfx-drivers, qnx ) {
                 HEADERS += embedded/qscreenqnx_qws.h
                 SOURCES += embedded/qscreenqnx_qws.cpp
-                LIBS += -lgf
+                LIBS_PRIVATE += -lgf
         }
 
         contains( gfx-drivers, integrityfb ) {

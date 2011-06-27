@@ -234,6 +234,8 @@ protected:
 private:
     Q_DISABLE_COPY(QGraphicsWidget)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QGraphicsWidget)
+    Q_PRIVATE_SLOT(d_func(), void _q_relayout())
+
     friend class QGraphicsScene;
     friend class QGraphicsScenePrivate;
     friend class QGraphicsView;

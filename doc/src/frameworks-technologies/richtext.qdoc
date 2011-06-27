@@ -880,6 +880,10 @@
     \row    \o \c a
             \o Anchor or link
             \o Supports the \c href and \c name attributes.
+               Note that the \c{:visited} selector is one of those
+               that is not supported by the rich text engine.
+               See \l{#Supported CSS Selectors}{below} for a list
+               of others.
     \row    \o \c address
             \o Address
             \o
@@ -1017,6 +1021,11 @@
     \row    \o \c strong
             \o Strong
             \o Same as \c b.
+    \row    \o \c style
+            \o Style sheet
+            \o Allows styling information to be included with the rich text.
+               A \l{#CSS Properties}{limited subset of CSS syntax} can be
+               used to change the appearance of the text.
     \row    \o \c sub
             \o Subscript
             \o
@@ -1210,5 +1219,4 @@
 
     All CSS 2.1 selector classes are supported except pseudo-class selectors such
     as \c{:first-child}, \c{:visited} and \c{:hover}.
-
 */

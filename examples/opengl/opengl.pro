@@ -12,13 +12,14 @@ contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2){
     }
 } else {
     SUBDIRS   = 2dpainting \
+                cube \
                 grabber \
                 hellogl \
                 overpainting \
                 pbuffers \
                 framebufferobject2 \
                 samplebuffers \
-                textures
+                textures \
 
     contains(QT_CONFIG, svg) {
         SUBDIRS += framebufferobject \
@@ -32,4 +33,3 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS opengl.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/opengl
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

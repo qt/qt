@@ -135,19 +135,21 @@ void QWSLinuxInputMousePrivate::readMouseData()
     int n = 0;
 
     forever {
-        n = QT_READ(m_fd, reinterpret_cast<char *>(buffer) + n, sizeof(buffer) - n);
-
-        if (n == 0) {
+        int bytesRead = QT_READ(m_fd, reinterpret_cast<char *>(buffer) + n, sizeof(buffer) - n);
+        if (bytesRead == 0) {
             qWarning("Got EOF from the input device.");
             return;
-        } else if (n < 0 && (errno != EINTR && errno != EAGAIN)) {
-            qWarning("Could not read from input device: %s", strerror(errno));
-            return;
-        } else if (n % sizeof(buffer[0]) == 0) {
+        }
+        if (bytesRead == -1) {
+            if (errno != EAGAIN)
+                qWarning("Could not read from input device: %s", strerror(errno));
             break;
         }
-    }
 
+        n += bytesRead;
+        if (n % sizeof(buffer[0]) == 0)
+            break;
+    }
     n /= sizeof(buffer[0]);
 
     for (int i = 0; i < n; ++i) {

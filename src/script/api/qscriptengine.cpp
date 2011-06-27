@@ -3820,7 +3820,7 @@ QStringList QScriptEngine::importedExtensions() const
     which did not support member template functions. It is advised
     to use the other form in new code.
 
-    \sa QScriptEngine::toScriptValue(), qscriptvalue_cast
+    \sa QScriptEngine::toScriptValue(), qscriptvalue_cast()
 */
 
 /*!

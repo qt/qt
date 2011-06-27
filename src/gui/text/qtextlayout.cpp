@@ -584,7 +584,7 @@ bool QTextLayout::cacheEnabled() const
     this option is for widgets like QLineEdit or custom widgets without
     a QTextDocument. Default value is Qt::LogicalMoveStyle.
 
-    \sa setCursorMoveStyle()
+    \sa cursorMoveStyle()
 */
 void QTextLayout::setCursorMoveStyle(Qt::CursorMoveStyle style)
 {

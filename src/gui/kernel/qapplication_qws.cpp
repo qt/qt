@@ -209,7 +209,7 @@ QString qws_dataDir()
     if (!S_ISDIR(buf.st_mode))
         qFatal("%s is not a directory", dataDir.constData());
 
-#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_VXWORKS)
+#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_VXWORKS) && !defined(Q_OS_QNX)
     if (buf.st_uid != getuid())
         qFatal("Qt for Embedded Linux data directory is not owned by user %d", getuid());
 
@@ -2184,6 +2184,11 @@ void qt_init(QApplicationPrivate *priv, int type)
     qws_screen_is_interlaced = read_bool_env_var("QWS_INTERLACE",false);
 
     const char *display = ::getenv("QWS_DISPLAY");
+
+#ifdef QT_QWS_DEFAULT_DRIVER_NAME
+    if (!display) display = QT_QWS_DEFAULT_DRIVER_NAME;
+#endif
+
     if (display)
         qws_display_spec = display; // since we setenv later!
 

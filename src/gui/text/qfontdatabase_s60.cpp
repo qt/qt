@@ -47,7 +47,7 @@
 #include "qdesktopservices.h"
 #include "qtemporaryfile.h"
 #include "qtextcodec.h"
-#include <private/qpixmap_s60_p.h>
+#include <private/qpixmap_raster_symbian_p.h>
 #include <private/qt_s60_p.h>
 #include "qendian.h"
 #include <private/qcore_symbian_p.h>

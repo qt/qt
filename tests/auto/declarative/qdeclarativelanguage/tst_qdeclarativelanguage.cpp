@@ -135,6 +135,7 @@ private slots:
     void reservedWords_data();
     void reservedWords();
     void inlineAssignmentsOverrideBindings();
+    void nestedComponentRoots();
 
     void basicRemote_data();
     void basicRemote();
@@ -1423,6 +1424,12 @@ void tst_qdeclarativelanguage::inlineAssignmentsOverrideBindings()
     QVERIFY(o != 0);
     QCOMPARE(o->property("test").toInt(), 11);
     delete o;
+}
+
+// QTBUG-19354
+void tst_qdeclarativelanguage::nestedComponentRoots()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("nestedComponentRoots.qml"));
 }
 
 // Import tests (QT-558)
