@@ -3110,7 +3110,7 @@ static void drawImageTiled(QVGPaintEnginePrivate *d,
     VGImage tileWithOpacity = VG_INVALID_HANDLE;
     if (d->opacity != 1) {
         tileWithOpacity = pool->createPermanentImage(VG_sARGB_8888_PRE,
-            tileWidth, tileHeight, VG_IMAGE_QUALITY_FASTER);
+            tileWidth, tileHeight, VG_IMAGE_QUALITY_NONANTIALIASED);
         if (tileWithOpacity == VG_INVALID_HANDLE)
             qWarning("drawImageTiled: Failed to create extra tile, ignoring opacity");
     }
@@ -3123,6 +3123,10 @@ static void drawImageTiled(QVGPaintEnginePrivate *d,
     VGfloat scaleY = r.height() / sourceRect.height();
 
     d->setImageOptions();
+    VGImageQuality oldImageQuality = d->imageQuality;
+    VGRenderingQuality oldRenderingQuality = d->renderingQuality;
+    d->setImageQuality(VG_IMAGE_QUALITY_NONANTIALIASED);
+    d->setRenderingQuality(VG_RENDERING_QUALITY_NONANTIALIASED);
 
     for (int y = sourceRect.y(); y < sourceRect.height(); y += tileHeight) {
         int h = qMin(tileHeight, sourceRect.height() - y);
@@ -3162,6 +3166,9 @@ static void drawImageTiled(QVGPaintEnginePrivate *d,
     vgDestroyImage(tile);
     if (tileWithOpacity != VG_INVALID_HANDLE)
         vgDestroyImage(tileWithOpacity);
+
+    d->setImageQuality(oldImageQuality);
+    d->setRenderingQuality(oldRenderingQuality);
 }
 
 // Used by qpixmapfilter_vg.cpp to draw filtered VGImage's.

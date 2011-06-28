@@ -724,4 +724,5 @@ EXPORTS
 	?initFromNativeImageHandle@QGLPixmapData@@QAE_NPAXABVQString@@@Z @ 723 NONAME ; bool QGLPixmapData::initFromNativeImageHandle(void *, class QString const &)
 	?platformExtension@QGLGraphicsSystem@@UAEPAVQGraphicsSystemEx@@XZ @ 724 NONAME ; class QGraphicsSystemEx * QGLGraphicsSystem::platformExtension(void)
 	?releaseCachedGpuResources@QGLGraphicsSystem@@UAEXXZ @ 725 NONAME ; void QGLGraphicsSystem::releaseCachedGpuResources(void)
+	?toVolatileImage@QGLPixmapData@@UBE?AVQVolatileImage@@XZ @ 726 NONAME ; class QVolatileImage QGLPixmapData::toVolatileImage(void) const
 
