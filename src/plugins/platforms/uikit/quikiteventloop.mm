@@ -103,7 +103,7 @@
 - (void)processEventsAndSchedule
 {
     QPlatformEventLoopIntegration::processEvents();
-    qint64 nextTime = mIntegration->nextTimerEvent();
+    qint64 nextTime = qMin((qint64)33, mIntegration->nextTimerEvent()); // at least 30fps
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
     NSDate *nextDate = [[NSDate date] dateByAddingTimeInterval:((double)nextTime/1000)];
     [mIntegration->mTimer setFireDate:nextDate];
