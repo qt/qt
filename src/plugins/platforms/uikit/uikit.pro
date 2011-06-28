@@ -22,6 +22,6 @@ HEADERS = quikitsoftwareinputhandler.h
 #add libz for freetype.
 LIBS += -lz
 
-#include(../fontdatabases/basicunix/basicunix.pri)
+include(../fontdatabases/genericunix/genericunix.pri)
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
