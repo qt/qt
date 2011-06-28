@@ -303,7 +303,7 @@ protected:
 
     void setRoleNames(const QHash<int,QByteArray> &roleNames);
 
-protected slots:
+protected Q_SLOTS:
     void resetInternalData();
 
 private:
