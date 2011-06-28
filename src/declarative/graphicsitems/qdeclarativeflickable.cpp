@@ -910,18 +910,24 @@ void QDeclarativeFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEv
     qreal velocity = vData.velocity;
     if (vData.atBeginning || vData.atEnd)
         velocity /= 2;
-    if (qAbs(velocity) > MinimumFlickVelocity && qAbs(event->pos().y() - pressPos.y()) > FlickThreshold)
+    if (q->yflick() && qAbs(velocity) > MinimumFlickVelocity && qAbs(event->pos().y() - pressPos.y()) > FlickThreshold) {
+        velocityTimeline.reset(vData.smoothVelocity);
+        vData.smoothVelocity.setValue(-velocity);
         flickY(velocity);
-    else
+    } else {
         fixupY();
+    }
 
     velocity = hData.velocity;
     if (hData.atBeginning || hData.atEnd)
         velocity /= 2;
-    if (qAbs(velocity) > MinimumFlickVelocity && qAbs(event->pos().x() - pressPos.x()) > FlickThreshold)
+    if (q->xflick() && qAbs(velocity) > MinimumFlickVelocity && qAbs(event->pos().x() - pressPos.x()) > FlickThreshold) {
+        velocityTimeline.reset(hData.smoothVelocity);
+        hData.smoothVelocity.setValue(-velocity);
         flickX(velocity);
-    else
+    } else {
         fixupX();
+    }
 
     if (!timeline.isActive())
         q->movementEnding();
@@ -1121,19 +1127,25 @@ void QDeclarativeFlickable::viewportMoved()
 
     qreal prevX = d->lastFlickablePosition.x();
     qreal prevY = d->lastFlickablePosition.y();
-    d->velocityTimeline.clear();
     if (d->pressed || d->calcVelocity) {
         int elapsed = QDeclarativeItemPrivate::restart(d->velocityTime);
         if (elapsed > 0) {
             qreal horizontalVelocity = (prevX - d->hData.move.value()) * 1000 / elapsed;
+            if (qAbs(horizontalVelocity) > 0) {
+                d->velocityTimeline.reset(d->hData.smoothVelocity);
+                d->velocityTimeline.move(d->hData.smoothVelocity, horizontalVelocity, d->reportedVelocitySmoothing);
+                d->velocityTimeline.move(d->hData.smoothVelocity, 0, d->reportedVelocitySmoothing);
+            }
             qreal verticalVelocity = (prevY - d->vData.move.value()) * 1000 / elapsed;
-            d->velocityTimeline.move(d->hData.smoothVelocity, horizontalVelocity, d->reportedVelocitySmoothing);
-            d->velocityTimeline.move(d->hData.smoothVelocity, 0, d->reportedVelocitySmoothing);
-            d->velocityTimeline.move(d->vData.smoothVelocity, verticalVelocity, d->reportedVelocitySmoothing);
-            d->velocityTimeline.move(d->vData.smoothVelocity, 0, d->reportedVelocitySmoothing);
+            if (qAbs(verticalVelocity) > 0) {
+                d->velocityTimeline.reset(d->vData.smoothVelocity);
+                d->velocityTimeline.move(d->vData.smoothVelocity, verticalVelocity, d->reportedVelocitySmoothing);
+                d->velocityTimeline.move(d->vData.smoothVelocity, 0, d->reportedVelocitySmoothing);
+            }
         }
     } else {
         if (d->timeline.time() > d->vTime) {
+            d->velocityTimeline.clear();
             qreal horizontalVelocity = (prevX - d->hData.move.value()) * 1000 / (d->timeline.time() - d->vTime);
             qreal verticalVelocity = (prevY - d->vData.move.value()) * 1000 / (d->timeline.time() - d->vTime);
             d->hData.smoothVelocity.setValue(horizontalVelocity);
