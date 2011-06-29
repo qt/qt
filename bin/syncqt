@@ -714,8 +714,25 @@ foreach my $lib (@modules_to_sync) {
     my $master_contents = "#ifndef QT_".$libcapitals."_MODULE_H\n#define QT_".$libcapitals."_MODULE_H\n";
 
     #get dependencies
-    if(-e "$dir/" . basename($dir) . ".pro") {
-        if(open(F, "<$dir/" . basename($dir) . ".pro")) {
+    my $pro_file = "$dir/" . basename($dir) . ".pro";
+    if(!open(F, "<$pro_file")) {
+        #the pro file doesn't exist let's try to find one
+        opendir(DIR, $dir);
+        $pro_file = "";
+        foreach my $file (readdir(DIR))
+        {
+            if ( $file =~ /\.pro$/i) {
+                die "There are multiple pro files for $lib module, which one should I use? \n" if ($pro_file ne "");
+                $pro_file = "$dir/" . $file;
+            }
+        }
+        closedir(DIR);
+        if ($pro_file eq "") {
+            die "I couldn't find a pro file for $lib module \n";
+        }
+    }
+    if(-e "$pro_file") {
+        if(open(F, "<$pro_file")) {
             while(my $line = <F>) {
                 chomp $line;
                 if($line =~ /^ *QT *\+?= *([^\r\n]*)/) {
