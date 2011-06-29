@@ -1778,7 +1778,7 @@ QMimeData *QAbstractItemModel::mimeData(const QModelIndexList &indexes) const
     When \a row and \a column are -1 it means that the dropped data should be
     considered as dropped directly on \a parent. Usually this will mean
     appending the data as child items of \a parent. If \a row and column are
-    greater than or equal zero, it means that the drop occured just before the
+    greater than or equal zero, it means that the drop occurred just before the
     specified \a row and \a column in the specified \a parent.
 
     \sa supportedDropActions(), {Using drag and drop with item views}
