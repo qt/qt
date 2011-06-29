@@ -48,6 +48,11 @@ static QSystemLocale *QSystemLocale_globalSystemLocale();
 QT_END_NAMESPACE
 #endif
 
+#if !defined(QWS) && defined(Q_OS_MAC)
+#   include "private/qcore_mac_p.h"
+#   include <CoreFoundation/CoreFoundation.h>
+#endif
+
 #include "qplatformdefs.h"
 
 #include "qdatastream.h"
@@ -64,10 +69,6 @@ QT_END_NAMESPACE
 #if defined(Q_WS_WIN)
 #   include "qt_windows.h"
 #   include <time.h>
-#endif
-#if !defined(QWS) && defined(Q_OS_MAC)
-#   include "private/qcore_mac_p.h"
-#   include <CoreFoundation/CoreFoundation.h>
 #endif
 #include "private/qnumeric_p.h"
 #include "private/qsystemlibrary_p.h"
