@@ -1433,12 +1433,26 @@ QPixmap QS60StylePrivate::backgroundTexture(bool skipCreation)
         // Notify all widgets that palette is updated with the actual background texture.
         QPalette pal = QApplication::palette();
         pal.setBrush(QPalette::Window, *m_background);
+
+        //Application palette hash is automatically cleared when QApplication::setPalette is called.
+        //To avoid losing palette hash data, back it up before calling the setPalette() API and
+        //restore it afterwards.
+        typedef QHash<QByteArray, QPalette> PaletteHash;
+        PaletteHash hash;
+        if (qt_app_palettes_hash() || !qt_app_palettes_hash()->isEmpty())
+            hash = *qt_app_palettes_hash();
         QApplication::setPalette(pal);
-        setThemePaletteHash(&pal);
+        if (hash.isEmpty()) {
+            //set default theme palette hash
+            setThemePaletteHash(&pal);
+        } else {
+            for (int i = 0; i < hash.count() - 1; i++) {
+                QByteArray widgetClassName = hash.keys().at(i);
+                QApplication::setPalette(hash.value(widgetClassName), widgetClassName);
+            }
+        }
         storeThemePalette(&pal);
-        foreach (QWidget *widget, QApplication::allWidgets()){
-            QEvent e(QEvent::PaletteChange);
-            QApplication::sendEvent(widget, &e);
+        foreach (QWidget *widget, QApplication::allWidgets()) {
             setThemePalette(widget);
             widget->ensurePolished();
         }
