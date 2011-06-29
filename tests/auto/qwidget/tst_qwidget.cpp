@@ -4052,6 +4052,11 @@ public:
 */
 void tst_QWidget::optimizedResizeMove()
 {
+#if defined(QT_MAC_USE_COCOA)
+    if (QApplicationPrivate::graphics_system_name != QLatin1String("raster"))
+        QSKIP("WA_StaticContents in Cocoa/Native paint engine lacks support", SkipAll);
+#endif
+
     QWidget parent;
     parent.resize(400, 400);
 
@@ -8258,6 +8263,10 @@ void tst_QWidget::doubleRepaint()
    QCOMPARE(widget.numPaintEvents, 0);
    widget.numPaintEvents = 0;
 
+#if defined(QT_MAC_USE_COCOA)
+    if (QApplicationPrivate::graphics_system_name != QLatin1String("raster"))
+        QEXPECT_FAIL(0, "Cocoa will send us an update when showing the window", Continue);
+#endif
    // Restore: Should not trigger a repaint.
    widget.showNormal();
    QTest::qWaitForWindowShown(&widget);
@@ -8367,6 +8376,11 @@ public slots:
 
 void tst_QWidget::setMaskInResizeEvent()
 {
+#if defined(QT_MAC_USE_COCOA)
+    if (QApplicationPrivate::graphics_system_name != QLatin1String("raster"))
+        QSKIP("Updates on masked widgets are not optimized for Cocoa/native paint engine", SkipAll);
+#endif
+
     UpdateWidget w;
     w.reset();
     w.resize(200, 200);
@@ -9041,6 +9055,11 @@ void tst_QWidget::setClearAndResizeMask()
 
 void tst_QWidget::maskedUpdate()
 {
+#if defined(QT_MAC_USE_COCOA)
+    if (QApplicationPrivate::graphics_system_name != QLatin1String("raster"))
+        QSKIP("Updates on masked widgets are not optimized for Cocoa/native paint engine", SkipAll);
+#endif
+
     UpdateWidget topLevel;
     topLevel.resize(200, 200);
     const QRegion topLevelMask(50, 50, 70, 70);
