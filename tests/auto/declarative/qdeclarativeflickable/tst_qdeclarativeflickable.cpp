@@ -83,6 +83,7 @@ private slots:
 private:
     QDeclarativeEngine engine;
 
+    void flick(QGraphicsView *canvas, const QPoint &from, const QPoint &to, int duration);
     template<typename T>
     T *findItem(QGraphicsObject *parent, const QString &objectName);
 };
@@ -492,63 +493,35 @@ void tst_qdeclarativeflickable::flickVelocity()
     QDeclarativeFlickable *flickable = qobject_cast<QDeclarativeFlickable*>(canvas->rootObject());
     QVERIFY(flickable != 0);
 
-    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(20, 90)));
-    {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,80)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
-    }
-    QTest::qWait(10);
-    {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,70)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
-    }
-    QTest::qWait(10);
-    {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,60)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
-    }
-    QTest::qWait(10);
-    {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,50)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
-    }
-    QTest::qWait(10);
-
-    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(20, 50)));
-
+    // flick up
+    flick(canvas, QPoint(20,190), QPoint(20, 50), 100);
     QVERIFY(flickable->verticalVelocity() > 0.0);
     QTRY_VERIFY(flickable->verticalVelocity() == 0.0);
 
-    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(20, 10)));
-    {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,20)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
-    }
-    QTest::qWait(10);
-    {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,30)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
-    }
-    QTest::qWait(10);
-    {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,40)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
-    }
-    QTest::qWait(10);
-    {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,50)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
-    }
-    QTest::qWait(10);
-
-    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(20, 50)));
-
+    // flick down
+    flick(canvas, QPoint(20,10), QPoint(20, 100), 100);
     QVERIFY(flickable->verticalVelocity() < 0.0);
     QTRY_VERIFY(flickable->verticalVelocity() == 0.0);
 
     delete canvas;
 }
 
+void tst_qdeclarativeflickable::flick(QGraphicsView *canvas, const QPoint &from, const QPoint &to, int duration)
+{
+    const int pointCount = 5;
+    QPoint diff = to - from;
+
+    // send press, five equally spaced moves, and release.
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(from));
+
+    for (int i = 0; i < pointCount; ++i) {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(from + (i+1)*diff/pointCount), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+        QTest::qWait(duration/pointCount);
+    }
+
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(to));
+}
 
 template<typename T>
 T *tst_qdeclarativeflickable::findItem(QGraphicsObject *parent, const QString &objectName)
