@@ -44,6 +44,7 @@
 #include "quikitwindowsurface.h"
 #include "quikitscreen.h"
 #include "quikiteventloop.h"
+#include "qgenericunixfontdatabase.h"
 
 #include <QtGui/QApplication>
 
@@ -55,7 +56,18 @@
 
 QT_BEGIN_NAMESPACE
 
+class QUIKitFontDatabase : public QGenericUnixFontDatabase
+{
+public:
+    virtual QString fontDir() const
+    {
+        return QString( [[[[NSBundle mainBundle] bundlePath]
+            stringByAppendingPathComponent:@"fonts"] UTF8String] );
+    }
+};
+
 QUIKitIntegration::QUIKitIntegration()
+    :mFontDb(new QUIKitFontDatabase() )
 {
     mScreens << new QUIKitScreen(0);
 }
@@ -93,12 +105,7 @@ QPlatformEventLoopIntegration *QUIKitIntegration::createEventLoopIntegration() c
 
 QPlatformFontDatabase * QUIKitIntegration::fontDatabase() const
 {
-    static bool initialized = false;
-    if (!initialized) {
-        initialized = true;
-        setenv("QT_QPA_FONTDIR",[[[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"fonts"] UTF8String],1);
-    }
-    return QPlatformIntegration::fontDatabase();
+    return mFontDb;
 }
 
 QT_END_NAMESPACE
