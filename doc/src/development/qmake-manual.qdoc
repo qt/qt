@@ -1291,11 +1291,12 @@
         automatically be added to the project.
     \row \o console \o The target is a Win32 console application (app only). The
         proper include paths, compiler flags and libraries will
-        automatically be added to the
-        project.
+        automatically be added to the project.
     \row \o shared \o{1,3} The target is a shared object/DLL. The proper
         include paths, compiler flags and libraries will automatically be
-        added to the project.
+        added to the project. Note that \c dll can also be used on all platforms;
+        a shared library file with the appropriate suffix for the target platform
+        (dll, so, dylib) will be created.
     \row \o dll \o
     \row \o dylib \o
     \row \o static \o{1,2} The target is a static library (lib only).  The proper
@@ -1767,6 +1768,9 @@
     executable. If you need to install executable files, you can unset the
     files' executable flags.
 
+    Note that \c qmake will skip files that are executable. If you need to install
+    executable files, you can unset the files' executable flags.
+
     \target LEXIMPLS
     \section1 LEXIMPLS
 
@@ -1856,6 +1860,8 @@
     information for building a project.  The value of this variable is
     typically handled by \l{qmake Manual#qmake}{\c qmake} or
     \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    \bold{Note:} On the Symbian platform, this variable is ignored.
 
     \bold{Note:} On the Symbian platform, this variable is ignored.
 
@@ -3555,11 +3561,11 @@
 
     This can be useful to optionally enable or disable features. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 157
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 157
 
     And then, in the code:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 158
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 158
 
     \section1 basename(variablename)
 

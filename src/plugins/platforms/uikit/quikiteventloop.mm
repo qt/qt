@@ -72,7 +72,7 @@
     Q_UNUSED(application)
     foreach (QWidget *widget, qApp->topLevelWidgets()) {
         QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->platformWindow());
-        platformWindow->ensureNativeWindow();
+        if (platformWindow) platformWindow->ensureNativeWindow();
     }
     return YES;
 }
@@ -80,8 +80,6 @@
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     Q_UNUSED(application)
-    // TODO this isn't called for some reason
-    qDebug() << "quit";
     qApp->quit();
 }
 
@@ -105,7 +103,7 @@
 - (void)processEventsAndSchedule
 {
     QPlatformEventLoopIntegration::processEvents();
-    qint64 nextTime = mIntegration->nextTimerEvent();
+    qint64 nextTime = qMin((qint64)33, mIntegration->nextTimerEvent()); // at least 30fps
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
     NSDate *nextDate = [[NSDate date] dateByAddingTimeInterval:((double)nextTime/1000)];
     [mIntegration->mTimer setFireDate:nextDate];
@@ -156,15 +154,15 @@ bool QUIKitSoftwareInputHandler::eventFilter(QObject *obj, QEvent *event)
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
         QWidget *widget = qobject_cast<QWidget *>(obj);
         if (widget) {
-            QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->platformWindow());
-            [platformWindow->nativeView() becomeFirstResponder];
+            QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->window()->platformWindow());
+            if (platformWindow) [platformWindow->nativeView() becomeFirstResponder];
             return true;
         }
     } else if (event->type() == QEvent::CloseSoftwareInputPanel) {
         QWidget *widget = qobject_cast<QWidget *>(obj);
         if (widget) {
-            QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->platformWindow());
-            [platformWindow->nativeView() resignFirstResponder];
+            QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->window()->platformWindow());
+            if (platformWindow) [platformWindow->nativeView() resignFirstResponder];
             return true;
         }
     }

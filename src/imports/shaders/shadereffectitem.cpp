@@ -7,29 +7,29 @@
 ** This file is part of the QML Shaders plugin of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -72,7 +72,7 @@ static const char qt_emptyAttributeName[] = "";
 
 /*!
     \qmlclass ShaderEffectItem ShaderEffectItem
-    \ingroup qmlshadersplugin
+    \ingroup qml-shader-elements
     \brief The ShaderEffectItem object alters the output of given item with OpenGL shaders.
     \inherits Item
 
@@ -84,7 +84,7 @@ static const char qt_emptyAttributeName[] = "";
     and may be heavily changed or removed in later versions.
 
     Requirement for the use of shaders is that the application is either using
-    Qt OpenGL graphicssystem or is forced to use OpenGL by setting QGLWidget as the viewport to QDeclarativeView (recommened way).
+    Qt OpenGL graphicssystem or is using OpenGL by setting QGLWidget as the viewport to QDeclarativeView (depending on which one is the recommened way in the targeted platform).
 
     ShaderEffectItem internal behaviour is such that during the paint event it first renders its
     ShaderEffectSource items into a OpenGL framebuffer object which can be used as a texture. If the ShaderEffectSource is defined to be an image,
@@ -195,7 +195,7 @@ Rectangle {
     }
 }
     \endqml
-    \image Example1.png
+    \image shaderexample.png
 
 */
 

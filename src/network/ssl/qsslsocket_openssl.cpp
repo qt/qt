@@ -68,7 +68,7 @@
 #endif
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
 #define kSecTrustSettingsDomainSystem 2 // so we do not need to include the header file
     PtrSecCertificateGetData QSslSocketPrivate::ptrSecCertificateGetData = 0;
     PtrSecTrustSettingsCopyCertificates QSslSocketPrivate::ptrSecTrustSettingsCopyCertificates = 0;
@@ -420,7 +420,11 @@ init_context:
         QByteArray ace = QUrl::toAce(tlsHostName);
         // only send the SNI header if the URL is valid and not an IP
         if (!ace.isEmpty() && !QHostAddress().setAddress(tlsHostName)) {
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+            if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.data()))
+#else
             if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.constData()))
+#endif
                 qWarning("could not set SSL_CTRL_SET_TLSEXT_HOSTNAME, Server Name Indication disabled");
         }
     }
@@ -532,7 +536,7 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
     resetDefaultCiphers();
 
     //load symbols needed to receive certificates from system store
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
     QLibrary securityLib("/System/Library/Frameworks/Security.framework/Versions/Current/Security");
     if (securityLib.load()) {
         ptrSecCertificateGetData = (PtrSecCertificateGetData) securityLib.resolve("SecCertificateGetData");
@@ -813,7 +817,7 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
     timer.start();
 #endif
     QList<QSslCertificate> systemCerts;
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
     CFArrayRef cfCerts;
     OSStatus status = 1;
 
@@ -1338,9 +1342,9 @@ bool QSslSocketBackendPrivate::startHandshake()
         sslErrors.clear();
     }
 
-    // if we have a max read buffer size, reset the plain socket's to 16k
+    // if we have a max read buffer size, reset the plain socket's to 32k
     if (readBufferMaxSize)
-        plainSocket->setReadBufferSize(16384);
+        plainSocket->setReadBufferSize(32768);
 
     connectionEncrypted = true;
     emit q->encrypted();

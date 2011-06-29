@@ -1309,6 +1309,9 @@ inline void QRingBuffer<T>::enqueue(const T &x)
 //============================================================================//
 //                               QTriangulator                                //
 //============================================================================//
+
+typedef QRBTree<int>::Node *QRBTreeIntNodePointer;
+
 template<typename T>
 class QTriangulator
 {
@@ -1775,7 +1778,7 @@ bool QTriangulator<T>::ComplexToSimple::edgeIsLeftOfEdge(int leftEdgeIndex, int 
 }
 
 template <typename T>
-QRBTree<int>::Node *QTriangulator<T>::ComplexToSimple::searchEdgeLeftOf(int edgeIndex) const
+QRBTreeIntNodePointer QTriangulator<T>::ComplexToSimple::searchEdgeLeftOf(int edgeIndex) const
 {
     QRBTree<int>::Node *current = m_edgeList.root;
     QRBTree<int>::Node *result = 0;
@@ -1791,7 +1794,7 @@ QRBTree<int>::Node *QTriangulator<T>::ComplexToSimple::searchEdgeLeftOf(int edge
 }
 
 template <typename T>
-QRBTree<int>::Node *QTriangulator<T>::ComplexToSimple::searchEdgeLeftOf(int edgeIndex, QRBTree<int>::Node *after) const
+QRBTreeIntNodePointer QTriangulator<T>::ComplexToSimple::searchEdgeLeftOf(int edgeIndex, QRBTree<int>::Node *after) const
 {
     if (!m_edgeList.root)
         return after;

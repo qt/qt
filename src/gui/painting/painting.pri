@@ -198,12 +198,12 @@ qpa {
 
 symbian {
         SOURCES += \
-				painting/qpaintengine_s60.cpp \
+		painting/qpaintengine_raster_symbian.cpp \
                 painting/qregion_s60.cpp \
                 painting/qcolormap_s60.cpp
 
         HEADERS += \
-                painting/qpaintengine_s60_p.h
+                painting/qpaintengine_raster_symbian_p.h
 }
 
 x11|embedded|qpa {
