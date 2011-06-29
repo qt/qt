@@ -184,7 +184,7 @@ QGLGraphicsSystem::QGLGraphicsSystem(bool useX11GL)
 class QGLGlobalShareWidget
 {
 public:
-    QGLGlobalShareWidget() : firstPixmap(0), widgetRefCount(0), widget(0), initializing(false) {
+    QGLGlobalShareWidget() : refCount(0), widget(0), initializing(false) {
         created = true;
     }
 
@@ -227,8 +227,7 @@ public:
     static bool cleanedUp;
     static bool created;
 
-    QGLPixmapData *firstPixmap;
-    int widgetRefCount;
+    int refCount;
 
 private:
     QGLWidget *widget;
@@ -270,43 +269,6 @@ const QGLContext *qt_gl_share_context()
         return widget->context();
     return 0;
 }
-
-#ifdef QGL_USE_TEXTURE_POOL
-void qt_gl_register_pixmap(QGLPixmapData *pd)
-{
-    QGLGlobalShareWidget *shared = _qt_gl_share_widget();
-    pd->next = shared->firstPixmap;
-    pd->prev = 0;
-    if (shared->firstPixmap)
-        shared->firstPixmap->prev = pd;
-    shared->firstPixmap = pd;
-}
-
-void qt_gl_unregister_pixmap(QGLPixmapData *pd)
-{
-    if (pd->next)
-        pd->next->prev = pd->prev;
-    if (pd->prev) {
-        pd->prev->next = pd->next;
-    } else {
-        QGLGlobalShareWidget *shared = _qt_gl_share_widget();
-        if (shared)
-           shared->firstPixmap = pd->next;
-    }
-}
-
-void qt_gl_hibernate_pixmaps()
-{
-    QGLGlobalShareWidget *shared = _qt_gl_share_widget();
-
-    // Scan all QGLPixmapData objects in the system and hibernate them.
-    QGLPixmapData *pd = shared->firstPixmap;
-    while (pd != 0) {
-        pd->hibernate();
-        pd = pd->next;
-    }
-}
-#endif
 
 struct QGLWindowSurfacePrivate
 {
@@ -407,18 +369,10 @@ QGLWindowSurface::~QGLWindowSurface()
     if (QGLGlobalShareWidget::cleanedUp)
         return;
 
-    --(_qt_gl_share_widget()->widgetRefCount);
+    --(_qt_gl_share_widget()->refCount);
 
-#ifdef QGL_USE_TEXTURE_POOL
-    if (_qt_gl_share_widget()->widgetRefCount <= 0) {
-        // All of the widget window surfaces have been destroyed
-        // but we still have GL pixmaps active.  Ask them to hibernate
-        // to free up GPU resources until a widget is shown again.
-        // This may eventually cause the EGLContext to be destroyed
-        // because nothing in the system needs a context, which will
-        // free up even more GPU resources.
-        qt_gl_hibernate_pixmaps();
-
+#ifdef Q_OS_SYMBIAN
+    if (_qt_gl_share_widget()->refCount <= 0) {
         // Destroy the context if necessary.
         if (!qt_gl_share_widget()->context()->isSharing())
             qt_destroy_gl_share_widget();
@@ -474,7 +428,7 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     ctx->create(qt_gl_share_context());
 
     if (widget != qt_gl_share_widget())
-        ++(_qt_gl_share_widget()->widgetRefCount);
+        ++(_qt_gl_share_widget()->refCount);
 
 #ifndef QT_NO_EGL
     static bool checkedForNOKSwapRegion = false;
@@ -508,6 +462,7 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
     voidPtrPtr = &widgetPrivate->extraData()->glContext;
     d_ptr->contexts << ctxPtrPtr;
+
 #ifndef Q_OS_SYMBIAN
     qDebug() << "hijackWindow() context created for" << widget << d_ptr->contexts.size();
 #endif
@@ -902,7 +857,7 @@ void QGLWindowSurface::updateGeometry() {
 #ifdef Q_OS_SYMBIAN // Symbian needs to recreate the context when native window size changes
         if (d_ptr->size != geometry().size()) {
             if (window() != qt_gl_share_widget())
-                --(_qt_gl_share_widget()->widgetRefCount);
+                --(_qt_gl_share_widget()->refCount);
 
             delete wd->extraData()->glContext;
             wd->extraData()->glContext = 0;

@@ -10,4 +10,3 @@ win32-msvc|win32-msvc9x {
     QMAKE_CXXFLAGS_RELEASE -= -O1
 }
 CONFIG += parallel_test
-HEADERS = tst_qdatetime.loc

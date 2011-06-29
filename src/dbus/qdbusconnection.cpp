@@ -234,10 +234,11 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
 
 /*!
     \since 4.8
-    \enum QDBusConnection::ConnectionCapabilities
-    The available capabilities for a D-Bus connection.
+    \enum QDBusConnection::ConnectionCapability
 
-    \value UnixFileDescriptorPassing        passing of Unix file descriptors to other processes
+    This enum describes the available capabilities for a D-Bus connection.
+
+    \value UnixFileDescriptorPassing        enables passing of Unix file descriptors to other processes
                                             (see QDBusUnixFileDescriptor)
 
     \sa connectionCapabilities()
@@ -1120,6 +1121,27 @@ void QDBusConnectionPrivate::setBusService(const QDBusConnection &connection)
     QObject::connect(this, SIGNAL(callWithCallbackFailed(QDBusError,QDBusMessage)),
                      busService, SIGNAL(callWithCallbackFailed(QDBusError,QDBusMessage)),
                      Qt::QueuedConnection);
+}
+
+/*!
+    \since 4.8
+    Returns the local machine ID as known to the D-Bus system. Each
+    node or host that runs D-Bus has a unique identifier that can be
+    used to distinguish it from other hosts if they are sharing
+    resources like the filesystem.
+
+    Note that the local machine ID is not guaranteed to be persistent
+    across boots of the system, so this identifier should not be
+    stored in persistent storage (like the filesystem). It is
+    guaranteed to remain constant only during the lifetime of this
+    boot session.
+*/
+QByteArray QDBusConnection::localMachineId()
+{
+    char *dbus_machine_id = q_dbus_get_local_machine_id();
+    QByteArray result = dbus_machine_id;
+    q_dbus_free(dbus_machine_id);
+    return result;
 }
 
 /*!

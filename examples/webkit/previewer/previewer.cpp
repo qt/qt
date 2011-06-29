@@ -60,5 +60,10 @@ void Previewer::on_previewButton_clicked()
     // Update the contents in web viewer
     QString text = plainTextEdit->toPlainText();
     webView->setHtml(text, baseUrl);
+
+    // In mobile devices, change the tab
+    #if defined Q_OS_SYMBIAN || defined Q_WS_HILDON || defined Q_WS_MAEMO_5 || defined Q_WS_SIMULATOR
+        tabWidget->setCurrentWidget(tabHTMLPreview);
+    #endif
 }
 //! [1]

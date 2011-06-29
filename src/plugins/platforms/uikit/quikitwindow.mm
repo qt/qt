@@ -67,9 +67,8 @@ public:
         mFormat.setBlueBufferSize(8);
         mFormat.setAlphaBufferSize(8);
         mFormat.setStencilBufferSize(8);
+        mFormat.setSamples(0);
         mFormat.setSampleBuffers(false);
-        mFormat.setSamples(1);
-//        mFormat.setSwapInterval(?)
         mFormat.setDoubleBuffer(true);
         mFormat.setDepth(true);
         mFormat.setRgba(true);
@@ -290,37 +289,25 @@ private:
 
 - (void)insertText:(NSString *)text
 {
-    QKeyEvent *ev;
+    QString string = QString::fromUtf8([text UTF8String]);
     int key = 0;
     if ([text isEqualToString:@"\n"])
         key = (int)Qt::Key_Return;
-    ev = new QKeyEvent(QEvent::KeyPress,
-                       key,
-                       Qt::NoModifier,
-                       QString::fromUtf8([text UTF8String])
-                       );
-    qApp->postEvent(qApp->focusWidget(), ev);
-    ev = new QKeyEvent(QEvent::KeyRelease,
-                       key,
-                       Qt::NoModifier,
-                       QString::fromUtf8([text UTF8String])
-                       );
-    qApp->postEvent(qApp->focusWidget(), ev);
+
+    // Send key event to window system interface
+    QWindowSystemInterface::handleKeyEvent(
+        0, QEvent::KeyPress, key, Qt::NoModifier, string, false, int(string.length()));
+    QWindowSystemInterface::handleKeyEvent(
+        0, QEvent::KeyRelease, key, Qt::NoModifier, string, false, int(string.length()));
 }
 
 - (void)deleteBackward
 {
-    QKeyEvent *ev;
-    ev = new QKeyEvent(QEvent::KeyPress,
-                       (int)Qt::Key_Backspace,
-                       Qt::NoModifier
-                       );
-    qApp->postEvent(qApp->focusWidget(), ev);
-    ev = new QKeyEvent(QEvent::KeyRelease,
-                       (int)Qt::Key_Backspace,
-                       Qt::NoModifier
-                       );
-    qApp->postEvent(qApp->focusWidget(), ev);
+    // Send key event to window system interface
+    QWindowSystemInterface::handleKeyEvent(
+        0, QEvent::KeyPress, (int)Qt::Key_Backspace, Qt::NoModifier);
+    QWindowSystemInterface::handleKeyEvent(
+        0, QEvent::KeyRelease, (int)Qt::Key_Backspace, Qt::NoModifier);
 }
 
 @end
@@ -335,9 +322,8 @@ QUIKitWindow::QUIKitWindow(QWidget *tlw) :
     mScreen = static_cast<QUIKitScreen *>(QPlatformScreen::platformScreenForWidget(tlw));
     CGRect screenBounds = [mScreen->uiScreen() bounds];
     QRect geom(screenBounds.origin.x, screenBounds.origin.y, screenBounds.size.width, screenBounds.size.height);
-    setGeometry(geom);
-    mView = [[EAGLView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
-    // TODO ensure the native window if the application is already running
+    QPlatformWindow::setGeometry(geom);
+    mView = [[EAGLView alloc] initWithFrame:CGRectMake(geom.x(), geom.y(), geom.width(), geom.height())];
 }
 
 QUIKitWindow::~QUIKitWindow()

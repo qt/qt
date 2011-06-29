@@ -173,7 +173,6 @@ namespace QT_NAMESPACE {}
      RELIANT  - Reliant UNIX
      DYNIX    - DYNIX/ptx
      QNX      - QNX
-     QNX6     - QNX RTP 6.1
      LYNX     - LynxOS
      BSD4     - Any BSD 4.4 system
      UNIX     - Any UNIX BSD/SYSV system
@@ -2744,17 +2743,6 @@ QT_LICENSED_MODULE(DBus)
 #if defined(Q_CC_GNU) && (__GNUC__ < 4)
 #  define QT_NO_CONCURRENT_MAP
 #  define QT_NO_CONCURRENT_FILTER
-#endif
-
-#ifdef Q_OS_QNX
-// QNX doesn't have SYSV style shared memory. Multiprocess QWS apps,
-// shared fonts and QSystemSemaphore + QSharedMemory are not available
-#  define QT_NO_QWS_MULTIPROCESS
-#  define QT_NO_QWS_SHARE_FONTS
-#  define QT_NO_SYSTEMSEMAPHORE
-#  define QT_NO_SHAREDMEMORY
-// QNX currently doesn't support forking in a thread, so disable QProcess
-#  define QT_NO_PROCESS
 #endif
 
 #if defined (__ELF__)
