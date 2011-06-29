@@ -67,7 +67,11 @@
 QT_BEGIN_NAMESPACE
 
 // Really slow flicks can be annoying.
-const qreal MinimumFlickVelocity = 75.0;
+#ifndef QML_FLICK_MINVELOCITY
+#define QML_FLICK_MINVELOCITY 175
+#endif
+
+const qreal MinimumFlickVelocity = QML_FLICK_MINVELOCITY;
 
 class QDeclarativeFlickableVisibleArea;
 class QDeclarativeFlickablePrivate : public QDeclarativeItemPrivate, public QDeclarativeItemChangeListener
