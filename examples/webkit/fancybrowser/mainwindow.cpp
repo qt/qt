@@ -39,6 +39,7 @@
 ****************************************************************************/
 
 #include <QtGui>
+#include <QtNetwork>
 #include <QtWebKit>
 #include "mainwindow.h"
 
