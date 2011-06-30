@@ -494,12 +494,12 @@ void tst_qdeclarativeflickable::flickVelocity()
     QVERIFY(flickable != 0);
 
     // flick up
-    flick(canvas, QPoint(20,190), QPoint(20, 50), 100);
+    flick(canvas, QPoint(20,190), QPoint(20, 50), 200);
     QVERIFY(flickable->verticalVelocity() > 0.0);
     QTRY_VERIFY(flickable->verticalVelocity() == 0.0);
 
     // flick down
-    flick(canvas, QPoint(20,10), QPoint(20, 100), 100);
+    flick(canvas, QPoint(20,10), QPoint(20, 140), 200);
     QVERIFY(flickable->verticalVelocity() < 0.0);
     QTRY_VERIFY(flickable->verticalVelocity() == 0.0);
 
