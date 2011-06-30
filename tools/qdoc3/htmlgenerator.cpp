@@ -66,25 +66,6 @@ bool HtmlGenerator::debugging_on = false;
 
 QString HtmlGenerator::divNavTop = "";
 
-QString HtmlGenerator::sinceTitles[] =
-    {
-        "    New Namespaces",
-        "    New Classes",
-        "    New Member Functions",
-        "    New Functions in Namespaces",
-        "    New Global Functions",
-        "    New Macros",
-        "    New Enum Types",
-        "    New Typedefs",
-        "    New Properties",
-        "    New Variables",
-        "    New QML Elements",
-        "    New QML Properties",
-        "    New QML Signal Handlers",
-        "    New QML Methods",
-        ""
-    };
-
 static bool showBrokenLinks = false;
 
 static QRegExp linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
@@ -612,14 +593,18 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             ncmap = newClassMaps.find(atom->string());
             NewClassMaps::const_iterator nqcmap;
             nqcmap = newQmlClassMaps.find(atom->string());
+
             if ((nsmap != newSinceMaps.constEnd()) && !nsmap.value().isEmpty()) {
                 QList<Section> sections;
                 QList<Section>::ConstIterator s;
+
                 for (int i=0; i<LastSinceType; ++i)
                     sections.append(Section(sinceTitle(i),QString(),QString(),QString()));
 
                 NodeMultiMap::const_iterator n = nsmap.value().constBegin();
+
                 while (n != nsmap.value().constEnd()) {
+
                     const Node* node = n.value();
                     switch (node->type()) {
                       case Node::Fake:
@@ -1361,6 +1346,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         // Generate brief text and status for modules.
         generateBrief(fake, marker);
         generateStatus(fake, marker);
+        generateSince(fake, marker);
 
         if (moduleNamespaceMap.contains(fake->name())) {
             out() << "<a name=\"" << registerRef("namespaces") << "\"></a>" << divNavTop << "\n";
@@ -1377,6 +1363,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         // Generate brief text and status for modules.
         generateBrief(fake, marker);
         generateStatus(fake, marker);
+        generateSince(fake, marker);
 
         out() << "<ul>\n";
 
@@ -1408,6 +1395,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         generateQmlInherits(qml_cn, marker);
         generateQmlInheritedBy(qml_cn, marker);
         generateQmlInstantiates(qml_cn, marker);
+        generateSince(qml_cn, marker);
 
         QString allQmlMembersLink = generateAllQmlMembersFile(qml_cn, marker);
         if (!allQmlMembersLink.isEmpty()) {
@@ -2258,9 +2246,6 @@ void HtmlGenerator::generateCompactList(const Node *relative,
     for (int i=0; i<NumParagraphs; i++)         // i = 0..36
         paragraphOffset[i+1] = paragraphOffset[i] + paragraph[i].count();
 
-    int curParNr = 0;
-    int curParOffset = 0;
-
     /*
       Output the alphabet as a row of links.
      */
@@ -2278,8 +2263,12 @@ void HtmlGenerator::generateCompactList(const Node *relative,
       Output a <div> element to contain all the <dl> elements.
      */
     out() << "<div class=\"flowListDiv\">\n";
+    numTableRows = 0;
 
-    for (int i=0; i<classMap.count()-1; i++) {
+    int curParNr = 0;
+    int curParOffset = 0;
+
+    for (int i=0; i<classMap.count(); i++) {
         while ((curParNr < NumParagraphs) &&
                (curParOffset == paragraph[curParNr].count())) {
             ++curParNr;
@@ -2340,7 +2329,9 @@ void HtmlGenerator::generateCompactList(const Node *relative,
         out() << "</dd>\n";
         curParOffset++;
     }
-    out() << "</dl>\n";
+    if (classMap.count() > 0)
+        out() << "</dl>\n";
+
     out() << "</div>\n";
 }
 
@@ -3370,70 +3361,6 @@ void HtmlGenerator::findAllClasses(const InnerNode *node)
             }
         }
         ++c;
-    }
-}
-
-/*!
-  For generating the "New Classes... in 4.6" section on the
-  What's New in 4.6" page.
- */
-void HtmlGenerator::findAllSince(const InnerNode *node)
-{
-    NodeList::const_iterator child = node->childNodes().constBegin();
-    while (child != node->childNodes().constEnd()) {
-        QString sinceVersion = (*child)->since();
-        if (((*child)->access() != Node::Private) && !sinceVersion.isEmpty()) {
-            NewSinceMaps::iterator nsmap = newSinceMaps.find(sinceVersion);
-            if (nsmap == newSinceMaps.end())
-                nsmap = newSinceMaps.insert(sinceVersion,NodeMultiMap());
-            NewClassMaps::iterator ncmap = newClassMaps.find(sinceVersion);
-            if (ncmap == newClassMaps.end())
-                ncmap = newClassMaps.insert(sinceVersion,NodeMap());
-            NewClassMaps::iterator nqcmap = newQmlClassMaps.find(sinceVersion);
-            if (nqcmap == newQmlClassMaps.end())
-                nqcmap = newQmlClassMaps.insert(sinceVersion,NodeMap());
- 
-            if ((*child)->type() == Node::Function) {
-                FunctionNode *func = static_cast<FunctionNode *>(*child);
-                if ((func->status() > Node::Obsolete) &&
-                    (func->metaness() != FunctionNode::Ctor) &&
-                    (func->metaness() != FunctionNode::Dtor)) {
-                    nsmap.value().insert(func->name(),(*child));
-                }
-            }
-            else if ((*child)->url().isEmpty()) {
-                if ((*child)->type() == Node::Class && !(*child)->doc().isEmpty()) {
-                    QString className = (*child)->name();
-                    if ((*child)->parent() &&
-                        (*child)->parent()->type() == Node::Namespace &&
-                        !(*child)->parent()->name().isEmpty())
-                        className = (*child)->parent()->name()+"::"+className;
-                    nsmap.value().insert(className,(*child));
-                    ncmap.value().insert(className,(*child));
-                }
-                else if ((*child)->subType() == Node::QmlClass) {
-                    QString className = (*child)->name();
-                    if ((*child)->parent() &&
-                        (*child)->parent()->type() == Node::Namespace &&
-                        !(*child)->parent()->name().isEmpty())
-                        className = (*child)->parent()->name()+"::"+className;
-                    nsmap.value().insert(className,(*child));
-                    nqcmap.value().insert(className,(*child));
-                }
-            }
-            else {
-                QString name = (*child)->name();
-                if ((*child)->parent() &&
-                    (*child)->parent()->type() == Node::Namespace &&
-                    !(*child)->parent()->name().isEmpty())
-                    name = (*child)->parent()->name()+"::"+name;
-                nsmap.value().insert(name,(*child));
-            }
-            if ((*child)->isInnerNode()) {
-                findAllSince(static_cast<InnerNode *>(*child));
-            }
-        }
-        ++child;
     }
 }
 
