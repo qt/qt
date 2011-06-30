@@ -518,6 +518,7 @@ void tst_qdeclarativeflickable::flick(QGraphicsView *canvas, const QPoint &from,
         QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(from + (i+1)*diff/pointCount), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
         QApplication::sendEvent(canvas->viewport(), &mv);
         QTest::qWait(duration/pointCount);
+        QCoreApplication::processEvents();
     }
 
     QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(to));
