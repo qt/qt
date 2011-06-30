@@ -77,6 +77,25 @@ QString Generator::outDir;
 QString Generator::project;
 QHash<QString, QString> Generator::outputPrefixes;
 
+QString Generator::sinceTitles[] =
+    {
+        "    New Namespaces",
+        "    New Classes",
+        "    New Member Functions",
+        "    New Functions in Namespaces",
+        "    New Global Functions",
+        "    New Macros",
+        "    New Enum Types",
+        "    New Typedefs",
+        "    New Properties",
+        "    New Variables",
+        "    New QML Elements",
+        "    New QML Properties",
+        "    New QML Signals",
+        "    New QML Methods",
+        ""
+    };
+
 static void singularPlural(Text& text, const NodeList& nodes)
 {
     if (nodes.count() == 1)
@@ -760,8 +779,18 @@ QString Generator::typeString(const Node *node)
     case Node::Class:
         return "class";
     case Node::Fake:
-    default:
-        return "documentation";
+    {
+        switch (node->subType()) {
+        case Node::QmlClass:
+            return "element";
+        case Node::QmlPropertyGroup:
+            return "property group";
+        case Node::QmlBasicType:
+            return "type";
+        default:
+            return "documentation";
+        }
+    }
     case Node::Enum:
         return "enum";
     case Node::Typedef:
@@ -770,6 +799,8 @@ QString Generator::typeString(const Node *node)
         return "function";
     case Node::Property:
         return "property";
+    default:
+        return "documentation";
     }
 }
 
@@ -1094,11 +1125,21 @@ void Generator::generateSince(const Node *node, CodeMarker *marker)
             text << " was introduced or modified in ";
         else
             text << " was introduced in ";
-        if (project.isEmpty())
-             text << "version";
-        else
-             text << project;
-        text << " " << node->since() << "." << Atom::ParaRight;
+
+        QStringList since = node->since().split(" ");
+        if (since.count() == 1) {
+            // Handle legacy use of \since <version>.
+            if (project.isEmpty())
+                 text << "version";
+            else
+                 text << project;
+            text << " " << since[0];
+        } else {
+            // Reconstruct the <project> <version> string.
+            text << " " << since.join(" ");
+        }
+
+        text << "." << Atom::ParaRight;
         generateText(text, node, marker);
     }
 }
@@ -1347,6 +1388,93 @@ QStringList Generator::getMetadataElements(const InnerNode* inner, const QString
     if (!s.isEmpty())
         metaTagMap.remove(t);
     return s;
+}
+
+/*!
+  For generating the "New Classes... in 4.6" section on the
+  What's New in 4.6" page.
+ */
+void Generator::findAllSince(const InnerNode *node)
+{
+    NodeList::const_iterator child = node->childNodes().constBegin();
+
+    // Traverse the tree, starting at the node supplied.
+
+    while (child != node->childNodes().constEnd()) {
+
+        QString sinceString = (*child)->since();
+
+        if (((*child)->access() != Node::Private) && !sinceString.isEmpty()) {
+
+            // Insert a new entry into each map for each new since string found.
+            NewSinceMaps::iterator nsmap = newSinceMaps.find(sinceString);
+            if (nsmap == newSinceMaps.end())
+                nsmap = newSinceMaps.insert(sinceString,NodeMultiMap());
+
+            NewClassMaps::iterator ncmap = newClassMaps.find(sinceString);
+            if (ncmap == newClassMaps.end())
+                ncmap = newClassMaps.insert(sinceString,NodeMap());
+
+            NewClassMaps::iterator nqcmap = newQmlClassMaps.find(sinceString);
+            if (nqcmap == newQmlClassMaps.end())
+                nqcmap = newQmlClassMaps.insert(sinceString,NodeMap());
+
+            if ((*child)->type() == Node::Function) {
+                // Insert functions into the general since map.
+                FunctionNode *func = static_cast<FunctionNode *>(*child);
+                if ((func->status() > Node::Obsolete) &&
+                    (func->metaness() != FunctionNode::Ctor) &&
+                    (func->metaness() != FunctionNode::Dtor)) {
+                    nsmap.value().insert(func->name(),(*child));
+                }
+            }
+            else if ((*child)->url().isEmpty()) {
+                if ((*child)->type() == Node::Class && !(*child)->doc().isEmpty()) {
+                    // Insert classes into the since and class maps.
+                    QString className = (*child)->name();
+                    if ((*child)->parent() &&
+                        (*child)->parent()->type() == Node::Namespace &&
+                        !(*child)->parent()->name().isEmpty())
+                        className = (*child)->parent()->name()+"::"+className;
+
+                    nsmap.value().insert(className,(*child));
+                    ncmap.value().insert(className,(*child));
+                }
+                else if ((*child)->subType() == Node::QmlClass) {
+                    // Insert QML elements into the since and element maps.
+                    QString className = (*child)->name();
+                    if ((*child)->parent() &&
+                        (*child)->parent()->type() == Node::Namespace &&
+                        !(*child)->parent()->name().isEmpty())
+                        className = (*child)->parent()->name()+"::"+className;
+
+                    nsmap.value().insert(className,(*child));
+                    nqcmap.value().insert(className,(*child));
+                }
+                else if ((*child)->type() == Node::QmlProperty) {
+                    // Insert QML properties into the since map.
+                    QString propertyName = (*child)->name();
+                    nsmap.value().insert(propertyName,(*child));
+                }
+            }
+            else {
+                // Insert external documents into the general since map.
+                QString name = (*child)->name();
+                if ((*child)->parent() &&
+                    (*child)->parent()->type() == Node::Namespace &&
+                    !(*child)->parent()->name().isEmpty())
+                    name = (*child)->parent()->name()+"::"+name;
+
+                nsmap.value().insert(name,(*child));
+            }
+
+            // Find child nodes with since commands.
+            if ((*child)->isInnerNode()) {
+                findAllSince(static_cast<InnerNode *>(*child));
+            }
+        }
+        ++child;
+    }
 }
 
 QT_END_NAMESPACE
