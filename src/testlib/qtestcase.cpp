@@ -1035,20 +1035,19 @@ static void qPrintDataTags()
     invokeMethod(QTest::currentTestObject, "initTestCase_data()");
     const QTestTable *gTable = QTestTable::globalTestTable();
 
-    // Process test functions:
-    for (int i = 0; i < QTest::currentTestObject->metaObject()->methodCount(); ++i) {
-        QMetaMethod tf = QTest::currentTestObject->metaObject()->method(i);
-        if (isValidSlot(tf)) {
-            const char *slotName = tf.signature();
+    const QMetaObject *currTestMetaObj = QTest::currentTestObject->metaObject();
 
+    // Process test functions:
+    for (int i = 0; i < currTestMetaObj->methodCount(); ++i) {
+        QMetaMethod tf = currTestMetaObj->method(i);
+        if (isValidSlot(tf)) {
             // Retrieve local tags:
             QStringList localTags;
             QTestTable table;
             char member[512];
-            char *slot = qstrdup(slotName);
+            char *slot = qstrdup(tf.signature());
             slot[strlen(slot) - 2] = '\0';
             QTest::qt_snprintf(member, 512, "%s_data()", slot);
-            delete[] slot;
             invokeMethod(QTest::currentTestObject, member);
             for (int j = 0; j < table.dataCount(); ++j)
                 localTags << QLatin1String(table.testData(j)->dataTag());
@@ -1057,27 +1056,33 @@ static void qPrintDataTags()
             if (gTable->dataCount() == 0) {
                 if (localTags.count() == 0) {
                     // No tags at all, so just print the test function:
-                    printf("%s\n", slotName);
+                    printf("%s %s\n", currTestMetaObj->className(), slot);
                 } else {
                     // Only local tags, so print each of them:
                     for (int k = 0; k < localTags.size(); ++k)
-                        printf("%s %s\n", slotName, localTags.at(k).toLatin1().data());
+                        printf(
+                            "%s %s %s\n",
+                            currTestMetaObj->className(), slot, localTags.at(k).toLatin1().data());
                 }
             } else {
                 for (int j = 0; j < gTable->dataCount(); ++j) {
                     if (localTags.count() == 0) {
                         // Only global tags, so print the current one:
-                        printf("%s __global__ %s\n", slotName, gTable->testData(j)->dataTag());
+                        printf(
+                            "%s %s __global__ %s\n",
+                            currTestMetaObj->className(), slot, gTable->testData(j)->dataTag());
                     } else {
                         // Local and global tags, so print each of the local ones and
                         // the current global one:
                         for (int k = 0; k < localTags.size(); ++k)
                             printf(
-                                "%s %s __global__ %s\n", slotName,
+                                "%s %s %s __global__ %s\n", currTestMetaObj->className(), slot,
                                 localTags.at(k).toLatin1().data(), gTable->testData(j)->dataTag());
                     }
                 }
             }
+
+            delete[] slot;
         }
     }
 }
