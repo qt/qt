@@ -579,6 +579,8 @@ bool QTextLayout::cacheEnabled() const
 }
 
 /*!
+    \since 4.8
+
     Set the cursor movement style. If the QTextLayout is backed by
     a document, you can ignore this and use the option in QTextDocument,
     this option is for widgets like QLineEdit or custom widgets without
@@ -592,6 +594,8 @@ void QTextLayout::setCursorMoveStyle(Qt::CursorMoveStyle style)
 }
 
 /*!
+    \since 4.8
+
     The cursor movement style of this QTextLayout. The default is
     Qt::LogicalMoveStyle.
 
@@ -725,9 +729,11 @@ int QTextLayout::previousCursorPosition(int oldPos, CursorMode mode) const
 }
 
 /*!
+    \since 4.8
+
     Returns the cursor position to the right of \a oldPos, next to it.
-    It's dependent on the visual position of characters, after bi-directional
-    reordering.
+    The position is dependent on the visual position of characters, after
+    bi-directional reordering.
 
     \sa leftCursorPosition(), nextCursorPosition()
 */
@@ -739,9 +745,11 @@ int QTextLayout::rightCursorPosition(int oldPos) const
 }
 
 /*!
+    \since 4.8
+
     Returns the cursor position to the left of \a oldPos, next to it.
-    It's dependent on the visual position of characters, after bi-directional
-    reordering.
+    The position is dependent on the visual position of characters, after
+    bi-directional reordering.
 
     \sa rightCursorPosition(), previousCursorPosition()
 */

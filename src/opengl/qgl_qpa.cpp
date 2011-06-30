@@ -53,6 +53,8 @@
 QT_BEGIN_NAMESPACE
 
 /*!
+    \since 4.8
+
     Returns an OpenGL format for the platform window format specified by \a format.
 */
 QGLFormat QGLFormat::fromPlatformWindowFormat(const QPlatformWindowFormat &format)
@@ -87,6 +89,8 @@ QGLFormat QGLFormat::fromPlatformWindowFormat(const QPlatformWindowFormat &forma
 }
 
 /*!
+    \since 4.8
+
     Returns a platform window format for the OpenGL format specified by \a format.
 */
 QPlatformWindowFormat QGLFormat::toPlatformWindowFormat(const QGLFormat &format)
@@ -387,6 +391,8 @@ QGLContext::QGLContext(QPlatformGLContext *platformContext)
 }
 
 /*!
+    \since 4.8
+
     Returns a OpenGL context for the platform-specific OpenGL context given by
     \a platformContext.
 */

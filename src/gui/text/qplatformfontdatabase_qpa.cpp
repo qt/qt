@@ -203,6 +203,7 @@ bool QSupportedWritingSystems::supported(QFontDatabase::WritingSystem writingSys
     \brief The QSupportedWritingSystems class is used when registering fonts with the internal Qt
     fontdatabase
     \ingroup painting
+    \since 4.8
 
     Its to provide an easy to use interface for indicating what writing systems a specific font
     supports.
@@ -322,6 +323,7 @@ QString QPlatformFontDatabase::fontDir() const
     \class QPlatformFontDatabase
     \brief The QPlatformFontDatabase class makes it possible to customize how fonts
     are discovered and how they are rendered
+    \since 4.8
 
     \ingroup painting
 
