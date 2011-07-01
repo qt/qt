@@ -57,8 +57,11 @@
 #include "qfile.h"
 #include "qdir.h"
 
-#define QT_USE_MMAP
 #include <stdlib.h>
+
+#if !defined(Q_OS_INTEGRITY)
+#define QT_USE_MMAP
+#endif
 
 #ifdef QT_USE_MMAP
 // for mmap
@@ -69,10 +72,12 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#  if defined(QT_LINUXBASE) && !defined(MAP_FILE)
-     // LSB 3.2 does not define MAP_FILE
-#    define MAP_FILE 0
-#  endif
+#ifndef MAP_FILE
+#  define MAP_FILE 0
+#endif
+#ifndef MAP_FAILED
+#  define MAP_FAILED (void *)-1
+#endif
 
 #endif
 
@@ -384,73 +389,58 @@ class QFontEngineQPF1Data
 public:
     QPFFontMetrics fm;
     QPFGlyphTree *tree;
-    void *mmapStart;
+    uchar *mmapStart;
     size_t mmapLength;
-};
-
-#if defined(Q_OS_INTEGRITY)
-static void *qt_mmap(void *start, size_t length, int /*prot*/, int /*flags*/, int fd, off_t offset)
-{
-    // INTEGRITY cannot mmap local files - load it into a local buffer
-    if (::lseek(fd, offset, SEEK_SET) == -1) {
-#  if defined(DEBUG_FONTENGINE)
-        perror("lseek failed");
-#  endif
-    }
-    void *buf = malloc(length);
-    if (::read(fd, buf, length) != (ssize_t)length) {
-#  if defined(DEBUG_FONTENGINE)
-        perror("read failed");
-#  endif
-    }
-
-    return buf;
-}
-#else
-static inline void *qt_mmap(void *start, size_t length, int prot, int flags, int fd, off_t offset)
-{
-    return mmap(start, length, prot, flags, fd, offset);
-}
+#ifdef QT_USE_MMAP
+    bool used_mmap;
 #endif
-
-
+};
 
 QFontEngineQPF1::QFontEngineQPF1(const QFontDef&, const QString &fn)
 {
     cache_cost = 1;
 
-    int f = QT_OPEN( QFile::encodeName(fn), O_RDONLY, 0);
-    Q_ASSERT(f>=0);
+    int fd = QT_OPEN(QFile::encodeName(fn).constData(), O_RDONLY, 0);
+    if (fd == -1)
+        qFatal("Failed to open '%s'", QFile::encodeName(fn).constData());
+
     QT_STATBUF st;
-    if ( QT_FSTAT( f, &st ) )
-        qFatal("Failed to stat %s",QFile::encodeName(fn).data());
-    uchar* data = (uchar*)qt_mmap( 0, // any address
-                                st.st_size, // whole file
-                                PROT_READ, // read-only memory
-#if defined(Q_OS_INTEGRITY)
-	                        0,
-#elif !defined(Q_OS_SOLARIS) && !defined(Q_OS_QNX4) && !defined(Q_OS_VXWORKS)
-                                MAP_FILE | MAP_PRIVATE, // swap-backed map from file
-#else
-                                MAP_PRIVATE,
-#endif
-                                f, 0 ); // from offset 0 of f
-#if !defined(MAP_FAILED) && (defined(Q_OS_QNX4) || defined(Q_OS_INTEGRITY))
-#define MAP_FAILED ((void *)-1)
-#endif
-    if ( !data || data == (uchar*)MAP_FAILED )
-        qFatal("Failed to mmap %s",QFile::encodeName(fn).data());
-    QT_CLOSE(f);
+    if (QT_FSTAT(fd, &st) != 0)
+        qFatal("Failed to stat '%s'", QFile::encodeName(fn).constData());
 
     d = new QFontEngineQPF1Data;
-    d->mmapStart = data;
+    d->mmapStart = 0;
     d->mmapLength = st.st_size;
-    memcpy(reinterpret_cast<char*>(&d->fm),data,sizeof(d->fm));
 
-    data += sizeof(d->fm);
-    d->tree = new QPFGlyphTree(data);
-    glyphFormat = (d->fm.flags & FM_SMOOTH) ? QFontEngineGlyphCache::Raster_A8
-                  : QFontEngineGlyphCache::Raster_Mono;
+#ifdef QT_USE_MMAP
+    d->used_mmap = true;
+    d->mmapStart = (uchar *)::mmap(0, st.st_size,             // any address, whole file
+                                   PROT_READ,                 // read-only memory
+                                   MAP_FILE | MAP_PRIVATE,    // swap-backed map from file
+                                   fd, 0);                   // from offset 0 of fd
+    if (d->mmapStart == (uchar *)MAP_FAILED)
+        d->mmapStart = 0;
+#endif
+
+    if (!d->mmapStart) {
+#ifdef QT_USE_MMAP
+        d->used_mmap = false;
+#endif
+        d->mmapStart = new uchar[d->mmapLength];
+        if (QT_READ(fd, d->mmapStart, d->mmapLength) != d->mmapLength)
+            qFatal("Failed to read '%s'", QFile::encodeName(fn).constData());
+    }
+    QT_CLOSE(fd);
+
+    if (d->mmapStart) {
+        uchar* data = d->mmapStart;
+
+        memcpy(reinterpret_cast<char*>(&d->fm), data, sizeof(d->fm));
+        data += sizeof(d->fm);
+
+        d->tree = new QPFGlyphTree(data);
+        glyphFormat = (d->fm.flags & FM_SMOOTH) ? QFontEngineGlyphCache::Raster_A8
+                                                : QFontEngineGlyphCache::Raster_Mono;
 #if 0
     qDebug() << "font file" << fn
              << "ascent" << d->fm.ascent << "descent" << d->fm.descent
@@ -462,12 +452,19 @@ QFontEngineQPF1::QFontEngineQPF1(const QFontDef&, const QString &fn)
              << "underlinepos" << d->fm.underlinepos
              << "underlinewidth" << d->fm.underlinewidth;
 #endif
+    }
 }
 
 QFontEngineQPF1::~QFontEngineQPF1()
 {
-    if (d->mmapStart)
-        munmap(d->mmapStart, d->mmapLength);
+    if (d->mmapStart) {
+#if defined(QT_USE_MMAP)
+        if (d->used_mmap)
+            ::munmap(d->mmapStart, d->mmapLength);
+        else
+#endif
+            delete [] d->mmapStart;
+    }
     delete d->tree;
     delete d;
 }
