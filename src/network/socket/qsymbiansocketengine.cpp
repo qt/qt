@@ -1037,7 +1037,7 @@ qint64 QSymbianSocketEngine::write(const char *data, qint64 len)
     TSockXfrLength sentBytes = 0;
     TRequestStatus status;
     d->nativeSocket.Send(buffer, 0, status, sentBytes);
-    User::WaitForRequest(status); //TODO: on emulator this blocks for write >16kB (non blocking IO not implemented properly?)
+    User::WaitForRequest(status);
     TInt err = status.Int(); 
 
     if (err) {
@@ -1204,7 +1204,7 @@ int QSymbianSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool 
         const_cast<QSymbianSocketEnginePrivate*>(this)->setError(err);
         //restart asynchronous notifier (only one IOCTL allowed at a time)
         if (asyncSelect)
-            asyncSelect->IssueRequest(); //TODO: in error case should we restart or not?
+            asyncSelect->IssueRequest();
         return err;
     }
     if (checkRead && (selectFlags() & KSockSelectRead)) {
@@ -1324,7 +1324,7 @@ bool QSymbianSocketEnginePrivate::checkProxy(const QHostAddress &address)
     return true;
 }
 
-// FIXME this is also in QNativeSocketEngine, unify it
+// ### this is also in QNativeSocketEngine, unify it
 /*! \internal
 
     Sets the error and error string if not set already. The only
