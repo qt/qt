@@ -2774,10 +2774,12 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
 {
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
+    const QFixed offs = QFixed::fromReal(aliasedCoordinateDelta);
 
 #if !defined(QT_NO_FREETYPE)
     if (fontEngine->type() == QFontEngine::Freetype) {
         QFontEngineFT *fe = static_cast<QFontEngineFT *>(fontEngine);
+        const QFixed xOffs = fe->supportsSubPixelPositions() ? 0 : offs;
         QFontEngineFT::GlyphFormat neededFormat =
             painter()->device()->devType() == QInternal::Widget
             ? fe->defaultGlyphFormat()
@@ -2851,8 +2853,8 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             };
 
             alphaPenBlt(glyph->data, pitch, depth,
-                        qFloor(positions[i].x) + glyph->x,
-                        qFloor(positions[i].y) - glyph->y,
+                        qFloor(positions[i].x + xOffs) + glyph->x,
+                        qFloor(positions[i].y + offs) - glyph->y,
                         glyph->width, glyph->height);
         }
         if (lockedFace)
@@ -2892,7 +2894,6 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             rightShift = 3; // divide by 8
 
         int margin = cache->glyphMargin();
-        const QFixed offs = QFixed::fromReal(aliasedCoordinateDelta);
         const uchar *bits = image.bits();
         for (int i=0; i<numGlyphs; ++i) {
 
