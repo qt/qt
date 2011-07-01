@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qfontengine_p.h"
-#include <private/qunicodetables_p.h>
 #include <qwsdisplay_qws.h>
 #include <qvarlengtharray.h>
 #include <private/qpainter_p.h>
@@ -51,11 +50,10 @@
 
 #include <qdebug.h>
 
-
 #ifndef QT_NO_QWS_QPF
 
+#include "qplatformdefs.h"
 #include "qfile.h"
-#include "qdir.h"
 
 #include <stdlib.h>
 
@@ -79,16 +77,9 @@
 #  define MAP_FAILED (void *)-1
 #endif
 
-#endif
-
-#endif // QT_NO_QWS_QPF
+#endif // QT_USE_MMAP
 
 QT_BEGIN_NAMESPACE
-
-#ifndef QT_NO_QWS_QPF
-QT_BEGIN_INCLUDE_NAMESPACE
-#include "qplatformdefs.h"
-QT_END_INCLUDE_NAMESPACE
 
 static inline unsigned int getChar(const QChar *str, int &i, const int len)
 {
@@ -166,17 +157,10 @@ public:
     QPFGlyphTree* more;
     QPFGlyph* glyph;
 public:
-#ifdef QT_USE_MMAP
     QPFGlyphTree(uchar*& data)
     {
         read(data);
     }
-#else
-    QPFGlyphTree(QIODevice& f)
-    {
-        read(f);
-    }
-#endif
 
     ~QPFGlyphTree()
     {
@@ -242,7 +226,6 @@ private:
     {
     }
 
-#ifdef QT_USE_MMAP
     void read(uchar*& data)
     {
         // All node data first
@@ -252,19 +235,7 @@ private:
         // Then all video data
         readData(data);
     }
-#else
-    void read(QIODevice& f)
-    {
-        // All node data first
-        readNode(f);
-        // Then all non-video data
-        readMetrics(f);
-        // Then all video data
-        readData(f);
-    }
-#endif
 
-#ifdef QT_USE_MMAP
     void readNode(uchar*& data)
     {
         uchar rw = *data++;
@@ -290,38 +261,7 @@ private:
         if ( more )
             more->readNode(data);
     }
-#else
-    void readNode(QIODevice& f)
-    {
-        char rw;
-        char cl;
-        f.getChar(&rw);
-        f.getChar(&cl);
-        min = (rw << 8) | cl;
-        f.getChar(&rw);
-        f.getChar(&cl);
-        max = (rw << 8) | cl;
-        char flags;
-        f.getChar(&flags);
-        if ( flags & 1 )
-            less = new QPFGlyphTree;
-        else
-            less = 0;
-        if ( flags & 2 )
-            more = new QPFGlyphTree;
-        else
-            more = 0;
-        int n = max-min+1;
-        glyph = new QPFGlyph[n];
 
-        if ( less )
-            less->readNode(f);
-        if ( more )
-            more->readNode(f);
-    }
-#endif
-
-#ifdef QT_USE_MMAP
     void readMetrics(uchar*& data)
     {
         int n = max-min+1;
@@ -334,22 +274,7 @@ private:
         if ( more )
             more->readMetrics(data);
     }
-#else
-    void readMetrics(QIODevice& f)
-    {
-        int n = max-min+1;
-        for (int i=0; i<n; i++) {
-            glyph[i].metrics = new QPFGlyphMetrics;
-            f.read((char*)glyph[i].metrics, sizeof(QPFGlyphMetrics));
-        }
-        if ( less )
-            less->readMetrics(f);
-        if ( more )
-            more->readMetrics(f);
-    }
-#endif
 
-#ifdef QT_USE_MMAP
     void readData(uchar*& data)
     {
         int n = max-min+1;
@@ -364,24 +289,6 @@ private:
         if ( more )
             more->readData(data);
     }
-#else
-    void readData(QIODevice& f)
-    {
-        int n = max-min+1;
-        for (int i=0; i<n; i++) {
-            QSize s( glyph[i].metrics->width, glyph[i].metrics->height );
-            //############### s = qt_screen->mapToDevice( s );
-            uint datasize = glyph[i].metrics->linestep * s.height();
-            glyph[i].data = new uchar[datasize]; // ### deleted?
-            f.read((char*)glyph[i].data, datasize);
-        }
-        if ( less )
-            less->readData(f);
-        if ( more )
-            more->readData(f);
-    }
-#endif
-
 };
 
 class QFontEngineQPF1Data
