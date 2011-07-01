@@ -342,14 +342,14 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
                 fd = QT_OPEN(encodedFileName, O_RDONLY);
                 if (fd == -1) {
 #if defined(DEBUG_FONTENGINE)
-                    qErrnoWarning("QFontEngineQPF: unable to open %s", encodedName.constData());
+                    qErrnoWarning("QFontEngineQPF: unable to open %s", encodedFileName.constData());
 #endif
                     return;
                 }
             }
             if (fd == -1) {
 #if defined(DEBUG_FONTENGINE)
-                qWarning("QFontEngineQPF: insufficient access rights to %s", encodedName.constData());
+                qWarning("QFontEngineQPF: insufficient access rights to %s", encodedFileName.constData());
 #endif
                 return;
             }
@@ -361,7 +361,7 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
                 fd = QT_OPEN(encodedFileName, O_RDWR | O_EXCL | O_CREAT, 0644);
                 if (fd == -1) {
 #if defined(DEBUG_FONTENGINE)
-                    qErrnoWarning(errno, "QFontEngineQPF: open() failed for %s", encodedName.constData());
+                    qErrnoWarning(errno, "QFontEngineQPF: open() failed for %s", encodedFileName.constData());
 #endif
                     return;
                 }
@@ -374,7 +374,7 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
                 const QByteArray &data = buffer.data();
                 if (QT_WRITE(fd, data.constData(), data.size()) == -1) {
 #if defined(DEBUG_FONTENGINE)
-                    qErrnoWarning(errno, "QFontEngineQPF: write() failed for %s", encodedName.constData());
+                    qErrnoWarning(errno, "QFontEngineQPF: write() failed for %s", encodedFileName.constData());
 #endif
                     return;
                 }
