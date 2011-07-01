@@ -752,11 +752,43 @@
     plugin. If the Helix plugin fails to load, the MMF plugin, if present on
     the device, will be loaded instead.
 
-    \section1 QtOpenGL Support
+    \section1 Hardware Accelerated Rendering
 
-    Qt 4.7 introduces the QtOpenGL module to Symbian^3. QtOpenGL is supported on
-    devices which support OpenGL ES 2.0. Symbian platforms prior to Symbian^3
-    are not supported.
+    The default graphics system on Symbian^3 is OpenVG, which uses OpenVG
+    hardware to accelerate \l QPainter functions. There are a few exceptions,
+    where Qt will use software rendering fallback.
+
+    Devices like the N8 and C7 only have 32Mb of GPU memory and limited support
+    for EGL surface transparency. These devices can be identified by querying
+    the\c GL_RENDERER or \c VG_RENDERER string which evaluates to \c {VideoCore III}.
+    On these devices, Qt will use software rendering in cases listed below.
+
+        \list
+        \o Translucent windows
+        \o Dialogs
+        \o Popups
+        \endlist
+
+    \section1 QtOpenGL Support in Symbian
+
+     Qt 4.7 introduces the \l {QtOpenGL} module to Symbian^3. QtOpenGL is
+     supported on devices which support OpenGL ES 2.0. Symbian platforms prior
+     to Symbian^3 are not supported.
+
+    \l QGLWidget usage as a \l QGraphicsView viewport is not recommended on
+    Symbian. The OpenVG graphics system is not able to manage OpenGL graphics
+    resources. Also, a QGLWidget object is not able to release its GPU resources
+    when the application goes to the background. If OpenGL functionality is
+    needed, OpenGL graphics system usage is recommended. If an application
+    decides to use QGLWidget, then it is the application's responsibility to
+    destroy and release QGLWidget and related OpenGL resources when the
+    application goes to the background. Otherwise, the \l{Graphics Out Of Memory monitor}
+    may decide to kill the application as it consumes GPU resources while in the
+    background.
+
+    \note \l QGLBuffer, \l QGLFramebufferObject, \l QGLPixelBuffer, \l
+    QGLShader, and \l QGLShaderProgram are direct GPU resources and it is the
+    application's responsibility to manage them.
 
     \section1 UI Performance in devices prior to Symbian^3
 
