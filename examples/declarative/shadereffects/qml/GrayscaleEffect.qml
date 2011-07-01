@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,46 +39,24 @@
 **
 ****************************************************************************/
 
-#ifndef QPAINTENGINE_S60_P_H
-#define QPAINTENGINE_S60_P_H
+import QtQuick 1.0
+import Qt.labs.shaders 1.0
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of other Qt classes.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+ShaderEffectItem {
+    id: effect
+    property real ratio: 1.0
+    property variant source: 0
 
-#include "private/qpaintengine_raster_p.h"
-
-QT_BEGIN_NAMESPACE
-
-class QS60PaintEnginePrivate;
-class QS60PixmapData;
-
-class QS60PaintEngine : public QRasterPaintEngine
-{
-    Q_DECLARE_PRIVATE(QS60PaintEngine)
-
-public:
-    QS60PaintEngine(QPaintDevice *device, QS60PixmapData* data);
-    bool begin(QPaintDevice *device);
-    bool end();
-
-    void drawPixmap(const QPointF &p, const QPixmap &pm);
-    void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
-    void drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &sr);
-
-    void prepare(QImage* image);
-
-private:
-    QS60PixmapData *pixmapData;
-};
-
-QT_END_NAMESPACE
-
-#endif // QPAINTENGINE_S60_P_H
+    fragmentShader:
+        "
+        varying highp vec2 qt_TexCoord0;
+        uniform sampler2D source;
+        uniform highp float ratio;
+        void main(void)
+        {
+            lowp vec4 textureColor = texture2D(source, qt_TexCoord0.st);
+            lowp float gray = dot(textureColor, vec4(0.299, 0.587, 0.114, 0.0));
+            gl_FragColor = vec4(gray * ratio + textureColor.r * (1.0 - ratio), gray * ratio + textureColor.g * (1.0 - ratio), gray * ratio + textureColor.b * (1.0 - ratio), textureColor.a);
+        }
+        "
+}

@@ -41,7 +41,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "qmlapplicationviewer/qmlapplicationviewer.h"
+#include "../share/qmlapplicationviewer/qmlapplicationviewer.h"
 
 #include <QtGui/QApplication>
 #include <QtCore/QtPlugin>

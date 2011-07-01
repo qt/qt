@@ -89,6 +89,8 @@ public:
     void enablePolling();
     void disablePolling();
 
+    void initialize();
+    void cleanup();
 public Q_SLOTS:
     void updateConfigurations();
 
@@ -109,6 +111,7 @@ private Q_SLOTS:
 private:
     Q_INVOKABLE void startPolling();
     QTimer *pollTimer;
+    QThread *bearerThread;
 
 private:
     mutable QMutex mutex;

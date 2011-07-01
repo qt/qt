@@ -45,7 +45,7 @@
 #include "qstyleoption.h"
 #include "qstyle.h"
 #include "private/qt_s60_p.h"
-#include "private/qpixmap_s60_p.h"
+#include "private/qpixmap_raster_symbian_p.h"
 #include "private/qcore_symbian_p.h"
 #include "private/qvolatileimage_p.h"
 #include "qapplication.h"
@@ -1058,6 +1058,14 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
         case QS60StylePrivate::SF_PopupBackground:
             centerId.Set(KAknsIIDQsnFrPopupCenterSubmenu);
             frameId.Set(KAknsIIDQsnFrPopupSub);
+            break;
+        case QS60StylePrivate::SF_SettingsList:
+            // Starting from S60_5_3, the root theme has been changed so that KAknsIIDQsnFrSetOpt is empty.
+            // Set the theme ID to None, to avoid theme server trying to draw the empty frame.
+            if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_2) {
+                centerId.Set(KAknsIIDNone);
+                frameId.Set(KAknsIIDNone);
+            }
             break;
         case QS60StylePrivate::SF_PanelBackground:
             // remove center piece for panel graphics, so that only border is drawn
