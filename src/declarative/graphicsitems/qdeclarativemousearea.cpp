@@ -419,7 +419,7 @@ void QDeclarativeMouseArea::setEnabled(bool a)
 
 /*!
     \qmlproperty bool MouseArea::preventStealing
-    \since Quick 1.1
+    \since QtQuick 1.1
     This property holds whether the mouse events may be stolen from this
     MouseArea.
 
