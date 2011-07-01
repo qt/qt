@@ -27,7 +27,9 @@ General Improvements
 Third party components
 ----------------------
 
- - Updated libpng to version x.y.z
+ - Updated libpng to version 1.5.1
+ - Updated libjpeg to version 8c
+ - Updated zlib to version 1.2.5
 
 
 ****************************************************************************
@@ -65,6 +67,7 @@ QtGui
  - Deprecate qGenericMatrixFromMatrix4x4 and qGenericMatrixToMatrix4x4
  - QListView diverses optimisations [QTBUG-11438]
  - QTreeWidget/QListWidget: use localeAwareCompare for string comparisons [QTBUG-10839]
+ - PNG image I/O: Much improved support for text annotations, including iTXt fields.
 
 QtNetwork
 ---------
