@@ -27,7 +27,9 @@ General Improvements
 Third party components
 ----------------------
 
- - Updated libpng to version x.y.z
+ - Updated libpng to version 1.5.1
+ - Updated libjpeg to version 8c
+ - Updated zlib to version 1.2.5
 
 
 ****************************************************************************
@@ -54,6 +56,8 @@ QtCore
  - qSwap now uses std::swap, specialized std::swap for our container to work better with stl algoritms
  - QVariant: deprecated global function qVariantSetValue, qVariantValue, qVariantCanConvert, qVariantFromValue
  - QUrl: add method for retrieving effective top level domain [QTBUG-13601] (MR-1205)
+ - optimised performance of QFileInfo, QDir, QDirIterator, these classes now share metadata and access the filesystem less
+ - QFile: new open() overloads allow control over whether QFile should close an adopted file handle or not
 
 QtGui
 -----
@@ -63,6 +67,7 @@ QtGui
  - Deprecate qGenericMatrixFromMatrix4x4 and qGenericMatrixToMatrix4x4
  - QListView diverses optimisations [QTBUG-11438]
  - QTreeWidget/QListWidget: use localeAwareCompare for string comparisons [QTBUG-10839]
+ - PNG image I/O: Much improved support for text annotations, including iTXt fields.
 
 QtNetwork
 ---------
@@ -77,7 +82,7 @@ QtNetwork
  - HTTP API: add support for HTTP multipart messages [QTBUG-6222]
  - HTTP cache: do not load resources from cache that must be revalidated [QTBUG-18983]
  - HTTP cache: change file organization (MR-2505)
-
+ - SOCKS5: write errors are propagated to the outer socket [QTBUG-18713]
 
  QtOpenGL
  --------
@@ -118,6 +123,18 @@ Qt for Embedded Linux
  - Added support for QNX 6.5 with multi-process support, and much improved mouse,
    keyboard and screen drivers.
 
+Qt for Symbian
+--------------
+ - File APIs now have backends using native API rather than unix.
+   This improves performance and stability.
+ - Socket APIs now have a backend using native API rather than unix. [QTBUG-7274]
+   This improves stability and enables IPv6.
+ - IPv6 connectivity is now supported.
+ - Multiple instances of QNetworkAccessManager in the same process with a
+   different QNetworkConfiguration now work. This allows http requests to
+   be made via a specific network. For example to mobile operator websites
+   only accessible via the cellular network, or to websites inside a firewall
+ - System proxy settings now work correctly when using service networks [QTBUG-18618]
 
 Qt for Windows CE
 -----------------
