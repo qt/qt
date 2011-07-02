@@ -27,7 +27,6 @@ contains(QT_CONFIG, webkit)  {
 !contains(QT_CONFIG, no-gui):contains(QT_CONFIG, scripttools): SRC_SUBDIRS += src_scripttools
 SRC_SUBDIRS += src_plugins
 contains(QT_CONFIG, declarative): SRC_SUBDIRS += src_imports
-contains(QT_CONFIG, declarative):contains(QT_CONFIG, webkit): SRC_SUBDIRS += src_webkit_declarative
 
 # s60installs need to be at the end, because projects.pro does an ordered build,
 # and s60installs depends on all the others.
@@ -81,8 +80,6 @@ src_webkit.file = $$QT_SOURCE_TREE/src/3rdparty/webkit/Source/WebKit.pro
 src_webkit.target = sub-webkit
 src_declarative.subdir = $$QT_SOURCE_TREE/src/declarative
 src_declarative.target = sub-declarative
-src_webkit_declarative.subdir = $$QT_SOURCE_TREE/src/3rdparty/webkit/Source/WebKit/qt/declarative
-src_webkit_declarative.target = sub-webkitdeclarative
 
 #CONFIG += ordered
 !wince*:!ordered:!symbian-abld:!symbian-sbsv2 {
@@ -136,7 +133,6 @@ src_webkit_declarative.target = sub-webkitdeclarative
    contains(QT_CONFIG, svg) {
       src_declarative.depends += src_svg
    }
-   contains(QT_CONFIG, webkit) : contains(QT_CONFIG, declarative): src_webkit_declarative.depends = src_declarative src_webkit
 }
 
 
