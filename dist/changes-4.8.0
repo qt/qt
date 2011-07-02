@@ -65,6 +65,7 @@ QtGui
  - Deprecate qGenericMatrixFromMatrix4x4 and qGenericMatrixToMatrix4x4
  - QListView diverses optimisations [QTBUG-11438]
  - QTreeWidget/QListWidget: use localeAwareCompare for string comparisons [QTBUG-10839]
+ - Fixed a rare race condition when showing toplevel windows on X11
 
 QtNetwork
 ---------
@@ -88,6 +89,7 @@ QtNetwork
    OpenGL/ES 2.0 API.
  - Including <QtOpenGL> will not work in combination with GLEW, as
    QGLFunctions will undefine GLEW's defines.
+ - Optimize behavior of QGLTextureCache
 
 QtScript
 --------
@@ -105,6 +107,7 @@ QtScript
 
 Qt for Linux/X11
 ----------------
+ - Added experimental support for armCC
 
 
 Qt for Windows
@@ -119,6 +122,8 @@ Qt for Embedded Linux
 ---------------------
  - Added support for QNX 6.5 with multi-process support, and much improved mouse,
    keyboard and screen drivers.
+ - Improved support for INTEGRITY RTOS
+ - Allow hard-coding the temp path in mkspecs (QT_UNIX_TEMP_PATH_OVERRIDE define)
 
 Qt for Symbian
 --------------
