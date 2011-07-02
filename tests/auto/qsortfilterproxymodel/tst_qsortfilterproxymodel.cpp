@@ -3291,7 +3291,7 @@ public:
         // It would be possible to use only the modelReset signal of the source model to clear
         // the data in *this, however, this requires that the slot is connected
         // before QSortFilterProxyModel::setSourceModel is called, and even then depends
-        // on the order of invokation of slots being the same as the order of connection.
+        // on the order of invocation of slots being the same as the order of connection.
         // ie, not reliable.
 //         connect(sourceModel, SIGNAL(modelReset()), SLOT(resetInternalData()));
         QSortFilterProxyModel::setSourceModel(sourceModel);
