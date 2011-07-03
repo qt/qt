@@ -484,6 +484,10 @@ void tst_qdeclarativeflickable::wheel()
 
 void tst_qdeclarativeflickable::flickVelocity()
 {
+#ifdef Q_WS_MAC
+    QSKIP("Producing flicks on Mac CI impossible due to timing problems", SkipAll);
+#endif
+
     QDeclarativeView *canvas = new QDeclarativeView;
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/flickable03.qml"));
     canvas->show();
