@@ -134,19 +134,22 @@ symbian: {
     contains(QT_CONFIG, declarative): {
         qtlibraries.files += $$QMAKE_LIBDIR_QT/QtDeclarative$${QT_LIBINFIX}.dll
 
-        folderlistmodelImport.files = $$QT_BUILD_TREE/imports/Qt/labs/folderlistmodel/qmlfolderlistmodelplugin$${QT_LIBINFIX}.dll
-        gesturesImport.files = $$QT_BUILD_TREE/imports/Qt/labs/gestures/qmlgesturesplugin$${QT_LIBINFIX}.dll
-        particlesImport.files = $$QT_BUILD_TREE/imports/Qt/labs/particles/qmlparticlesplugin$${QT_LIBINFIX}.dll
+        folderlistmodelImport.sources = $$QT_BUILD_TREE/imports/Qt/labs/folderlistmodel/qmlfolderlistmodelplugin$${QT_LIBINFIX}.dll
+        gesturesImport.sources = $$QT_BUILD_TREE/imports/Qt/labs/gestures/qmlgesturesplugin$${QT_LIBINFIX}.dll
+        particlesImport.sources = $$QT_BUILD_TREE/imports/Qt/labs/particles/qmlparticlesplugin$${QT_LIBINFIX}.dll
+        shadersImport.sources = $$QT_BUILD_TREE/imports/Qt/labs/shaders/qmlshadersplugin$${QT_LIBINFIX}.dll
 
-        folderlistmodelImport.files += $$QT_SOURCE_TREE/src/imports/folderlistmodel/qmldir
-        gesturesImport.files += $$QT_SOURCE_TREE/src/imports/gestures/qmldir
-        particlesImport.files += $$QT_SOURCE_TREE/src/imports/particles/qmldir
+        folderlistmodelImport.sources += $$QT_SOURCE_TREE/src/imports/folderlistmodel/qmldir
+        gesturesImport.sources += $$QT_SOURCE_TREE/src/imports/gestures/qmldir
+        particlesImport.sources += $$QT_SOURCE_TREE/src/imports/particles/qmldir
+        shadersImport.sources += $$QT_SOURCE_TREE/src/imports/shaders/qmldir
 
         folderlistmodelImport.path = c:$$QT_IMPORTS_BASE_DIR/Qt/labs/folderlistmodel
         gesturesImport.path = c:$$QT_IMPORTS_BASE_DIR/Qt/labs/gestures
         particlesImport.path = c:$$QT_IMPORTS_BASE_DIR/Qt/labs/particles
+        shadersImport.path = c:$$QT_IMPORTS_BASE_DIR/Qt/labs/shaders
 
-        DEPLOYMENT += folderlistmodelImport gesturesImport particlesImport
+        DEPLOYMENT += folderlistmodelImport gesturesImport particlesImport shadersImport
     }
 
     graphicssystems_plugins.path = c:$$QT_PLUGINS_BASE_DIR/graphicssystems

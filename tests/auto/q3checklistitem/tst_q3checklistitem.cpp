@@ -284,7 +284,7 @@ void tst_Q3CheckListItem::setState_data()
 	s.insert( "b_item1", Q3CheckListItem::On );
 	// bring back old state
 	s.insert( "c_item1", Q3CheckListItem::NoChange );
-	// set item9 (and it's children) to On, wich also saves new history for the whole tree to On
+	// set item9 (and it's children) to On, which also saves new history for the whole tree to On
 	s.insert( "d_item9", Q3CheckListItem::On );
 	// bring back old state once again, all should be On now
 	s.insert( "e_item1", Q3CheckListItem::NoChange );

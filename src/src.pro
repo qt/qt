@@ -22,13 +22,11 @@ contains(QT_CONFIG, svg): SRC_SUBDIRS += src_svg
 contains(QT_CONFIG, script): SRC_SUBDIRS += src_script
 contains(QT_CONFIG, declarative): SRC_SUBDIRS += src_declarative
 contains(QT_CONFIG, webkit)  {
-    exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): SRC_SUBDIRS += src_javascriptcore
     SRC_SUBDIRS += src_webkit
 }
 !contains(QT_CONFIG, no-gui):contains(QT_CONFIG, scripttools): SRC_SUBDIRS += src_scripttools
 SRC_SUBDIRS += src_plugins
 contains(QT_CONFIG, declarative): SRC_SUBDIRS += src_imports
-contains(QT_CONFIG, declarative):contains(QT_CONFIG, webkit): SRC_SUBDIRS += src_webkit_declarative
 
 # s60installs need to be at the end, because projects.pro does an ordered build,
 # and s60installs depends on all the others.
@@ -78,14 +76,10 @@ src_imports.subdir = $$QT_SOURCE_TREE/src/imports
 src_imports.target = sub-imports
 src_testlib.subdir = $$QT_SOURCE_TREE/src/testlib
 src_testlib.target = sub-testlib
-src_javascriptcore.subdir = $$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore
-src_javascriptcore.target = sub-javascriptcore
-src_webkit.subdir = $$QT_SOURCE_TREE/src/3rdparty/webkit/WebCore
+src_webkit.file = $$QT_SOURCE_TREE/src/3rdparty/webkit/Source/WebKit.pro
 src_webkit.target = sub-webkit
 src_declarative.subdir = $$QT_SOURCE_TREE/src/declarative
 src_declarative.target = sub-declarative
-src_webkit_declarative.subdir = $$QT_SOURCE_TREE/src/3rdparty/webkit/WebKit/qt/declarative
-src_webkit_declarative.target = sub-webkitdeclarative
 
 #CONFIG += ordered
 !wince*:!ordered:!symbian-abld:!symbian-sbsv2 {
@@ -121,10 +115,6 @@ src_webkit_declarative.target = sub-webkitdeclarative
       src_webkit.depends = src_gui src_sql src_network
       contains(QT_CONFIG, xmlpatterns): src_webkit.depends += src_xmlpatterns
       src_imports.depends += src_webkit
-      exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro) {
-         src_webkit.depends += src_javascriptcore
-         src_javascriptcore.depends = src_corelib
-      }
    }
    contains(QT_CONFIG, qt3support): src_plugins.depends += src_qt3support
    contains(QT_CONFIG, dbus):{
@@ -143,7 +133,6 @@ src_webkit_declarative.target = sub-webkitdeclarative
    contains(QT_CONFIG, svg) {
       src_declarative.depends += src_svg
    }
-   contains(QT_CONFIG, webkit) : contains(QT_CONFIG, declarative): src_webkit_declarative.depends = src_declarative src_webkit
 }
 
 
@@ -200,7 +189,7 @@ contains(CONFIG, run_on_phone) {
     src_runonphone_target.commands = $(MAKE) -C $$QT_BUILD_TREE/src/s60installs runonphone
     src_runonphone_target.depends = first
     contains(QT_CONFIG, webkit) {
-        src_runonphone_target.commands += && $(MAKE) -C $$QT_BUILD_TREE/src/3rdparty/webkit/WebCore runonphone
+        src_runonphone_target.commands += && $(MAKE) -C $$QT_BUILD_TREE/src/3rdparty/webkit/Source/WebCore runonphone
     }
     QMAKE_EXTRA_TARGETS += src_runonphone_target
 }
