@@ -493,3 +493,8 @@
     \externalpage http://msdn.microsoft.com/en-us/library/dd318066.aspx
     \title Microsoft Active Accessibility Event Constants
 */
+
+/*!
+    \externalpage http://www.rfc-editor.org/rfc/bcp/bcp47.txt
+    \title RFC 5646 - BCP47
+*/
