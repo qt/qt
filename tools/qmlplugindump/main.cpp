@@ -68,6 +68,9 @@
 QString pluginImportPath;
 bool verbose = false;
 
+QString currentProperty;
+QString inObjectInstantiation;
+
 void collectReachableMetaObjects(const QMetaObject *meta, QSet<const QMetaObject *> *metas)
 {
     if (! meta || metas->contains(meta))
@@ -80,8 +83,6 @@ void collectReachableMetaObjects(const QMetaObject *meta, QSet<const QMetaObject
 
     collectReachableMetaObjects(meta->superClass(), metas);
 }
-
-QString currentProperty;
 
 void collectReachableMetaObjects(QObject *object, QSet<const QMetaObject *> *metas)
 {
@@ -177,7 +178,7 @@ QSet<const QMetaObject *> collectReachableMetaObjects(const QString &importCode,
             foreach (const QDeclarativeType *baseExport, baseExports) {
                 bool match = false;
                 foreach (const QDeclarativeType *extensionExport, extensionExports) {
-                    if (baseExport->module() == extensionExport->module()
+                    if (baseExport->qmlTypeName() == extensionExport->qmlTypeName()
                             && baseExport->majorVersion() == extensionExport->majorVersion()
                             && baseExport->minorVersion() == extensionExport->minorVersion()) {
                         match = true;
@@ -214,7 +215,10 @@ QSet<const QMetaObject *> collectReachableMetaObjects(const QString &importCode,
         QDeclarativeComponent c(engine);
         c.setData(code, QUrl::fromLocalFile(pluginImportPath + "/typeinstance.qml"));
 
+        inObjectInstantiation = tyName;
         QObject *object = c.create();
+        inObjectInstantiation.clear();
+
         if (object)
             collectReachableMetaObjects(object, &metas);
         else
@@ -267,6 +271,9 @@ public:
                     continue;
                 if (qmlTyName.startsWith(relocatableModuleUri + QLatin1Char('/'))) {
                     qmlTyName.remove(0, relocatableModuleUri.size() + 1);
+                }
+                if (qmlTyName.startsWith("./")) {
+                    qmlTyName.remove(0, 2);
                 }
                 exports += enquote(QString("%1 %2.%3").arg(
                                        qmlTyName,
@@ -433,6 +440,8 @@ void sigSegvHandler(int) {
     fprintf(stderr, "Error: SEGV\n");
     if (!currentProperty.isEmpty())
         fprintf(stderr, "While processing the property '%s', which probably has uninitialized data.\n", currentProperty.toLatin1().constData());
+    if (!inObjectInstantiation.isEmpty())
+        fprintf(stderr, "While instantiating the object '%s'.\n", inObjectInstantiation.toLatin1().constData());
     exit(EXIT_SEGV);
 }
 #endif
@@ -530,11 +539,16 @@ int main(int argc, char *argv[])
 
     QDeclarativeView view;
     QDeclarativeEngine *engine = view.engine();
-    if (!pluginImportPath.isEmpty())
+    if (!pluginImportPath.isEmpty()) {
+        QDir cur = QDir::current();
+        cur.cd(pluginImportPath);
+        pluginImportPath = cur.absolutePath();
+        QDir::setCurrent(pluginImportPath);
         engine->addImportPath(pluginImportPath);
+    }
 
     // find all QMetaObjects reachable from the builtin module
-    QByteArray importCode("import QtQuick 1.1\n");
+    QByteArray importCode("import QtQuick 1.0\n");
     QSet<const QMetaObject *> defaultReachable = collectReachableMetaObjects(importCode, engine);
 
     // this will hold the meta objects we want to dump information of
