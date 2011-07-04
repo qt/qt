@@ -199,6 +199,9 @@ Qt for Windows CE
 
 - qt3to4
 
+- qmlplugindump
+    * New tool to generate text descriptions of the QML components defined
+      in plugins loaded by a QML module.
 
 ****************************************************************************
 *                          Plugins                                         *
