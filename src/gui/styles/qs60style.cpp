@@ -3810,7 +3810,7 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
 
 #if defined(Q_WS_S60)
     //If new custom standardIcon is missing version information, assume S60 5.3.
-    if (standardIcon >= SP_CustomToolBarAdd) {
+    if (standardIcon & QStyle::SP_CustomBase) {
         if (versionSupport == QSysInfo::SV_Unknown)
             versionSupport = QSysInfo::SV_S60_5_3;
         metric = PM_SmallIconSize;
