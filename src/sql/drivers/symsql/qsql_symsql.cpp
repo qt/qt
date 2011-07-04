@@ -102,7 +102,9 @@ const QString fieldSeparator(QLatin1String(","));
 static QString _q_escapeIdentifier(const QString &identifier) 
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('"')) && identifier.right(1) != QString(QLatin1Char('"')) ) {
+    if (!identifier.isEmpty() 
+            && identifier.left(1) != QString(QLatin1Char('"')) 
+            && identifier.right(1) != QString(QLatin1Char('"'))) {
         res.replace(QLatin1Char('"'), QLatin1String("\"\""));
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
         res.replace(QLatin1Char('.'), QLatin1String("\".\""));
@@ -112,24 +114,23 @@ static QString _q_escapeIdentifier(const QString &identifier)
 
 static QVariant::Type qGetColumnType(const TSqlColumnType coltype)
 {
-    //ToDo Check Implementation
     switch(coltype){
-        case ESqlInt:
-        case ESqlInt64:
-            return QVariant::Int;
-        case ESqlReal:
-            return QVariant::Double;
-        case ESqlBinary:
-            return QVariant::ByteArray;
-        case ESqlText:
-        case ESqlNull:
-        default:
-            return QVariant::String;
+    case ESqlInt:
+    case ESqlInt64:
+        return QVariant::Int;
+    case ESqlReal:
+        return QVariant::Double;
+    case ESqlBinary:
+        return QVariant::ByteArray;
+    case ESqlText:
+    case ESqlNull:
+    default:
+        return QVariant::String;
     }
 }
 
 static QVariant::Type qGetColumnType(const QString &tpName)
-    {
+{
     const QString typeName = tpName.toLower();
     
     if (typeName == QLatin1String("integer")
@@ -145,17 +146,21 @@ static QVariant::Type qGetColumnType(const QString &tpName)
     return QVariant::String;
 }
 
-static QSqlError qMakeError(RSqlDatabase& access, const QString &descr, QSqlError::ErrorType type,
-                            int errorCode = -1)
+static QSqlError qMakeError(RSqlDatabase& access, 
+    const QString &descr, 
+    QSqlError::ErrorType type,
+    int errorCode = -1)
 {
     return QSqlError(descr,
                      QString::fromUtf16(static_cast<const ushort *>(access.LastErrorMessage().Ptr())),
-                     type, errorCode);
+                     type, 
+                     errorCode);
 }
 
 
-static QSqlError gMakeErrorOpen(const QString &descr, QSqlError::ErrorType type,
-                                TInt errorCode)
+static QSqlError gMakeErrorOpen(const QString &descr, 
+    QSqlError::ErrorType type,
+    TInt errorCode)
 {
     return QSqlError(descr, QLatin1String(""), type, errorCode);
 }
@@ -186,7 +191,9 @@ public:
 };
 
 QSymSQLResultPrivate::QSymSQLResultPrivate(QSymSQLResult* res) : q(res),
-skipRow(false), skippedStatus(false), prepareCalled(false)      
+    skipRow(false), 
+    skippedStatus(false), 
+    prepareCalled(false)      
 {
 }
 
@@ -240,8 +247,6 @@ void QSymSQLResultPrivate::initColumns(QSqlRecord& rec)
         int dotIdx = colName.lastIndexOf(QLatin1Char('.'));
         QSqlField fld(colName.mid(dotIdx == -1 ? 0 : dotIdx + 1),  qGetColumnType(decColType));
 
-        //int stp = stmt.ColumnType(i); Useless lines of code, comment modified according to review
-        //fld.setSqlType(stp);  Useless lines of code, comment modified according to review
         rec.append(fld);
     }
 }
@@ -265,13 +270,11 @@ bool QSymSQLResultPrivate::fetchNext(bool initialFetch)
         return true;
     case KSqlAtEnd:
         stmt.Reset();
-        //Removed debug qDebug()<<"query Reset(1)"<<endl; //Debug
         return false;
     case KSqlErrGeneral:
         // KSqlErrGeneral is a generic error code and we must call stmt.Reset()
         // to get the specific error message.
         stmt.Reset();
-        //Removed debug qDebug()<<"query Reset(2)"<<endl; //Debug
         q->setLastError(qMakeError(access, QCoreApplication::translate("QSymSQLResult",
                         "Unable to fetch row"), QSqlError::ConnectionError, res));
         q->setAt(QSql::AfterLastRow);
@@ -283,7 +286,6 @@ bool QSymSQLResultPrivate::fetchNext(bool initialFetch)
         q->setLastError(qMakeError(access, QCoreApplication::translate("QSymSQLResult",
                         "Unable to fetch row"), QSqlError::ConnectionError, res));
         stmt.Reset();
-        //Removed debug qDebug()<<"query Reset(3)"<<endl; //Debug
         q->setAt(QSql::AfterLastRow);
         return false;
     }
@@ -323,7 +325,6 @@ bool QSymSQLResult::prepare(const QString &query)
     setSelect(false);
 
     TInt res = d->stmt.Prepare(d->access, qt_QString2TPtrC(query));
-    //Removed debug qDebug()<<"query:"<<query<<endl; //Debug
     
     if (res != KErrNone) {
         setLastError(qMakeError(d->access, QCoreApplication::translate("QSymSQLResult",
@@ -339,7 +340,7 @@ bool QSymSQLResult::prepare(const QString &query)
 
 bool QSymSQLResult::exec()
 {
-    if(d->prepareCalled == false) {
+    if (d->prepareCalled == false) {
         setLastError(qMakeError(d->access, QCoreApplication::translate("QSymSQLResult",
                         "Statement is not prepared"), QSqlError::StatementError, KErrGeneral));
         return false;
@@ -353,8 +354,6 @@ bool QSymSQLResult::exec()
     setLastError(QSqlError());
     int res = d->stmt.Reset();
     
-    //Removed debug qDebug()<<"query Reset(4)"<<endl; //Debug
-    
     if (res != KErrNone) {
         setLastError(qMakeError(d->access, QCoreApplication::translate("QSymSQLResult",
                      "Unable to reset statement"), QSqlError::StatementError, res));
@@ -363,10 +362,8 @@ bool QSymSQLResult::exec()
     }
     TPtrC tmp;
     TInt paramCount = 0;
-    while(d->stmt.ParamName(paramCount, tmp) == KErrNone)
-        {
+    while (d->stmt.ParamName(paramCount, tmp) == KErrNone) 
         paramCount++;
-        }
 
     if (paramCount == values.count()) {
         for (int i = 0; i < paramCount; ++i) {
@@ -378,12 +375,9 @@ bool QSymSQLResult::exec()
             } else {
                 switch (value.type()) {
                 case QVariant::ByteArray: {
-                    //ToDo check how to handle SQLITE_STATIC
                     const QByteArray *ba = static_cast<const QByteArray*>(value.constData());
                     TPtrC8 data(reinterpret_cast<const TUint8 *>(ba->constData()), ba->length());
                     res = d->stmt.BindBinary(i, data); //replaced i + 1 with i
-                    //res = sqlite3_bind_blob(d->stmt, i + 1, ba->constData(),
-                    //                        ba->size(), SQLITE_STATIC);
                     break; }
                 case QVariant::Int:
                     res = d->stmt.BindInt(i, value.toInt()); //replaced i + 1 with i
@@ -399,19 +393,12 @@ bool QSymSQLResult::exec()
                 
                 case QVariant::String: {
                     // lifetime of string == lifetime of its qvariant
-                    //ToDo check how to handle SQLITE_STATIC
                     const QString *str = static_cast<const QString*>(value.constData());
                     res = d->stmt.BindText(i, qt_QString2TPtrC(*str)); // replaced i + 1 with i
-                    //res = sqlite3_bind_text16(d->stmt, i + 1, str->utf16(),
-                    //                          (str->size()) * sizeof(QChar), SQLITE_STATIC);
                     break; }
                 default: {
-                    //ToDo check how to handle SQLITE_TRANSIENT
                     QString str = value.toString();
                     res = d->stmt.BindText(i, qt_QString2TPtrC(str)); //replaced i + 1 with i
-                    // SQLITE_TRANSIENT makes sure that sqlite buffers the data
-                    //res = sqlite3_bind_text16(d->stmt, i + 1, str.utf16(),
-                    //                          (str.size()) * sizeof(QChar), SQLITE_TRANSIENT);
                     break; }
                 }
             }
@@ -436,7 +423,7 @@ bool QSymSQLResult::exec()
         return false;
     }
     
-    if(d->stmt.ColumnCount() > 0) {
+    if (d->stmt.ColumnCount() > 0) {
         //If there is something, it has to be select
         setSelect(true);
     } else {
@@ -448,7 +435,7 @@ bool QSymSQLResult::exec()
        //Just check whether there is one in the beginning, don't know if this is enough
        //Comments should be at the end of line if those are passed
        //For some reason, case insensitive indexOf didn't work for me
-       if(query.indexOf(QLatin1String("select")) == 0) {
+       if (query.indexOf(QLatin1String("select")) == 0) {
            setSelect(true);
        } else {
            setSelect(false);
@@ -474,9 +461,8 @@ QVariant QSymSQLResult::lastInsertId() const
 {
     if (isActive()) {
         qint64 id = static_cast<qint64>(d->access.LastInsertedRowId());
-        if (id){
+        if (id)
             return id;
-        }
     }
 
     return QVariant();
@@ -499,14 +485,12 @@ QVariant QSymSQLResult::handle() const
 }
 
     
-// ToDo is a virtual_hook needed?
 void QSymSQLResult::virtual_hook(int id, void *data)
 {
     switch (id) 
     {
         case QSqlResult::DetachFromResultSet:
             d->stmt.Reset();
-            //Removed debug qDebug()<<"query Reset(5)"<<endl;
             break;
         default:
             QSqlResult::virtual_hook(id, data);
@@ -518,65 +502,47 @@ QVariant QSymSQLResult::data(int idx)
     QVariant r;
     
     switch (d->stmt.ColumnType(idx)) {
-        case ESqlBinary:
+    case ESqlBinary:
         {
             TPtrC8 data; 
             d->stmt.ColumnBinary(idx, data);
-            return QByteArray(reinterpret_cast<const char *>(data.Ptr()), data.Length());        
-            
-             //ToDo - check if this is correct
-            // values[i + idx] = QByteArray(static_cast<const char *>(   
-            //         sqlite3_column_blob(stmt, i)),
-            //        stmt.ColumnSize(i));
-             break;
+            return QByteArray(reinterpret_cast<const char *>(data.Ptr()), data.Length());
+            break;
          }
-         case ESqlInt:
-         		 r = QVariant(d->stmt.ColumnInt(idx));
-             break;
-         case ESqlInt64:
-             r = QVariant(d->stmt.ColumnInt64(idx));
-             break;
-         case ESqlReal:
-             switch(numericalPrecisionPolicy()) {
-                 case QSql::LowPrecisionInt32:
-                     r = QVariant(d->stmt.ColumnInt(idx));
-                     break;
-                 case QSql::LowPrecisionInt64:
-                     r = QVariant(d->stmt.ColumnInt64(idx));
-                     break;
-                 case QSql::LowPrecisionDouble:
-                     r = QVariant(d->stmt.ColumnReal(idx));
-                     break;
-                 case QSql::HighPrecision:
-                 default:
-                     TPtrC res;
-                     d->stmt.ColumnText(idx, res);
-                     r = QVariant(qt_TDesC2QString(res));
-                     //values[i + idx] = QString::fromUtf16(res.Ptr(), res.Length());
-                                            
-                     //ToDo - Check if the implementation is correct
-                     //values[i + idx] = QString::fromUtf16(static_cast<const ushort *>(
-                     //                    sqlite3_column_text16(stmt, i)),
-                     //                    sqlite3_column_bytes16(stmt, i) / sizeof(ushort));
-                     break;
-             };
-             break;
-         case ESqlNull:
-             r  = QVariant(QVariant::String);
-             break;
-         default:
-             TPtrC res;
-             d->stmt.ColumnText(idx, res);
-             r = QVariant(qt_TDesC2QString(res));
-             //values[i + idx] = QString::fromUtf16(res.Ptr(), res.Length());
-             
-             //ToDo - Check if the implementation is correct
-             //values[i + idx] = QString::fromUtf16(static_cast<const ushort *>(
-             //            sqlite3_column_text16(stmt, i)),
-             //            sqlite3_column_bytes16(stmt, i) / sizeof(ushort));
-             break;
+    case ESqlInt:
+        r = QVariant(d->stmt.ColumnInt(idx));
+        break;
+    case ESqlInt64:
+        r = QVariant(d->stmt.ColumnInt64(idx));
+        break;
+    case ESqlReal:
+        switch(numericalPrecisionPolicy()) {
+        case QSql::LowPrecisionInt32:
+            r = QVariant(d->stmt.ColumnInt(idx));
+            break;
+        case QSql::LowPrecisionInt64:
+            r = QVariant(d->stmt.ColumnInt64(idx));
+            break;
+        case QSql::LowPrecisionDouble:
+            r = QVariant(d->stmt.ColumnReal(idx));
+            break;
+        case QSql::HighPrecision:
+        default:
+            TPtrC res;
+            d->stmt.ColumnText(idx, res);
+            r = QVariant(qt_TDesC2QString(res));
+            break;
+        };
+        break;
+    case ESqlNull:
+        r  = QVariant(QVariant::String);
+        break;
+    default:
+        TPtrC res;
+        d->stmt.ColumnText(idx, res);
+        r = QVariant(qt_TDesC2QString(res));
+        break;
     }
-    //Removed debug qDebug()<<"SymSql, Data:"<<r<<"ID:"<<idx<<endl;
 
     return r;
 }    
@@ -591,18 +557,17 @@ bool QSymSQLResult::fetch(int i)
     //Single return point modified according to review
     bool retVal = true;
     
-    if(i < 0 || !isActive()) {
+    if (i < 0 || !isActive()) {
         retVal = false;
     } else {
-        //Removed for benchmark, comment modified according to review qDebug()<<"fetch i="<<i<<endl;
-        if(at() <= -1 || i < at()) {
+        if (at() <= -1 || i < at()) {
             d->stmt.Reset();
             setAt(-1);
             d->skipRow = false;
         }
     
-        while(at() < i){
-            if(!d->fetchNext(false)) {
+        while (at() < i) {
+            if (!d->fetchNext(false)) {
                 retVal = false;
                 break;
             }
@@ -617,7 +582,7 @@ bool QSymSQLResult::fetch(int i)
 bool QSymSQLResult::fetchNext()
 {   
     bool res = d->fetchNext(false);
-    if(res){
+    if (res) {
         setAt(at()+1);
     }
     
@@ -636,29 +601,23 @@ bool QSymSQLResult::fetchFirst()
 
 bool QSymSQLResult::fetchLast()
 {
-    if(!isActive()){
+    if (!isActive())
         return false;
-    }
 
-    if(at() <= -1){
-        if(!fetchFirst()){
+    if (at() <= -1) {
+        if (!fetchFirst())
             return false;
-        }
     }
     
     TInt res;
-    qDebug() << at();
     
-    do
-    {
+    do {
         res = d->stmt.Next();
         setAt(at()+1);
-    }
-    while(res == KSqlAtRow);
+    } while (res == KSqlAtRow);
         
-    if(res != KSqlAtEnd){
+    if (res != KSqlAtEnd)
         return false;
-    }
     
     d->skippedStatus = false;
     d->skipRow = false;
@@ -719,18 +678,17 @@ TCapability qMatchCapStr(QString& str)
 {
     TCapability cap = ECapability_HardLimit;
     
-    for(int i = 0; i < static_cast<int>(ECapability_Limit); i++) {
-        if(str.compare(QLatin1String(qCapabilityNames[i]), Qt::CaseInsensitive) == 0){
+    for (int i = 0; i < static_cast<int>(ECapability_Limit); i++) {
+        if (str.compare(QLatin1String(qCapabilityNames[i]), Qt::CaseInsensitive) == 0) {
             cap = static_cast<TCapability>(i);
             break;
         }
     }
     
     //Special case, we allow ECapability_None to be defined
-    if(cap == ECapability_HardLimit && 
-        str.compare(QLatin1String(qCapabilityNone), Qt::CaseInsensitive) == 0) {
+    if (cap == ECapability_HardLimit
+        && str.compare(QLatin1String(qCapabilityNone), Qt::CaseInsensitive) == 0) 
         cap = ECapability_None;
-    }
     
     return cap;
 }
@@ -741,13 +699,13 @@ bool qExtractSecurityPolicyFromString(const QString &string, TSecurityPolicy &po
     QStringList values;
     bool ret = false;
     
-    if(startPos == -1) {
+    if (startPos == -1) {
         values = string.split(QLatin1Char(','), QString::SkipEmptyParts);
     } else {
         values = string.mid(startPos + 1).split(QLatin1Char(','), QString::SkipEmptyParts);
     }
     
-    if(values.count() > 0) {
+    if (values.count() > 0) {
         const QString findVid(QLatin1String("vid["));
         const QString findSid(QLatin1String("sid["));
         const int MaxCapCount = 7;
@@ -763,14 +721,14 @@ bool qExtractSecurityPolicyFromString(const QString &string, TSecurityPolicy &po
         QString idString(QLatin1String(""));
         int maxAllowed = MaxCapCount;
         
-        if(values[0].contains(findVid, Qt::CaseInsensitive)) {
+        if (values[0].contains(findVid, Qt::CaseInsensitive)) {
             idString = values[0].remove(findVid, Qt::CaseInsensitive);
             idString = idString.remove(QLatin1Char(']'));
             values.removeAt(0);
             isVID = true;
             maxAllowed = VidMaxCount;
             
-        } else if(values[0].contains(findSid, Qt::CaseInsensitive)) {
+        } else if (values[0].contains(findSid, Qt::CaseInsensitive)) {
             idString = values[0].remove(findSid, Qt::CaseInsensitive);
             idString = idString.remove(QLatin1Char(']'));
             values.removeAt(0);
@@ -778,25 +736,25 @@ bool qExtractSecurityPolicyFromString(const QString &string, TSecurityPolicy &po
             maxAllowed = SidMaxCount;
         }
         
-        if(values.count() <= maxAllowed) {
+        if (values.count() <= maxAllowed) {
             bool wasSuccesful = true;
             
-            for(int i = 0; i < values.count(); i++) {
+            for (int i = 0; i < values.count(); i++) {
                 capList[i] = qMatchCapStr(values[i]);
                 
-                if(capList[i] == ECapability_HardLimit) {
+                if (capList[i] == ECapability_HardLimit) {
                     wasSuccesful = false;
                     break;
                 }
             }
             
-            if(wasSuccesful) {
-                if(isVID || isSID){
+            if (wasSuccesful) {
+                if (isVID || isSID){
                     bool ok = true;
                     quint32 id = idString.toUInt(&ok, 16);
                     
-                    if(ok) {
-                        if(isVID) {
+                    if (ok) {
+                        if (isVID) {
                             TVendorId vid(id);
                             policy = TSecurityPolicy(vid, capList[0], capList[1], capList[2]);
                         } else {
@@ -900,8 +858,8 @@ bool QSymSQLDriver::open(const QString & db, const QString &, const QString &, c
     QStringList optionList = conOpts.split(itemSeparator, QString::SkipEmptyParts);
     QStringList symbianList;
     
-    for( int i = optionList.count() - 1; i >= 0; i--) {
-        if(!optionList[i].contains(isOurOption)) {
+    for (int i = optionList.count() - 1; i >= 0; i--) {
+        if (!optionList[i].contains(isOurOption)) {
             symbianList.append(optionList[i]);
             optionList.removeAt(i);
         } else {
@@ -917,7 +875,7 @@ bool QSymSQLDriver::open(const QString & db, const QString &, const QString &, c
     
     QString symbianOpt;
     
-    for( int i = 0; i < symbianList.count(); i++) {
+    for (int i = 0; i < symbianList.count(); i++) {
         symbianOpt += symbianList[i];
         symbianOpt += itemSeparator;
     }
@@ -928,7 +886,7 @@ bool QSymSQLDriver::open(const QString & db, const QString &, const QString &, c
     
     TInt res = d->access.Open(dbName, &config);
     
-    if(res == KErrNotFound) {
+    if (res == KErrNotFound) {
 
         QRegExp findDefault(QLatin1String("POLICY_DB_DEFAULT=*"), Qt::CaseInsensitive, QRegExp::Wildcard);
         QRegExp findRead(QLatin1String("POLICY_DB_READ=*"), Qt::CaseInsensitive, QRegExp::Wildcard);
@@ -939,47 +897,47 @@ bool QSymSQLDriver::open(const QString & db, const QString &, const QString &, c
                
         int policyIndex = optionList.indexOf(findDefault);
         
-        if(policyIndex != -1) {
+        if (policyIndex != -1) {
             QString defaultPolicyString = optionList[policyIndex];
             optionList.removeAt(policyIndex);
             
             TSecurityPolicy policyItem;
             
-            if(qExtractSecurityPolicyFromString(defaultPolicyString, policyItem)) {
+            if (qExtractSecurityPolicyFromString(defaultPolicyString, policyItem)) {
                 RSqlSecurityPolicy policy;
                 res = policy.Create(policyItem);
                 
-                if(res == KErrNone) {
-                    for(int i = 0; i < optionList.count(); i++) {
+                if (res == KErrNone) {
+                    for (int i = 0; i < optionList.count(); i++) {
                         QString option = optionList[i];
                         
-                        if(option.contains(findRead)) {
-                            if(qExtractSecurityPolicyFromString(option, policyItem)) {
+                        if (option.contains(findRead)) {
+                            if (qExtractSecurityPolicyFromString(option, policyItem)) {
                                 res = policy.SetDbPolicy(RSqlSecurityPolicy::EReadPolicy, policyItem);
                             } else {
                                 res = KErrArgument;
                             }
-                        } else if(option.contains(findWrite)) {
-                            if(qExtractSecurityPolicyFromString(option, policyItem)) {
+                        } else if (option.contains(findWrite)) {
+                            if (qExtractSecurityPolicyFromString(option, policyItem)) {
                                 res = policy.SetDbPolicy(RSqlSecurityPolicy::EWritePolicy, policyItem);
                             } else {
                                 res = KErrArgument;
                             }
-                        } else if(option.contains(findSchema)) {
-                            if(qExtractSecurityPolicyFromString(option, policyItem)) {
+                        } else if (option.contains(findSchema)) {
+                            if (qExtractSecurityPolicyFromString(option, policyItem)) {
                                 res = policy.SetDbPolicy(RSqlSecurityPolicy::ESchemaPolicy, policyItem);
                             } else {
                                 res = KErrArgument;
                             }
-                        } else if(option.contains(findTableWrite)) {
+                        } else if (option.contains(findTableWrite)) {
                             QString tableOption = option.mid(option.indexOf(QLatin1Char('=')) + 1);
                             int firstComma = tableOption.indexOf(QLatin1Char(','));
                             
-                            if(firstComma != -1) {
+                            if (firstComma != -1) {
                                 QString tableName = tableOption.left(firstComma);
                                 tableOption = tableOption.mid(firstComma + 1);
                                 
-                                if(qExtractSecurityPolicyFromString(tableOption, policyItem)) {
+                                if (qExtractSecurityPolicyFromString(tableOption, policyItem)) {
                                     TPtrC symTableName(qt_QString2TPtrC(tableName));
                                                                 
                                     res = policy.SetPolicy(RSqlSecurityPolicy::ETable, symTableName,
@@ -990,15 +948,15 @@ bool QSymSQLDriver::open(const QString & db, const QString &, const QString &, c
                             } else {
                                 res = KErrArgument;
                             }
-                        } else if(option.contains(findTableRead)) {
+                        } else if (option.contains(findTableRead)) {
                             QString tableOption = option.mid(option.indexOf(QLatin1Char('=')) + 1);
                             int firstComma = tableOption.indexOf(QLatin1Char(','));
                             
-                            if(firstComma != -1) {
+                            if (firstComma != -1) {
                                 QString tableName = tableOption.left(firstComma);
                                 tableOption = tableOption.mid(firstComma + 1);
                                 
-                                if(qExtractSecurityPolicyFromString(tableOption, policyItem)) {
+                                if (qExtractSecurityPolicyFromString(tableOption, policyItem)) {
                                     TPtrC symTableName(qt_QString2TPtrC(tableName));
                                                                 
                                     res = policy.SetPolicy(RSqlSecurityPolicy::ETable, symTableName,
@@ -1013,19 +971,18 @@ bool QSymSQLDriver::open(const QString & db, const QString &, const QString &, c
                             res = KErrArgument;
                         }
                         
-                        if(res != KErrNone) {
+                        if (res != KErrNone) {
                             setLastError(gMakeErrorOpen(tr("Invalid option: ") + option, QSqlError::ConnectionError, res));
                             break;
                         }
                     }
                     
-                    if(res == KErrNone) {
+                    if (res == KErrNone) {
                         res = d->access.Create(dbName, policy, &config);
                         policy.Close();
                         
-                        if(res != KErrNone) {
+                        if (res != KErrNone) 
                             setLastError(gMakeErrorOpen(tr("Error opening database"), QSqlError::ConnectionError, res));
-                        }
                     }
                 }
                 
@@ -1038,12 +995,11 @@ bool QSymSQLDriver::open(const QString & db, const QString &, const QString &, c
             //Check whether there is some of our options, fail if so.
             policyIndex = optionList.indexOf(isOurOption);
             
-            if(policyIndex == -1) {
+            if (policyIndex == -1) {
                 res = d->access.Create(dbName, &config);
             
-                if(res != KErrNone) {
+                if (res != KErrNone) 
                     setLastError(gMakeErrorOpen(tr("Error opening database"), QSqlError::ConnectionError, res));
-                }
             } else {
                 res = KErrArgument;
                 setLastError(gMakeErrorOpen(tr("POLICY_DB_DEFAULT must be defined before any other POLICY definitions can be used"), QSqlError::ConnectionError, res));
@@ -1081,7 +1037,7 @@ bool QSymSQLDriver::beginTransaction()
         return false;
     
     TInt err = d->access.Exec(_L("BEGIN"));
-    if(err < KErrNone) {
+    if (err < KErrNone) {
         setLastError(QSqlError(tr("Unable to begin transaction"),
                 qt_TDesC2QString(d->access.LastErrorMessage()), QSqlError::TransactionError, err));
         return false;
@@ -1096,7 +1052,7 @@ bool QSymSQLDriver::commitTransaction()
         return false;
     
     TInt err = d->access.Exec(_L("COMMIT"));
-    if(err < KErrNone) {
+    if (err < KErrNone) {
         setLastError(QSqlError(tr("Unable to commit transaction"),
                 qt_TDesC2QString(d->access.LastErrorMessage()), QSqlError::TransactionError, err));
         return false;
@@ -1111,7 +1067,7 @@ bool QSymSQLDriver::rollbackTransaction()
         return false;
 
     TInt err = d->access.Exec(_L("ROLLBACK"));
-    if(err < KErrNone) {
+    if (err < KErrNone) {
         setLastError(QSqlError(tr("Unable to rollback transaction"),
                 qt_TDesC2QString(d->access.LastErrorMessage()), QSqlError::TransactionError, err));
         return false;
@@ -1141,14 +1097,13 @@ QStringList QSymSQLDriver::tables(QSql::TableType type) const
         sql.clear();
 
     if (!sql.isEmpty() && q.exec(sql)) {
-        while(q.next())
+        while (q.next())
             res.append(q.value(0).toString());
     }
 
-    if (type & QSql::SystemTables) {
+    if (type & QSql::SystemTables) 
         // there are no internal tables beside this one:
         res.append(QLatin1String("sqlite_master"));
-    }
 
     return res;
 }
@@ -1185,12 +1140,6 @@ static QSqlIndex qGetTableInfo(QSqlQuery &q, QString &tableName, bool onlyPIndex
         fld.setDefaultValue(q.value(DFLT_VALUE_IDX));
         ind.append(fld);
     }
-    /*Removed debug 
-    for (int i = 0; i< ind.count(); i++)
-        {
-        qDebug() << "QSqlIndex" << ind.field(i).name() << endl;
-        }
-        */
     return ind;
 }
 
