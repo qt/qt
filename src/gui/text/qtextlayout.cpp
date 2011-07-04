@@ -76,7 +76,7 @@ static QFixed alignLine(QTextEngine *eng, const QScriptLine &line)
         if (align & Qt::AlignRight)
             x = line.width - (line.textAdvance + eng->leadingSpaceWidth(line));
         else if (align & Qt::AlignHCenter)
-            x = (line.width - line.textAdvance)/2;
+            x = (line.width - (line.textAdvance))/2 - eng->leadingSpaceWidth(line);
     }
     return x;
 }
