@@ -119,6 +119,7 @@ static const QSymbianCodecInitData codecsData[] = {
     { /*271082504*/ 271082504,                                   0, "portuguese_locking_gsm7ext\0" },
     { /*271082505*/ 271082505,                                   0, "portuguese_locking_single\0" },
     { /*271082506*/ 271082506,                                   0, "spanish_gsm7_single\0" },
+    { /*271082762*/ 271082762,                                   0, "hkscs_2004\0" },
     { /*271085624*/ 271085624,                                 114, "GB18030\0" },
     { /*536929574*/ 536929574,                                  38, "EUC-KR\0" },
     { /*536936703*/ 536936703,                                   0, "CP949\0" },
