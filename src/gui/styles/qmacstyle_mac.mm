@@ -3681,9 +3681,27 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     proxy()->drawItemText(p, nr, alignment, np, tab->state & State_Enabled,
                                                tab->text, QPalette::WindowText);
                     p->restore();
-                }
+                    QCommonStyle::drawControl(ce, &myTab, p, w);
+                } else if (qMacVersion() >= QSysInfo::MV_10_7 && (tab->state & State_Selected)) {
+                    p->save();
+                    rotateTabPainter(p, myTab.shape, myTab.rect);
 
-                QCommonStyle::drawControl(ce, &myTab, p, w);
+                    QPalette np = tab->palette;
+                    np.setColor(QPalette::WindowText, QColor(0, 0, 0, 75));
+                    QRect nr = subElementRect(SE_TabBarTabText, opt, w);
+                    nr.moveTop(-1);
+                    int alignment = Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextHideMnemonic;
+                    proxy()->drawItemText(p, nr, alignment, np, tab->state & State_Enabled,
+                                               tab->text, QPalette::WindowText);
+
+                    np.setColor(QPalette::WindowText, QColor(255, 255, 255, 255));
+                    nr.moveTop(-2);
+                    proxy()->drawItemText(p, nr, alignment, np, tab->state & State_Enabled,
+                                               tab->text, QPalette::WindowText);
+                    p->restore();
+                } else {
+                    QCommonStyle::drawControl(ce, &myTab, p, w);
+                }
             } else {
                 p->save();
                 CGContextSetShouldAntialias(cg, true);
