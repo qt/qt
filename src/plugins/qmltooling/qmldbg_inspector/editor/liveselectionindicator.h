@@ -39,64 +39,42 @@
 **
 ****************************************************************************/
 
-#ifndef RUBBERBANDSELECTIONMANIPULATOR_H
-#define RUBBERBANDSELECTIONMANIPULATOR_H
+#ifndef LIVESELECTIONINDICATOR_H
+#define LIVESELECTIONINDICATOR_H
 
-#include "liveselectionrectangle_p.h"
-
-#include <QtCore/QPointF>
-
-QT_FORWARD_DECLARE_CLASS(QGraphicsItem)
-
-QT_BEGIN_HEADER
+#include <QtCore/QWeakPointer>
+#include <QtCore/QHash>
 
 QT_BEGIN_NAMESPACE
+class QGraphicsObject;
+class QGraphicsRectItem;
+class QGraphicsItem;
+class QPolygonF;
+QT_END_NAMESPACE
 
-QT_MODULE(Declarative)
+namespace QmlJSDebugger {
 
 class QDeclarativeViewInspector;
 
-class LiveRubberBandSelectionManipulator
+class LiveSelectionIndicator
 {
 public:
-    enum SelectionType {
-        ReplaceSelection,
-        AddToSelection,
-        RemoveFromSelection
-    };
+    LiveSelectionIndicator(QDeclarativeViewInspector *viewInspector, QGraphicsObject *layerItem);
+    ~LiveSelectionIndicator();
 
-    LiveRubberBandSelectionManipulator(QGraphicsObject *layerItem,
-                                       QDeclarativeViewInspector *editorView);
-
-    void setItems(const QList<QGraphicsItem*> &itemList);
-
-    void begin(const QPointF& beginPoint);
-    void update(const QPointF& updatePoint);
-    void end();
+    void show();
+    void hide();
 
     void clear();
 
-    void select(SelectionType selectionType);
-
-    QPointF beginPoint() const;
-
-    bool isActive() const;
-
-protected:
-    QGraphicsItem *topFormEditorItem(const QList<QGraphicsItem*> &itemList);
+    void setItems(const QList<QWeakPointer<QGraphicsObject> > &itemList);
 
 private:
-    QList<QGraphicsItem*> m_itemList;
-    QList<QGraphicsItem*> m_oldSelectionList;
-    LiveSelectionRectangle m_selectionRectangleElement;
-    QPointF m_beginPoint;
-    QDeclarativeViewInspector *m_editorView;
-    QGraphicsItem *m_beginFormEditorItem;
-    bool m_isActive;
+    QHash<QGraphicsItem*, QGraphicsRectItem *> m_indicatorShapeHash;
+    QWeakPointer<QGraphicsObject> m_layerItem;
+    QDeclarativeViewInspector *m_view;
 };
 
-QT_END_NAMESPACE
+}
 
-QT_END_HEADER
-
-#endif // RUBBERBANDSELECTIONMANIPULATOR_H
+#endif // LIVESELECTIONINDICATOR_H

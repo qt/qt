@@ -39,85 +39,69 @@
 **
 ****************************************************************************/
 
-#ifndef QJSDEBUGSERVICE_P_H
-#define QJSDEBUGSERVICE_P_H
+#ifndef ZOOMTOOL_H
+#define ZOOMTOOL_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include "abstractliveedittool.h"
+#include "liverubberbandselectionmanipulator.h"
 
-#include <QtCore/QPointer>
-#include <QElapsedTimer>
+QT_FORWARD_DECLARE_CLASS(QAction)
 
-#include "private/qdeclarativedebugservice_p.h"
+namespace QmlJSDebugger {
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class QDeclarativeEngine;
-class QJSDebuggerAgent;
-
-struct JSAgentCoverageData
-{
-    QByteArray prefix;
-    qint64 time;
-    int messageType;
-
-    qint64 scriptId;
-    QString program;
-    QString fileName;
-    int baseLineNumber;
-    int lineNumber;
-    int columnNumber;
-    QString returnValue;
-
-    QByteArray toByteArray() const;
-};
-
-class QJSDebugService : public QDeclarativeDebugService
+class ZoomTool : public AbstractLiveEditTool
 {
     Q_OBJECT
 
 public:
-    QJSDebugService(QObject *parent = 0);
-    ~QJSDebugService();
+    enum ZoomDirection {
+        ZoomIn,
+        ZoomOut
+    };
 
-    static QJSDebugService *instance();
+    explicit ZoomTool(QDeclarativeViewInspector *view);
 
-    void addEngine(QDeclarativeEngine *);
-    void removeEngine(QDeclarativeEngine *);
-    void processMessage(const JSAgentCoverageData &message);
+    virtual ~ZoomTool();
 
-    QElapsedTimer m_timer;
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *event);
+
+    void hoverMoveEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
+
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *keyEvent);
+    void itemsAboutToRemoved(const QList<QGraphicsItem*> &) {}
+
+    void clear();
 
 protected:
-    void statusChanged(Status status);
-    void messageReceived(const QByteArray &);
+    void selectedItemsChanged(const QList<QGraphicsItem*> &) {}
 
-private Q_SLOTS:
-    void executionStopped(bool becauseOfException,
-                          const QString &exception);
+private slots:
+    void zoomTo100();
+    void zoomIn();
+    void zoomOut();
 
 private:
-    void sendMessages();
-    QList<QDeclarativeEngine *> m_engines;
-    QPointer<QJSDebuggerAgent> m_agent;
-    bool m_deferredSend;
-    QList<JSAgentCoverageData> m_data;
+    qreal nextZoomScale(ZoomDirection direction) const;
+    void scaleView(const QPointF &centerPos);
+
+private:
+    bool m_dragStarted;
+    QPoint m_mousePos; // in view coords
+    QPointF m_dragBeginPos;
+    QAction *m_zoomTo100Action;
+    QAction *m_zoomInAction;
+    QAction *m_zoomOutAction;
+    LiveRubberBandSelectionManipulator *m_rubberbandManipulator;
+
+    qreal m_smoothZoomMultiplier;
+    qreal m_currentScale;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
-QT_END_HEADER
-
-#endif // QJSDEBUGSERVICE_P_H
+#endif // ZOOMTOOL_H

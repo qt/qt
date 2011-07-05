@@ -39,85 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef QJSDEBUGSERVICE_P_H
-#define QJSDEBUGSERVICE_P_H
+#ifndef SUBCOMPONENTMASKLAYERITEM_H
+#define SUBCOMPONENTMASKLAYERITEM_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtGui/QGraphicsPolygonItem>
 
-#include <QtCore/QPointer>
-#include <QElapsedTimer>
+namespace QmlJSDebugger {
 
-#include "private/qdeclarativedebugservice_p.h"
+class QDeclarativeViewInspector;
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class QDeclarativeEngine;
-class QJSDebuggerAgent;
-
-struct JSAgentCoverageData
+class SubcomponentMaskLayerItem : public QGraphicsPolygonItem
 {
-    QByteArray prefix;
-    qint64 time;
-    int messageType;
-
-    qint64 scriptId;
-    QString program;
-    QString fileName;
-    int baseLineNumber;
-    int lineNumber;
-    int columnNumber;
-    QString returnValue;
-
-    QByteArray toByteArray() const;
-};
-
-class QJSDebugService : public QDeclarativeDebugService
-{
-    Q_OBJECT
-
 public:
-    QJSDebugService(QObject *parent = 0);
-    ~QJSDebugService();
-
-    static QJSDebugService *instance();
-
-    void addEngine(QDeclarativeEngine *);
-    void removeEngine(QDeclarativeEngine *);
-    void processMessage(const JSAgentCoverageData &message);
-
-    QElapsedTimer m_timer;
-
-protected:
-    void statusChanged(Status status);
-    void messageReceived(const QByteArray &);
-
-private Q_SLOTS:
-    void executionStopped(bool becauseOfException,
-                          const QString &exception);
+    explicit SubcomponentMaskLayerItem(QDeclarativeViewInspector *inspector,
+                                       QGraphicsItem *parentItem = 0);
+    int type() const;
+    void setCurrentItem(QGraphicsItem *item);
+    void setBoundingBox(const QRectF &boundingBox);
+    QGraphicsItem *currentItem() const;
+    QRectF itemRect() const;
 
 private:
-    void sendMessages();
-    QList<QDeclarativeEngine *> m_engines;
-    QPointer<QJSDebuggerAgent> m_agent;
-    bool m_deferredSend;
-    QList<JSAgentCoverageData> m_data;
+    QDeclarativeViewInspector *m_inspector;
+    QGraphicsItem *m_currentItem;
+    QGraphicsRectItem *m_borderRect;
+    QRectF m_itemPolyRect;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
-QT_END_HEADER
-
-#endif // QJSDEBUGSERVICE_P_H
+#endif // SUBCOMPONENTMASKLAYERITEM_H

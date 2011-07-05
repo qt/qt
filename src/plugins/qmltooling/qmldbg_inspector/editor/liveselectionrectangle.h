@@ -49,11 +49,7 @@ QT_FORWARD_DECLARE_CLASS(QGraphicsRectItem)
 QT_FORWARD_DECLARE_CLASS(QPointF)
 QT_FORWARD_DECLARE_CLASS(QRectF)
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
+namespace QmlJSDebugger {
 
 class LiveSelectionRectangle
 {
@@ -76,8 +72,6 @@ private:
     QWeakPointer<QGraphicsObject> m_layerItem;
 };
 
-QT_END_NAMESPACE
-
-QT_END_HEADER
+} // namespace QmlJSDebugger
 
 #endif // LIVESELECTIONRECTANGLE_H

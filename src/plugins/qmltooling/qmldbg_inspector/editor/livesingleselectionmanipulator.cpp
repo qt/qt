@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 
-#include "livesingleselectionmanipulator_p.h"
+#include "livesingleselectionmanipulator.h"
 
-#include "../qdeclarativeviewinspector_p_p.h"
+#include "../qdeclarativeviewinspector_p.h"
 
 #include <QtDebug>
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
 LiveSingleSelectionManipulator::LiveSingleSelectionManipulator(QDeclarativeViewInspector *editorView)
     : m_editorView(editorView),
@@ -148,4 +148,4 @@ QPointF LiveSingleSelectionManipulator::beginPoint() const
     return m_beginPoint;
 }
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
