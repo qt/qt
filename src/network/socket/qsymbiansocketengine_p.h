@@ -195,7 +195,6 @@ public:
 
     mutable QByteArray receivedDataBuffer;
     mutable bool hasReceivedBufferedDatagram;
-    // FIXME this is duplicated from qnativesocketengine_p.h
     enum ErrorString {
         NonBlockingInitFailedErrorString,
         BroadcastingInitFailedErrorString,

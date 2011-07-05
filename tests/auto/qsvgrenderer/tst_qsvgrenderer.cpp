@@ -1242,7 +1242,7 @@ void tst_QSvgRenderer::testStopOffsetOpacity()
 void tst_QSvgRenderer::testUseElement()
 {
     static const char *svgs[] = {
-        //Use refering to non group node (1)
+        //Use referring to non group node (1)
         "<svg viewBox = \"0 0 200 200\">"
         " <polygon points=\"20,20 50,120 100,10 40,80 50,80\"/>"
         " <polygon points=\"20,80 50,180 100,70 40,140 50,140\" fill= \"red\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\" stroke-width = \"3\"/>"
@@ -1263,7 +1263,7 @@ void tst_QSvgRenderer::testUseElement()
         "  <use y = \"60\" xlink:href = \"#usedPolyline\" fill = \" red\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\"/>"
         " </g>"
         "</svg>",
-        //Use refering to non group node (2)
+        //Use referring to non group node (2)
         "<svg viewBox = \"0 0 200 200\">"
         " <polygon points=\"20,20 50,120 100,10 40,80 50,80\" fill = \"green\" fill-rule = \"nonzero\" stroke = \"purple\" stroke-width = \"4\" stroke-dasharray = \"1,1,3,1\" stroke-offset = \"3\" stroke-miterlimit = \"6\" stroke-linecap = \"butt\" stroke-linejoin = \"round\"/>"
         " <polygon points=\"20,80 50,180 100,70 40,140 50,140\" fill= \"red\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\" stroke-width = \"3\" stroke-dasharray = \"1,1,1,1\" stroke-offset = \"5\" stroke-miterlimit = \"3\" stroke-linecap = \"butt\" stroke-linejoin = \"square\"/>"
@@ -1284,7 +1284,7 @@ void tst_QSvgRenderer::testUseElement()
         "  <use y = \"60\" xlink:href = \"#usedPolyline\" fill= \"red\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\" />"
         " </g>"
         "</svg>",
-        //Use refering to group node
+        //Use referring to group node
         "<svg viewBox = \"0 0 200 200\">"
         " <g>"
         "  <circle cx=\"0\" cy=\"0\" r=\"100\" fill = \"red\" fill-opacity = \"0.6\"/>"

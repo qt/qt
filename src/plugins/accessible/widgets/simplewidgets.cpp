@@ -703,7 +703,14 @@ void QAccessibleLineEdit::setText(Text t, int control, const QString &text)
         QAccessibleWidgetEx::setText(t, control, text);
         return;
     }
-    lineEdit()->setText(text);
+
+    QString newText = text;
+    if (lineEdit()->validator()) {
+        int pos = 0;
+        if (lineEdit()->validator()->validate(newText, pos) != QValidator::Acceptable)
+            return;
+    }
+    lineEdit()->setText(newText);
 }
 
 /*! \reimp */
@@ -801,6 +808,10 @@ QString QAccessibleLineEdit::text(int startOffset, int endOffset)
 {
     if (startOffset > endOffset)
         return QString();
+
+    if (lineEdit()->echoMode() != QLineEdit::Normal)
+        return QString();
+
     return lineEdit()->text().mid(startOffset, endOffset - startOffset);
 }
 
