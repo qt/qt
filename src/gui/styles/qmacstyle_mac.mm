@@ -4725,7 +4725,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
                 HIThemeFrameDrawInfo fdi;
                 fdi.version = qt_mac_hitheme_version;
-                fdi.state = tds;
+                fdi.state = ((sb->state & State_ReadOnly) || !(sb->state & State_Enabled)) ? kThemeStateInactive : kThemeStateActive;
                 fdi.kind = kHIThemeFrameTextFieldSquare;
                 fdi.isFocused = false;
                 HIRect hirect = qt_hirectForQRect(lineeditRect);
