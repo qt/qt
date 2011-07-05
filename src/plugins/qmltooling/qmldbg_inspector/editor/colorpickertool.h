@@ -39,48 +39,54 @@
 **
 ****************************************************************************/
 
-#ifndef LIVESELECTIONINDICATOR_H
-#define LIVESELECTIONINDICATOR_H
+#ifndef COLORPICKERTOOL_H
+#define COLORPICKERTOOL_H
 
-#include <QtCore/QWeakPointer>
-#include <QtCore/QHash>
+#include "abstractliveedittool.h"
 
-QT_BEGIN_NAMESPACE
-class QGraphicsObject;
-class QGraphicsRectItem;
-class QGraphicsItem;
-class QPolygonF;
-QT_END_NAMESPACE
+#include <QtGui/QColor>
 
-QT_BEGIN_HEADER
+QT_FORWARD_DECLARE_CLASS(QPoint)
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
-QT_MODULE(Declarative)
-
-class QDeclarativeViewInspector;
-
-class LiveSelectionIndicator
+class ColorPickerTool : public AbstractLiveEditTool
 {
+    Q_OBJECT
 public:
-    LiveSelectionIndicator(QDeclarativeViewInspector *viewInspector, QGraphicsObject *layerItem);
-    ~LiveSelectionIndicator();
+    explicit ColorPickerTool(QDeclarativeViewInspector *view);
 
-    void show();
-    void hide();
+    virtual ~ColorPickerTool();
+
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *) {}
+    void mouseDoubleClickEvent(QMouseEvent *) {}
+
+    void hoverMoveEvent(QMouseEvent *) {}
+
+    void keyPressEvent(QKeyEvent *) {}
+    void keyReleaseEvent(QKeyEvent *) {}
+
+    void wheelEvent(QWheelEvent *) {}
+
+    void itemsAboutToRemoved(const QList<QGraphicsItem*> &) {}
 
     void clear();
 
-    void setItems(const QList<QWeakPointer<QGraphicsObject> > &itemList);
+signals:
+    void selectedColorChanged(const QColor &color);
+
+protected:
+    void selectedItemsChanged(const QList<QGraphicsItem*> &) {}
 
 private:
-    QHash<QGraphicsItem*, QGraphicsRectItem *> m_indicatorShapeHash;
-    QWeakPointer<QGraphicsObject> m_layerItem;
-    QDeclarativeViewInspector *m_view;
+    void pickColor(const QPoint &pos);
+
+private:
+    QColor m_selectedColor;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
-QT_END_HEADER
-
-#endif // LIVESELECTIONINDICATOR_H
+#endif // COLORPICKERTOOL_H

@@ -69,6 +69,8 @@ public:
     void expandObjectById(const QByteArray& objectName, quint64 objectId);
     void setProperty(const QByteArray& id, qint64 objectId, const QString &property, const QString &value);
     void activateFrame(int frameId);
+    void startCoverageCompleted();
+    void startCoverageRun();
 
     // info from last exec
     JSAgentWatchData exec_data;
@@ -94,6 +96,11 @@ signals:
     void stopped();
     void expanded();
     void watchTriggered();
+    void coverageScriptLoaded();
+    void coverageFuncEntered();
+    void coverageFuncExited();
+    void coveragePosChanged();
+    void coverageCompleted();
 
 protected:
     virtual void statusChanged(Status status);
@@ -156,6 +163,9 @@ private slots:
     void setProperty4();
     void activateFrame2();
     void verifyQMLOptimizerDisabled();
+    void testCoverageCompleted();
+    void testCoverageRun();
+
 };
 
 
@@ -280,6 +290,28 @@ void QJSDebugClient::activateFrame(int frameId)
     sendMessage(reply);
 }
 
+void QJSDebugClient::startCoverageRun()
+{
+    QByteArray reply;
+    QDataStream rs(&reply, QIODevice::WriteOnly);
+    QByteArray cmd = "COVERAGE";
+    bool enabled = true;
+    rs << cmd
+       << enabled;
+    sendMessage(reply);
+}
+
+void QJSDebugClient::startCoverageCompleted()
+{
+    QByteArray reply;
+    QDataStream rs(&reply, QIODevice::WriteOnly);
+    QByteArray cmd = "COVERAGE";
+    bool enabled = false;
+    rs << cmd
+       << enabled;
+    sendMessage(reply);
+}
+
 void QJSDebugClient::statusChanged(Status /*status*/)
 {
     emit statusHasChanged();
@@ -317,6 +349,30 @@ void QJSDebugClient::messageReceived(const QByteArray &data)
         stream >> ping;
         QCOMPARE(ping, m_ping);
         emit pong();
+    } else if (command == "COVERAGE") {
+        qint64 time;
+        int messageType;
+        qint64 scriptId;
+        QString program;
+        QString fileName;
+        int baseLineNumber;
+        int lineNumber;
+        int columnNumber;
+        QString returnValue;
+
+        stream >> time >> messageType >> scriptId >> program >> fileName >> baseLineNumber
+        >> lineNumber >> columnNumber >> returnValue;
+        if (messageType == CoverageComplete) {
+            emit coverageCompleted();
+        } else if (messageType == CoverageScriptLoad) {
+            emit coverageScriptLoaded();
+        } else if (messageType == CoveragePosChange) {
+            emit coveragePosChanged();
+        } else if (messageType == CoverageFuncEntry) {
+            emit coverageFuncEntered();
+        } else if (messageType == CoverageFuncExit) {
+            emit coverageFuncExited();
+        }
     } else {
         QFAIL("Unknown message :" + command);
     }
@@ -1336,6 +1392,51 @@ void tst_QDeclarativeDebugJS::verifyQMLOptimizerDisabled()
     QVERIFY(QDeclarativeDebugTest::waitForSignal(&client, SIGNAL(stopped())));
 
 }
+
+void tst_QDeclarativeDebugJS::testCoverageCompleted()
+{
+    QJSDebugProcess process;
+    process.start(QStringList() << "-qmljsdebugger=port:3771,block" << TEST_FILE("backtrace1.qml"));
+    QVERIFY(process.waitForStarted());
+
+    QDeclarativeDebugConnection connection;
+    connection.connectToHost("127.0.0.1", 3771);
+    QVERIFY(connection.waitForConnected());
+
+    QJSDebugClient client(&connection);
+    QVERIFY(QDeclarativeDebugTest::waitForSignal(&client, SIGNAL(statusHasChanged())));
+    if (client.status() == QJSDebugClient::Unavailable)
+        QVERIFY(QDeclarativeDebugTest::waitForSignal(&client, SIGNAL(statusHasChanged())));
+    QCOMPARE(client.status(), QJSDebugClient::Enabled);
+
+    client.startCoverageCompleted();
+    QVERIFY(QDeclarativeDebugTest::waitForSignal(&client, SIGNAL(coverageCompleted())));
+}
+
+void tst_QDeclarativeDebugJS::testCoverageRun()
+{
+    QJSDebugProcess process;
+    process.start(QStringList() << "-qmljsdebugger=port:3771,block" << TEST_FILE("backtrace1.qml"));
+    QVERIFY(process.waitForStarted());
+
+    QDeclarativeDebugConnection connection;
+    connection.connectToHost("127.0.0.1", 3771);
+    QVERIFY(connection.waitForConnected());
+
+    QJSDebugClient client(&connection);
+    QVERIFY(QDeclarativeDebugTest::waitForSignal(&client, SIGNAL(statusHasChanged())));
+    if (client.status() == QJSDebugClient::Unavailable)
+        QVERIFY(QDeclarativeDebugTest::waitForSignal(&client, SIGNAL(statusHasChanged())));
+    QCOMPARE(client.status(), QJSDebugClient::Enabled);
+
+    client.startCoverageRun();
+    client.startCoverageCompleted();
+    QVERIFY(QDeclarativeDebugTest::waitForSignal(&client, SIGNAL(coverageScriptLoaded())));
+    QVERIFY(QDeclarativeDebugTest::waitForSignal(&client, SIGNAL(coveragePosChanged())));
+    //QVERIFY(QDeclarativeDebugTest::waitForSignal(&client, SIGNAL(coverageFuncEntered())));
+    //QVERIFY(QDeclarativeDebugTest::waitForSignal(&client, SIGNAL(coverageFuncExited())));
+}
+
 QTEST_MAIN(tst_QDeclarativeDebugJS)
 
 #include "tst_qdeclarativedebugjs.moc"

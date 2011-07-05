@@ -39,85 +39,62 @@
 **
 ****************************************************************************/
 
-#ifndef QJSDEBUGSERVICE_P_H
-#define QJSDEBUGSERVICE_P_H
+#ifndef QDECLARATIVEVIEWINSPECTOR_H
+#define QDECLARATIVEVIEWINSPECTOR_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <private/qdeclarativeglobal_p.h>
 
-#include <QtCore/QPointer>
-#include <QElapsedTimer>
+#include "qmlinspectorconstants.h"
+#include "abstractviewinspector.h"
 
-#include "private/qdeclarativedebugservice_p.h"
+#include <QtCore/QScopedPointer>
+#include <QtDeclarative/QDeclarativeView>
 
-QT_BEGIN_HEADER
+namespace QmlJSDebugger {
 
-QT_BEGIN_NAMESPACE
+class AbstractLiveEditTool;
+class QDeclarativeViewInspectorPrivate;
 
-QT_MODULE(Declarative)
-
-class QDeclarativeEngine;
-class QJSDebuggerAgent;
-
-struct JSAgentCoverageData
-{
-    QByteArray prefix;
-    qint64 time;
-    int messageType;
-
-    qint64 scriptId;
-    QString program;
-    QString fileName;
-    int baseLineNumber;
-    int lineNumber;
-    int columnNumber;
-    QString returnValue;
-
-    QByteArray toByteArray() const;
-};
-
-class QJSDebugService : public QDeclarativeDebugService
+class QDeclarativeViewInspector : public AbstractViewInspector
 {
     Q_OBJECT
 
 public:
-    QJSDebugService(QObject *parent = 0);
-    ~QJSDebugService();
+    explicit QDeclarativeViewInspector(QDeclarativeView *view, QObject *parent = 0);
+    ~QDeclarativeViewInspector();
 
-    static QJSDebugService *instance();
+    // AbstractViewInspector
+    void changeCurrentObjects(const QList<QObject*> &objects);
+    void reloadView();
+    void reparentQmlObject(QObject *object, QObject *newParent);
+    void changeTool(InspectorProtocol::Tool tool);
+    QWidget *viewWidget() const { return declarativeView(); }
+    QDeclarativeEngine *declarativeEngine() const;
 
-    void addEngine(QDeclarativeEngine *);
-    void removeEngine(QDeclarativeEngine *);
-    void processMessage(const JSAgentCoverageData &message);
+    void setSelectedItems(QList<QGraphicsItem *> items);
+    QList<QGraphicsItem *> selectedItems() const;
 
-    QElapsedTimer m_timer;
+    QDeclarativeView *declarativeView() const;
+
+    QRectF adjustToScreenBoundaries(const QRectF &boundingRectInSceneSpace);
 
 protected:
-    void statusChanged(Status status);
-    void messageReceived(const QByteArray &);
+    bool eventFilter(QObject *obj, QEvent *event);
 
-private Q_SLOTS:
-    void executionStopped(bool becauseOfException,
-                          const QString &exception);
+    bool leaveEvent(QEvent *);
+    bool mouseMoveEvent(QMouseEvent *event);
+
+    AbstractLiveEditTool *currentTool() const;
 
 private:
-    void sendMessages();
-    QList<QDeclarativeEngine *> m_engines;
-    QPointer<QJSDebuggerAgent> m_agent;
-    bool m_deferredSend;
-    QList<JSAgentCoverageData> m_data;
+    Q_DISABLE_COPY(QDeclarativeViewInspector)
+
+    inline QDeclarativeViewInspectorPrivate *d_func() { return data.data(); }
+    QScopedPointer<QDeclarativeViewInspectorPrivate> data;
+    friend class QDeclarativeViewInspectorPrivate;
+    friend class AbstractLiveEditTool;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
-QT_END_HEADER
-
-#endif // QJSDEBUGSERVICE_P_H
+#endif // QDECLARATIVEVIEWINSPECTOR_H

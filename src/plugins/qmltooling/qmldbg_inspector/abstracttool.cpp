@@ -39,57 +39,16 @@
 **
 ****************************************************************************/
 
-#ifndef LIVESINGLESELECTIONMANIPULATOR_H
-#define LIVESINGLESELECTIONMANIPULATOR_H
+#include "abstracttool.h"
 
-#include <QtCore/QPointF>
-#include <QtCore/QList>
+#include "abstractviewinspector.h"
 
-QT_FORWARD_DECLARE_CLASS(QGraphicsItem)
+namespace QmlJSDebugger {
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class QDeclarativeViewInspector;
-
-class LiveSingleSelectionManipulator
+AbstractTool::AbstractTool(AbstractViewInspector *inspector) :
+    QObject(inspector),
+    m_inspector(inspector)
 {
-public:
-    LiveSingleSelectionManipulator(QDeclarativeViewInspector *editorView);
+}
 
-    enum SelectionType {
-        ReplaceSelection,
-        AddToSelection,
-        RemoveFromSelection,
-        InvertSelection
-    };
-
-    void begin(const QPointF& beginPoint);
-    void update(const QPointF& updatePoint);
-    void end(const QPointF& updatePoint);
-
-    void select(SelectionType selectionType, const QList<QGraphicsItem*> &items,
-                bool selectOnlyContentItems);
-    void select(SelectionType selectionType, bool selectOnlyContentItems);
-
-    void clear();
-
-    QPointF beginPoint() const;
-
-    bool isActive() const;
-
-private:
-    QList<QGraphicsItem*> m_oldSelectionList;
-    QPointF m_beginPoint;
-    QDeclarativeViewInspector *m_editorView;
-    bool m_isActive;
-};
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // LIVESINGLESELECTIONMANIPULATOR_H
+} // namespace QmlJSDebugger
