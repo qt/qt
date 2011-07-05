@@ -104,15 +104,7 @@ void SymbianEngine::initialize()
         return;
     }
 
-    TRAP(error, {
-        iConnectionMonitor.ConnectL();
-        CleanupClosePushL(iConnectionMonitor);
-#ifdef SNAP_FUNCTIONALITY_AVAILABLE
-        User::LeaveIfError(iConnectionMonitor.SetUintAttribute(EBearerIdAll, 0, KBearerGroupThreshold, 1));
-#endif
-        iConnectionMonitor.NotifyEventL(*this);
-        CleanupStack::Pop();
-    });
+    TRAP(error, StartConnectionMonitorNotifyL());
     if (error != KErrNone) {
         iInitOk = false;
         return;
@@ -146,6 +138,17 @@ void SymbianEngine::initialize()
     updateAvailableAccessPoints(); // On first time updates (without WLAN scans)
     // Start monitoring IAP and/or SNAP changes in Symbian CommsDB
     startCommsDatabaseNotifications();
+}
+
+void SymbianEngine::StartConnectionMonitorNotifyL()
+{
+    iConnectionMonitor.ConnectL();
+    CleanupClosePushL(iConnectionMonitor);
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
+    User::LeaveIfError(iConnectionMonitor.SetUintAttribute(EBearerIdAll, 0, KBearerGroupThreshold, 1));
+#endif
+    iConnectionMonitor.NotifyEventL(*this);
+    CleanupStack::Pop();
 }
 
 SymbianEngine::~SymbianEngine()

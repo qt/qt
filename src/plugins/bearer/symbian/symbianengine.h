@@ -184,6 +184,8 @@ private:
     void startMonitoringIAPData(TUint32 aIapId);
     QNetworkConfigurationPrivatePointer dataByConnectionId(TUint aConnectionId);
 
+    void StartConnectionMonitorNotifyL();
+
 protected:
     // From CActive
     void RunL();
