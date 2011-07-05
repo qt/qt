@@ -434,12 +434,18 @@ int QHttpNetworkReplyPrivate::gunzipBodyPartially(QByteArray &compressed, QByteA
      } while (inflateStrm.avail_out == 0);
     // clean up and return
     if (ret <= Z_ERRNO || ret == Z_STREAM_END) {
-        inflateEnd(&inflateStrm);
-        initInflate = false;
+        gunzipBodyPartiallyEnd();
     }
     streamEnd = (ret == Z_STREAM_END);
     return ret;
 }
+
+void QHttpNetworkReplyPrivate::gunzipBodyPartiallyEnd()
+{
+    inflateEnd(&inflateStrm);
+    initInflate = false;
+}
+
 #endif
 
 qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
