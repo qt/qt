@@ -541,6 +541,7 @@ public:
         SE_DropArea,
         SE_TableItemPressed,
         SE_ListItemPressed,
+        SE_DialogBackground,
     };
 
     enum SkinFrameElements {
@@ -560,6 +561,7 @@ public:
         SF_ButtonInactive,
         SF_TableItemPressed,
         SF_ListItemPressed,
+        SF_DialogBackground,
     };
 
     enum SkinElementFlag {

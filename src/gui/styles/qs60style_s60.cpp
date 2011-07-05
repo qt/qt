@@ -1196,6 +1196,10 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
             centerId.Set(KAknsIIDQsnFrPopupCenterSubmenu);
             frameId.Set(KAknsIIDQsnFrPopupSub);
             break;
+        case QS60StylePrivate::SF_DialogBackground:
+            centerId.Set(KAknsIIDQsnFrPopupCenter);
+            frameId.Set(KAknsIIDQsnFrPopup);
+            break;
         case QS60StylePrivate::SF_SettingsList:
             // Starting from S60_5_3, the root theme has been changed so that KAknsIIDQsnFrSetOpt is empty.
             // Set the theme ID to None, to avoid theme server trying to draw the empty frame.
