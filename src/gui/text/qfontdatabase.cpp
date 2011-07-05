@@ -226,9 +226,9 @@ struct QtFontStyle
         signed int stretch : 12;
 
         bool operator==(const Key & other) {
-            return styleName == other.styleName && style == other.style &&
-                     weight == other.weight &&
-                     (stretch == 0 || other.stretch == 0 || stretch == other.stretch);
+            return (!styleName.isEmpty() && !other.styleName.isEmpty() && styleName == other.styleName) ||
+                   (style == other.style && weight == other.weight &&
+                    (stretch == 0 || other.stretch == 0 || stretch == other.stretch));
         }
         bool operator!=(const Key &other) {
             return !operator==(other);
@@ -2030,16 +2030,12 @@ QFont QFontDatabase::font(const QString &family, const QString &style,
 
     if (!s) // no styles found?
         return QApplication::font();
-    if (s->key.styleName.isEmpty()) {
-        QFont fnt(family, pointSize, s->key.weight);
-        fnt.setStyle((QFont::Style)s->key.style);
-        return fnt;
-    } else {
-        // found a perfect match
-        QFont fnt(family, pointSize);
+
+    QFont fnt(family, pointSize, s->key.weight);
+    fnt.setStyle((QFont::Style)s->key.style);
+    if (!s->key.styleName.isEmpty())
         fnt.setStyleName(s->key.styleName);
-        return fnt;
-    }
+    return fnt;
 }
 
 
