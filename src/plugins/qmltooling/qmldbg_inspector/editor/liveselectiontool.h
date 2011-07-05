@@ -42,10 +42,10 @@
 #ifndef LIVESELECTIONTOOL_H
 #define LIVESELECTIONTOOL_H
 
-#include "abstractliveedittool_p.h"
-#include "liverubberbandselectionmanipulator_p.h"
-#include "livesingleselectionmanipulator_p.h"
-#include "liveselectionindicator_p.h"
+#include "abstractliveedittool.h"
+#include "liverubberbandselectionmanipulator.h"
+#include "livesingleselectionmanipulator.h"
+#include "liveselectionindicator.h"
 
 #include <QtCore/QList>
 #include <QtCore/QTime>
@@ -55,11 +55,7 @@ QT_FORWARD_DECLARE_CLASS(QMouseEvent)
 QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 QT_FORWARD_DECLARE_CLASS(QAction)
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
+namespace QmlJSDebugger {
 
 class LiveSelectionTool : public AbstractLiveEditTool
 {
@@ -72,13 +68,13 @@ public:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
-    void mouseDoubleClickEvent(QMouseEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *) {}
     void hoverMoveEvent(QMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
-    void keyReleaseEvent(QKeyEvent *keyEvent);
+    void keyReleaseEvent(QKeyEvent *) {}
     void wheelEvent(QWheelEvent *event);
 
-    void itemsAboutToRemoved(const QList<QGraphicsItem*> &itemList);
+    void itemsAboutToRemoved(const QList<QGraphicsItem*> &) {}
 //    QVariant itemChange(const QList<QGraphicsItem*> &itemList,
 //                        QGraphicsItem::GraphicsItemChange change,
 //                        const QVariant &value );
@@ -101,7 +97,7 @@ private slots:
     void repaintBoundingRects();
 
 private:
-    void createContextMenu(QList<QGraphicsItem*> itemList, QPoint globalPos);
+    void createContextMenu(const QList<QGraphicsItem*> &itemList, QPoint globalPos);
     LiveSingleSelectionManipulator::SelectionType getSelectionType(Qt::KeyboardModifiers modifiers);
     bool alreadySelected(const QList<QGraphicsItem*> &itemList) const;
 
@@ -119,8 +115,6 @@ private:
     QList<QGraphicsItem*> m_contextMenuItemList;
 };
 
-QT_END_NAMESPACE
-
-QT_END_HEADER
+} // namespace QmlJSDebugger
 
 #endif // LIVESELECTIONTOOL_H

@@ -45,15 +45,11 @@
 #include <QtGui/QToolBar>
 #include <QtGui/QIcon>
 
-#include "../qmlinspectorconstants_p.h"
+#include "../qmlinspectorconstants.h"
 
 QT_FORWARD_DECLARE_CLASS(QActionGroup)
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
+namespace QmlJSDebugger {
 
 class ToolBarColorBox;
 
@@ -131,8 +127,6 @@ private:
     Ui *ui;
 };
 
-QT_END_NAMESPACE
-
-QT_END_HEADER
+}
 
 #endif // QMLTOOLBAR_H
