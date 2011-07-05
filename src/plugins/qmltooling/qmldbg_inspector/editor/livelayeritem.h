@@ -39,52 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef QMLINSPECTORCONSTANTS_H
-#define QMLINSPECTORCONSTANTS_H
+#ifndef LIVELAYERITEM_H
+#define LIVELAYERITEM_H
 
-#include <QtDeclarative/private/qdeclarativeglobal_p.h>
+#include <QtGui/QGraphicsObject>
 
-QT_BEGIN_HEADER
+namespace QmlJSDebugger {
 
-QT_BEGIN_NAMESPACE
+class LiveLayerItem : public QGraphicsObject
+{
+public:
+    LiveLayerItem(QGraphicsScene *scene);
+    ~LiveLayerItem();
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                QWidget *widget = 0);
+    QRectF boundingRect() const;
+    int type() const;
 
-QT_MODULE(Declarative)
+    QList<QGraphicsItem*> findAllChildItems() const;
 
-namespace Constants {
-
-enum DesignTool {
-    NoTool = 0,
-    SelectionToolMode = 1,
-    MarqueeSelectionToolMode = 2,
-    MoveToolMode = 3,
-    ResizeToolMode = 4,
-    ColorPickerMode = 5,
-    ZoomMode = 6
+protected:
+    QList<QGraphicsItem*> findAllChildItems(const QGraphicsItem *item) const;
 };
 
-enum ToolFlags {
-    NoToolFlags = 0,
-    UseCursorPos = 1
-};
+}
 
-static const int DragStartTime = 50;
-
-static const int DragStartDistance = 20;
-
-static const double ZoomSnapDelta = 0.04;
-
-static const int EditorItemDataKey = 1000;
-
-enum GraphicsItemTypes {
-    EditorItemType = 0xEAAA,
-    ResizeHandleItemType = 0xEAEA
-};
-
-
-} // namespace Constants
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QMLINSPECTORCONSTANTS_H
+#endif // LIVELAYERITEM_H

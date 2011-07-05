@@ -39,75 +39,47 @@
 **
 ****************************************************************************/
 
-#ifndef ZOOMTOOL_H
-#define ZOOMTOOL_H
+#ifndef ABSTRACTTOOL_H
+#define ABSTRACTTOOL_H
 
-#include "abstractliveedittool_p.h"
-#include "liverubberbandselectionmanipulator_p.h"
-
-QT_FORWARD_DECLARE_CLASS(QAction)
-
-QT_BEGIN_HEADER
+#include <QtCore/QObject>
 
 QT_BEGIN_NAMESPACE
+class QMouseEvent;
+class QKeyEvent;
+class QWheelEvent;
+QT_END_NAMESPACE
 
-QT_MODULE(Declarative)
+namespace QmlJSDebugger {
 
-class ZoomTool : public AbstractLiveEditTool
+class AbstractViewInspector;
+
+class AbstractTool : public QObject
 {
     Q_OBJECT
 
 public:
-    enum ZoomDirection {
-        ZoomIn,
-        ZoomOut
-    };
+    explicit AbstractTool(AbstractViewInspector *inspector);
 
-    explicit ZoomTool(QDeclarativeViewInspector *view);
+    AbstractViewInspector *inspector() const { return m_inspector; }
 
-    virtual ~ZoomTool();
+    virtual void leaveEvent(QEvent *event) = 0;
 
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void mouseDoubleClickEvent(QMouseEvent *event);
+    virtual void mousePressEvent(QMouseEvent *event) = 0;
+    virtual void mouseMoveEvent(QMouseEvent *event) = 0;
+    virtual void mouseReleaseEvent(QMouseEvent *event) = 0;
+    virtual void mouseDoubleClickEvent(QMouseEvent *event) = 0;
 
-    void hoverMoveEvent(QMouseEvent *event);
-    void wheelEvent(QWheelEvent *event);
+    virtual void hoverMoveEvent(QMouseEvent *event) = 0;
+    virtual void wheelEvent(QWheelEvent *event) = 0;
 
-    void keyPressEvent(QKeyEvent *event);
-    void keyReleaseEvent(QKeyEvent *keyEvent);
-    void itemsAboutToRemoved(const QList<QGraphicsItem*> &itemList);
-
-    void clear();
-
-protected:
-    void selectedItemsChanged(const QList<QGraphicsItem*> &itemList);
-
-private slots:
-    void zoomTo100();
-    void zoomIn();
-    void zoomOut();
+    virtual void keyPressEvent(QKeyEvent *event) = 0;
+    virtual void keyReleaseEvent(QKeyEvent *keyEvent) = 0;
 
 private:
-    qreal nextZoomScale(ZoomDirection direction) const;
-    void scaleView(const QPointF &centerPos);
-
-private:
-    bool m_dragStarted;
-    QPoint m_mousePos; // in view coords
-    QPointF m_dragBeginPos;
-    QAction *m_zoomTo100Action;
-    QAction *m_zoomInAction;
-    QAction *m_zoomOutAction;
-    LiveRubberBandSelectionManipulator *m_rubberbandManipulator;
-
-    qreal m_smoothZoomMultiplier;
-    qreal m_currentScale;
+    AbstractViewInspector *m_inspector;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
-QT_END_HEADER
-
-#endif // ZOOMTOOL_H
+#endif // ABSTRACTTOOL_H

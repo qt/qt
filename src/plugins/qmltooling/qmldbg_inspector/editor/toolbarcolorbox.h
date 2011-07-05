@@ -39,35 +39,43 @@
 **
 ****************************************************************************/
 
-#ifndef LIVELAYERITEM_H
-#define LIVELAYERITEM_H
+#ifndef TOOLBARCOLORBOX_H
+#define TOOLBARCOLORBOX_H
 
-#include <QtGui/QGraphicsObject>
+#include <QtGui/QLabel>
+#include <QtGui/QColor>
+#include <QtCore/QPoint>
 
-QT_BEGIN_HEADER
+QT_FORWARD_DECLARE_CLASS(QContextMenuEvent)
+QT_FORWARD_DECLARE_CLASS(QAction)
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
-QT_MODULE(Declarative)
-
-class LiveLayerItem : public QGraphicsObject
+class ToolBarColorBox : public QLabel
 {
-public:
-    LiveLayerItem(QGraphicsScene *scene);
-    ~LiveLayerItem();
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                QWidget *widget = 0);
-    QRectF boundingRect() const;
-    int type() const;
+    Q_OBJECT
 
-    QList<QGraphicsItem*> findAllChildItems() const;
+public:
+    explicit ToolBarColorBox(QWidget *parent = 0);
+    void setColor(const QColor &color);
 
 protected:
-    QList<QGraphicsItem*> findAllChildItems(const QGraphicsItem *item) const;
+    void contextMenuEvent(QContextMenuEvent *ev);
+    void mousePressEvent(QMouseEvent *ev);
+    void mouseMoveEvent(QMouseEvent *ev);
+private slots:
+    void copyColorToClipboard();
+
+private:
+    QPixmap createDragPixmap(int size = 24) const;
+
+private:
+    bool m_dragStarted;
+    QPoint m_dragBeginPoint;
+    QAction *m_copyHexColor;
+    QColor m_color;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
-QT_END_HEADER
-
-#endif // LIVELAYERITEM_H
+#endif // TOOLBARCOLORBOX_H

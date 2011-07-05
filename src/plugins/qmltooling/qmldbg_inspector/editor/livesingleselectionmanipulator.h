@@ -39,85 +39,51 @@
 **
 ****************************************************************************/
 
-#ifndef QJSDEBUGSERVICE_P_H
-#define QJSDEBUGSERVICE_P_H
+#ifndef LIVESINGLESELECTIONMANIPULATOR_H
+#define LIVESINGLESELECTIONMANIPULATOR_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtCore/QPointF>
+#include <QtCore/QList>
 
-#include <QtCore/QPointer>
-#include <QElapsedTimer>
+QT_FORWARD_DECLARE_CLASS(QGraphicsItem)
 
-#include "private/qdeclarativedebugservice_p.h"
+namespace QmlJSDebugger {
 
-QT_BEGIN_HEADER
+class QDeclarativeViewInspector;
 
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class QDeclarativeEngine;
-class QJSDebuggerAgent;
-
-struct JSAgentCoverageData
+class LiveSingleSelectionManipulator
 {
-    QByteArray prefix;
-    qint64 time;
-    int messageType;
-
-    qint64 scriptId;
-    QString program;
-    QString fileName;
-    int baseLineNumber;
-    int lineNumber;
-    int columnNumber;
-    QString returnValue;
-
-    QByteArray toByteArray() const;
-};
-
-class QJSDebugService : public QDeclarativeDebugService
-{
-    Q_OBJECT
-
 public:
-    QJSDebugService(QObject *parent = 0);
-    ~QJSDebugService();
+    LiveSingleSelectionManipulator(QDeclarativeViewInspector *editorView);
 
-    static QJSDebugService *instance();
+    enum SelectionType {
+        ReplaceSelection,
+        AddToSelection,
+        RemoveFromSelection,
+        InvertSelection
+    };
 
-    void addEngine(QDeclarativeEngine *);
-    void removeEngine(QDeclarativeEngine *);
-    void processMessage(const JSAgentCoverageData &message);
+    void begin(const QPointF& beginPoint);
+    void update(const QPointF& updatePoint);
+    void end(const QPointF& updatePoint);
 
-    QElapsedTimer m_timer;
+    void select(SelectionType selectionType, const QList<QGraphicsItem*> &items,
+                bool selectOnlyContentItems);
+    void select(SelectionType selectionType, bool selectOnlyContentItems);
 
-protected:
-    void statusChanged(Status status);
-    void messageReceived(const QByteArray &);
+    void clear();
 
-private Q_SLOTS:
-    void executionStopped(bool becauseOfException,
-                          const QString &exception);
+    QPointF beginPoint() const;
+
+    bool isActive() const;
 
 private:
-    void sendMessages();
-    QList<QDeclarativeEngine *> m_engines;
-    QPointer<QJSDebuggerAgent> m_agent;
-    bool m_deferredSend;
-    QList<JSAgentCoverageData> m_data;
+    QList<QGraphicsItem*> m_oldSelectionList;
+    QPointF m_beginPoint;
+    QDeclarativeViewInspector *m_editorView;
+    bool m_isActive;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
-QT_END_HEADER
-
-#endif // QJSDEBUGSERVICE_P_H
+#endif // LIVESINGLESELECTIONMANIPULATOR_H

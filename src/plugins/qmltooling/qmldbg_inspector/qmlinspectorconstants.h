@@ -39,61 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef COLORPICKERTOOL_H
-#define COLORPICKERTOOL_H
+#ifndef QMLINSPECTORCONSTANTS_H
+#define QMLINSPECTORCONSTANTS_H
 
-#include "abstractliveedittool_p.h"
+#include <QtDeclarative/private/qdeclarativeglobal_p.h>
 
-#include <QtGui/QColor>
+namespace QmlJSDebugger {
+namespace Constants {
 
-QT_FORWARD_DECLARE_CLASS(QPoint)
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class ColorPickerTool : public AbstractLiveEditTool
-{
-    Q_OBJECT
-public:
-    explicit ColorPickerTool(QDeclarativeViewInspector *view);
-
-    virtual ~ColorPickerTool();
-
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void mouseDoubleClickEvent(QMouseEvent *event);
-
-    void hoverMoveEvent(QMouseEvent *event);
-
-    void keyPressEvent(QKeyEvent *event);
-    void keyReleaseEvent(QKeyEvent *keyEvent);
-
-    void wheelEvent(QWheelEvent *event);
-
-    void itemsAboutToRemoved(const QList<QGraphicsItem*> &itemList);
-
-    void clear();
-
-signals:
-    void selectedColorChanged(const QColor &color);
-
-protected:
-
-    void selectedItemsChanged(const QList<QGraphicsItem*> &itemList);
-
-private:
-    void pickColor(const QPoint &pos);
-
-private:
-    QColor m_selectedColor;
+enum DesignTool {
+    NoTool = 0,
+    SelectionToolMode = 1,
+    MarqueeSelectionToolMode = 2,
+    MoveToolMode = 3,
+    ResizeToolMode = 4,
+    ColorPickerMode = 5,
+    ZoomMode = 6
 };
 
-QT_END_NAMESPACE
+static const int DragStartTime = 50;
 
-QT_END_HEADER
+static const int DragStartDistance = 20;
 
-#endif // COLORPICKERTOOL_H
+static const double ZoomSnapDelta = 0.04;
+
+static const int EditorItemDataKey = 1000;
+
+enum GraphicsItemTypes {
+    EditorItemType = 0xEAAA,
+    ResizeHandleItemType = 0xEAEA
+};
+
+
+} // namespace Constants
+} // namespace QmlJSDebugger
+
+#endif // QMLINSPECTORCONSTANTS_H
