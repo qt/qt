@@ -64,6 +64,7 @@ public:
 
 private:
     QList<QPlatformScreen *> mScreens;
+    QPlatformFontDatabase *mFontDb;
 };
 
 QT_END_NAMESPACE

@@ -63,12 +63,18 @@ QUIKitScreen::QUIKitScreen(int screenIndex)
     const qreal inch = 25.4;
     qreal dpi = 160.;
     int dragDistance = 12;
+    int defaultFontPixelSize = 14;
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
         dpi = 132.;
         dragDistance = 10;
     }
     m_physicalSize = QSize(qRound(bounds.size.width * inch / dpi), qRound(bounds.size.height * inch / dpi));
     qApp->setStartDragDistance(dragDistance);
+
+    QFont font(QLatin1String("Bitstream Vera Sans"));
+    font.setPixelSize(defaultFontPixelSize);
+    qApp->setFont(font);
+
     [pool release];
 }
 
