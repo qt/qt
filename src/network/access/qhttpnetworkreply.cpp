@@ -431,7 +431,7 @@ int QHttpNetworkReplyPrivate::gunzipBodyPartially(QByteArray &compressed, QByteA
         }
         have = sizeof(out) - inflateStrm.avail_out;
         inflated.append(QByteArray((const char *)out, have));
-     } while (inflateStrm.avail_out == 0);
+     } while (inflateStrm.avail_out == 0 && inflateStrm.avail_in > 0);
     // clean up and return
     if (ret <= Z_ERRNO || ret == Z_STREAM_END) {
         gunzipBodyPartiallyEnd();
