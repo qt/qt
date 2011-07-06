@@ -2507,7 +2507,12 @@ void QMessageBox::setInformativeText(const QString &text)
         label->hide();
         QTextBrowser *textBrowser = new QTextBrowser(this);
         textBrowser->setOpenExternalLinks(true);
-        grid->addWidget(textBrowser, 1, 1, 1, 1);
+#if defined(Q_OS_SYMBIAN)
+        const int preferredTextColumn = (QApplication::layoutDirection() == Qt::LeftToRight) ? 0 : 1;
+#else
+        const int preferredTextColumn = 1;
+#endif
+        grid->addWidget(textBrowser, 1, preferredTextColumn, 1, 1);
         d->textBrowser = textBrowser;
 #else
         grid->addWidget(label, 1, 1, 1, 1);

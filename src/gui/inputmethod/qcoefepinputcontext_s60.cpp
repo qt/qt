@@ -83,6 +83,8 @@ Q_GUI_EXPORT void qt_s60_setPartialScreenInputMode(bool enable)
 {
     S60->partial_keyboard = enable;
 
+    QApplication::setAttribute(Qt::AA_S60DisablePartialScreenInputMode, !S60->partial_keyboard);
+
     QInputContext *ic = 0;
     if (QApplication::focusWidget()) {
         ic = QApplication::focusWidget()->inputContext();
@@ -111,7 +113,7 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
     m_fepState->SetObjectProvider(this);
     int defaultFlags = EAknEditorFlagDefault;
     if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0) {
-        if (S60->partial_keyboard) {
+        if (isPartialKeyboardSupported()) {
             defaultFlags |= QT_EAknEditorFlagEnablePartialScreen;
         }
         defaultFlags |= QT_EAknEditorFlagSelectionVisible;
@@ -420,7 +422,8 @@ void QCoeFepInputContext::mouseHandler(int x, QMouseEvent *event)
         //If splitview is open and T9 word is tapped, pass the pointer event to pointer handler.
         //This will open the "suggested words" list. Pass pointer position always as zero, to make
         //full word replacement in case user makes a selection.
-        if (S60->partial_keyboard && S60->partialKeyboardOpen
+        if (isPartialKeyboardSupported()
+            && S60->partialKeyboardOpen
             && m_pointerHandler
             && !(currentHints & Qt::ImhNoPredictiveText)
             && (x > 0 && x < m_preeditString.length())) {
@@ -534,6 +537,11 @@ bool QCoeFepInputContext::isWidgetVisible(QWidget *widget, int offset)
     return visible;
 }
 
+bool QCoeFepInputContext::isPartialKeyboardSupported()
+{
+    return (S60->partial_keyboard || !QApplication::testAttribute(Qt::AA_S60DisablePartialScreenInputMode));
+}
+
 // Ensure that the input widget is visible in the splitview rect.
 
 void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
@@ -644,7 +652,7 @@ void QCoeFepInputContext::updateHints(bool mustUpdateInputCapabilities)
         // we need to update its state separately.
         if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0) {
             TInt currentFlags = m_fepState->Flags();
-            if (S60->partial_keyboard)
+            if (isPartialKeyboardSupported())
                 currentFlags |= QT_EAknEditorFlagEnablePartialScreen;
             else
                 currentFlags &= ~QT_EAknEditorFlagEnablePartialScreen;
@@ -761,7 +769,7 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
 
     flags = 0;
     if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0) {
-        if (S60->partial_keyboard)
+        if (isPartialKeyboardSupported())
             flags |= QT_EAknEditorFlagEnablePartialScreen;
         flags |= QT_EAknEditorFlagSelectionVisible;
     }
