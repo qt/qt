@@ -1953,7 +1953,7 @@ QList<int> QFontDatabase::pointSizes(const QString &family,
 #if defined(Q_WS_WIN)
     // windows and macosx are always smoothly scalable
     Q_UNUSED(family);
-    Q_UNUSED(style);
+    Q_UNUSED(styleName);
     return standardSizes();
 #else
     bool smoothScalable = false;
