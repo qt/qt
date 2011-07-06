@@ -160,6 +160,13 @@ symbian: {
         particlesImport.path = c:$$QT_IMPORTS_BASE_DIR/Qt/labs/particles
 
         DEPLOYMENT += folderlistmodelImport gesturesImport particlesImport
+
+        contains(QT_CONFIG, opengl) {
+            shadersImport.sources = $$QT_BUILD_TREE/imports/Qt/labs/shaders/qmlshadersplugin$${QT_LIBINFIX}.dll \
+                                    $$QT_SOURCE_TREE/src/imports/shaders/qmldir
+            shadersImport.path = c:$$QT_IMPORTS_BASE_DIR/Qt/labs/shaders
+            DEPLOYMENT += shadersImport
+        }
     }
 
     graphicssystems_plugins.path = c:$$QT_PLUGINS_BASE_DIR/graphicssystems

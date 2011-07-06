@@ -174,6 +174,14 @@ bool QMeeGoGraphicsSystemSwitchHandler::eventFilter(QObject *object, QEvent *eve
                     QMeeGoGraphicsSystem::switchToMeeGo();
             }
         }
+    } else if (event->type() == QEvent::Show
+               && QMeeGoGraphicsSystem::switchPolicy == QMeeGoGraphicsSystem::AutomaticSwitch) {
+        if (visibleWidgets() > 0)
+            QMeeGoGraphicsSystem::switchToMeeGo();
+    } else if (event->type() == QEvent::Hide
+               && QMeeGoGraphicsSystem::switchPolicy == QMeeGoGraphicsSystem::AutomaticSwitch) {
+        if (visibleWidgets() == 0)
+            QMeeGoGraphicsSystem::switchToRaster();
     }
 
     // resume processing of event

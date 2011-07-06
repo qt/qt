@@ -54,6 +54,7 @@
 
 #include <fepitfr.h>
 #include <hal.h>
+#include <e32property.h>
 
 #include <limits.h>
 // You only find these enumerations on SDK 5 onwards, so we need to provide our own
@@ -71,6 +72,10 @@
 
 // EAknEditorFlagEnablePartialScreen is only valid from Sym^3 onwards.
 #define QT_EAknEditorFlagEnablePartialScreen 0x200000
+
+// Properties to detect VKB status from AknFepInternalPSKeys.h
+#define QT_EPSUidAknFep 0x100056de
+#define QT_EAknFepTouchInputActive 0x00000004
 
 QT_BEGIN_NAMESPACE
 
@@ -307,28 +312,46 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         return false;
 
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
-        // Notify S60 that we want the virtual keyboard to show up.
-        QSymbianControl *sControl;
-        sControl = focusWidget()->effectiveWinId()->MopGetObject(sControl);
-        Q_ASSERT(sControl);
+        // Only request virtual keyboard if it is not yet active or if this is the first time
+        // panel is requested for this application.
+        static bool firstTime = true;
+        int vkbActive = 0;
 
-        // The FEP UI temporarily steals focus when it shows up the first time, causing
-        // all sorts of weird effects on the focused widgets. Since it will immediately give
-        // back focus to us, we temporarily disable focus handling until the job's done.
-        if (sControl) {
-            sControl->setIgnoreFocusChanged(true);
+        if (firstTime) {
+            // Sometimes the global QT_EAknFepTouchInputActive value can be left incorrect at
+            // application exit if the application is exited when input panel is active.
+            // Therefore we always want to open the panel the first time application requests it.
+            firstTime = false;
+        } else {
+            const TUid KPSUidAknFep = {QT_EPSUidAknFep};
+            // No need to check for return value, as vkbActive stays zero in that case
+            RProperty::Get(KPSUidAknFep, QT_EAknFepTouchInputActive, vkbActive);
         }
 
-        ensureInputCapabilitiesChanged();
-        m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::QT_EAknActivatePenInputRequest);
+        if (!vkbActive) {
+            // Notify S60 that we want the virtual keyboard to show up.
+            QSymbianControl *sControl;
+            sControl = focusWidget()->effectiveWinId()->MopGetObject(sControl);
+            Q_ASSERT(sControl);
 
-        if (sControl) {
-            sControl->setIgnoreFocusChanged(false);
+            // The FEP UI temporarily steals focus when it shows up the first time, causing
+            // all sorts of weird effects on the focused widgets. Since it will immediately give
+            // back focus to us, we temporarily disable focus handling until the job's done.
+            if (sControl) {
+                sControl->setIgnoreFocusChanged(true);
+            }
+
+            ensureInputCapabilitiesChanged();
+            m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::QT_EAknActivatePenInputRequest);
+
+            if (sControl) {
+                sControl->setIgnoreFocusChanged(false);
+            }
+            //If m_pointerHandler has already been set, it means that fep inline editing is in progress.
+            //When this is happening, do not filter out pointer events.
+            if (!m_pointerHandler)
+                return true;
         }
-        //If m_pointerHandler has already been set, it means that fep inline editing is in progress.
-        //When this is happening, do not filter out pointer events.
-        if (!m_pointerHandler)
-            return true;
     }
 
     return false;
