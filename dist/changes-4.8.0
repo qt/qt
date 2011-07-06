@@ -65,6 +65,18 @@ QtGui
  - Deprecate qGenericMatrixFromMatrix4x4 and qGenericMatrixToMatrix4x4
  - QListView diverses optimisations [QTBUG-11438]
  - QTreeWidget/QListWidget: use localeAwareCompare for string comparisons [QTBUG-10839]
+ - Fixed a rare race condition when showing toplevel windows on X11
+ - Accessibility: Fix potential crash in QDockWidget.
+ - Accessibility: Fix crash when asking for relations of child accessibles.
+ - Accessibility: More consistency in reporting names (especially when widget is invisible).
+ - Accessibility: Make focus handling more consistent.
+ - Accessibility: Send updates when text changes.
+ - Accessibility: Add IAccessible2 events.
+ - Accessibility: Fix crash when accessing ItemViews during initialization.
+ - Accessibility: Make QTabWidget child hierarchy consistent.
+ - Accessibility: Report correct window title and application name.
+ - Accessibility: Return text attributes for QTextEdit.
+
 
 QtNetwork
 ---------
@@ -88,6 +100,7 @@ QtNetwork
    OpenGL/ES 2.0 API.
  - Including <QtOpenGL> will not work in combination with GLEW, as
    QGLFunctions will undefine GLEW's defines.
+ - Optimize behavior of QGLTextureCache
 
 QtScript
 --------
@@ -105,6 +118,7 @@ QtScript
 
 Qt for Linux/X11
 ----------------
+ - Added experimental support for armCC
 
 
 Qt for Windows
@@ -119,6 +133,8 @@ Qt for Embedded Linux
 ---------------------
  - Added support for QNX 6.5 with multi-process support, and much improved mouse,
    keyboard and screen drivers.
+ - Improved support for INTEGRITY RTOS
+ - Allow hard-coding the temp path in mkspecs (QT_UNIX_TEMP_PATH_OVERRIDE define)
 
 Qt for Symbian
 --------------
@@ -194,6 +210,9 @@ Qt for Windows CE
 
 - qt3to4
 
+- qmlplugindump
+    * New tool to generate text descriptions of the QML components defined
+      in plugins loaded by a QML module.
 
 ****************************************************************************
 *                          Plugins                                         *

@@ -1,7 +1,7 @@
 import QtQuick 1.0
 
 Flickable {
-    width: 100; height: 100
+    width: 100; height: 200
     contentWidth: column.width; contentHeight: column.height
 
     Column {

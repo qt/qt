@@ -264,6 +264,9 @@ void tst_Symbols::prefix()
     excusedPrefixes["QtSql"] =
         QStringList() << "sqlite3";
 
+    excusedPrefixes["QtScript"] =
+        QStringList() << "QTJSC";
+
     excusedPrefixes["QtWebKit"] =
         QStringList() << "WebCore::"
                       << "KJS::"
@@ -294,7 +297,7 @@ void tst_Symbols::prefix()
 
     bool isFailed = false;
     foreach (QString lib, files) {
-        if (lib.contains("Designer") || lib.contains("QtCLucene") || lib.contains("XmlPatternsSDK"))
+        if (lib.contains("Designer") || lib.contains("QtCLucene") || lib.contains("XmlPatternsSDK") || lib.contains("WebKit"))
             continue;
 
         bool isPhonon = lib.contains("phonon");
