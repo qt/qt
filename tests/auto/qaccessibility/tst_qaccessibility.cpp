@@ -1830,7 +1830,7 @@ void tst_QAccessibility::buttonTest()
     menuToolButton.setPopup(&toolMenu);
     menuToolButton.setMinimumSize(20,20);
 
-    // splitted menu toolbutton
+    // split menu toolbutton
     QToolButton splitToolButton(&window);
     splitToolButton.setTextLabel("Split Tool");
     Q3PopupMenu splitMenu(&splitToolButton);
@@ -1951,7 +1951,7 @@ void tst_QAccessibility::buttonTest()
 //    QCOMPARE(test->actionText(QAccessible::Press, QAccessible::Name, 0), QString("Press"));
 //    test->release();
 
-//    // test splitted menu toolbutton
+//    // test split menu toolbutton
 //    QVERIFY(QAccessible::queryAccessibleInterface(&splitToolButton, &test));
 //    QCOMPARE(test->childCount(), 2);
 //    QCOMPARE(test->role(0), QAccessible::ButtonDropDown);

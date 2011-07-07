@@ -44,6 +44,7 @@
 #include <qtabwidget.h>
 #include <qdebug.h>
 #include <qapplication.h>
+#include <private/qapplication_p.h>
 #include <qlabel.h>
 #include <QtGui/qboxlayout.h>
 
@@ -618,6 +619,10 @@ void tst_QTabWidget::paintEventCount()
     QTest::qWait(100);
 
     QCOMPARE(tab1->count, initalPaintCount);
+#if defined(QT_MAC_USE_COCOA)
+    if (QApplicationPrivate::graphics_system_name != QLatin1String("raster"))
+        QEXPECT_FAIL(0, "Cocoa sends an extra updates when the view is shown", Abort);
+#endif
     QCOMPARE(tab2->count, 1);
 
     tw->setCurrentIndex(0);

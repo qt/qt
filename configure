@@ -7601,7 +7601,7 @@ fi
 
 if [ "$CFG_WEBKIT" != "no" ]; then
     # This include takes care of adding "webkit" to QT_CONFIG.
-    cp -f "$relpath/src/3rdparty/webkit/WebKit/qt/qt_webkit_version.pri" "$outpath/mkspecs/modules/qt_webkit_version.pri"
+    cp -f "$relpath/src/3rdparty/webkit/Source/WebKit/qt/qt_webkit_version.pri" "$outpath/mkspecs/modules/qt_webkit_version.pri"
     # The reason we set CFG_WEBKIT, is such that the printed overview of what will be enabled, shows correctly.
     if [ "$CFG_WEBKIT" = "debug" ]; then
         QMAKE_CONFIG="$QMAKE_CONFIG webkit-debug"

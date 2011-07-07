@@ -78,6 +78,17 @@ enum JSDebuggerState
     StoppedState
 };
 
+enum JSCoverageMessage {
+    CoverageLocation,
+    CoverageScriptLoad,
+    CoveragePosChange,
+    CoverageFuncEntry,
+    CoverageFuncExit,
+    CoverageComplete,
+
+    CoverageMaximumMessage
+};
+
 struct JSAgentWatchData
 {
     QByteArray exp;
@@ -165,6 +176,7 @@ public:
     void stepInto();
     void stepOut();
     void continueExecution();
+    void setCoverageEnabled(bool enabled);
 
     JSAgentWatchData executeExpression(const QString &expr);
     QList<JSAgentWatchData> expandObjectById(quint64 objectId);
