@@ -2396,12 +2396,13 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         d->image_filler_xform.setupMatrix(copy, s->flags.bilinear);
 
         if (!s->flags.antialiased && s->matrix.type() == QTransform::TxScale) {
-            QRectF rr = s->matrix.mapRect(r);
+            QPointF rr_tl = s->matrix.map(r.topLeft());
+            QPointF rr_br = s->matrix.map(r.bottomRight());
 
-            const int x1 = qRound(rr.x());
-            const int y1 = qRound(rr.y());
-            const int x2 = qRound(rr.right());
-            const int y2 = qRound(rr.bottom());
+            const int x1 = qRound(rr_tl.x());
+            const int y1 = qRound(rr_tl.y());
+            const int x2 = qRound(rr_br.x());
+            const int y2 = qRound(rr_br.y());
 
             fillRect_normalized(QRect(x1, y1, x2-x1, y2-y1), &d->image_filler_xform, d);
             return;
