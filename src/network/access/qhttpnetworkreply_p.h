@@ -207,6 +207,7 @@ public:
 #ifndef QT_NO_COMPRESS
     bool gzipCheckHeader(QByteArray &content, int &pos);
     int gunzipBodyPartially(QByteArray &compressed, QByteArray &inflated);
+    void gunzipBodyPartiallyEnd();
 #endif
     void removeAutoDecompressHeader();
 
