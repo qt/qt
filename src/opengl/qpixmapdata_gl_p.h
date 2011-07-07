@@ -61,6 +61,9 @@
 
 #ifdef Q_OS_SYMBIAN
 #include "private/qvolatileimage_p.h"
+#ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
+#  include <sgresource/sgimage.h>
+#endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -72,8 +75,7 @@ class QGLPixmapData;
 
 #ifdef Q_OS_SYMBIAN
 class QNativeImageHandleProvider;
-#endif
-
+#else
 class QGLFramebufferObjectPool
 {
 public:
@@ -102,7 +104,7 @@ public:
 private:
     QGLPixmapData *data;
 };
-
+#endif
 
 class Q_OPENGL_EXPORT QGLPixmapData : public QPixmapData
 {
@@ -194,6 +196,9 @@ private:
     mutable QNativeImageHandleProvider *nativeImageHandleProvider;
     void *nativeImageHandle;
     QString nativeImageType;
+#ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
+    RSgImage *m_sgImage;
+#endif
 #else
     mutable QImage m_source;
 #endif
@@ -208,9 +213,9 @@ private:
     mutable bool m_hasFillColor;
 
     mutable bool m_hasAlpha;
-
+#ifndef Q_OS_SYMBIAN
     mutable QGLPixmapGLPaintDevice m_glDevice;
-
+#endif
     friend class QGLPixmapGLPaintDevice;
     friend class QMeeGoPixmapData;
     friend class QMeeGoLivePixmapData;

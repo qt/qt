@@ -2518,7 +2518,7 @@ void tst_QNetworkReply::ioGetFromFile()
 
     QNetworkRequest request(QUrl::fromLocalFile(file.fileName()));
     QNetworkReplyPtr reply = manager.get(request);
-    QVERIFY(reply->isFinished()); // a file should immediatly be done
+    QVERIFY(reply->isFinished()); // a file should immediately be done
     DataReader reader(reply);
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
@@ -2808,7 +2808,7 @@ void tst_QNetworkReply::ioGetFromHttpWithAuth()
 void tst_QNetworkReply::ioGetFromHttpWithAuthSynchronous()
 {
     // verify that we do not enter an endless loop with synchronous calls and wrong credentials
-    // the case when we succed with the login is tested in ioGetFromHttpWithAuth()
+    // the case when we succeed with the login is tested in ioGetFromHttpWithAuth()
 
     QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfcs-auth/rfc3252.txt"));
     request.setAttribute(
@@ -2917,7 +2917,7 @@ void tst_QNetworkReply::ioGetFromHttpWithProxyAuth()
 void tst_QNetworkReply::ioGetFromHttpWithProxyAuthSynchronous()
 {
     // verify that we do not enter an endless loop with synchronous calls and wrong credentials
-    // the case when we succed with the login is tested in ioGetFromHttpWithAuth()
+    // the case when we succeed with the login is tested in ioGetFromHttpWithAuth()
 
     QNetworkProxy proxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::serverName(), 3129);
     QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt"));
@@ -6236,7 +6236,7 @@ void tst_QNetworkReply::httpAbort()
     QCOMPARE(reply->error(), QNetworkReply::OperationCanceledError);
     QVERIFY(reply->isFinished());
 
-    // Abort immediatly after the get()
+    // Abort immediately after the get()
     QNetworkReplyPtr reply2 = manager.get(request);
     connect(reply2, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     reply2->abort();
