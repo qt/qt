@@ -263,6 +263,7 @@
 
 /*!
     \fn void QSizePolicy::setWidthForHeight(bool dependent)
+    \since 4.8
 
     Sets the flag determining whether the widget's width
     depends on its height, to \a dependent.
@@ -276,6 +277,7 @@
 
 /*!
     \fn bool QSizePolicy::hasWidthForHeight() const
+    \since 4.8
 
     Returns true if the widget's width depends on its
     height; otherwise returns false.

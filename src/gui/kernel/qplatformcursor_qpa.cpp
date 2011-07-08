@@ -53,6 +53,7 @@ QList <QWeakPointer<QPlatformCursor> > QPlatformCursorPrivate::instances;
 
 /*!
     \class QPlatformCursor
+    \since 4.8
 
     \brief The QPlatformCursor class provides information about
     pointer device events (movement, buttons), and requests to change
@@ -105,6 +106,7 @@ QPlatformCursor::QPlatformCursor(QPlatformScreen *scr )
 
 /*!
     \class QPlatformCursorImage
+    \since 4.8
 
     \brief The QPlatformCursorImage class provides a set of graphics
     intended to be used as cursors.
