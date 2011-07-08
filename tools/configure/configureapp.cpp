@@ -2760,7 +2760,7 @@ void Configure::generateOutputVars()
     QFile::remove(dst);
     if (dictionary["WEBKIT"] != "no") {
         // This include takes care of adding "webkit" to QT_CONFIG.
-        QString src = sourcePath + "/src/3rdparty/webkit/WebKit/qt/qt_webkit_version.pri";
+        QString src = sourcePath + "/src/3rdparty/webkit/Source/WebKit/qt/qt_webkit_version.pri";
         QFile::copy(src, dst);
         if (dictionary["WEBKIT"] == "debug")
             qtConfig += "webkit-debug";

@@ -41,6 +41,7 @@
 
 #include "private/qjsdebuggeragent_p.h"
 #include "private/qdeclarativedebughelper_p.h"
+#include "private/qjsdebugservice_p.h"
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qcoreapplication.h>
@@ -56,7 +57,7 @@ class QJSDebuggerAgentPrivate
 {
 public:
     QJSDebuggerAgentPrivate(QJSDebuggerAgent *q)
-        : q(q), state(NoState), isInitialized(false)
+        : q(q), state(NoState), isInitialized(false), coverageEnabled(false)
     {}
 
     void continueExec();
@@ -80,6 +81,7 @@ public:
     QStringList watchExpressions;
     QSet<qint64> knownObjectIds;
     bool isInitialized;
+    bool coverageEnabled;
 };
 
 namespace {
@@ -261,6 +263,12 @@ bool QJSDebuggerAgent::isInitialized() const
     return d->isInitialized;
 }
 
+void QJSDebuggerAgent::setCoverageEnabled(bool enabled)
+{
+    d->isInitialized = true;
+    d->coverageEnabled = enabled;
+}
+
 void QJSDebuggerAgent::setBreakpoints(const JSAgentBreakpoints &breakpoints)
 {
     d->breakpoints = breakpoints;
@@ -417,10 +425,16 @@ void QJSDebuggerAgent::setProperty(qint64 objectId,
   \reimp
 */
 void QJSDebuggerAgent::scriptLoad(qint64 id, const QString &program,
-                                  const QString &fileName, int)
+                                  const QString &fileName, int baseLineNumber)
 {
-    Q_UNUSED(program);
     d->filenames.insert(id, fileName);
+
+    if (d->coverageEnabled) {
+        JSAgentCoverageData rd = {"COVERAGE", QJSDebugService::instance()->m_timer.elapsed(), (int)CoverageScriptLoad,
+            id, program, fileName, baseLineNumber,
+            0, 0, QString()};
+        QJSDebugService::instance()->processMessage(rd);
+    }
 }
 
 /*!
@@ -450,8 +464,14 @@ void QJSDebuggerAgent::contextPop()
 */
 void QJSDebuggerAgent::functionEntry(qint64 scriptId)
 {
-    Q_UNUSED(scriptId);
     d->stepDepth++;
+
+    if (d->coverageEnabled) {
+        JSAgentCoverageData rd = {"COVERAGE", QJSDebugService::instance()->m_timer.elapsed(), (int)CoverageFuncEntry,
+            scriptId, QString(), QString(), 0, 0, 0, QString()};
+        QJSDebugService::instance()->processMessage(rd);
+        QJSDebugService::instance()->m_timer.restart();
+    }
 }
 
 /*!
@@ -459,9 +479,13 @@ void QJSDebuggerAgent::functionEntry(qint64 scriptId)
 */
 void QJSDebuggerAgent::functionExit(qint64 scriptId, const QScriptValue &returnValue)
 {
-    Q_UNUSED(scriptId);
-    Q_UNUSED(returnValue);
     d->stepDepth--;
+
+    if (d->coverageEnabled) {
+        JSAgentCoverageData rd = {"COVERAGE", QJSDebugService::instance()->m_timer.elapsed(), (int)CoverageFuncExit,
+            scriptId, QString(), QString(), 0, 0, 0, returnValue.toString()};
+        QJSDebugService::instance()->processMessage(rd);
+    }
 }
 
 /*!
@@ -470,6 +494,12 @@ void QJSDebuggerAgent::functionExit(qint64 scriptId, const QScriptValue &returnV
 void QJSDebuggerAgent::positionChange(qint64 scriptId, int lineNumber, int columnNumber)
 {
     d->positionChange(scriptId, lineNumber, columnNumber);
+
+    if (d->coverageEnabled) {
+        JSAgentCoverageData rd = {"COVERAGE", QJSDebugService::instance()->m_timer.elapsed(), (int)CoveragePosChange,
+            scriptId, QString(), QString(), 0, lineNumber, columnNumber, QString()};
+        QJSDebugService::instance()->processMessage(rd);
+    }
 }
 
 void QJSDebuggerAgentPrivate::positionChange(qint64 scriptId, int lineNumber, int columnNumber)
