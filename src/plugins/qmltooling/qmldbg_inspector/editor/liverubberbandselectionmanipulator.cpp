@@ -39,15 +39,15 @@
 **
 ****************************************************************************/
 
-#include "liverubberbandselectionmanipulator_p.h"
+#include "liverubberbandselectionmanipulator.h"
 
-#include "../qdeclarativeviewinspector_p_p.h"
+#include "../qdeclarativeviewinspector_p.h"
 
 #include <QtGui/QGraphicsItem>
 
 #include <QtCore/QDebug>
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
 LiveRubberBandSelectionManipulator::LiveRubberBandSelectionManipulator(QGraphicsObject *layerItem,
                                                                        QDeclarativeViewInspector *editorView)
@@ -162,4 +162,4 @@ bool LiveRubberBandSelectionManipulator::isActive() const
     return m_isActive;
 }
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger

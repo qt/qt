@@ -649,8 +649,11 @@ bool QHttpNetworkConnectionChannel::expand(bool dataComplete)
         int ret = Z_OK;
         if (content.size())
             ret = reply->d_func()->gunzipBodyPartially(content, inflated);
-        int retCheck = (dataComplete) ? Z_STREAM_END : Z_OK;
-        if (ret >= retCheck) {
+        if (ret >= Z_OK) {
+            if (dataComplete && ret == Z_OK && !reply->d_func()->streamEnd) {
+                reply->d_func()->gunzipBodyPartiallyEnd();
+                reply->d_func()->streamEnd = true;
+            }
             if (inflated.size()) {
                 reply->d_func()->totalProgress += inflated.size();
                 reply->d_func()->appendUncompressedReplyData(inflated);
