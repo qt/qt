@@ -506,8 +506,10 @@ bool QS60StylePrivate::equalToThemePalette(qint64 cacheKey, QPalette::ColorRole 
 {
     if (!m_themePalette)
         return false;
-    if (cacheKey == m_themePalette->brush(role).texture().cacheKey())
+    if ((m_placeHolderTexture && (cacheKey == m_placeHolderTexture->cacheKey()))
+        || (cacheKey == m_themePalette->brush(role).texture().cacheKey()))
         return true;
+
     return false;
 }
 
