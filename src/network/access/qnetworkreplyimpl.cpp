@@ -1030,7 +1030,7 @@ bool QNetworkReplyImplPrivate::migrateBackend()
         return true;
 
     // Backend does not support resuming download.
-    if (!backend->canResume())
+    if (backend && !backend->canResume())
         return false;
 
     state = QNetworkReplyImplPrivate::Reconnecting;
