@@ -63,11 +63,16 @@
 #include <qdeclarativeanimation_p_p.h>
 
 #include <qdatetime.h>
+#include "qplatformdefs.h"
 
 QT_BEGIN_NAMESPACE
 
 // Really slow flicks can be annoying.
-const qreal MinimumFlickVelocity = 75.0;
+#ifndef QML_FLICK_MINVELOCITY
+#define QML_FLICK_MINVELOCITY 175
+#endif
+
+const qreal MinimumFlickVelocity = QML_FLICK_MINVELOCITY;
 
 class QDeclarativeFlickableVisibleArea;
 class QDeclarativeFlickablePrivate : public QDeclarativeItemPrivate, public QDeclarativeItemChangeListener
@@ -94,7 +99,7 @@ public:
     struct AxisData {
         AxisData(QDeclarativeFlickablePrivate *fp, void (QDeclarativeFlickablePrivate::*func)(qreal))
             : move(fp, func), viewSize(-1), smoothVelocity(fp), atEnd(false), atBeginning(true)
-            , fixingUp(false), inOvershoot(false)
+            , fixingUp(false), inOvershoot(false), moving(false), flicking(false)
         {}
 
         void reset() {
@@ -121,6 +126,8 @@ public:
         bool atBeginning : 1;
         bool fixingUp : 1;
         bool inOvershoot : 1;
+        bool moving : 1;
+        bool flicking : 1;
     };
 
     void flickX(qreal velocity);
@@ -152,12 +159,8 @@ public:
     AxisData vData;
 
     QDeclarativeTimeLine timeline;
-    bool flickingHorizontally : 1;
-    bool flickingVertically : 1;
     bool hMoved : 1;
     bool vMoved : 1;
-    bool movingHorizontally : 1;
-    bool movingVertically : 1;
     bool stealMouse : 1;
     bool pressed : 1;
     bool interactive : 1;

@@ -54,6 +54,7 @@
 //
 
 #include <QtCore/QPointer>
+#include <QElapsedTimer>
 
 #include "private/qdeclarativedebugservice_p.h"
 
@@ -65,6 +66,23 @@ QT_MODULE(Declarative)
 
 class QDeclarativeEngine;
 class QJSDebuggerAgent;
+
+struct JSAgentCoverageData
+{
+    QByteArray prefix;
+    qint64 time;
+    int messageType;
+
+    qint64 scriptId;
+    QString program;
+    QString fileName;
+    int baseLineNumber;
+    int lineNumber;
+    int columnNumber;
+    QString returnValue;
+
+    QByteArray toByteArray() const;
+};
 
 class QJSDebugService : public QDeclarativeDebugService
 {
@@ -78,6 +96,9 @@ public:
 
     void addEngine(QDeclarativeEngine *);
     void removeEngine(QDeclarativeEngine *);
+    void processMessage(const JSAgentCoverageData &message);
+
+    QElapsedTimer m_timer;
 
 protected:
     void statusChanged(Status status);
@@ -88,8 +109,11 @@ private Q_SLOTS:
                           const QString &exception);
 
 private:
+    void sendMessages();
     QList<QDeclarativeEngine *> m_engines;
     QPointer<QJSDebuggerAgent> m_agent;
+    bool m_deferredSend;
+    QList<JSAgentCoverageData> m_data;
 };
 
 QT_END_NAMESPACE

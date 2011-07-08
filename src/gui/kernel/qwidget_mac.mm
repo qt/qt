@@ -3490,7 +3490,10 @@ void QWidgetPrivate::show_sys()
 
             QWidget *top = 0;
             if (QApplicationPrivate::tryModalHelper(q, &top)) {
-                [window makeKeyAndOrderFront:window];
+                if (q->testAttribute(Qt::WA_ShowWithoutActivating))
+                    [window orderFront:window];
+                else
+                    [window makeKeyAndOrderFront:window];
                 // If this window is app modal, we need to start spinning
                 // a modal session for it. Interrupting
                 // the event dispatcher will make this happend:

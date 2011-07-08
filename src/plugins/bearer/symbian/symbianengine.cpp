@@ -104,11 +104,19 @@ void SymbianEngine::initialize()
         return;
     }
 
-    TRAP_IGNORE(iConnectionMonitor.ConnectL());
+    TRAP(error, {
+        iConnectionMonitor.ConnectL();
+        CleanupClosePushL(iConnectionMonitor);
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
-    TRAP_IGNORE(iConnectionMonitor.SetUintAttribute(EBearerIdAll, 0, KBearerGroupThreshold, 1));
+        User::LeaveIfError(iConnectionMonitor.SetUintAttribute(EBearerIdAll, 0, KBearerGroupThreshold, 1));
 #endif
-    TRAP_IGNORE(iConnectionMonitor.NotifyEventL(*this));
+        iConnectionMonitor.NotifyEventL(*this);
+        CleanupStack::Pop();
+    });
+    if (error != KErrNone) {
+        iInitOk = false;
+        return;
+    }
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     TRAP(error, iCmManager.OpenL());

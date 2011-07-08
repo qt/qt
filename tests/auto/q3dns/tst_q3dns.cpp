@@ -123,7 +123,7 @@ void tst_Q3Dns::destructor()
     Q3Socket *s = new Q3Socket(&a);
     s->connectToHost("ftp.qt.nokia.com", 21);
 
-    // dummy verify since this test only makes shure that it does not crash
+    // dummy verify since this test only makes sure that it does not crash
     QVERIFY( TRUE );
 }
 
