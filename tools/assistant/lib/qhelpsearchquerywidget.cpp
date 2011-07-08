@@ -511,6 +511,8 @@ QHelpSearchQueryWidget::~QHelpSearchQueryWidget()
 }
 
 /*!
+    \since 4.8
+
     Expands the search query widget so that the extended search fields are shown.
 */
 void QHelpSearchQueryWidget::expandExtendedSearch()
@@ -520,6 +522,8 @@ void QHelpSearchQueryWidget::expandExtendedSearch()
 }
 
 /*!
+    \since 4.8
+
     Collapses the search query widget so that only the default search field is
     shown.
 */
@@ -542,6 +546,8 @@ QList<QHelpSearchQuery> QHelpSearchQueryWidget::query() const
 }
 
 /*!
+    \since 4.8
+
     Sets the QHelpSearchQueryWidget input fields to the values specified by
     \a queryList search field name. Please note that one has to call the search
     engine's search(QList<QHelpSearchQuery> &queryList) function to perform the
