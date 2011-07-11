@@ -170,6 +170,7 @@ private:
 };
 
 Q_GUI_EXPORT void qt_s60_setPartialScreenInputMode(bool enable);
+Q_GUI_EXPORT void qt_s60_setPartialScreenAutomaticTranslation(bool enable);
 
 QT_END_NAMESPACE
 

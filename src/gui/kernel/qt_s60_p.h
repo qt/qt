@@ -153,6 +153,7 @@ public:
     int menuBeingConstructed : 1;
     int orientationSet : 1;
     int partial_keyboard : 1;
+    int partial_keyboardAutoTranslation : 1;
     int partialKeyboardOpen : 1;
     int handleStatusPaneResizeNotifications : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
@@ -343,6 +344,7 @@ inline QS60Data::QS60Data()
   menuBeingConstructed(0),
   orientationSet(0),
   partial_keyboard(0),
+  partial_keyboardAutoTranslation(1),
   partialKeyboardOpen(0),
   handleStatusPaneResizeNotifications(1),
   s60ApplicationFactory(0)
