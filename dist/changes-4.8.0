@@ -64,6 +64,7 @@ QtGui
 
  - QTabBar: reduced minimumSizeHint if ElideMode is set.
  - QComboBox: Fixed a color propagation issue with the lineedit. [QTBUG-5950]
+ - QGraphicsLayout: Made setInstantInvalidatePropagation() public
  - Deprecate qGenericMatrixFromMatrix4x4 and qGenericMatrixToMatrix4x4
  - QListView diverses optimisations [QTBUG-11438]
  - QTreeWidget/QListWidget: use localeAwareCompare for string comparisons [QTBUG-10839]
@@ -87,6 +88,8 @@ QtGui
  - Accessibility: Make QTabWidget child hierarchy consistent.
  - Accessibility: Report correct window title and application name.
  - Accessibility: Return text attributes for QTextEdit.
+ - Accessibility: Make accessibility work on Windows with alien widgets
+ - Accessibility: Several enablers for accessible graphicsview and Qt Quick applications.
 
 QtNetwork
 ---------
