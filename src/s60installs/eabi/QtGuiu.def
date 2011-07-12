@@ -12197,4 +12197,5 @@ EXPORTS
 	_ZTV24QSymbianGraphicsSystemEx @ 12196 NONAME
 	_ZNK11QPixmapData15toVolatileImageEv @ 12197 NONAME
 	_ZNK14QVolatileImage13constImageRefEv @ 12198 NONAME
+	_Z43qt_s60_setPartialScreenAutomaticTranslationb @ 12199 NONAME
 

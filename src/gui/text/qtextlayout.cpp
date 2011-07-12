@@ -386,6 +386,7 @@ QTextLayout::~QTextLayout()
 void QTextLayout::setFont(const QFont &font)
 {
     d->fnt = font;
+    d->feCache.reset();
 }
 
 /*!
@@ -518,6 +519,7 @@ void QTextLayout::setAdditionalFormats(const QList<FormatRange> &formatList)
     }
     if (d->block.docHandle())
         d->block.docHandle()->documentChange(d->block.position(), d->block.length());
+    d->feCache.reset();
 }
 
 /*!
@@ -1867,14 +1869,14 @@ void QTextLine::layout_helper(int maxGlyphs)
             lbh.currentPosition = qMax(line.from, current.position);
             end = current.position + eng->length(item);
             lbh.glyphs = eng->shapedGlyphs(&current);
+            QFontEngine *fontEngine = eng->fontEngine(current);
+            if (lbh.fontEngine != fontEngine) {
+                lbh.fontEngine = fontEngine;
+                lbh.minimumRightBearing = qMin(QFixed(),
+                                               QFixed::fromReal(fontEngine->minRightBearing()));
+            }
         }
         const QScriptItem &current = eng->layoutData->items[item];
-        QFontEngine *fontEngine = eng->fontEngine(current);
-        if (lbh.fontEngine != fontEngine) {
-            lbh.fontEngine = fontEngine;
-            lbh.minimumRightBearing = qMin(QFixed(),
-                                           QFixed::fromReal(fontEngine->minRightBearing()));
-        }
 
         lbh.tmpData.leading = qMax(lbh.tmpData.leading + lbh.tmpData.ascent,
                                    current.leading + current.ascent) - qMax(lbh.tmpData.ascent,
@@ -2319,13 +2321,13 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
         unsigned short *logClusters = eng->logClusters(&si);
         QGlyphLayout glyphs = eng->shapedGlyphs(&si);
 
-        QTextItemInt gf(si, &f, format);
-        gf.glyphs = glyphs.mid(iterator.glyphsStart, iterator.glyphsEnd - iterator.glyphsStart);
-        gf.chars = eng->layoutData->string.unicode() + iterator.itemStart;
+        QTextItemInt gf(glyphs.mid(iterator.glyphsStart, iterator.glyphsEnd - iterator.glyphsStart),
+                        &f, eng->layoutData->string.unicode() + iterator.itemStart,
+                        iterator.itemEnd - iterator.itemStart, eng->fontEngine(si), format);
         gf.logClusters = logClusters + iterator.itemStart - si.position;
-        gf.num_chars = iterator.itemEnd - iterator.itemStart;
         gf.width = iterator.itemWidth;
         gf.justified = line.justified;
+        gf.initWithScriptItem(si);
 
         Q_ASSERT(gf.fontEngine);
 

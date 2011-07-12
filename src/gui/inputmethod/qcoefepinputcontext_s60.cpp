@@ -95,6 +95,11 @@ Q_GUI_EXPORT void qt_s60_setPartialScreenInputMode(bool enable)
         ic->update();
 }
 
+Q_GUI_EXPORT void qt_s60_setPartialScreenAutomaticTranslation(bool enable)
+{
+    S60->partial_keyboardAutoTranslation = enable;
+}
+
 QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
     : QInputContext(parent),
       m_fepState(q_check_ptr(new CAknEdwinState)),		// CBase derived object needs check on new
@@ -612,12 +617,13 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
             widget->resize(widget->width(), splitViewRect.height() - windowTop);
         }
 
-        if (gv->scene()) {
+        if (gv->scene() && S60->partial_keyboardAutoTranslation) {
             const QRectF microFocusRect = gv->scene()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
             gv->ensureVisible(microFocusRect);
         }
     } else {
-        translateInputWidget();
+        if (S60->partial_keyboardAutoTranslation)
+            translateInputWidget();
     }
 
     if (alwaysResize)

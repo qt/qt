@@ -311,11 +311,13 @@ public:
           logClusters(0), f(0), fontEngine(0)
     {}
     QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFormat &format = QTextCharFormat());
-    QTextItemInt(const QGlyphLayout &g, QFont *font, const QChar *chars, int numChars, QFontEngine *fe);
+    QTextItemInt(const QGlyphLayout &g, QFont *font, const QChar *chars, int numChars, QFontEngine *fe,
+                 const QTextCharFormat &format = QTextCharFormat());
 
     /// copy the structure items, adjusting the glyphs arrays to the right subarrays.
     /// the width of the returned QTextItemInt is not adjusted, for speed reasons
     QTextItemInt midItem(QFontEngine *fontEngine, int firstGlyphIndex, int numGlyphs) const;
+    void initWithScriptItem(const QScriptItem &si);
 
     QFixed descent;
     QFixed ascent;
@@ -555,6 +557,23 @@ public:
     QFixed calculateTabWidth(int index, QFixed x) const;
 
     mutable QScriptLineArray lines;
+
+    struct FontEngineCache {
+        FontEngineCache();
+        mutable QFontEngine *prevFontEngine;
+        mutable QFontEngine *prevScaledFontEngine;
+        mutable int prevScript;
+        mutable int prevPosition;
+        mutable int prevLength;
+        inline void reset() {
+            prevFontEngine = 0;
+            prevScaledFontEngine = 0;
+            prevScript = -1;
+            prevPosition = -1;
+            prevLength = -1;
+        }
+    };
+    mutable FontEngineCache feCache;
 
     QString text;
     QFont fnt;
