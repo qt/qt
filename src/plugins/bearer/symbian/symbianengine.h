@@ -145,10 +145,10 @@ public:
 
 Q_SIGNALS:
     void onlineStateChanged(bool isOnline);
-    
+
     void configurationStateChanged(quint32 accessPointId, quint32 connMonId,
                                    QNetworkSession::State newState);
-    
+
 public Q_SLOTS:
     void updateConfigurations();
     void delayedConfigurationUpdate();
@@ -169,8 +169,8 @@ private:
             TUint32 aApId, SymbianNetworkConfigurationPrivate *apNetworkConfiguration);
     void readNetworkConfigurationValuesFromCommsDbL(
             TUint32 aApId, SymbianNetworkConfigurationPrivate *apNetworkConfiguration);
-#endif    
-    
+#endif
+
     void updateConfigurationsL();
     void updateActiveAccessPoints();
     void updateAvailableAccessPoints();
@@ -190,7 +190,7 @@ protected:
     // From CActive
     void RunL();
     void DoCancel();
-    
+
 private:
     // MConnectionMonitorObserver
     void EventL(const CConnMonEventBase& aEvent);
@@ -200,7 +200,7 @@ private:
 #endif
 
 private: // Data
-    bool               iFirstUpdate; 
+    bool               iFirstUpdate;
     CCommsDatabase*    ipCommsDB;
     RConnectionMonitor iConnectionMonitor;
 
@@ -227,11 +227,11 @@ class AccessPointsAvailabilityScanner : public CActive
 {
 public:
     AccessPointsAvailabilityScanner(SymbianEngine& owner,
-                                   RConnectionMonitor& connectionMonitor); 
+                                   RConnectionMonitor& connectionMonitor);
     ~AccessPointsAvailabilityScanner();
 
     void StartScanning();
-    
+
 protected: // From CActive
     void RunL();
     void DoCancel();
