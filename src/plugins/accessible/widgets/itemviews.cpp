@@ -284,7 +284,7 @@ QList<QAccessibleTable2CellInterface*> QAccessibleTable2::selectedCells() const
 QList<int> QAccessibleTable2::selectedColumns() const
 {
     QList<int> columns;
-    Q_FOREACH(const QModelIndex &index, view->selectionModel()->selectedColumns()) {
+    Q_FOREACH (const QModelIndex &index, view->selectionModel()->selectedColumns()) {
         columns.append(index.column());
     }
     return columns;
@@ -293,7 +293,7 @@ QList<int> QAccessibleTable2::selectedColumns() const
 QList<int> QAccessibleTable2::selectedRows() const
 {
     QList<int> rows;
-    Q_FOREACH(const QModelIndex &index, view->selectionModel()->selectedRows()) {
+    Q_FOREACH (const QModelIndex &index, view->selectionModel()->selectedRows()) {
         rows.append(index.row());
     }
     return rows;
@@ -773,7 +773,7 @@ QString QAccessibleTable2Cell::text(Text t, int child) const
     Q_ASSERT(child == 0);
     QAbstractItemModel *model = view->model();
     QString value;
-    switch(t) {
+    switch (t) {
     case QAccessible::Value:
     case QAccessible::Name:
         value = model->data(m_index, Qt::AccessibleTextRole).toString();
