@@ -141,6 +141,7 @@ const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameEleme
     {SE_Editor,                 QS60StyleEnums::SP_QsnFrInputCenter},
     {SE_TableItemPressed,       QS60StyleEnums::SP_QsnFrGridCenterPressed},
     {SE_ListItemPressed,        QS60StyleEnums::SP_QsnFrListCenterPressed},
+    {SE_DialogBackground,       QS60StyleEnums::SP_QsnFrPopupCenter},
 };
 
 static const int frameElementsCount =
@@ -262,6 +263,9 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
         break;
     case SE_PopupBackground:
         drawFrame(SF_PopupBackground, painter, rect, flags | SF_PointNorth);
+        break;
+    case SE_DialogBackground:
+        drawFrame(SF_DialogBackground, painter, rect, flags | SF_PointNorth);
         break;
     case SE_SettingsList:
         drawFrame(SF_SettingsList, painter, rect, flags | SF_PointNorth);
@@ -497,8 +501,10 @@ bool QS60StylePrivate::equalToThemePalette(qint64 cacheKey, QPalette::ColorRole 
 {
     if (!m_themePalette)
         return false;
-    if (cacheKey == m_themePalette->brush(role).texture().cacheKey())
+    if ((m_placeHolderTexture && (cacheKey == m_placeHolderTexture->cacheKey()))
+        || (cacheKey == m_themePalette->brush(role).texture().cacheKey()))
         return true;
+
     return false;
 }
 
@@ -2261,10 +2267,14 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             if (QS60StylePrivate::canDrawThemeBackground(option->palette.base(), widget)
                 && QS60StylePrivate::equalToThemePalette(option->palette.window().texture().cacheKey(), QPalette::Window)) {
                     const bool comboMenu = qobject_cast<const QComboBoxListView *>(widget);
+                    const bool menu = qobject_cast<const QMenu *>(widget);
                     // Add margin area to the background, to avoid background being cut for first and last item.
                     const int verticalMenuAdjustment = comboMenu ? QS60StylePrivate::pixelMetric(PM_MenuVMargin) : 0;
                     const QRect adjustedMenuRect = option->rect.adjusted(0, -verticalMenuAdjustment, 0, verticalMenuAdjustment);
-                    QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_PopupBackground, painter, adjustedMenuRect, flags);
+                    if (comboMenu || menu)
+                        QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_PopupBackground, painter, adjustedMenuRect, flags);
+                    else
+                        QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_DialogBackground, painter, adjustedMenuRect, flags);
             } else {
                 commonStyleDraws = true;
             }
@@ -3345,6 +3355,12 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
             QS60StylePrivate::SF_StateEnabled :
             QS60StylePrivate::SF_StateDisabled;
 
+    int metric = PM_ToolBarIconSize;
+#if defined(Q_WS_S60)
+    //Support version specific standard icons only with Symbian/S60 platform.
+    QSysInfo::S60Version versionSupport = QSysInfo::SV_S60_Unknown;
+#endif
+
     switch(standardIcon) {
         case SP_MessageBoxWarning:
             // By default, S60 messagebox icons have 4:3 ratio. Value is from S60 LAF documentation.
@@ -3415,11 +3431,353 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
             adjustedFlags |= QS60StylePrivate::SF_PointEast;
             part = QS60StyleEnums::SP_QgnIndiSubmenu;
             break;
+        case SP_TitleBarMenuButton:
+#if defined(Q_WS_S60)
+            versionSupport = QSysInfo::SV_S60_5_3;
+#endif
+            metric = PM_SmallIconSize;
+            part = QS60StyleEnums::SP_QtgToolBarOptions;
+            break;
+        case SP_DirHomeIcon:
+            metric = PM_SmallIconSize;
+            part = QS60StyleEnums::SP_QgnIndiBrowserTbHome;
+            break;
+        case SP_BrowserReload:
+            metric = PM_SmallIconSize;
+            part = QS60StyleEnums::SP_QgnIndiBrowserTbReload;
+            break;
+        case SP_BrowserStop:
+            metric = PM_SmallIconSize;
+            part = QS60StyleEnums::SP_QgnIndiBrowserTbStop;
+            break;
+#if defined(Q_WS_S60)
+        case SP_MediaPlay:
+            versionSupport = QSysInfo::SV_S60_5_3;
+            metric = PM_SmallIconSize;
+            part = QS60StyleEnums::SP_QtgToolBarPlay;
+            break;
+        case SP_MediaStop:
+            versionSupport = QSysInfo::SV_S60_5_3;
+            metric = PM_SmallIconSize;
+            part = QS60StyleEnums::SP_QtgToolBarStop;
+            break;
+        case SP_MediaPause:
+            versionSupport = QSysInfo::SV_S60_5_3;
+            metric = PM_SmallIconSize;
+            part = QS60StyleEnums::SP_QtgToolBarPause;
+            break;
+        case SP_MediaSkipForward:
+            versionSupport = QSysInfo::SV_S60_5_3;
+            metric = PM_SmallIconSize;
+            part = QS60StyleEnums::SP_QtgToolBarNext;
+            break;
+        case SP_MediaSkipBackward:
+            versionSupport = QSysInfo::SV_S60_5_3;
+            metric = PM_SmallIconSize;
+            part = QS60StyleEnums::SP_QtgToolBarPrevious;
+            break;
+        case SP_MediaSeekForward:
+            versionSupport = QSysInfo::SV_S60_5_3;
+            metric = PM_SmallIconSize;
+            part = QS60StyleEnums::SP_QtgToolBarForward;
+            break;
+        case SP_MediaSeekBackward:
+            versionSupport = QSysInfo::SV_S60_5_3;
+            metric = PM_SmallIconSize;
+            part = QS60StyleEnums::SP_QtgToolBarRewind;
+            break;
+#endif
+// Custom icons
+        case SP_CustomToolBarAdd:
+            part = QS60StyleEnums::SP_QtgToolBarAdd;
+            break;
+        case SP_CustomToolBarAddDetail:
+            part = QS60StyleEnums::SP_QtgToolBarAddDetail;
+            break;
+        case SP_CustomToolBarAgain:
+            part = QS60StyleEnums::SP_QtgToolBarAgain;
+            break;
+        case SP_CustomToolBarAgenda:
+            part = QS60StyleEnums::SP_QtgToolBarAgenda;
+            break;
+        case SP_CustomToolBarAudioOff:
+            part = QS60StyleEnums::SP_QtgToolBarAudioOff;
+            break;
+        case SP_CustomToolBarAudioOn:
+            part = QS60StyleEnums::SP_QtgToolBarAudioOn;
+            break;
+        case SP_CustomToolBarBack:
+            part = QS60StyleEnums::SP_QtgToolBarBack;
+            break;
+        case SP_CustomToolBarBluetoothOff:
+            part = QS60StyleEnums::SP_QtgToolBarBluetoothOff;
+            break;
+        case SP_CustomToolBarBluetoothOn:
+            part = QS60StyleEnums::SP_QtgToolBarBluetoothOn;
+            break;
+        case SP_CustomToolBarCancel:
+            part = QS60StyleEnums::SP_QtgToolBarCancel;
+            break;
+        case SP_CustomToolBarDelete:
+            part = QS60StyleEnums::SP_QtgToolBarDelete;
+            break;
+        case SP_CustomToolBarDone:
+            part = QS60StyleEnums::SP_QtgToolBarDone;
+            break;
+        case SP_CustomToolBarEdit:
+            part = QS60StyleEnums::SP_QtgToolBarEdit;
+            break;
+        case SP_CustomToolBarEmailSend:
+            part = QS60StyleEnums::SP_QtgToolBarEmailSend;
+            break;
+        case SP_CustomToolBarEmergencyCall:
+            part = QS60StyleEnums::SP_QtgToolBarEmergencyCall;
+            break;
+        case SP_CustomToolBarFavouriteAdd:
+            part = QS60StyleEnums::SP_QtgToolBarFavouriteAdd;
+            break;
+        case SP_CustomToolBarFavouriteRemove:
+            part = QS60StyleEnums::SP_QtgToolBarFavouriteRemove;
+            break;
+        case SP_CustomToolBarFavourites:
+            part = QS60StyleEnums::SP_QtgToolBarFavourites;
+            break;
+        case SP_CustomToolBarGo:
+            part = QS60StyleEnums::SP_QtgToolBarGo;
+            break;
+        case SP_CustomToolBarHome:
+            part = QS60StyleEnums::SP_QtgToolBarHome;
+            break;
+        case SP_CustomToolBarList:
+            part = QS60StyleEnums::SP_QtgToolBarList;
+            break;
+        case SP_CustomToolBarLock:
+            part = QS60StyleEnums::SP_QtgToolBarLock;
+            break;
+        case SP_CustomToolBarLogs:
+            part = QS60StyleEnums::SP_QtgToolBarLogs;
+            break;
+        case SP_CustomToolBarMenu:
+            part = QS60StyleEnums::SP_QtgToolBarMenu;
+            break;
+        case SP_CustomToolBarNewContact:
+            part = QS60StyleEnums::SP_QtgToolBarNewContact;
+            break;
+        case SP_CustomToolBarNewGroup:
+            part = QS60StyleEnums::SP_QtgToolBarNewGroup;
+            break;
+        case SP_CustomToolBarNowPlay:
+            part = QS60StyleEnums::SP_QtgToolBarNowPlay;
+            break;
+        case SP_CustomToolBarOptions:
+            part = QS60StyleEnums::SP_QtgToolBarOptions;
+            break;
+        case SP_CustomToolBarOther:
+            part = QS60StyleEnums::SP_QtgToolBarOther;
+            break;
+        case SP_CustomToolBarOvi:
+            part = QS60StyleEnums::SP_QtgToolBarOvi;
+            break;
+        case SP_CustomToolBarRead:
+            part = QS60StyleEnums::SP_QtgToolBarRead;
+            break;
+        case SP_CustomToolBarRefresh:
+            part = QS60StyleEnums::SP_QtgToolBarRefresh;
+            break;
+        case SP_CustomToolBarRemoveDetail:
+            part = QS60StyleEnums::SP_QtgToolBarRemoveDetail;
+            break;
+        case SP_CustomToolBarRepeat:
+            part = QS60StyleEnums::SP_QtgToolBarRepeat;
+            break;
+        case SP_CustomToolBarRepeatOff:
+            part = QS60StyleEnums::SP_QtgToolBarRepeatOff;
+            break;
+        case SP_CustomToolBarRepeatOne:
+            part = QS60StyleEnums::SP_QtgToolBarRepeatOne;
+            break;
+        case SP_CustomToolBarSearch:
+            part = QS60StyleEnums::SP_QtgToolBarSearch;
+            break;
+        case SP_CustomToolBarSelfTimer:
+            part = QS60StyleEnums::SP_QtgToolBarSelfTimer;
+            break;
+        case SP_CustomToolBarSend:
+            part = QS60StyleEnums::SP_QtgToolBarSend;
+            break;
+        case SP_CustomToolBarShare:
+            part = QS60StyleEnums::SP_QtgToolBarShare;
+            break;
+        case SP_CustomToolBarShift:
+            part = QS60StyleEnums::SP_QtgToolBarShift;
+            break;
+        case SP_CustomToolBarShuffle:
+            part = QS60StyleEnums::SP_QtgToolBarShuffle;
+            break;
+        case SP_CustomToolBarShuffleOff:
+            part = QS60StyleEnums::SP_QtgToolBarShuffleOff;
+            break;
+        case SP_CustomToolBarSignalOff:
+            part = QS60StyleEnums::SP_QtgToolBarSignalOff;
+            break;
+        case SP_CustomToolBarSignalOn:
+            part = QS60StyleEnums::SP_QtgToolBarSignalOn;
+            break;
+        case SP_CustomToolBarSync:
+            part = QS60StyleEnums::SP_QtgToolBarSync;
+            break;
+        case SP_CustomToolBarUnlock:
+            part = QS60StyleEnums::SP_QtgToolBarUnlock;
+            break;
+        case SP_CustomToolBarUnmark:
+            part = QS60StyleEnums::SP_QtgToolBarUnmark;
+            break;
+        case SP_CustomToolBarView:
+            part = QS60StyleEnums::SP_QtgToolBarView;
+            break;
+        case SP_CustomToolBarWlanOff:
+            part = QS60StyleEnums::SP_QtgToolBarWlanOff;
+            break;
+        case SP_CustomToolBarWlanOn:
+            part = QS60StyleEnums::SP_QtgToolBarWlanOn;
+            break;
+#if defined(Q_WS_S60)
+        case SP_CustomCameraCaptureButton:
+            versionSupport = QSysInfo::SV_S60_5_2;
+            part = QS60StyleEnums::SP_QtgGrafCameraButtonCaptureNormal;
+            break;
+        case SP_CustomCameraCaptureButtonPressed:
+            versionSupport = QSysInfo::SV_S60_5_2;
+            part = QS60StyleEnums::SP_QtgGrafCameraButtonCapturePressed;
+            break;
+        case SP_CustomCameraPauseButton:
+            versionSupport = QSysInfo::SV_S60_5_2;
+            part = QS60StyleEnums::SP_QtgGrafCameraButtonPauseNormal;
+            break;
+        case SP_CustomCameraPauseButtonPressed:
+            versionSupport = QSysInfo::SV_S60_5_2;
+            part = QS60StyleEnums::SP_QtgGrafCameraButtonPausePressed;
+            break;
+        case SP_CustomCameraPlayButton:
+            versionSupport = QSysInfo::SV_S60_5_2;
+            part = QS60StyleEnums::SP_QtgGrafCameraButtonPlayNormal;
+            break;
+        case SP_CustomCameraPlayButtonPressed:
+            versionSupport = QSysInfo::SV_S60_5_2;
+            part = QS60StyleEnums::SP_QtgGrafCameraButtonPlayPressed;
+            break;
+        case SP_CustomCameraRecButton:
+            versionSupport = QSysInfo::SV_S60_5_2;
+            part = QS60StyleEnums::SP_QtgGrafCameraButtonRecNormal;
+            break;
+        case SP_CustomCameraRecButtonPressed:
+            versionSupport = QSysInfo::SV_S60_5_2;
+            part = QS60StyleEnums::SP_QtgGrafCameraButtonRecPressed;
+            break;
+        case SP_CustomCameraStopButton:
+            versionSupport = QSysInfo::SV_S60_5_2;
+            part = QS60StyleEnums::SP_QtgGrafCameraButtonStopNormal;
+            break;
+        case SP_CustomCameraStopButtonPressed:
+            versionSupport = QSysInfo::SV_S60_5_2;
+            part = QS60StyleEnums::SP_QtgGrafCameraButtonStopPressed;
+            break;
+#endif
+        case SP_CustomTabAll:
+            part = QS60StyleEnums::SP_QtgTabAll;
+            break;
+        case SP_CustomTabArtist:
+            part = QS60StyleEnums::SP_QtgTabArtist;
+            break;
+        case SP_CustomTabFavourite:
+            part = QS60StyleEnums::SP_QtgTabFavourite;
+            break;
+        case SP_CustomTabGenre:
+            part = QS60StyleEnums::SP_QtgTabGenre;
+            break;
+        case SP_CustomTabLanguage:
+            part = QS60StyleEnums::SP_QtgTabLanguage;
+            break;
+        case SP_CustomTabMusicAlbum:
+            part = QS60StyleEnums::SP_QtgTabMusicAlbum;
+            break;
+        case SP_CustomTabPhotosAlbum:
+            part = QS60StyleEnums::SP_QtgTabPhotosAlbum;
+            break;
+        case SP_CustomTabPhotosAll:
+            part = QS60StyleEnums::SP_QtgTabPhotosAll;
+            break;
+        case SP_CustomTabPlaylist:
+            part = QS60StyleEnums::SP_QtgTabPlaylist;
+            break;
+        case SP_CustomTabServices:
+            part = QS60StyleEnums::SP_QtgTabServices;
+            break;
+        case SP_CustomTabSongs:
+            part = QS60StyleEnums::SP_QtgTabSongs;
+            break;
+        case SP_CustomTabVideos:
+            part = QS60StyleEnums::SP_QtgTabVideos;
+            break;
+        case SP_CustomToolBarEditDisabled:
+            part = QS60StyleEnums::SP_QtgToolBarEditDisabled;
+            break;
+        case SP_CustomToolBarImageTools:
+            part = QS60StyleEnums::SP_QtgToolBarImageTools;
+            break;
+        case SP_CustomToolBarNextFrame:
+            part = QS60StyleEnums::SP_QtgToolBarNextFrame;
+            break;
+        case SP_CustomToolBarPreviousFrame:
+            part = QS60StyleEnums::SP_QtgToolBarPreviousFrame;
+            break;
+        case SP_CustomToolBarRedoDisabled:
+            part = QS60StyleEnums::SP_QtgToolBarRedoDisabled;
+            break;
+        case SP_CustomToolBarRedo:
+            part = QS60StyleEnums::SP_QtgToolBarRedo;
+            break;
+        case SP_CustomToolBarRemoveDisabled:
+            part = QS60StyleEnums::SP_QtgToolBarRemoveDisabled;
+            break;
+        case SP_CustomToolBarSearchDisabled:
+            part = QS60StyleEnums::SP_QtgToolBarSearchDisabled;
+            break;
+        case SP_CustomToolBarSelectContent:
+            part = QS60StyleEnums::SP_QtgToolBarSelectContent;
+            break;
+        case SP_CustomToolBarSendDimmed:
+            part = QS60StyleEnums::SP_QtgToolBarSendDimmed;
+            break;
+        case SP_CustomToolBarTools:
+            part = QS60StyleEnums::SP_QtgToolBarTools;
+            break;
+        case SP_CustomToolBarTrim:
+            part = QS60StyleEnums::SP_QtgToolBarTrim;
+            break;
         default:
             return QCommonStyle::standardIconImplementation(standardIcon, option, widget);
     }
+
+#if defined(Q_WS_S60)
+    //If new custom standardIcon is missing version information, assume S60 5.3.
+    if (standardIcon & QStyle::SP_CustomBase) {
+        if (versionSupport == QSysInfo::SV_Unknown)
+            versionSupport = QSysInfo::SV_S60_5_3;
+        metric = PM_SmallIconSize;
+    }
+
+    // Toolbar icons are only available from SV_S60_5_3 onwards. Use common style for earlier releases.
+    if ((versionSupport != QSysInfo::SV_Unknown) && QSysInfo::s60Version() < versionSupport) {
+        return QCommonStyle::standardIconImplementation(standardIcon, option, widget);
+    }
+#else
+    if (standardIcon >= SP_CustomToolBarAdd)
+        metric = PM_SmallIconSize;
+#endif
+
     const QS60StylePrivate::SkinElementFlags flags = adjustedFlags;
-    const int iconDimension = QS60StylePrivate::pixelMetric(PM_ToolBarIconSize);
+    const int iconDimension = QS60StylePrivate::pixelMetric(metric);
     const QRect iconSize = (!option) ? 
         QRect(0, 0, iconDimension * iconWidthMultiplier, iconDimension * iconHeightMultiplier) : option->rect;
     const QPixmap cachedPixMap(QS60StylePrivate::cachedPart(part, iconSize.size(), 0, flags));

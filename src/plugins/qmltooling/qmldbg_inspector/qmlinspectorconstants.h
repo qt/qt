@@ -44,12 +44,7 @@
 
 #include <QtDeclarative/private/qdeclarativeglobal_p.h>
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
+namespace QmlJSDebugger {
 namespace Constants {
 
 enum DesignTool {
@@ -60,11 +55,6 @@ enum DesignTool {
     ResizeToolMode = 4,
     ColorPickerMode = 5,
     ZoomMode = 6
-};
-
-enum ToolFlags {
-    NoToolFlags = 0,
-    UseCursorPos = 1
 };
 
 static const int DragStartTime = 50;
@@ -82,9 +72,6 @@ enum GraphicsItemTypes {
 
 
 } // namespace Constants
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
+} // namespace QmlJSDebugger
 
 #endif // QMLINSPECTORCONSTANTS_H

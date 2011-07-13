@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,55 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSYSTEM_VGLITE_H
-#define QGRAPHICSSYSTEM_VGLITE_H
+#ifndef LIVESELECTIONRECTANGLE_H
+#define LIVESELECTIONRECTANGLE_H
 
-#include <QtGui/private/qgraphicssystem_p.h>
-#include <QtGui/private/qegl_p.h>
-#include <QtGui/qimage.h>
+#include <QtCore/QWeakPointer>
 
-QT_BEGIN_NAMESPACE
+QT_FORWARD_DECLARE_CLASS(QGraphicsObject)
+QT_FORWARD_DECLARE_CLASS(QGraphicsRectItem)
+QT_FORWARD_DECLARE_CLASS(QPointF)
+QT_FORWARD_DECLARE_CLASS(QRectF)
 
-class QVGLiteWindowSurface;
+namespace QmlJSDebugger {
 
-class QVGLiteGraphicsSystem : public QGraphicsSystem,
-                              public QGraphicsSystemScreen
+class LiveSelectionRectangle
 {
 public:
-    QVGLiteGraphicsSystem();
-    ~QVGLiteGraphicsSystem();
+    LiveSelectionRectangle(QGraphicsObject *layerItem);
+    ~LiveSelectionRectangle();
 
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QWindowSurface *createWindowSurface(QWidget *widget) const;
-    QList<QGraphicsSystemScreen *> screens() const { return mScreens; }
+    void show();
+    void hide();
 
-    QRect geometry() const { return QRect(0, 0, w, h); }
-    int depth() const { return d; }
-    QImage::Format format() const { return screenFormat; }
-    QSize physicalSize() const { return QSize(physWidth, physHeight); }
+    void clear();
+
+    void setRect(const QPointF &firstPoint,
+                 const QPointF &secondPoint);
+
+    QRectF rect() const;
 
 private:
-    friend class QVGLiteWindowSurface;
-
-    int w;
-    int h;
-    int d;
-
-    int dw;
-    int dh;
-
-    int physWidth;
-    int physHeight;
-
-    mutable QVGLiteWindowSurface *surface;
-    QEglContext *context;
-    EGLSurface rootWindow;
-    QImage::Format screenFormat;
-    bool preservedSwap;
-
-    QList<QGraphicsSystemScreen *> mScreens;
+    QGraphicsRectItem *m_controlShape;
+    QWeakPointer<QGraphicsObject> m_layerItem;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
-#endif
+#endif // LIVESELECTIONRECTANGLE_H

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the QtDBus module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,48 +39,43 @@
 **
 ****************************************************************************/
 
-#ifndef LIVESELECTIONINDICATOR_H
-#define LIVESELECTIONINDICATOR_H
+#ifndef QDBUSTREENODE_H
+#define QDBUSTREENODE_H
 
-#include <QtCore/QWeakPointer>
-#include <QtCore/QHash>
+#include <QtDBus/qdbusmacros.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qobject.h>
 
-QT_BEGIN_NAMESPACE
-class QGraphicsObject;
-class QGraphicsRectItem;
-class QGraphicsItem;
-class QPolygonF;
-QT_END_NAMESPACE
+#ifndef QT_NO_DBUS
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
+QT_MODULE(DBus)
 
-class QDeclarativeViewInspector;
+class QDBusMessage;
+class QDBusConnection;
 
-class LiveSelectionIndicator
+class QDBusVirtualObjectPrivate;
+class Q_DBUS_EXPORT QDBusVirtualObject : public QObject
 {
+    Q_OBJECT
 public:
-    LiveSelectionIndicator(QDeclarativeViewInspector *viewInspector, QGraphicsObject *layerItem);
-    ~LiveSelectionIndicator();
+    explicit QDBusVirtualObject(QObject *parent = 0);
+    virtual ~QDBusVirtualObject();
 
-    void show();
-    void hide();
-
-    void clear();
-
-    void setItems(const QList<QWeakPointer<QGraphicsObject> > &itemList);
+    virtual QString introspect(const QString &path) const = 0;
+    virtual bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection) = 0;
 
 private:
-    QHash<QGraphicsItem*, QGraphicsRectItem *> m_indicatorShapeHash;
-    QWeakPointer<QGraphicsObject> m_layerItem;
-    QDeclarativeViewInspector *m_view;
+    Q_DECLARE_PRIVATE(QDBusVirtualObject)
+    Q_DISABLE_COPY(QDBusVirtualObject)
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // LIVESELECTIONINDICATOR_H
+#endif // QT_NO_DBUS
+#endif

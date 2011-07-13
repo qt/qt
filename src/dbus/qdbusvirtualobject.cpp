@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtDBus module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,53 +39,59 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSURFACE_VGLITE_H
-#define QWINDOWSURFACE_VGLITE_H
+#include "qdbusvirtualobject.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtGui/private/qwindowsurface_p.h>
-#include <QtGui/private/qegl_p.h>
+#ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
 
-class QVGLiteGraphicsSystem;
-class QVGPaintEngine;
-
-class Q_OPENVG_EXPORT QVGLiteWindowSurface : public QWindowSurface, public QPaintDevice
+QDBusVirtualObject::QDBusVirtualObject(QObject *parent) :
+    QObject(parent)
 {
-public:
-    QVGLiteWindowSurface(QVGLiteGraphicsSystem *gs, QWidget *window);
-    ~QVGLiteWindowSurface();
+}
 
-    QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    void setGeometry(const QRect &rect);
-    bool scroll(const QRegion &area, int dx, int dy);
-
-    void beginPaint(const QRegion &region);
-    void endPaint(const QRegion &region);
-
-    QPaintEngine *paintEngine() const;
-
-protected:
-    int metric(PaintDeviceMetric metric) const;
-
-private:
-    QVGLiteGraphicsSystem *graphicsSystem;
-    bool isPaintingActive;
-    mutable QVGPaintEngine *engine;
-};
+QDBusVirtualObject::~QDBusVirtualObject()
+{
+}
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSURFACE_VGLITE_H
+
+/*!
+    \internal
+    \class QDBusVirtualObject
+    \inmodule QtDBus
+    \since 4.8
+
+    \brief The QDBusVirtualObject class is used to handle several DBus paths with one class.
+*/
+
+/*!
+    \internal
+    \fn bool QDBusVirtualObject::handleMessage(const QDBusMessage &message, const QDBusConnection &connection) = 0
+
+    This function needs to handle all messages to the path of the
+    virtual object, when the SubPath option is specified.
+    The service, path, interface and methos are all part of the message.
+    Must return true when the message is handled, otherwise false (will generate dbus error message).
+*/
+
+
+/*!
+    \internal
+    \fn QString QDBusVirtualObject::introspect(const QString &path) const
+
+    This function needs to handle the introspection of the
+    virtual object. It must return xml of the form:
+
+    \code
+<interface name="com.trolltech.QtDBus.MyObject" >
+    <property access="readwrite" type="i" name="prop1" />
+</interface>
+    \endcode
+
+    If you pass the SubPath option, this introspection has to include all child nodes.
+    Otherwise QDBus handles the introspection of the child nodes.
+*/
+
+#endif // QT_NO_DBUS

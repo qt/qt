@@ -39,35 +39,58 @@
 **
 ****************************************************************************/
 
-#ifndef LIVELAYERITEM_H
-#define LIVELAYERITEM_H
+#ifndef RUBBERBANDSELECTIONMANIPULATOR_H
+#define RUBBERBANDSELECTIONMANIPULATOR_H
 
-#include <QtGui/QGraphicsObject>
+#include "liveselectionrectangle.h"
 
-QT_BEGIN_HEADER
+#include <QtCore/QPointF>
 
-QT_BEGIN_NAMESPACE
+QT_FORWARD_DECLARE_CLASS(QGraphicsItem)
 
-QT_MODULE(Declarative)
+namespace QmlJSDebugger {
 
-class LiveLayerItem : public QGraphicsObject
+class QDeclarativeViewInspector;
+
+class LiveRubberBandSelectionManipulator
 {
 public:
-    LiveLayerItem(QGraphicsScene *scene);
-    ~LiveLayerItem();
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                QWidget *widget = 0);
-    QRectF boundingRect() const;
-    int type() const;
+    enum SelectionType {
+        ReplaceSelection,
+        AddToSelection,
+        RemoveFromSelection
+    };
 
-    QList<QGraphicsItem*> findAllChildItems() const;
+    LiveRubberBandSelectionManipulator(QGraphicsObject *layerItem,
+                                       QDeclarativeViewInspector *editorView);
+
+    void setItems(const QList<QGraphicsItem*> &itemList);
+
+    void begin(const QPointF& beginPoint);
+    void update(const QPointF& updatePoint);
+    void end();
+
+    void clear();
+
+    void select(SelectionType selectionType);
+
+    QPointF beginPoint() const;
+
+    bool isActive() const;
 
 protected:
-    QList<QGraphicsItem*> findAllChildItems(const QGraphicsItem *item) const;
+    QGraphicsItem *topFormEditorItem(const QList<QGraphicsItem*> &itemList);
+
+private:
+    QList<QGraphicsItem*> m_itemList;
+    QList<QGraphicsItem*> m_oldSelectionList;
+    LiveSelectionRectangle m_selectionRectangleElement;
+    QPointF m_beginPoint;
+    QDeclarativeViewInspector *m_editorView;
+    QGraphicsItem *m_beginFormEditorItem;
+    bool m_isActive;
 };
 
-QT_END_NAMESPACE
+}
 
-QT_END_HEADER
-
-#endif // LIVELAYERITEM_H
+#endif // RUBBERBANDSELECTIONMANIPULATOR_H

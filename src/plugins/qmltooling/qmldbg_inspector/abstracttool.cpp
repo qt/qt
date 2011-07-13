@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,33 +39,16 @@
 **
 ****************************************************************************/
 
-#include <private/qgraphicssystemplugin_p.h>
-#include "qgraphicssystem_vglite.h"
+#include "abstracttool.h"
 
-QT_BEGIN_NAMESPACE
+#include "abstractviewinspector.h"
 
-class QVGGraphicsSystemPlugin : public QGraphicsSystemPlugin
+namespace QmlJSDebugger {
+
+AbstractTool::AbstractTool(AbstractViewInspector *inspector) :
+    QObject(inspector),
+    m_inspector(inspector)
 {
-public:
-    QStringList keys() const;
-    QGraphicsSystem *create(const QString&);
-};
-
-QStringList QVGGraphicsSystemPlugin::keys() const
-{
-    QStringList list;
-    list << "OpenVG";
-    return list;
 }
 
-QGraphicsSystem* QVGGraphicsSystemPlugin::create(const QString& system)
-{
-    if (system.toLower() == "openvg")
-        return new QVGLiteGraphicsSystem;
-
-    return 0;
-}
-
-Q_EXPORT_PLUGIN2(openvg, QVGGraphicsSystemPlugin)
-
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger

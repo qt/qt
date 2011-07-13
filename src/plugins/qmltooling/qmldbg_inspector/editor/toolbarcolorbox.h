@@ -39,45 +39,43 @@
 **
 ****************************************************************************/
 
-#ifndef LIVESELECTIONRECTANGLE_H
-#define LIVESELECTIONRECTANGLE_H
+#ifndef TOOLBARCOLORBOX_H
+#define TOOLBARCOLORBOX_H
 
-#include <QtCore/QWeakPointer>
+#include <QtGui/QLabel>
+#include <QtGui/QColor>
+#include <QtCore/QPoint>
 
-QT_FORWARD_DECLARE_CLASS(QGraphicsObject)
-QT_FORWARD_DECLARE_CLASS(QGraphicsRectItem)
-QT_FORWARD_DECLARE_CLASS(QPointF)
-QT_FORWARD_DECLARE_CLASS(QRectF)
+QT_FORWARD_DECLARE_CLASS(QContextMenuEvent)
+QT_FORWARD_DECLARE_CLASS(QAction)
 
-QT_BEGIN_HEADER
+namespace QmlJSDebugger {
 
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class LiveSelectionRectangle
+class ToolBarColorBox : public QLabel
 {
+    Q_OBJECT
+
 public:
-    LiveSelectionRectangle(QGraphicsObject *layerItem);
-    ~LiveSelectionRectangle();
+    explicit ToolBarColorBox(QWidget *parent = 0);
+    void setColor(const QColor &color);
 
-    void show();
-    void hide();
-
-    void clear();
-
-    void setRect(const QPointF &firstPoint,
-                 const QPointF &secondPoint);
-
-    QRectF rect() const;
+protected:
+    void contextMenuEvent(QContextMenuEvent *ev);
+    void mousePressEvent(QMouseEvent *ev);
+    void mouseMoveEvent(QMouseEvent *ev);
+private slots:
+    void copyColorToClipboard();
 
 private:
-    QGraphicsRectItem *m_controlShape;
-    QWeakPointer<QGraphicsObject> m_layerItem;
+    QPixmap createDragPixmap(int size = 24) const;
+
+private:
+    bool m_dragStarted;
+    QPoint m_dragBeginPoint;
+    QAction *m_copyHexColor;
+    QColor m_color;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
-QT_END_HEADER
-
-#endif // LIVESELECTIONRECTANGLE_H
+#endif // TOOLBARCOLORBOX_H

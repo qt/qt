@@ -39,83 +39,51 @@
 **
 ****************************************************************************/
 
-#ifndef BOUNDINGRECTHIGHLIGHTER_H
-#define BOUNDINGRECTHIGHLIGHTER_H
+#ifndef LIVESINGLESELECTIONMANIPULATOR_H
+#define LIVESINGLESELECTIONMANIPULATOR_H
 
-#include "livelayeritem_p.h"
-
-#include <QtCore/QObject>
-#include <QtCore/QWeakPointer>
+#include <QtCore/QPointF>
+#include <QtCore/QList>
 
 QT_FORWARD_DECLARE_CLASS(QGraphicsItem)
-QT_FORWARD_DECLARE_CLASS(QPainter)
-QT_FORWARD_DECLARE_CLASS(QWidget)
-QT_FORWARD_DECLARE_CLASS(QStyleOptionGraphicsItem)
-QT_FORWARD_DECLARE_CLASS(QTimer)
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
+namespace QmlJSDebugger {
 
 class QDeclarativeViewInspector;
-class BoundingBox;
 
-class BoundingRectHighlighter : public LiveLayerItem
+class LiveSingleSelectionManipulator
 {
-    Q_OBJECT
 public:
-    explicit BoundingRectHighlighter(QDeclarativeViewInspector *view);
-    ~BoundingRectHighlighter();
+    LiveSingleSelectionManipulator(QDeclarativeViewInspector *editorView);
+
+    enum SelectionType {
+        ReplaceSelection,
+        AddToSelection,
+        RemoveFromSelection,
+        InvertSelection
+    };
+
+    void begin(const QPointF& beginPoint);
+    void update(const QPointF& updatePoint);
+    void end(const QPointF& updatePoint);
+
+    void select(SelectionType selectionType, const QList<QGraphicsItem*> &items,
+                bool selectOnlyContentItems);
+    void select(SelectionType selectionType, bool selectOnlyContentItems);
+
     void clear();
-    void highlight(QList<QGraphicsObject*> items);
-    void highlight(QGraphicsObject* item);
 
-private slots:
-    void refresh();
-    void itemDestroyed(QObject *);
+    QPointF beginPoint() const;
+
+    bool isActive() const;
 
 private:
-    BoundingBox *boxFor(QGraphicsObject *item) const;
-    void highlightAll();
-    BoundingBox *createBoundingBox(QGraphicsObject *itemToHighlight);
-    void removeBoundingBox(BoundingBox *box);
-    void freeBoundingBox(BoundingBox *box);
-
-private:
-    Q_DISABLE_COPY(BoundingRectHighlighter)
-
-    QDeclarativeViewInspector *m_view;
-    QList<BoundingBox* > m_boxes;
-    QList<BoundingBox* > m_freeBoxes;
+    QList<QGraphicsItem*> m_oldSelectionList;
+    QPointF m_beginPoint;
+    QDeclarativeViewInspector *m_editorView;
+    bool m_isActive;
 };
 
-class BoundingBox : public QObject
-{
-    Q_OBJECT
-public:
-    explicit BoundingBox(QGraphicsObject *itemToHighlight, QGraphicsItem *parentItem,
-                         QObject *parent = 0);
-    ~BoundingBox();
-    QWeakPointer<QGraphicsObject> highlightedObject;
-    QGraphicsPolygonItem *highlightPolygon;
-    QGraphicsPolygonItem *highlightPolygonEdge;
+} // namespace QmlJSDebugger
 
-private:
-    Q_DISABLE_COPY(BoundingBox)
-
-};
-
-class BoundingBoxPolygonItem : public QGraphicsPolygonItem
-{
-public:
-    explicit BoundingBoxPolygonItem(QGraphicsItem *item);
-    int type() const;
-};
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // BOUNDINGRECTHIGHLIGHTER_H
+#endif // LIVESINGLESELECTIONMANIPULATOR_H

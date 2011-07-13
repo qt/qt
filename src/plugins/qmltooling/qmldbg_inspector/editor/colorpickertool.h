@@ -39,49 +39,54 @@
 **
 ****************************************************************************/
 
-#ifndef TOOLBARCOLORBOX_H
-#define TOOLBARCOLORBOX_H
+#ifndef COLORPICKERTOOL_H
+#define COLORPICKERTOOL_H
 
-#include <QtGui/QLabel>
+#include "abstractliveedittool.h"
+
 #include <QtGui/QColor>
-#include <QtCore/QPoint>
 
-QT_FORWARD_DECLARE_CLASS(QContextMenuEvent)
-QT_FORWARD_DECLARE_CLASS(QAction)
+QT_FORWARD_DECLARE_CLASS(QPoint)
 
-QT_BEGIN_HEADER
+namespace QmlJSDebugger {
 
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class ToolBarColorBox : public QLabel
+class ColorPickerTool : public AbstractLiveEditTool
 {
     Q_OBJECT
-
 public:
-    explicit ToolBarColorBox(QWidget *parent = 0);
-    void setColor(const QColor &color);
+    explicit ColorPickerTool(QDeclarativeViewInspector *view);
+
+    virtual ~ColorPickerTool();
+
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *) {}
+    void mouseDoubleClickEvent(QMouseEvent *) {}
+
+    void hoverMoveEvent(QMouseEvent *) {}
+
+    void keyPressEvent(QKeyEvent *) {}
+    void keyReleaseEvent(QKeyEvent *) {}
+
+    void wheelEvent(QWheelEvent *) {}
+
+    void itemsAboutToRemoved(const QList<QGraphicsItem*> &) {}
+
+    void clear();
+
+signals:
+    void selectedColorChanged(const QColor &color);
 
 protected:
-    void contextMenuEvent(QContextMenuEvent *ev);
-    void mousePressEvent(QMouseEvent *ev);
-    void mouseMoveEvent(QMouseEvent *ev);
-private slots:
-    void copyColorToClipboard();
+    void selectedItemsChanged(const QList<QGraphicsItem*> &) {}
 
 private:
-    QPixmap createDragPixmap(int size = 24) const;
+    void pickColor(const QPoint &pos);
 
 private:
-    bool m_dragStarted;
-    QPoint m_dragBeginPoint;
-    QAction *m_copyHexColor;
-    QColor m_color;
+    QColor m_selectedColor;
 };
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger
 
-QT_END_HEADER
-
-#endif // TOOLBARCOLORBOX_H
+#endif // COLORPICKERTOOL_H
