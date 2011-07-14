@@ -39,10 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qlock_p.h"
-
 #include "qvfbshmem.h"
-#include "qvfbhdr.h"
+#include <qvfbhdr.h>
+#include <private/qlock_p.h>
 
 #include <QFile>
 #include <QTimer>
@@ -53,8 +52,6 @@
 #include <sys/types.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
-#include <sys/sem.h>
-#include <sys/mman.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <math.h>
@@ -143,20 +140,10 @@ QShMemViewProtocol::QShMemViewProtocol(int displayid, const QSize &s,
 
     qws_dataDir(displayid);
 
-    QString oldPipe = "/tmp/qtembedded-" + username + "/" + QString("QtEmbedded-%1").arg(displayid);
-    int oldPipeSemkey = ftok(oldPipe.toLatin1().constData(), 'd');
-    if (oldPipeSemkey != -1) {
-        int oldPipeLockId = semget(oldPipeSemkey, 0, 0);
-        if (oldPipeLockId >= 0){
-            sembuf sops;
-            sops.sem_num = 0;
-            sops.sem_op = 1;
-            sops.sem_flg = SEM_UNDO;
-            int rv;
-            do {
-                rv = semop(lockId,&sops,1);
-            } while (rv == -1 && errno == EINTR);
-
+    {
+        QString oldPipe = "/tmp/qtembedded-" + username + "/" + QString("QtEmbedded-%1").arg(displayid);
+        QLock oldPipeLock(oldPipe, 'd', false);
+        if (oldPipeLock.isValid()) {
             perror("QShMemViewProtocol::QShMemViewProtocol");
             qFatal("Cannot create lock file as an old version of QVFb has "
                    "opened %s. Close other QVFb and try again",
