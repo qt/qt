@@ -69,27 +69,40 @@ QT_BEGIN_NAMESPACE
 // live.
 static QString qws_dataDir(int qws_display_id)
 {
-    QByteArray dataDir = QT_VFB_DATADIR(qws_display_id).toLocal8Bit();
-    if (mkdir(dataDir, 0700)) {
+    static QString result;
+    if (!result.isEmpty())
+        return result;
+    result = QT_VFB_DATADIR(qws_display_id);
+    QByteArray dataDir = result.toLocal8Bit();
+
+#if defined(Q_OS_INTEGRITY)
+    /* ensure filesystem is ready before starting requests */
+    WaitForFileSystemInitialization();
+#endif
+
+    if (QT_MKDIR(dataDir, 0700)) {
         if (errno != EEXIST) {
             qFatal("Cannot create Qt for Embedded Linux data directory: %s", dataDir.constData());
         }
     }
 
-    struct stat buf;
-    if (lstat(dataDir, &buf))
+    QT_STATBUF buf;
+    if (QT_LSTAT(dataDir, &buf))
         qFatal("stat failed for Qt for Embedded Linux data directory: %s", dataDir.constData());
 
     if (!S_ISDIR(buf.st_mode))
         qFatal("%s is not a directory", dataDir.constData());
+
+#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_VXWORKS) && !defined(Q_OS_QNX)
     if (buf.st_uid != getuid())
         qFatal("Qt for Embedded Linux data directory is not owned by user %uh", getuid());
 
     if ((buf.st_mode & 0677) != 0600)
         qFatal("Qt for Embedded Linux data directory has incorrect permissions: %s", dataDir.constData());
-    dataDir += "/";
+#endif
 
-    return QString(dataDir);
+    result.append(QLatin1Char('/'));
+    return result;
 }
 
 
