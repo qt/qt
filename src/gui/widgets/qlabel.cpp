@@ -55,6 +55,10 @@
 #include "private/qstylesheetstyle_p.h"
 #include <qmath.h>
 
+#ifndef QT_NO_ACCESSIBILITY
+#include <qaccessible.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -370,6 +374,11 @@ void QLabel::setText(const QString &text)
 #endif
 
     d->updateLabel();
+
+#ifndef QT_NO_ACCESSIBILITY
+    if (accessibleName().isEmpty())
+        QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
+#endif
 }
 
 QString QLabel::text() const
