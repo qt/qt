@@ -2766,7 +2766,7 @@ void tst_QAccessibility::listViewTest()
 #else
     {
         QListView listView;
-        QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(listView);
+        QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&listView);
         QVERIFY(iface);
         QCOMPARE(iface->childCount(), 1);
         delete iface;
@@ -2780,11 +2780,11 @@ void tst_QAccessibility::listViewTest()
     listView.show();
     QTest::qWait(1); // Need this for indexOfchild to work.
 #if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(listView);
+    qt_x11_wait_for_window_manager(&listView);
     QTest::qWait(100);
 #endif
 
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(listView);
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&listView);
     QCOMPARE((int)iface->role(0), (int)QAccessible::Client);
     QCOMPARE((int)iface->role(1), (int)QAccessible::List);
     QCOMPARE(iface->childCount(), 1);
