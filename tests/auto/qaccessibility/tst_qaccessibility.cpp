@@ -190,7 +190,8 @@ static int verifyHierarchy(QAccessibleInterface *iface)
             if (middleChild) {
                 entry = if2->navigate(QAccessible::Sibling, middle, &if3);
                 EXPECT(entry == 0 && if3->object() == middleChild->object());
-                delete if3;
+                if (entry == 0)
+                    delete if3;
                 EXPECT(iface->indexOfChild(middleChild) == middle);
             }
 
@@ -307,6 +308,10 @@ QString eventName(const int ev)
     case 0x0012: return "ScrollingStart";
     case 0x0013: return "ScrollingEnd";
     case 0x0018: return "MenuCommand";
+
+    case 0x0116: return "TableModelChanged";
+    case 0x011B: return "TextCaretMoved";
+
     case 0x8000: return "ObjectCreated";
     case 0x8001: return "ObjectDestroyed";
     case 0x8002: return "ObjectShow";
@@ -1755,18 +1760,22 @@ void tst_QAccessibility::applicationTest()
 
 void tst_QAccessibility::mainWindowTest()
 {
-    QMainWindow mw;
-    mw.resize(300, 200);
-    mw.show(); // triggers layout
+    QMainWindow *mw = new QMainWindow;
+    mw->resize(300, 200);
+    mw->show(); // triggers layout
 
     QLatin1String name = QLatin1String("I am the main window");
-    mw.setWindowTitle(name);
-    QTest::qWaitForWindowShown(&mw);
+    mw->setWindowTitle(name);
+    QTest::qWaitForWindowShown(mw);
+    QVERIFY_EVENT(mw, 0, QAccessible::ObjectShow);
 
-    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&mw);
+    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(mw);
     QCOMPARE(interface->text(QAccessible::Name, 0), name);
     QCOMPARE(interface->role(0), QAccessible::Window);
     delete interface;
+    delete mw;
+    QVERIFY_EVENT(mw, 0, QAccessible::ObjectHide);
+    QTestAccessibility::clearEvents();
 }
 
 class CounterButton : public QPushButton {
@@ -2752,9 +2761,12 @@ void tst_QAccessibility::textBrowserTest()
 
 void tst_QAccessibility::listViewTest()
 {
+#if defined(Q_WS_X11)
+    QSKIP( "Accessible table1 interface is no longer supported on X11.", SkipAll);
+#else
     {
         QListView listView;
-        QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&listView);
+        QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(listView);
         QVERIFY(iface);
         QCOMPARE(iface->childCount(), 1);
         delete iface;
@@ -2768,11 +2780,11 @@ void tst_QAccessibility::listViewTest()
     listView.show();
     QTest::qWait(1); // Need this for indexOfchild to work.
 #if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&listView);
+    qt_x11_wait_for_window_manager(listView);
     QTest::qWait(100);
 #endif
 
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&listView);
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(listView);
     QCOMPARE((int)iface->role(0), (int)QAccessible::Client);
     QCOMPARE((int)iface->role(1), (int)QAccessible::List);
     QCOMPARE(iface->childCount(), 1);
@@ -2817,6 +2829,7 @@ void tst_QAccessibility::listViewTest()
 
     }
     QTestAccessibility::clearEvents();
+#endif
 }
 
 
@@ -3071,9 +3084,11 @@ void tst_QAccessibility::lineEditTest()
     le3->deselect();
     le3->setCursorPosition(3);
     QCOMPARE(textIface->cursorPosition(), 3);
+    QTRY_VERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(le3, 0, QAccessible::TextCaretMoved)));
     QCOMPARE(textIface->selectionCount(), 0);
-    int start, end;
+    QTestAccessibility::clearEvents();
 
+    int start, end;
     QCOMPARE(textIface->text(0, 8), QString::fromLatin1("I always"));
     QCOMPARE(textIface->textAtOffset(0, QAccessible2::CharBoundary,&start,&end), QString::fromLatin1("I"));
     QCOMPARE(start, 0);
@@ -3116,6 +3131,7 @@ void tst_QAccessibility::lineEditTest()
 
     delete iface;
     delete toplevel;
+    QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::workspaceTest()
@@ -3526,6 +3542,9 @@ void tst_QAccessibility::scrollAreaTest()
 
 void tst_QAccessibility::tableWidgetTest()
 {
+#if defined(Q_WS_X11)
+    QSKIP( "Accessible table1 interface is no longer supported on X11.", SkipAll);
+#else
     {
     QWidget *topLevel = new QWidget;
     QTableWidget *w = new QTableWidget(8,4,topLevel);
@@ -3565,6 +3584,7 @@ void tst_QAccessibility::tableWidgetTest()
     delete topLevel;
     }
     QTestAccessibility::clearEvents();
+#endif
 }
 
 class QtTestTableModel: public QAbstractTableModel
@@ -3647,6 +3667,9 @@ public:
 
 void tst_QAccessibility::tableViewTest()
 {
+#if defined(Q_WS_X11)
+    QSKIP( "Accessible table1 interface is no longer supported on X11.", SkipAll);
+#else
     {
     QtTestTableModel *model = new QtTestTableModel(3, 4);
     QTableView *w = new QTableView();
@@ -3726,23 +3749,28 @@ void tst_QAccessibility::tableViewTest()
     delete model;
     }
     QTestAccessibility::clearEvents();
+#endif
 }
 
 void tst_QAccessibility::table2ListTest()
 {
-    QListWidget listView;
-    listView.addItem("Oslo");
-    listView.addItem("Berlin");
-    listView.addItem("Brisbane");
-    listView.resize(400,400);
-    listView.show();
+#if !defined(Q_WS_X11)
+    QSKIP( "Accessible table2 interface is currently only supported on X11.", SkipAll);
+#else
+    QListWidget *listView = new QListWidget;
+    listView->addItem("Oslo");
+    listView->addItem("Berlin");
+    listView->addItem("Brisbane");
+    listView->resize(400,400);
+    listView->show();
     QTest::qWait(1); // Need this for indexOfchild to work.
 #if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&listView);
+    qt_x11_wait_for_window_manager(listView);
     QTest::qWait(100);
 #endif
 
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&listView);
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(listView);
+    QCOMPARE(verifyHierarchy(iface), 0);
 
     QCOMPARE((int)iface->role(0), (int)QAccessible::List);
     QCOMPARE(iface->childCount(), 3);
@@ -3771,14 +3799,14 @@ void tst_QAccessibility::table2ListTest()
     QTestAccessibility::clearEvents();
 
     // Check for events
-    QTest::mouseClick(listView.viewport(), Qt::LeftButton, 0, listView.visualItemRect(listView.item(1)).center());
-    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(&listView, 2, QAccessible::Selection)));
-    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(&listView, 2, QAccessible::Focus)));
-    QTest::mouseClick(listView.viewport(), Qt::LeftButton, 0, listView.visualItemRect(listView.item(2)).center());
-    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(&listView, 3, QAccessible::Selection)));
-    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(&listView, 3, QAccessible::Focus)));
+    QTest::mouseClick(listView->viewport(), Qt::LeftButton, 0, listView->visualItemRect(listView->item(1)).center());
+    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(listView, 2, QAccessible::Selection)));
+    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(listView, 2, QAccessible::Focus)));
+    QTest::mouseClick(listView->viewport(), Qt::LeftButton, 0, listView->visualItemRect(listView->item(2)).center());
+    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(listView, 3, QAccessible::Selection)));
+    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(listView, 3, QAccessible::Focus)));
 
-    listView.addItem("Munich");
+    listView->addItem("Munich");
     QCOMPARE(iface->childCount(), 4);
 
     // table 2
@@ -3799,23 +3827,27 @@ void tst_QAccessibility::table2ListTest()
 
     delete cell4;
     delete cell1;
-
     delete iface;
+    delete listView;
     QTestAccessibility::clearEvents();
+#endif
 }
 
 void tst_QAccessibility::table2TreeTest()
 {
-    QTreeWidget treeView;
-    treeView.setColumnCount(2);
+#if !defined(Q_WS_X11)
+    QSKIP( "Accessible table2 interface is currently only supported on X11.", SkipAll);
+#else
+    QTreeWidget *treeView = new QTreeWidget;
+    treeView->setColumnCount(2);
     QTreeWidgetItem *header = new QTreeWidgetItem;
     header->setText(0, "Artist");
     header->setText(1, "Work");
-    treeView.setHeaderItem(header);
+    treeView->setHeaderItem(header);
 
     QTreeWidgetItem *root1 = new QTreeWidgetItem;
     root1->setText(0, "Spain");
-    treeView.addTopLevelItem(root1);
+    treeView->addTopLevelItem(root1);
 
     QTreeWidgetItem *item1 = new QTreeWidgetItem;
     item1->setText(0, "Picasso");
@@ -3829,22 +3861,24 @@ void tst_QAccessibility::table2TreeTest()
 
     QTreeWidgetItem *root2 = new QTreeWidgetItem;
     root2->setText(0, "Austria");
-    treeView.addTopLevelItem(root2);
+    treeView->addTopLevelItem(root2);
 
     QTreeWidgetItem *item3 = new QTreeWidgetItem;
     item3->setText(0, "Klimt");
     item3->setText(1, "The Kiss");
     root2->addChild(item3);
 
-    treeView.resize(400,400);
-    treeView.show();
+    treeView->resize(400,400);
+    treeView->show();
     QTest::qWait(1); // Need this for indexOfchild to work.
 #if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&treeView);
+    qt_x11_wait_for_window_manager(treeView);
     QTest::qWait(100);
 #endif
 
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&treeView);
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(treeView);
+    QEXPECT_FAIL("", "Implement Sibling navigation for table2 cells.", Continue);
+    QCOMPARE(verifyHierarchy(iface), 0);
 
     QCOMPARE((int)iface->role(0), (int)QAccessible::Tree);
     // header and 2 rows (the others are not expanded, thus not visible)
@@ -3897,14 +3931,13 @@ void tst_QAccessibility::table2TreeTest()
     delete cell2;
     delete cell1;
 
-    treeView.expandAll();
+    treeView->expandAll();
 
     QTest::qWait(1); // Need this for indexOfchild to work.
 #if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&treeView);
+    qt_x11_wait_for_window_manager(treeView);
     QTest::qWait(100);
 #endif
-//    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(&treeView, 0, QAccessible::TableModelChanged)));
 
     QCOMPARE(table2->columnCount(), 2);
     QCOMPARE(table2->rowCount(), 5);
@@ -3925,36 +3958,42 @@ void tst_QAccessibility::table2TreeTest()
 
     delete iface;
     QTestAccessibility::clearEvents();
+#endif
 }
 
 
 void tst_QAccessibility::table2TableTest()
 {
-    QTableWidget tableView(3, 3);
-    tableView.setColumnCount(3);
+#if !defined(Q_WS_X11)
+    QSKIP( "Accessible table2 interface is currently only supported on X11.", SkipAll);
+#else
+    QTableWidget *tableView = new QTableWidget(3, 3);
+    tableView->setColumnCount(3);
     QStringList hHeader;
     hHeader << "h1" << "h2" << "h3";
-    tableView.setHorizontalHeaderLabels(hHeader);
+    tableView->setHorizontalHeaderLabels(hHeader);
 
     QStringList vHeader;
     vHeader << "v1" << "v2" << "v3";
-    tableView.setVerticalHeaderLabels(vHeader);
+    tableView->setVerticalHeaderLabels(vHeader);
 
     for (int i = 0; i<9; ++i) {
         QTableWidgetItem *item = new QTableWidgetItem;
         item->setText(QString::number(i/3) + QString(".") + QString::number(i%3));
-        tableView.setItem(i/3, i%3, item);
+        tableView->setItem(i/3, i%3, item);
     }
 
-    tableView.resize(600,600);
-    tableView.show();
+    tableView->resize(600,600);
+    tableView->show();
     QTest::qWait(1); // Need this for indexOfchild to work.
 #if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&tableView);
+    qt_x11_wait_for_window_manager(tableView);
     QTest::qWait(100);
 #endif
 
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&tableView);
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(tableView);
+    QEXPECT_FAIL("", "Implement Sibling navigation for table2 cells.", Continue);
+    QCOMPARE(verifyHierarchy(iface), 0);
 
     QCOMPARE((int)iface->role(0), (int)QAccessible::Table);
     // header and 2 rows (the others are not expanded, thus not visible)
@@ -3964,7 +4003,7 @@ void tst_QAccessibility::table2TableTest()
     QCOMPARE(iface->navigate(QAccessible::Child, 1, &cornerButton), 0);
     QVERIFY(cornerButton);
     QCOMPARE(iface->indexOfChild(cornerButton), 1);
-    QCOMPARE(cornerButton->role(0), QAccessible::PushButton);
+    QCOMPARE(cornerButton->role(0), QAccessible::Pane);
     delete cornerButton;
 
     QAccessibleInterface *child1 = 0;
@@ -4030,7 +4069,11 @@ void tst_QAccessibility::table2TableTest()
     QCOMPARE(table2->rowDescription(2), QString("v3"));
 
     delete iface;
+
+    delete tableView;
+
     QTestAccessibility::clearEvents();
+#endif
 }
 
 void tst_QAccessibility::calendarWidgetTest()
@@ -4288,6 +4331,9 @@ void tst_QAccessibility::comboBoxTest()
 
 void tst_QAccessibility::treeWidgetTest()
 {
+#if defined(Q_WS_X11)
+    QSKIP( "Accessible table1 interface is no longer supported on X11.", SkipAll);
+#else
     QWidget *w = new QWidget;
     QTreeWidget *tree = new QTreeWidget(w);
     QHBoxLayout *l = new QHBoxLayout(w);
@@ -4345,6 +4391,7 @@ void tst_QAccessibility::treeWidgetTest()
     delete w;
 
     QTestAccessibility::clearEvents();
+#endif
 }
 
 void tst_QAccessibility::labelTest()
