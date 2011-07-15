@@ -878,6 +878,7 @@ static const char * const keywordTable[] = {
     "signals", "slots", "emit", 0
 };
 
+#if 0
 static QString untabified(const QString &in)
 {
     QString res;
@@ -897,6 +898,7 @@ static QString untabified(const QString &in)
 
     return res;
 }
+#endif
 
 /*
     @char

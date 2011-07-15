@@ -276,6 +276,7 @@ void HtmlGenerator::generateTree(const Tree *tree)
     generatePageIndex(outputDir() + "/" + fileBase + ".pageindex");
 
     helpProjectWriter->generate(myTree);
+    generateManifestFile();
 }
 
 void HtmlGenerator::startText(const Node * /* relative */,
@@ -331,8 +332,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::BriefLeft:
         if (relative->type() == Node::Fake) {
-            skipAhead = skipAtoms(atom, Atom::BriefRight);
-            break;
+            if (relative->subType() != Node::Example) {
+                skipAhead = skipAtoms(atom, Atom::BriefRight);
+                break;
+            }
         }
 
         out() << "<p>";
@@ -765,6 +768,15 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                     out() << " alt=\"" << protectEnc(text) << "\"";
                 out() << " />";
                 helpProjectWriter->addExtraFile(fileName);
+                if ((relative->type() == Node::Fake) &&
+                    (relative->subType() == Node::Example)) {
+                    const ExampleNode* cen = static_cast<const ExampleNode*>(relative);
+                    if (cen->imageFileName().isEmpty()) {
+                        ExampleNode* en = const_cast<ExampleNode*>(cen);
+                        en->setImageFileName(fileName);
+                        ExampleNode::exampleNodeMap.insert(en->title(),en);
+                    }
+                }
             }
             if (atom->type() == Atom::Image)
                 out() << "</p>";
@@ -1792,7 +1804,6 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
         toc = node->doc().tableOfContents();
     if (toc.isEmpty() && !sections && (node->subType() != Node::Module))
         return;
-    bool debug = false;
     
     QStringList sectionNumber;
     int detailsBase = 0;
@@ -3779,8 +3790,6 @@ void HtmlGenerator::endLink()
     inObsoleteLink = false;
 }
 
-#ifdef QDOC_QML
-
 /*!
   Generates the summary for the \a section. Only used for
   sections of QML element documentation.
@@ -4266,7 +4275,6 @@ QString HtmlGenerator::fullDocumentLocation(const Node *node)
             return "";
     }
     else if (node->type() == Node::Fake) {
-#ifdef QDOC_QML
         if ((node->subType() == Node::QmlClass) ||
             (node->subType() == Node::QmlBasicType)) {
             QString fb = node->fileBase();
@@ -4274,9 +4282,9 @@ QString HtmlGenerator::fullDocumentLocation(const Node *node)
                 return fb + ".html";
             else
                 return Generator::outputPrefix(QLatin1String("QML")) + node->fileBase() + QLatin1String(".html");
-        } else
-#endif
-        parentName = node->fileBase() + ".html";
+        }
+        else
+            parentName = node->fileBase() + ".html";
     }
     else if (node->fileBase().isEmpty())
         return "";
@@ -4387,6 +4395,74 @@ QString HtmlGenerator::fullDocumentLocation(const Node *node)
     return parentName.toLower() + anchorRef;
 }
 
-#endif
+void HtmlGenerator::generateManifestFile()
+{
+    if (ExampleNode::exampleNodeMap.isEmpty())
+        return;
+    QString fileName = "examples-manifest.xml";
+    QFile file(outputDir() + "/" + fileName);
+    if (!file.open(QFile::WriteOnly | QFile::Text))
+        return ;
+
+    QXmlStreamWriter writer(&file);
+    writer.setAutoFormatting(true);
+    writer.writeStartDocument();
+    writer.writeStartElement("instructionals");
+    writer.writeAttribute("module", project);
+    writer.writeStartElement("examples");
+
+    ExampleNodeMap::Iterator i = ExampleNode::exampleNodeMap.begin();
+    while (i != ExampleNode::exampleNodeMap.end()) {
+        const ExampleNode* en = i.value();
+        writer.writeStartElement("example");
+        writer.writeAttribute("name", en->title());
+        QString docUrl = projectUrl + "/" + en->fileBase() + ".html";
+        writer.writeAttribute("docUrl", docUrl);
+        foreach (const Node* child, en->childNodes()) {
+            if (child->subType() == Node::File) {
+                QString file = child->name();
+                if (file.endsWith(".pro"))
+                     writer.writeAttribute("projectPath", "./" + file);
+            }
+        }
+        writer.writeAttribute("imageUrl", projectUrl + "/" + en->imageFileName());
+        Text brief = en->doc().briefText();
+        if (!brief.isEmpty()) {
+            writer.writeStartElement("description");
+            writer.writeCharacters(brief.toString());
+            writer.writeEndElement(); // description
+        }
+        QStringList tags = en->title().toLower().split(" ");
+        if (!tags.isEmpty()) {
+            writer.writeStartElement("tags");
+            bool wrote_one = false;
+            for (int n=0; n<tags.size(); ++n) {
+                QString tag = tags.at(n);
+                if (tag.at(0).isDigit())
+                    continue;
+                if (tag.at(0) == '-')
+                    continue;
+                if (tag.startsWith("example"))
+                    continue;
+                if (tag.startsWith("chapter"))
+                    continue;
+                if (tag.endsWith(":"))
+                    tag.chop(1);
+                if (n>0 && wrote_one)
+                    writer.writeCharacters(",");
+                writer.writeCharacters(tag);
+                wrote_one = true;
+            }
+            writer.writeEndElement(); // tags
+        }
+        writer.writeEndElement(); // example
+        ++i;
+    }
+
+    writer.writeEndElement(); // examples
+    writer.writeEndElement(); // instructionals
+    writer.writeEndDocument();
+    file.close();
+}
 
 QT_END_NAMESPACE

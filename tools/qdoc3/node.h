@@ -58,7 +58,13 @@
 
 QT_BEGIN_NAMESPACE
 
+class Node;
 class InnerNode;
+class ExampleNode;
+
+typedef QMap<QString, const Node*> NodeMap;
+typedef QMultiMap<QString, Node*> NodeMultiMap;
+typedef QMap<QString, const ExampleNode*> ExampleNodeMap;
 
 class Node
 {
@@ -380,8 +386,10 @@ class FakeNode : public InnerNode
     virtual QString title() const;
     virtual QString fullTitle() const;
     virtual QString subTitle() const;
+    virtual QString imageFileName() const { return QString(); }
     const NodeList &groupMembers() const { return gr; }
     virtual QString nameForLists() const { return title(); }
+    virtual void setImageFileName(const QString& ) { }
 
  private:
     SubType sub;
@@ -390,7 +398,21 @@ class FakeNode : public InnerNode
     NodeList gr;
 };
 
-#ifdef QDOC_QML
+class ExampleNode : public FakeNode
+{
+ public:
+    ExampleNode(InnerNode* parent, const QString& name);
+    virtual ~ExampleNode() { }
+    virtual QString imageFileName() const { return imageFileName_; }
+    virtual void setImageFileName(const QString& ifn) { imageFileName_ = ifn; }
+
+ public:
+    static ExampleNodeMap exampleNodeMap;
+
+ private:
+    QString imageFileName_;
+};
+
 class QmlClassNode : public FakeNode
 {
  public:
@@ -482,7 +504,6 @@ class QmlPropertyNode : public LeafNode
     Trool   wri;
     bool    att;
 };
-#endif
 
 class EnumItem
 {

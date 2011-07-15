@@ -704,7 +704,7 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
         if (command == COMMAND_CLASS) {
             if (paths.size() > 1) {
                 if (!paths[1].endsWith(".h")) {
-                    ClassNode*cnode = static_cast<ClassNode*>(node);
+                    ClassNode* cnode = static_cast<ClassNode*>(node);
                     cnode->setQmlElement(paths[1]);
                 }
             }
@@ -712,9 +712,9 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
         return node;
     }
     else if (command == COMMAND_EXAMPLE) {
-        FakeNode *fake = new FakeNode(tre->root(), arg, Node::Example);
-        createExampleFileNodes(fake);
-        return fake;
+        ExampleNode* en = new ExampleNode(tre->root(), arg);
+        createExampleFileNodes(en);
+        return en;
     }
     else if (command == COMMAND_EXTERNALPAGE) {
         return new FakeNode(tre->root(), arg, Node::ExternalPage);
