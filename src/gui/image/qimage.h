@@ -66,8 +66,7 @@ template <class T> class QVector;
 struct QImageData;
 class QImageDataMisc; // internal
 #ifndef QT_NO_IMAGE_TEXT
-#ifdef QT_DEPRECATED
-class Q_GUI_EXPORT QT_DEPRECATED QImageTextKeyLang {
+class Q_GUI_EXPORT QImageTextKeyLang {
 public:
     QImageTextKeyLang(const char* k, const char* l) : key(k), lang(l) { }
     QImageTextKeyLang() { }
@@ -82,7 +81,6 @@ public:
     inline bool operator!= (const QImageTextKeyLang &other) const
         { return !operator==(other); }
 };
-#endif
 #endif //QT_NO_IMAGE_TEXT
 
 
