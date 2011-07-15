@@ -39,10 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qlock_p.h"
-
 #include "qvfbshmem.h"
-#include "qvfbhdr.h"
+#include <qvfbhdr.h>
+#include <private/qlock_p.h>
 
 #include <QFile>
 #include <QTimer>
@@ -53,8 +52,6 @@
 #include <sys/types.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
-#include <sys/sem.h>
-#include <sys/mman.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <math.h>
@@ -69,27 +66,40 @@ QT_BEGIN_NAMESPACE
 // live.
 static QString qws_dataDir(int qws_display_id)
 {
-    QByteArray dataDir = QT_VFB_DATADIR(qws_display_id).toLocal8Bit();
-    if (mkdir(dataDir, 0700)) {
+    static QString result;
+    if (!result.isEmpty())
+        return result;
+    result = QT_VFB_DATADIR(qws_display_id);
+    QByteArray dataDir = result.toLocal8Bit();
+
+#if defined(Q_OS_INTEGRITY)
+    /* ensure filesystem is ready before starting requests */
+    WaitForFileSystemInitialization();
+#endif
+
+    if (QT_MKDIR(dataDir, 0700)) {
         if (errno != EEXIST) {
             qFatal("Cannot create Qt for Embedded Linux data directory: %s", dataDir.constData());
         }
     }
 
-    struct stat buf;
-    if (lstat(dataDir, &buf))
+    QT_STATBUF buf;
+    if (QT_LSTAT(dataDir, &buf))
         qFatal("stat failed for Qt for Embedded Linux data directory: %s", dataDir.constData());
 
     if (!S_ISDIR(buf.st_mode))
         qFatal("%s is not a directory", dataDir.constData());
+
+#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_VXWORKS) && !defined(Q_OS_QNX)
     if (buf.st_uid != getuid())
         qFatal("Qt for Embedded Linux data directory is not owned by user %uh", getuid());
 
     if ((buf.st_mode & 0677) != 0600)
         qFatal("Qt for Embedded Linux data directory has incorrect permissions: %s", dataDir.constData());
-    dataDir += "/";
+#endif
 
-    return QString(dataDir);
+    result.append(QLatin1Char('/'));
+    return result;
 }
 
 
@@ -130,20 +140,10 @@ QShMemViewProtocol::QShMemViewProtocol(int displayid, const QSize &s,
 
     qws_dataDir(displayid);
 
-    QString oldPipe = "/tmp/qtembedded-" + username + "/" + QString("QtEmbedded-%1").arg(displayid);
-    int oldPipeSemkey = ftok(oldPipe.toLatin1().constData(), 'd');
-    if (oldPipeSemkey != -1) {
-        int oldPipeLockId = semget(oldPipeSemkey, 0, 0);
-        if (oldPipeLockId >= 0){
-            sembuf sops;
-            sops.sem_num = 0;
-            sops.sem_op = 1;
-            sops.sem_flg = SEM_UNDO;
-            int rv;
-            do {
-                rv = semop(lockId,&sops,1);
-            } while (rv == -1 && errno == EINTR);
-
+    {
+        QString oldPipe = "/tmp/qtembedded-" + username + "/" + QString("QtEmbedded-%1").arg(displayid);
+        QLock oldPipeLock(oldPipe, 'd', false);
+        if (oldPipeLock.isValid()) {
             perror("QShMemViewProtocol::QShMemViewProtocol");
             qFatal("Cannot create lock file as an old version of QVFb has "
                    "opened %s. Close other QVFb and try again",

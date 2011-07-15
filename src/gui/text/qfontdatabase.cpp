@@ -1130,13 +1130,14 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #elif defined(Q_OS_SYMBIAN)
 #  include "qfontdatabase_s60.cpp"
 #endif
+QT_END_INCLUDE_NAMESPACE
+
 #if !defined(Q_WS_X11)
 QString QFontDatabase::resolveFontFamilyAlias(const QString &family)
 {
     return family;
 }
 #endif
-QT_END_INCLUDE_NAMESPACE
 
 static QtFontStyle *bestStyle(QtFontFoundry *foundry, const QtFontStyle::Key &styleKey,
                               const QString &styleName = QString())
