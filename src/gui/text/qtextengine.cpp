@@ -897,6 +897,12 @@ void QTextEngine::shapeText(int item) const
     if (si.num_glyphs)
         return;
 
+    // Skip shaping of line or paragraph separators since we are not
+    // going to draw them anyway
+    if (si.analysis.flags == QScriptAnalysis::LineOrParagraphSeparator
+        && !(option.flags() & QTextOption::ShowLineAndParagraphSeparators))
+        return;
+
 #if defined(Q_WS_MAC)
 #if !defined(QT_ENABLE_HARFBUZZ_FOR_MAC)
     if (enableHarfBuzz()) {
