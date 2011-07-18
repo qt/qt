@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the Symbian application wrapper of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSURFACE_VGLITE_H
-#define QWINDOWSURFACE_VGLITE_H
+#ifndef QS60KEYCAPTURE_P_H
+#define QS60KEYCAPTURE_P_H
 
 //
 //  W A R N I N G
@@ -53,39 +53,64 @@
 // We mean it.
 //
 
-#include <QtGui/private/qwindowsurface_p.h>
-#include <QtGui/private/qegl_p.h>
+#include <QtCore/qglobal.h>
+
+#ifdef Q_OS_SYMBIAN
+
+#include <QObject>
+#include <QEvent>
+#include <QTimer>
+#include <remconcoreapitargetobserver.h>
+#include <w32std.h>
+
+class CRemConInterfaceSelector;
+class CRemConCoreApiTarget;
+class CResponseHandler;
+class CCoeEnv;
 
 QT_BEGIN_NAMESPACE
 
-class QVGLiteGraphicsSystem;
-class QVGPaintEngine;
-
-class Q_OPENVG_EXPORT QVGLiteWindowSurface : public QWindowSurface, public QPaintDevice
+class QS60KeyCapture: public QObject,
+                      public MRemConCoreApiTargetObserver
 {
+    Q_OBJECT
 public:
-    QVGLiteWindowSurface(QVGLiteGraphicsSystem *gs, QWidget *window);
-    ~QVGLiteWindowSurface();
+    QS60KeyCapture(CCoeEnv *env, QObject *parent = 0);
+    ~QS60KeyCapture();
 
-    QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    void setGeometry(const QRect &rect);
-    bool scroll(const QRegion &area, int dx, int dy);
+    void MrccatoCommand(TRemConCoreApiOperationId operationId,
+                        TRemConCoreApiButtonAction buttonAct);
 
-    void beginPaint(const QRegion &region);
-    void endPaint(const QRegion &region);
-
-    QPaintEngine *paintEngine() const;
-
-protected:
-    int metric(PaintDeviceMetric metric) const;
+private slots:
+    void volumeUpClickTimerExpired();
+    void volumeDownClickTimerExpired();
+    void repeatTimerExpired();
 
 private:
-    QVGLiteGraphicsSystem *graphicsSystem;
-    bool isPaintingActive;
-    mutable QVGPaintEngine *engine;
+    void sendKey(TRemConCoreApiOperationId operationId, QEvent::Type type);
+    TKeyEvent mapToKeyEvent(TRemConCoreApiOperationId operationId);
+    void initRemCon();
+
+private:
+    QS60KeyCapture();
+    Q_DISABLE_COPY(QS60KeyCapture)
+
+    CCoeEnv *coeEnv;
+
+    CRemConInterfaceSelector *selector;
+    CRemConCoreApiTarget *target;
+    CResponseHandler *handler;
+
+    QTimer volumeUpClickTimer;
+    QTimer volumeDownClickTimer;
+
+    TKeyEvent repeatKeyEvent;
+    int initialRepeatTime; // time before first repeat key event
+    int repeatTime; // time between subsequent repeat key events
+    QTimer repeatTimer;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSURFACE_VGLITE_H
+#endif // Q_OS_SYMBIAN
+#endif // QS60KEYCAPTURE_P_H

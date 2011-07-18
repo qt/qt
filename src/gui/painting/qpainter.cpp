@@ -6469,10 +6469,16 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
 
     QLineF line(pos.x(), pos.y(), pos.x() + qFloor(width), pos.y());
 
-    const qreal underlineOffset = fe->underlinePosition().toReal();
+    qreal underlineOffset = fe->underlinePosition().toReal();
+    qreal y = pos.y();
+    // compensate for different rounding rule in Core Graphics paint engine,
+    // ideally code like this should be moved to respective engines.
+    if (painter->paintEngine()->type() == QPaintEngine::CoreGraphics) {
+        y = qCeil(y);
+    }
     // deliberately ceil the offset to avoid the underline coming too close to
     // the text above it.
-    const qreal underlinePos = pos.y() + qCeil(underlineOffset);
+    const qreal underlinePos = y + qCeil(underlineOffset);
 
     if (underlineStyle == QTextCharFormat::SpellCheckUnderline) {
         underlineStyle = QTextCharFormat::UnderlineStyle(QApplication::style()->styleHint(QStyle::SH_SpellCheckUnderlineStyle));

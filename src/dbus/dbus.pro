@@ -44,7 +44,8 @@ PUB_HEADERS = qdbusargument.h \
     qdbusmetatype.h \
     qdbuspendingcall.h \
     qdbuspendingreply.h \
-    qdbuscontext.h
+    qdbuscontext.h \
+    qdbusvirtualobject.h
 HEADERS += $$PUB_HEADERS \
     qdbusconnection_p.h \
     qdbusmessage_p.h \
@@ -60,7 +61,8 @@ HEADERS += $$PUB_HEADERS \
     qdbuspendingcall_p.h \
     qdbus_symbols_p.h \
     qdbusservicewatcher.h \
-    qdbusunixfiledescriptor.h
+    qdbusunixfiledescriptor.h \
+    qdbusvirtualobject.h
 SOURCES += qdbusconnection.cpp \
     qdbusconnectioninterface.cpp \
     qdbuserror.cpp \
@@ -87,4 +89,5 @@ SOURCES += qdbusconnection.cpp \
     qdbuspendingreply.cpp \
     qdbus_symbols.cpp \
     qdbusservicewatcher.cpp \
-    qdbusunixfiledescriptor.cpp
+    qdbusunixfiledescriptor.cpp \
+    qdbusvirtualobject.cpp
