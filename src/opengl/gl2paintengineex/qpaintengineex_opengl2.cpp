@@ -90,6 +90,11 @@
 
 QT_BEGIN_NAMESPACE
 
+inline static bool isPowerOfTwo(uint x)
+{
+    return x && !(x & (x - 1));
+}
+
 #if defined(Q_WS_WIN)
 extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif
@@ -229,7 +234,13 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         QGLTexture *tex = ctx->d_func()->bindTexture(currentBrushPixmap, GL_TEXTURE_2D, GL_RGBA,
                                                      QGLContext::InternalBindOption |
                                                      QGLContext::CanFlipNativePixmapBindOption);
-        updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
+        GLenum wrapMode = GL_REPEAT;
+#ifdef QT_OPENGL_ES_2
+        // should check for GL_OES_texture_npot or GL_IMG_texture_npot extension
+        if (!isPowerOfTwo(currentBrushPixmap.width()) || !isPowerOfTwo(currentBrushPixmap.height()))
+            wrapMode = GL_CLAMP_TO_EDGE;
+#endif
+        updateTextureFilter(GL_TEXTURE_2D, wrapMode, q->state()->renderHints & QPainter::SmoothPixmapTransform);
         textureInvertedY = tex->options & QGLContext::InvertedYBindOption ? -1 : 1;
     }
     brushTextureDirty = false;
