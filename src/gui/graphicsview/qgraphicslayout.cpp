@@ -466,7 +466,6 @@ void QGraphicsLayout::addChildLayoutItem(QGraphicsLayoutItem *layoutItem)
 static bool g_instantInvalidatePropagation = false;
 
 /*!
-    \internal
     \since 4.8
     \sa instantInvalidatePropagation()
 
@@ -496,7 +495,6 @@ void QGraphicsLayout::setInstantInvalidatePropagation(bool enable)
 }
 
 /*!
-    \internal
     \since 4.8
     \sa setInstantInvalidatePropagation()
 
