@@ -90,10 +90,9 @@
 
 QT_BEGIN_NAMESPACE
 
-inline static bool isPowerOfTwo(int x)
+inline static bool isPowerOfTwo(uint x)
 {
-    // Assumption: x >= 1
-    return x == (x & -x);
+    return x && !(x & (x - 1));
 }
 
 #if defined(Q_WS_WIN)
@@ -248,16 +247,13 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         QGLTexture *tex = ctx->d_func()->bindTexture(currentBrushPixmap, GL_TEXTURE_2D, GL_RGBA,
                                                      QGLContext::InternalBindOption |
                                                      QGLContext::CanFlipNativePixmapBindOption);
-#if !defined(QT_NO_DEBUG) && defined(QT_OPENGL_ES_2)
-        QGLFunctions funcs(QGLContext::currentContext());
-        bool npotSupported = funcs.hasOpenGLFeature(QGLFunctions::NPOTTextures);
-        bool isNpot = !isPowerOfTwo(currentBrushPixmap.size().width())
-            || !isPowerOfTwo(currentBrushPixmap.size().height());
-        if (isNpot && !npotSupported) {
-            qWarning("GL2 Paint Engine: This system does not support the REPEAT wrap mode for non-power-of-two textures.");
-        }
+        GLenum wrapMode = GL_REPEAT;
+#ifdef QT_OPENGL_ES_2
+        // should check for GL_OES_texture_npot or GL_IMG_texture_npot extension
+        if (!isPowerOfTwo(currentBrushPixmap.width()) || !isPowerOfTwo(currentBrushPixmap.height()))
+            wrapMode = GL_CLAMP_TO_EDGE;
 #endif
-        updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
+        updateTextureFilter(GL_TEXTURE_2D, wrapMode, q->state()->renderHints & QPainter::SmoothPixmapTransform);
         textureInvertedY = tex->options & QGLContext::InvertedYBindOption ? -1 : 1;
     }
     brushTextureDirty = false;
