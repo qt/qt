@@ -275,12 +275,13 @@ public:
     QString text(const QString &key = QString()) const;
     void setText(const QString &key, const QString &value);
 
-    // The following functions are obsolete as of 4.1
-    QString text(const char* key, const char* lang=0) const;
-    QList<QImageTextKeyLang> textList() const;
-    QStringList textLanguages() const;
-    QString text(const QImageTextKeyLang&) const;
-    void setText(const char* key, const char* lang, const QString&);
+#ifdef QT_DEPRECATED
+    QT_DEPRECATED QString text(const char* key, const char* lang=0) const;
+    QT_DEPRECATED QList<QImageTextKeyLang> textList() const;
+    QT_DEPRECATED QStringList textLanguages() const;
+    QT_DEPRECATED QString text(const QImageTextKeyLang&) const;
+    QT_DEPRECATED void setText(const char* key, const char* lang, const QString&);
+#endif
 #endif
 
 #ifdef QT3_SUPPORT
