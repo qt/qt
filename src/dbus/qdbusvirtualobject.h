@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the QtDBus module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,42 +39,43 @@
 **
 ****************************************************************************/
 
-import QtQuick 1.0
+#ifndef QDBUSTREENODE_H
+#define QDBUSTREENODE_H
 
-BorderImage {
-    id: button
+#include <QtDBus/qdbusmacros.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qobject.h>
 
-    property alias operation: buttonText.text
-    property string color: ""
+#ifndef QT_NO_DBUS
 
-    signal clicked
+QT_BEGIN_HEADER
 
-    source: "images/button-" + color + ".png"; clip: true
-    border { left: 10; top: 10; right: 10; bottom: 10 }
+QT_BEGIN_NAMESPACE
 
-    Rectangle {
-        id: shade
-        anchors.fill: button; radius: 10; color: "black"; opacity: 0
-    }
+QT_MODULE(DBus)
 
-    Text {
-        id: buttonText
-        anchors.centerIn: parent; anchors.verticalCenterOffset: -1
-        font.pixelSize: parent.width > parent.height ? parent.height * .5 : parent.width * .5
-        style: Text.Sunken; color: "white"; styleColor: "black"; smooth: true
-    }
+class QDBusMessage;
+class QDBusConnection;
 
-    MouseArea {
-        id: mouseArea
-        anchors.fill: parent
-        onClicked: {
-            doOp(operation)
-            button.clicked()
-        }
-    }
+class QDBusVirtualObjectPrivate;
+class Q_DBUS_EXPORT QDBusVirtualObject : public QObject
+{
+    Q_OBJECT
+public:
+    explicit QDBusVirtualObject(QObject *parent = 0);
+    virtual ~QDBusVirtualObject();
 
-    states: State {
-        name: "pressed"; when: mouseArea.pressed == true
-        PropertyChanges { target: shade; opacity: .4 }
-    }
-}
+    virtual QString introspect(const QString &path) const = 0;
+    virtual bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection) = 0;
+
+private:
+    Q_DECLARE_PRIVATE(QDBusVirtualObject)
+    Q_DISABLE_COPY(QDBusVirtualObject)
+};
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QT_NO_DBUS
+#endif

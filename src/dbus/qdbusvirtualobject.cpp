@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the QtDBus module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,28 +39,59 @@
 **
 ****************************************************************************/
 
-import QtQuick 1.0
+#include "qdbusvirtualobject.h"
 
-XmlListModel {
-    property string tags : ""
+#ifndef QT_NO_DBUS
 
-    function commasep(x)
-    {
-        return x.replace(' ',',');
-    }
+QT_BEGIN_NAMESPACE
 
-    source: "http://api.flickr.com/services/feeds/photos_public.gne?"+(tags ? "tags="+commasep(tags)+"&" : "")+"format=rss2"
-    query: "/rss/channel/item"
-    namespaceDeclarations: "declare namespace media=\"http://search.yahoo.com/mrss/\";"
-
-    XmlRole { name: "title"; query: "title/string()" }
-    XmlRole { name: "imagePath"; query: "media:thumbnail/@url/string()" }
-    XmlRole { name: "url"; query: "media:content/@url/string()" }
-    XmlRole { name: "description"; query: "description/string()" }
-    XmlRole { name: "tags"; query: "media:category/string()" }
-    XmlRole { name: "photoWidth"; query: "media:content/@width/string()" }
-    XmlRole { name: "photoHeight"; query: "media:content/@height/string()" }
-    XmlRole { name: "photoType"; query: "media:content/@type/string()" }
-    XmlRole { name: "photoAuthor"; query: "author/string()" }
-    XmlRole { name: "photoDate"; query: "pubDate/string()" }
+QDBusVirtualObject::QDBusVirtualObject(QObject *parent) :
+    QObject(parent)
+{
 }
+
+QDBusVirtualObject::~QDBusVirtualObject()
+{
+}
+
+QT_END_NAMESPACE
+
+
+/*!
+    \internal
+    \class QDBusVirtualObject
+    \inmodule QtDBus
+    \since 4.8
+
+    \brief The QDBusVirtualObject class is used to handle several DBus paths with one class.
+*/
+
+/*!
+    \internal
+    \fn bool QDBusVirtualObject::handleMessage(const QDBusMessage &message, const QDBusConnection &connection) = 0
+
+    This function needs to handle all messages to the path of the
+    virtual object, when the SubPath option is specified.
+    The service, path, interface and methos are all part of the message.
+    Must return true when the message is handled, otherwise false (will generate dbus error message).
+*/
+
+
+/*!
+    \internal
+    \fn QString QDBusVirtualObject::introspect(const QString &path) const
+
+    This function needs to handle the introspection of the
+    virtual object. It must return xml of the form:
+
+    \code
+<interface name="com.trolltech.QtDBus.MyObject" >
+    <property access="readwrite" type="i" name="prop1" />
+</interface>
+    \endcode
+
+    If you pass the SubPath option, this introspection has to include all child nodes.
+    Otherwise QDBus handles the introspection of the child nodes.
+*/
+
+#endif // QT_NO_DBUS

@@ -492,17 +492,6 @@ void QCoreTextFontEngine::init()
         avgCharWidth = QFixed::fromReal(width * fontDef.pixelSize / emSize);
     } else
         avgCharWidth = QFontEngine::averageCharWidth();
-
-    ctMaxCharWidth = ctMinLeftBearing = ctMinRightBearing = 0;
-    QByteArray hheaTable = getSfntTable(MAKE_TAG('h', 'h', 'e', 'a'));
-    if (hheaTable.size() >= 16) {
-        quint16 width = qFromBigEndian<quint16>(reinterpret_cast<const uchar *>(hheaTable.constData() + 10));
-        ctMaxCharWidth = width * fontDef.pixelSize / emSize;
-        qint16 bearing = qFromBigEndian<qint16>(reinterpret_cast<const uchar *>(hheaTable.constData() + 12));
-        ctMinLeftBearing = bearing * fontDef.pixelSize / emSize;
-        bearing = qFromBigEndian<qint16>(reinterpret_cast<const uchar *>(hheaTable.constData() + 14));
-        ctMinRightBearing = bearing * fontDef.pixelSize / emSize;
-    }
 }
 
 bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
@@ -599,20 +588,17 @@ QFixed QCoreTextFontEngine::averageCharWidth() const
 
 qreal QCoreTextFontEngine::maxCharWidth() const
 {
-    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? qRound(ctMaxCharWidth) : ctMaxCharWidth;
+    return 0;
 }
 
 qreal QCoreTextFontEngine::minLeftBearing() const
 {
-    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? qRound(ctMinLeftBearing) : ctMinLeftBearing;
+    return 0;
 }
 
 qreal QCoreTextFontEngine::minRightBearing() const
 {
-    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? qRound(ctMinRightBearing) : ctMinLeftBearing;
+    return 0;
 }
 
 void QCoreTextFontEngine::draw(CGContextRef ctx, qreal x, qreal y, const QTextItemInt &ti, int paintDeviceHeight)
@@ -732,8 +718,9 @@ void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *position
 
 QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, int margin, bool aa)
 {
+    Q_UNUSED(margin);
     const glyph_metrics_t br = boundingBox(glyph);
-    QImage im(qRound(br.width) + margin * 2, qRound(br.height) + margin * 2, QImage::Format_RGB32);
+    QImage im(qRound(br.width) + 2, qRound(br.height) + 2, QImage::Format_RGB32);
     im.fill(0);
 
     CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
@@ -764,8 +751,8 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
 
     CGContextSetFont(ctx, cgFont);
 
-    qreal pos_x = -br.x.toReal() + subPixelPosition.toReal() + margin;
-    qreal pos_y = im.height() + br.y.toReal() - margin;
+    qreal pos_x = -br.x.truncate() + subPixelPosition.toReal();
+    qreal pos_y = im.height() + br.y.toReal();
     CGContextSetTextPosition(ctx, pos_x, pos_y);
 
     CGSize advance;
