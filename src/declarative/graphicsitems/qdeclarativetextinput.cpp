@@ -560,13 +560,11 @@ QRect QDeclarativeTextInput::cursorRectangle() const
     \qmlproperty int TextInput::selectionStart
 
     The cursor position before the first character in the current selection.
-    Setting this and selectionEnd allows you to specify a selection in the
-    text edit.
 
-    Note that if selectionStart == selectionEnd then there is no current
-    selection.
+    This property is read-only. To change the selection, use select(start,end),
+    selectAll(), or selectWord().
 
-    \sa selectionEnd, cursorPosition, selectedText, select()
+    \sa selectionEnd, cursorPosition, selectedText
 */
 int QDeclarativeTextInput::selectionStart() const
 {
@@ -578,13 +576,11 @@ int QDeclarativeTextInput::selectionStart() const
     \qmlproperty int TextInput::selectionEnd
 
     The cursor position after the last character in the current selection.
-    Setting this and selectionStart allows you to specify a selection in the
-    text edit.
 
-    Note that if selectionStart == selectionEnd then there is no current
-    selection.
+    This property is read-only. To change the selection, use select(start,end),
+    selectAll(), or selectWord().
 
-    \sa selectionStart, cursorPosition, selectedText, select()
+    \sa selectionStart, cursorPosition, selectedText
 */
 int QDeclarativeTextInput::selectionEnd() const
 {
