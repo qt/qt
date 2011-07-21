@@ -192,13 +192,19 @@ bool QTiffHandler::read(QImage *image)
         return false;
     }
 
-    // BitsPerSample defaults to 1 according to the TIFF spec.
-    uint16 bitPerSample;
-    if (!TIFFGetField(tiff, TIFFTAG_BITSPERSAMPLE, &bitPerSample))
-        bitPerSample = 1;
+    uint16 bitsPerSample, samplesPerPixel, bitsPerPixel;
+    if (!TIFFGetFieldDefaulted(tiff, TIFFTAG_BITSPERSAMPLE, &bitsPerSample)) {
+        TIFFClose(tiff);
+        return false;
+    }
+    if (!TIFFGetFieldDefaulted(tiff, TIFFTAG_SAMPLESPERPIXEL, &samplesPerPixel)) {
+        TIFFClose(tiff);
+        return false;
+    }
+    bitsPerPixel = bitsPerSample * samplesPerPixel;
 
     bool grayscale = photometric == PHOTOMETRIC_MINISBLACK || photometric == PHOTOMETRIC_MINISWHITE;
-    if (grayscale && bitPerSample == 1) {
+    if (grayscale && bitsPerPixel == 1) {
         if (image->size() != QSize(width, height) || image->format() != QImage::Format_Mono)
             *image = QImage(width, height, QImage::Format_Mono);
         QVector<QRgb> colortable(2);
@@ -220,7 +226,7 @@ bool QTiffHandler::read(QImage *image)
             }
         }
     } else {
-        if ((grayscale || photometric == PHOTOMETRIC_PALETTE) && bitPerSample == 8) {
+        if ((grayscale || photometric == PHOTOMETRIC_PALETTE) && bitsPerPixel == 8) {
             if (image->size() != QSize(width, height) || image->format() != QImage::Format_Indexed8)
                 *image = QImage(width, height, QImage::Format_Indexed8);
             if (!image->isNull()) {
@@ -233,14 +239,14 @@ bool QTiffHandler::read(QImage *image)
                     }
                 } else {
                     // create the color table
-                    uint16 *redTable = static_cast<uint16 *>(qMalloc(tableSize * sizeof(uint16)));
-                    uint16 *greenTable = static_cast<uint16 *>(qMalloc(tableSize * sizeof(uint16)));
-                    uint16 *blueTable = static_cast<uint16 *>(qMalloc(tableSize * sizeof(uint16)));
-                    if (!redTable || !greenTable || !blueTable) {
+                    uint16 *redTable = 0;
+                    uint16 *greenTable = 0;
+                    uint16 *blueTable = 0;
+                    if (!TIFFGetField(tiff, TIFFTAG_COLORMAP, &redTable, &greenTable, &blueTable)) {
                         TIFFClose(tiff);
                         return false;
                     }
-                    if (!TIFFGetField(tiff, TIFFTAG_COLORMAP, &redTable, &greenTable, &blueTable)) {
+                    if (!redTable || !greenTable || !blueTable) {
                         TIFFClose(tiff);
                         return false;
                     }
@@ -497,6 +503,9 @@ bool QTiffHandler::write(const QImage &image)
             uint16 *greenTable = static_cast<uint16 *>(qMalloc(256 * sizeof(uint16)));
             uint16 *blueTable = static_cast<uint16 *>(qMalloc(256 * sizeof(uint16)));
             if (!redTable || !greenTable || !blueTable) {
+                qFree(redTable);
+                qFree(greenTable);
+                qFree(blueTable);
                 TIFFClose(tiff);
                 return false;
             }
