@@ -136,6 +136,7 @@ QGLPixmapData::QGLPixmapData(PixelType type)
 
 QGLPixmapData::~QGLPixmapData()
 {
+#ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
     if (m_sgImage) {
         if (m_texture.id) {
             QGLSgImageTextureCleanup::cleanupForContext(m_ctx)->remove(m_texture.id);
@@ -146,6 +147,7 @@ QGLPixmapData::~QGLPixmapData()
         delete m_sgImage;
         m_sgImage = 0;
     }
+#endif
     delete m_engine;
 }
 
@@ -662,6 +664,7 @@ static inline bool knownGoodFormat(QImage::Format format)
     }
 }
 
+#ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
 static inline int symbianPixeFormatBitsPerPixel(TUidPixelFormat pixelFormat)
 {
     switch (pixelFormat) {
@@ -713,6 +716,7 @@ static inline int symbianPixeFormatBitsPerPixel(TUidPixelFormat pixelFormat)
             return 32;
     };
 }
+#endif
 
 void QGLPixmapData::fromNativeType(void* pixmap, NativeType type)
 {
