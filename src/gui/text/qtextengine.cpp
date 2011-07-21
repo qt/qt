@@ -323,7 +323,7 @@ static QChar::Direction skipBoundryNeutrals(QScriptAnalysis *analysis,
                                             const ushort *unicode, int length,
                                             int &sor, int &eor, QBidiControl &control)
 {
-    QChar::Direction dir;
+    QChar::Direction dir = control.basicDirection();
     int level = sor > 0 ? analysis[sor - 1].bidiLevel : control.level;
     while (sor < length) {
         dir = QChar::direction(unicode[sor]);
@@ -2808,7 +2808,7 @@ QFixed QTextEngine::alignLine(const QScriptLine &line)
         if (align & Qt::AlignRight)
             x = line.width - (line.textAdvance + leadingSpaceWidth(line));
         else if (align & Qt::AlignHCenter)
-            x = (line.width - (line.textAdvance + leadingSpaceWidth(line)))/2;
+            x = (line.width - line.textAdvance)/2 - leadingSpaceWidth(line);
     }
     return x;
 }
