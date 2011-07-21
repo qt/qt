@@ -274,6 +274,7 @@ class HtmlGenerator : public PageGenerator
     QString footer;
     QString address;
     bool pleaseGenerateMacRef;
+    bool noBreadCrumbs;
     QString project;
     QString projectDescription;
     QString projectUrl;
@@ -308,6 +309,7 @@ class HtmlGenerator : public PageGenerator
 #define HTMLGENERATOR_GENERATEMACREFS   "generatemacrefs" // ### document me
 #define HTMLGENERATOR_POSTHEADER        "postheader"
 #define HTMLGENERATOR_POSTPOSTHEADER    "postpostheader"
+#define HTMLGENERATOR_NOBREADCRUMBS     "nobreadcrumbs"
 
 QT_END_NAMESPACE
 

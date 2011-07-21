@@ -180,6 +180,9 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     pleaseGenerateMacRef = config.getBool(HtmlGenerator::format() +
                                           Config::dot +
                                           HTMLGENERATOR_GENERATEMACREFS);
+    noBreadCrumbs = config.getBool(HtmlGenerator::format() +
+                                   Config::dot +
+                                   HTMLGENERATOR_NOBREADCRUMBS);
 
     project = config.getString(CONFIG_PROJECT);
 
@@ -1516,8 +1519,10 @@ void HtmlGenerator::generateBreadCrumbs(const QString &title,
                                         const Node *node,
                                         CodeMarker *marker)
 {
+    if (noBreadCrumbs)
+        return;
+    
     Text breadcrumbs;
-
     if (node->type() == Node::Class) {
         const ClassNode *cn = static_cast<const ClassNode *>(node);
         QString name =  node->moduleName();
