@@ -770,7 +770,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         {
             writeStartTag(DT_codeblock);
             xmlWriter().writeAttribute("outputclass","cpp");
-            QString chars = trimmedTrailing(atom->string()); 
+            QString chars = trimmedTrailing(atom->string());
             writeText(chars, marker, relative);
             writeEndTag(); // </codeblock>
         }
@@ -3407,6 +3407,7 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
         "<@type>",         "<@type>",
         "<@headerfile>",   "<@headerfile>",
         "<@func>",         "<@func>",
+        "<@func ",         "<@func ",
         "<@param>",        "<@param>",
         "<@extra>",        "<@extra>",
         "</@link>",        "</@link>",
@@ -3419,7 +3420,7 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
     for (int i = 0, n = src.size(); i < n;) {
         if (src.at(i) == charLangle) {
             bool handled = false;
-            for (int k = 0; k != 12; ++k) {
+            for (int k = 0; k != 13; ++k) {
                 const QString & tag = spanTags[2 * k];
                 if (tag == QStringRef(&src, i, tag.length())) {
                     html += spanTags[2 * k + 1];
