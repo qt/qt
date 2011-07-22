@@ -837,18 +837,21 @@ int QString::grow(int size)
 
 /*!
     \typedef QString::const_reference
+    \since 4.8
 
     The QString::const_reference typedef provides an STL-style
     const reference for QString.
 */
 /*!
     \typedef QString::reference
+    \since 4.8
 
     The QString::const_reference typedef provides an STL-style
     reference for QString.
 */
 /*!
     \typedef QString::value_type
+    \since 4.8
 
     The QString::const_reference typedef provides an STL-style
     value type for QString.
