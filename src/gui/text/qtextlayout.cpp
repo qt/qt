@@ -1869,6 +1869,7 @@ void QTextLine::layout_helper(int maxGlyphs)
             lbh.currentPosition = qMax(line.from, current.position);
             end = current.position + eng->length(item);
             lbh.glyphs = eng->shapedGlyphs(&current);
+            lbh.previousGlyph = 0;
             QFontEngine *fontEngine = eng->fontEngine(current);
             if (lbh.fontEngine != fontEngine) {
                 lbh.fontEngine = fontEngine;
