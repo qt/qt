@@ -2862,15 +2862,9 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
     } else
 #endif
     {
-        QFontEngineGlyphCache::Type glyphType;
-        if (fontEngine->glyphFormat >= 0) {
-            glyphType = QFontEngineGlyphCache::Type(fontEngine->glyphFormat);
-        } else if (s->matrix.type() > QTransform::TxTranslate
-                   && d->glyphCacheType == QFontEngineGlyphCache::Raster_RGBMask) {
-            glyphType = QFontEngineGlyphCache::Raster_A8;
-        } else {
-            glyphType = d->glyphCacheType;
-        }
+        QFontEngineGlyphCache::Type glyphType = fontEngine->glyphFormat >= 0
+                ? QFontEngineGlyphCache::Type(fontEngine->glyphFormat)
+                : d->glyphCacheType;
 
         QImageTextureGlyphCache *cache =
             static_cast<QImageTextureGlyphCache *>(fontEngine->glyphCache(0, glyphType, s->matrix));
