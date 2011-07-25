@@ -670,7 +670,7 @@ static inline bool knownGoodFormat(QImage::Format format)
     }
 }
 
-#if defined(QT_SYMBIAN_SUPPORTS_SGIMAGE) && !defined(QT_NO_EGL)
+#ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
 static inline int symbianPixeFormatBitsPerPixel(TUidPixelFormat pixelFormat)
 {
     switch (pixelFormat) {
@@ -723,6 +723,7 @@ static inline int symbianPixeFormatBitsPerPixel(TUidPixelFormat pixelFormat)
     };
 }
 #endif
+
 void QGLPixmapData::fromNativeType(void* pixmap, NativeType type)
 {
     if (type == QPixmapData::SgImage && pixmap) {
