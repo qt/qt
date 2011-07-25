@@ -42,7 +42,7 @@
 
 #include <QtTest/QtTest>
 
-class tst_Foo: public QObject
+class tst_MyTestCase: public QObject
 {
     Q_OBJECT
 private slots:
@@ -58,7 +58,7 @@ private slots:
     void c() const;
 };
 
-void tst_Foo::initTestCase_data() const
+void tst_MyTestCase::initTestCase_data() const
 {
     QTest::addColumn<int>("f");
     QTest::addColumn<int>("g");
@@ -67,11 +67,11 @@ void tst_Foo::initTestCase_data() const
     QTest::newRow("global data tag 2") << 1 << 2;
 }
 
-void tst_Foo::initTestCase() const
+void tst_MyTestCase::initTestCase() const
 {
 }
 
-void tst_Foo::a_data() const
+void tst_MyTestCase::a_data() const
 {
     QTest::addColumn<int>("x");
     QTest::addColumn<int>("y");
@@ -80,15 +80,15 @@ void tst_Foo::a_data() const
     QTest::newRow("data tag a2") << 1 << 2;
 }
 
-void tst_Foo::a() const
+void tst_MyTestCase::a() const
 {
 }
 
-void tst_Foo::b() const
+void tst_MyTestCase::b() const
 {
 }
 
-void tst_Foo::c_data() const
+void tst_MyTestCase::c_data() const
 {
     QTest::addColumn<int>("x");
 
@@ -97,10 +97,10 @@ void tst_Foo::c_data() const
     QTest::newRow("data tag c3") << 1;
 }
 
-void tst_Foo::c() const
+void tst_MyTestCase::c() const
 {
 }
 
-QTEST_MAIN(tst_Foo)
+QTEST_MAIN(tst_MyTestCase)
 
 #include "tst_printdatatagswithglobaltags.moc"
