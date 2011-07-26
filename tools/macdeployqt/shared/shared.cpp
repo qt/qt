@@ -111,7 +111,7 @@ FrameworkInfo parseOtoolLibraryLine(const QString &line, bool useDebugLibs)
     // Don't deploy system libraries.
     if (trimmed.startsWith("/System/Library/") ||
         (trimmed.startsWith("/usr/lib/") && trimmed.contains("libQt") == false) // exception for libQtuitools and libQtlucene
-        || trimmed.startsWith("@executable_path"))
+        || trimmed.startsWith("@executable_path") || trimmed.startsWith("@loader_path") || trimmed.startsWith("@rpath"))
         return info;
 
     enum State {QtPath, FrameworkName, DylibName, Version, End};
@@ -238,7 +238,7 @@ QList<FrameworkInfo> getQtFrameworks(const QString &path, bool useDebugLibs)
     QStringList outputLines = output.split("\n");
     outputLines.removeFirst(); // remove line containing the binary path
     if (path.contains(".framework") || path.contains(".dylib"))
-        outputLines.removeFirst(); // frameworks and dylibs lists themselves as a dependency.
+        outputLines.removeFirst(); // frameworks and dylibs print install name of themselves first.
 
     return getQtFrameworks(outputLines, useDebugLibs);
 }
