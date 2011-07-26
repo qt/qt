@@ -294,5 +294,4 @@ void AVMediaObject::handlePlayerFinished()
     emit aboutToFinish();
     changeState(Phonon::StoppedState);
     emit finished();
-    NSLog(@"finished!");
 }
