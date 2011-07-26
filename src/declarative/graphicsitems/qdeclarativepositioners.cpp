@@ -584,7 +584,7 @@ QDeclarativeRow::QDeclarativeRow(QDeclarativeItem *parent)
 
 /*!
     \qmlproperty enumeration Row::layoutDirection
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     This property holds the layoutDirection of the row.
 
@@ -597,7 +597,12 @@ QDeclarativeRow::QDeclarativeRow(QDeclarativeItem *parent)
     the right anchor remains to the right of the row.
     \endlist
 
-    \sa Grid::layoutDirection, Flow::layoutDirection, {declarative/righttoleft/layoutdirection}{Layout directions example}
+    When using the attached property \l {LayoutMirroring::enabled} for locale layouts,
+    the visual layout direction of the row positioner will be mirrored. However, the
+    property \c layoutDirection will remain unchanged. You can use the property
+    \l {LayoutMirroring::enabled} to determine whether the direction has been mirrored.
+
+    \sa Grid::layoutDirection, Flow::layoutDirection, {declarative/righttoleft/layoutdirection}{Layout directions example}, {LayoutMirroring}{LayoutMirroring}
 */
 Qt::LayoutDirection QDeclarativeRow::layoutDirection() const
 {
@@ -616,20 +621,8 @@ void QDeclarativeRow::setLayoutDirection(Qt::LayoutDirection layoutDirection)
             d->removeItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
         prePositioning();
         emit layoutDirectionChanged();
-        emit effectiveLayoutDirectionChanged();
     }
 }
-
-/*!
-    \qmlproperty enumeration Row::effectiveLayoutDirection
-    This property holds the effective layout direction of the row positioner.
-
-    When using the attached property \l {LayoutMirroring::enabled}{LayoutMirroring::enabled} for locale layouts,
-    the visual layout direction of the row positioner will be mirrored. However, the
-    property \l {Row::layoutDirection}{layoutDirection} will remain unchanged.
-
-    \sa Row::layoutDirection, {LayoutMirroring}{LayoutMirroring}
-*/
 
 Qt::LayoutDirection QDeclarativeRow::effectiveLayoutDirection() const
 {
@@ -885,7 +878,7 @@ void QDeclarativeGrid::setFlow(Flow flow)
 
 /*!
     \qmlproperty enumeration Grid::layoutDirection
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     This property holds the layout direction of the layout.
 
@@ -900,7 +893,12 @@ void QDeclarativeGrid::setFlow(Flow flow)
     \l Grid::flow property.
     \endlist
 
-    \sa Flow::layoutDirection, Row::layoutDirection, {declarative/righttoleft/layoutdirection}{Layout directions example}
+    When using the attached property \l {LayoutMirroring::enabled} for locale layouts,
+    the visual layout direction of the grid positioner will be mirrored. However, the
+    property \c layoutDirection will remain unchanged. You can use the property
+    \l {LayoutMirroring::enabled} to determine whether the direction has been mirrored.
+
+    \sa Flow::layoutDirection, Row::layoutDirection, {declarative/righttoleft/layoutdirection}{Layout directions example}, {LayoutMirroring}{LayoutMirroring}
 */
 Qt::LayoutDirection QDeclarativeGrid::layoutDirection() const
 {
@@ -918,21 +916,9 @@ void QDeclarativeGrid::setLayoutDirection(Qt::LayoutDirection layoutDirection)
         else
             d->removeItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
         prePositioning();
-        emit layoutDirectionChanged();
-        emit effectiveLayoutDirectionChanged();
+        emit layoutDirectionChanged();;
     }
 }
-
-/*!
-    \qmlproperty enumeration Grid::effectiveLayoutDirection
-    This property holds the effective layout direction of the grid positioner.
-
-    When using the attached property \l {LayoutMirroring::enabled}{LayoutMirroring::enabled} for locale layouts,
-    the visual layout direction of the grid positioner will be mirrored. However, the
-    property \l {Grid::layoutDirection}{layoutDirection} will remain unchanged.
-
-    \sa Grid::layoutDirection, {LayoutMirroring}{LayoutMirroring}
-*/
 
 Qt::LayoutDirection QDeclarativeGrid::effectiveLayoutDirection() const
 {
@@ -1250,7 +1236,7 @@ void QDeclarativeFlow::setFlow(Flow flow)
 
 /*!
     \qmlproperty enumeration Flow::layoutDirection
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     This property holds the layout direction of the layout.
 
@@ -1265,7 +1251,12 @@ void QDeclarativeFlow::setFlow(Flow flow)
     \l Flow::flow property.
     \endlist
 
-    \sa Grid::layoutDirection, Row::layoutDirection, {declarative/righttoleft/layoutdirection}{Layout directions example}
+    When using the attached property \l {LayoutMirroring::enabled} for locale layouts,
+    the visual layout direction of the flow positioner will be mirrored. However, the
+    property \c layoutDirection will remain unchanged. You can use the property
+    \l {LayoutMirroring::enabled} to determine whether the direction has been mirrored.
+
+    \sa Grid::layoutDirection, Row::layoutDirection, {declarative/righttoleft/layoutdirection}{Layout directions example}, {LayoutMirroring}{LayoutMirroring}
 */
 
 Qt::LayoutDirection QDeclarativeFlow::layoutDirection() const
@@ -1281,20 +1272,8 @@ void QDeclarativeFlow::setLayoutDirection(Qt::LayoutDirection layoutDirection)
         d->layoutDirection = layoutDirection;
         prePositioning();
         emit layoutDirectionChanged();
-        emit effectiveLayoutDirectionChanged();
     }
 }
-
-/*!
-    \qmlproperty enumeration Flow::effectiveLayoutDirection
-    This property holds the effective layout direction of the flow positioner.
-
-    When using the attached property \l {LayoutMirroring::enabled}{LayoutMirroring::enabled} for locale layouts,
-    the visual layout direction of the grid positioner will be mirrored. However, the
-    property \l {Flow::layoutDirection}{layoutDirection} will remain unchanged.
-
-    \sa Flow::layoutDirection, {LayoutMirroring}{LayoutMirroring}
-*/
 
 Qt::LayoutDirection QDeclarativeFlow::effectiveLayoutDirection() const
 {

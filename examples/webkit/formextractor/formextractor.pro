@@ -6,7 +6,8 @@ SOURCES     +=  main.cpp \
                 mainwindow.cpp
 HEADERS     +=  formextractor.h \
                 mainwindow.h
-FORMS        += formextractor.ui
+FORMS        += formextractor.ui \
+                formextractor_mobiles.ui
 RESOURCES    += formextractor.qrc
 
 # install
@@ -18,4 +19,6 @@ INSTALLS += target sources
 symbian {
     TARGET.UID3 = 0xA000CF6D
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.CAPABILITY = NetworkServices
 }
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)

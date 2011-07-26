@@ -148,11 +148,18 @@ void tst_QUdpSocket::initTestCase_data()
 
 #ifndef QT_NO_BEARERMANAGEMENT
     netConfMan = new QNetworkConfigurationManager(this);
+    netConfMan->updateConfigurations();
+    connect(netConfMan, SIGNAL(updateCompleted()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
     networkConfiguration = netConfMan->defaultConfiguration();
-    networkSession = QSharedPointer<QNetworkSession>(new QNetworkSession(networkConfiguration));
-    if (!networkSession->isOpen()) {
-        networkSession->open();
-        QVERIFY(networkSession->waitForOpened(30000));
+    if (networkConfiguration.isValid()) {
+        networkSession = QSharedPointer<QNetworkSession>(new QNetworkSession(networkConfiguration));
+        if (!networkSession->isOpen()) {
+            networkSession->open();
+            QVERIFY(networkSession->waitForOpened(30000));
+        }
+    } else {
+        QVERIFY(!(netConfMan->capabilities() & QNetworkConfigurationManager::NetworkSessionRequired));
     }
 #endif
 }
@@ -701,7 +708,7 @@ void tst_QUdpSocket::bindMode()
     // Depending on the user's privileges, this or will succeed or
     // fail. Admins are allowed to reuse the address, but nobody else.
     if (!socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint), socket2.errorString().toLatin1().constData())
-        qWarning("Failed to bind with QUdpSocket::ReuseAddressHint, user isn't an adminstrator?");
+        qWarning("Failed to bind with QUdpSocket::ReuseAddressHint, user isn't an administrator?");
     socket.close();
     QVERIFY2(socket.bind(0, QUdpSocket::ShareAddress), socket.errorString().toLatin1().constData());
     QVERIFY(!socket2.bind(socket.localPort()));

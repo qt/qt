@@ -61,12 +61,12 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 /*!
     \class QGenericPluginFactory
     \ingroup qpa
+    \since 4.8
 
     \brief The QGenericPluginFactory class creates window-system
     related plugin drivers in Qt QPA.
 
-    Note that this class is only available in \l{Qt QPA}.
-
+    Note that this class is only available in Qt QPA.
 
     \sa QGenericPlugin
 */

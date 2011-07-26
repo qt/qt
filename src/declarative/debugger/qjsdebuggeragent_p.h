@@ -78,6 +78,17 @@ enum JSDebuggerState
     StoppedState
 };
 
+enum JSCoverageMessage {
+    CoverageLocation,
+    CoverageScriptLoad,
+    CoveragePosChange,
+    CoverageFuncEntry,
+    CoverageFuncExit,
+    CoverageComplete,
+
+    CoverageMaximumMessage
+};
+
 struct JSAgentWatchData
 {
     QByteArray exp;
@@ -94,6 +105,12 @@ inline QDataStream &operator<<(QDataStream &s, const JSAgentWatchData &data)
              << data.type << data.hasChildren << data.objectId;
 }
 
+inline QDataStream &operator>>(QDataStream &s, JSAgentWatchData &data)
+{
+    return s >> data.exp >> data.name >> data.value
+             >> data.type >> data.hasChildren >> data.objectId;
+}
+
 struct JSAgentStackData
 {
     QByteArray functionName;
@@ -104,6 +121,11 @@ struct JSAgentStackData
 inline QDataStream &operator<<(QDataStream &s, const JSAgentStackData &data)
 {
     return s << data.functionName << data.fileUrl << data.lineNumber;
+}
+
+inline QDataStream &operator>>(QDataStream &s, JSAgentStackData &data)
+{
+    return s >> data.functionName >> data.fileUrl >> data.lineNumber;
 }
 
 struct JSAgentBreakpointData
@@ -145,6 +167,8 @@ public:
     QJSDebuggerAgent(QDeclarativeEngine *engine, QObject *parent = 0);
     ~QJSDebuggerAgent();
 
+    bool isInitialized() const;
+
     void setBreakpoints(const JSAgentBreakpoints &);
     void setWatchExpressions(const QStringList &);
 
@@ -152,6 +176,7 @@ public:
     void stepInto();
     void stepOut();
     void continueExecution();
+    void setCoverageEnabled(bool enabled);
 
     JSAgentWatchData executeExpression(const QString &expr);
     QList<JSAgentWatchData> expandObjectById(quint64 objectId);

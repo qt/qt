@@ -90,6 +90,11 @@
 
 QT_BEGIN_NAMESPACE
 
+inline static bool isPowerOfTwo(uint x)
+{
+    return x && !(x & (x - 1));
+}
+
 #if defined(Q_WS_WIN)
 extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif
@@ -201,6 +206,15 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
 
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         ctx->d_func()->bindTexture(texImage, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
+#if !defined(QT_NO_DEBUG) && defined(QT_OPENGL_ES_2)
+        QGLFunctions funcs(QGLContext::currentContext());
+        bool npotSupported = funcs.hasOpenGLFeature(QGLFunctions::NPOTTextures);
+        bool isNpot = !isPowerOfTwo(texImage.size().width())
+            || !isPowerOfTwo(texImage.size().height());
+        if (isNpot && !npotSupported) {
+            qWarning("GL2 Paint Engine: This system does not support the REPEAT wrap mode for non-power-of-two textures.");
+        }
+#endif
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
     else if (style >= Qt::LinearGradientPattern && style <= Qt::ConicalGradientPattern) {
@@ -233,7 +247,13 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         QGLTexture *tex = ctx->d_func()->bindTexture(currentBrushPixmap, GL_TEXTURE_2D, GL_RGBA,
                                                      QGLContext::InternalBindOption |
                                                      QGLContext::CanFlipNativePixmapBindOption);
-        updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
+        GLenum wrapMode = GL_REPEAT;
+#ifdef QT_OPENGL_ES_2
+        // should check for GL_OES_texture_npot or GL_IMG_texture_npot extension
+        if (!isPowerOfTwo(currentBrushPixmap.width()) || !isPowerOfTwo(currentBrushPixmap.height()))
+            wrapMode = GL_CLAMP_TO_EDGE;
+#endif
+        updateTextureFilter(GL_TEXTURE_2D, wrapMode, q->state()->renderHints & QPainter::SmoothPixmapTransform);
         textureInvertedY = tex->options & QGLContext::InvertedYBindOption ? -1 : 1;
     }
     brushTextureDirty = false;
@@ -1362,14 +1382,11 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
-    QGLContext::BindOptions bindOptions = QGLContext::InternalBindOption|QGLContext::CanFlipNativePixmapBindOption;
-#ifdef QGL_USE_TEXTURE_POOL
-    bindOptions |= QGLContext::TemporarilyCachedBindOption;
-#endif
-
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     QGLTexture *texture =
-        ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, bindOptions);
+        ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA,
+                                    QGLContext::InternalBindOption
+                                    | QGLContext::CanFlipNativePixmapBindOption);
 
     GLfloat top = texture->options & QGLContext::InvertedYBindOption ? (pixmap.height() - src.top()) : src.top();
     GLfloat bottom = texture->options & QGLContext::InvertedYBindOption ? (pixmap.height() - src.bottom()) : src.bottom();
@@ -1381,12 +1398,6 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, texture->id);
     d->drawTexture(dest, srcRect, pixmap.size(), isOpaque, isBitmap);
-
-    if (texture->options&QGLContext::TemporarilyCachedBindOption) {
-        // pixmap was temporarily cached as a QImage texture by pooling system
-        // and should be destroyed immediately
-        QGLTextureCache::instance()->remove(ctx, texture->id);
-    }
 }
 
 void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const QRectF& src,
@@ -1411,23 +1422,12 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
 
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
 
-    QGLContext::BindOptions bindOptions = QGLContext::InternalBindOption;
-#ifdef QGL_USE_TEXTURE_POOL
-    bindOptions |= QGLContext::TemporarilyCachedBindOption;
-#endif
-
-    QGLTexture *texture = ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, bindOptions);
+    QGLTexture *texture = ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
     GLuint id = texture->id;
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, id);
     d->drawTexture(dest, src, image.size(), !image.hasAlphaChannel());
-
-    if (texture->options&QGLContext::TemporarilyCachedBindOption) {
-        // image was temporarily cached by texture pooling system
-        // and should be destroyed immediately
-        QGLTextureCache::instance()->remove(ctx, texture->id);
-    }
 }
 
 void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
@@ -1436,19 +1436,30 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
 
     ensureActive();
 
-    QFontEngineGlyphCache::Type glyphType = textItem->fontEngine()->glyphFormat >= 0
-                                            ? QFontEngineGlyphCache::Type(textItem->fontEngine()->glyphFormat)
-                                            : d->glyphCacheType;
-    if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
-        if (d->device->alphaRequested() || state()->matrix.type() > QTransform::TxTranslate
-            || (state()->composition_mode != QPainter::CompositionMode_Source
-            && state()->composition_mode != QPainter::CompositionMode_SourceOver))
-        {
-            glyphType = QFontEngineGlyphCache::Raster_A8;
-        }
-    }
+    QPainterState *s = state();
+    float det = s->matrix.determinant();
 
-    d->drawCachedGlyphs(glyphType, textItem);
+    // don't try to cache huge fonts or vastly transformed fonts
+    QFontEngine *fontEngine = textItem->fontEngine();
+    const qreal pixelSize = fontEngine->fontDef.pixelSize;
+    if (pixelSize * pixelSize * qAbs(det) < QT_MAX_CACHED_GLYPH_SIZE * QT_MAX_CACHED_GLYPH_SIZE ||
+        det < 0.25f || det > 4.f) {
+        QFontEngineGlyphCache::Type glyphType = fontEngine->glyphFormat >= 0
+                                                ? QFontEngineGlyphCache::Type(textItem->fontEngine()->glyphFormat)
+                                                : d->glyphCacheType;
+        if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
+            if (d->device->alphaRequested() || s->matrix.type() > QTransform::TxTranslate
+                || (s->composition_mode != QPainter::CompositionMode_Source
+                && s->composition_mode != QPainter::CompositionMode_SourceOver))
+            {
+                glyphType = QFontEngineGlyphCache::Raster_A8;
+            }
+        }
+
+        d->drawCachedGlyphs(glyphType, textItem);
+    } else {
+        QPaintEngineEx::drawStaticTextItem(textItem);
+    }
 }
 
 bool QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const QSize &size, const QRectF &src)
@@ -1681,6 +1692,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     }
 
     int numGlyphs = vertexCoordinates->vertexCount() / 4;
+    if (numGlyphs == 0)
+        return;
 
     if (elementIndices.size() < numGlyphs*6) {
         Q_ASSERT(elementIndices.size() % 6 == 0);
@@ -1771,6 +1784,15 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
             glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
             glBindTexture(GL_TEXTURE_2D, cache->texture());
+#if !defined(QT_NO_DEBUG) && defined(QT_OPENGL_ES_2)
+            QGLFunctions funcs(QGLContext::currentContext());
+            bool npotSupported = funcs.hasOpenGLFeature(QGLFunctions::NPOTTextures);
+            bool isNpot = !isPowerOfTwo(cache->width())
+                || !isPowerOfTwo(cache->height());
+            if (isNpot && !npotSupported) {
+                qWarning("GL2 Paint Engine: This system does not support the REPEAT wrap mode for non-power-of-two textures.");
+            }
+#endif
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)

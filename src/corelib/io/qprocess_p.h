@@ -288,11 +288,15 @@ public:
     QRingBuffer errorReadBuffer;
     QRingBuffer writeBuffer;
 
+#ifndef Q_OS_QNX
     Q_PIPE childStartedPipe[2];
+#endif
     Q_PIPE deathPipe[2];
     void destroyPipe(Q_PIPE pipe[2]);
 
+#ifndef Q_OS_QNX
     QSocketNotifier *startupSocketNotifier;
+#endif
     QSocketNotifier *deathNotifier;
 
     // the wonderful windows notifier
@@ -301,8 +305,10 @@ public:
     QWinEventNotifier *processFinishedNotifier;
 
     void startProcess();
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(Q_OS_QNX)
     void execChild(const char *workingDirectory, char **path, char **argv, char **envp);
+#elif defined(Q_OS_QNX)
+    pid_t spawnChild(const char *workingDirectory, char **argv, char **envp);
 #endif
     bool processStarted();
     void terminateProcess();

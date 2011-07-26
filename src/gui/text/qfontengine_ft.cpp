@@ -758,6 +758,8 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     }
 #endif
 
+    fontDef.styleName = QString::fromUtf8(face->style_name);
+
     unlockFace();
 
     fsType = freetype->fsType();
@@ -795,7 +797,7 @@ int QFontEngineFT::loadFlags(QGlyphSet *set, GlyphFormat format, int flags,
     if (set && set->outline_drawing)
         load_flags = FT_LOAD_NO_BITMAP;
 
-    if (default_hint_style == HintNone || (flags & HB_ShaperFlag_UseDesignMetrics))
+    if (default_hint_style == HintNone || (flags & HB_ShaperFlag_UseDesignMetrics) || set->outline_drawing)
         load_flags |= FT_LOAD_NO_HINTING;
     else
         load_flags |= load_target;
@@ -1751,7 +1753,6 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
     } else {
         glyphSet = &defaultGlyphSet;
     }
-    bool needsDelete = false;
     Glyph * g = glyphSet->getGlyph(glyph);
     if (!g || g->format != format) {
         face = lockFace();
@@ -1759,7 +1760,6 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
         FT_Matrix_Multiply(&glyphSet->transformationMatrix, &m);
         freetype->matrix = m;
         g = loadGlyph(glyphSet, glyph, subPixelPosition, format);
-        needsDelete = true;
     }
 
     if (g) {
@@ -1768,8 +1768,6 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
         overall.width = g->width;
         overall.height = g->height;
         overall.xoff = g->advance;
-        if (needsDelete)
-            delete g;
     } else {
         int left  = FLOOR(face->glyph->metrics.horiBearingX);
         int right = CEIL(face->glyph->metrics.horiBearingX + face->glyph->metrics.width);

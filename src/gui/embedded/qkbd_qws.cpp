@@ -225,7 +225,7 @@ bool QWSKbPrivate::loadKeymap(const QString &file)
     ds >> qmap_magic >> qmap_version >> qmap_keymap_size >> qmap_keycompose_size;
 
     if (ds.status() != QDataStream::Ok || qmap_magic != QWSKeyboard::FileMagic || qmap_version != 1 || qmap_keymap_size == 0) {
-        qWarning("'%s' is ot a valid.qmap keymap file.", qPrintable(file));
+        qWarning("'%s' is not a valid .qmap keymap file.", qPrintable(file));
         return false;
     }
 

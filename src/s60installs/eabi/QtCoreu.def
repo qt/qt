@@ -43,7 +43,7 @@ EXPORTS
 	_Z21qt_regexp_toCanonicalRK7QStringN7QRegExp13PatternSyntaxE @ 42 NONAME
 	_Z23qUnregisterResourceDataiPKhS0_S0_ @ 43 NONAME
 	_Z23qt_qFindChildren_helperPK7QObjectRK7QStringPK7QRegExpRK11QMetaObjectP5QListIPvE @ 44 NONAME
-	_Z23qt_resolveS60PluginFunci @ 45 NONAME
+	_Z23qt_resolveS60PluginFunci @ 45 NONAME ABSENT
 	_Z23qt_symbian_throwIfErrori @ 46 NONAME
 	_Z24qGlobalPostedEventsCountv @ 47 NONAME
 	_Z24qcoreStateMachineHandlerv @ 48 NONAME
@@ -1294,7 +1294,7 @@ EXPORTS
 	_ZN23QEventDispatcherSymbian24reactivateSocketNotifierEP15QSocketNotifier @ 1293 NONAME
 	_ZN23QEventDispatcherSymbian24sendDeferredSocketEventsEv @ 1294 NONAME
 	_ZN23QEventDispatcherSymbian24unregisterSocketNotifierEP15QSocketNotifier @ 1295 NONAME
-	_ZN23QEventDispatcherSymbian31reactivateDeferredActiveObjectsEv @ 1296 NONAME
+	_ZN23QEventDispatcherSymbian31reactivateDeferredActiveObjectsEv @ 1296 NONAME ABSENT
 	_ZN23QEventDispatcherSymbian5flushEv @ 1297 NONAME
 	_ZN23QEventDispatcherSymbian6wakeUpEv @ 1298 NONAME
 	_ZN23QEventDispatcherSymbian9interruptEv @ 1299 NONAME
@@ -3713,7 +3713,7 @@ EXPORTS
 	_ZrsR11QDataStreamR12QEasingCurve @ 3712 NONAME
 	_Z26qt_symbian_SetupThreadHeapiR24SStdEpocThreadCreateInfo @ 3713 NONAME
 	_ZN24QAbstractDeclarativeData17objectNameChangedE @ 3714 NONAME DATA 4
-	_ZN23QEventDispatcherSymbian36queueDeferredActiveObjectsCompletionEv @ 3715 NONAME
+	_ZN23QEventDispatcherSymbian36queueDeferredActiveObjectsCompletionEv @ 3715 NONAME ABSENT
 	_ZN23QCoreApplicationPrivate18symbianCommandLineEv @ 3716 NONAME
 	_ZNK11QMetaMethod8revisionEv @ 3717 NONAME
 	_ZNK13QMetaProperty8revisionEv @ 3718 NONAME
@@ -3850,11 +3850,11 @@ EXPORTS
 	_ZN11QTranslator18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 3849 NONAME
 	_ZN11QTranslator25staticMetaObjectExtraDataE @ 3850 NONAME DATA 8
 	_ZN11QTranslator4loadERK7QLocaleRK7QStringS5_S5_S5_ @ 3851 NONAME
-	_ZN13QActiveObject18maybeQueueForLaterEv @ 3852 NONAME
+	_ZN13QActiveObject18maybeQueueForLaterEv @ 3852 NONAME ABSENT
 	_ZN13QActiveObject21maybeDeferSocketEventEv @ 3853 NONAME
 	_ZN13QActiveObject21reactivateAndCompleteEv @ 3854 NONAME
-	_ZN13QActiveObject4waitE5QListIP7CActiveEi @ 3855 NONAME
-	_ZN13QActiveObject4waitEP7CActivei @ 3856 NONAME
+	_ZN13QActiveObject4waitE5QListIP7CActiveEi @ 3855 NONAME ABSENT
+	_ZN13QActiveObject4waitEP7CActivei @ 3856 NONAME ABSENT
 	_ZN13QActiveObjectC2EiP23QEventDispatcherSymbian @ 3857 NONAME
 	_ZN13QActiveObjectD0Ev @ 3858 NONAME
 	_ZN13QActiveObjectD1Ev @ 3859 NONAME
@@ -4154,4 +4154,12 @@ EXPORTS
 	_ZTVN12QtConcurrent16ThreadEngineBaseE @ 4153 NONAME
 	_ZTVN12QtConcurrent18UnhandledExceptionE @ 4154 NONAME
 	_ZTVN12QtConcurrent9ExceptionE @ 4155 NONAME
+	_Z15qIsEffectiveTLDRK7QString @ 4156 NONAME
+	_Z15qTopLevelDomainRK7QString @ 4157 NONAME
+	_ZN5QUuid11fromRfc4122ERK10QByteArray @ 4158 NONAME
+	_ZN5QUuidC1ERK10QByteArray @ 4159 NONAME
+	_ZN5QUuidC2ERK10QByteArray @ 4160 NONAME
+	_ZNK4QUrl14topLevelDomainEv @ 4161 NONAME
+	_ZNK5QUuid11toByteArrayEv @ 4162 NONAME
+	_ZNK5QUuid9toRfc4122Ev @ 4163 NONAME
 

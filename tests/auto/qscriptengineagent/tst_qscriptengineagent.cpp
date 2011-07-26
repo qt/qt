@@ -815,7 +815,7 @@ void tst_QScriptEngineAgent::functionEntryAndExit_native2()
 /** check behaiviour of native function throwing error*/
 void tst_QScriptEngineAgent::functionEntryAndExit_nativeThrowing()
 {
-    /* This function was changed from old backend. JSC return more Entrys / Exits, (exactly +1)
+    /* This function was changed from old backend. JSC return more Entries / Exits, (exactly +1)
        in exception creation time */
 
     QScriptEngine eng;
@@ -2356,7 +2356,7 @@ void tst_QScriptEngineAgent::hasUncaughtException()
   QVERIFY2(spy->isPass(), "At least one of a functionExit event should set hasUncaughtException flag.");
   spy->reset();
 
-  // Check catched exception.
+  // Check caught exception.
   eng.evaluate("function innerFoo() { throw new Error('ciao') }");
   eng.evaluate("function foo() {try { innerFoo() } catch (e) {} }");
   scriptValue = QScriptValue(eng.globalObject().property("foo")).call();

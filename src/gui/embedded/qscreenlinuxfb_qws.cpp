@@ -110,7 +110,9 @@ QLinuxFbScreenPrivate::QLinuxFbScreenPrivate()
 #endif
       ttyfd(-1), oldKdMode(KD_TEXT)
 {
+#ifndef QT_NO_QWS_SIGNALHANDLER
     QWSSignalHandler::instance()->addObject(this);
+#endif
 }
 
 QLinuxFbScreenPrivate::~QLinuxFbScreenPrivate()
@@ -263,6 +265,9 @@ QLinuxFbScreen::QLinuxFbScreen(int display_id)
 
 QLinuxFbScreen::~QLinuxFbScreen()
 {
+#ifdef QT_NO_QWS_SIGNALHANDLER
+    delete d_ptr;
+#endif
 }
 
 /*!

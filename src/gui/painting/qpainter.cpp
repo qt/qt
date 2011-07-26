@@ -152,14 +152,6 @@ static inline uint line_emulation(uint emulation)
                         | QPaintEngine_OpaqueBackground);
 }
 
-static bool qt_paintengine_supports_transformations(QPaintEngine::Type type)
-{
-    return type == QPaintEngine::OpenGL2
-            || type == QPaintEngine::OpenVG
-            || type == QPaintEngine::OpenGL
-            || type == QPaintEngine::CoreGraphics;
-}
-
 #ifndef QT_NO_DEBUG
 static bool qt_painter_thread_test(int devType, const char *what, bool extraCondition = false)
 {
@@ -2745,7 +2737,7 @@ QRectF QPainter::clipBoundingRect() const
     }
 
     // Accumulate the bounding box in device space. This is not 100%
-    // precise, but it fits within the guarantee and it is resonably
+    // precise, but it fits within the guarantee and it is reasonably
     // fast.
     QRectF bounds;
     for (int i=0; i<d->state->clipInfo.size(); ++i) {
@@ -2868,6 +2860,9 @@ void QPainter::setClipRect(const QRect &rect, Qt::ClipOperation op)
         return;
     }
 
+    if (d->state->clipOperation == Qt::NoClip && op == Qt::IntersectClip)
+        op = Qt::ReplaceClip;
+
     d->state->clipRegion = rect;
     d->state->clipOperation = op;
     if (op == Qt::NoClip || op == Qt::ReplaceClip)
@@ -2922,6 +2917,9 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
         d->state->clipOperation = op;
         return;
     }
+
+    if (d->state->clipOperation == Qt::NoClip && op == Qt::IntersectClip)
+        op = Qt::ReplaceClip;
 
     d->state->clipRegion = r;
     d->state->clipOperation = op;
@@ -3327,6 +3325,9 @@ void QPainter::setClipPath(const QPainterPath &path, Qt::ClipOperation op)
         d->state->clipOperation = op;
         return;
     }
+
+    if (d->state->clipOperation == Qt::NoClip && op == Qt::IntersectClip)
+        op = Qt::ReplaceClip;
 
     d->state->clipPath = path;
     d->state->clipOperation = op;
@@ -5809,35 +5810,37 @@ void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
     if (!font.isValid())
         return;
 
-    QVector<quint32> glyphIndexes = glyphRun.glyphIndexes();
-    QVector<QPointF> glyphPositions = glyphRun.positions();
+    QGlyphRunPrivate *glyphRun_d = QGlyphRunPrivate::get(glyphRun);
 
-    int count = qMin(glyphIndexes.size(), glyphPositions.size());
+    const quint32 *glyphIndexes = glyphRun_d->glyphIndexData;
+    const QPointF *glyphPositions = glyphRun_d->glyphPositionData;
+
+    int count = qMin(glyphRun_d->glyphIndexDataSize, glyphRun_d->glyphPositionDataSize);
     QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
 
-    bool paintEngineSupportsTransformations =
-            d->extended != 0
-            ? qt_paintengine_supports_transformations(d->extended->type())
-            : qt_paintengine_supports_transformations(d->engine->type());
-
-    // If the matrix is not affine, the paint engine will fall back to
-    // drawing the glyphs as paths, which in turn means we should not
-    // preprocess the glyph positions
-    if (!d->state->matrix.isAffine())
-        paintEngineSupportsTransformations = true;
+    QRawFontPrivate *fontD = QRawFontPrivate::get(font);
+    bool supportsTransformations;
+    if (d->extended != 0) {
+        supportsTransformations = d->extended->supportsTransformations(fontD->fontEngine->fontDef.pixelSize,
+                                                                       d->state->matrix);
+    } else {
+        supportsTransformations = d->engine->type() == QPaintEngine::CoreGraphics
+                                  || d->state->matrix.isAffine();
+    }
 
     for (int i=0; i<count; ++i) {
-        QPointF processedPosition = position + glyphPositions.at(i);
-        if (!paintEngineSupportsTransformations)
+        QPointF processedPosition = position + glyphPositions[i];
+        if (!supportsTransformations)
             processedPosition = d->state->transform().map(processedPosition);
         fixedPointPositions[i] = QFixedPoint::fromPointF(processedPosition);
     }
 
-    d->drawGlyphs(glyphIndexes.data(), fixedPointPositions.data(), count, font, glyphRun.overline(),
+    d->drawGlyphs(glyphIndexes, fixedPointPositions.data(), count, font, glyphRun.overline(),
                   glyphRun.underline(), glyphRun.strikeOut());
 }
 
-void QPainterPrivate::drawGlyphs(quint32 *glyphArray, QFixedPoint *positions, int glyphCount,
+void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, QFixedPoint *positions,
+                                 int glyphCount,
                                  const QRawFont &font, bool overline, bool underline,
                                  bool strikeOut)
 {
@@ -6004,11 +6007,12 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         return;
     }
 
-    bool paintEngineSupportsTransformations = qt_paintengine_supports_transformations(d->extended->type());
-    if (paintEngineSupportsTransformations && !staticText_d->untransformedCoordinates) {
+    bool supportsTransformations = d->extended->supportsTransformations(staticText_d->font.pixelSize(),
+                                                                        d->state->matrix);
+    if (supportsTransformations && !staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = true;
         staticText_d->needsRelayout = true;
-    } else if (!paintEngineSupportsTransformations && staticText_d->untransformedCoordinates) {
+    } else if (!supportsTransformations && staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = false;
         staticText_d->needsRelayout = true;
     }
@@ -6465,11 +6469,16 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
 
     QLineF line(pos.x(), pos.y(), pos.x() + qFloor(width), pos.y());
 
-    const qreal underlineOffset = fe->underlinePosition().toReal();
+    qreal underlineOffset = fe->underlinePosition().toReal();
+    qreal y = pos.y();
+    // compensate for different rounding rule in Core Graphics paint engine,
+    // ideally code like this should be moved to respective engines.
+    if (painter->paintEngine()->type() == QPaintEngine::CoreGraphics) {
+        y = qCeil(y);
+    }
     // deliberately ceil the offset to avoid the underline coming too close to
     // the text above it.
-    const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
-    const qreal underlinePos = pos.y() + qCeil(underlineOffset) - aliasedCoordinateDelta;
+    const qreal underlinePos = y + qCeil(underlineOffset);
 
     if (underlineStyle == QTextCharFormat::SpellCheckUnderline) {
         underlineStyle = QTextCharFormat::UnderlineStyle(QApplication::style()->styleHint(QStyle::SH_SpellCheckUnderlineStyle));
@@ -6643,6 +6652,10 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
         qreal x = p.x();
         qreal y = p.y();
 
+        bool rtl = ti.flags & QTextItem::RightToLeft;
+        if (rtl)
+            x += ti.width.toReal();
+
         int start = 0;
         int end, i;
         for (end = 0; end < ti.glyphs.numGlyphs; ++end) {
@@ -6659,14 +6672,19 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
                 ti2.width += ti.glyphs.effectiveAdvance(i);
             }
 
+            if (rtl)
+                x -= ti2.width.toReal();
+
             d->engine->drawTextItem(QPointF(x, y), ti2);
+
+            if (!rtl)
+                x += ti2.width.toReal();
 
             // reset the high byte for all glyphs and advance to the next sub-string
             const int hi = which << 24;
             for (i = start; i < end; ++i) {
                 glyphs.glyphs[i] = hi | glyphs.glyphs[i];
             }
-            x += ti2.width.toReal();
 
             // change engine
             start = end;
@@ -6680,6 +6698,9 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
             glyphs.glyphs[i] = glyphs.glyphs[i] & 0xffffff;
             ti2.width += ti.glyphs.effectiveAdvance(i);
         }
+
+        if (rtl)
+            x -= ti2.width.toReal();
 
         if (d->extended)
             d->extended->drawTextItem(QPointF(x, y), ti2);

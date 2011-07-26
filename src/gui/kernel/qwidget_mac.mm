@@ -3490,7 +3490,10 @@ void QWidgetPrivate::show_sys()
 
             QWidget *top = 0;
             if (QApplicationPrivate::tryModalHelper(q, &top)) {
-                [window makeKeyAndOrderFront:window];
+                if (q->testAttribute(Qt::WA_ShowWithoutActivating))
+                    [window orderFront:window];
+                else
+                    [window makeKeyAndOrderFront:window];
                 // If this window is app modal, we need to start spinning
                 // a modal session for it. Interrupting
                 // the event dispatcher will make this happend:
@@ -4551,6 +4554,11 @@ void QWidgetPrivate::setGeometry_sys_helper(int x, int y, int w, int h, bool isM
 
     QPoint oldp = q->pos();
     QSize  olds = q->size();
+    // Apply size restrictions, applicable for Windows & Widgets.
+    if (QWExtra *extra = extraData()) {
+        w = qBound(extra->minw, w, extra->maxw);
+        h = qBound(extra->minh, h, extra->maxh);
+    }
     const bool isResize = (olds != QSize(w, h));
 
     if (!realWindow && !isResize && QPoint(x, y) == oldp)
@@ -4560,13 +4568,6 @@ void QWidgetPrivate::setGeometry_sys_helper(int x, int y, int w, int h, bool isM
         data.window_state = data.window_state & ~Qt::WindowMaximized;
 
     const bool visible = q->isVisible();
-    // Apply size restrictions, applicable for Windows & Widgets.
-    if (QWExtra *extra = extraData()) {
-        w = qMin(w, extra->maxw);
-        h = qMin(h, extra->maxh);
-        w = qMax(w, extra->minw);
-        h = qMax(h, extra->minh);
-    }
     data.crect = QRect(x, y, w, h);
 
     if (realWindow) {

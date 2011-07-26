@@ -269,18 +269,8 @@ void QGraphicsLayout::activate()
         return;
     Q_ASSERT(!parentItem->isLayout());
 
-    if (QGraphicsLayout::instantInvalidatePropagation()) {
-        QGraphicsWidget *parentWidget = static_cast<QGraphicsWidget*>(parentItem);
-        if (!parentWidget->parentLayoutItem()) {
-            // we've reached the topmost widget, resize it
-            bool wasResized = parentWidget->testAttribute(Qt::WA_Resized);
-            parentWidget->resize(parentWidget->size());
-            parentWidget->setAttribute(Qt::WA_Resized, wasResized);
-        }
-
-        setGeometry(parentItem->contentsRect());    // relayout children
-    } else {
-        setGeometry(parentItem->contentsRect());    // relayout children
+    setGeometry(parentItem->contentsRect());    // relayout children
+    if (!QGraphicsLayout::instantInvalidatePropagation()) {
         parentLayoutItem()->updateGeometry();
     }
 }
@@ -476,9 +466,8 @@ void QGraphicsLayout::addChildLayoutItem(QGraphicsLayoutItem *layoutItem)
 static bool g_instantInvalidatePropagation = false;
 
 /*!
-    \internal
     \since 4.8
-    \see instantInvalidatePropagation
+    \sa instantInvalidatePropagation()
 
     Calling this function with \a enable set to true will enable a feature that
     makes propagation of invalidation up to ancestor layout items to be done in
@@ -489,7 +478,7 @@ static bool g_instantInvalidatePropagation = false;
     invalid (not activated). This is the recommended behaviour.
 
     If not set it will also propagate up the parentLayoutItem() hierarchy, but
-    it will stop at the \i first \i widget it encounters, and post a layout
+    it will stop at the \e{first widget} it encounters, and post a layout
     request to the widget. When the layout request is consumed, this might
     cause it to continue propagation up to the parentLayoutItem() of the
     widget. It will continue in this fashion until it has reached a widget with
@@ -506,9 +495,8 @@ void QGraphicsLayout::setInstantInvalidatePropagation(bool enable)
 }
 
 /*!
-    \internal
     \since 4.8
-    \see setInstantInvalidatePropagation
+    \sa setInstantInvalidatePropagation()
 
     returns true if the complete widget/layout hierarchy is rearranged in one go.
 */

@@ -218,7 +218,6 @@ extern OSWindowRef qt_mac_window_for(const QWidget*); //qwidget_mac.cpp
 extern QWidget *qt_mac_find_window(OSWindowRef); //qwidget_mac.cpp
 extern void qt_mac_set_cursor(const QCursor *); //qcursor_mac.cpp
 extern bool qt_mac_is_macsheet(const QWidget *); //qwidget_mac.cpp
-extern QString qt_mac_from_pascal_string(const Str255); //qglobal.cpp
 extern void qt_mac_command_set_enabled(MenuRef, UInt32, bool); //qmenu_mac.cpp
 extern bool qt_sendSpontaneousEvent(QObject *obj, QEvent *event); // qapplication.cpp
 extern void qt_mac_update_cursor(); // qcursor_mac.mm
@@ -715,6 +714,7 @@ void qt_event_request_showsheet(QWidget *w)
 {
     Q_ASSERT(qt_mac_is_macsheet(w));
 #ifdef QT_MAC_USE_COCOA
+    w->repaint();
     [NSApp beginSheet:qt_mac_window_for(w) modalForWindow:qt_mac_window_for(w->parentWidget())
         modalDelegate:nil didEndSelector:nil contextInfo:0];
 #else
@@ -2623,8 +2623,6 @@ OSStatus QApplicationPrivate::globalAppleEventProcessor(const AppleEvent *ae, Ap
     Return true if you want to stop the event from being processed.
     Return false for normal event dispatching. The default
     implementation returns false.
-
-    \sa macEventFilter(void *nsevent)
 */
 bool QApplication::macEventFilter(EventHandlerCallRef, EventRef)
 {

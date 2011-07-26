@@ -1040,7 +1040,6 @@ void QDeclarativeText::setStyleColor(const QColor &color)
 /*!
     \qmlproperty enumeration Text::horizontalAlignment
     \qmlproperty enumeration Text::verticalAlignment
-    \qmlproperty enumeration Text::effectiveHorizontalAlignment
 
     Sets the horizontal and vertical alignment of the text within the Text items
     width and height. By default, the text is vertically aligned to the top. Horizontal
@@ -1056,10 +1055,10 @@ void QDeclarativeText::setStyleColor(const QColor &color)
     need to either modify the Item::anchors, or set horizontalAlignment to Text.AlignHCenter and bind the width to 
     that of the parent.
 
-    When using the attached property LayoutMirroring::enabled to mirror application
+    When using the attached property \l {LayoutMirroring::enabled} to mirror application
     layouts, the horizontal alignment of text will also be mirrored. However, the property
     \c horizontalAlignment will remain unchanged. To query the effective horizontal alignment
-    of Text, use the read-only property \c effectiveHorizontalAlignment.
+    of Text, use the property \l {LayoutMirroring::enabled}.
 */
 QDeclarativeText::HAlignment QDeclarativeText::hAlign() const
 {
@@ -1109,10 +1108,7 @@ bool QDeclarativeTextPrivate::setHAlign(QDeclarativeText::HAlignment alignment, 
     if (hAlign != alignment || forceAlign) {
         QDeclarativeText::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
         hAlign = alignment;
-
         emit q->horizontalAlignmentChanged(hAlign);
-        if (oldEffectiveHAlign != q->effectiveHAlign())
-            emit q->effectiveHorizontalAlignmentChanged();
         return true;
     }
     return false;
@@ -1134,7 +1130,6 @@ void QDeclarativeTextPrivate::mirrorChange()
     if (q->isComponentComplete()) {
         if (!hAlignImplicit && (hAlign == QDeclarativeText::AlignRight || hAlign == QDeclarativeText::AlignLeft)) {
             updateLayout();
-            emit q->effectiveHorizontalAlignmentChanged();
         }
     }
 }
@@ -1195,7 +1190,7 @@ void QDeclarativeText::setWrapMode(WrapMode mode)
 
 /*!
     \qmlproperty int Text::lineCount
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Returns the number of lines visible in the text item.
 
@@ -1211,7 +1206,7 @@ int QDeclarativeText::lineCount() const
 
 /*!
     \qmlproperty bool Text::truncated
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Returns true if the text has been truncated due to \l maximumLineCount
     or \l elide.
@@ -1228,7 +1223,7 @@ bool QDeclarativeText::truncated() const
 
 /*!
     \qmlproperty int Text::maximumLineCount
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Set this property to limit the number of lines that the text item will show.
     If elide is set to Text.ElideRight, the text will be elided appropriately.
@@ -1462,7 +1457,7 @@ qreal QDeclarativeText::paintedHeight() const
 
 /*!
     \qmlproperty real Text::lineHeight
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Sets the line height for the text.
     The value can be in pixels or a multiplier depending on lineHeightMode.

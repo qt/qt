@@ -52,9 +52,13 @@
 
 #include <qmath.h>
 #include <math.h>
+#include "qplatformdefs.h"
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QML_FLICK_SNAPONETHRESHOLD
+#define QML_FLICK_SNAPONETHRESHOLD 30
+#endif
 
 //----------------------------------------------------------------------------
 
@@ -206,7 +210,6 @@ public:
     void mirrorChange() {
         Q_Q(QDeclarativeGridView);
         regenerate();
-        emit q->effectiveLayoutDirectionChanged();
     }
 
     qreal position() const {
@@ -345,9 +348,12 @@ public:
         Q_Q(const QDeclarativeGridView);
         qreal snapPos = 0;
         if (!visibleItems.isEmpty()) {
+            qreal highlightStart = isRightToLeftTopToBottom() && highlightRangeStartValid ? size()-highlightRangeEnd : highlightRangeStart;
+            pos += highlightStart;
             pos += rowSize()/2;
             snapPos = visibleItems.first()->rowPos() - visibleIndex / columns * rowSize();
             snapPos = pos - fmodf(pos - snapPos, qreal(rowSize()));
+            snapPos -= highlightStart;
             qreal maxExtent;
             qreal minExtent;
             if (isRightToLeftTopToBottom()) {
@@ -818,7 +824,9 @@ void QDeclarativeGridViewPrivate::createHighlight()
     if (highlight) {
         if (trackedItem == highlight)
             trackedItem = 0;
-        delete highlight->item;
+        if (highlight->item->scene())
+            highlight->item->scene()->removeItem(highlight->item);
+        highlight->item->deleteLater();
         delete highlight;
         highlight = 0;
         delete highlightXAnimator;
@@ -873,7 +881,7 @@ void QDeclarativeGridViewPrivate::updateHighlight()
 {
     if ((!currentItem && highlight) || (currentItem && !highlight))
         createHighlight();
-    if (currentItem && autoHighlight && highlight && !movingHorizontally && !movingVertically) {
+    if (currentItem && autoHighlight && highlight && !hData.moving && !vData.moving) {
         // auto-update highlight
         highlightXAnimator->to = currentItem->item->x();
         highlightYAnimator->to = currentItem->item->y();
@@ -1060,6 +1068,18 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
 
     if (snapMode != QDeclarativeGridView::NoSnap) {
         qreal tempPosition = isRightToLeftTopToBottom() ? -position()-size() : position();
+        if (snapMode == QDeclarativeGridView::SnapOneRow && moveReason == Mouse) {
+            // if we've been dragged < rowSize()/2 then bias towards the next row
+            qreal dist = data.move.value() - (data.pressPos - data.dragStartOffset);
+            qreal bias = 0;
+            if (data.velocity > 0 && dist > QML_FLICK_SNAPONETHRESHOLD && dist < rowSize()/2)
+                bias = rowSize()/2;
+            else if (data.velocity < 0 && dist < -QML_FLICK_SNAPONETHRESHOLD && dist > -rowSize()/2)
+                bias = -rowSize()/2;
+            if (isRightToLeftTopToBottom())
+                bias = -bias;
+            tempPosition -= bias;
+        }
         FxGridItem *topItem = snapItemAt(tempPosition+highlightStart);
         FxGridItem *bottomItem = snapItemAt(tempPosition+highlightEnd);
         qreal pos;
@@ -1081,24 +1101,12 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
             }
         } else if (bottomItem) {
             if (isRightToLeftTopToBottom())
-                pos = qMax(qMin(-bottomItem->rowPos() + highlightStart - size(), -maxExtent), -minExtent);
+                pos = qMax(qMin(-bottomItem->rowPos() + highlightEnd - size(), -maxExtent), -minExtent);
             else
-                pos = qMax(qMin(bottomItem->rowPos() - highlightStart, -maxExtent), -minExtent);
+                pos = qMax(qMin(bottomItem->rowPos() - highlightEnd, -maxExtent), -minExtent);
         } else {
             QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
             return;
-        }
-        if (currentItem && haveHighlightRange && highlightRange == QDeclarativeGridView::StrictlyEnforceRange) {
-            updateHighlight();
-            qreal currPos = currentItem->rowPos();
-            if (isRightToLeftTopToBottom())
-                pos = -pos-size(); // Transform Pos if required
-            if (pos < currPos + rowSize() - highlightEnd)
-                pos = currPos + rowSize() - highlightEnd;
-            if (pos > currPos - highlightStart)
-                pos = currPos - highlightStart;
-            if (isRightToLeftTopToBottom())
-                pos = -pos-size(); // Untransform
         }
         qreal dist = qAbs(data.move + pos);
         if (dist > 0) {
@@ -1156,9 +1164,14 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     if (velocity > 0) {
         if (data.move.value() < minExtent) {
             if (snapMode == QDeclarativeGridView::SnapOneRow) {
-                if (FxGridItem *item = firstVisibleItem()) {
-                    maxDistance = qAbs(item->rowPos() + dataValue);
-                }
+                // if we've been dragged < averageSize/2 then bias towards the next item
+                qreal dist = data.move.value() - (data.pressPos - data.dragStartOffset);
+                qreal bias = dist < rowSize()/2 ? rowSize()/2 : 0;
+                if (isRightToLeftTopToBottom())
+                    bias = -bias;
+                data.flickTarget = -snapPosAt(-dataValue - bias);
+                maxDistance = qAbs(data.flickTarget - data.move.value());
+                velocity = maxVelocity;
             } else {
                 maxDistance = qAbs(minExtent - data.move.value());
             }
@@ -1168,8 +1181,14 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     } else {
         if (data.move.value() > maxExtent) {
             if (snapMode == QDeclarativeGridView::SnapOneRow) {
-                qreal pos = snapPosAt(-dataValue) + (isRightToLeftTopToBottom() ? 0 : rowSize());
-                maxDistance = qAbs(pos + dataValue);
+                // if we've been dragged < averageSize/2 then bias towards the next item
+                qreal dist = data.move.value() - (data.pressPos - data.dragStartOffset);
+                qreal bias = -dist < rowSize()/2 ? rowSize()/2 : 0;
+                if (isRightToLeftTopToBottom())
+                    bias = -bias;
+                data.flickTarget = -snapPosAt(-dataValue + bias);
+                maxDistance = qAbs(data.flickTarget - data.move.value());
+                velocity = -maxVelocity;
             } else {
                 maxDistance = qAbs(maxExtent - data.move.value());
             }
@@ -1179,7 +1198,6 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     }
 
     bool overShoot = boundsBehavior == QDeclarativeFlickable::DragAndOvershootBounds;
-    qreal highlightStart = isRightToLeftTopToBottom() && highlightRangeStartValid ? size()-highlightRangeEnd : highlightRangeStart;
 
     if (maxDistance > 0 || overShoot) {
         // This mode requires the grid to stop exactly on a row boundary.
@@ -1199,9 +1217,20 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             dist = qMin(dist, maxDistance);
             if (v > 0)
                 dist = -dist;
-            qreal distTemp = isRightToLeftTopToBottom() ? -dist : dist;
-            data.flickTarget = -snapPosAt(-(dataValue - highlightStart) + distTemp) + highlightStart;
+            if (snapMode != QDeclarativeGridView::SnapOneRow) {
+                qreal distTemp = isRightToLeftTopToBottom() ? -dist : dist;
+                data.flickTarget = -snapPosAt(-dataValue + distTemp);
+            }
             data.flickTarget = isRightToLeftTopToBottom() ? -data.flickTarget+size() : data.flickTarget;
+            if (overShoot) {
+                if (data.flickTarget >= minExtent) {
+                    overshootDist = overShootDistance(vSize);
+                    data.flickTarget += overshootDist;
+                } else if (data.flickTarget <= maxExtent) {
+                    overshootDist = overShootDistance(vSize);
+                    data.flickTarget -= overshootDist;
+                }
+            }
             qreal adjDist = -data.flickTarget + data.move.value();
             if (qAbs(adjDist) > qAbs(dist)) {
                 // Prevent painfully slow flicking - adjust velocity to suit flickDeceleration
@@ -1222,14 +1251,14 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
         timeline.reset(data.move);
         timeline.accel(data.move, v, accel, maxDistance + overshootDist);
         timeline.callback(QDeclarativeTimeLineCallback(&data.move, fixupCallback, this));
-        if (!flickingHorizontally && q->xflick()) {
-            flickingHorizontally = true;
+        if (!hData.flicking && q->xflick()) {
+            hData.flicking = true;
             emit q->flickingChanged();
             emit q->flickingHorizontallyChanged();
             emit q->flickStarted();
         }
-        if (!flickingVertically && q->yflick()) {
-            flickingVertically = true;
+        if (!vData.flicking && q->yflick()) {
+            vData.flicking = true;
             emit q->flickingChanged();
             emit q->flickingVerticallyChanged();
             emit q->flickStarted();
@@ -1553,6 +1582,8 @@ void QDeclarativeGridView::setCurrentIndex(int index)
     if (index == d->currentIndex)
         return;
     if (isComponentComplete() && d->isValid()) {
+        if (d->layoutScheduled)
+            d->layout();
         d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
         d->updateCurrent(index);
     } else {
@@ -1799,12 +1830,15 @@ void QDeclarativeGridView::setHighlightRangeMode(HighlightRangeMode mode)
   \o Qt.LeftToRight (default) - Items will be laid out starting in the top, left corner. The flow is
   dependent on the \l GridView::flow property.
   \o Qt.RightToLeft - Items will be laid out starting in the top, right corner. The flow is dependent
-  on the \l GridView:flow property.
+  on the \l GridView::flow property.
   \endlist
 
-  \bold Note: If GridView::flow is set to GridView.LeftToRight, this is not to be confused if
-  GridView::layoutDirection is set to Qt.RightToLeft. The GridView.LeftToRight flow value simply
-  indicates that the flow is horizontal.
+  When using the attached property \l {LayoutMirroring::enabled} for locale layouts,
+  the layout direction of the grid view will be mirrored. However, the actual property
+  \c layoutDirection will remain unchanged. You can use the property
+  \l {LayoutMirroring::enabled} to determine whether the direction has been mirrored.
+
+  \sa {LayoutMirroring}{LayoutMirroring}
 */
 
 Qt::LayoutDirection QDeclarativeGridView::layoutDirection() const
@@ -1820,20 +1854,8 @@ void QDeclarativeGridView::setLayoutDirection(Qt::LayoutDirection layoutDirectio
         d->layoutDirection = layoutDirection;
         d->regenerate();
         emit layoutDirectionChanged();
-        emit effectiveLayoutDirectionChanged();
     }
 }
-
-/*!
-    \qmlproperty enumeration GridView::effectiveLayoutDirection
-    This property holds the effective layout direction of the grid.
-
-    When using the attached property \l {LayoutMirroring::enabled}{LayoutMirroring::enabled} for locale layouts,
-    the visual layout direction of the grid will be mirrored. However, the
-    property \l {GridView::layoutDirection}{layoutDirection} will remain unchanged.
-
-    \sa GridView::layoutDirection, {LayoutMirroring}{LayoutMirroring}
-*/
 
 Qt::LayoutDirection QDeclarativeGridView::effectiveLayoutDirection() const
 {
@@ -2106,7 +2128,8 @@ bool QDeclarativeGridView::event(QEvent *event)
 {
     Q_D(QDeclarativeGridView);
     if (event->type() == QEvent::User) {
-        d->layout();
+        if (d->layoutScheduled)
+            d->layout();
         return true;
     }
 
@@ -2120,7 +2143,7 @@ void QDeclarativeGridView::viewportMoved()
     if (!d->itemCount)
         return;
     d->lazyRelease = true;
-    if (d->flickingHorizontally || d->flickingVertically) {
+    if (d->hData.flicking || d->vData.flicking) {
         if (yflick()) {
             if (d->vData.velocity > 0)
                 d->bufferMode = QDeclarativeGridViewPrivate::BufferBefore;
@@ -2136,7 +2159,7 @@ void QDeclarativeGridView::viewportMoved()
         }
     }
     refill();
-    if (d->flickingHorizontally || d->flickingVertically || d->movingHorizontally || d->movingVertically)
+    if (d->hData.flicking || d->vData.flicking || d->hData.moving || d->vData.moving)
         d->moveReason = QDeclarativeGridViewPrivate::Mouse;
     if (d->moveReason != QDeclarativeGridViewPrivate::SetIndex) {
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange && d->highlight) {
@@ -2595,7 +2618,7 @@ void QDeclarativeGridView::positionViewAtIndex(int index, int mode)
 /*!
     \qmlmethod GridView::positionViewAtBeginning()
     \qmlmethod GridView::positionViewAtEnd()
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Positions the view at the beginning or end, taking into account any header or footer.
 
@@ -2882,7 +2905,6 @@ void QDeclarativeGridView::itemsRemoved(int modelIndex, int count)
     d->itemCount -= count;
     bool currentRemoved = d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count;
     bool removedVisible = false;
-
     // Remove the items from the visible list, skipping anything already marked for removal
     QList<FxGridItem*>::Iterator it = d->visibleItems.begin();
     while (it != d->visibleItems.end()) {
@@ -2915,6 +2937,11 @@ void QDeclarativeGridView::itemsRemoved(int modelIndex, int count)
             }
         }
     }
+
+    // If we removed items before visible items a layout may be
+    // required to ensure item 0 is in the first column.
+    if (!removedVisible && modelIndex < d->visibleIndex)
+        d->scheduleLayout();
 
     // fix current
     if (d->currentIndex >= modelIndex + count) {

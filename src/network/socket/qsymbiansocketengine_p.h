@@ -136,10 +136,7 @@ public:
 
     Q_INVOKABLE void startNotifications();
 
-public Q_SLOTS:
-    // TODO: Why do we do this? This is private Qt implementation stuff anyway, no need for it
-    // non-virtual override;
-    void connectionNotification();
+    void connectionComplete();
 
 private:
     Q_DECLARE_PRIVATE(QSymbianSocketEngine)
@@ -198,7 +195,6 @@ public:
 
     mutable QByteArray receivedDataBuffer;
     mutable bool hasReceivedBufferedDatagram;
-    // FIXME this is duplicated from qnativesocketengine_p.h
     enum ErrorString {
         NonBlockingInitFailedErrorString,
         BroadcastingInitFailedErrorString,

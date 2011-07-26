@@ -1,5 +1,6 @@
 QT       += webkit network
-FORMS     = window.ui
+FORMS     = window.ui \
+            window_mobiles.ui
 HEADERS   = window.h
 SOURCES   = main.cpp \
             window.cpp
@@ -12,5 +13,10 @@ INSTALLS += target sources
 
 symbian {
     TARGET.UID3 = 0xA000D7CB
+    TARGET.CAPABILITY = NetworkServices
+    TARGET.EPOCHEAPSIZE = 0x100000 0x2000000
+    TARGET.EPOCSTACKSIZE = 0x14000
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+

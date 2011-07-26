@@ -127,7 +127,7 @@ void QUIKitWindowSurface::flush(QWidget *widget, const QRegion &region, const QP
 
 QWindowSurface::WindowSurfaceFeatures QUIKitWindowSurface::features() const
 {
-    return PartialUpdates;
+    return 0;
 }
 
 QT_END_NAMESPACE
