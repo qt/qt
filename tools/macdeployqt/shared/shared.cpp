@@ -350,18 +350,18 @@ DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks,
     LogNormal();
     LogNormal() << "Deploying Qt frameworks found inside:" << binaryPath;
     QStringList copiedFrameworks;
-    DeploymentInfo deploymenInfo;
+    DeploymentInfo deploymentInfo;
 
     while (frameworks.isEmpty() == false) {
         const FrameworkInfo framework = frameworks.takeFirst();
         copiedFrameworks.append(framework.frameworkName);
 
         // Get the qt path from one of the Qt frameworks;
-        if (deploymenInfo.qtPath.isNull() && framework.frameworkName.contains("Qt") 
+        if (deploymentInfo.qtPath.isNull() && framework.frameworkName.contains("Qt")
             && framework.frameworkDirectory.contains("/lib"))
         {
-                deploymenInfo.qtPath = framework.frameworkDirectory;
-                deploymenInfo.qtPath.chop(5); // remove "/lib/"
+            deploymentInfo.qtPath = framework.frameworkDirectory;
+            deploymentInfo.qtPath.chop(5); // remove "/lib/"
         }
 
         if (framework.installName.startsWith("/@executable_path/")) {
@@ -394,8 +394,8 @@ DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks,
             }
         }
     }
-    deploymenInfo.deployedFrameworks = copiedFrameworks;
-    return deploymenInfo;
+    deploymentInfo.deployedFrameworks = copiedFrameworks;
+    return deploymentInfo;
 }
 
 DeploymentInfo deployQtFrameworks(const QString &appBundlePath, bool useDebugLibs)
