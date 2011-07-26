@@ -2879,6 +2879,12 @@ void QWidgetPrivate::deleteTLSysExtra()
 {
     // don't destroy input context here. it will be destroyed in
     // QWidget::destroy() destroyInputContext();
+#ifndef QT_NO_XSYNC
+    if (extra && extra->topextra && extra->topextra->syncUpdateCounter) {
+        XSyncDestroyCounter(X11->display, extra->topextra->syncUpdateCounter);
+        extra->topextra->syncUpdateCounter = 0;
+    }
+#endif
 }
 
 void QWidgetPrivate::registerDropSite(bool on)
