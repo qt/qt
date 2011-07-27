@@ -58,7 +58,40 @@
 #endif // SYMBIAN_ENABLE_SPLIT_HEADERS
 #endif // QT_NO_FREETYPE
 
+#ifndef SYMBIAN_VERSION_9_4
+#define SYMBIAN_LINKEDFONTS_SUPPORTED
+#endif // !SYMBIAN_VERSION_9_4
+
+#ifdef SYMBIAN_LINKEDFONTS_SUPPORTED
+#include <linkedfonts.h>
+#endif // SYMBIAN_LINKEDFONTS_SUPPORTED
+
 QT_BEGIN_NAMESPACE
+
+#ifdef SYMBIAN_LINKEDFONTS_SUPPORTED
+static bool isLinkedFontL(const TDesC &aTypefaceName)
+{
+    CLinkedTypefaceSpecification *linkedspec = CLinkedTypefaceSpecification::NewLC(aTypefaceName);
+    CFbsTypefaceStore *tfs = CFbsTypefaceStore::NewL(NULL);
+    CleanupStack::PushL(tfs);
+    linkedspec->FetchLinkedTypefaceSpecificationL(*tfs);
+    CleanupStack::PopAndDestroy(tfs);
+    CleanupStack::PopAndDestroy(linkedspec);
+    return true;
+}
+#endif // SYMBIAN_LINKEDFONTS_SUPPORTED
+
+bool qt_symbian_isLinkedFont(const TDesC &typefaceName) // Also used in qfont_s60.cpp
+{
+    bool isLinkedFont = false;
+#ifdef SYMBIAN_LINKEDFONTS_SUPPORTED
+    if (RFbsSession::Connect() == KErrNone) {
+        TRAP_IGNORE(isLinkedFont = isLinkedFontL(typefaceName));
+        RFbsSession::Disconnect();
+    }
+#endif // SYMBIAN_LINKEDFONTS_SUPPORTED
+    return isLinkedFont;
+}
 
 QStringList qt_symbian_fontFamiliesOnFontServer() // Also used in qfont_s60.cpp
 {
@@ -468,7 +501,10 @@ static bool registerScreenDeviceFont(int screenDeviceFontIndex,
                                      const QSymbianFontDatabaseExtrasImplementation *dbExtras)
 {
     TTypefaceSupport typefaceSupport;
-        S60->screenDevice()->TypefaceSupport(typefaceSupport, screenDeviceFontIndex);
+    S60->screenDevice()->TypefaceSupport(typefaceSupport, screenDeviceFontIndex);
+
+    if (qt_symbian_isLinkedFont(typefaceSupport.iTypeface.iName))
+        return false;
 
     QString familyName((const QChar*)typefaceSupport.iTypeface.iName.Ptr(), typefaceSupport.iTypeface.iName.Length());
     if (qt_symbian_fontNameHasAppFontMarker(familyName)) {
