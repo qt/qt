@@ -1154,7 +1154,7 @@ void QDeclarativeData::destroyed(QObject *object)
         context->destroy();
 
     while (guards) {
-        QDeclarativeGuard<QObject> *guard = guards;
+        QDeclarativeGuard<QObject> *guard = static_cast<QDeclarativeGuard<QObject> *>(guards);
         *guard = (QObject *)0;
         guard->objectDestroyed(object);
     }
