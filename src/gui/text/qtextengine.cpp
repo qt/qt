@@ -1577,19 +1577,13 @@ bool QTextEngine::isRightToLeft() const
 int QTextEngine::findItem(int strPos) const
 {
     itemize();
-    int left = 0;
-    int right = layoutData->items.size()-1;
-    while(left <= right) {
-        int middle = ((right-left)/2)+left;
-        if (strPos > layoutData->items[middle].position)
-            left = middle+1;
-        else if(strPos < layoutData->items[middle].position)
-            right = middle-1;
-        else {
-            return middle;
-        }
+
+    int item;
+    for (item = layoutData->items.size()-1; item > 0; --item) {
+        if (layoutData->items[item].position <= strPos)
+            break;
     }
-    return right;
+    return item;
 }
 
 QFixed QTextEngine::width(int from, int len) const
