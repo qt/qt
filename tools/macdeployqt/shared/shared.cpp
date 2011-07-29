@@ -72,7 +72,7 @@ QDebug operator<<(QDebug debug, const FrameworkInfo &info)
     debug << "Install name" << info.installName << "\n";
     debug << "Deployed install name" << info.deployedInstallName << "\n";
     debug << "Source file Path" << info.sourceFilePath << "\n";
-    debug << "Deployed Directory (relative to bundle)" << info.destinationDirectory << "\n";
+    debug << "Destination Directory (relative to bundle)" << info.destinationDirectory << "\n";
 
     return debug;
 }
@@ -295,32 +295,51 @@ void recursiveCopy(const QString &sourcePath, const QString &destinationPath)
 QString copyFramework(const FrameworkInfo &framework, const QString path)
 {
     QString from = framework.sourceFilePath;
-    QString toDir = path + "/" + framework.destinationDirectory;
-    QString to = toDir + "/" + framework.binaryName;
 
-    if (QFile::exists(from) == false) {
+    if (!QFile::exists(from)) {
         LogError() << "no file at" << from;
         return QString();
     }
 
+    QFileInfo fromDirInfo(framework.frameworkPath + QLatin1Char('/')
+                      + framework.binaryDirectory);
+    bool fromDirIsSymLink = fromDirInfo.isSymLink();
+    QString unresolvedToDir = path + "/" + framework.destinationDirectory;
+    QString resolvedToDir;
+    QString relativeLinkTarget; // will contain the link from Current to e.g. 4 in the Versions directory
+    if (fromDirIsSymLink) {
+        // handle the case where framework is referenced with Versions/Current
+        // which is a symbolic link, so copy to target and recreate as symbolic link
+        relativeLinkTarget = QDir(fromDirInfo.canonicalPath())
+                .relativeFilePath(QFileInfo(fromDirInfo.symLinkTarget()).canonicalFilePath());
+        resolvedToDir = QFileInfo(unresolvedToDir).path() + QLatin1Char('/') + relativeLinkTarget;
+    } else {
+        resolvedToDir = unresolvedToDir;
+    }
 
+    QString to = resolvedToDir + "/" + framework.binaryName;
+
+    // create the (non-symlink) dir
     QDir dir;
-    if (dir.mkpath(toDir) == false) {
+    if (!dir.mkpath(resolvedToDir)) {
         LogError() << "could not create destination directory" << to;
         return QString();
     }
 
+    if (!QFile::exists(to)) { // copy the binary and resources if that wasn't done before
+        copyFilePrintStatus(from, to);
 
-    if (QFile::exists(to)) {
-        return QString();
+        const QString resourcesSourcePath = framework.frameworkPath + "/Resources";
+        const QString resourcesDestianationPath = path + "/Contents/Frameworks/" + framework.frameworkName + "/Resources";
+        recursiveCopy(resourcesSourcePath, resourcesDestianationPath);
     }
 
-    copyFilePrintStatus(from, to);
-
-    const QString resourcesSourcePath = framework.frameworkPath + "/Resources";
-    const QString resourcesDestianationPath = path + "/Contents/Frameworks/" + framework.frameworkName + "/Resources";
-    recursiveCopy(resourcesSourcePath, resourcesDestianationPath);
-
+    // create the Versions/Current symlink dir if necessary
+    if (fromDirIsSymLink) {
+        QFile::link(relativeLinkTarget, unresolvedToDir);
+        LogNormal() << " linked:" << unresolvedToDir;
+        LogNormal() << " to" << resolvedToDir << "(" << relativeLinkTarget << ")";
+    }
     return to;
 }
 
