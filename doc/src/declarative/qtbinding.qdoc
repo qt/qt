@@ -514,7 +514,7 @@ and the signal are declared within the same class, or that the enumeration value
 in the \l {Qt}{Qt Namespace}.
 
 Likewise, invokable C++ methods parameters may be enumeration values providing that the enumeration and
-the method is declared within the same class, or that the enumeration value is one of thise declared in the
+the method are declared within the same class, or that the enumeration value is one of those declared in the
 \l {Qt}{Qt Namespace}.
 
 Additionally, if a C++ signal with an enum parameter should be connectable to a QML function using the
