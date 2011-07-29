@@ -1,6 +1,6 @@
 startOfSequence()
 atomicValue(xs:untypedAtomic)
-atomicValue(2002-10-10T23:02:11)
+atomicValue(2002-10-10T23:02:11Z)
 atomicValue(2002-10-10)
 atomicValue()
 atomicValue()

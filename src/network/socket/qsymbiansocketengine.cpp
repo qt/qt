@@ -264,6 +264,7 @@ QSymbianSocketEnginePrivate::QSymbianSocketEnginePrivate() :
 
 QSymbianSocketEnginePrivate::~QSymbianSocketEnginePrivate()
 {
+    selectTimer.Close();
 }
 
 
