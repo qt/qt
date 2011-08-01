@@ -61,8 +61,7 @@ HEADERS += $$PUB_HEADERS \
     qdbuspendingcall_p.h \
     qdbus_symbols_p.h \
     qdbusservicewatcher.h \
-    qdbusunixfiledescriptor.h \
-    qdbusvirtualobject.h
+    qdbusunixfiledescriptor.h
 SOURCES += qdbusconnection.cpp \
     qdbusconnectioninterface.cpp \
     qdbuserror.cpp \
