@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,45 +39,35 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
+#include "avaudiooutput.h"
 
-#if !defined(QT_NO_RAWFONT)
-
-#include "qrawfont_p.h"
-#include "qfontengine_coretext_p.h"
-
-QT_BEGIN_NAMESPACE
-
-void QRawFontPrivate::platformCleanUp()
+AVAudioOutput::AVAudioOutput(QObject *parent)
+    : QObject(parent),
+      m_volume(1.)
 {
 }
 
-extern int qt_defaultDpi();
-
-void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData,
-                                           qreal pixelSize,
-                                           QFont::HintingPreference hintingPreference)
+AVAudioOutput::~AVAudioOutput()
 {
-    // Mac OS X ignores it
-    Q_UNUSED(hintingPreference);
-
-    QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(NULL,
-            fontData.constData(), fontData.size(), NULL);
-
-    CGFontRef cgFont = CGFontCreateWithDataProvider(dataProvider);
-
-    if (cgFont == NULL) {
-        qWarning("QRawFont::platformLoadFromData: CGFontCreateWithDataProvider failed");
-    } else {
-        QFontDef def;
-        def.pixelSize = pixelSize;
-        def.pointSize = pixelSize * 72.0 / qt_defaultDpi();
-        fontEngine = new QCoreTextFontEngine(cgFont, def);
-        CFRelease(cgFont);
-        fontEngine->ref.ref();
-    }
 }
 
-QT_END_NAMESPACE
+qreal AVAudioOutput::volume() const
+{
+    return m_volume;
+}
 
-#endif // QT_NO_RAWFONT
+void AVAudioOutput::setVolume(qreal value)
+{
+    m_volume = value;
+    emit volumeChanged(value);
+}
+
+int AVAudioOutput::outputDevice() const
+{
+    return 0;
+}
+
+bool AVAudioOutput::setOutputDevice(int newDevice)
+{
+    return (newDevice == 0);
+}
