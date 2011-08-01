@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,45 +39,30 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
+#ifndef AV_AUDIOOUTPUT_H
+#define AV_AUDIOOUTPUT_H
 
-#if !defined(QT_NO_RAWFONT)
+#include <phonon/audiooutputinterface.h>
+#include <QtCore/QObject>
 
-#include "qrawfont_p.h"
-#include "qfontengine_coretext_p.h"
-
-QT_BEGIN_NAMESPACE
-
-void QRawFontPrivate::platformCleanUp()
+class AVAudioOutput : public QObject, public Phonon::AudioOutputInterface
 {
-}
+    Q_OBJECT
+    Q_INTERFACES(Phonon::AudioOutputInterface)
+public:
+    AVAudioOutput(QObject *parent);
+    ~AVAudioOutput();
 
-extern int qt_defaultDpi();
+    qreal volume() const;
+    void setVolume(qreal value);
+    int outputDevice() const;
+    bool setOutputDevice(int newDevice);
 
-void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData,
-                                           qreal pixelSize,
-                                           QFont::HintingPreference hintingPreference)
-{
-    // Mac OS X ignores it
-    Q_UNUSED(hintingPreference);
+Q_SIGNALS:
+    void audioDeviceFailed();
+    void volumeChanged(qreal);
+private:
+    qreal m_volume;
+};
 
-    QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(NULL,
-            fontData.constData(), fontData.size(), NULL);
-
-    CGFontRef cgFont = CGFontCreateWithDataProvider(dataProvider);
-
-    if (cgFont == NULL) {
-        qWarning("QRawFont::platformLoadFromData: CGFontCreateWithDataProvider failed");
-    } else {
-        QFontDef def;
-        def.pixelSize = pixelSize;
-        def.pointSize = pixelSize * 72.0 / qt_defaultDpi();
-        fontEngine = new QCoreTextFontEngine(cgFont, def);
-        CFRelease(cgFont);
-        fontEngine->ref.ref();
-    }
-}
-
-QT_END_NAMESPACE
-
-#endif // QT_NO_RAWFONT
+#endif // AV_AUDIOOUTPUT_H

@@ -93,10 +93,17 @@ void QVGWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoin
     d_ptr->endPaint(parent, region);
 }
 
+#if !defined(Q_WS_QPA)
 void QVGWindowSurface::setGeometry(const QRect &rect)
 {
     QWindowSurface::setGeometry(rect);
 }
+#else
+void QVGWindowSurface::resize(const QSize &size)
+{
+            QWindowSurface::resize(size);
+}
+#endif //!Q_WS_QPA
 
 bool QVGWindowSurface::scroll(const QRegion &area, int dx, int dy)
 {

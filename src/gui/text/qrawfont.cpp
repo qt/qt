@@ -139,7 +139,7 @@ QRawFont::QRawFont()
    \note The referenced file must contain a TrueType or OpenType font.
 */
 QRawFont::QRawFont(const QString &fileName,
-                   int pixelSize,
+                   qreal pixelSize,
                    QFont::HintingPreference hintingPreference)
     : d(new QRawFontPrivate)
 {
@@ -154,7 +154,7 @@ QRawFont::QRawFont(const QString &fileName,
    \note The data must contain a TrueType or OpenType font.
 */
 QRawFont::QRawFont(const QByteArray &fontData,
-                   int pixelSize,
+                   qreal pixelSize,
                    QFont::HintingPreference hintingPreference)
     : d(new QRawFontPrivate)
 {
@@ -204,7 +204,7 @@ bool QRawFont::isValid() const
    \sa loadFromData()
 */
 void QRawFont::loadFromFile(const QString &fileName,
-                            int pixelSize,
+                            qreal pixelSize,
                             QFont::HintingPreference hintingPreference)
 {
     QFile file(fileName);
@@ -222,7 +222,7 @@ void QRawFont::loadFromFile(const QString &fileName,
    \sa loadFromFile()
 */
 void QRawFont::loadFromData(const QByteArray &fontData,
-                            int pixelSize,
+                            qreal pixelSize,
                             QFont::HintingPreference hintingPreference)
 {
     detach();
@@ -624,7 +624,7 @@ QList<QFontDatabase::WritingSystem> QRawFont::supportedWritingSystems() const
 
     \sa supportedWritingSystems()
 */
-bool QRawFont::supportsCharacter(const QChar &character) const
+bool QRawFont::supportsCharacter(QChar character) const
 {
     if (!isValid())
         return false;
@@ -633,6 +633,7 @@ bool QRawFont::supportsCharacter(const QChar &character) const
 }
 
 /*!
+    \overload
    Returns true if the font has a glyph that corresponds to the UCS-4 encoded character \a ucs4.
 
    \sa supportedWritingSystems()
@@ -642,8 +643,18 @@ bool QRawFont::supportsCharacter(quint32 ucs4) const
     if (!isValid())
         return false;
 
-    QString str = QString::fromUcs4(&ucs4, 1);
-    return d->fontEngine->canRender(str.constData(), str.size());
+    QChar str[2];
+    int len;
+    if (!QChar::requiresSurrogates(ucs4)) {
+        str[0] = QChar(ucs4);
+        len = 1;
+    } else {
+        str[0] = QChar(QChar::highSurrogate(ucs4));
+        str[1] = QChar(QChar::lowSurrogate(ucs4));
+        len = 2;
+    }
+
+    return d->fontEngine->canRender(str, len);
 }
 
 // qfontdatabase.cpp
