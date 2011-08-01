@@ -13,5 +13,3 @@ symbian: {
     DEPLOYMENT += dummyDeploy
     LIBS += -lefsrv
 }
-
-CONFIG+=insignificant_test # QTQAINFRA-428
