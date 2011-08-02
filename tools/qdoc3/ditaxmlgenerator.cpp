@@ -76,7 +76,7 @@ QString DitaXmlGenerator::sinceTitles[] =
         "    New Variables",
         "    New QML Elements",
         "    New Qml Properties",
-        "    New Qml Signals",
+        "    New Qml Signal Handlers",
         "    New Qml Methods",
         ""
     };

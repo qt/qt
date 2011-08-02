@@ -80,7 +80,7 @@ QString HtmlGenerator::sinceTitles[] =
         "    New Variables",
         "    New QML Elements",
         "    New QML Properties",
-        "    New QML Signals",
+        "    New QML Signal Handlers",
         "    New QML Methods",
         ""
     };
