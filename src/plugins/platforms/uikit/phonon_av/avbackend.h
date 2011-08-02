@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,45 +39,35 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
+#ifndef AV_BACKEND_H
+#define AV_BACKEND_H
 
-#if !defined(QT_NO_RAWFONT)
+#include <phonon/backendinterface.h>
+#include <phonon/phononnamespace.h>
 
-#include "qrawfont_p.h"
-#include "qfontengine_coretext_p.h"
+#include <QtCore/QList>
 
-QT_BEGIN_NAMESPACE
+class AVAudioOutput;
+class AVMediaObject;
 
-void QRawFontPrivate::platformCleanUp()
+class AVBackend : public QObject, public Phonon::BackendInterface
 {
-}
+    Q_OBJECT
+    Q_INTERFACES(Phonon::BackendInterface)
+public:
+    AVBackend(QObject *parent = 0);
+    ~AVBackend();
 
-extern int qt_defaultDpi();
+    QObject *createObject(Phonon::BackendInterface::Class, QObject *parent, const QList<QVariant> &args);
+    QList<int> objectDescriptionIndexes(Phonon::ObjectDescriptionType type) const;
+    QHash<QByteArray, QVariant> objectDescriptionProperties(Phonon::ObjectDescriptionType type, int index) const;
 
-void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData,
-                                           qreal pixelSize,
-                                           QFont::HintingPreference hintingPreference)
-{
-    // Mac OS X ignores it
-    Q_UNUSED(hintingPreference);
+    bool startConnectionChange(QSet<QObject *> connection);
+    bool connectNodes(QObject *node1, QObject *node2);
+    bool disconnectNodes(QObject *node1, QObject *node2);
+    bool endConnectionChange(QSet<QObject *> connection);
 
-    QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(NULL,
-            fontData.constData(), fontData.size(), NULL);
+    QStringList availableMimeTypes() const;
+};
 
-    CGFontRef cgFont = CGFontCreateWithDataProvider(dataProvider);
-
-    if (cgFont == NULL) {
-        qWarning("QRawFont::platformLoadFromData: CGFontCreateWithDataProvider failed");
-    } else {
-        QFontDef def;
-        def.pixelSize = pixelSize;
-        def.pointSize = pixelSize * 72.0 / qt_defaultDpi();
-        fontEngine = new QCoreTextFontEngine(cgFont, def);
-        CFRelease(cgFont);
-        fontEngine->ref.ref();
-    }
-}
-
-QT_END_NAMESPACE
-
-#endif // QT_NO_RAWFONT
+#endif // AV_BACKEND_H
