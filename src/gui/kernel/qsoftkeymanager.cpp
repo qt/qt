@@ -54,7 +54,7 @@
 #ifndef QT_NO_SOFTKEYMANAGER
 QT_BEGIN_NAMESPACE
 
-QSoftKeyManager *QSoftKeyManagerPrivate::self = 0;
+QScopedPointer<QSoftKeyManager> QSoftKeyManagerPrivate::self(0);
 
 QString QSoftKeyManager::standardSoftKeyText(StandardSoftKey standardKey)
 {
@@ -85,9 +85,9 @@ QString QSoftKeyManager::standardSoftKeyText(StandardSoftKey standardKey)
 QSoftKeyManager *QSoftKeyManager::instance()
 {
     if (!QSoftKeyManagerPrivate::self)
-        QSoftKeyManagerPrivate::self = new QSoftKeyManager;
+        QSoftKeyManagerPrivate::self.reset(new QSoftKeyManager);
 
-    return QSoftKeyManagerPrivate::self;
+    return QSoftKeyManagerPrivate::self.data();
 }
 
 QSoftKeyManager::QSoftKeyManager() :
