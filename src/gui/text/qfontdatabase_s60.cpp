@@ -62,33 +62,14 @@
 #define SYMBIAN_LINKEDFONTS_SUPPORTED
 #endif // !SYMBIAN_VERSION_9_4
 
-#ifdef SYMBIAN_LINKEDFONTS_SUPPORTED
-#include <linkedfonts.h>
-#endif // SYMBIAN_LINKEDFONTS_SUPPORTED
-
 QT_BEGIN_NAMESPACE
-
-#ifdef SYMBIAN_LINKEDFONTS_SUPPORTED
-static bool isLinkedFontL(const TDesC &aTypefaceName)
-{
-    CLinkedTypefaceSpecification *linkedspec = CLinkedTypefaceSpecification::NewLC(aTypefaceName);
-    CFbsTypefaceStore *tfs = CFbsTypefaceStore::NewL(NULL);
-    CleanupStack::PushL(tfs);
-    linkedspec->FetchLinkedTypefaceSpecificationL(*tfs);
-    CleanupStack::PopAndDestroy(tfs);
-    CleanupStack::PopAndDestroy(linkedspec);
-    return true;
-}
-#endif // SYMBIAN_LINKEDFONTS_SUPPORTED
 
 bool qt_symbian_isLinkedFont(const TDesC &typefaceName) // Also used in qfont_s60.cpp
 {
     bool isLinkedFont = false;
 #ifdef SYMBIAN_LINKEDFONTS_SUPPORTED
-    if (RFbsSession::Connect() == KErrNone) {
-        TRAP_IGNORE(isLinkedFont = isLinkedFontL(typefaceName));
-        RFbsSession::Disconnect();
-    }
+    const QString name((const QChar*)typefaceName.Ptr(), typefaceName.Length());
+    isLinkedFont = name.endsWith(QLatin1String("LF")) && name == name.toUpper();
 #endif // SYMBIAN_LINKEDFONTS_SUPPORTED
     return isLinkedFont;
 }
