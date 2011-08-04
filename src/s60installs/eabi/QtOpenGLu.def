@@ -724,9 +724,9 @@ EXPORTS
 	_ZN13QGLPixmapData24releaseNativeImageHandleEv @ 723 NONAME
 	_ZN13QGLPixmapData25initFromNativeImageHandleEPvRK7QString @ 724 NONAME
 	_ZN13QGLPixmapData35createFromNativeImageHandleProviderEv @ 725 NONAME
-	_Z28qt_resolve_buffer_extensionsP10QGLContext @ 726 NONAME
-	_ZN12QGLFunctions21initializeGLFunctionsEPK10QGLContext @ 727 NONAME
-	_ZN12QGLFunctionsC1EPK10QGLContext @ 728 NONAME
+	_ZN17QGLGraphicsSystem17platformExtensionEv @ 726 NONAME
+	_ZN17QGLGraphicsSystem25releaseCachedGpuResourcesEv @ 727 NONAME
+	_ZThn4_N17QGLGraphicsSystem25releaseCachedGpuResourcesEv @ 728 NONAME
 	_ZN12QGLFunctionsC1Ev @ 729 NONAME
 	_ZN12QGLFunctionsC2EPK10QGLContext @ 730 NONAME
 	_ZN12QGLFunctionsC2Ev @ 731 NONAME
@@ -780,7 +780,7 @@ EXPORTS
 	_ZN9QGLShader25staticMetaObjectExtraDataE @ 779 NONAME DATA 8
 	_ZN9QGLWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 780 NONAME
 	_ZN9QGLWidget25staticMetaObjectExtraDataE @ 781 NONAME DATA 8
-	_ZN17QGLGraphicsSystem17platformExtensionEv @ 782 NONAME
-	_ZN17QGLGraphicsSystem25releaseCachedGpuResourcesEv @ 783 NONAME
-	_ZThn4_N17QGLGraphicsSystem25releaseCachedGpuResourcesEv @ 784 NONAME
+	_Z28qt_resolve_buffer_extensionsP10QGLContext @ 782 NONAME
+	_ZN12QGLFunctions21initializeGLFunctionsEPK10QGLContext @ 783 NONAME
+	_ZN12QGLFunctionsC1EPK10QGLContext @ 784 NONAME
 

@@ -49,6 +49,7 @@
 #include <QtCore/QTextStream>
 #include <QtCore/QDebug>
 #include <QtCore/QStringList>
+#include <QtCore/QVariant>
 
 #include <ctype.h>
 
@@ -59,7 +60,7 @@
 #define JDEBUG(s)
 #endif
 
-namespace tcftrk {
+namespace Coda {
 
 static void skipSpaces(const char *&from, const char *to)
 {
@@ -100,6 +101,7 @@ QByteArray JsonValue::parseNumber(const char *&from, const char *to)
 QByteArray JsonValue::parseCString(const char *&from, const char *to)
 {
     QByteArray result;
+    const char * const fromSaved = from;
     JDEBUG("parseCString: " << QByteArray(from, to - from));
     if (*from != '"') {
         qDebug() << "JSON Parse Error, double quote expected";
@@ -117,7 +119,8 @@ QByteArray JsonValue::parseCString(const char *&from, const char *to)
         if (*ptr == '\\') {
             ++ptr;
             if (ptr == to) {
-                qDebug() << "JSON Parse Error, unterminated backslash escape";
+                qWarning("JSON Parse Error, unterminated backslash escape in '%s'",
+                         QByteArray(fromSaved, to - fromSaved).constData());
                 from = ptr; // So we don't hang
                 return QByteArray();
             }
@@ -142,8 +145,24 @@ QByteArray JsonValue::parseCString(const char *&from, const char *to)
                 case 'v': *dst++ = '\v'; break;
                 case '"': *dst++ = '"'; break;
                 case '\\': *dst++ = '\\'; break;
-                default:
-                    {
+                case 'u':  { // 4 digit hex escape as in '\u000a'
+                    if (end - src < 4) {
+                        qWarning("JSON Parse Error, too few hex digits in \\u-escape in '%s' obtained from '%s'",
+                                 result.constData(), QByteArray(fromSaved, to - fromSaved).constData());
+                        return QByteArray();
+                    }
+                    bool ok;
+                    const uchar prod = QByteArray(src, 4).toUInt(&ok, 16);
+                    if (!ok) {
+                        qWarning("JSON Parse Error, invalid hex digits in \\u-escape in '%s' obtained from '%s'",
+                                  result.constData(), QByteArray(fromSaved, to - fromSaved).constData());
+                         return QByteArray();
+                    }
+                    *dst++ = prod;
+                    src += 4;
+            }
+                    break;
+                default: { // Up to 3 decimal digits: Not sure if this is supported in JSON?
                         int chars = 0;
                         uchar prod = 0;
                         forever {
@@ -157,7 +176,8 @@ QByteArray JsonValue::parseCString(const char *&from, const char *to)
                             c = *src++;
                         }
                         if (!chars) {
-                            qDebug() << "JSON Parse Error, unrecognized backslash escape";
+                            qWarning("JSON Parse Error, unrecognized backslash escape in string '%s' obtained from '%s'",
+                                     result.constData(), QByteArray(fromSaved, to - fromSaved).constData());
                             return QByteArray();
                         }
                         *dst++ = prod;
@@ -360,7 +380,7 @@ QByteArray JsonValue::toString(bool multiline, int indent) const
             break;
         case String:
             if (!m_name.isEmpty())
-                result += m_name + "=";
+                result += m_name + '=';
             result += '"' + escapeCString(m_data) + '"';
             break;
         case Number:
@@ -380,29 +400,68 @@ QByteArray JsonValue::toString(bool multiline, int indent) const
             if (multiline) {
                 result += "{\n";
                 dumpChildren(&result, multiline, indent + 1);
-                result += '\n' + ind(indent) + "}";
+                result += '\n' + ind(indent) + '}';
             } else {
-                result += "{";
+                result += '{';
                 dumpChildren(&result, multiline, indent + 1);
-                result += "}";
+                result += '}';
             }
             break;
         case Array:
             if (!m_name.isEmpty())
-                result += m_name + "=";
+                result += m_name + '=';
             if (multiline) {
                 result += "[\n";
                 dumpChildren(&result, multiline, indent + 1);
-                result += '\n' + ind(indent) + "]";
+                result += '\n' + ind(indent) + ']';
             } else {
-                result += "[";
+                result += '[';
                 dumpChildren(&result, multiline, indent + 1);
-                result += "]";
+                result += ']';
             }
             break;
     }
     return result;
 }
+
+
+QVariant JsonValue::toVariant() const
+{
+    switch (m_type) {
+    case String:
+        return QString(m_data);
+    case Number: {
+        bool ok;
+        qint64 val = QString(m_data).toLongLong(&ok);
+        if (ok)
+            return val;
+        return QVariant();
+    }
+    case Object: {
+        QHash<QString, QVariant> hash;
+        for (int i = 0; i < m_children.size(); ++i) {
+            QString name(m_children[i].name());
+            QVariant val = m_children[i].toVariant();
+            hash.insert(name, val);
+        }
+        return hash;
+    }
+    case Array: {
+        QList<QVariant> list;
+        for (int i = 0; i < m_children.size(); ++i) {
+            list.append(m_children[i].toVariant());
+        }
+        return list;
+    }
+    case Boolean:
+        return data() == QByteArray("true");
+    case Invalid:
+    case NullObject:
+    default:
+        return QVariant();
+    }
+}
+
 
 void JsonValue::fromString(const QByteArray &ba)
 {
@@ -486,5 +545,5 @@ JsonInputStream &JsonInputStream::operator<<(bool b)
     return *this;
 }
 
-} // namespace tcftrk
+} // namespace Coda
 

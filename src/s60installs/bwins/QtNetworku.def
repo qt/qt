@@ -1242,4 +1242,6 @@ EXPORTS
 	?networkConfiguration@QNetworkProxyQuery@@QBE?AVQNetworkConfiguration@@XZ @ 1241 NONAME ; class QNetworkConfiguration QNetworkProxyQuery::networkConfiguration(void) const
 	?setNetworkConfiguration@QNetworkProxyQuery@@QAEXABVQNetworkConfiguration@@@Z @ 1242 NONAME ; void QNetworkProxyQuery::setNetworkConfiguration(class QNetworkConfiguration const &)
 	??0QNetworkProxyQuery@@QAE@ABVQNetworkConfiguration@@GABVQString@@W4QueryType@0@@Z @ 1243 NONAME ; QNetworkProxyQuery::QNetworkProxyQuery(class QNetworkConfiguration const &, unsigned short, class QString const &, enum QNetworkProxyQuery::QueryType)
+	?cleanup@QNetworkConfigurationManagerPrivate@@QAEXXZ @ 1244 NONAME ; void QNetworkConfigurationManagerPrivate::cleanup(void)
+	?initialize@QNetworkConfigurationManagerPrivate@@QAEXXZ @ 1245 NONAME ; void QNetworkConfigurationManagerPrivate::initialize(void)
 

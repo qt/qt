@@ -39,50 +39,51 @@
 **
 ****************************************************************************/
 
-#ifndef TRKSIGNALHANDLER_H
-#define TRKSIGNALHANDLER_H
-#include <QObject>
-#include <QString>
-#include "symbianutils/trkutils.h"
+#include "virtualserialdevice.h"
+#include <QtCore/QThread>
+#include <QtCore/QWaitCondition>
 
-class TrkSignalHandlerPrivate;
-class TrkSignalHandler : public QObject
+namespace SymbianUtils {
+
+bool VirtualSerialDevice::isSequential() const
 {
-    Q_OBJECT
-public slots:
-    void copyingStarted(const QString &fileName);
-    void canNotConnect(const QString &errorMessage);
-    void canNotCreateFile(const QString &filename, const QString &errorMessage);
-    void canNotWriteFile(const QString &filename, const QString &errorMessage);
-    void canNotCloseFile(const QString &filename, const QString &errorMessage);
-    void installingStarted(const QString &packageName);
-    void canNotInstall(const QString &packageFilename, const QString &errorMessage);
-    void installingFinished();
-    void startingApplication();
-    void applicationRunning(uint pid);
-    void canNotRun(const QString &errorMessage);
-    void finished();
-    void applicationOutputReceived(const QString &output);
-    void copyProgress(int percent);
-    void stateChanged(int);
-    void stopped(uint pc, uint pid, uint tid, const QString& reason);
-    void timeout();
-    void libraryLoaded(const trk::Library &lib);
-    void libraryUnloaded(const trk::Library &lib);
-    void registersAndCallStackReadComplete(const QList<uint>& registers, const QByteArray& stack);
-signals:
-    void resume(uint pid, uint tid);
-    void stop(uint pid, uint tid);
-    void terminate();
-    void getRegistersAndCallStack(uint pid, uint tid);
-public:
-    TrkSignalHandler();
-    ~TrkSignalHandler();
-    void setLogLevel(int);
-    void setCrashLogging(bool);
-    void setCrashLogPath(QString);
-private:
-    TrkSignalHandlerPrivate *d;
-};
+    return true;
+}
 
-#endif // TRKSIGNALHANDLER_H
+VirtualSerialDevice::VirtualSerialDevice(const QString &aPortName, QObject *parent) :
+    QIODevice(parent), portName(aPortName), lock(QMutex::NonRecursive), emittingBytesWritten(false), waiterForBytesWritten(NULL)
+{
+    platInit();
+}
+
+const QString& VirtualSerialDevice::getPortName() const
+{
+    return portName;
+}
+
+void VirtualSerialDevice::close()
+{
+    if (isOpen()) {
+        QMutexLocker locker(&lock);
+        delete waiterForBytesWritten;
+        waiterForBytesWritten = NULL;
+        QIODevice::close();
+        platClose();
+    }
+}
+
+void VirtualSerialDevice::emitBytesWrittenIfNeeded(QMutexLocker& locker, qint64 len)
+{
+    if (waiterForBytesWritten) {
+        waiterForBytesWritten->wakeAll();
+    }
+    if (!emittingBytesWritten) {
+        emittingBytesWritten = true;
+        locker.unlock();
+        emit bytesWritten(len);
+        locker.relock();
+        emittingBytesWritten = false;
+    }
+}
+
+} // namespace SymbianUtils
