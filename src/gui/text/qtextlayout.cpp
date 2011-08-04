@@ -1591,6 +1591,7 @@ namespace {
         QFixed minimumRightBearing;
 
         QFontEngine *fontEngine;
+        QFontEngine *previousFontEngine;
         const unsigned short *logClusters;
 
         bool manualWrap;
@@ -1611,12 +1612,19 @@ namespace {
             return glyphs.glyphs[logClusters[currentPosition - 1]];
         }
 
-        inline void saveCurrentGlyph()
+        inline void resetPreviousGlyph()
         {
             previousGlyph = 0;
+            previousFontEngine = 0;
+        }
+
+        inline void saveCurrentGlyph()
+        {
+            resetPreviousGlyph();
             if (currentPosition > 0 &&
                 logClusters[currentPosition - 1] < glyphs.numGlyphs) {
                 previousGlyph = currentGlyph(); // needed to calculate right bearing later
+                previousFontEngine = fontEngine;
             }
         }
 
@@ -1636,8 +1644,11 @@ namespace {
 
         inline void adjustPreviousRightBearing()
         {
-            if (previousGlyph > 0)
-                adjustRightBearing(previousGlyph);
+            if (previousGlyph > 0 && previousFontEngine) {
+                qreal rb;
+                previousFontEngine->getGlyphBearings(previousGlyph, 0, &rb);
+                rightBearing = qMin(QFixed(), QFixed::fromReal(rb));
+            }
         }
 
         inline void resetRightBearing()
@@ -1728,7 +1739,7 @@ void QTextLine::layout_helper(int maxGlyphs)
     lbh.currentPosition = line.from;
     int end = 0;
     lbh.logClusters = eng->layoutData->logClustersPtr;
-    lbh.previousGlyph = 0;
+    lbh.resetPreviousGlyph();
 
     while (newItem < eng->layoutData->items.size()) {
         lbh.resetRightBearing();
@@ -1917,8 +1928,12 @@ found:
 
     if (line.textWidth > 0 && item < eng->layoutData->items.size())
         eng->maxWidth += lbh.spaceData.textWidth;
-    if (eng->option.flags() & QTextOption::IncludeTrailingSpaces)
+    // In the latter case, text are drawn with trailing spaces at the beginning
+    // of a line, so the naturalTextWidth should contain the space width
+    if ((eng->option.flags() & QTextOption::IncludeTrailingSpaces) ||
+        (line.width == QFIXED_MAX && eng->isRightToLeft())) {
         line.textWidth += lbh.spaceData.textWidth;
+    }
     if (lbh.spaceData.length) {
         line.length += lbh.spaceData.length;
         line.hasTrailingSpaces = true;
