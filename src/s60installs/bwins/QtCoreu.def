@@ -4882,4 +4882,6 @@ EXPORTS
 	?resultsReadyAt@QFutureWatcherBase@@IAEXHH@Z @ 4881 NONAME ; void QFutureWatcherBase::resultsReadyAt(int, int)
 	?started@QFutureWatcherBase@@IAEXXZ @ 4882 NONAME ; void QFutureWatcherBase::started(void)
 	?resetInternalData@QAbstractItemModel@@IAEXXZ @ 4883 NONAME ; void QAbstractItemModel::resetInternalData(void)
+	?toLower@QLocale@@QBE?AVQString@@ABV2@@Z @ 4884 NONAME ; class QString QLocale::toLower(class QString const &) const
+	?toUpper@QLocale@@QBE?AVQString@@ABV2@@Z @ 4885 NONAME ; class QString QLocale::toUpper(class QString const &) const
 
