@@ -1679,16 +1679,33 @@ void tst_qdeclarativetextedit::cursorDelegate()
     QInputMethodEvent event;
     QApplication::sendEvent(view, &event);
 
+
     // Test delegate gets moved on mouse press.
     textEditObject->setSelectByMouse(true);
     textEditObject->setCursorPosition(0);
-    qDebug() << textEditObject->boundingRect() << textEditObject->positionToRectangle(5).center() << view->mapFromScene(textEditObject->positionToRectangle(5).center());
+    const QPoint point1 = view->mapFromScene(textEditObject->positionToRectangle(5).center());
+    QTest::mouseClick(view->viewport(), Qt::LeftButton, 0, point1);
+    QVERIFY(textEditObject->cursorPosition() != 0);
+    QCOMPARE(textEditObject->cursorRectangle().x(), qRound(delegateObject->x()));
+    QCOMPARE(textEditObject->cursorRectangle().y(), qRound(delegateObject->y()));
+
+    // Test delegate gets moved on mouse drag
+    textEditObject->setCursorPosition(0);
+    const QPoint point2 = view->mapFromScene(textEditObject->positionToRectangle(10).center());
+    QTest::mousePress(view->viewport(), Qt::LeftButton, 0, point1);
+    QMouseEvent mv(QEvent::MouseMove, point2, Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+    QApplication::sendEvent(view->viewport(), &mv);
+    QTest::mouseRelease(view->viewport(), Qt::LeftButton, 0, point2);
+    QCOMPARE(textEditObject->cursorRectangle().x(), qRound(delegateObject->x()));
+    QCOMPARE(textEditObject->cursorRectangle().y(), qRound(delegateObject->y()));
+
+    textEditObject->setReadOnly(true);
+    textEditObject->setCursorPosition(0);
     QTest::mouseClick(view->viewport(), Qt::LeftButton, 0, view->mapFromScene(textEditObject->positionToRectangle(5).center()));
     QVERIFY(textEditObject->cursorPosition() != 0);
     QCOMPARE(textEditObject->cursorRectangle().x(), qRound(delegateObject->x()));
     QCOMPARE(textEditObject->cursorRectangle().y(), qRound(delegateObject->y()));
 
-    textEditObject->setReadOnly(true);
     textEditObject->setCursorPosition(0);
     QTest::mouseClick(view->viewport(), Qt::LeftButton, 0, view->mapFromScene(textEditObject->positionToRectangle(5).center()));
     QVERIFY(textEditObject->cursorPosition() != 0);
