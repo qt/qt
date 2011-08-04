@@ -2396,7 +2396,7 @@ bool QDeclarativeBindingCompilerPrivate::parseConditional(QDeclarativeJS::AST::N
     skip.skip.reg = -1;
     bytecode << skip;
 
-    // Release to allow reuse of reg
+    // Release to allow reuse of reg in else path
     releaseReg(ok.reg);
     bytecode[skipIdx].skip.count = bytecode.count() - skipIdx - 1;
 
@@ -2406,8 +2406,7 @@ bool QDeclarativeBindingCompilerPrivate::parseConditional(QDeclarativeJS::AST::N
     if (!parseExpression(expression->ko, ko)) return false;
     if (ko.unknownType) return false;
 
-    // Release to allow reuse of reg
-    releaseReg(ko.reg);
+    // Do not release reg here, so that its ownership passes to the caller
     bytecode[skipIdx2].skip.count = bytecode.count() - skipIdx2 - 1;
 
     if (ok != ko)
