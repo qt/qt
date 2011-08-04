@@ -1099,7 +1099,7 @@ void QDeclarativeVMEStack<T>::push(const T &o) {
 
     Q_ASSERT(_index <= VLA::size());
     if (_index == VLA::size())
-        append(o);
+        VLA::append(o);
     else
         VLA::data()[_index] = o;
 }
