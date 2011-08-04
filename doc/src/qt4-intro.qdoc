@@ -62,6 +62,12 @@
 
     The following features have been added to Qt since the first release of Qt 4.
 
+    In Qt 4.8:
+    \list
+    \o \l{Qt Quick} 1.1 offers changes to the \l{QML Elements} and performance
+    upgrades
+    \
+    \endlist
     In Qt 4.7:
     \list
     \o Declarative UI Development with \l{Qt Quick}, technologies for creating
@@ -118,7 +124,7 @@
        64-bit Macintosh hardware.
     \o The QtXmlPatterns module has been extended to cover XSLT, a
        transformation language for XML documents.
-    \o Qt Script introduced its debugger, 
+    \o Qt Script introduced its debugger,
        providing error reporting for scripts, and to let users track down
        bugs in their own scripts.
     \o Qt 4.5 includes support for writing rich text documents as
@@ -132,7 +138,7 @@
 
     In Qt 4.4:
     \list
-    \o \l{Webkit in QT}{Qt WebKit integration}, making it possible for developers
+    \o \l{WebKit in Qt}{Qt WebKit integration}, making it possible for developers
     to use a fully-featured Web browser to display documents and access online
     services.
     \o A multimedia API provided by the \l{Phonon Overview}{Phonon Multimedia Framework}.
@@ -489,6 +495,97 @@
 */
 
 /*!
+    \page qt4-8-intro.html
+    \title What's New in Qt 4.8
+
+    Qt 4.8 provides many improvements and enhancements over the previous
+    releases in the Qt 4 series. This document covers the most important
+    features in this release, separated by category.
+
+    A list of other Qt 4 features can be found on the \bold{\l{What's
+    New in Qt 4}} page.
+
+    \section1 Qt Quick 1.1
+    Qt Quick 1.1 introduces \l{What's New in Qt Quick}{new changes} such as
+    new properties and better performance.
+
+    \list
+    \o \l {QML Right-to-left User Interfaces}{Right-To-Left} text support
+    \o Improved image caching
+    \o Text input improvements - Support for split-screen virtual keyboard
+    \o \l PinchArea Element - enables simple pinch gesture handling
+    \o New properties for \l{QML Elements}.
+    \endlist
+
+
+    \section1 Qt Platform Abstraction -- \e Lighthouse
+
+    \e QPA allows porting Qt to different windowing systems and devices
+    easier. It provides a clean abstraction layer for porting QtGui to new
+    window systems.
+
+    \section1 Qt WebKit 2.2
+
+    The new Qt WebKit release introduces bug fixes, performance improvements,
+    and greater compiler compatibility.
+
+    \section1 Threaded OpenGL
+
+    Many Qt OpenGL functions are now thread-safe. Threads that cater to
+    different situations are now available.
+
+    \list
+    \o Buffer swapping thread
+    \o Texture uploading thread
+    \o \l QPainter thread
+    \endlist
+
+    \section1 Deprecated Items in Qt 4.8
+
+    As part of Open Governance, modules in Qt 4.8 will receive maintainers and
+    receive different support levels.
+
+    Currently, a module has an activity classification, the \e{Module Maturity Level}.
+    As well, a list of modules and their maturity level is in the \l{Qt Developer Network}.
+
+    \list
+        \o \l{Qt Modules' Maturity Level - Description} - description of the
+        different \e{maturity levels}
+        \o \l{Qt Modules' Maturity Levels - Modules List} - list of the Qt
+        modules and their maturity level
+    \endlist
+    \section1 Additions to the Qt API
+
+    Qt 4.8 introduces changes to the Qt API.
+    \list
+    \o Localization API
+    Changes to the Localization APIs include improvements to \l QLocale and more
+    support for different language code formats.
+
+        \list
+        \o \l {QLocale::quoteString()} - for localized quotes
+        \o \l {QLocale::createSeparatedList()} - for localized list separation (e.g. "1, 2 and 3")
+        \o \l {QLocale::bcp47Name()} - for locale names in the canonical form
+        according to \l {RFC 5646 - BCP47}
+        \o \l {QLocale::matchingLocales()} - to get a list of locales that match a
+        criteria - e.g. a list of locales that use French language.
+        \o \l {QLocale::firstDayOfWeek()}
+        \o \l {QLocale::weekdays()}
+        \o \l{QLocale::currencySymbol()}
+        \o \l{QLocale::toCurrencyString()} - number formatting for currencies
+        \o \l{QLocale::uiLanguages()}
+        \o \l{QLocale::nativeLanguageName()}
+        \o \l{QLocale::nativeCountryName()}
+        \endlist
+    \o IP Multicast API
+    \o Multithreaded HTTP
+    \endlist
+
+    \section1 New Classes, Functions, Macros, etc.
+    \sincelist 4.8
+*/
+
+/*!
     \page qt4-7-intro.html
     \title What's New in Qt 4.7
 
@@ -610,7 +707,6 @@
     introduced in Qt 4.7.
 
     \sincelist 4.7
-
 */
 
 /*!
@@ -686,7 +782,7 @@
     \list
         \o Simplify complex application semantics.
         \o Use of states to reduce code bloat.
-        \o Use states to improve maintainability. 
+        \o Use states to improve maintainability.
         \o Makes event-driven programming robust and more
            reusable.
     \endlist

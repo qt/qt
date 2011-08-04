@@ -79,6 +79,8 @@ QPrinterInfo::QPrinterInfo()
 }
 
 /*!
+    \since 4.8
+
     Constructs a copy of \a other.
 */
 QPrinterInfo::QPrinterInfo(const QPrinterInfo &other)
@@ -117,6 +119,8 @@ QPrinterInfo::~QPrinterInfo()
 }
 
 /*!
+    \since 4.8
+
     Sets the QPrinterInfo object to be equal to \a other.
 */
 QPrinterInfo &QPrinterInfo::operator=(const QPrinterInfo &other)

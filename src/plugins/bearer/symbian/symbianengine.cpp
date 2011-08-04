@@ -104,15 +104,7 @@ void SymbianEngine::initialize()
         return;
     }
 
-    TRAP(error, {
-        iConnectionMonitor.ConnectL();
-        CleanupClosePushL(iConnectionMonitor);
-#ifdef SNAP_FUNCTIONALITY_AVAILABLE
-        User::LeaveIfError(iConnectionMonitor.SetUintAttribute(EBearerIdAll, 0, KBearerGroupThreshold, 1));
-#endif
-        iConnectionMonitor.NotifyEventL(*this);
-        CleanupStack::Pop();
-    });
+    TRAP(error, StartConnectionMonitorNotifyL());
     if (error != KErrNone) {
         iInitOk = false;
         return;
@@ -146,6 +138,17 @@ void SymbianEngine::initialize()
     updateAvailableAccessPoints(); // On first time updates (without WLAN scans)
     // Start monitoring IAP and/or SNAP changes in Symbian CommsDB
     startCommsDatabaseNotifications();
+}
+
+void SymbianEngine::StartConnectionMonitorNotifyL()
+{
+    iConnectionMonitor.ConnectL();
+    CleanupClosePushL(iConnectionMonitor);
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
+    User::LeaveIfError(iConnectionMonitor.SetUintAttribute(EBearerIdAll, 0, KBearerGroupThreshold, 1));
+#endif
+    iConnectionMonitor.NotifyEventL(*this);
+    CleanupStack::Pop();
 }
 
 SymbianEngine::~SymbianEngine()
@@ -255,7 +258,7 @@ void SymbianEngine::updateConfigurationsL()
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     // S60 version is >= Series60 3rd Edition Feature Pack 2
     TInt error = KErrNone;
-    
+
     // Loop through all IAPs
     RArray<TUint32> connectionMethods; // IAPs
     CleanupClosePushL(connectionMethods);
@@ -289,7 +292,7 @@ void SymbianEngine::updateConfigurationsL()
         CleanupStack::PopAndDestroy(&connectionMethod);
     }
     CleanupStack::PopAndDestroy(&connectionMethods);
-    
+
     // Loop through all SNAPs
     RArray<TUint32> destinations;
     CleanupClosePushL(destinations);
@@ -459,7 +462,7 @@ void SymbianEngine::updateConfigurationsL()
                     break;
                 }
             }
-        }    
+        }
     }
 
     foreach (const QString &oldIface, knownSnapConfigs) {
@@ -489,13 +492,13 @@ SymbianNetworkConfigurationPrivate *SymbianEngine::configFromConnectionMethodL(
     SymbianNetworkConfigurationPrivate *cpPriv = new SymbianNetworkConfigurationPrivate;
     TUint32 iapId = connectionMethod.GetIntAttributeL(CMManager::ECmIapId);
     QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(iapId));
-    
+
     HBufC *pName = connectionMethod.GetStringAttributeL(CMManager::ECmName);
     CleanupStack::PushL(pName);
     QT_TRYCATCH_LEAVING(cpPriv->name = QString::fromUtf16(pName->Ptr(),pName->Length()));
     CleanupStack::PopAndDestroy(pName);
     pName = NULL;
-    
+
     TUint32 bearerId = connectionMethod.GetIntAttributeL(CMManager::ECmCommsDBBearerType);
     switch (bearerId) {
     case KCommDbBearerCSD:
@@ -520,7 +523,7 @@ SymbianNetworkConfigurationPrivate *SymbianEngine::configFromConnectionMethodL(
         cpPriv->bearerType = QNetworkConfiguration::BearerUnknown;
         break;
     }
-    
+
     TInt error = KErrNone;
     TUint32 bearerType = connectionMethod.GetIntAttributeL(CMManager::ECmBearerType);
     switch (bearerType) {
@@ -544,13 +547,13 @@ SymbianNetworkConfigurationPrivate *SymbianEngine::configFromConnectionMethodL(
         CleanupStack::PopAndDestroy(pName);
         pName = NULL;
     }
- 
+
     cpPriv->state = QNetworkConfiguration::Defined;
     TBool isConnected = connectionMethod.GetBoolAttributeL(CMManager::ECmConnected);
     if (isConnected) {
         cpPriv->state = QNetworkConfiguration::Active;
     }
-    
+
     cpPriv->isValid = true;
     cpPriv->id = ident;
     cpPriv->numericId = iapId;
@@ -566,7 +569,7 @@ bool SymbianEngine::readNetworkConfigurationValuesFromCommsDb(
 {
     TRAPD(error, readNetworkConfigurationValuesFromCommsDbL(aApId,apNetworkConfiguration));
     if (error != KErrNone) {
-        return false;        
+        return false;
     }
     return true;
 }
@@ -574,22 +577,22 @@ bool SymbianEngine::readNetworkConfigurationValuesFromCommsDb(
 void SymbianEngine::readNetworkConfigurationValuesFromCommsDbL(
         TUint32 aApId, SymbianNetworkConfigurationPrivate *apNetworkConfiguration)
 {
-    CApDataHandler* pDataHandler = CApDataHandler::NewLC(*ipCommsDB); 
-    CApAccessPointItem* pAPItem = CApAccessPointItem::NewLC(); 
+    CApDataHandler* pDataHandler = CApDataHandler::NewLC(*ipCommsDB);
+    CApAccessPointItem* pAPItem = CApAccessPointItem::NewLC();
     TBuf<KCommsDbSvrMaxColumnNameLength> name;
-    
+
     CApUtils* pApUtils = CApUtils::NewLC(*ipCommsDB);
     TUint32 apId = pApUtils->WapIdFromIapIdL(aApId);
-    
+
     pDataHandler->AccessPointDataL(apId,*pAPItem);
     pAPItem->ReadTextL(EApIapName, name);
     if (name.Compare(_L("Easy WLAN")) == 0) {
         // "Easy WLAN" won't be accepted to the Configurations list
         User::Leave(KErrNotFound);
     }
-    
+
     QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(aApId));
-    
+
     QT_TRYCATCH_LEAVING(apNetworkConfiguration->name = QString::fromUtf16(name.Ptr(),name.Length()));
     apNetworkConfiguration->isValid = true;
     apNetworkConfiguration->id = ident;
@@ -600,7 +603,7 @@ void SymbianEngine::readNetworkConfigurationValuesFromCommsDbL(
     apNetworkConfiguration->purpose = QNetworkConfiguration::UnknownPurpose;
     apNetworkConfiguration->roamingSupported = false;
     switch (pAPItem->BearerTypeL()) {
-    case EApBearerTypeCSD:      
+    case EApBearerTypeCSD:
         apNetworkConfiguration->bearerType = QNetworkConfiguration::Bearer2G;
         break;
     case EApBearerTypeGPRS:
@@ -625,7 +628,7 @@ void SymbianEngine::readNetworkConfigurationValuesFromCommsDbL(
         apNetworkConfiguration->bearerType = QNetworkConfiguration::BearerUnknown;
         break;
     }
-    
+
     CleanupStack::PopAndDestroy(pApUtils);
     CleanupStack::PopAndDestroy(pAPItem);
     CleanupStack::PopAndDestroy(pDataHandler);
@@ -664,7 +667,7 @@ QNetworkConfigurationPrivatePointer SymbianEngine::defaultConfigurationL()
         ptr = accessPointConfigurations.value(iface);
     }
 #endif
-    
+
     if (ptr) {
         QMutexLocker configLocker(&ptr->mutex);
         if (ptr->isValid)
@@ -684,7 +687,7 @@ void SymbianEngine::updateActiveAccessPoints()
     TUint connectionCount;
     iConnectionMonitor.GetConnectionCount(connectionCount, status);
     User::WaitForRequest(status);
-    
+
     // Go through all connections and set state of related IAPs to Active.
     // Status needs to be checked carefully, because ConnMon lists also e.g.
     // WLAN connections that are being currently tried --> we don't want to
@@ -763,7 +766,7 @@ void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapIn
     iUpdateGoingOn = false;
     if (scanSuccessful) {
         QList<QString> unavailableConfigs = accessPointConfigurations.keys();
-        
+
         // Set state of returned IAPs to Discovered
         // if state is not already Active
         for(TUint i=0; i<iapInfo.iCount; i++) {
@@ -780,7 +783,7 @@ void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapIn
                 }
             }
         }
-        
+
         // Make sure that state of rest of the IAPs won't be Active
         foreach (const QString &iface, unavailableConfigs) {
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(iface);
@@ -792,7 +795,7 @@ void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapIn
     }
 
     updateStatesToSnaps();
-    
+
     if (!iFirstUpdate) {
         startCommsDatabaseNotifications();
         mutex.unlock();
@@ -844,7 +847,7 @@ void SymbianEngine::updateStatesToSnaps()
         } else {
             changeConfigurationStateTo(ptr, QNetworkConfiguration::Defined);
         }
-    }    
+    }
 }
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
@@ -1062,7 +1065,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
         if (connectionStatus == KConfigDaemonStartingRegistration) {
             TUint connectionId = realEvent->ConnectionId();
             TUint subConnectionCount = 0;
-            TUint apId;            
+            TUint apId;
             TRequestStatus status;
             iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount, KIAPId, apId, status);
             User::WaitForRequest(status);
@@ -1088,7 +1091,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
             // Connection has been successfully opened
             TUint connectionId = realEvent->ConnectionId();
             TUint subConnectionCount = 0;
-            TUint apId;            
+            TUint apId;
             TRequestStatus status;
             iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount, KIAPId, apId, status);
             User::WaitForRequest(status);
@@ -1144,7 +1147,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
                                                    connectionId, QNetworkSession::Disconnected);
                 );
             }
-            
+
             bool online = false;
             foreach (const QString &iface, accessPointConfigurations.keys()) {
                 QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(iface);
@@ -1160,7 +1163,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
             }
         }
         }
-        break;    
+        break;
 
     case EConnMonIapAvailabilityChange:
         {
@@ -1174,7 +1177,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
 
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
             if (ptr) {
-                // Configuration is either Discovered or Active 
+                // Configuration is either Discovered or Active
                 QT_TRYCATCH_LEAVING(changeConfigurationStateAtMinTo(ptr, QNetworkConfiguration::Discovered));
                 unDiscoveredConfigs.removeOne(ident);
             }
@@ -1360,7 +1363,7 @@ AccessPointsAvailabilityScanner::AccessPointsAvailabilityScanner(SymbianEngine& 
                                                                RConnectionMonitor& connectionMonitor)
     : CActive(CActive::EPriorityHigh), iOwner(owner), iConnectionMonitor(connectionMonitor)
 {
-    CActiveScheduler::Add(this);  
+    CActiveScheduler::Add(this);
 }
 
 AccessPointsAvailabilityScanner::~AccessPointsAvailabilityScanner()
