@@ -303,6 +303,7 @@ QSize QCheckBox::sizeHint() const
 
 /*!
     \reimp
+    \since 4.8
 */
 QSize QCheckBox::minimumSizeHint() const
 {

@@ -141,6 +141,7 @@ const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameEleme
     {SE_Editor,                 QS60StyleEnums::SP_QsnFrInputCenter},
     {SE_TableItemPressed,       QS60StyleEnums::SP_QsnFrGridCenterPressed},
     {SE_ListItemPressed,        QS60StyleEnums::SP_QsnFrListCenterPressed},
+    {SE_DialogBackground,       QS60StyleEnums::SP_QsnFrPopupCenter},
 };
 
 static const int frameElementsCount =
@@ -262,6 +263,9 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
         break;
     case SE_PopupBackground:
         drawFrame(SF_PopupBackground, painter, rect, flags | SF_PointNorth);
+        break;
+    case SE_DialogBackground:
+        drawFrame(SF_DialogBackground, painter, rect, flags | SF_PointNorth);
         break;
     case SE_SettingsList:
         drawFrame(SF_SettingsList, painter, rect, flags | SF_PointNorth);
@@ -497,8 +501,10 @@ bool QS60StylePrivate::equalToThemePalette(qint64 cacheKey, QPalette::ColorRole 
 {
     if (!m_themePalette)
         return false;
-    if (cacheKey == m_themePalette->brush(role).texture().cacheKey())
+    if ((m_placeHolderTexture && (cacheKey == m_placeHolderTexture->cacheKey()))
+        || (cacheKey == m_themePalette->brush(role).texture().cacheKey()))
         return true;
+
     return false;
 }
 
@@ -2261,10 +2267,14 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             if (QS60StylePrivate::canDrawThemeBackground(option->palette.base(), widget)
                 && QS60StylePrivate::equalToThemePalette(option->palette.window().texture().cacheKey(), QPalette::Window)) {
                     const bool comboMenu = qobject_cast<const QComboBoxListView *>(widget);
+                    const bool menu = qobject_cast<const QMenu *>(widget);
                     // Add margin area to the background, to avoid background being cut for first and last item.
                     const int verticalMenuAdjustment = comboMenu ? QS60StylePrivate::pixelMetric(PM_MenuVMargin) : 0;
                     const QRect adjustedMenuRect = option->rect.adjusted(0, -verticalMenuAdjustment, 0, verticalMenuAdjustment);
-                    QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_PopupBackground, painter, adjustedMenuRect, flags);
+                    if (comboMenu || menu)
+                        QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_PopupBackground, painter, adjustedMenuRect, flags);
+                    else
+                        QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_DialogBackground, painter, adjustedMenuRect, flags);
             } else {
                 commonStyleDraws = true;
             }

@@ -13,7 +13,6 @@ SUBDIRS = \
 TRUSTED_BENCHMARKS += \
     qscriptclass \
     qscriptvalue \
-    qscriptengine \
     qscriptqobject
 
 include(../trusted-benchmarks.pri)

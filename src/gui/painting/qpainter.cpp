@@ -6469,10 +6469,16 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
 
     QLineF line(pos.x(), pos.y(), pos.x() + qFloor(width), pos.y());
 
-    const qreal underlineOffset = fe->underlinePosition().toReal();
+    qreal underlineOffset = fe->underlinePosition().toReal();
+    qreal y = pos.y();
+    // compensate for different rounding rule in Core Graphics paint engine,
+    // ideally code like this should be moved to respective engines.
+    if (painter->paintEngine()->type() == QPaintEngine::CoreGraphics) {
+        y = qCeil(y);
+    }
     // deliberately ceil the offset to avoid the underline coming too close to
     // the text above it.
-    const qreal underlinePos = pos.y() + qCeil(underlineOffset);
+    const qreal underlinePos = y + qCeil(underlineOffset);
 
     if (underlineStyle == QTextCharFormat::SpellCheckUnderline) {
         underlineStyle = QTextCharFormat::UnderlineStyle(QApplication::style()->styleHint(QStyle::SH_SpellCheckUnderlineStyle));
@@ -6646,6 +6652,10 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
         qreal x = p.x();
         qreal y = p.y();
 
+        bool rtl = ti.flags & QTextItem::RightToLeft;
+        if (rtl)
+            x += ti.width.toReal();
+
         int start = 0;
         int end, i;
         for (end = 0; end < ti.glyphs.numGlyphs; ++end) {
@@ -6662,14 +6672,19 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
                 ti2.width += ti.glyphs.effectiveAdvance(i);
             }
 
+            if (rtl)
+                x -= ti2.width.toReal();
+
             d->engine->drawTextItem(QPointF(x, y), ti2);
+
+            if (!rtl)
+                x += ti2.width.toReal();
 
             // reset the high byte for all glyphs and advance to the next sub-string
             const int hi = which << 24;
             for (i = start; i < end; ++i) {
                 glyphs.glyphs[i] = hi | glyphs.glyphs[i];
             }
-            x += ti2.width.toReal();
 
             // change engine
             start = end;
@@ -6683,6 +6698,9 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
             glyphs.glyphs[i] = glyphs.glyphs[i] & 0xffffff;
             ti2.width += ti.glyphs.effectiveAdvance(i);
         }
+
+        if (rtl)
+            x -= ti2.width.toReal();
 
         if (d->extended)
             d->extended->drawTextItem(QPointF(x, y), ti2);
@@ -9226,6 +9244,52 @@ void QPainter::drawPixmapFragments(const PixmapFragment *fragments, int fragment
 
         setOpacity(oldOpacity);
         setTransform(oldTransform);
+    }
+}
+
+/*!
+    \since 4.8
+
+    This function is used to draw the same \a pixmap with multiple target
+    and source rectangles. If \a sourceRects is 0, the whole pixmap will be
+    rendered at each of the target rectangles. The \a hints parameter can be
+    used to pass in drawing hints.
+
+    This function is potentially faster than multiple calls to drawPixmap(),
+    since the backend can optimize state changes.
+
+    \sa QPainter::PixmapFragmentHint
+*/
+
+void QPainter::drawPixmapFragments(const QRectF *targetRects, const QRectF *sourceRects, int fragmentCount,
+                                   const QPixmap &pixmap, PixmapFragmentHints hints)
+{
+    Q_D(QPainter);
+
+    if (!d->engine || pixmap.isNull())
+        return;
+
+#ifndef QT_NO_DEBUG
+    if (sourceRects) {
+        for (int i = 0; i < fragmentCount; ++i) {
+            QRectF sourceRect = sourceRects[i];
+            if (!(QRectF(pixmap.rect()).contains(sourceRect)))
+                qWarning("QPainter::drawPixmapFragments - the source rect is not contained by the pixmap's rectangle");
+        }
+    }
+#endif
+
+    if (d->engine->isExtended()) {
+        d->extended->drawPixmapFragments(targetRects, sourceRects, fragmentCount, pixmap, hints);
+    } else {
+        if (sourceRects) {
+            for (int i = 0; i < fragmentCount; ++i)
+                drawPixmap(targetRects[i], pixmap, sourceRects[i]);
+        } else {
+            QRectF sourceRect = pixmap.rect();
+            for (int i = 0; i < fragmentCount; ++i)
+                drawPixmap(targetRects[i], pixmap, sourceRect);
+        }
     }
 }
 

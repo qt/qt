@@ -1128,6 +1128,8 @@ void QLineEdit::setDragEnabled(bool b)
 */
 
 /*!
+    \since 4.8
+
     Returns the movement style for the cursor in the line edit.
 */
 Qt::CursorMoveStyle QLineEdit::cursorMoveStyle() const
@@ -1137,6 +1139,8 @@ Qt::CursorMoveStyle QLineEdit::cursorMoveStyle() const
 }
 
 /*!
+    \since 4.8
+
     Sets the movement style for the cursor in the line edit to the given
     \a style.
 */

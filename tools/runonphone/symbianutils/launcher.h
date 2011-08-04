@@ -64,6 +64,13 @@ class SYMBIANUTILS_EXPORT Launcher : public QObject
 public:
     typedef void (Launcher::*TrkCallBack)(const TrkResult &);
 
+    enum InstallationMode {
+        InstallationModeSilent  = 0x1,
+        InstallationModeUser = 0x2,
+        InstallationModeSilentAndUser = InstallationModeSilent|InstallationModeUser
+                                    //first attempt is silent and if it fails then the user installation is launched
+    };
+
     enum Actions {
         ActionPingOnly = 0x0,
         ActionCopy = 0x1,
@@ -95,13 +102,19 @@ public:
     void setTrkServerName(const QString &name);
     QString trkServerName() const;
     void setFileName(const QString &name);
-    void setCopyFileName(const QString &srcName, const QString &dstName);
+    void setCopyFileNames(const QStringList &srcName, const QStringList &dstName);
     void setDownloadFileName(const QString &srcName, const QString &dstName);
-    void setInstallFileName(const QString &name);
-    void setCommandLineArgs(const QStringList &args);
+    void setInstallFileNames(const QStringList &names);
+    void setCommandLineArgs(const QString &args);
     bool startServer(QString *errorMessage);
+    void setInstallationMode(InstallationMode installation);
+    void setInstallationDrive(char drive);
     void setVerbose(int v);
     void setSerialFrame(bool b);
+
+    InstallationMode installationMode() const;
+    char installationDrive() const;
+
     bool serialFrame() const;
     // Close device or leave it open
     bool closeDevice() const;
@@ -122,7 +135,7 @@ public:
 
     // Create Trk message to start a process.
     static QByteArray startProcessMessage(const QString &executable,
-                                          const QStringList &arguments);
+                                          const QString &arguments);
     // Create Trk message to read memory
     static QByteArray readMemoryMessage(uint pid, uint tid, uint from, uint len);
     static QByteArray readRegistersMessage(uint pid, uint tid);
@@ -135,14 +148,14 @@ public:
 
 signals:
     void deviceDescriptionReceived(const QString &port, const QString &description);
-    void copyingStarted();
+    void copyingStarted(const QString &fileName);
     void canNotConnect(const QString &errorMessage);
     void canNotCreateFile(const QString &filename, const QString &errorMessage);
     void canNotOpenFile(const QString &filename, const QString &errorMessage);
     void canNotOpenLocalFile(const QString &filename, const QString &errorMessage);
     void canNotWriteFile(const QString &filename, const QString &errorMessage);
     void canNotCloseFile(const QString &filename, const QString &errorMessage);
-    void installingStarted();
+    void installingStarted(const QString &packageName);
     void canNotInstall(const QString &packageFilename, const QString &errorMessage);
     void installingFinished();
     void startingApplication();
@@ -152,7 +165,7 @@ signals:
     void applicationOutputReceived(const QString &output);
     void copyProgress(int percent);
     void stateChanged(int);
-    void processStopped(uint pc, uint pid, uint tid, const QString& reason);
+    void processStopped(uint pc, uint pid, uint tid, const QString &reason);
     void processResumed(uint pid, uint tid);
     void libraryLoaded(const trk::Library &lib);
     void libraryUnloaded(const trk::Library &lib);
@@ -198,6 +211,8 @@ private:
     void copyFileToRemote();
     void copyFileFromRemote();
     void installRemotePackageSilently();
+    void installRemotePackageByUser();
+    void installRemotePackage();
     void startInferiorIfNeeded();
     void handleFinished();
 
