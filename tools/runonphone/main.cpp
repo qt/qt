@@ -270,7 +270,7 @@ int main(int argc, char *argv[])
         if (!exeFile.isEmpty()) {
             launcher->addStartupActions(trk::Launcher::ActionRun);
             launcher->setFileName(QString("c:\\sys\\bin\\") + info.fileName());
-            launcher->setCommandLineArgs(cmdLine.join(QLatin1String(", ")));
+            launcher->setCommandLineArgs(cmdLine.join(QLatin1String(" ")));
         }
         if (!downloadRemoteFile.isEmpty() && !downloadLocalFile.isEmpty()) {
             launcher->addStartupActions(trk::Launcher::ActionDownload);
