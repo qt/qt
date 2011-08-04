@@ -74,6 +74,7 @@
 # include <centralrepository.h>
 # include "qs60mainappui.h"
 # include "qinputcontext.h"
+# include <private/qgraphicssystemex_symbian_p.h>
 #endif
 
 #if defined(Q_WS_S60)
@@ -133,7 +134,7 @@ void QS60Data::setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, boo
         s->MakeVisible(statusPaneVisible);
     }
     if (buttonGroupVisibilityChanged  || statusPaneVisibilityChanged) {
-        const QSize size = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect()).size();
+        const QSize size = qt_TRect2QRect(S60->clientRect()).size();
         const QSize oldSize; // note that QDesktopWidget::resizeEvent ignores the QResizeEvent contents
         QResizeEvent event(size, oldSize);
         QApplication::instance()->sendEvent(QApplication::desktop(), &event);
@@ -228,6 +229,28 @@ void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
             }
         }
     }
+}
+
+TRect QS60Data::clientRect()
+{
+    TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+    if (S60->partialKeyboardOpen) {
+        // Adjust client rect when splitview is open, since for some curious reason
+        // native side insists that clientRect starts from (0,0) even though status
+        // pane might be visible.
+        TRect statusPaneRect;
+        TRect mainRect;
+        AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStatusPane, statusPaneRect);
+        AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EMainPane, mainRect);
+        int clientAreaHeight = mainRect.Height();
+        CEikStatusPane *const s = S60->statusPane();
+        if (s && s->IsVisible())
+            r.Move(0, statusPaneRect.Height());
+        else
+            clientAreaHeight += statusPaneRect.Height();
+        r.SetHeight(clientAreaHeight);
+    }
+    return r;
 }
 
 bool qt_nograb()                                // application no-grab option
@@ -907,6 +930,15 @@ TKeyResponse QSymbianControl::sendSymbianKeyEvent(const TKeyEvent &keyEvent, QEv
     }
 
     Qt::KeyboardModifiers mods = mapToQtModifiers(keyEvent.iModifiers);
+
+    TInt code = keyEvent.iCode;
+
+    if (mods == Qt::ControlModifier) {
+        //only support ctrl+a .. ctrl+z, 0x40 is the key value before Qt::Key_A
+        if (code > 0 && code < 27)
+            keyCode = 0x40 + code;
+    }	
+           
     QKeyEventEx qKeyEvent(type, keyCode, mods, qt_keymapper_private()->translateKeyEvent(keyCode, mods),
             (keyEvent.iRepeats != 0), 1, keyEvent.iScanCode, s60Keysym, keyEvent.iModifiers);
     QWidget *widget;
@@ -1434,7 +1466,9 @@ void QSymbianControl::handleClientAreaChange()
     if (qwidget->isFullScreen() && !cbaVisibilityHint) {
         SetExtentToWholeScreen();
     } else if (qwidget->isMaximized() || (qwidget->isFullScreen() && cbaVisibilityHint)) {
-        TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+        // Note that if there is S60->splitViewLastWidget, it means the resizing is done
+        // by input context handling and we can use just default ClientRect.
+        TRect r = (!S60->splitViewLastWidget) ? S60->clientRect() : static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
         SetExtent(r.iTl, r.Size());
     } else if (!qwidget->isMinimized()) { // Normal geometry
         if (!qwidget->testAttribute(Qt::WA_Resized)) {
@@ -1442,7 +1476,7 @@ void QSymbianControl::handleClientAreaChange()
             qwidget->setAttribute(Qt::WA_Resized, false); //not a user resize
         }
         if (!qwidget->testAttribute(Qt::WA_Moved) && qwidget->windowType() != Qt::Dialog) {
-            TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+            TRect r = S60->clientRect();
             SetPosition(r.iTl);
             qwidget->setAttribute(Qt::WA_Moved, false); // not really an explicit position
         }
@@ -1488,13 +1522,14 @@ void QSymbianControl::HandleResourceChange(int resourceType)
             if (!ic) {
                 ic = qobject_cast<QCoeFepInputContext *>(qApp->inputContext());
             }
-            if (ic && isSplitViewWidget(widget)) {
+            if (ic) {
                 if (resourceType == KSplitViewCloseEvent) {
                     S60->partialKeyboardOpen = false;
                     ic->resetSplitViewWidget();
                 } else {
                     S60->partialKeyboardOpen = true;
-                    ic->ensureFocusWidgetVisible(widget);
+                    if (isSplitViewWidget(widget))
+                        ic->ensureFocusWidgetVisible(widget);
                 }
             }
         }
@@ -1507,7 +1542,8 @@ void QSymbianControl::HandleResourceChange(int resourceType)
         // client area.
         if (S60->statusPane() && (S60->statusPane()->IsVisible() || m_lastStatusPaneVisibility)) {
             m_lastStatusPaneVisibility = S60->statusPane()->IsVisible();
-            handleClientAreaChange();
+            if (S60->handleStatusPaneResizeNotifications)
+                handleClientAreaChange();
         }
         if (IsFocused() && IsVisible()) {
             qwidget->d_func()->setWindowIcon_sys(true);
@@ -1529,6 +1565,11 @@ void QSymbianControl::HandleResourceChange(int resourceType)
         if (qt_desktopWidget) {
             QResizeEvent e(qt_desktopWidget->size(), qt_desktopWidget->size());
             QApplication::sendEvent(qt_desktopWidget, &e);
+        }
+        // Send resize event to dialogs so they can adjust their position if necessary.
+        if (qwidget->windowType() & Qt::Dialog) {
+            QResizeEvent e(qwidget->size(), qwidget->size());
+            QApplication::sendEvent(qwidget, &e);
         }
         break;
     }
@@ -1694,7 +1735,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         if (commandLine) {
             // After this construction, CEikonEnv will be available from CEikonEnv::Static().
             // (much like our qApp).
-            QtEikonEnv* coe = new QtEikonEnv;
+            CEikonEnv* coe = new CEikonEnv;
             //not using QT_TRAP_THROWING, because coe owns the cleanupstack so it can't be pushed there.
             TRAPD(err, coe->ConstructAppFromCommandLineL(factory, *commandLine));
             if(err != KErrNone) {
@@ -1850,26 +1891,12 @@ void qt_init(QApplicationPrivate * /* priv */, int)
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
     QApplicationPrivate::instance()->useTranslucentEGLSurfaces = true;
 
-    const TUid KIvePropertyCat = {0x2726beef};
-    enum TIvePropertyChipType {
-        EVCBCM2727B1 = 0x00000000,
-        EVCBCM2763A0 = 0x04000100,
-        EVCBCM2763B0 = 0x04000102,
-        EVCBCM2763C0 = 0x04000103,
-        EVCBCM2763C1 = 0x04000104,
-        EVCBCMUnknown = 0x7fffffff
-    };
-
-    TInt chipType = EVCBCMUnknown;
-    if (RProperty::Get(KIvePropertyCat, 0 /*chip type*/, chipType) == KErrNone) {
-        if (chipType == EVCBCM2727B1) {
-            // We have only 32MB GPU memory. Use raster surfaces
-            // for transparent TLWs.
-            QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
-        }
-    } else {
+    if (QSymbianGraphicsSystemEx::hasBCM2727()) {
+        // We have only 32MB GPU memory. Use raster surfaces
+        // for transparent TLWs.
         QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
     }
+
     if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
         QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
 #else
@@ -1920,7 +1947,7 @@ void qt_cleanup()
         qt_S60Beep = 0;
     }
     QFontCache::cleanup(); // Has to happen now, since QFontEngineS60 has FBS handles
-    QPixmapCache::clear(); // Has to happen now, since QS60PixmapData has FBS handles
+    QPixmapCache::clear(); // Has to happen now, since QSymbianRasterPixmapData has FBS handles
 
 #ifdef QT_NO_FREETYPE
     qt_cleanup_symbianFontDatabase();
@@ -2027,7 +2054,7 @@ void QApplicationPrivate::openPopup(QWidget *popup)
     QApplicationPrivate::popupWidgets->append(popup);
 
     // Cancel focus widget pointer capture and long tap timer
-    if (QApplication::focusWidget()) {
+    if (QApplication::focusWidget() && QApplication::focusWidget()->effectiveWinId()) {
         static_cast<QSymbianControl*>(QApplication::focusWidget()->effectiveWinId())->CancelLongTapTimer();
         QApplication::focusWidget()->effectiveWinId()->SetPointerCapture(false);
         }
@@ -2278,6 +2305,7 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
 #if defined(Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS)
     case EEventDisplayChanged:
 #endif
+        {
         if (callSymbianEventFilters(symbianEvent))
             return 1;
         if (S60)
@@ -2288,6 +2316,12 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
             qt_desktopWidget->data->crect.setHeight(S60->screenHeightInPixels);
             QResizeEvent e(qt_desktopWidget->size(), oldSize);
             QApplication::sendEvent(qt_desktopWidget, &e);
+        }
+        // Close non-native QMenus (that should act like context menus, i.e. close
+        // automatically when the orientation changes).
+        QMenu *activeMenu = qobject_cast<QMenu *>(QApplication::activePopupWidget());
+        if (activeMenu)
+            activeMenu->close();
         }
         return 0; // Propagate to CONE
     case EEventWindowVisibilityChanged:

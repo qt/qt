@@ -67,10 +67,8 @@ static QNetworkInterface::InterfaceFlags convertFlags(const TSoInetInterfaceInfo
     return flags;
 }
 
-//TODO: share this, at least QHostInfo needs to do the same thing
-static QHostAddress qt_QHostAddressFromTInetAddr(const TInetAddr& addr)
+QHostAddress qt_QHostAddressFromTInetAddr(const TInetAddr& addr)
 {
-    //TODO: do we want to call v4 mapped addresses v4 or v6 outside of this file?
     if (addr.IsV4Mapped() || addr.Family() == KAfInet) {
         //convert v4 host address
         return QHostAddress(addr.Address());

@@ -52,7 +52,11 @@ int main(int argc, char **argv)
     
     KAstTopLevel topLevel;
     topLevel.setWindowTitle("Ported Asteroids Game");
+#if defined(Q_OS_SYMBIAN)
+    topLevel.showFullScreen();
+#else
     topLevel.show();
+#endif
 
     app.setQuitOnLastWindowClosed(true);
     return app.exec();

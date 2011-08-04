@@ -46,7 +46,7 @@ Qt applications.
 \section1 Getting Started
 
 \list
-\o \l{Intro to Qt Quick}{Introduction to Qt Quick}
+\o \l{Introduction to Qt Quick}
 \o \l{QML for Qt Programmers}{QML Programming for Qt Programmers}
 \o \l{Getting Started Programming with QML}
 
@@ -146,5 +146,13 @@ examples for porting}
 \section1 License Information
 \list
 \o \l{Qt Quick Licensing Information}
+\endlist
+
+\section1 Online Examples
+
+\list
+\o Forum Nokia:
+\l{http://wiki.forum.nokia.com/index.php/Qt_Quick_examples_for_porting}{Qt Quick
+examples for porting}
 \endlist
 */

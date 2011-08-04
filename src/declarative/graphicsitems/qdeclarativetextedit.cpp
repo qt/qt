@@ -107,7 +107,7 @@ TextEdit {
 
 /*!
     \qmlsignal TextEdit::onLinkActivated(string link)
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     This handler is called when the user clicks on a link embedded in the text.
     The link must be in rich text or HTML format and the
@@ -458,7 +458,6 @@ void QDeclarativeTextEdit::setSelectedTextColor(const QColor &color)
 /*!
     \qmlproperty enumeration TextEdit::horizontalAlignment
     \qmlproperty enumeration TextEdit::verticalAlignment
-    \qmlproperty enumeration TextEdit::effectiveHorizontalAlignment
 
     Sets the horizontal and vertical alignment of the text within the TextEdit item's
     width and height. By default, the text alignment follows the natural alignment
@@ -480,10 +479,10 @@ void QDeclarativeTextEdit::setSelectedTextColor(const QColor &color)
     \o TextEdit.AlignVCenter
     \endlist
 
-    When using the attached property LayoutMirroring::enabled to mirror application
+    When using the attached property \l {LayoutMirroring::enabled} to mirror application
     layouts, the horizontal alignment of text will also be mirrored. However, the property
     \c horizontalAlignment will remain unchanged. To query the effective horizontal alignment
-    of TextEdit, use the read-only property \c effectiveHorizontalAlignment.
+    of TextEdit, use the property \l {LayoutMirroring::enabled}.
 */
 QDeclarativeTextEdit::HAlignment QDeclarativeTextEdit::hAlign() const
 {
@@ -538,8 +537,6 @@ bool QDeclarativeTextEditPrivate::setHAlign(QDeclarativeTextEdit::HAlignment ali
         QDeclarativeTextEdit::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
         hAlign = alignment;
         emit q->horizontalAlignmentChanged(alignment);
-        if (oldEffectiveHAlign != q->effectiveHAlign())
-            emit q->effectiveHorizontalAlignmentChanged();
         return true;
     }
     return false;
@@ -562,7 +559,6 @@ void QDeclarativeTextEditPrivate::mirrorChange()
         if (!hAlignImplicit && (hAlign == QDeclarativeTextEdit::AlignRight || hAlign == QDeclarativeTextEdit::AlignLeft)) {
             updateDefaultTextOption();
             q->updateSize();
-            emit q->effectiveHorizontalAlignmentChanged();
         }
     }
 }
@@ -619,7 +615,7 @@ void QDeclarativeTextEdit::setWrapMode(WrapMode mode)
 
 /*!
     \qmlproperty int TextEdit::lineCount
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Returns the total number of lines in the textEdit item.
 */
@@ -713,7 +709,7 @@ void QDeclarativeTextEdit::moveCursorSelection(int pos)
 
 /*!
     \qmlmethod void TextEdit::moveCursorSelection(int position, SelectionMode mode = TextEdit.SelectCharacters)
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Moves the cursor to \a position and updates the selection according to the optional \a mode
     parameter. (To only move the cursor, set the \l cursorPosition property.)
@@ -1078,7 +1074,7 @@ void QDeclarativeTextEdit::setSelectByMouse(bool on)
 
 /*!
     \qmlproperty enum TextEdit::mouseSelectionMode
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Specifies how text should be selected using a mouse.
 
@@ -1224,7 +1220,7 @@ void QDeclarativeTextEditPrivate::focusChanged(bool hasFocus)
 
 /*!
     \qmlmethod void TextEdit::deselect()
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Removes active text selection.
 */

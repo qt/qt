@@ -146,7 +146,7 @@ bootstrap { #Qt code
 
     qnx {
         CFLAGS += -fhonor-std
-        LFLAGS += -lcpp
+        LFLAGS += -lcpp -lm
     }
     DEFINES *= QT_NO_QOBJECT
 } else {

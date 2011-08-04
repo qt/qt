@@ -288,7 +288,6 @@ public:
     void mirrorChange() {
         Q_Q(QDeclarativeListView);
         regenerate();
-        emit q->effectiveLayoutDirectionChanged();
     }
 
     bool isRightToLeft() const {
@@ -2189,7 +2188,12 @@ void QDeclarativeListView::setOrientation(QDeclarativeListView::Orientation orie
   \o Qt.RightToLeft - Items will be laid out from right to let.
   \endlist
 
-  \sa ListView::effectiveLayoutDirection
+  When using the attached property \l {LayoutMirroring::enabled} for locale layouts,
+  the layout direction of the horizontal list will be mirrored. However, the actual property
+  \c layoutDirection will remain unchanged. You can use the property
+  \l {LayoutMirroring::enabled} to determine whether the direction has been mirrored.
+
+  \sa {LayoutMirroring}{LayoutMirroring}
 */
 
 Qt::LayoutDirection QDeclarativeListView::layoutDirection() const
@@ -2205,20 +2209,8 @@ void QDeclarativeListView::setLayoutDirection(Qt::LayoutDirection layoutDirectio
         d->layoutDirection = layoutDirection;
         d->regenerate();
         emit layoutDirectionChanged();
-        emit effectiveLayoutDirectionChanged();
     }
 }
-
-/*!
-    \qmlproperty enumeration ListView::effectiveLayoutDirection
-    This property holds the effective layout direction of the horizontal list.
-
-    When using the attached property \l {LayoutMirroring::enabled}{LayoutMirroring::enabled} for locale layouts,
-    the visual layout direction of the horizontal list will be mirrored. However, the
-    property \l {ListView::layoutDirection}{layoutDirection} will remain unchanged.
-
-    \sa ListView::layoutDirection, {LayoutMirroring}{LayoutMirroring}
-*/
 
 Qt::LayoutDirection QDeclarativeListView::effectiveLayoutDirection() const
 {
@@ -3036,7 +3028,7 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
 /*!
     \qmlmethod ListView::positionViewAtBeginning()
     \qmlmethod ListView::positionViewAtEnd()
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Positions the view at the beginning or end, taking into account any header or footer.
 

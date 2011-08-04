@@ -47,7 +47,7 @@
 
 QString toString(QAudioFormat::SampleType sampleType)
 {
-    QString result("Unknown");
+    QString result;
     switch (sampleType) {
     case QAudioFormat::SignedInt:
         result = "SignedInt";
@@ -58,7 +58,9 @@ QString toString(QAudioFormat::SampleType sampleType)
     case QAudioFormat::Float:
         result = "Float";
         break;
+    default:
     case QAudioFormat::Unknown:
+        result = "Unknown";
         break;
     }
     return result;

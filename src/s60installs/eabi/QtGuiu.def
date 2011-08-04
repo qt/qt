@@ -12104,7 +12104,7 @@ EXPORTS
 	_ZN15QStaticTextItem13setFontEngineEP11QFontEngine @ 12103 NONAME
 	_ZN15QStaticTextItemD1Ev @ 12104 NONAME
 	_ZN15QStaticTextItemD2Ev @ 12105 NONAME
-	_ZN19QEventDispatcherS6031reactivateDeferredActiveObjectsEv @ 12106 NONAME
+	_ZN19QEventDispatcherS6031reactivateDeferredActiveObjectsEv @ 12106 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate11setSubFocusEP13QGraphicsItemS1_ @ 12107 NONAME
 	_ZN20QGraphicsItemPrivate13clearSubFocusEP13QGraphicsItemS1_ @ 12108 NONAME
 	_ZN12QLineControl21resetCursorBlinkTimerEv @ 12109 NONAME
@@ -12180,7 +12180,7 @@ EXPORTS
 	_ZNK14QVolatileImage7toImageEv @ 12179 NONAME
 	_ZNK14QVolatileImage9byteCountEv @ 12180 NONAME
 	_ZNK14QVolatileImage9constBitsEv @ 12181 NONAME
-	_ZN15QGraphicsSystem22releaseCachedResourcesEv @ 12182 NONAME
+	_ZN15QGraphicsSystem22releaseCachedResourcesEv @ 12182 NONAME ABSENT
 	_Z32qt_s60_setPartialScreenInputModeb @ 12183 NONAME
 	_Z18qt_addBitmapToPathffPKhiiiP12QPainterPath @ 12184 NONAME
 	_Z22qt_fontdata_from_indexi @ 12185 NONAME
@@ -12288,7 +12288,7 @@ EXPORTS
 	_ZN11QTextEngine27positionAfterVisualMovementEiN11QTextCursor13MoveOperationE @ 12287 NONAME
 	_ZN11QTextEngine9alignLineERK11QScriptLine @ 12288 NONAME
 	_ZN11QTextEngine9endOfLineEi @ 12289 NONAME
-	_ZN11QTextLayout18setCursorMoveStyleEN11QTextCursor9MoveStyleE @ 12290 NONAME
+	_ZN11QTextLayout18setCursorMoveStyleEN11QTextCursor9MoveStyleE @ 12290 NONAME ABSENT
 	_ZN11QTextObject18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12291 NONAME
 	_ZN11QTextObject25staticMetaObjectExtraDataE @ 12292 NONAME DATA 8
 	_ZN11QToolButton18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12293 NONAME
@@ -12352,7 +12352,7 @@ EXPORTS
 	_ZN13QSwipeGesture18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12351 NONAME
 	_ZN13QSwipeGesture25staticMetaObjectExtraDataE @ 12352 NONAME DATA 8
 	_ZN13QTextDocument18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12353 NONAME
-	_ZN13QTextDocument25setDefaultCursorMoveStyleEN11QTextCursor9MoveStyleE @ 12354 NONAME
+	_ZN13QTextDocument25setDefaultCursorMoveStyleEN11QTextCursor9MoveStyleE @ 12354 NONAME ABSENT
 	_ZN13QTextDocument25staticMetaObjectExtraDataE @ 12355 NONAME DATA 8
 	_ZN13QWidgetAction18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12356 NONAME
 	_ZN13QWidgetAction25staticMetaObjectExtraDataE @ 12357 NONAME DATA 8
@@ -12641,7 +12641,7 @@ EXPORTS
 	_ZN9QGroupBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12640 NONAME
 	_ZN9QGroupBox25staticMetaObjectExtraDataE @ 12641 NONAME DATA 8
 	_ZN9QLineEdit18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12642 NONAME
-	_ZN9QLineEdit18setCursorMoveStyleEN11QTextCursor9MoveStyleE @ 12643 NONAME
+	_ZN9QLineEdit18setCursorMoveStyleEN11QTextCursor9MoveStyleE @ 12643 NONAME ABSENT
 	_ZN9QLineEdit25staticMetaObjectExtraDataE @ 12644 NONAME DATA 8
 	_ZN9QListView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12645 NONAME
 	_ZN9QListView25staticMetaObjectExtraDataE @ 12646 NONAME DATA 8
@@ -12666,7 +12666,7 @@ EXPORTS
 	_ZNK10QBlittable12capabilitiesEv @ 12665 NONAME
 	_ZNK10QBlittable4sizeEv @ 12666 NONAME
 	_ZNK10QTabWidget14heightForWidthEi @ 12667 NONAME
-	_ZNK10QTextBlock7isValidEv @ 12668 NONAME
+	_ZNK10QTextBlock7isValidEv @ 12668 NONAME ABSENT
 	_ZNK10QZipWriter10isWritableEv @ 12669 NONAME
 	_ZNK10QZipWriter17compressionPolicyEv @ 12670 NONAME
 	_ZNK10QZipWriter19creationPermissionsEv @ 12671 NONAME
@@ -12738,4 +12738,20 @@ EXPORTS
 	_ZTV19QIdentityProxyModel @ 12737 NONAME
 	_ZTV20QBlittablePixmapData @ 12738 NONAME
 	_Zls6QDebugPK13QSymbianEvent @ 12739 NONAME
-
+	_ZN11QTextLayout18setCursorMoveStyleEN2Qt15CursorMoveStyleE @ 12740 NONAME
+	_ZN13QTextDocument25setDefaultCursorMoveStyleEN2Qt15CursorMoveStyleE @ 12741 NONAME
+	_ZN15QGraphicsSystem17platformExtensionEv @ 12742 NONAME
+	_ZN24QSymbianGraphicsSystemEx10hasBCM2727Ev @ 12743 NONAME
+	_ZN24QSymbianGraphicsSystemEx13forceToRasterEP7QWidget @ 12744 NONAME
+	_ZN24QSymbianGraphicsSystemEx22releaseAllGpuResourcesEv @ 12745 NONAME
+	_ZN24QSymbianGraphicsSystemEx25releaseCachedGpuResourcesEv @ 12746 NONAME
+	_ZN9QLineEdit18setCursorMoveStyleEN2Qt15CursorMoveStyleE @ 12747 NONAME
+	_ZTI17QGraphicsSystemEx @ 12748 NONAME
+	_ZTI24QSymbianGraphicsSystemEx @ 12749 NONAME
+	_ZTV24QSymbianGraphicsSystemEx @ 12750 NONAME
+	_ZN11QTextEngine16getClusterLengthEPtPK17HB_CharAttributesiiiPi @ 12751 NONAME
+	_ZN11QTextEngine18positionInLigatureEPK11QScriptItemi6QFixedS3_ib @ 12752 NONAME
+	_ZN14QPaintEngineEx18drawStaticTextItemEP15QStaticTextItem @ 12753 NONAME
+	_ZNK14QPaintEngineEx23supportsTransformationsEfRK10QTransform @ 12754 NONAME
+	_ZNK11QPixmapData15toVolatileImageEv @ 12755 NONAME
+	_ZNK14QVolatileImage13constImageRefEv @ 12756 NONAME

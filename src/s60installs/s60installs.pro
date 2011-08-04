@@ -10,10 +10,10 @@ symbian: {
     TARGET = "Qt$${QT_LIBINFIX}"
 
     isEmpty(QT_LIBINFIX) {
-        TARGET.UID3 = 0x2001E61C
+        TARGET.UID3 = 0x2001e61c
     } else {
         # Always use experimental UID for infixed configuration to avoid UID clash
-        TARGET.UID3 = 0xE001E61C
+        TARGET.UID3 = 0xe001e61c
     }
     VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 
@@ -40,36 +40,23 @@ symbian: {
         bearerStubZ = $${PWD}/qsymbianbearer.qtplugin
     }
 
-    contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {
+    contains(S60_VERSION, 5.0) {
         qts60plugindeployment = \
             "IF package(0x2003A678) OR package(0x20022E6D)" \
-            "   \"$$pluginLocations/qts60plugin_5_0$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_5_0$${QT_LIBINFIX}.dll\"" \
             "   \"$$bearerPluginLocation/qsymbianbearer$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
             "ELSEIF package(0x1028315F)" \
-            "   \"$$pluginLocations/qts60plugin_5_0$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_5_0$${QT_LIBINFIX}.dll\"" \
             "   \"$$bearerPluginLocation/qsymbianbearer$${QT_LIBINFIX}_3_2.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
-            "ELSEIF package(0x102752AE)" \
-            "   \"$$pluginLocations/qts60plugin_3_2$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_3_2$${QT_LIBINFIX}.dll\"" \
-            "   \"$$bearerPluginLocation/qsymbianbearer$${QT_LIBINFIX}_3_2.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
-            "ELSEIF package(0x102032BE)" \
-            "   \"$$pluginLocations/qts60plugin_3_1$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_3_1$${QT_LIBINFIX}.dll\"" \
-            "   \"$$bearerPluginLocation/qsymbianbearer$${QT_LIBINFIX}_3_1.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
             "ELSE" \
-            "   \"$$pluginLocations/qts60plugin_5_0$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_5_0$${QT_LIBINFIX}.dll\"" \
             "   \"$$bearerPluginLocation/qsymbianbearer$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
             "ENDIF" \
             "   \"$$bearerStubZ\" - \"c:$$replace(QT_PLUGINS_BASE_DIR,/,\\)\\bearer\\qsymbianbearer$${QT_LIBINFIX}.qtplugin\""
+        qtlibraries.pkg_postrules += qts60plugindeployment
     } else {
         # No need to deploy plugins for older platform versions when building on Symbian3 or later
-        qts60plugindeployment = \
-            "   \"$$pluginLocations/qts60plugin_5_0$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_5_0$${QT_LIBINFIX}.dll\""
-
         bearer_plugin.files = $$QT_BUILD_TREE/plugins/bearer/qsymbianbearer$${QT_LIBINFIX}.dll
         bearer_plugin.path = c:$$QT_PLUGINS_BASE_DIR/bearer
         DEPLOYMENT += bearer_plugin
     }
-
-    qtlibraries.pkg_postrules += qts60plugindeployment
 
     qtlibraries.path = c:/sys/bin
 
@@ -86,7 +73,7 @@ symbian: {
     qtlibraries.pkg_prerules += "; Dependencies of Qt libraries"
 
     # It is expected that Symbian^3 and newer phones will have sufficiently new OpenC already installed
-    contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {
+    contains(S60_VERSION, 5.0) {
         qtlibraries.pkg_prerules += "(0x20013851), 1, 5, 1, {\"PIPS Installer\"}"
         contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
             qtlibraries.pkg_prerules += "(0x200110CB), 1, 5, 1, {\"Open C LIBSSL Common\"}"
@@ -116,7 +103,7 @@ symbian: {
 
     # Support backup & restore for Qt libraries
     qtbackup.files = backup_registration.xml
-    qtbackup.path = c:/private/10202D56/import/packages/$$replace(TARGET.UID3, 0x,)
+    qtbackup.path = c:/private/10202d56/import/packages/$$replace(TARGET.UID3, 0x,)
 
     DEPLOYMENT += qtlibraries \
                   qtbackup \
@@ -147,19 +134,26 @@ symbian: {
     contains(QT_CONFIG, declarative): {
         qtlibraries.files += $$QMAKE_LIBDIR_QT/QtDeclarative$${QT_LIBINFIX}.dll
 
-        folderlistmodelImport.files = $$QT_BUILD_TREE/imports/Qt/labs/folderlistmodel/qmlfolderlistmodelplugin$${QT_LIBINFIX}.dll
-        gesturesImport.files = $$QT_BUILD_TREE/imports/Qt/labs/gestures/qmlgesturesplugin$${QT_LIBINFIX}.dll
-        particlesImport.files = $$QT_BUILD_TREE/imports/Qt/labs/particles/qmlparticlesplugin$${QT_LIBINFIX}.dll
+        folderlistmodelImport.sources = $$QT_BUILD_TREE/imports/Qt/labs/folderlistmodel/qmlfolderlistmodelplugin$${QT_LIBINFIX}.dll
+        gesturesImport.sources = $$QT_BUILD_TREE/imports/Qt/labs/gestures/qmlgesturesplugin$${QT_LIBINFIX}.dll
+        particlesImport.sources = $$QT_BUILD_TREE/imports/Qt/labs/particles/qmlparticlesplugin$${QT_LIBINFIX}.dll
 
-        folderlistmodelImport.files += $$QT_SOURCE_TREE/src/imports/folderlistmodel/qmldir
-        gesturesImport.files += $$QT_SOURCE_TREE/src/imports/gestures/qmldir
-        particlesImport.files += $$QT_SOURCE_TREE/src/imports/particles/qmldir
+        folderlistmodelImport.sources += $$QT_SOURCE_TREE/src/imports/folderlistmodel/qmldir
+        gesturesImport.sources += $$QT_SOURCE_TREE/src/imports/gestures/qmldir
+        particlesImport.sources += $$QT_SOURCE_TREE/src/imports/particles/qmldir
 
         folderlistmodelImport.path = c:$$QT_IMPORTS_BASE_DIR/Qt/labs/folderlistmodel
         gesturesImport.path = c:$$QT_IMPORTS_BASE_DIR/Qt/labs/gestures
         particlesImport.path = c:$$QT_IMPORTS_BASE_DIR/Qt/labs/particles
 
         DEPLOYMENT += folderlistmodelImport gesturesImport particlesImport
+
+        contains(QT_CONFIG, opengl) {
+            shadersImport.sources = $$QT_BUILD_TREE/imports/Qt/labs/shaders/qmlshadersplugin$${QT_LIBINFIX}.dll \
+                                    $$QT_SOURCE_TREE/src/imports/shaders/qmldir
+            shadersImport.path = c:$$QT_IMPORTS_BASE_DIR/Qt/labs/shaders
+            DEPLOYMENT += shadersImport
+        }
     }
 
     graphicssystems_plugins.path = c:$$QT_PLUGINS_BASE_DIR/graphicssystems

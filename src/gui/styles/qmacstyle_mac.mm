@@ -1195,15 +1195,15 @@ QRect QMacStylePrivate::comboboxEditBounds(const QRect &outerBounds, const HIThe
     QRect ret = outerBounds;
     switch (bdi.kind){
     case kThemeComboBox:
-        ret.adjust(5, 8, -21, -4);
+        ret.adjust(5, 8, -22, -4);
         break;
     case kThemeComboBoxSmall:
-        ret.adjust(4, 5, -18, 0);
-        ret.setHeight(16);
+        ret.adjust(4, 6, -20, 0);
+        ret.setHeight(14);
         break;
     case kThemeComboBoxMini:
-        ret.adjust(4, 5, -16, 0);
-        ret.setHeight(13);
+        ret.adjust(4, 5, -18, -1);
+        ret.setHeight(12);
         break;
     case kThemePopupButton:
         ret.adjust(10, 3, -23, -3);
@@ -3681,9 +3681,27 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     proxy()->drawItemText(p, nr, alignment, np, tab->state & State_Enabled,
                                                tab->text, QPalette::WindowText);
                     p->restore();
-                }
+                    QCommonStyle::drawControl(ce, &myTab, p, w);
+                } else if (qMacVersion() >= QSysInfo::MV_10_7 && (tab->state & State_Selected)) {
+                    p->save();
+                    rotateTabPainter(p, myTab.shape, myTab.rect);
 
-                QCommonStyle::drawControl(ce, &myTab, p, w);
+                    QPalette np = tab->palette;
+                    np.setColor(QPalette::WindowText, QColor(0, 0, 0, 75));
+                    QRect nr = subElementRect(SE_TabBarTabText, opt, w);
+                    nr.moveTop(-1);
+                    int alignment = Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextHideMnemonic;
+                    proxy()->drawItemText(p, nr, alignment, np, tab->state & State_Enabled,
+                                               tab->text, QPalette::WindowText);
+
+                    np.setColor(QPalette::WindowText, QColor(255, 255, 255, 255));
+                    nr.moveTop(-2);
+                    proxy()->drawItemText(p, nr, alignment, np, tab->state & State_Enabled,
+                                               tab->text, QPalette::WindowText);
+                    p->restore();
+                } else {
+                    QCommonStyle::drawControl(ce, &myTab, p, w);
+                }
             } else {
                 p->save();
                 CGContextSetShouldAntialias(cg, true);
@@ -4707,7 +4725,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
                 HIThemeFrameDrawInfo fdi;
                 fdi.version = qt_mac_hitheme_version;
-                fdi.state = tds;
+                fdi.state = ((sb->state & State_ReadOnly) || !(sb->state & State_Enabled)) ? kThemeStateInactive : kThemeStateActive;
                 fdi.kind = kHIThemeFrameTextFieldSquare;
                 fdi.isFocused = false;
                 HIRect hirect = qt_hirectForQRect(lineeditRect);

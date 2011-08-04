@@ -109,8 +109,6 @@ static QHash<void *, QByteArray> *asciiCache = 0;
 #ifdef QT_USE_ICU
 // qlocale_icu.cpp
 extern bool qt_ucol_strcoll(const QChar *source, int sourceLength, const QChar *target, int targetLength, int *result);
-extern bool qt_u_strToUpper(const QString &str, QString *out, const QLocale &locale);
-extern bool qt_u_strToLower(const QString &str, QString *out, const QLocale &locale);
 #endif
 
 
@@ -835,6 +833,28 @@ int QString::grow(int size)
     iterator for QString.
 
     \sa QString::const_iterator
+*/
+
+/*!
+    \typedef QString::const_reference
+    \since 4.8
+
+    The QString::const_reference typedef provides an STL-style
+    const reference for QString.
+*/
+/*!
+    \typedef QString::reference
+    \since 4.8
+
+    The QString::const_reference typedef provides an STL-style
+    reference for QString.
+*/
+/*!
+    \typedef QString::value_type
+    \since 4.8
+
+    The QString::const_reference typedef provides an STL-style
+    value type for QString.
 */
 
 /*! \fn QString::iterator QString::begin()
@@ -3556,6 +3576,61 @@ bool QString::endsWith(const QChar &c, Qt::CaseSensitivity cs) const
     Use toLocal8Bit() instead.
 */
 
+#if defined(QT_ALWAYS_HAVE_SSE2)
+static inline __m128i mergeQuestionMarks(__m128i chunk)
+{
+    const __m128i questionMark = _mm_set1_epi16('?');
+
+# ifdef __SSE4_2__
+    // compare the unsigned shorts for the range 0x0100-0xFFFF
+    // note on the use of _mm_cmpestrm:
+    //  The MSDN documentation online (http://technet.microsoft.com/en-us/library/bb514080.aspx)
+    //  says for range search the following:
+    //    For each character c in a, determine whether b0 <= c <= b1 or b2 <= c <= b3
+    //
+    //  However, all examples on the Internet, including from Intel
+    //  (see http://software.intel.com/en-us/articles/xml-parsing-accelerator-with-intel-streaming-simd-extensions-4-intel-sse4/)
+    //  put the range to be searched first
+    //
+    //  Disassembly and instruction-level debugging with GCC and ICC show
+    //  that they are doing the right thing. Inverting the arguments in the
+    //  instruction does cause a bunch of test failures.
+
+    const int mode = _SIDD_UWORD_OPS | _SIDD_CMP_RANGES | _SIDD_UNIT_MASK;
+    const __m128i rangeMatch = _mm_cvtsi32_si128(0xffff0100);
+    const __m128i offLimitMask = _mm_cmpestrm(rangeMatch, 2, chunk, 8, mode);
+
+    // replace the non-Latin 1 characters in the chunk with question marks
+    chunk = _mm_blendv_epi8(chunk, questionMark, offLimitMask);
+# else
+    // SSE has no compare instruction for unsigned comparison.
+    // The variables must be shiffted + 0x8000 to be compared
+    const __m128i signedBitOffset = _mm_set1_epi16(0x8000);
+    const __m128i thresholdMask = _mm_set1_epi16(0xff + 0x8000);
+
+    const __m128i signedChunk = _mm_add_epi16(chunk, signedBitOffset);
+    const __m128i offLimitMask = _mm_cmpgt_epi16(signedChunk, thresholdMask);
+
+#  ifdef __SSE4_1__
+    // replace the non-Latin 1 characters in the chunk with question marks
+    chunk = _mm_blendv_epi8(chunk, questionMark, offLimitMask);
+#  else
+    // offLimitQuestionMark contains '?' for each 16 bits that was off-limit
+    // the 16 bits that were correct contains zeros
+    const __m128i offLimitQuestionMark = _mm_and_si128(offLimitMask, questionMark);
+
+    // correctBytes contains the bytes that were in limit
+    // the 16 bits that were off limits contains zeros
+    const __m128i correctBytes = _mm_andnot_si128(offLimitMask, chunk);
+
+    // merge offLimitQuestionMark and correctBytes to have the result
+    chunk = _mm_or_si128(correctBytes, offLimitQuestionMark);
+#  endif
+# endif
+    return chunk;
+}
+#endif
+
 static QByteArray toLatin1_helper(const QChar *data, int length)
 {
     QByteArray ba;
@@ -3566,41 +3641,15 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
 #if defined(QT_ALWAYS_HAVE_SSE2)
         if (length >= 16) {
             const int chunkCount = length >> 4; // divided by 16
-            const __m128i questionMark = _mm_set1_epi16('?');
-            // SSE has no compare instruction for unsigned comparison.
-            // The variables must be shiffted + 0x8000 to be compared
-            const __m128i signedBitOffset = _mm_set1_epi16(0x8000);
-            const __m128i thresholdMask = _mm_set1_epi16(0xff + 0x8000);
+
             for (int i = 0; i < chunkCount; ++i) {
                 __m128i chunk1 = _mm_loadu_si128((__m128i*)src); // load
+                chunk1 = mergeQuestionMarks(chunk1);
                 src += 8;
-                {
-                    // each 16 bit is equal to 0xFF if the source is outside latin 1 (>0xff)
-                    const __m128i signedChunk = _mm_add_epi16(chunk1, signedBitOffset);
-                    const __m128i offLimitMask = _mm_cmpgt_epi16(signedChunk, thresholdMask);
-
-                    // offLimitQuestionMark contains '?' for each 16 bits that was off-limit
-                    // the 16 bits that were correct contains zeros
-                    const __m128i offLimitQuestionMark = _mm_and_si128(offLimitMask, questionMark);
-
-                    // correctBytes contains the bytes that were in limit
-                    // the 16 bits that were off limits contains zeros
-                    const __m128i correctBytes = _mm_andnot_si128(offLimitMask, chunk1);
-
-                    // merge offLimitQuestionMark and correctBytes to have the result
-                    chunk1 = _mm_or_si128(correctBytes, offLimitQuestionMark);
-                }
 
                 __m128i chunk2 = _mm_loadu_si128((__m128i*)src); // load
+                chunk2 = mergeQuestionMarks(chunk2);
                 src += 8;
-                {
-                    // exactly the same operations as for the previous chunk of data
-                    const __m128i signedChunk = _mm_add_epi16(chunk2, signedBitOffset);
-                    const __m128i offLimitMask = _mm_cmpgt_epi16(signedChunk, thresholdMask);
-                    const __m128i offLimitQuestionMark = _mm_and_si128(offLimitMask, questionMark);
-                    const __m128i correctBytes = _mm_andnot_si128(offLimitMask, chunk2);
-                    chunk2 = _mm_or_si128(correctBytes, offLimitQuestionMark);
-                }
 
                 // pack the two vector to 16 x 8bits elements
                 const __m128i result = _mm_packus_epi16(chunk1, chunk2);
@@ -4964,7 +5013,10 @@ QString QString::rightJustified(int width, QChar fill, bool truncate) const
 
     \snippet doc/src/snippets/qstring/main.cpp 75
 
-    \sa toUpper()
+    The case conversion will always happen in the 'C' locale. For locale dependent
+    case folding use QLocale::toLower()
+
+    \sa toUpper(), QLocale::toLower()
 */
 
 QString QString::toLower() const
@@ -4974,15 +5026,6 @@ QString QString::toLower() const
         return *this;
     if (!d->size)
         return *this;
-
-#ifdef QT_USE_ICU
-    {
-        QString result;
-        if (qt_u_strToLower(*this, &result, QLocale()))
-            return result;
-        // else fall through and use Qt's toUpper
-    }
-#endif
 
     const ushort *e = d->data + d->size;
 
@@ -5064,7 +5107,10 @@ QString QString::toCaseFolded() const
 
     \snippet doc/src/snippets/qstring/main.cpp 81
 
-    \sa toLower()
+    The case conversion will always happen in the 'C' locale. For locale dependent
+    case folding use QLocale::toUpper()
+
+    \sa toLower(), QLocale::toLower()
 */
 
 QString QString::toUpper() const
@@ -5074,15 +5120,6 @@ QString QString::toUpper() const
         return *this;
     if (!d->size)
         return *this;
-
-#ifdef QT_USE_ICU
-    {
-        QString result;
-        if (qt_u_strToUpper(*this, &result, QLocale()))
-            return result;
-        // else fall through and use Qt's toUpper
-    }
-#endif
 
     const ushort *e = d->data + d->size;
 
@@ -9111,7 +9148,7 @@ QByteArray QStringRef::toUtf8() const
     UCS-4 is a Unicode codec and is lossless. All characters from this string
     can be encoded in UCS-4.
 
-    \sa fromUtf8(), toAscii(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
+    \sa toAscii(), toLatin1(), toLocal8Bit(), QTextCodec
 */
 QVector<uint> QStringRef::toUcs4() const
 {

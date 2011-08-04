@@ -165,13 +165,21 @@ typedef int EGLImageKHR;
 typedef void *EGLImageKHR;
 #endif
 
+#if !defined(EGL_NO_IMAGE_KHR)
 #define EGL_NO_IMAGE_KHR            ((EGLImageKHR)0)
+#endif
+#if !defined(EGL_IMAGE_PRESERVED_KHR)
 #define EGL_IMAGE_PRESERVED_KHR     0x30D2
+#endif
+#if !defined(EGL_KHR_image_base)
 #define EGL_KHR_image_base
 #endif
+#endif
 
-#if !defined(EGL_KHR_image) && !defined(EGL_KHR_image_pixmap)
+#if !defined(EGL_KHR_image)
 #define EGL_NATIVE_PIXMAP_KHR       0x30B0
+#endif
+#if !defined(EGL_KHR_image_pixmap)
 #define EGL_KHR_image_pixmap
 #endif
 

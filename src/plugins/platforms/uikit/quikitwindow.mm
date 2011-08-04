@@ -67,9 +67,8 @@ public:
         mFormat.setBlueBufferSize(8);
         mFormat.setAlphaBufferSize(8);
         mFormat.setStencilBufferSize(8);
+        mFormat.setSamples(0);
         mFormat.setSampleBuffers(false);
-        mFormat.setSamples(1);
-//        mFormat.setSwapInterval(?)
         mFormat.setDoubleBuffer(true);
         mFormat.setDepth(true);
         mFormat.setRgba(true);
@@ -290,37 +289,25 @@ private:
 
 - (void)insertText:(NSString *)text
 {
-    QKeyEvent *ev;
+    QString string = QString::fromUtf8([text UTF8String]);
     int key = 0;
     if ([text isEqualToString:@"\n"])
         key = (int)Qt::Key_Return;
-    ev = new QKeyEvent(QEvent::KeyPress,
-                       key,
-                       Qt::NoModifier,
-                       QString::fromUtf8([text UTF8String])
-                       );
-    qApp->postEvent(qApp->focusWidget(), ev);
-    ev = new QKeyEvent(QEvent::KeyRelease,
-                       key,
-                       Qt::NoModifier,
-                       QString::fromUtf8([text UTF8String])
-                       );
-    qApp->postEvent(qApp->focusWidget(), ev);
+
+    // Send key event to window system interface
+    QWindowSystemInterface::handleKeyEvent(
+        0, QEvent::KeyPress, key, Qt::NoModifier, string, false, int(string.length()));
+    QWindowSystemInterface::handleKeyEvent(
+        0, QEvent::KeyRelease, key, Qt::NoModifier, string, false, int(string.length()));
 }
 
 - (void)deleteBackward
 {
-    QKeyEvent *ev;
-    ev = new QKeyEvent(QEvent::KeyPress,
-                       (int)Qt::Key_Backspace,
-                       Qt::NoModifier
-                       );
-    qApp->postEvent(qApp->focusWidget(), ev);
-    ev = new QKeyEvent(QEvent::KeyRelease,
-                       (int)Qt::Key_Backspace,
-                       Qt::NoModifier
-                       );
-    qApp->postEvent(qApp->focusWidget(), ev);
+    // Send key event to window system interface
+    QWindowSystemInterface::handleKeyEvent(
+        0, QEvent::KeyPress, (int)Qt::Key_Backspace, Qt::NoModifier);
+    QWindowSystemInterface::handleKeyEvent(
+        0, QEvent::KeyRelease, (int)Qt::Key_Backspace, Qt::NoModifier);
 }
 
 @end
@@ -333,11 +320,7 @@ QUIKitWindow::QUIKitWindow(QWidget *tlw) :
     mContext(0)
 {
     mScreen = static_cast<QUIKitScreen *>(QPlatformScreen::platformScreenForWidget(tlw));
-    CGRect screenBounds = [mScreen->uiScreen() bounds];
-    QRect geom(screenBounds.origin.x, screenBounds.origin.y, screenBounds.size.width, screenBounds.size.height);
-    setGeometry(geom);
-    mView = [[EAGLView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
-    // TODO ensure the native window if the application is already running
+    mView = [[EAGLView alloc] init];
 }
 
 QUIKitWindow::~QUIKitWindow()
@@ -349,29 +332,23 @@ QUIKitWindow::~QUIKitWindow()
 
 void QUIKitWindow::setGeometry(const QRect &rect)
 {
-    if (mWindow && rect != geometry()) {
-        mWindow.frame = CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
-        mView.frame = CGRectMake(0, 0, rect.width(), rect.height());
-        [mView deleteFramebuffer];
-        [mWindow setNeedsDisplay];
-    }
+    // Not supported. Only a single "full screen" window is supported
     QPlatformWindow::setGeometry(rect);
 }
 
 UIWindow *QUIKitWindow::ensureNativeWindow()
 {
     if (!mWindow) {
-        // window
-        CGRect frame = [mScreen->uiScreen() applicationFrame];
-        QRect geom = QRect(frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-        widget()->setGeometry(geom);
         mWindow = [[UIWindow alloc] init];
+        updateGeometryAndOrientation();
+        // window
         mWindow.screen = mScreen->uiScreen();
-        mWindow.frame = frame; // for some reason setting the screen resets frame.origin, so we need to set the frame afterwards
+        // for some reason setting the screen resets frame.origin, so we need to set the frame afterwards
+        mWindow.frame = mFrame;
 
         // view
         [mView deleteFramebuffer];
-        mView.frame = CGRectMake(0, 0, frame.size.width, frame.size.height); // fill
+        mView.frame = CGRectMake(0, 0, mWindow.bounds.size.width, mWindow.bounds.size.height); // fill
         [mView setMultipleTouchEnabled:YES];
         [mView setWindow:this];
         [mWindow addSubview:mView];
@@ -379,6 +356,50 @@ UIWindow *QUIKitWindow::ensureNativeWindow()
         [mWindow makeKeyAndVisible];
     }
     return mWindow;
+}
+
+void QUIKitWindow::updateGeometryAndOrientation()
+{
+    if (!mWindow)
+        return;
+    mFrame = [mScreen->uiScreen() applicationFrame];
+    CGRect screen = [mScreen->uiScreen() bounds];
+    QRect geom;
+    CGFloat angle = 0;
+    switch ([[UIApplication sharedApplication] statusBarOrientation]) {
+    case UIInterfaceOrientationPortrait:
+        geom = QRect(mFrame.origin.x, mFrame.origin.y, mFrame.size.width, mFrame.size.height);
+        break;
+    case UIInterfaceOrientationPortraitUpsideDown:
+        geom = QRect(screen.size.width - mFrame.origin.x - mFrame.size.width,
+                     screen.size.height - mFrame.origin.y - mFrame.size.height,
+                     mFrame.size.width,
+                     mFrame.size.height);
+        angle = M_PI;
+        break;
+    case UIInterfaceOrientationLandscapeLeft:
+        geom = QRect(screen.size.height - mFrame.origin.y - mFrame.size.height,
+                     mFrame.origin.x,
+                     mFrame.size.height,
+                     mFrame.size.width);
+        angle = -M_PI/2.;
+        break;
+    case UIInterfaceOrientationLandscapeRight:
+        geom = QRect(mFrame.origin.y,
+                     screen.size.width - mFrame.origin.x - mFrame.size.width,
+                     mFrame.size.height,
+                     mFrame.size.width);
+        angle = +M_PI/2.;
+        break;
+    }
+    if (angle != 0) {
+        [mView layer].transform = CATransform3DMakeRotation(angle, 0, 0, 1.);
+    } else {
+        [mView layer].transform = CATransform3DIdentity;
+    }
+    [mView setNeedsDisplay];
+    widget()->setGeometry(geom);
+    widget()->update();
 }
 
 QPlatformGLContext *QUIKitWindow::glContext() const

@@ -3475,6 +3475,10 @@ void tst_QString::toLatin1Roundtrip_data()
 
     static const ushort unicode6[] = { 0x180, 0x1ff, 0x8001, 0x8080, 0xfffc };
     QTest::newRow("non-latin1b") << QByteArray("?????") << QString::fromUtf16(unicode6, 5) << questionmarks;
+
+    static const ushort unicode7[] = { 'H', 'e', 'l', 'l', 'o', 0x100, 0x17f, 0x180, 0x8080, 0xfffc };
+    static const ushort unicode7q[] = { 'H', 'e', 'l', 'l', 'o', '?', '?', '?', '?', '?' };
+    QTest::newRow("mixed") << QByteArray("Hello?????") << QString::fromUtf16(unicode7, 10) << QString::fromUtf16(unicode7q, 10);
 }
 
 void tst_QString::toLatin1Roundtrip()
@@ -4334,7 +4338,7 @@ void tst_QString::localeAwareCompare_data()
 void tst_QString::localeAwareCompare()
 {
 #ifdef Q_OS_SYMBIAN
-    QSKIP("QTBUG-16921: There is no way to set up the system locale, so this test is not reliable in Symbian.");
+    QSKIP("QTBUG-16921: There is no way to set up the system locale, so this test is not reliable in Symbian.", SkipSingle);
 #else
 #ifdef Q_OS_WIN
 #   ifndef Q_OS_WINCE
@@ -5099,24 +5103,28 @@ void tst_QString::toUpperLower_icu()
 
     QLocale::setDefault(QLocale(QLocale::Turkish, QLocale::Turkey));
 
-    // turkish locale has a capital I with a dot (U+0130, utf8 c4b0)
+    QCOMPARE(s.toUpper(), QString::fromLatin1("I"));
+    QCOMPARE(s.toLower(), QString::fromLatin1("i"));
 
-    QCOMPARE(s.toUpper(), QString::fromUtf8("\xc4\xb0"));
-    QCOMPARE(QString::fromUtf8("\xc4\xb0").toLower(), s);
+    // turkish locale has a capital I with a dot (U+0130, utf8 c4b0)
+    QLocale l;
+
+    QCOMPARE(l.toUpper(s), QString::fromUtf8("\xc4\xb0"));
+    QCOMPARE(l.toLower(QString::fromUtf8("\xc4\xb0")), s);
 
     // nothing should happen here
-    QCOMPARE(s.toLower(), s);
-    QCOMPARE(QString::fromLatin1("I").toUpper(), QString::fromLatin1("I"));
+    QCOMPARE(l.toLower(s), s);
+    QCOMPARE(l.toUpper(QString::fromLatin1("I")), QString::fromLatin1("I"));
 
     // U+0131, utf8 c4b1 is the lower-case i without a dot
     QString sup = QString::fromUtf8("\xc4\xb1");
 
-    QCOMPARE(sup.toUpper(), QString::fromLatin1("I"));
-    QCOMPARE(QString::fromLatin1("I").toLower(), sup);
+    QCOMPARE(l.toUpper(sup), QString::fromLatin1("I"));
+    QCOMPARE(l.toLower(QString::fromLatin1("I")), sup);
 
     // nothing should happen here
-    QCOMPARE(sup.toLower(), sup);
-    QCOMPARE(QString::fromLatin1("i").toLower(), QString::fromLatin1("i"));
+    QCOMPARE(l.toLower(sup), sup);
+    QCOMPARE(l.toLower(QString::fromLatin1("i")), QString::fromLatin1("i"));
 
     // the cleanup function will restore the default locale
 }

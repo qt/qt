@@ -97,6 +97,7 @@ public:
     virtual void drawRoundedRect(const QRectF &rect, qreal xrad, qreal yrad, Qt::SizeMode mode);
 
     virtual void clipEnabledChanged();
+    virtual void brushChanged();
     virtual void penChanged();
     virtual void opacityChanged();
     virtual void compositionModeChanged();

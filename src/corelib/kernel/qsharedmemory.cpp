@@ -80,6 +80,8 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
     return result;
 #elif defined(Q_OS_SYMBIAN)
     return result.left(KMaxKernelName);
+#elif defined(QT_POSIX_IPC)
+    return QLatin1Char('/') + result;
 #else
     return QDir::tempPath() + QLatin1Char('/') + result;
 #endif
@@ -116,6 +118,9 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
   release the shared memory segment. But if that last thread or
   process crashes without running the QSharedMemory destructor, the
   shared memory segment survives the crash.
+
+  \o QNX: Due to possible race conditions in the POSIX IPC implementation, create()
+  should be called prior to any attach() calls (even across multiple threads).
 
   \o HP-UX: Only one attach to a shared memory segment is allowed per
   process. This means that QSharedMemory should not be used across
@@ -247,14 +252,14 @@ void QSharedMemory::setNativeKey(const QString &key)
     if (isAttached())
         detach();
     d->cleanHandle();
-    d->key = QString();
+    d->key.clear();
     d->nativeKey = key;
 }
 
 bool QSharedMemoryPrivate::initKey()
 {
-    if (!cleanHandle())
-        return false;
+    cleanHandle();
+
 #ifndef QT_NO_SYSTEMSEMAPHORE
     systemSemaphore.setKey(QString(), 1);
     systemSemaphore.setKey(key, 1);
@@ -285,7 +290,7 @@ bool QSharedMemoryPrivate::initKey()
         return false;
     }
 #endif
-    errorString = QString();
+    errorString.clear();
     error = QSharedMemory::NoError;
     return true;
 }
@@ -342,27 +347,23 @@ bool QSharedMemory::create(int size, AccessMode mode)
     if (!d->initKey())
         return false;
 
+    if (size <= 0) {
+        d->error = QSharedMemory::InvalidSize;
+        d->errorString = QSharedMemory::tr("%1: create size is less then 0").arg(QLatin1String("QSharedMemory::create"));
+        return false;
+    }
+
 #ifndef QT_NO_SYSTEMSEMAPHORE
 #ifndef Q_OS_WIN
     // Take ownership and force set initialValue because the semaphore
     // might have already existed from a previous crash.
     d->systemSemaphore.setKey(d->key, 1, QSystemSemaphore::Create);
 #endif
-#endif
 
-    QString function = QLatin1String("QSharedMemory::create");
-#ifndef QT_NO_SYSTEMSEMAPHORE
     QSharedMemoryLocker lock(this);
-    if (!d->key.isNull() && !d->tryLocker(&lock, function))
+    if (!d->key.isNull() && !d->tryLocker(&lock, QLatin1String("QSharedMemory::create")))
         return false;
 #endif
-
-    if (size <= 0) {
-        d->error = QSharedMemory::InvalidSize;
-        d->errorString =
-	    QSharedMemory::tr("%1: create size is less then 0").arg(function);
-        return false;
-    }
 
     if (!d->create(size))
         return false;

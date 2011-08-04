@@ -59,12 +59,27 @@
 #include <private/qmenu_p.h>
 #include <private/qt_s60_p.h>
 #include <qdebug.h>
+#include "qs60keycapture_p.h"
 
 //Animated wallpapers in Qt applications are not supported.
 const TInt KAknDisableAnimationBackground = 0x02000000;
 const TInt KAknSingleClickCompatible = 0x01000000;
 
 QT_BEGIN_NAMESPACE
+
+static QS60KeyCapture *qt_S60KeyCapture = 0;
+
+static void installS60KeyCapture(CCoeEnv *env)
+{
+    if (QApplication::testAttribute(Qt::AA_CaptureMultimediaKeys))
+        qt_S60KeyCapture = new QS60KeyCapture(env);
+}
+
+static void removeS60KeyCapture()
+{
+    delete qt_S60KeyCapture;
+    qt_S60KeyCapture = 0;
+}
 
 /*!
   \class QS60MainAppUi
@@ -127,6 +142,7 @@ void QS60MainAppUi::ConstructL()
     }
 #endif
     BaseConstructL(flags);
+    installS60KeyCapture(iCoeEnv);
 }
 
 /*!
@@ -142,6 +158,7 @@ QS60MainAppUi::QS60MainAppUi()
  */
 QS60MainAppUi::~QS60MainAppUi()
 {
+    removeS60KeyCapture();
 }
 
 /*!
@@ -316,7 +333,21 @@ TRect QS60MainAppUi::ApplicationRect() const
 */
 void QS60MainAppUi::HandleScreenDeviceChangedL()
 {
+    // This function triggers AppUi relayout which also generates
+    // HandleStatusPaneSizeChange(). We don't want to handle
+    // status pane resizes at this point because it causes
+    // Qt window resize and thus EGL surface resize in the middle of
+    // incomplete layout process causing unnecessary overhead.
+    // To prevent status pane resize handling while layout is still
+    // in progress, we guard relayouting with handleStatusPaneResizeNotifications
+    // flag. QSymbianControl checks this flag before doing Qt window
+    // resize due to status pane change.
+    // Eventually when layout is ready, Symbian framework calls
+    // HandleResourceChangeL(KEikDynamicLayoutVariantSwitch) which triggers
+    // resize to Qt window and to its EGL surface.
+    S60->handleStatusPaneResizeNotifications = false;
     QS60MainAppUiBase::HandleScreenDeviceChangedL();
+    S60->handleStatusPaneResizeNotifications = true;
 }
 
 /*!

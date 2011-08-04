@@ -649,7 +649,12 @@ bool qt_get_verificationdata(QtPluginQueryVerificationDataFunction pfn, uint *qt
 #else
     szData = pfn();
 #endif
-    return qt_parse_pattern(szData, qt_version, debug, key);
+
+#ifdef QT_NO_PLUGIN_CHECK
+	return true;
+#else
+	return qt_parse_pattern(szData, qt_version, debug, key);
+#endif
 }
 
 bool QLibraryPrivate::isPlugin(QSettings *settings)

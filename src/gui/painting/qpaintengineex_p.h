@@ -198,11 +198,13 @@ public:
     virtual void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s);
 
     virtual void drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,
-                                     QFlags<QPainter::PixmapFragmentHint> hints);
+                                     QPainter::PixmapFragmentHints hints);
+    virtual void drawPixmapFragments(const QRectF *targetRects, const QRectF *sourceRects, int fragmentCount, const QPixmap &pixmap,
+                                     QPainter::PixmapFragmentHints hints);
 
     virtual void updateState(const QPaintEngineState &state);
 
-    virtual void drawStaticTextItem(QStaticTextItem *) = 0;
+    virtual void drawStaticTextItem(QStaticTextItem *);
 
     virtual void setState(QPainterState *s);
     inline QPainterState *state() { return static_cast<QPainterState *>(QPaintEngine::state); }
@@ -227,6 +229,7 @@ public:
         IsEmulationEngine = 0x02    // If set, this object is a QEmulationEngine.
     };
     virtual uint flags() const {return 0;}
+    virtual bool supportsTransformations(qreal pixelSize, const QTransform &m) const;
 
 protected:
     QPaintEngineEx(QPaintEngineExPrivate &data);

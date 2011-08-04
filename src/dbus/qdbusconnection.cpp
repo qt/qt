@@ -222,6 +222,18 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
 */
 
 /*!
+    \internal
+    \since 4.8
+    \enum QDBusConnection::VirtualObjectRegisterOption
+    Specifies the options for registering virtual objects with the connection. The possible values are:
+
+    \value SingleNode                           register a virtual object to handle one path only
+    \value SubPath                              register a virtual object so that it handles all sub paths
+
+    \sa registerVirtualObject(), QDBusVirtualObject
+*/
+
+/*!
     \enum QDBusConnection::UnregisterMode
     The mode for unregistering an object path:
 
@@ -234,10 +246,11 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
 
 /*!
     \since 4.8
-    \enum QDBusConnection::ConnectionCapabilities
-    The available capabilities for a D-Bus connection.
+    \enum QDBusConnection::ConnectionCapability
 
-    \value UnixFileDescriptorPassing        passing of Unix file descriptors to other processes
+    This enum describes the available capabilities for a D-Bus connection.
+
+    \value UnixFileDescriptorPassing        enables passing of Unix file descriptors to other processes
                                             (see QDBusUnixFileDescriptor)
 
     \sa connectionCapabilities()
@@ -800,9 +813,21 @@ bool QDBusConnection::registerObject(const QString &path, QObject *object, Regis
             // this node exists
             // consider it free if there's no object here and the user is not trying to
             // replace the object sub-tree
-            if ((options & ExportChildObjects && !node->children.isEmpty()) || node->obj)
+            if (node->obj)
                 return false;
 
+            if (options & QDBusConnectionPrivate::VirtualObject) {
+                // technically the check for children needs to go even deeper
+                if (options & SubPath) {
+                    foreach (const QDBusConnectionPrivate::ObjectTreeNode &child, node->children) {
+                        if (child.obj)
+                            return false;
+                    }
+                }
+            } else {
+                if ((options & ExportChildObjects && !node->children.isEmpty()))
+                    return false;
+            }
             // we can add the object here
             node->obj = object;
             node->flags = options;
@@ -810,6 +835,13 @@ bool QDBusConnection::registerObject(const QString &path, QObject *object, Regis
             d->registerObject(node);
             //qDebug("REGISTERED FOR %s", path.toLocal8Bit().constData());
             return true;
+        }
+
+        // if a virtual object occupies this path, return false
+        if (node->obj && (node->flags & QDBusConnectionPrivate::VirtualObject) && (node->flags & QDBusConnection::SubPath)) {
+            qDebug("Cannot register object at %s because QDBusVirtualObject handles all sub-paths.",
+                   qPrintable(path));
+            return false;
         }
 
         // find the position where we'd insert the node
@@ -837,6 +869,21 @@ bool QDBusConnection::registerObject(const QString &path, QObject *object, Regis
 
     Q_ASSERT_X(false, "QDBusConnection::registerObject", "The impossible happened");
     return false;
+}
+
+/*!
+    \internal
+    \since 4.8
+    Registers a QDBusTreeNode for a path. It can handle a path including all child paths, thus
+    handling multiple DBus nodes.
+
+    To unregister a QDBusTreeNode use the unregisterObject() function with its path.
+*/
+bool QDBusConnection::registerVirtualObject(const QString &path, QDBusVirtualObject *treeNode,
+                      VirtualObjectRegisterOption options)
+{
+    int opts = options | QDBusConnectionPrivate::VirtualObject;
+    return registerObject(path, (QObject*) treeNode, (RegisterOptions) opts);
 }
 
 /*!
@@ -904,6 +951,8 @@ QObject *QDBusConnection::objectRegisteredAt(const QString &path) const
     while (node) {
         if (pathComponents.count() == i)
             return node->obj;
+        if ((node->flags & QDBusConnectionPrivate::VirtualObject) && (node->flags & QDBusConnection::SubPath))
+            return node->obj;
 
         QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator it =
             qLowerBound(node->children.constBegin(), node->children.constEnd(), pathComponents.at(i));
@@ -915,6 +964,8 @@ QObject *QDBusConnection::objectRegisteredAt(const QString &path) const
     }
     return 0;
 }
+
+
 
 /*!
     Returns a QDBusConnectionInterface object that represents the
@@ -1120,6 +1171,27 @@ void QDBusConnectionPrivate::setBusService(const QDBusConnection &connection)
     QObject::connect(this, SIGNAL(callWithCallbackFailed(QDBusError,QDBusMessage)),
                      busService, SIGNAL(callWithCallbackFailed(QDBusError,QDBusMessage)),
                      Qt::QueuedConnection);
+}
+
+/*!
+    \since 4.8
+    Returns the local machine ID as known to the D-Bus system. Each
+    node or host that runs D-Bus has a unique identifier that can be
+    used to distinguish it from other hosts if they are sharing
+    resources like the filesystem.
+
+    Note that the local machine ID is not guaranteed to be persistent
+    across boots of the system, so this identifier should not be
+    stored in persistent storage (like the filesystem). It is
+    guaranteed to remain constant only during the lifetime of this
+    boot session.
+*/
+QByteArray QDBusConnection::localMachineId()
+{
+    char *dbus_machine_id = q_dbus_get_local_machine_id();
+    QByteArray result = dbus_machine_id;
+    q_dbus_free(dbus_machine_id);
+    return result;
 }
 
 /*!

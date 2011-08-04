@@ -1015,6 +1015,7 @@ static bool isValidSlot(const QMetaMethod &sl)
 }
 
 Q_TESTLIB_EXPORT bool printAvailableFunctions = false;
+Q_TESTLIB_EXPORT bool printAvailableTags = false;
 Q_TESTLIB_EXPORT QStringList testFunctions;
 Q_TESTLIB_EXPORT QStringList testTags;
 
@@ -1024,6 +1025,65 @@ static void qPrintTestSlots()
         QMetaMethod sl = QTest::currentTestObject->metaObject()->method(i);
         if (isValidSlot(sl))
             printf("%s\n", sl.signature());
+    }
+}
+
+static void qPrintDataTags()
+{
+    // Get global data tags:
+    QTestTable::globalTestTable();
+    invokeMethod(QTest::currentTestObject, "initTestCase_data()");
+    const QTestTable *gTable = QTestTable::globalTestTable();
+
+    const QMetaObject *currTestMetaObj = QTest::currentTestObject->metaObject();
+
+    // Process test functions:
+    for (int i = 0; i < currTestMetaObj->methodCount(); ++i) {
+        QMetaMethod tf = currTestMetaObj->method(i);
+        if (isValidSlot(tf)) {
+            // Retrieve local tags:
+            QStringList localTags;
+            QTestTable table;
+            char member[512];
+            char *slot = qstrdup(tf.signature());
+            slot[strlen(slot) - 2] = '\0';
+            QTest::qt_snprintf(member, 512, "%s_data()", slot);
+            invokeMethod(QTest::currentTestObject, member);
+            for (int j = 0; j < table.dataCount(); ++j)
+                localTags << QLatin1String(table.testData(j)->dataTag());
+
+            // Print all tag combinations:
+            if (gTable->dataCount() == 0) {
+                if (localTags.count() == 0) {
+                    // No tags at all, so just print the test function:
+                    printf("%s %s\n", currTestMetaObj->className(), slot);
+                } else {
+                    // Only local tags, so print each of them:
+                    for (int k = 0; k < localTags.size(); ++k)
+                        printf(
+                            "%s %s %s\n",
+                            currTestMetaObj->className(), slot, localTags.at(k).toLatin1().data());
+                }
+            } else {
+                for (int j = 0; j < gTable->dataCount(); ++j) {
+                    if (localTags.count() == 0) {
+                        // Only global tags, so print the current one:
+                        printf(
+                            "%s %s __global__ %s\n",
+                            currTestMetaObj->className(), slot, gTable->testData(j)->dataTag());
+                    } else {
+                        // Local and global tags, so print each of the local ones and
+                        // the current global one:
+                        for (int k = 0; k < localTags.size(); ++k)
+                            printf(
+                                "%s %s %s __global__ %s\n", currTestMetaObj->className(), slot,
+                                localTags.at(k).toLatin1().data(), gTable->testData(j)->dataTag());
+                    }
+                }
+            }
+
+            delete[] slot;
+        }
     }
 }
 
@@ -1043,6 +1103,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
     const char *testOptions =
          " options:\n"
          " -functions : Returns a list of current testfunctions\n"
+         " -datatags  : Returns a list of current data tags.\n"
+         "              A global data tag is preceded by ' __global__ '.\n"
          " -xunitxml  : Outputs results as XML XUnit document\n"
          " -xml       : Outputs results as XML document\n"
          " -lightxml  : Outputs results as stream of XML tags\n"
@@ -1092,6 +1154,12 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 QTest::printAvailableFunctions = true;
             } else {
                 qPrintTestSlots();
+                exit(0);
+            }
+        } else if (strcmp(argv[i], "-datatags") == 0) {
+            QTest::printAvailableTags = true;
+            if (!qml) {
+                qPrintDataTags();
                 exit(0);
             }
         } else if(strcmp(argv[i], "-xunitxml") == 0){

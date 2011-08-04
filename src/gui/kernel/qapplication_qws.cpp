@@ -112,19 +112,6 @@
 
 #include <qvfbhdr.h>
 
-#ifndef QT_NO_QWS_MULTIPROCESS
-#ifdef QT_NO_QSHM
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#ifndef Q_OS_DARWIN
-# include <sys/sem.h>
-#endif
-#include <sys/socket.h>
-#else
-#include "private/qwssharedmemory_p.h"
-#endif
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_DIRECTPAINTER
@@ -222,7 +209,7 @@ QString qws_dataDir()
     if (!S_ISDIR(buf.st_mode))
         qFatal("%s is not a directory", dataDir.constData());
 
-#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_VXWORKS)
+#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_VXWORKS) && !defined(Q_OS_QNX)
     if (buf.st_uid != getuid())
         qFatal("Qt for Embedded Linux data directory is not owned by user %d", getuid());
 
@@ -230,7 +217,7 @@ QString qws_dataDir()
         qFatal("Qt for Embedded Linux data directory has incorrect permissions: %s", dataDir.constData());
 #endif
 
-    result.append("/");
+    result.append(QLatin1Char('/'));
     return result;
 }
 
@@ -2197,6 +2184,11 @@ void qt_init(QApplicationPrivate *priv, int type)
     qws_screen_is_interlaced = read_bool_env_var("QWS_INTERLACE",false);
 
     const char *display = ::getenv("QWS_DISPLAY");
+
+#ifdef QT_QWS_DEFAULT_DRIVER_NAME
+    if (!display) display = QT_QWS_DEFAULT_DRIVER_NAME;
+#endif
+
     if (display)
         qws_display_spec = display; // since we setenv later!
 
@@ -3565,13 +3557,8 @@ bool QETWidget::translateKeyEvent(const QWSKeyEvent *event, bool grab) /* grab i
                         QEvent::KeyPress : QEvent::KeyRelease;
     bool autor = event->simpleData.is_auto_repeat;
     QString text;
-    char ascii = 0;
-    if (event->simpleData.unicode) {
-        QChar ch(event->simpleData.unicode);
-        if (ch.unicode() != 0xffff)
-            text += ch;
-        ascii = ch.toLatin1();
-    }
+    if (event->simpleData.unicode && event->simpleData.unicode != 0xffff)
+        text += QChar(event->simpleData.unicode);
     code = event->simpleData.keycode;
 
 #if defined QT3_SUPPORT && !defined(QT_NO_SHORTCUT)

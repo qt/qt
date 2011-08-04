@@ -44,7 +44,7 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtCore/qpoint.h>
-#include <QtCore/qlist.h>
+#include <QtCore/qstringlist.h>
 #include <QtGui/qrgb.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qimage.h>
@@ -357,6 +357,7 @@ private:
     friend class QVNCScreen;
     friend class QLinuxFbScreen;
     friend class QVFbScreen;
+    friend class QQnxScreen;
     friend class QProxyScreen;
     friend class QIntfbScreen;
 #endif

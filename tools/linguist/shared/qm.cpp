@@ -503,12 +503,7 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
     // for squeezed but non-file data, this is what needs to be deleted
     const uchar *messageArray = 0;
     const uchar *offsetArray = 0;
-    const uchar *contextArray = 0;
-    const uchar *numerusRulesArray = 0;
-    uint messageLength = 0;
     uint offsetLength = 0;
-    uint contextLength = 0;
-    uint numerusRulesLength = 0;
 
     bool ok = true;
     const uchar *end = data + len;
@@ -527,22 +522,13 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
             break;
         }
 
-        if (tag == Contexts) {
-            contextArray = data;
-            contextLength = blockLen;
-            //qDebug() << "CONTEXTS: " << contextLength << QByteArray((const char *)contextArray, contextLength).toHex();
-        } else if (tag == Hashes) {
+        if (tag == Hashes) {
             offsetArray = data;
             offsetLength = blockLen;
-            //qDebug() << "HASHES: " << offsetLength << QByteArray((const char *)offsetArray, offsetLength).toHex();
+            //qDebug() << "HASHES: " << blockLen << QByteArray((const char *)data, blockLen).toHex();
         } else if (tag == Messages) {
             messageArray = data;
-            messageLength = blockLen;
-            //qDebug() << "MESSAGES: " << messageLength << QByteArray((const char *)messageArray, messageLength).toHex();
-        } else if (tag == NumerusRules) {
-            numerusRulesArray = data;
-            numerusRulesLength = blockLen;
-            //qDebug() << "NUMERUSRULES: " << numerusRulesLength << QByteArray((const char *)numerusRulesArray, numerusRulesLength).toHex();
+            //qDebug() << "MESSAGES: " << blockLen << QByteArray((const char *)data, blockLen).toHex();
         }
 
         data += blockLen;
@@ -697,7 +683,7 @@ static bool containsStripped(const Translator &translator, const TranslatorMessa
     return false;
 }
 
-static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData &cd)
+bool saveQM(const Translator &translator, QIODevice &dev, ConversionData &cd)
 {
     Releaser releaser;
     QLocale::Language l;

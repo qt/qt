@@ -686,6 +686,8 @@ QEglContext *QVGEGLWindowSurfaceDirect::ensureContext(QWidget *widget)
 #endif
         EGLSurface surface = context->createSurface(widget, &surfaceProps);
         if (surface == EGL_NO_SURFACE) {
+            qt_vg_destroy_paint_engine(engine);
+            engine = 0;
             qt_vg_destroy_context(context, QInternal::Widget);
             context = 0;
             return 0;

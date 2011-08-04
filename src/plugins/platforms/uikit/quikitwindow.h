@@ -119,9 +119,13 @@ public:
 
     QPlatformGLContext *glContext() const;
 
+    QUIKitScreen *platformScreen() const { return mScreen; }
+
+    void updateGeometryAndOrientation();
 private:
     QUIKitScreen *mScreen;
     UIWindow *mWindow;
+    CGRect mFrame;
     EAGLView *mView;
     mutable EAGLPlatformContext *mContext;
 };
