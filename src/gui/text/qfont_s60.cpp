@@ -49,14 +49,31 @@ QT_BEGIN_NAMESPACE
 
 #ifdef QT_NO_FREETYPE
 Q_GLOBAL_STATIC(QMutex, lastResortFamilyMutex);
-#endif // QT_NO_FREETYPE
-
 extern QStringList qt_symbian_fontFamiliesOnFontServer(); // qfontdatabase_s60.cpp
 Q_GLOBAL_STATIC_WITH_INITIALIZER(QStringList, fontFamiliesOnFontServer, {
     // We are only interested in the initial font families. No Application fonts.
     // Therefore, we are allowed to cache the list.
     x->append(qt_symbian_fontFamiliesOnFontServer());
 });
+
+extern bool qt_symbian_isLinkedFont(const TDesC &typefaceName); // qfontdatabase_s60.cpp
+
+static QString classicalSymbianSystemFont()
+{
+    static QString font;
+    if (font.isEmpty()) {
+        static const char* const classicSymbianSystemFonts[] = { "Nokia Sans S60", "Series 60 Sans" };
+        for (int i = 0; i < sizeof classicSymbianSystemFonts / sizeof classicSymbianSystemFonts[0]; ++i) {
+            const QString classicFont = QLatin1String(classicSymbianSystemFonts[i]);
+            if (fontFamiliesOnFontServer()->contains(classicFont)) {
+                font = classicFont;
+                break;
+            }
+        }
+    }
+    return font;
+}
+#endif // QT_NO_FREETYPE
 
 QString QFont::lastResortFont() const
 {
@@ -85,6 +102,10 @@ QString QFont::lastResortFamily() const
         S60->screenDevice()->ReleaseFont(font);
         
         lock.relock();
+
+        // We must not return a Symbian Linked Font. See QTBUG-20007
+        if (qt_symbian_isLinkedFont(spec.iTypeface.iName) && !classicalSymbianSystemFont().isEmpty())
+            family = classicalSymbianSystemFont();
     }
     return family;
 #else // QT_NO_FREETYPE
@@ -117,14 +138,9 @@ QString QFont::defaultFamily() const
 {
 #ifdef QT_NO_FREETYPE
     switch(d->request.styleHint) {
-        case QFont::SansSerif: {
-            static const char* const preferredSansSerif[] = {"Nokia Sans S60", "Series 60 Sans"};
-            for (int i = 0; i < sizeof preferredSansSerif / sizeof preferredSansSerif[0]; ++i) {
-                const QString sansSerif = QLatin1String(preferredSansSerif[i]);
-                if (fontFamiliesOnFontServer()->contains(sansSerif))
-                    return sansSerif;
-            }
-        }
+        case QFont::SansSerif:
+        if (!classicalSymbianSystemFont().isEmpty())
+            return classicalSymbianSystemFont();
         // No break. Intentional fall through.
         default:
             return lastResortFamily();
