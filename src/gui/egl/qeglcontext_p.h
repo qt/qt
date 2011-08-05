@@ -104,6 +104,7 @@ private:
     bool current;
     bool ownsContext;
     bool sharing;
+    bool apiChanged;
 
     static QEglContext *currentContext(QEgl::API api);
     static void setCurrentContext(QEgl::API api, QEglContext *context);
