@@ -4163,4 +4163,6 @@ EXPORTS
 	_ZNK5QUuid11toByteArrayEv @ 4162 NONAME
 	_ZNK5QUuid9toRfc4122Ev @ 4163 NONAME
 	_ZN18QAbstractItemModel17resetInternalDataEv @ 4164 NONAME
+	_ZNK7QLocale7toLowerERK7QString @ 4165 NONAME
+	_ZNK7QLocale7toUpperERK7QString @ 4166 NONAME
 

@@ -15,7 +15,7 @@ INSTALLS += target sources
 
 symbian: {
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
-    addFiles.sources = frank.xbel jennifer.xbel
+    addFiles.files = frank.xbel jennifer.xbel
     addFiles.path = /data/qt/streambookmarks
     DEPLOYMENT += addFiles
 }
