@@ -77,8 +77,8 @@
 #include <akncontext.h>             // CAknContextPane
 #include <eikspane.h>               // CEikStatusPane
 #include <AknPopupFader.h>          // MAknFadedComponent and TAknPopupFader
-#include <gfxtranseffect/gfxtranseffect.h> // BeginFullScreen
 #ifdef QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H
+#include <gfxtranseffect/gfxtranseffect.h> // BeginFullScreen
 #include <akntranseffect.h> // BeginFullScreen
 #endif
 #endif
