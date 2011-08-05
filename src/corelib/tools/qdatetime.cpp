@@ -4040,8 +4040,11 @@ static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time)
             RTz tz;
             User::LeaveIfError(tz.Connect());
             CleanupClosePushL(tz);
-            res.tm_isdst = tz.IsDaylightSavingOnL(*tz.GetTimeZoneIdL(),utcTTime);
+            CTzId *tzId = tz.GetTimeZoneIdL();
+            CleanupStack::PushL(tzId);
+            res.tm_isdst = tz.IsDaylightSavingOnL(*tzId,utcTTime);
             User::LeaveIfError(tz.ConvertToLocalTime(utcTTime));
+            CleanupStack::PopAndDestroy(tzId);
             CleanupStack::PopAndDestroy(&tz));
         if (KErrNone == err) {
             TDateTime localDateTime = utcTTime.DateTime();
