@@ -694,7 +694,7 @@ public slots:
     void terminate();
 
 private:
-    enum Handles { FileHandle, TerminateEventHandle, HandleCount };
+    enum Handles { TerminateEventHandle, FileHandle, HandleCount };
 
     inline int tryRead();
 
@@ -727,7 +727,7 @@ int WinReaderThread::tryRead()
     const DWORD bytesToRead = qMax(DWORD(1), qMin(comStat.cbInQue, DWORD(BufSize)));
     // Trigger read
     DWORD bytesRead = 0;
-    if (ReadFile(m_context->device, &buffer, bytesToRead, &bytesRead, &m_context->readOverlapped)) {
+    if (ReadFile(m_context->device, &buffer, bytesToRead, &bytesRead, &m_context->readOverlapped) && bytesRead > 0) {
         if (bytesRead == 1) {
             processData(buffer[0]);
         } else {
@@ -736,7 +736,7 @@ int WinReaderThread::tryRead()
         return 0;
     }
     const DWORD readError = GetLastError();
-    if (readError != ERROR_IO_PENDING) {
+    if (readError != ERROR_IO_PENDING && readError != 0) {
         emit error(QString::fromLatin1("Read error: %1").arg(winErrorMessage(readError)));
         return -1;
     }
