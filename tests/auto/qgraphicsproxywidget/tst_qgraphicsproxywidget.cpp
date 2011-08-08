@@ -1498,6 +1498,10 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
     view.paintEventRegion = QRegion();
     view.npaints = 0;
     QTimer::singleShot(0, widget, SLOT(updateScroll()));
+#if defined(QT_MAC_USE_COCOA)
+    if (QApplicationPrivate::graphics_system_name != QLatin1String("raster"))
+        QEXPECT_FAIL(0, "Cocoa will send us one aggregated update", Abort);
+#endif
     QTRY_COMPARE(view.npaints, 2);
     // QRect(0, 0, 200, 12) is the first update, expanded (-2, -2, 2, 2)
     // QRect(0, 12, 102, 10) is the scroll update, expanded (-2, -2, 2, 2),

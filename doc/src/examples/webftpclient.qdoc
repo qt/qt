@@ -1,0 +1,336 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example webkit/webftpclient
+    \title Web FTP Client Example
+
+    The Web FTP Client example shows how to add support for a new protocol
+    to QtWebKit-based applications.
+
+    \image webkit-webftpclient.png An FTP client displaying the contents of the ftp.qt.nokia.com site.
+
+    \section1 Introduction
+
+    The QtWebKit module presents many ways to integrate the worlds of native
+    desktop and mobile applications and the Web, making it possible for
+    developers to extend and combine features found in Qt and WebKit to create
+    new ones. In this article, we examine the use of Qt's network access API
+    with WebKit and show how to turn QWebView into a simple FTP client.
+
+    In the \l{Web Plugin Example}, we extended Qt's WebKit integration by
+    showing how to add custom widgets to Web pages. In the article, we used
+    QNetworkRequest to ask for content for display in a widget, and we obtained
+    the data returned by the server by reading from the corresponding
+    QNetworkReply.
+
+    Qt's network access API is a technology that aims to replace much, but not
+    all, of the functionality provided by the QHttp and QFtp classes.
+    Although the network access API is a Qt-specific technology, the QtWebKit
+    module integrates this Qt technology with WebKit to enable customization of
+    the browser engine by Qt application developers. It also means that we can
+    control how the browser engine obtains and renders content.
+
+    Since QNetworkRequest and QNetworkReply are designed to provide a reusable
+    abstraction for network operations, it seems obvious to use these classes
+    to add FTP support to browsers written using QtWebKit. To do this, we first
+    need to examine the network access classes before we see how the QtWebKit
+    module uses them to manage network operations.
+
+    \section1 Network Access
+
+    The central class in Qt's network access API is QNetworkAccessManager.
+    This class performs the work of dispatching requests to remote servers and
+    handling incoming replies. Applications typically construct an instance of
+    this class and use it for all high level network communication.
+
+    Applications create QNetworkRequest objects, each of them specifying a URL
+    where the request is to be sent and containing meta-data that will be
+    understood by the server. Each request is dispatched by passing it to a
+    function in the network manager \mdash there are different functions
+    corresponding to different kinds of operations, such as
+    \l{QNetworkAccessManager::}{get()}, \l{QNetworkAccessManager::}{put()} and
+    \l{QNetworkAccessManager::}{post()}. Each of these functions returns a
+    QNetworkReply object which is used to obtain the content sent in the reply,
+    as well as any meta-data that describes it.
+
+    The QtWebKit module provides the QWebPage class which represents the
+    content displayed in a QWebView widget. Behind the scenes, this class uses
+    a default network access manager to handle network communication. This
+    default manager works perfectly well for fetching content over HTTP from
+    \tt{http://} URLs, but only supports fetching of files over FTP when using
+    \tt{ftp://} URLs.
+
+    Fortunately, QWebPage provides the \l{QWebPage::}{setNetworkAccessManager()}
+    function that allows the default manager to be replaced with one with more
+    features. This lets us add improved support for FTP quite easily if we can
+    write a new manager that supports \tt{ftp://} URLs.
+
+    The process of replacing the manager and using a new one with an existing
+    QWebPage object can be broken up into three steps:
+
+    \list 1
+    \o Creating a new QNetworkAccessManager subclass.
+    \o Creating a new QNetworkReply subclass to deal with the FTP protocol.
+    \o Setting the new manager on the QWebPage.
+    \endlist
+
+    Additionally, to provide a reasonable user experience, we should also handle
+    content that the browser engine cannot display. To do this, we create a
+    custom \c{Downloader} object. We will briefly return to this topic later.
+
+    \section1 Creating a New Network Manager
+
+    Replacing an existing network manager for a QWebPage is conceptually simple:
+    we subclass QNetworkAccessManager and reimplement its
+    \l{QNetworkAccessManager::}{createRequest()} function to check for URLs
+    with the \tt{ftp} scheme. However, we want to ensure that the manager uses
+    any existing cache and proxy settings that may have been set up for the
+    existing manager used by the QWebPage.
+
+    To keep the existing proxy and cache, we give our network manager a
+    constructor that accepts the old manager as an argument. In the constructor,
+    we reuse the settings from the old manager.
+
+    \snippet examples/webkit/webftpclient/networkaccessmanager.cpp constructor
+
+    The \c{createRequest()} function is used to create and dispatch requests to
+    remote servers for each of the different kinds of operation that the API
+    presents to the developer. Since we are only interested in performing simple
+    fetches of resources using the \tt{ftp} scheme, we filter out other schemes
+    and other kinds of operation, delegating the task of handling these to the
+    default implementation.
+
+    \snippet examples/webkit/webftpclient/networkaccessmanager.cpp create request
+
+    Here, we construct and return an instance of the \c FtpReply class. This
+    class performs most of the work of handling the FTP protocol.
+
+    \section1 Creating a Custom Reply
+
+    The network access API is designed to be simple to use: we set up a request,
+    dispatch it using the network manager, and obtain a QNetworkReply object.
+    If we are not interested in the reply's meta-data, we can simply read the
+    data using its \l{QNetworkReply::}{readAll()} function because QNetworkReply
+    is a QIODevice subclass.
+
+    In order to keep the API so simple, however, we need to perform some work
+    behind the scenes. In this case, that means that we must perform a series of
+    communications with the FTP server. Fortunately, we can use the existing
+    implementation provided by QFtp to perform the low level work.
+
+    In the \c FtpReply class, we need to reimplement four functions in the
+    API to ensure that it will work correctly. These functions,
+    \l{QNetworkReply::}{abort()}, \l{QIODevice::}{bytesAvailable()},
+    \l{QIODevice::}{isSequential()}, \l{QIODevice::}{readData()},
+    rely on the rest of the implementation to fill a QByteArray with data and
+    use an integer offset to track how much has been read from the device by
+    the browser.
+
+    \snippet examples/webkit/webftpclient/ftpreply.h class definition
+
+    The \c{processCommand()}, \c{processListInfo} and \c{processData()} slots
+    handle interaction with the FTP server. The private \c{setContent()} and
+    \c{setListContent()} functions are used to add meta-data to the reply and
+    compose HTML for the browser to display.
+
+    Two of the private variables hold information about the data obtained from
+    the FTP server: \c items is updated to contain information about each
+    file found at a given URL, and \c content contains the raw data obtained
+    from the server. The \c offset variable is used to track how much data has
+    been read by the browser from the reply.
+
+    In the constructor, we construct a QFtp object and connect the signals and
+    slots that form the basis of the interaction with the FTP server. The high
+    level communication is reported by the \l{QFtp::}{commandFinished()}
+    signal. New data from the server is reported by the
+    \l{QFtp::}readyRead()} signal.
+    Individual items in an FTP directory listing are reported by the
+    \l{QFtp::}{listInfo()} signal.
+
+    \snippet examples/webkit/webftpclient/ftpreply.cpp constructor
+
+    We also initialize the \c offset into the data that represents the number
+    of bytes that the browser has read from the reply. Additionally, we define
+    a list of units for use with the \c setListContent() function.
+    The last two tasks performed in the constructor are to set the URL of the
+    reply so that the browser can tell where it came from, and to connect to
+    the FTP server.
+
+    \section2 Fetching Data from the Server
+
+    All communication with the server is handled by the \c processCommand()
+    slot, which acts on responses from the server and tells us when a command
+    we have issued has completed.
+    This slot performs the task of logging in to the server when connection has
+    occurred (the \l{QFtp::}{ConnectToHost} command has completed), asking for
+    a list of files when logged in (\l{QFtp::}{Login} has completed),
+    preparing a page with a listing when all file information has been received
+    (\l{QFtp::}{List} has completed), and setting the current content for the
+    reply when data has been fetched from the server
+    (\l{QFtp::}{Get} has completed).
+
+    \snippet examples/webkit/webftpclient/ftpreply.cpp process command
+
+    The result of the \l{QFtp::}{List} command is handled by looking at the
+    number of items obtained from the server.
+    The items themselves are recorded by the \c processListInfo() slot. When a
+    \l{QFtp::}{List} command is complete, we can count the number of items
+    received and determine whether or not we should create a file listing, or
+    try to fetch the file instead by invoking a \l{QFtp::}{Get} command.
+
+    \snippet examples/webkit/webftpclient/ftpreply.cpp process list info
+
+    Since the reply will only be used once, we can simply append items to a list
+    and never bother to clear it.
+
+    The \c processData() slot simply appends data obtained from the FTP server
+    to the QByteArray containing the content to be supplied to the browser.
+
+    \snippet examples/webkit/webftpclient/ftpreply.cpp process data
+
+    Data is appended to the \c content array until the connection to the FTP
+    server is closed, either by the reply or by the server itself. One of the
+    ways in which this happens is when a \l{QFtp::}{Get} command completes. At
+    this point, the \c setContent() function is called from within the
+    \c processCommand() function.
+
+    \snippet examples/webkit/webftpclient/ftpreply.cpp set content
+
+    Here, we prepare the reply for use by the browser by opening it for
+    unbuffered reading and setting the header that reports the amount of data
+    held by the reply. We emit signals that indicate that the network operation
+    has finished and that it has data to be read. Since we are no longer
+    interested in the FTP server, we close the connection to it.
+
+    \section2 Preparing Content for the Reader
+
+    Another way in which the reply closes the connection to the server is when
+    the \c setListContent() function is called from the \c processCommand()
+    function. Most of the implementation of this function involves transforming
+    the information about the items held in the reply's private \c items
+    variable to HTML.
+
+    \snippet examples/webkit/webftpclient/ftpreply.cpp set list content
+
+    Once the HTML description of the files has been composed in a QString, we
+    convert it to a UTF-8 encoded set of bytes which we store in the reply's
+    private \c content variable. In this case, the QByteArray holds HTML
+    instead of file data. We set the reply's headers to indicate that it
+    contains UTF-8 encoded HTML with a certain length, and we emit the
+    \l{QNetworkReply::}{readyRead()} and \l{QNetworkReply::}{finished()}
+    signals to let the browser know that it can start reading the content.
+
+    \section2 Supplying Data to the Browser
+
+    We reimplement four QIODevice functions to provide basic read-only behavior,
+    simply supplying the data held in the \c content array.
+
+    We do not support aborting of the reply, so our \c abort() implementation
+    is empty.
+
+    \snippet examples/webkit/webftpclient/ftpreply.cpp abort
+
+    Similarly, we do not support random access reading, so \c isSequential()
+    is reimplemented to always return true.
+
+    \snippet examples/webkit/webftpclient/ftpreply.cpp is sequential
+
+    The \c bytesAvailable() function returns the total number of bytes held by
+    the reply minus the value of \c offset, which is the number of bytes we
+    have already supplied to the reader.
+
+    \snippet examples/webkit/webftpclient/ftpreply.cpp bytes available
+
+    \snippet examples/webkit/webftpclient/ftpreply.cpp read data
+
+    The \c readData() reimplementation tries to return as much data to the
+    reader as it will allow, copying bytes directly to the appropriate location
+    in memory. The \c offset variable is updated to keep track of how many
+    bytes have been read.
+
+    \section1 Enabling the Protocol
+
+    Now that we have an FTP-enabled network manager and a reply that can handle
+    communication with FTP servers, we can now enable the manager for a given
+    QWebPage.
+    We derive the \c FtpView class from QWebView and configure its behavior in
+    its constructor.
+
+    As we mentioned earlier, we pass the original network manager to the
+    newly-created manager and pass the new manager to the QWebPage belonging to
+    the browser. This enables our network manager for the content it displays.
+
+    \snippet examples/webkit/webftpclient/ftpview.cpp constructor
+
+    We also go to some effort to handle content that WebKit does not natively
+    support, using a \c Downloader helper class to manage this and files that
+    the user downloads via the browser's \gui{Save Link...} context menu entry.
+
+    In the example's \c main() function, we perform the usual steps to
+    initialize our Qt application. We choose an appropriate starting URL for
+    the \c FtpView widget to open before running the application's event loop.
+
+    \snippet examples/webkit/webftpclient/main.cpp main
+
+    \section1 Summary
+
+    As we have seen, enabling support for another protocol and URL scheme in
+    QtWebKit is a fairly simple process involving the creation of a network
+    manager and custom reply object. The implementation challenges
+    are mostly related to how the protocol is handled by the custom
+    QNetworkReply subclass where, in our case, we need to issue the appropriate
+    commands in the correct order to obtain data from the FTP server.
+
+    We also need to ensure that that the reply emits the appropriate signals to
+    inform the browser that it has content to be read. Our implementation is
+    intentionally simple, only notifying the browser with the
+    \l{QIODevice::}{readyRead()} signal when \e all the content is ready to
+    read and emitting the \l{QNetworkReply::}{finished()} signal to indicate
+    that communication is complete; a more sophisticated approach would
+    interleave the commands sent to the server with the emission of signals,
+    allowing the browser to read content as data is obtained from the FTP
+    server.
+
+    The reply also needs to be open for reading. Forgetting to call the
+    \l{QIODevice::}{open()} function is a common error to make when dealing
+    with devices, but in this case it is the reply's responsibility to open
+    itself.
+    It must indicate how much content it has for the browser to read. As we
+    have seen, this is done by setting the reply's
+    \l{QNetworkRequest::}{ContentLengthHeader} header with the appropriate
+    value. With this information available, the browser can read from the reply
+    when the content becomes available, displaying a directory listing or
+    downloading content depending on the type of data supplied.
+
+    We can use the approach described in this article to enable support for
+    other protocols by writing or extending a network manager to handle URL
+    schemes such as \tt mailto, \tt sip, \tt news, \tt file and \tt ldap.
+    Applications that integrate Web content with information from other sources
+    can also provide custom URL schemes as long as care is taken not to use an
+    existing public scheme.
+*/

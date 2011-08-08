@@ -197,13 +197,19 @@ tst_QHostInfo::~tst_QHostInfo()
 void tst_QHostInfo::initTestCase()
 {
 #ifndef QT_NO_BEARERMANAGEMENT
-    //start the default network
     netConfMan = new QNetworkConfigurationManager(this);
+    netConfMan->updateConfigurations();
+    connect(netConfMan, SIGNAL(updateCompleted()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
     networkConfiguration = netConfMan->defaultConfiguration();
-    networkSession.reset(new QNetworkSession(networkConfiguration));
-    if (!networkSession->isOpen()) {
-        networkSession->open();
-        QVERIFY(networkSession->waitForOpened(30000));
+    if (networkConfiguration.isValid()) {
+        networkSession.reset(new QNetworkSession(networkConfiguration));
+        if (!networkSession->isOpen()) {
+            networkSession->open();
+            QVERIFY(networkSession->waitForOpened(30000));
+        }
+    } else {
+        QVERIFY(!(netConfMan->capabilities() & QNetworkConfigurationManager::NetworkSessionRequired));
     }
 #endif
 
@@ -213,6 +219,13 @@ void tst_QHostInfo::initTestCase()
 #else
     ipv6Available = false;
     ipv6LookupsAvailable = false;
+
+    QTcpServer server;
+    if (server.listen(QHostAddress("::1"))) {
+        // We have IPv6 support
+        ipv6Available = true;
+    }
+
 #if !defined(QT_NO_GETADDRINFO)
     // check if the system getaddrinfo can do IPv6 lookups
     struct addrinfo hint, *result = 0;
@@ -235,13 +248,6 @@ void tst_QHostInfo::initTestCase()
 #endif
 #endif
 
-    QTcpServer server;
-    if (server.listen(QHostAddress("::1"))) {
-        // We have IPv6 support
-        ipv6Available = true;
-    }
-
-
     // run each testcase with and without test enabled
     QTest::addColumn<bool>("cache");
     QTest::newRow("WithCache") << true;
@@ -250,7 +256,7 @@ void tst_QHostInfo::initTestCase()
 
 void tst_QHostInfo::init()
 {
-    // delete the cache so inidividual testcase results are independant from each other
+    // delete the cache so inidividual testcase results are independent from each other
     qt_qhostinfo_clear_cache();
 
     QFETCH_GLOBAL(bool, cache);

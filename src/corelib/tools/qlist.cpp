@@ -237,7 +237,7 @@ void **QListData::append(int n)
         if (b - n >= 2 * d->alloc / 3) {
             // we have enough space. Just not at the end -> move it.
             e -= b;
-            ::memcpy(d->array, d->array + b, e * sizeof(void *));
+            ::memmove(d->array, d->array + b, e * sizeof(void *));
             d->begin = 0;
         } else {
             realloc(grow(d->alloc + n));
@@ -590,10 +590,10 @@ void **QListData::erase(void **xi)
     \sa operator=()
 */
 
-/*! \fn QList::QList(std::initializer_list<T> args)
+/*! \fn inline QList::QList(std::initializer_list<T> args)
     \since 4.8
 
-    Construct a list from a std::initilizer_list.
+    Construct a list from the std::initializer_list specified by \a args.
 
     This constructor is only enabled if the compiler supports C++0x
 */

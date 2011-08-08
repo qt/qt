@@ -67,12 +67,12 @@ public:
     virtual void updateSoftKeys_sys() {};
 
 protected:
-    static QSoftKeyManager *self;
+    static QScopedPointer<QSoftKeyManager> self;
     QHash<QAction*, Qt::Key> keyedActions;
     QMultiHash<int, QAction*> requestedSoftKeyActions;
     QWidget *initialSoftKeySource;
     bool pendingUpdate;
-#ifdef SYMBIAN_VERSION_SYMBIAN3
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
     QHash<QAction*, int> softKeyCommandActions;
 #endif
 };

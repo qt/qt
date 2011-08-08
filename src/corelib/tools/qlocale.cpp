@@ -48,6 +48,11 @@ static QSystemLocale *QSystemLocale_globalSystemLocale();
 QT_END_NAMESPACE
 #endif
 
+#if !defined(QWS) && defined(Q_OS_MAC)
+#   include "private/qcore_mac_p.h"
+#   include <CoreFoundation/CoreFoundation.h>
+#endif
+
 #include "qplatformdefs.h"
 
 #include "qdatastream.h"
@@ -65,10 +70,6 @@ QT_END_NAMESPACE
 #   include "qt_windows.h"
 #   include <time.h>
 #endif
-#if !defined(QWS) && defined(Q_OS_MAC)
-#   include "private/qcore_mac_p.h"
-#   include <CoreFoundation/CoreFoundation.h>
-#endif
 #include "private/qnumeric_p.h"
 #include "private/qsystemlibrary_p.h"
 
@@ -76,7 +77,6 @@ QT_BEGIN_NAMESPACE
 
 #if defined(Q_OS_SYMBIAN)
 void qt_symbianUpdateSystemPrivate();
-void qt_symbianInitSystemLocale();
 #endif
 
 #ifndef QT_NO_SYSTEMLOCALE
@@ -88,6 +88,8 @@ Q_GLOBAL_STATIC(QLocalePrivate, globalLocalePrivate)
 
 #ifdef QT_USE_ICU
 extern bool qt_initIcu(const QString &localeName);
+extern bool qt_u_strToUpper(const QString &str, QString *out, const QLocale &locale);
+extern bool qt_u_strToLower(const QString &str, QString *out, const QLocale &locale);
 #endif
 
 /******************************************************************************
@@ -470,9 +472,6 @@ static const QSystemLocale *systemLocale()
 {
     if (_systemLocale)
         return _systemLocale;
-#if defined(Q_OS_SYMBIAN)
-    qt_symbianInitSystemLocale();
-#endif
     return QSystemLocale_globalSystemLocale();
 }
 
@@ -937,24 +936,37 @@ QLocale::Country QLocale::country() const
     name() will not contain it for compatibility reasons. Use bcp47Name() instead
     if you need a full locale name.
 
-    \sa QLocale(const QString &), language(), script(), country(), bcp47Name()
+    \sa QLocale(), language(), script(), country(), bcp47Name()
 */
 
 QString QLocale::name() const
 {
-    Language l = language();
+    const QLocalePrivate *dd = d();
 
-    QString result = d()->languageCode();
+    if (dd->m_language_id == QLocale::AnyLanguage)
+        return QString();
+    if (dd->m_language_id == QLocale::C)
+        return QLatin1String("C");
 
-    if (l == C)
-        return result;
+    const unsigned char *c = language_code_list + 3*(uint(dd->m_language_id));
 
-    Country c = country();
-    if (c == AnyCountry)
-        return result;
+    QString result(7, Qt::Uninitialized);
+    ushort *data = (ushort *)result.unicode();
+    const ushort *begin = data;
 
-    result.append(QLatin1Char('_'));
-    result.append(d()->countryCode());
+    *data++ = ushort(c[0]);
+    *data++ = ushort(c[1]);
+    if (c[2] != 0)
+        *data++ = ushort(c[2]);
+    if (dd->m_country_id != AnyCountry) {
+        *data++ = '_';
+        const unsigned char *c = country_code_list + 3*(uint(dd->m_country_id));
+        *data++ = ushort(c[0]);
+        *data++ = ushort(c[1]);
+        if (c[2] != 0)
+            *data++ = ushort(c[2]);
+    }
+    result.resize(data - begin);
 
     return result;
 }
@@ -2168,6 +2180,42 @@ Qt::LayoutDirection QLocale::textDirection() const
         return Qt::RightToLeft;
 
     return Qt::LeftToRight;
+}
+
+/*!
+  \since 4.8
+
+  Returns an uppercase copy of \a str.
+*/
+QString QLocale::toUpper(const QString &str) const
+{
+#ifdef QT_USE_ICU
+    {
+        QString result;
+        if (qt_u_strToUpper(str, &result, *this))
+            return result;
+        // else fall through and use Qt's toUpper
+    }
+#endif
+    return str.toUpper();
+}
+
+/*!
+  \since 4.8
+
+  Returns a lowercase copy of \a str.
+*/
+QString QLocale::toLower(const QString &str) const
+{
+#ifdef QT_USE_ICU
+    {
+        QString result;
+        if (qt_u_strToLower(str, &result, *this))
+            return result;
+        // else fall through and use Qt's toUpper
+    }
+#endif
+    return str.toLower();
 }
 
 

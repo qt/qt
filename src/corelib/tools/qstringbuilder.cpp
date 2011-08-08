@@ -142,7 +142,8 @@ QT_BEGIN_NAMESPACE
   characters.
  */
 
-/*! \fn QStringBuilder::operator QString() const
+/*!
+    \fn operator QStringBuilder::QString() const
  
     Converts the \c QLatin1Literal into a \c QString object.
 */
@@ -161,6 +162,8 @@ void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out
     }
 #endif
     if (len == -1) {
+        if (!a)
+            return;
         while (*a)
             *out++ = QLatin1Char(*a++);
     } else {

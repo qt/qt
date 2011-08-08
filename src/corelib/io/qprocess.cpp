@@ -751,12 +751,16 @@ QProcessPrivate::QProcessPrivate()
     sequenceNumber = 0;
     exitCode = 0;
     exitStatus = QProcess::NormalExit;
+#ifndef Q_OS_QNX
     startupSocketNotifier = 0;
+#endif
     deathNotifier = 0;
     notifier = 0;
     pipeWriter = 0;
+#ifndef Q_OS_QNX
     childStartedPipe[0] = INVALID_Q_PIPE;
     childStartedPipe[1] = INVALID_Q_PIPE;
+#endif
     deathPipe[0] = INVALID_Q_PIPE;
     deathPipe[1] = INVALID_Q_PIPE;
     exitCode = 0;
@@ -825,11 +829,13 @@ void QProcessPrivate::cleanup()
         qDeleteInEventHandler(stdinChannel.notifier);
         stdinChannel.notifier = 0;
     }
+#ifndef Q_OS_QNX
     if (startupSocketNotifier) {
         startupSocketNotifier->setEnabled(false);
         qDeleteInEventHandler(startupSocketNotifier);
         startupSocketNotifier = 0;
     }
+#endif
     if (deathNotifier) {
         deathNotifier->setEnabled(false);
         qDeleteInEventHandler(deathNotifier);
@@ -842,7 +848,9 @@ void QProcessPrivate::cleanup()
     destroyPipe(stdoutChannel.pipe);
     destroyPipe(stderrChannel.pipe);
     destroyPipe(stdinChannel.pipe);
+#ifndef Q_OS_QNX
     destroyPipe(childStartedPipe);
+#endif
     destroyPipe(deathPipe);
 #ifdef Q_OS_UNIX
     serial = 0;
@@ -1077,8 +1085,10 @@ bool QProcessPrivate::_q_startupNotification()
     qDebug("QProcessPrivate::startupNotification()");
 #endif
 
+#ifndef Q_OS_QNX
     if (startupSocketNotifier)
         startupSocketNotifier->setEnabled(false);
+#endif
     if (processStarted()) {
         q->setProcessState(QProcess::Running);
         emit q->started();
@@ -1673,13 +1683,10 @@ QProcessEnvironment QProcess::processEnvironment() const
 bool QProcess::waitForStarted(int msecs)
 {
     Q_D(QProcess);
-    if (d->processState == QProcess::Starting) {
-        if (!d->waitForStarted(msecs))
-            return false;
-        setProcessState(QProcess::Running);
-        emit started();
-    }
-    return d->processState == QProcess::Running;
+    if (d->processState == QProcess::Running)
+        return true;
+
+    return d->waitForStarted(msecs);
 }
 
 /*! \reimp

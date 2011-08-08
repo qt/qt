@@ -39,14 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qplatformdefs.h"
 #include "qmouseqnx_qws.h"
 
+#include "qplatformdefs.h"
 #include "qsocketnotifier.h"
-#include "qdebug.h"
+#include "private/qcore_unix_p.h"
 
 #include <sys/dcmd_input.h>
-
 #include <errno.h>
 
 QT_BEGIN_NAMESPACE
@@ -92,22 +91,28 @@ QT_BEGIN_NAMESPACE
 
     \sa QMouseDriverFactory
  */
-QQnxMouseHandler::QQnxMouseHandler(const QString & /*driver*/, const QString &device)
+QQnxMouseHandler::QQnxMouseHandler(const QString & driver, const QString &device)
+    : QObject(), QWSMouseHandler(driver, device), mouseButtons(Qt::NoButton)
 {
     // open the mouse device with O_NONBLOCK so reading won't block when there's no data
     mouseFD = QT_OPEN(device.isEmpty() ? "/dev/devi/mouse0" : device.toLatin1().constData(),
-                          QT_OPEN_RDONLY | O_NONBLOCK);
+                      QT_OPEN_RDONLY | O_NONBLOCK);
     if (mouseFD == -1) {
         qErrnoWarning(errno, "QQnxMouseHandler: Unable to open mouse device");
-        return;
+    } else {
+        struct _pointer_info data;
+        if (devctl(mouseFD, _POINTERGETINFO, &data, sizeof(data), NULL) == EOK)
+            absolutePositioning = (data.flags & _POINTER_FLAG_ABSOLUTE);
+        else
+            absolutePositioning = !device.isEmpty() && device.contains(QLatin1String("touch"));
+
+        // register a socket notifier on the file descriptor so we'll wake up whenever
+        // there's a mouse move waiting for us.
+        mouseNotifier = new QSocketNotifier(mouseFD, QSocketNotifier::Read, this);
+        connect(mouseNotifier, SIGNAL(activated(int)), SLOT(socketActivated()));
+
+        qDebug("QQnxMouseHandler: connected.");
     }
-
-    // register a socket notifier on the file descriptor so we'll wake up whenever
-    // there's a mouse move waiting for us.
-    mouseNotifier = new QSocketNotifier(mouseFD, QSocketNotifier::Read, this);
-    connect(mouseNotifier, SIGNAL(activated(int)), SLOT(socketActivated()));
-
-    qDebug() << "QQnxMouseHandler: connected.";
 }
 
 /*!
@@ -115,7 +120,8 @@ QQnxMouseHandler::QQnxMouseHandler(const QString & /*driver*/, const QString &de
  */
 QQnxMouseHandler::~QQnxMouseHandler()
 {
-    QT_CLOSE(mouseFD);
+    if (mouseFD != -1)
+        QT_CLOSE(mouseFD);
 }
 
 /*! \reimp */
@@ -140,39 +146,45 @@ void QQnxMouseHandler::suspend()
 */
 void QQnxMouseHandler::socketActivated()
 {
+    QPoint queuedPos = mousePos;
+
     // _mouse_packet is a QNX structure. devi-hid is nice enough to translate
     // the raw byte data from mouse devices into generic format for us.
-    _mouse_packet packet;
+    struct _mouse_packet buffer[32];
+    int n = 0;
 
-    int iteration = 0;
-
-    // read mouse events in batches of 10. Since we're getting quite a lot
-    // of mouse events, it's better to do them in batches than to return to the
-    // event loop every time.
-    do {
-        int bytesRead = QT_READ(mouseFD, &packet, sizeof(packet));
+    forever {
+        int bytesRead = QT_READ(mouseFD, reinterpret_cast<char *>(buffer) + n, sizeof(buffer) - n);
         if (bytesRead == -1) {
             // EAGAIN means that there are no more mouse events to read
             if (errno != EAGAIN)
-                qErrnoWarning(errno, "QQnxMouseHandler: Unable to read from socket");
-            return;
+                qErrnoWarning(errno, "QQnxMouseHandler: Could not read from input device");
+            break;
         }
 
-        // bytes read should always be equal to the size of a packet.
-        Q_ASSERT(bytesRead == sizeof(packet));
+        n += bytesRead;
+        if (n % sizeof(buffer[0]) == 0)
+            break;
+    }
+    n /= sizeof(buffer[0]);
 
-        // translate the coordinates from the QNX data structure to Qt coordinates
-        // note the swapped y axis
-        QPoint pos = mousePos;
-        pos += QPoint(packet.dx, -packet.dy);
+    for (int i = 0; i < n; ++i) {
+        const struct _mouse_packet &packet = buffer[i];
 
-        // QNX only tells us relative mouse movements, not absolute ones, so limit the
-        // cursor position manually to the screen
-        limitToScreen(pos);
+        // translate the coordinates from the QNX data structure to the Qt coordinates
+        if (absolutePositioning) {
+            queuedPos = QPoint(packet.dx, packet.dy);
+        } else {
+            // note the swapped y axis
+            queuedPos += QPoint(packet.dx, -packet.dy);
+
+            // QNX only tells us relative mouse movements, not absolute ones, so
+            // limit the cursor position manually to the screen
+            limitToScreen(queuedPos);
+        }
 
         // translate the QNX mouse button bitmask to Qt buttons
         int buttons = Qt::NoButton;
-
         if (packet.hdr.buttons & _POINTER_BUTTON_LEFT)
             buttons |= Qt::LeftButton;
         if (packet.hdr.buttons & _POINTER_BUTTON_MIDDLE)
@@ -180,11 +192,17 @@ void QQnxMouseHandler::socketActivated()
         if (packet.hdr.buttons & _POINTER_BUTTON_RIGHT)
             buttons |= Qt::RightButton;
 
-        // call mouseChanged() - this does all the magic to actually move the on-screen
-        // mouse cursor.
-        mouseChanged(pos, buttons, 0);
-    } while (++iteration < 11);
+        if (buttons != mouseButtons) {
+            // send the MouseEvent to avoid missing any clicks
+            mouseChanged(queuedPos, buttons, 0);
+            // mousePos updated by the mouseChanged()
+            queuedPos = mousePos;
+            mouseButtons = buttons;
+        }
+    }
+
+    if (queuedPos != mousePos)
+        mouseChanged(queuedPos, mouseButtons, 0);
 }
 
 QT_END_NAMESPACE
-

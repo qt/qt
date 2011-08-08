@@ -53,49 +53,34 @@
 // We mean it.
 //
 
-#include "qplatformdefs.h"
-#include "QtCore/qstring.h"
+#include <qplatformdefs.h>
 
 QT_BEGIN_NAMESPACE
 
 #if !defined(QT_NO_QWS_MULTIPROCESS)
 
-class QWSSharedMemory {
+class QWSSharedMemory
+{
 public:
-
     QWSSharedMemory();
     ~QWSSharedMemory();
 
-    void setPermissions(mode_t mode);
-    int size() const;
-    void *address() { return shmBase; }
+    bool create(int size);
+    bool attach(int id);
+    void detach();
 
     int id() const { return shmId; }
 
-    void detach();
-
-    bool create(int size);
-    bool attach(int id);
-
-    //bool create(int size, const QString &filename, char c = 'Q');
-    //bool attach(const QString &filename, char c = 'Q');
-// old API
-
-    QWSSharedMemory(int, const QString &, char c = 'Q');
-    void * base() { return address(); }
-
-    bool create();
-    void destroy();
-
-    bool attach();
+    void *address() const { return shmBase; }
+    int size() const;
 
 private:
-    void *shmBase;
-    int shmSize;
-    QString shmFile;
-    char character;
     int shmId;
-    key_t key;
+    void *shmBase;
+    mutable int shmSize;
+#ifdef QT_POSIX_IPC
+    int hand;
+#endif
 };
 
 #endif // QT_NO_QWS_MULTIPROCESS

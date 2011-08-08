@@ -129,12 +129,19 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
 
+    d->aboutToDestroy();
+    if (!isWindow() && parentWidget())
+        parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
+    d->deactivateWidgetCleanup();
+
     if ((windowType() == Qt::Popup))
         qApp->d_func()->closePopup(this);
 
     //### we don't have proper focus event handling yet
     if (this == QApplicationPrivate::active_window)
         QApplication::setActiveWindow(0);
+
+    setAttribute(Qt::WA_WState_Created, false);
 
     if (windowType() != Qt::Desktop) {
         if (destroySubWindows) {
@@ -155,6 +162,8 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
                 d->hide_sys();
             }
         }
+
+        d->setWinId(0);
     }
 }
 
@@ -412,6 +421,7 @@ void QWidgetPrivate::hide_sys()
 {
     Q_Q(QWidget);
     q->setAttribute(Qt::WA_Mapped, false);
+    deactivateWidgetCleanup();
     if (!q->isWindow()) {
         QWidget *p = q->parentWidget();
         if (p &&p->isVisible()) {
@@ -680,9 +690,12 @@ int QWidget::metric(PaintDeviceMetric m) const
 
 /*!
     \preliminary
+    \since 4.8
 
-    Sets the window to be the \a window specified.
-    The QWidget takes ownership of the \a surface.
+    Sets the window to be the platform \a window specified.
+
+    The widget takes ownership of the \a window. Any platform window
+    previously set on the widget will be destroyed.
 */
 void QWidget::setPlatformWindow(QPlatformWindow *window)
 {
@@ -698,6 +711,7 @@ void QWidget::setPlatformWindow(QPlatformWindow *window)
 
 /*!
     \preliminary
+    \since 4.8
 
     Returns the QPlatformWindow this widget will be drawn into.
 */
@@ -711,6 +725,11 @@ QPlatformWindow *QWidget::platformWindow() const
     return 0;
 }
 
+/*!
+    \since 4.8
+
+    Sets the platform window format for the widget to the \a format specified.
+*/
 void QWidget::setPlatformWindowFormat(const QPlatformWindowFormat &format)
 {
     if (isWindow() || testAttribute(Qt::WA_NativeWindow)) {
@@ -727,16 +746,28 @@ void QWidget::setPlatformWindowFormat(const QPlatformWindowFormat &format)
     }
 }
 
+/*!
+    \since 4.8
+
+    Returns the platform window format for the widget.
+*/
 QPlatformWindowFormat QWidget::platformWindowFormat() const
 {
     Q_D(const QWidget);
 
+    QPlatformWindowFormat format;
+
     QTLWExtra *extra = d->maybeTopData();
     if (extra){
-        return extra->platformWindowFormat;
+        format = extra->platformWindowFormat;
     } else {
-        return QPlatformWindowFormat::defaultFormat();
+        format = QPlatformWindowFormat::defaultFormat();
     }
+
+    if (testAttribute(Qt::WA_TranslucentBackground))
+        format.setAlpha(true);
+
+    return format;
 }
 
 void QWidgetPrivate::createSysExtra()

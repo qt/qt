@@ -62,9 +62,9 @@ QNotifyChangeEvent::QNotifyChangeEvent(RFs &fs, const TDesC &file,
         failureCount(0)
 {
     if (isDir) {
-        fsSession.NotifyChange(ENotifyEntry, iStatus, file);
+        fsSession.NotifyChange(ENotifyEntry, iStatus, watchedPath);
     } else {
-        fsSession.NotifyChange(ENotifyAll, iStatus, file);
+        fsSession.NotifyChange(ENotifyAll, iStatus, watchedPath);
     }
     CActiveScheduler::Add(this);
     SetActive();

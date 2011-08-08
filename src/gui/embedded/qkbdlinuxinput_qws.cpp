@@ -103,6 +103,7 @@ QWSLinuxInputKbPrivate::QWSLinuxInputKbPrivate(QWSLinuxInputKeyboardHandler *h, 
     QString dev = QLatin1String("/dev/input/event1");
     int repeat_delay = -1;
     int repeat_rate = -1;
+    int grab = 0;
 
     QStringList args = device.split(QLatin1Char(':'));
     foreach (const QString &arg, args) {
@@ -110,12 +111,15 @@ QWSLinuxInputKbPrivate::QWSLinuxInputKbPrivate(QWSLinuxInputKeyboardHandler *h, 
             repeat_delay = arg.mid(13).toInt();
         else if (arg.startsWith(QLatin1String("repeat-rate=")))
             repeat_rate = arg.mid(12).toInt();
+        else if (arg.startsWith(QLatin1String("grab=")))
+            grab = arg.mid(5).toInt();
         else if (arg.startsWith(QLatin1String("/dev/")))
             dev = arg;
     }
 
     m_fd = QT_OPEN(dev.toLocal8Bit().constData(), O_RDWR, 0);
     if (m_fd >= 0) {
+        ::ioctl(m_fd, EVIOCGRAB, grab);
         if (repeat_delay > 0 && repeat_rate > 0) {
             int kbdrep[2] = { repeat_delay, repeat_rate };
             ::ioctl(m_fd, EVIOCSREP, kbdrep);

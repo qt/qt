@@ -42,7 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <QtNetwork/QNetworkCookieJar>
-#include "private/qnetworkcookiejar_p.h"
+#include "private/qtldurl_p.h"
 
 class tst_QNetworkCookieJar: public QObject
 {
@@ -52,6 +52,7 @@ private slots:
     void getterSetter();
     void setCookiesFromUrl_data();
     void setCookiesFromUrl();
+    void setCookiesFromUrl_50CookiesLimitPerDomain();
     void cookiesForUrl_data();
     void cookiesForUrl();
     void effectiveTLDs_data();
@@ -251,6 +252,46 @@ void tst_QNetworkCookieJar::setCookiesFromUrl()
     QVERIFY2(result.isEmpty(), QTest::toString(result));
 }
 
+static bool findCookieName(const QList<QNetworkCookie> &cookieList, const QString &name)
+{
+    foreach(QNetworkCookie cookie, cookieList)
+        if (cookie.name() == name)
+            return true;
+    return false;
+}
+
+void tst_QNetworkCookieJar::setCookiesFromUrl_50CookiesLimitPerDomain()
+{
+    QNetworkCookie cookie;
+    cookie.setValue("value");
+    MyCookieJar jar;
+    QUrl url("http://a.b.c.com");
+
+    for (int i = 0; i < 20; ++i) {
+        // Add a list of 3 domain-matched cookies on each iteration for a total of 60 cookies.
+        QList<QNetworkCookie> cookieList;
+        cookie.setName(QString("CookieNo%1").arg(i*3+1).toAscii());
+        cookie.setDomain("a.b.c.com");
+        cookieList += cookie;
+        cookie.setName(QString("CookieNo%1").arg(i*3+2).toAscii());
+        cookie.setDomain(".b.c.com");
+        cookieList += cookie;
+        cookie.setName(QString("CookieNo%1").arg(i*3+3).toAscii());
+        cookie.setDomain(".c.com");
+        cookieList += cookie;
+        jar.setCookiesFromUrl(cookieList, url);
+
+        int expectedNumCookies = std::min((i+1)*3, 50);
+        QCOMPARE(jar.allCookies().size(), expectedNumCookies);
+    }
+
+    // Verify that the oldest cookies were the ones overwritten.
+    QVERIFY(!findCookieName(jar.allCookies(), "CookieNo1"));
+    QVERIFY(!findCookieName(jar.allCookies(), "CookieNo10"));
+    QVERIFY(findCookieName(jar.allCookies(), "CookieNo11"));
+    QVERIFY(findCookieName(jar.allCookies(), "CookieNo60"));
+}
+
 void tst_QNetworkCookieJar::cookiesForUrl_data()
 {
     QTest::addColumn<QList<QNetworkCookie> >("allCookies");
@@ -438,7 +479,7 @@ void tst_QNetworkCookieJar::effectiveTLDs()
 #endif
     QFETCH(QString, domain);
     QFETCH(bool, isTLD);
-    QCOMPARE(QNetworkCookieJarPrivate::isEffectiveTLD(domain), isTLD);
+    QCOMPARE(qIsEffectiveTLD(domain), isTLD);
 }
 
 QTEST_MAIN(tst_QNetworkCookieJar)

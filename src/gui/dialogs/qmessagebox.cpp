@@ -259,8 +259,15 @@ void QMessageBoxPrivate::init(const QString &title, const QString &text)
 
     QGridLayout *grid = new QGridLayout;
 #ifndef Q_WS_MAC
-    grid->addWidget(iconLabel, 0, 0, 2, 1, Qt::AlignTop);
-    grid->addWidget(label, 0, 1, 1, 1);
+#ifdef Q_WS_S60
+    const int preferredIconColumn = (QApplication::layoutDirection() == Qt::LeftToRight) ? 1 : 0;
+    const int preferredTextColumn = (QApplication::layoutDirection() == Qt::LeftToRight) ? 0 : 1;
+#else
+    const int preferredIconColumn = 0;
+    const int preferredTextColumn = 1;
+#endif
+    grid->addWidget(iconLabel, 0, preferredIconColumn, 2, 1, Qt::AlignTop);
+    grid->addWidget(label, 0, preferredTextColumn, 1, 1);
     // -- leave space for information label --
     grid->addWidget(buttonBox, 2, 0, 1, 2);
 #else
@@ -2479,7 +2486,7 @@ void QMessageBox::setInformativeText(const QString &text)
     }
 
     if (!d->informativeLabel) {
-        QLabel *label = new QLabel;
+        QLabel *label = new QLabel(this);
         label->setObjectName(QLatin1String("qt_msgbox_informativelabel"));
         label->setTextInteractionFlags(Qt::TextInteractionFlags(style()->styleHint(QStyle::SH_MessageBox_TextInteractionFlags, 0, this)));
         label->setAlignment(Qt::AlignTop | Qt::AlignLeft);
@@ -2500,7 +2507,12 @@ void QMessageBox::setInformativeText(const QString &text)
         label->hide();
         QTextBrowser *textBrowser = new QTextBrowser(this);
         textBrowser->setOpenExternalLinks(true);
-        grid->addWidget(textBrowser, 1, 1, 1, 1);
+#if defined(Q_OS_SYMBIAN)
+        const int preferredTextColumn = (QApplication::layoutDirection() == Qt::LeftToRight) ? 0 : 1;
+#else
+        const int preferredTextColumn = 1;
+#endif
+        grid->addWidget(textBrowser, 1, preferredTextColumn, 1, 1);
         d->textBrowser = textBrowser;
 #else
         grid->addWidget(label, 1, 1, 1, 1);

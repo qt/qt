@@ -52,6 +52,8 @@
 #include <QInputContext>
 #include <private/qapplication_p.h>
 
+#include "qplatformdefs.h"
+
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
 #define SRCDIR "."
@@ -133,6 +135,9 @@ private slots:
     void focusOutClearSelection();
 
     void echoMode();
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+    void passwordEchoDelay();
+#endif
     void geometrySignals();
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
@@ -2051,6 +2056,62 @@ void tst_qdeclarativetextinput::echoMode()
     delete canvas;
 }
 
+
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+void tst_qdeclarativetextinput::passwordEchoDelay()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/echoMode.qml");
+    canvas->show();
+    canvas->setFocus();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeTextInput *input = qobject_cast<QDeclarativeTextInput *>(qvariant_cast<QObject *>(canvas->rootObject()->property("myInput")));
+
+    QChar fillChar = QLatin1Char('*');
+
+    input->setEchoMode(QDeclarativeTextInput::Password);
+    QCOMPARE(input->displayText(), QString(8, fillChar));
+    input->setText(QString());
+    QCOMPARE(input->displayText(), QString());
+
+    QTest::keyPress(canvas, '0');
+    QTest::keyPress(canvas, '1');
+    QTest::keyPress(canvas, '2');
+    QCOMPARE(input->displayText(), QString(2, fillChar) + QLatin1Char('2'));
+    QTest::keyPress(canvas, '3');
+    QTest::keyPress(canvas, '4');
+    QCOMPARE(input->displayText(), QString(4, fillChar) + QLatin1Char('4'));
+    QTest::keyPress(canvas, Qt::Key_Backspace);
+    QCOMPARE(input->displayText(), QString(4, fillChar));
+    QTest::keyPress(canvas, '4');
+    QCOMPARE(input->displayText(), QString(4, fillChar) + QLatin1Char('4'));
+    QTest::qWait(QT_GUI_PASSWORD_ECHO_DELAY);
+    QTRY_COMPARE(input->displayText(), QString(5, fillChar));
+    QTest::keyPress(canvas, '5');
+    QCOMPARE(input->displayText(), QString(5, fillChar) + QLatin1Char('5'));
+    input->setFocus(false);
+    QVERIFY(!input->hasFocus());
+    QCOMPARE(input->displayText(), QString(6, fillChar));
+    input->setFocus(true);
+    QTRY_VERIFY(input->hasFocus());
+    QCOMPARE(input->displayText(), QString(6, fillChar));
+    QTest::keyPress(canvas, '6');
+    QCOMPARE(input->displayText(), QString(6, fillChar) + QLatin1Char('6'));
+
+    QInputMethodEvent ev;
+    ev.setCommitString(QLatin1String("7"));
+    QApplication::sendEvent(canvas, &ev);
+    QCOMPARE(input->displayText(), QString(7, fillChar) + QLatin1Char('7'));
+
+    delete canvas;
+}
+#endif
+
+
 void tst_qdeclarativetextinput::simulateKey(QDeclarativeView *view, int key)
 {
     QKeyEvent press(QKeyEvent::KeyPress, key, 0);
@@ -2431,15 +2492,20 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
     QTest::qWaitForWindowShown(&view);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
+    QSignalSpy cursorRectangleSpy(&input, SIGNAL(cursorRectangleChanged()));
+    int cursorRectangleChanges = 0;
+
     // test the text is scrolled so the preedit is visible.
     ic.sendPreeditText(preeditText.mid(0, 3), 1);
     QVERIFY(input.positionAt(0) != 0);
     QVERIFY(input.cursorRectangle().left() < input.boundingRect().width());
+    QCOMPARE(cursorRectangleSpy.count(), ++cursorRectangleChanges);
 
     // test the text is scrolled back when the preedit is removed.
     ic.sendEvent(QInputMethodEvent());
     QCOMPARE(input.positionAt(0), 0);
     QCOMPARE(input.positionAt(input.width()), 5);
+    QCOMPARE(cursorRectangleSpy.count(), ++cursorRectangleChanges);
 
     // some tolerance for different fonts.
 #ifdef Q_OS_LINUX
@@ -2455,26 +2521,31 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
         ic.sendPreeditText(preeditText, i + 1);
         QVERIFY(input.cursorRectangle().right() >= fm.width(preeditText.at(i)) - error);
         QVERIFY(input.positionToRectangle(0).x() < x);
+        QCOMPARE(cursorRectangleSpy.count(), ++cursorRectangleChanges);
         x = input.positionToRectangle(0).x();
     }
     for (int i = 1; i >= 0; --i) {
         ic.sendPreeditText(preeditText, i + 1);
         QVERIFY(input.cursorRectangle().right() >= fm.width(preeditText.at(i)) - error);
         QVERIFY(input.positionToRectangle(0).x() > x);
+        QCOMPARE(cursorRectangleSpy.count(), ++cursorRectangleChanges);
         x = input.positionToRectangle(0).x();
     }
 
     // Test incrementing the preedit cursor doesn't cause further
     // scrolling when right most text is visible.
     ic.sendPreeditText(preeditText, preeditText.length() - 3);
+    QCOMPARE(cursorRectangleSpy.count(), ++cursorRectangleChanges);
     x = input.positionToRectangle(0).x();
     for (int i = 2; i >= 0; --i) {
         ic.sendPreeditText(preeditText, preeditText.length() - i);
         QCOMPARE(input.positionToRectangle(0).x(), x);
+        QCOMPARE(cursorRectangleSpy.count(), ++cursorRectangleChanges);
     }
     for (int i = 1; i <  3; ++i) {
         ic.sendPreeditText(preeditText, preeditText.length() - i);
         QCOMPARE(input.positionToRectangle(0).x(), x);
+        QCOMPARE(cursorRectangleSpy.count(), ++cursorRectangleChanges);
     }
 
     // Test disabling auto scroll.

@@ -49,10 +49,22 @@
 
 Q_GLOBAL_STATIC(QJSDebugService, serviceInstance)
 
+// convert to a QByteArray that can be sent to the debug client
+QByteArray JSAgentCoverageData::toByteArray() const
+{
+    QByteArray data;
+    //### using QDataStream is relatively expensive
+    QDataStream ds(&data, QIODevice::WriteOnly);
+    ds << prefix << time << messageType << scriptId << program << fileName << baseLineNumber
+        << lineNumber << columnNumber << returnValue;
+    return data;
+}
+
 QJSDebugService::QJSDebugService(QObject *parent)
     : QDeclarativeDebugService(QLatin1String("JSDebugger"), parent)
-    , m_agent(0)
+    , m_agent(0), m_deferredSend(true)
 {
+    m_timer.start();
 }
 
 QJSDebugService::~QJSDebugService()
@@ -71,6 +83,16 @@ void QJSDebugService::addEngine(QDeclarativeEngine *engine)
     Q_ASSERT(!m_engines.contains(engine));
 
     m_engines.append(engine);
+
+    if (status() == Enabled && !m_engines.isEmpty() && !m_agent) {
+        m_agent = new QJSDebuggerAgent(engine, engine);
+        connect(m_agent, SIGNAL(stopped(bool,QString)),
+                this, SLOT(executionStopped(bool,QString)));
+
+        while (!m_agent->isInitialized()) {
+            waitForMessage();
+        }
+    }
 }
 
 void QJSDebugService::removeEngine(QDeclarativeEngine *engine)
@@ -176,6 +198,13 @@ void QJSDebugService::messageReceived(const QByteArray &message)
         QDataStream rs(&reply, QIODevice::WriteOnly);
         rs << QByteArray("PONG") << ping;
         sendMessage(reply);
+    } else if (command == "COVERAGE") {
+        bool enabled;
+        ds >> enabled;
+        m_agent->setCoverageEnabled(enabled);
+        if (!enabled) {
+            sendMessages();
+        }
     } else {
         qDebug() << Q_FUNC_INFO << "Unknown command" << command;
     }
@@ -196,3 +225,35 @@ void QJSDebugService::executionStopped(bool becauseOfException,
        << becauseOfException << exception;
     sendMessage(reply);
 }
+
+/*
+    Either send the message directly, or queue up
+    a list of messages to send later (via sendMessages)
+*/
+void QJSDebugService::processMessage(const JSAgentCoverageData &message)
+{
+    if (m_deferredSend)
+        m_data.append(message);
+    else
+        sendMessage(message.toByteArray());
+}
+
+/*
+    Send the messages queued up by processMessage
+*/
+void QJSDebugService::sendMessages()
+{
+    if (m_deferredSend) {
+        //### this is a suboptimal way to send batched messages
+        for (int i = 0; i < m_data.count(); ++i)
+            sendMessage(m_data.at(i).toByteArray());
+        m_data.clear();
+
+        //indicate completion
+        QByteArray data;
+        QDataStream ds(&data, QIODevice::WriteOnly);
+        ds << QByteArray("COVERAGE") << (qint64)-1 << (int)CoverageComplete;
+        sendMessage(data);
+    }
+}
+

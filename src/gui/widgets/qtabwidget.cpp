@@ -883,8 +883,9 @@ QSize QTabWidget::minimumSizeHint() const
                     .expandedTo(QApplication::globalStrut());
 }
 
-/*
+/*!
     \reimp
+    \since 4.8
 */
 int QTabWidget::heightForWidth(int width) const
 {

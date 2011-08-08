@@ -87,8 +87,34 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \qmlproperty url AnimatedImage::source
+
+    This property holds the URL that refers to the source image.
+
+    AnimatedImage can handle any image format supported by Qt, loaded from any
+    URL scheme supported by Qt.
+
+    \sa QDeclarativeImageProvider
+*/
+
+/*!
+    \qmlproperty bool AnimatedImage::asynchronous
+
+    Specifies that images on the local filesystem should be loaded
+    asynchronously in a separate thread.  The default value is
+    false, causing the user interface thread to block while the
+    image is loaded.  Setting \a asynchronous to true is useful where
+    maintaining a responsive user interface is more desirable
+    than having images immediately visible.
+
+    Note that this property is only valid for images read from the
+    local filesystem.  Images loaded via a network resource (e.g. HTTP)
+    are always loaded asynchonously.
+*/
+
+/*!
     \qmlproperty bool AnimatedImage::cache
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Specifies whether the image should be cached. The default value is
     true. Setting \a cache to false is useful when dealing with large images,
@@ -97,7 +123,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlproperty bool AnimatedImage::mirror
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     This property holds whether the image should be horizontally inverted
     (effectively displaying a mirrored image).

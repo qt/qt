@@ -303,6 +303,9 @@ protected:
 
     void setRoleNames(const QHash<int,QByteArray> &roleNames);
 
+protected Q_SLOTS:
+    void resetInternalData();
+
 private:
     Q_DECLARE_PRIVATE(QAbstractItemModel)
     Q_DISABLE_COPY(QAbstractItemModel)

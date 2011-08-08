@@ -56,4 +56,10 @@ symbian {
     } else {
         DEFINES += USE_SCHEMEHANDLER
     }
+
+    contains(CONFIG, is_using_gnupoc) {
+        LIBS += -ldirectorylocalizer
+    } else {
+        LIBS += -lDirectoryLocalizer
+    }
 }

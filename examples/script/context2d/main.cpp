@@ -48,7 +48,12 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
     Window win;
 
+#ifdef Q_OS_SYMBIAN
+    bool smallScreen = true;
+#else
     bool smallScreen = QApplication::arguments().contains("-small-screen");
+#endif
+
     if (!smallScreen) {
         win.show();
     } else {

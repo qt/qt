@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "quikitscreen.h"
+#include "quikitwindow.h"
 
 #include <QtGui/QApplication>
 
@@ -52,8 +53,7 @@ QUIKitScreen::QUIKitScreen(int screenIndex)
       m_index(screenIndex)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    UIScreen *screen = [[UIScreen screens] objectAtIndex:screenIndex];
-    CGRect bounds = [screen bounds];
+    CGRect bounds = [uiScreen() bounds];
     m_geometry = QRect(bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
 
     m_format = QImage::Format_ARGB32;
@@ -63,12 +63,18 @@ QUIKitScreen::QUIKitScreen(int screenIndex)
     const qreal inch = 25.4;
     qreal dpi = 160.;
     int dragDistance = 12;
+    int defaultFontPixelSize = 14;
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
         dpi = 132.;
         dragDistance = 10;
     }
     m_physicalSize = QSize(qRound(bounds.size.width * inch / dpi), qRound(bounds.size.height * inch / dpi));
     qApp->setStartDragDistance(dragDistance);
+
+    QFont font(QLatin1String("Bitstream Vera Sans"));
+    font.setPixelSize(defaultFontPixelSize);
+    qApp->setFont(font);
+
     [pool release];
 }
 
@@ -79,6 +85,28 @@ QUIKitScreen::~QUIKitScreen()
 UIScreen *QUIKitScreen::uiScreen() const
 {
     return [[UIScreen screens] objectAtIndex:m_index];
+}
+
+void QUIKitScreen::updateInterfaceOrientation()
+{
+    CGRect bounds = [uiScreen() bounds];
+    switch ([[UIApplication sharedApplication] statusBarOrientation]) {
+    case UIInterfaceOrientationPortrait:
+    case UIInterfaceOrientationPortraitUpsideDown:
+        m_geometry = QRect(bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);;
+        break;
+    case UIInterfaceOrientationLandscapeLeft:
+    case UIInterfaceOrientationLandscapeRight:
+        m_geometry = QRect(bounds.origin.x, bounds.origin.y,
+                           bounds.size.height, bounds.size.width);
+        break;
+    }
+    foreach (QWidget *widget, qApp->topLevelWidgets()) {
+        QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->platformWindow());
+        if (platformWindow && platformWindow->platformScreen() == this) {
+            platformWindow->updateGeometryAndOrientation();
+        }
+    }
 }
 
 QT_END_NAMESPACE

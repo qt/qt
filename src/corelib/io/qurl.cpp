@@ -106,6 +106,19 @@
     folding rules in QUrl conform to \l{RFC 3491} (Nameprep: A Stringprep
     Profile for Internationalized Domain Names (IDN)).
 
+    \section2 Character Conversions
+
+    Follow these rules to avoid erroneous character conversion when
+    dealing with URLs and strings:
+
+    \list
+    \o When creating an QString to contain a URL from a QByteArray or a
+       char*, always use QString::fromUtf8().
+    \o Favor the use of QUrl::fromEncoded() and QUrl::toEncoded() instead of
+       QUrl(string) and QUrl::toString() when converting a QUrl to or from
+       a string.
+    \endlist
+
     \sa QUrlInfo
 */
 
@@ -192,7 +205,9 @@
 #if defined QT3_SUPPORT
 #include "qfileinfo.h"
 #endif
-
+#ifndef QT_BOOTSTRAPPED
+#include "qtldurl_p.h"
+#endif
 #if defined(Q_OS_WINCE_WM)
 #pragma optimize("g", off)
 #endif
@@ -5464,6 +5479,7 @@ void QUrl::removeAllEncodedQueryItems(const QByteArray &key)
             if (end < d->query.size())
                 ++end; // remove additional '%'
             d->query.remove(pos, end - pos);
+            query = d->query.constData(); //required if remove detach;
         } else {
             pos = end + 1;
         }
@@ -5591,6 +5607,21 @@ bool QUrl::hasFragment() const
 
     return d->hasFragment;
 }
+
+/*!
+    \since 4.8
+
+    Returns the TLD (Top-Level Domain) of the URL, (e.g. .co.uk, .net).
+    Note that the return value is prefixed with a '.' unless the
+    URL does not contain a valid TLD, in which case the function returns
+    an empty string.
+*/
+#ifndef QT_BOOTSTRAPPED
+QString QUrl::topLevelDomain() const
+{
+    return qTopLevelDomain(host());
+}
+#endif
 
 /*!
     Returns the result of the merge of this URL with \a relative. This
@@ -6088,7 +6119,7 @@ bool QUrl::isDetached() const
     "//servername/path/to/file.txt". Note that only certain platforms can
     actually open this file using QFile::open().
 
-    \sa toLocalFile(), isLocalFile(), QDir::toNativeSeparators
+    \sa toLocalFile(), isLocalFile(), QDir::toNativeSeparators()
 */
 QUrl QUrl::fromLocalFile(const QString &localFile)
 {
@@ -6495,16 +6526,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     \o ftp.qt.nokia.com becomes ftp://ftp.qt.nokia.com
     \o hostname becomes http://hostname
     \o /home/user/test.html becomes file:///home/user/test.html
-    \endlist
-
-    \section2 Tips to avoid erroneous character conversion when dealing with
-    URLs and strings:
-
-    \list
-    \o When creating an URL QString from a QByteArray or a char*, always use
-       QString::fromUtf8().
-    \o Favor the use of QUrl::fromEncoded() and QUrl::toEncoded() instead of
-       QUrl(string) and QUrl::toString() when converting QUrl to/from string.
     \endlist
 */
 QUrl QUrl::fromUserInput(const QString &userInput)
