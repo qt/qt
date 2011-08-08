@@ -1954,4 +1954,5 @@ EXPORTS
 	?trUtf8@QDeclarativeInspectorService@@SA?AVQString@@PBD0H@Z @ 1953 NONAME ; class QString QDeclarativeInspectorService::trUtf8(char const *, char const *, int)
 	??1QDeclarativeInspectorInterface@@UAE@XZ @ 1954 NONAME ; QDeclarativeInspectorInterface::~QDeclarativeInspectorInterface(void)
 	?qt_metacall@QDeclarativeInspectorService@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 1955 NONAME ; int QDeclarativeInspectorService::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?updateStatus@QDeclarativeInspectorService@@AAEXXZ @ 1956 NONAME ; void QDeclarativeInspectorService::updateStatus(void)
 

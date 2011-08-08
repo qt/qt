@@ -77,10 +77,10 @@ private:
     bool terminateNeeded;
 };
 
-void TrkSignalHandler::copyingStarted()
+void TrkSignalHandler::copyingStarted(const QString &fileName)
 {
     if (d->loglevel > 0)
-        d->out << "Copying..." << endl;
+        d->out << "Copying " << fileName << "..." << endl;
 }
 
 void TrkSignalHandler::canNotConnect(const QString &errorMessage)
@@ -103,10 +103,10 @@ void TrkSignalHandler::canNotCloseFile(const QString &filename, const QString &e
     d->err << "Cannot close file (" << filename << ") - " << errorMessage << endl;
 }
 
-void TrkSignalHandler::installingStarted()
+void TrkSignalHandler::installingStarted(const QString &packageName)
 {
     if (d->loglevel > 0)
-        d->out << "Installing..." << endl;
+        d->out << "Installing" << packageName << "..." << endl;
 }
 
 void TrkSignalHandler::canNotInstall(const QString &packageFilename, const QString &errorMessage)

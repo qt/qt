@@ -2486,7 +2486,7 @@ void QMessageBox::setInformativeText(const QString &text)
     }
 
     if (!d->informativeLabel) {
-        QLabel *label = new QLabel;
+        QLabel *label = new QLabel(this);
         label->setObjectName(QLatin1String("qt_msgbox_informativelabel"));
         label->setTextInteractionFlags(Qt::TextInteractionFlags(style()->styleHint(QStyle::SH_MessageBox_TextInteractionFlags, 0, this)));
         label->setAlignment(Qt::AlignTop | Qt::AlignLeft);
