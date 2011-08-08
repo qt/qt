@@ -1268,4 +1268,6 @@ EXPORTS
 	_ZN18QNetworkProxyQueryC2ERK21QNetworkConfigurationRK7QStringiS5_NS_9QueryTypeE @ 1267 NONAME
 	_ZN18QNetworkProxyQueryC2ERK21QNetworkConfigurationtRK7QStringNS_9QueryTypeE @ 1268 NONAME
 	_ZNK18QNetworkProxyQuery20networkConfigurationEv @ 1269 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate10initializeEv @ 1270 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate7cleanupEv @ 1271 NONAME
 

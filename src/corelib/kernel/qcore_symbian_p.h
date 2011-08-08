@@ -59,6 +59,7 @@
 #include <qstring.h>
 #include <qrect.h>
 #include <qhash.h>
+#include <qscopedpointer.h>
 #include <f32file.h>
 #include <es_sock.h>
 
@@ -260,6 +261,29 @@ private:
     mutable QMutex iMutex;
     RSocketServ iSocketServ;
     RConnection *iDefaultConnection;
+};
+
+template <typename T> class QScopedPointerResourceCloser
+{
+public:
+    static inline void cleanup(T* pointer)
+    {
+        if (pointer)
+            pointer->Close();
+    }
+};
+
+/*typical use:
+    RFile file;
+    file.Open(...);
+    QScopedResource<RFile> ptr(file);
+    container.append(file); //this may throw std::bad_alloc, in which case file.Close() is called by destructor
+    ptr.take(); //if we reach this line, ownership is transferred to the container
+ */
+template <typename T> class QScopedResource : public QScopedPointer<T, QScopedPointerResourceCloser<T> >
+{
+public:
+    inline QScopedResource(T& resource) : QScopedPointer<T, QScopedPointerResourceCloser<T> >(&resource) {}
 };
 
 QT_END_NAMESPACE
