@@ -2098,9 +2098,10 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateSince(qcn, marker);
         enterSection("h2","Detailed Description");
         generateBody(qcn, marker);
-        if (cn)
+        if (cn) {
             generateQmlText(cn->doc().body(), cn, marker, qcn->name());
-        generateAlsoList(cn, marker);
+            generateAlsoList(cn, marker);
+        }
         leaveSection();
         leaveSection(); // </apiDesc>
 

@@ -63,8 +63,9 @@
     unencoded representation is suitable for showing to users, but
     the encoded representation is typically what you would send to
     a web server. For example, the unencoded URL
-    "http://b\uuml\c{}hler.example.com" would be sent to the server as
-    "http://xn--bhler-kva.example.com/List%20of%20applicants.xml".
+    "http://b\uuml\c{}hler.example.com/List of applicants.xml" would be sent to the server as
+    "http://xn--bhler-kva.example.com/List%20of%20applicants.xml",
+    and this can be verified by calling the toEncoded() function.
 
     A URL can also be constructed piece by piece by calling
     setScheme(), setUserName(), setPassword(), setHost(), setPort(),
