@@ -37,11 +37,11 @@ After configuring and building Qt you need to also build src/plugins/platforms/u
 
 Simulator:
 ----------
-configure -qpa -xplatform qpa/macx-iphonesimulator-g++ -arch i386 -developer-build -release -opengl es2 -no-accessibility -no-qt3support -no-multimedia -no-phonon-backend -no-svg -no-webkit -no-scripttools -no-openssl -no-sql-mysql -no-sql-odbc -no-cups -no-iconv -no-dbus -static -nomake tools -nomake demos -nomake docs -nomake examples -nomake translations
+configure -qpa -xplatform qpa/macx-iphonesimulator-g++ -arch i386 -developer-build -release -opengl es2 -no-accessibility -no-qt3support -no-multimedia -no-phonon-backend -no-webkit -no-scripttools -no-openssl -no-sql-mysql -no-sql-odbc -no-cups -no-iconv -no-dbus -static -nomake tools -nomake demos -nomake docs -nomake examples -nomake translations
 
 Device:
 -------
-configure -qpa -xplatform qpa/macx-iphonedevice-g++ -arch armv7 -no-neon -developer-build -release -opengl es2 -no-accessibility -no-qt3support -no-multimedia -no-phonon-backend -no-svg -no-webkit -no-scripttools -no-openssl -no-sql-mysql -no-sql-odbc -no-cups -no-iconv -no-dbus -static -nomake tools -nomake demos -nomake docs -nomake examples -nomake translations
+configure -qpa -xplatform qpa/macx-iphonedevice-g++ -arch armv7 -no-neon -developer-build -release -opengl es2 -no-accessibility -no-qt3support -no-multimedia -no-phonon-backend -no-webkit -no-scripttools -no-openssl -no-sql-mysql -no-sql-odbc -no-cups -no-iconv -no-dbus -static -nomake tools -nomake demos -nomake docs -nomake examples -nomake translations
 
 2) XCode setup:
 - there are examples in the examples subdirectory of the platform plugin
@@ -58,7 +58,8 @@ configure -qpa -xplatform qpa/macx-iphonedevice-g++ -arch armv7 -no-neon -develo
     to the include search paths.
   - add "$(SRCROOT)/../qmltest" to the include search path if you didn't copy but
     linked to the qmlapplicationviewer
-  - for device set the architecture to armv7 only
+  - for device set the architecture to armv7 only and make sure you
+    don't compile for thumb
   - to use sound in your application, Q_IMPORT_PLUGIN(phonon_av),
     #include <phonon/private/factory_p.h>,
     and call Phonon::Factory::setBackend(qt_plugin_instance_phonon_av());
