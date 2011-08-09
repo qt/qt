@@ -522,7 +522,7 @@ void QJSDebuggerAgentPrivate::positionChange(qint64 scriptId, int lineNumber, in
             }
 
             const QString filePath = it.value();
-            JSAgentBreakpoints bps = fileNameToBreakpoints.values(fileName(filePath)).toSet();
+            const JSAgentBreakpoints bps = fileNameToBreakpoints.values(fileName(filePath)).toSet();
 
             foreach (const JSAgentBreakpointData &bp, bps) {
                 if (bp.lineNumber == lineNumber) {
