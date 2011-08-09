@@ -184,7 +184,7 @@ void RenderBlock::destroy()
                         childBox->remove();
                 }
             }
-        } else if (isInline() && parent())
+        } else if (parent())
             parent()->dirtyLinesFromChangedChild(this);
     }
 

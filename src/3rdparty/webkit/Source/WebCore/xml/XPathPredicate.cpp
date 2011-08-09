@@ -38,6 +38,12 @@
 #include <math.h>
 #include <wtf/MathExtras.h>
 
+#if COMPILER(WINSCW)
+#define BOOL_TO_VALUE_CAST (unsigned long)
+#else
+#define BOOL_TO_VALUE_CAST
+#endif
+
 namespace WebCore {
 namespace XPath {
         
@@ -142,7 +148,7 @@ bool EqTestOp::compare(const Value& lhs, const Value& rhs) const
             // If one object to be compared is a node-set and the other is a boolean, then the comparison will be true
             // if and only if the result of performing the comparison on the boolean and on the result of converting
             // the node-set to a boolean using the boolean function is true.
-            return compare(lhs.toBoolean(), rhs);
+            return compare(BOOL_TO_VALUE_CAST (lhs.toBoolean()), rhs);
         }
         ASSERT(0);
     }
@@ -161,7 +167,7 @@ bool EqTestOp::compare(const Value& lhs, const Value& rhs) const
             return false;
         }
         if (lhs.isBoolean())
-            return compare(lhs, rhs.toBoolean());
+            return compare(lhs, BOOL_TO_VALUE_CAST (rhs.toBoolean()));
         ASSERT(0);
     }
     
@@ -198,7 +204,7 @@ Value EqTestOp::evaluate() const
     Value lhs(subExpr(0)->evaluate());
     Value rhs(subExpr(1)->evaluate());
 
-    return compare(lhs, rhs);
+    return BOOL_TO_VALUE_CAST compare(lhs, rhs);
 }
 
 LogicalOp::LogicalOp(Opcode opcode, Expression* lhs, Expression* rhs)
@@ -224,9 +230,9 @@ Value LogicalOp::evaluate() const
     // dictates that we must do short-circuit evaluation
     bool lhsBool = lhs.toBoolean();
     if (lhsBool == shortCircuitOn())
-        return lhsBool;
+        return BOOL_TO_VALUE_CAST lhsBool;
 
-    return subExpr(1)->evaluate().toBoolean();
+    return BOOL_TO_VALUE_CAST (subExpr(1)->evaluate().toBoolean());
 }
 
 Value Union::evaluate() const

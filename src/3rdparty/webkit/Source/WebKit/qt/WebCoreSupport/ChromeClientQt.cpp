@@ -75,7 +75,7 @@
 #include <qtooltip.h>
 #include <wtf/OwnPtr.h>
 
-#if ENABLE(VIDEO) && (USE(GSTREAMER) || USE(QT_MULTIMEDIA))
+#if ENABLE(VIDEO) && (USE(GSTREAMER) || USE(QT_MULTIMEDIA) || USE(QTKIT))
 #include "FullScreenVideoQt.h"
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
@@ -92,7 +92,7 @@ bool ChromeClientQt::dumpVisitedLinksCallbacks = false;
 ChromeClientQt::ChromeClientQt(QWebPage* webPage)
     : m_webPage(webPage)
     , m_eventLoop(0)
-#if ENABLE(VIDEO) && (USE(GSTREAMER) || USE(QT_MULTIMEDIA))
+#if ENABLE(VIDEO) && (USE(GSTREAMER) || USE(QT_MULTIMEDIA) || USE(QTKIT))
     , m_fullScreenVideo(0)
 #endif
 {
@@ -104,7 +104,7 @@ ChromeClientQt::~ChromeClientQt()
     if (m_eventLoop)
         m_eventLoop->exit();
 
-#if ENABLE(VIDEO) && (USE(GSTREAMER) || USE(QT_MULTIMEDIA))
+#if ENABLE(VIDEO) && (USE(GSTREAMER) || USE(QT_MULTIMEDIA) || USE(QTKIT))
     delete m_fullScreenVideo;
 #endif
 }
@@ -127,6 +127,13 @@ FloatRect ChromeClientQt::windowRect()
     if (!platformPageClient())
         return FloatRect();
     return platformPageClient()->windowRect();
+}
+
+bool ChromeClientQt::allowsAcceleratedCompositing() const
+{
+    if (!platformPageClient())
+        return false;
+    return platformPageClient()->allowsAcceleratedCompositing();
 }
 
 FloatRect ChromeClientQt::pageRect()
@@ -661,7 +668,7 @@ IntRect ChromeClientQt::visibleRectForTiledBackingStore() const
 }
 #endif
 
-#if ENABLE(VIDEO) && (USE(GSTREAMER) || USE(QT_MULTIMEDIA))
+#if ENABLE(VIDEO) && (USE(GSTREAMER) || USE(QT_MULTIMEDIA) || USE(QTKIT))
 FullScreenVideoQt* ChromeClientQt::fullScreenVideo()
 {
     if (!m_fullScreenVideo)

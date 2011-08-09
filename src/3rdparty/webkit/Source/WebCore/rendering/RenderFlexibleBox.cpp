@@ -90,8 +90,8 @@ public:
                 current = forward ? current->nextSiblingBox() : current->previousSiblingBox();
             if (current && current->style()->boxOrdinalGroup() > lastOrdinal)
                 lastOrdinal = current->style()->boxOrdinalGroup();
-        } while (!current || current->style()->boxOrdinalGroup() != currentOrdinal ||
-                 current->style()->visibility() == COLLAPSE);
+        } while (!current || (!current->isAnonymous()
+                 && (current->style()->boxOrdinalGroup() != currentOrdinal || current->style()->visibility() == COLLAPSE)));
         return current;
     }
 

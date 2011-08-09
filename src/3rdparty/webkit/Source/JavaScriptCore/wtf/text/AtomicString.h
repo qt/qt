@@ -113,6 +113,16 @@ public:
     static AtomicString fromUTF8(const char*, size_t);
     static AtomicString fromUTF8(const char*);
 
+#if COMPILER(WINSCW)
+    static const AtomicString& nullAtom2();
+    static const AtomicString& emptyAtom2();
+    static const AtomicString& textAtom2();
+    static const AtomicString& commentAtom2();
+    static const AtomicString& starAtom2();
+    static const AtomicString& xmlAtom2();
+    static const AtomicString& xmlnsAtom2();
+#endif
+
 private:
     String m_string;
     
@@ -155,6 +165,24 @@ inline bool equalIgnoringCase(const String& a, const AtomicString& b) { return e
 // Define external global variables for the commonly used atomic strings.
 // These are only usable from the main thread.
 #ifndef ATOMICSTRING_HIDE_GLOBALS
+
+#if COMPILER(WINSCW)
+extern const JS_EXPORTDATA AtomicString nullAtom1;
+extern const JS_EXPORTDATA AtomicString emptyAtom1;
+extern const JS_EXPORTDATA AtomicString textAtom1;
+extern const JS_EXPORTDATA AtomicString commentAtom1;
+extern const JS_EXPORTDATA AtomicString starAtom1;
+extern const JS_EXPORTDATA AtomicString xmlAtom1;
+extern const JS_EXPORTDATA AtomicString xmlnsAtom1;
+
+#define nullAtom AtomicString::nullAtom2()
+#define emptyAtom AtomicString::emptyAtom2()
+#define textAtom AtomicString::textAtom2()
+#define commentAtom AtomicString::commentAtom2()
+#define starAtom AtomicString::starAtom2()
+#define xmlAtom AtomicString::xmlAtom2()
+#define xmlnsAtom AtomicString::xmlnsAtom2()
+#else
 extern const JS_EXPORTDATA AtomicString nullAtom;
 extern const JS_EXPORTDATA AtomicString emptyAtom;
 extern const JS_EXPORTDATA AtomicString textAtom;
@@ -162,6 +190,7 @@ extern const JS_EXPORTDATA AtomicString commentAtom;
 extern const JS_EXPORTDATA AtomicString starAtom;
 extern const JS_EXPORTDATA AtomicString xmlAtom;
 extern const JS_EXPORTDATA AtomicString xmlnsAtom;
+#endif
 
 inline AtomicString AtomicString::fromUTF8(const char* characters, size_t length)
 {
@@ -190,6 +219,7 @@ template<> struct DefaultHash<AtomicString> {
 
 } // namespace WTF
 
+#if !COMPILER(WINSCW)
 #ifndef ATOMICSTRING_HIDE_GLOBALS
 using WTF::AtomicString;
 using WTF::nullAtom;
@@ -199,6 +229,7 @@ using WTF::commentAtom;
 using WTF::starAtom;
 using WTF::xmlAtom;
 using WTF::xmlnsAtom;
+#endif
 #endif
 
 #endif // AtomicString_h

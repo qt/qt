@@ -2934,31 +2934,43 @@ contains(DEFINES, ENABLE_VIDEO=1) {
             bindings/js/JSAudioConstructor.cpp
     }
 
-    contains(DEFINES, USE_QTKIT=1) {
+    contains(DEFINES, WTF_USE_QTKIT=1) {
+        INCLUDEPATH += \
+            $$SOURCE_DIR/../WebKitLibraries/
+
         HEADERS += \
             platform/graphics/mac/MediaPlayerPrivateQTKit.h \
             platform/mac/WebCoreObjCExtras.h \
             platform/qt/WebCoreSystemInterface.h \
             platform/mac/BlockExceptions.h \
-            platform/mac/WebCoreObjCExtras.h
+            platform/mac/WebCoreObjCExtras.h \
+            platform/mac/WebVideoFullscreenController.h \
+            platform/mac/WebVideoFullscreenHUDWindowController.h \
+            platform/mac/WebWindowAnimation.h
+
         SOURCES += \
+            platform/graphics/cg/IntRectCG.cpp \
+            platform/graphics/cg/FloatSizeCG.cpp \
+            platform/cf/SharedBufferCF.cpp \
+            platform/cf/KURLCFNet.cpp
+
+         OBJECTIVE_SOURCES += \
+            platform/qt/WebCoreSystemInterface.mm \
+            platform/mac/BlockExceptions.mm \
+            platform/mac/WebCoreObjCExtras.mm \
             platform/graphics/mac/MediaPlayerPrivateQTKit.mm \
             platform/mac/SharedBufferMac.mm \
             platform/mac/KURLMac.mm \
             platform/text/mac/StringMac.mm \
             platform/graphics/mac/FloatSizeMac.mm \
             platform/graphics/mac/IntRectMac.mm \
-            platform/graphics/cg/IntRectCG.cpp \
-            platform/graphics/cg/FloatSizeCG.cpp \
-            platform/cf/SharedBufferCF.cpp \
-            platform/cf/KURLCFNet.cpp \
-            platform/qt/WebCoreSystemInterface.mm \
-            platform/mac/BlockExceptions.mm \
-            platform/mac/WebCoreObjCExtras.mm
+            platform/mac/WebVideoFullscreenController.mm \
+            platform/mac/WebVideoFullscreenHUDWindowController.mm \
+            platform/mac/WebWindowAnimation.mm
 
         DEFINES+=NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
 
-    } else: contains(DEFINES, USE_GSTREAMER=1) {
+    } else: contains(DEFINES, WTF_USE_GSTREAMER=1) {
         HEADERS += \
             platform/graphics/gstreamer/GOwnPtrGStreamer.h \
             platform/graphics/gstreamer/GRefPtrGStreamer.h \
@@ -2979,7 +2991,7 @@ contains(DEFINES, ENABLE_VIDEO=1) {
             platform/graphics/gstreamer/PlatformVideoWindowQt.cpp \
             platform/graphics/gstreamer/ImageGStreamerQt.cpp
 
-    } else:contains(MOBILITY_CONFIG, multimedia) {
+    } else:contains(DEFINES, WTF_USE_QT_MULTIMEDIA=1) {
         HEADERS += \ 
             platform/graphics/qt/MediaPlayerPrivateQt.h
 

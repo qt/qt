@@ -38,29 +38,6 @@
 
 namespace WebCore {
 
-static void destroyOnContextThread(PassOwnPtr<ActiveDOMObjectCallbackImpl>);
-
-class DestroyOnContextThreadTask : public ScriptExecutionContext::Task {
-public:
-    static PassOwnPtr<DestroyOnContextThreadTask> create(PassOwnPtr<ActiveDOMObjectCallbackImpl> impl)
-    {
-        return adoptPtr(new DestroyOnContextThreadTask(impl));
-    }
-
-    virtual void performTask(ScriptExecutionContext*)
-    {
-        destroyOnContextThread(m_impl.release());
-    }
-
-private:
-    DestroyOnContextThreadTask(PassOwnPtr<ActiveDOMObjectCallbackImpl> impl)
-        : m_impl(impl)
-    {
-    }
-
-    OwnPtr<ActiveDOMObjectCallbackImpl> m_impl;
-};
-
 class ActiveDOMObjectCallbackImpl : public ActiveDOMObject {
 public:
     ActiveDOMObjectCallbackImpl(ScriptExecutionContext* context)
@@ -107,6 +84,29 @@ private:
     Mutex m_mutex;
     bool m_suspended;
     bool m_stopped;
+};
+
+static void destroyOnContextThread(PassOwnPtr<ActiveDOMObjectCallbackImpl>);
+
+class DestroyOnContextThreadTask : public ScriptExecutionContext::Task {
+public:
+    static PassOwnPtr<DestroyOnContextThreadTask> create(PassOwnPtr<ActiveDOMObjectCallbackImpl> impl)
+    {
+        return adoptPtr(new DestroyOnContextThreadTask(impl));
+    }
+
+    virtual void performTask(ScriptExecutionContext*)
+    {
+        destroyOnContextThread(m_impl.release());
+    }
+
+private:
+    DestroyOnContextThreadTask(PassOwnPtr<ActiveDOMObjectCallbackImpl> impl)
+        : m_impl(impl)
+    {
+    }
+
+    OwnPtr<ActiveDOMObjectCallbackImpl> m_impl;
 };
 
 static void destroyOnContextThread(PassOwnPtr<ActiveDOMObjectCallbackImpl> impl)

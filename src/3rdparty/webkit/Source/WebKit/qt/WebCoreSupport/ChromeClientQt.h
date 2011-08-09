@@ -155,6 +155,7 @@ public:
     virtual void scheduleCompositingLayerSync();
     virtual CompositingTriggerFlags allowedCompositingTriggers() const;
 #endif
+    virtual bool allowsAcceleratedCompositing() const;
 
 #if ENABLE(TILED_BACKING_STORE)
     virtual IntRect visibleRectForTiledBackingStore() const;
@@ -164,7 +165,7 @@ public:
     virtual void needTouchEvents(bool) { }
 #endif
  
-#if ENABLE(VIDEO) && (USE(GSTREAMER) || USE(QT_MULTIMEDIA))
+#if ENABLE(VIDEO) && (USE(GSTREAMER) || USE(QT_MULTIMEDIA) || USE(QTKIT))
     virtual bool supportsFullscreenForNode(const Node*);
     virtual void enterFullscreenForNode(Node*);
     virtual void exitFullscreenForNode(Node*);
@@ -203,7 +204,7 @@ public:
     bool menuBarVisible;
     QEventLoop* m_eventLoop;
 
-#if ENABLE(VIDEO) && (USE(GSTREAMER) || USE(QT_MULTIMEDIA))
+#if ENABLE(VIDEO) && (USE(GSTREAMER) || USE(QT_MULTIMEDIA) || USE(QTKIT))
     FullScreenVideoQt* m_fullScreenVideo;
 #endif
 

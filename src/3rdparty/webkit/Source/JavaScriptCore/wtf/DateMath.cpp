@@ -692,7 +692,7 @@ double parseES5DateFromNullTerminatedCharacters(const char* dateString)
             return NaN;
         if (*postParsePosition != ':' || (postParsePosition - currentPosition) != 2)
             return NaN;
-        tzHoursAbs = abs(tzHours);
+        tzHoursAbs = labs(tzHours);
         currentPosition = postParsePosition + 1;
         
         if (!isASCIIDigit(*currentPosition))

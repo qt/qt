@@ -76,8 +76,13 @@ private:
 class Stringifier {
     WTF_MAKE_NONCOPYABLE(Stringifier);
 public:
+#if COMPILER(WINSCW)
+    Stringifier(ExecState*, const Local<Unknown>* replacer, const Local<Unknown>* space);
+    Local<Unknown> stringify(Handle<Unknown>*);
+#else
     Stringifier(ExecState*, const Local<Unknown>& replacer, const Local<Unknown>& space);
     Local<Unknown> stringify(Handle<Unknown>);
+#endif
 
     void visitAggregate(SlotVisitor&);
 
@@ -197,6 +202,15 @@ JSValue PropertyNameForFunctionCall::value(ExecState* exec) const
 
 // ------------------------------ Stringifier --------------------------------
 
+#if COMPILER(WINSCW)
+Stringifier::Stringifier(ExecState* exec, const Local<Unknown>* replacer, const Local<Unknown>* space)
+    : m_exec(exec)
+    , m_replacer(*replacer)
+    , m_usingArrayReplacer(false)
+    , m_arrayReplacerPropertyNames(exec)
+    , m_replacerCallType(CallTypeNone)
+    , m_gap(gap(exec, space->get()))
+#else
 Stringifier::Stringifier(ExecState* exec, const Local<Unknown>& replacer, const Local<Unknown>& space)
     : m_exec(exec)
     , m_replacer(replacer)
@@ -204,6 +218,7 @@ Stringifier::Stringifier(ExecState* exec, const Local<Unknown>& replacer, const 
     , m_arrayReplacerPropertyNames(exec)
     , m_replacerCallType(CallTypeNone)
     , m_gap(gap(exec, space.get()))
+#endif
 {
     if (!m_replacer.isObject())
         return;
@@ -244,17 +259,29 @@ Stringifier::Stringifier(ExecState* exec, const Local<Unknown>& replacer, const 
     m_replacerCallType = m_replacer.asObject()->getCallData(m_replacerCallData);
 }
 
+#if COMPILER(WINSCW)
+Local<Unknown> Stringifier::stringify(Handle<Unknown>* value)
+#else
 Local<Unknown> Stringifier::stringify(Handle<Unknown> value)
+#endif
 {
     JSObject* object = constructEmptyObject(m_exec);
     if (m_exec->hadException())
         return Local<Unknown>(m_exec->globalData(), jsNull());
 
     PropertyNameForFunctionCall emptyPropertyName(m_exec->globalData().propertyNames->emptyIdentifier);
+#if COMPILER(WINSCW)
+    object->putDirect(m_exec->globalData(), m_exec->globalData().propertyNames->emptyIdentifier, value->get());
+#else
     object->putDirect(m_exec->globalData(), m_exec->globalData().propertyNames->emptyIdentifier, value.get());
+#endif
 
     UStringBuilder result;
+#if COMPILER(WINSCW)
+    if (appendStringifiedValue(result, value->get(), object, emptyPropertyName) != StringifySucceeded)
+#else
     if (appendStringifiedValue(result, value.get(), object, emptyPropertyName) != StringifySucceeded)
+#endif
         return Local<Unknown>(m_exec->globalData(), jsUndefined());
     if (m_exec->hadException())
         return Local<Unknown>(m_exec->globalData(), jsNull());
@@ -606,6 +633,15 @@ bool JSONObject::getOwnPropertyDescriptor(ExecState* exec, const Identifier& pro
 
 class Walker {
 public:
+#if COMPILER(WINSCW)
+    Walker(ExecState* exec, Handle<JSObject>* function, CallType callType, CallData callData)
+        : m_exec(exec)
+        , m_function(exec->globalData(), *function)
+        , m_callType(callType)
+        , m_callData(callData)
+    {
+    }
+#else
     Walker(ExecState* exec, Handle<JSObject> function, CallType callType, CallData callData)
         : m_exec(exec)
         , m_function(exec->globalData(), function)
@@ -613,6 +649,7 @@ public:
         , m_callData(callData)
     {
     }
+#endif
     JSValue walk(JSValue unfiltered);
 private:
     JSValue callReviver(JSObject* thisObj, JSValue property, JSValue unfiltered)
@@ -829,7 +866,12 @@ EncodedJSValue JSC_HOST_CALL JSONProtoFuncParse(ExecState* exec)
     CallType callType = getCallData(function, callData);
     if (callType == CallTypeNone)
         return JSValue::encode(unfiltered);
+#if COMPILER(WINSCW)
+    Local<JSObject> handle(exec->globalData(), asObject(function));
+    return JSValue::encode(Walker(exec, &handle, callType, callData).walk(unfiltered));
+#else
     return JSValue::encode(Walker(exec, Local<JSObject>(exec->globalData(), asObject(function)), callType, callData).walk(unfiltered));
+#endif
 }
 
 // ECMA-262 v5 15.12.3
@@ -841,13 +883,24 @@ EncodedJSValue JSC_HOST_CALL JSONProtoFuncStringify(ExecState* exec)
     Local<Unknown> value(exec->globalData(), exec->argument(0));
     Local<Unknown> replacer(exec->globalData(), exec->argument(1));
     Local<Unknown> space(exec->globalData(), exec->argument(2));
+#if COMPILER(WINSCW)
+    return JSValue::encode(Stringifier(exec, &replacer, &space).stringify(&value).get());
+#else
     return JSValue::encode(Stringifier(exec, replacer, space).stringify(value).get());
+#endif
 }
 
 UString JSONStringify(ExecState* exec, JSValue value, unsigned indent)
 {
     LocalScope scope(exec->globalData());
+#if COMPILER(WINSCW)
+    Local<Unknown> replacer(exec->globalData(), jsNull());
+    Local<Unknown> space(exec->globalData(), jsNumber(indent));
+    Local<Unknown> valueHandle(exec->globalData(), value);
+    Local<Unknown> result = Stringifier(exec, &replacer, &space).stringify(&valueHandle);
+#else
     Local<Unknown> result = Stringifier(exec, Local<Unknown>(exec->globalData(), jsNull()), Local<Unknown>(exec->globalData(), jsNumber(indent))).stringify(Local<Unknown>(exec->globalData(), value));
+#endif
     if (result.isUndefinedOrNull())
         return UString();
     return result.getString(exec);

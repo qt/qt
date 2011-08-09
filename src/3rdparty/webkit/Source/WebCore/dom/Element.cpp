@@ -1208,7 +1208,13 @@ void Element::removeShadowRoot()
         InspectorInstrumentation::willRemoveDOMNode(document(), this);
         data->m_shadowRoot = 0;
         document()->removeFocusedNodeOfSubtree(oldRoot.get());
+
+        // Remove from rendering tree
+        if (oldRoot->attached())
+            oldRoot->detach();
+
         oldRoot->setShadowHost(0);
+        oldRoot->setTreeScopeRecursively(document());
         if (oldRoot->inDocument())
             oldRoot->removedFromDocument();
         else

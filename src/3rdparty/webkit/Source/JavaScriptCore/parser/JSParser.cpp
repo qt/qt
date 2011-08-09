@@ -215,13 +215,21 @@ private:
     template <class TreeBuilder> ALWAYS_INLINE TreeExpression parseObjectLiteral(TreeBuilder&);
     template <class TreeBuilder> ALWAYS_INLINE TreeExpression parseStrictObjectLiteral(TreeBuilder&);
     template <class TreeBuilder> ALWAYS_INLINE TreeArguments parseArguments(TreeBuilder&);
+#if COMPILER(WINSCW)
+    template <bool strict, class TreeBuilder> ALWAYS_INLINE TreeProperty parseProperty(bool, TreeBuilder&);
+#else
     template <bool strict, class TreeBuilder> ALWAYS_INLINE TreeProperty parseProperty(TreeBuilder&);
+#endif
     template <class TreeBuilder> ALWAYS_INLINE TreeFunctionBody parseFunctionBody(TreeBuilder&);
     template <class TreeBuilder> ALWAYS_INLINE TreeFormalParameterList parseFormalParameters(TreeBuilder&);
     template <class TreeBuilder> ALWAYS_INLINE TreeExpression parseVarDeclarationList(TreeBuilder&, int& declarations, const Identifier*& lastIdent, TreeExpression& lastInitializer, int& identStart, int& initStart, int& initEnd);
     template <class TreeBuilder> ALWAYS_INLINE TreeConstDeclList parseConstDeclarationList(TreeBuilder& context);
     enum FunctionRequirements { FunctionNoRequirements, FunctionNeedsName };
+#if COMPILER(WINSCW)
+    template <FunctionRequirements, bool nameIsInContainingScope, class TreeBuilder> bool parseFunctionInfo(FunctionRequirements, bool, TreeBuilder&, const Identifier*&, TreeFormalParameterList&, TreeFunctionBody&, int& openBrace, int& closeBrace, int& bodyStartLine);
+#else
     template <FunctionRequirements, bool nameIsInContainingScope, class TreeBuilder> bool parseFunctionInfo(TreeBuilder&, const Identifier*&, TreeFormalParameterList&, TreeFunctionBody&, int& openBrace, int& closeBrace, int& bodyStartLine);
+#endif
     ALWAYS_INLINE int isBinaryOperator(JSTokenType token);
     bool allowAutomaticSemicolon();
 
@@ -1290,7 +1298,11 @@ template <class TreeBuilder> TreeFunctionBody JSParser::parseFunctionBody(TreeBu
     return context.createFunctionBody(strictMode());
 }
 
+#if COMPILER(WINSCW)
+template <JSParser::FunctionRequirements, bool, class TreeBuilder> bool JSParser::parseFunctionInfo(JSParser::FunctionRequirements requirements, bool nameIsInContainingScope, TreeBuilder& context, const Identifier*& name, TreeFormalParameterList& parameters, TreeFunctionBody& body, int& openBracePos, int& closeBracePos, int& bodyStartLine)
+#else
 template <JSParser::FunctionRequirements requirements, bool nameIsInContainingScope, class TreeBuilder> bool JSParser::parseFunctionInfo(TreeBuilder& context, const Identifier*& name, TreeFormalParameterList& parameters, TreeFunctionBody& body, int& openBracePos, int& closeBracePos, int& bodyStartLine)
+#endif
 {
     AutoPopScopeRef functionScope(this, pushScope());
     functionScope->setIsFunction();
@@ -1371,7 +1383,11 @@ template <class TreeBuilder> TreeStatement JSParser::parseFunctionDeclaration(Tr
     int openBracePos = 0;
     int closeBracePos = 0;
     int bodyStartLine = 0;
+#if COMPILER(WINSCW)
+    failIfFalse((parseFunctionInfo<FunctionNeedsName, true>(FunctionNeedsName, true, context, name, parameters, body, openBracePos, closeBracePos, bodyStartLine)));
+#else
     failIfFalse((parseFunctionInfo<FunctionNeedsName, true>(context, name, parameters, body, openBracePos, closeBracePos, bodyStartLine)));
+#endif
     failIfFalse(name);
     failIfFalseIfStrict(declareVariable(name));
     return context.createFuncDeclStatement(name, body, parameters, openBracePos, closeBracePos, bodyStartLine, m_lastLine);
@@ -1695,8 +1711,11 @@ template <class TreeBuilder> TreeExpression JSParser::parseBinaryExpression(Tree
     return context.popOperandStack(operandStackDepth);
 }
 
-
+#if COMPILER(WINSCW)
+template <bool complete, class TreeBuilder> TreeProperty JSParser::parseProperty(bool complete, TreeBuilder& context)
+#else
 template <bool complete, class TreeBuilder> TreeProperty JSParser::parseProperty(TreeBuilder& context)
+#endif
 {
     bool wasIdent = false;
     switch (m_token.m_type) {
@@ -1710,7 +1729,14 @@ template <bool complete, class TreeBuilder> TreeProperty JSParser::parseProperty
             next();
             TreeExpression node = parseAssignmentExpression(context);
             failIfFalse(node);
+#if COMPILER(WINSCW)
+            if (complete)
+                return context.template createProperty<true>(ident, node, PropertyNode::Constant);
+            else
+                return context.template createProperty<false>(ident, node, PropertyNode::Constant);
+#else
             return context.template createProperty<complete>(ident, node, PropertyNode::Constant);
+#endif
         }
         failIfFalse(wasIdent);
         matchOrFail(IDENT);
@@ -1727,8 +1753,16 @@ template <bool complete, class TreeBuilder> TreeProperty JSParser::parseProperty
             type = PropertyNode::Setter;
         else
             fail();
+#if COMPILER(WINSCW)
+        failIfFalse((parseFunctionInfo<FunctionNeedsName, false>(FunctionNeedsName, false, context, accessorName, parameters, body, openBracePos, closeBracePos, bodyStartLine)));
+        if (complete)
+            return context.template createGetterOrSetterProperty<true>(type, accessorName, parameters, body, openBracePos, closeBracePos, bodyStartLine, m_lastLine);
+        else
+            return context.template createGetterOrSetterProperty<false>(type, accessorName, parameters, body, openBracePos, closeBracePos, bodyStartLine, m_lastLine);
+#else
         failIfFalse((parseFunctionInfo<FunctionNeedsName, false>(context, accessorName, parameters, body, openBracePos, closeBracePos, bodyStartLine)));
         return context.template createGetterOrSetterProperty<complete>(type, accessorName, parameters, body, openBracePos, closeBracePos, bodyStartLine, m_lastLine);
+#endif
     }
     case NUMBER: {
         double propertyName = m_token.m_data.doubleValue;
@@ -1736,7 +1770,14 @@ template <bool complete, class TreeBuilder> TreeProperty JSParser::parseProperty
         consumeOrFail(COLON);
         TreeExpression node = parseAssignmentExpression(context);
         failIfFalse(node);
+#if COMPILER(WINSCW)
+        if (complete)
+            return context.template createProperty<true>(m_globalData, propertyName, node, PropertyNode::Constant);
+        else
+            return context.template createProperty<false>(m_globalData, propertyName, node, PropertyNode::Constant);
+#else
         return context.template createProperty<complete>(m_globalData, propertyName, node, PropertyNode::Constant);
+#endif
     }
     default:
         failIfFalse(m_token.m_type & KeywordTokenFlag);
@@ -1754,7 +1795,11 @@ template <class TreeBuilder> TreeExpression JSParser::parseObjectLiteral(TreeBui
         return context.createObjectLiteral();
     }
 
+#if COMPILER(WINSCW)
+    TreeProperty property = parseProperty<false>(false, context);
+#else
     TreeProperty property = parseProperty<false>(context);
+#endif
     failIfFalse(property);
     if (!m_syntaxAlreadyValidated && context.getType(property) != PropertyNode::Constant) {
         m_lexer->setOffset(startOffset);
@@ -1768,7 +1813,11 @@ template <class TreeBuilder> TreeExpression JSParser::parseObjectLiteral(TreeBui
         // allow extra comma, see http://bugs.webkit.org/show_bug.cgi?id=5939
         if (match(CLOSEBRACE))
             break;
+#if COMPILER(WINSCW)
+        property = parseProperty<false>(false, context);
+#else
         property = parseProperty<false>(context);
+#endif
         failIfFalse(property);
         if (!m_syntaxAlreadyValidated && context.getType(property) != PropertyNode::Constant) {
             m_lexer->setOffset(startOffset);
@@ -1792,7 +1841,11 @@ template <class TreeBuilder> TreeExpression JSParser::parseStrictObjectLiteral(T
         return context.createObjectLiteral();
     }
     
+#if COMPILER(WINSCW)
+    TreeProperty property = parseProperty<true>(true, context);
+#else
     TreeProperty property = parseProperty<true>(context);
+#endif
     failIfFalse(property);
     
     typedef HashMap<RefPtr<StringImpl>, unsigned, IdentifierRepHash> ObjectValidationMap;
@@ -1808,7 +1861,11 @@ template <class TreeBuilder> TreeExpression JSParser::parseStrictObjectLiteral(T
         // allow extra comma, see http://bugs.webkit.org/show_bug.cgi?id=5939
         if (match(CLOSEBRACE))
             break;
+#if COMPILER(WINSCW)
+        property = parseProperty<true>(true, context);
+#else
         property = parseProperty<true>(context);
+#endif
         failIfFalse(property);
         if (!m_syntaxAlreadyValidated) {
             std::pair<ObjectValidationMap::iterator, bool> propertyEntryIter = objectValidator.add(context.getName(property).impl(), context.getType(property));
@@ -1987,7 +2044,11 @@ template <class TreeBuilder> TreeExpression JSParser::parseMemberExpression(Tree
         int closeBracePos = 0;
         int bodyStartLine = 0;
         next();
+#if COMPILER(WINSCW)
+        failIfFalse((parseFunctionInfo<FunctionNoRequirements, false>(FunctionNoRequirements, false, context, name, parameters, body, openBracePos, closeBracePos, bodyStartLine)));
+#else
         failIfFalse((parseFunctionInfo<FunctionNoRequirements, false>(context, name, parameters, body, openBracePos, closeBracePos, bodyStartLine)));
+#endif
         base = context.createFunctionExpr(name, body, parameters, openBracePos, closeBracePos, bodyStartLine, m_lastLine);
     } else
         base = parsePrimaryExpression(context);

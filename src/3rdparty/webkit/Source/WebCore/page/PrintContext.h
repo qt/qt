@@ -51,7 +51,11 @@ public:
 
     // These are only valid after page rects are computed.
     size_t pageCount() const { return m_pageRects.size(); }
+#if COMPILER(WINSCW)
+    const IntRect& pageRect(size_t pageNumber) const;
+#else
     const IntRect& pageRect(size_t pageNumber) const { return m_pageRects[pageNumber]; }
+#endif
     const Vector<IntRect>& pageRects() const { return m_pageRects; }
 
     float computeAutomaticScaleFactor(const FloatSize& availablePaperSize);
