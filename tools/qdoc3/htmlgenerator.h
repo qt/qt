@@ -93,7 +93,7 @@ class HtmlGenerator : public PageGenerator
     virtual void terminateGenerator();
     virtual QString format();
     virtual void generateTree(const Tree *tree);
-    void generateManifestFile();
+    void generateManifestFiles();
 
     QString protectEnc(const QString &string);
     static QString protect(const QString &string, const QString &encoding = "ISO-8859-1");
@@ -112,6 +112,8 @@ class HtmlGenerator : public PageGenerator
     virtual QString refForNode(const Node *node);
     virtual QString linkForNode(const Node *node, const Node *relative);
     virtual QString refForAtom(Atom *atom, const Node *node);
+
+    void generateManifestFile(QString manifest, QString element);
 
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };

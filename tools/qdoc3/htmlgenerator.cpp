@@ -279,7 +279,7 @@ void HtmlGenerator::generateTree(const Tree *tree)
     generatePageIndex(outputDir() + "/" + fileBase + ".pageindex");
 
     helpProjectWriter->generate(myTree);
-    generateManifestFile();
+    generateManifestFiles();
 }
 
 void HtmlGenerator::startText(const Node * /* relative */,
@@ -4400,43 +4400,78 @@ QString HtmlGenerator::fullDocumentLocation(const Node *node)
     return parentName.toLower() + anchorRef;
 }
 
-void HtmlGenerator::generateManifestFile()
+/*!
+  This function outputs one or more manifest files in XML.
+  They are used by Creator.
+ */
+void HtmlGenerator::generateManifestFiles()
+{
+    generateManifestFile("examples", "example");
+    generateManifestFile("demos", "demo");
+}
+
+/*!
+  This function is called by generaqteManiferstFile(), once
+  for each manifest file to be generated. \a manifest is the
+  type of manifest file.
+ */
+void HtmlGenerator::generateManifestFile(QString manifest, QString element)
 {
     if (ExampleNode::exampleNodeMap.isEmpty())
         return;
-    QString fileName = "examples-manifest.xml";
+    QString fileName = manifest +"-manifest.xml";
     QFile file(outputDir() + "/" + fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text))
         return ;
+    bool demos = false;
+    if (manifest == "demos")
+        demos = true;
 
     QXmlStreamWriter writer(&file);
     writer.setAutoFormatting(true);
     writer.writeStartDocument();
     writer.writeStartElement("instructionals");
     writer.writeAttribute("module", project);
-    writer.writeStartElement("examples");
+    writer.writeStartElement(manifest);
 
     ExampleNodeMap::Iterator i = ExampleNode::exampleNodeMap.begin();
     while (i != ExampleNode::exampleNodeMap.end()) {
         const ExampleNode* en = i.value();
-        writer.writeStartElement("example");
+        if (demos) {
+            if (!en->name().startsWith("demos")) {
+                ++i;
+                continue;
+            }
+        }
+        else if (en->name().startsWith("demos")) {
+            ++i;
+            continue;
+        }
+        writer.writeStartElement(element);
         writer.writeAttribute("name", en->title());
-        QString docUrl = projectUrl + "/" + en->fileBase() + ".html";
+        //QString docUrl = projectUrl + "/" + en->fileBase() + ".html";
+        QString docUrl = "%REPLACEME%/" + en->fileBase() + ".html";
         writer.writeAttribute("docUrl", docUrl);
         foreach (const Node* child, en->childNodes()) {
             if (child->subType() == Node::File) {
                 QString file = child->name();
-                if (file.endsWith(".pro"))
-                     writer.writeAttribute("projectPath", "./" + file);
+                if (file.endsWith(".pro") || file.endsWith(".qmlproject")) {
+                    if (file.startsWith("demos/"))
+                        file = file.mid(6);
+                    writer.writeAttribute("projectPath", file);
+                    break;
+                }
             }
         }
-        writer.writeAttribute("imageUrl", projectUrl + "/" + en->imageFileName());
+        //writer.writeAttribute("imageUrl", projectUrl + "/" + en->imageFileName());
+        writer.writeAttribute("imageUrl", "%REPLACEME%/" + en->imageFileName());
+        writer.writeStartElement("description");
         Text brief = en->doc().briefText();
-        if (!brief.isEmpty()) {
-            writer.writeStartElement("description");
-            writer.writeCharacters(brief.toString());
-            writer.writeEndElement(); // description
-        }
+        if (!brief.isEmpty())
+            writer.writeCDATA(brief.toString());
+        else
+            writer.writeCDATA(QString("No description available"));
+        writer.writeEndElement(); // description
         QStringList tags = en->title().toLower().split(" ");
         if (!tags.isEmpty()) {
             writer.writeStartElement("tags");
@@ -4459,6 +4494,38 @@ void HtmlGenerator::generateManifestFile()
                 wrote_one = true;
             }
             writer.writeEndElement(); // tags
+        }
+
+        QString ename = en->name().mid(en->name().lastIndexOf('/')+1);
+        QSet<QString> usedNames;
+        foreach (const Node* child, en->childNodes()) {
+            if (child->subType() == Node::File) {
+                QString file = child->name();
+                QString fileName = file.mid(file.lastIndexOf('/')+1);
+                QString baseName = fileName;
+                if ((fileName.count(QChar('.')) > 0) &&
+                    (fileName.endsWith(".cpp") ||
+                     fileName.endsWith(".h") ||
+                     fileName.endsWith(".qml")))
+                    baseName.truncate(baseName.lastIndexOf(QChar('.')));
+                if (baseName.toLower() == ename) {
+                    if (!usedNames.contains(fileName)) {
+                        writer.writeStartElement("fileToOpen");
+                        writer.writeCharacters(fileName);
+                        writer.writeEndElement(); // fileToOpen
+                        usedNames.insert(fileName);
+                    }
+                }
+                else if (fileName.toLower().endsWith("main.cpp") ||
+                         fileName.toLower().endsWith("main.qml")) {
+                    if (!usedNames.contains(fileName)) {
+                        writer.writeStartElement("fileToOpen");
+                        writer.writeCharacters(fileName);
+                        writer.writeEndElement(); // fileToOpen
+                        usedNames.insert(fileName);
+                    }
+                }
+            }
         }
         writer.writeEndElement(); // example
         ++i;
