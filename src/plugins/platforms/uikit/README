@@ -58,8 +58,7 @@ configure -qpa -xplatform qpa/macx-iphonedevice-g++ -arch armv7 -no-neon -develo
     to the include search paths.
   - add "$(SRCROOT)/../qmltest" to the include search path if you didn't copy but
     linked to the qmlapplicationviewer
-  - for device set the architecture to armv7 only and make sure you
-    don't compile for thumb
+  - for device set the architecture to armv7 only
   - to use sound in your application, Q_IMPORT_PLUGIN(phonon_av),
     #include <phonon/private/factory_p.h>,
     and call Phonon::Factory::setBackend(qt_plugin_instance_phonon_av());
