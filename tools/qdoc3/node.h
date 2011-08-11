@@ -59,8 +59,10 @@
 QT_BEGIN_NAMESPACE
 
 class Node;
+class ClassNode;
 class InnerNode;
 class ExampleNode;
+class QmlClassNode;
 
 typedef QMap<QString, const Node*> NodeMap;
 typedef QMultiMap<QString, Node*> NodeMultiMap;
@@ -200,6 +202,8 @@ class Node
     QString guid() const;
     QString ditaXmlHref();
     QString extractClassName(const QString &string) const;
+    const QmlClassNode* qmlClassNode() const;
+    const ClassNode* declarativeCppNode() const;
 
  protected:
     Node(Type type, InnerNode* parent, const QString& name);

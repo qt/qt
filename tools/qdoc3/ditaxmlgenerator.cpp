@@ -4398,7 +4398,8 @@ void DitaXmlGenerator::generateDetailedQmlMember(const Node* node,
                 writeStartTag(DT_li);
                 writeGuidAttribute((Node*)qpn);
                 QString attr;
-                if (!qpn->isWritable(myTree))
+                const ClassNode* cn = qpn->declarativeCppNode();
+                if (cn && !qpn->isWritable(myTree))
                     attr = "read-only";
                 if (qpgn->isDefault()) {
                     if (!attr.isEmpty())
