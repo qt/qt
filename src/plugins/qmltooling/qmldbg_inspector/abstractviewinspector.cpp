@@ -509,4 +509,3 @@ QString AbstractViewInspector::idStringForObject(QObject *obj) const
 
 } // namespace QmlJSDebugger
 
-#include "abstractviewinspector.moc"
