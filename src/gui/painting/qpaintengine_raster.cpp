@@ -2396,12 +2396,18 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         d->image_filler_xform.setupMatrix(copy, s->flags.bilinear);
 
         if (!s->flags.antialiased && s->matrix.type() == QTransform::TxScale) {
-            QRectF rr = s->matrix.mapRect(r);
+            QPointF rr_tl = s->matrix.map(r.topLeft());
+            QPointF rr_br = s->matrix.map(r.bottomRight());
 
-            const int x1 = qRound(rr.x());
-            const int y1 = qRound(rr.y());
-            const int x2 = qRound(rr.right());
-            const int y2 = qRound(rr.bottom());
+            int x1 = qRound(rr_tl.x());
+            int y1 = qRound(rr_tl.y());
+            int x2 = qRound(rr_br.x());
+            int y2 = qRound(rr_br.y());
+
+            if (x1 > x2)
+                qSwap(x1, x2);
+            if (y1 > y2)
+                qSwap(y1, y2);
 
             fillRect_normalized(QRect(x1, y1, x2-x1, y2-y1), &d->image_filler_xform, d);
             return;
@@ -2862,15 +2868,9 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
     } else
 #endif
     {
-        QFontEngineGlyphCache::Type glyphType;
-        if (fontEngine->glyphFormat >= 0) {
-            glyphType = QFontEngineGlyphCache::Type(fontEngine->glyphFormat);
-        } else if (s->matrix.type() > QTransform::TxTranslate
-                   && d->glyphCacheType == QFontEngineGlyphCache::Raster_RGBMask) {
-            glyphType = QFontEngineGlyphCache::Raster_A8;
-        } else {
-            glyphType = d->glyphCacheType;
-        }
+        QFontEngineGlyphCache::Type glyphType = fontEngine->glyphFormat >= 0
+                ? QFontEngineGlyphCache::Type(fontEngine->glyphFormat)
+                : d->glyphCacheType;
 
         QImageTextureGlyphCache *cache =
             static_cast<QImageTextureGlyphCache *>(fontEngine->glyphCache(0, glyphType, s->matrix));

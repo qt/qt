@@ -358,12 +358,14 @@
 				GCC_PREFIX_HEADER = qmltest_Prefix.pch;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../../../../../qt-lighthouse-ios-simulator/include\"/**";
 				INFOPLIST_FILE = "qmltest-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../../../../../qt-lighthouse-ios-simulator/lib\"",
 					"\"$(SRCROOT)/../../../../../../../qt-lighthouse-ios-simulator/plugins/platforms\"",
 				);
 				PRODUCT_NAME = qmltest;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -377,12 +379,14 @@
 				GCC_PREFIX_HEADER = qmltest_Prefix.pch;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../../../../../qt-lighthouse-ios-simulator/include\"/**";
 				INFOPLIST_FILE = "qmltest-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../../../../../qt-lighthouse-ios-simulator/lib\"",
 					"\"$(SRCROOT)/../../../../../../../qt-lighthouse-ios-simulator/plugins/platforms\"",
 				);
 				PRODUCT_NAME = qmltest;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -426,12 +430,14 @@
 				GCC_PREFIX_HEADER = qmltest_Prefix.pch;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../../../../../qt-lighthouse-ios-device/include\"/**";
 				INFOPLIST_FILE = "qmltest-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../../../../../qt-lighthouse-ios-device/lib\"",
 					"\"$(SRCROOT)/../../../../../../../qt-lighthouse-ios-device/plugins/platforms\"",
 				);
 				PRODUCT_NAME = qmltest;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -445,12 +451,14 @@
 				GCC_PREFIX_HEADER = qmltest_Prefix.pch;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../../../../../qt-lighthouse-ios-device/include\"/**";
 				INFOPLIST_FILE = "qmltest-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../../../../../qt-lighthouse-ios-device/lib\"",
 					"\"$(SRCROOT)/../../../../../../../qt-lighthouse-ios-device/plugins/platforms\"",
 				);
 				PRODUCT_NAME = qmltest;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

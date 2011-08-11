@@ -323,7 +323,7 @@ static QChar::Direction skipBoundryNeutrals(QScriptAnalysis *analysis,
                                             const ushort *unicode, int length,
                                             int &sor, int &eor, QBidiControl &control)
 {
-    QChar::Direction dir;
+    QChar::Direction dir = control.basicDirection();
     int level = sor > 0 ? analysis[sor - 1].bidiLevel : control.level;
     while (sor < length) {
         dir = QChar::direction(unicode[sor]);
@@ -1632,19 +1632,13 @@ bool QTextEngine::isRightToLeft() const
 int QTextEngine::findItem(int strPos) const
 {
     itemize();
-    int left = 0;
-    int right = layoutData->items.size()-1;
-    while(left <= right) {
-        int middle = ((right-left)/2)+left;
-        if (strPos > layoutData->items[middle].position)
-            left = middle+1;
-        else if(strPos < layoutData->items[middle].position)
-            right = middle-1;
-        else {
-            return middle;
-        }
+
+    int item;
+    for (item = layoutData->items.size()-1; item > 0; --item) {
+        if (layoutData->items[item].position <= strPos)
+            break;
     }
-    return right;
+    return item;
 }
 
 QFixed QTextEngine::width(int from, int len) const
@@ -2808,7 +2802,7 @@ QFixed QTextEngine::alignLine(const QScriptLine &line)
         if (align & Qt::AlignRight)
             x = line.width - (line.textAdvance + leadingSpaceWidth(line));
         else if (align & Qt::AlignHCenter)
-            x = (line.width - (line.textAdvance + leadingSpaceWidth(line)))/2;
+            x = (line.width - line.textAdvance)/2 - leadingSpaceWidth(line);
     }
     return x;
 }
