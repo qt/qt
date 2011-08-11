@@ -53,10 +53,6 @@
 #  include <errno.h>
 #endif
 
-#include <stdlib.h>
-#include <time.h>
-#include <ctype.h>
-
 #if defined(Q_OS_UNIX)
 # include "private/qcore_unix_p.h"      // overrides QT_OPEN
 #endif
@@ -118,7 +114,7 @@ static int createFileFromTemplate(char *const path,
         char *rIter = placeholderEnd;
 
 #if defined(QT_BUILD_CORE_LIB)
-        qint64 pid = QCoreApplication::applicationPid();
+        quint64 pid = quint64(QCoreApplication::applicationPid());
         do {
             *--rIter = (pid % 10) + '0';
             pid /= 10;
@@ -145,7 +141,7 @@ static int createFileFromTemplate(char *const path,
                 return -1;
         }
 #else
-        if (!QFileInfo(QLatin1String(path)).exists())
+        if (!QFileInfo(QString::fromLocal8Bit(path)).exists())
             return 1;
 #endif
 
@@ -153,23 +149,34 @@ static int createFileFromTemplate(char *const path,
         for (char *iter = placeholderStart;;) {
             // Character progression: [0-9] => 'a' ... 'z' => 'A' .. 'Z'
             // String progression: "ZZaiC" => "aabiC"
-            if (*iter == 'Z') {
-                *iter++ = 'a';
-                if (iter == placeholderEnd)
-                    return -1;
-            } else {
-                if (isdigit(*iter))
+            switch (*iter) {
+                case 'Z':
+                    // Rollover, advance next character
                     *iter = 'a';
-                else if (*iter == 'z') /* inc from z to A */
+                    if (++iter == placeholderEnd)
+                        return -1;
+
+                    continue;
+
+                case '0': case '1': case '2': case '3': case '4':
+                case '5': case '6': case '7': case '8': case '9':
+                    *iter = 'a';
+                    break;
+
+                case 'z':
+                    // increment 'z' to 'A'
                     *iter = 'A';
-                else {
+                    break;
+
+                default:
                     ++*iter;
-                }
-                break;
+                    break;
             }
+            break;
         }
     }
-    /*NOTREACHED*/
+
+    Q_ASSERT(false);
 }
 
 //************* QTemporaryFileEngine
@@ -323,7 +330,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
         return true;
     }
 
-    d->fileEntry = QFileSystemEntry(template_);
+    d->fileEntry = QFileSystemEntry(template_, QFileSystemEntry::FromInternalPath());
     return false;
 #endif
 }
