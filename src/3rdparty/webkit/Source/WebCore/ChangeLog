@@ -1,3 +1,11 @@
+2011-08-11  Alexis Menard  <alexis.menard@openbossa.org>
+
+        Unreviewed build fix for Qt.
+
+        Make sure we build when Qt is namespaced.
+
+        * platform/graphics/gstreamer/PlatformVideoWindowPrivate.h:
+
 2011-08-06  Aron Rosenberg  <arosenberg@logitech.com>
 
         Reviewed by Benjamin Poulain.
