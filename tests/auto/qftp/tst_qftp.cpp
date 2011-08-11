@@ -155,6 +155,7 @@ private:
 
     QFtp *ftp;
 #ifndef QT_NO_BEARERMANAGEMENT
+    QNetworkConfigurationManager *netConfMan;
     QSharedPointer<QNetworkSession> networkSessionExplicit;
     QSharedPointer<QNetworkSession> networkSessionImplicit;
 #endif
@@ -225,10 +226,20 @@ void tst_QFtp::initTestCase_data()
 void tst_QFtp::initTestCase()
 {
 #ifndef QT_NO_BEARERMANAGEMENT
-    QNetworkConfigurationManager manager;
-    networkSessionImplicit = QSharedPointer<QNetworkSession>(new QNetworkSession(manager.defaultConfiguration()));
-    networkSessionImplicit->open();
-    QVERIFY(networkSessionImplicit->waitForOpened(60000)); //there may be user prompt on 1st connect
+    netConfMan = new QNetworkConfigurationManager(this);
+    netConfMan->updateConfigurations();
+    connect(netConfMan, SIGNAL(updateCompleted()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QNetworkConfiguration networkConfiguration = netConfMan->defaultConfiguration();
+    if (networkConfiguration.isValid()) {
+        networkSessionImplicit = QSharedPointer<QNetworkSession>(new QNetworkSession(networkConfiguration));
+        if (!networkSessionImplicit->isOpen()) {
+            networkSessionImplicit->open();
+            QVERIFY(networkSessionImplicit->waitForOpened(30000));
+        }
+    } else {
+        QVERIFY(!(netConfMan->capabilities() & QNetworkConfigurationManager::NetworkSessionRequired));
+    }
 #endif
 }
 
@@ -254,6 +265,8 @@ void tst_QFtp::init()
     }
 #ifndef QT_NO_BEARERMANAGEMENT
     if (setSession) {
+        if (!networkSessionImplicit)
+            QSKIP("test requires a valid default network configuration", SkipSingle);
         networkSessionExplicit = networkSessionImplicit;
         if (!networkSessionExplicit->isOpen()) {
             networkSessionExplicit->open();
@@ -1416,7 +1429,7 @@ void tst_QFtp::abort()
                 QVERIFY( bytesDone != bytesTotal );
             }
         } else {
-            // this could be tested by verifying that no more progress signals are emited
+            // this could be tested by verifying that no more progress signals are emitted
             QVERIFY(bytesDone <= bytesTotal);
         }
     } else {

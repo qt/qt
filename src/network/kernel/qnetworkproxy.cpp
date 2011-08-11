@@ -916,6 +916,8 @@ QNetworkProxyQuery::QNetworkProxyQuery(quint16 bindPort, const QString &protocol
 
 #ifndef QT_NO_BEARERMANAGEMENT
 /*!
+    \since 4.8
+
     Constructs a QNetworkProxyQuery with the URL \a requestUrl and
     sets the query type to \a queryType. The specified \a networkConfiguration
     is used to resolve the proxy settings.
@@ -931,6 +933,8 @@ QNetworkProxyQuery::QNetworkProxyQuery(const QNetworkConfiguration &networkConfi
 }
 
 /*!
+    \since 4.8
+
     Constructs a QNetworkProxyQuery of type \a queryType and sets the
     protocol tag to be \a protocolTag. This constructor is suitable
     for QNetworkProxyQuery::TcpSocket queries, because it sets the
@@ -953,6 +957,8 @@ QNetworkProxyQuery::QNetworkProxyQuery(const QNetworkConfiguration &networkConfi
 }
 
 /*!
+    \since 4.8
+
     Constructs a QNetworkProxyQuery of type \a queryType and sets the
     protocol tag to be \a protocolTag. This constructor is suitable
     for QNetworkProxyQuery::TcpSocket queries because it sets the
@@ -1197,6 +1203,8 @@ QNetworkConfiguration QNetworkProxyQuery::networkConfiguration() const
 }
 
 /*!
+    \since 4.8
+
     Sets the network configuration component of this QNetworkProxyQuery
     object to be \a networkConfiguration. The network configuration can
     be used to return different proxy settings based on the network in

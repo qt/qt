@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
                 = { Q_BASIC_ATOMIC_INITIALIZER(0), false };             \
     static void NAME##_cleanup()                                        \
     {                                                                   \
-        delete this_##NAME.pointer;                                     \
+        this_##NAME.pointer->cleanup();                                 \
         this_##NAME.pointer = 0;                                        \
     }                                                                   \
     static TYPE *NAME()                                                 \
@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
                 delete x;                                               \
             else {                                                      \
                 qAddPostRoutine(NAME##_cleanup);                        \
-                this_##NAME.pointer->updateConfigurations();            \
+                this_##NAME.pointer->initialize();                      \
             }                                                           \
         }                                                               \
         return this_##NAME.pointer;                                     \
@@ -126,9 +126,10 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 
 /*!
     \fn void QNetworkConfigurationManager::configurationRemoved(const QNetworkConfiguration &config)
+    \since 4.8
 
     This signal is emitted when a configuration is about to be removed from the system. The removed
-    \a configuration is invalid but retains name and identifier.
+    configuration, specified by \a config, is invalid but retains name and identifier.
 */
 
 /*!

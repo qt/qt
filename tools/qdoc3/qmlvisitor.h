@@ -67,7 +67,7 @@ public:
     bool visit(QDeclarativeJS::AST::IdentifierPropertyName *idproperty);
 
 private:
-    QDeclarativeJS::AST::SourceLocation precedingComment(unsigned offset) const;
+    QDeclarativeJS::AST::SourceLocation precedingComment(quint32 offset) const;
     void applyDocumentation(QDeclarativeJS::AST::SourceLocation location, Node *node);
 
     QDeclarativeJS::Engine *engine;

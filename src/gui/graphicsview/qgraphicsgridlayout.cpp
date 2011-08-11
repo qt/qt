@@ -600,6 +600,8 @@ void QGraphicsGridLayout::removeAt(int index)
 }
 
 /*!
+    \since 4.8
+
     Removes the layout item \a item without destroying it.
     Ownership of the item is transferred to the caller.
 

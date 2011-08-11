@@ -59,7 +59,10 @@
 
 #include "qsharedmemory_p.h"
 #ifndef Q_OS_WINCE
-#   include <sys/types.h>
+#  include <sys/types.h>
+#endif
+#ifdef QT_POSIX_IPC
+#  include <semaphore.h>
 #endif
 
 #ifdef Q_OS_SYMBIAN
@@ -70,11 +73,10 @@ QT_BEGIN_NAMESPACE
 
 class QSystemSemaphorePrivate
 {
-
 public:
     QSystemSemaphorePrivate();
 
-    QString makeKeyFileName()
+    inline QString makeKeyFileName() const
     {
         return QSharedMemoryPrivate::makePlatformSafeKey(key, QLatin1String("qipc_systemsem_"));
     }
@@ -85,6 +87,9 @@ public:
 #elif defined(Q_OS_SYMBIAN)
     int handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
     void setErrorString(const QString &function,int err = 0);
+#elif defined(QT_POSIX_IPC)
+    bool handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
+    void setErrorString(const QString &function);
 #else
     key_t handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
     void setErrorString(const QString &function);
@@ -100,11 +105,14 @@ public:
     HANDLE semaphoreLock;
 #elif defined(Q_OS_SYMBIAN)
     RSemaphore semaphore;
+#elif defined(QT_POSIX_IPC)
+    sem_t *semaphore;
+    bool createdSemaphore;
 #else
+    key_t unix_key;
     int semaphore;
     bool createdFile;
     bool createdSemaphore;
-    key_t unix_key;
 #endif
     QString errorString;
     QSystemSemaphore::SystemSemaphoreError error;
@@ -115,4 +123,3 @@ QT_END_NAMESPACE
 #endif // QT_NO_SYSTEMSEMAPHORE
 
 #endif // QSYSTEMSEMAPHORE_P_H
-

@@ -1154,7 +1154,7 @@ void QDeclarativeData::destroyed(QObject *object)
         context->destroy();
 
     while (guards) {
-        QDeclarativeGuard<QObject> *guard = guards;
+        QDeclarativeGuard<QObject> *guard = static_cast<QDeclarativeGuard<QObject> *>(guards);
         *guard = (QObject *)0;
         guard->objectDestroyed(object);
     }
@@ -1712,9 +1712,6 @@ QScriptValue QDeclarativeEnginePrivate::rect(QScriptContext *ctxt, QScriptEngine
     qsreal y = ctxt->argument(1).toNumber();
     qsreal w = ctxt->argument(2).toNumber();
     qsreal h = ctxt->argument(3).toNumber();
-
-    if (w < 0 || h < 0)
-        return engine->nullValue();
 
     return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(QVariant::fromValue(QRectF(x, y, w, h)));
 }

@@ -715,7 +715,7 @@ EXPORTS
 	?detachTextureFromPool@QGLPixmapData@@QAEXXZ @ 714 NONAME ; void QGLPixmapData::detachTextureFromPool(void)
 	?reclaimTexture@QGLPixmapData@@QAEXXZ @ 715 NONAME ; void QGLPixmapData::reclaimTexture(void)
 	?destroyTexture@QGLPixmapData@@QAEXXZ @ 716 NONAME ; void QGLPixmapData::destroyTexture(void)
-	?releaseCachedResources@QGLGraphicsSystem@@UAEXXZ @ 717 NONAME ; void QGLGraphicsSystem::releaseCachedResources(void)
+	?releaseCachedResources@QGLGraphicsSystem@@UAEXXZ @ 717 NONAME ABSENT ; void QGLGraphicsSystem::releaseCachedResources(void)
 	?serialNumber@QGLTextureGlyphCache@@QBEHXZ @ 718 NONAME ; int QGLTextureGlyphCache::serialNumber(void) const
 	?forceToImage@QGLPixmapData@@QAEXXZ @ 719 NONAME ; void QGLPixmapData::forceToImage(void)
 	?idealFormat@QGLPixmapData@@QAE?AW4Format@QImage@@AAV3@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 720 NONAME ; enum QImage::Format QGLPixmapData::idealFormat(class QImage &, class QFlags<enum Qt::ImageConversionFlag>)
@@ -818,7 +818,7 @@ EXPORTS
 	?glGenFramebuffers@QGLFunctions@@QAEXHPAI@Z @ 817 NONAME ; void QGLFunctions::glGenFramebuffers(int, unsigned int *)
 	?glVertexAttrib3fv@QGLFunctions@@QAEXIPBM@Z @ 818 NONAME ; void QGLFunctions::glVertexAttrib3fv(unsigned int, float const *)
 	?glGetVertexAttribPointerv@QGLFunctions@@QAEXIIPAPAX@Z @ 819 NONAME ; void QGLFunctions::glGetVertexAttribPointerv(unsigned int, unsigned int, void * *)
-	?snippetNameStr@QGLEngineSharedShaders@@SA?AVQByteArray@@W4SnippetName@1@@Z @ 820 NONAME ABSENT ; class QByteArray QGLEngineSharedShaders::snippetNameStr(enum QGLEngineSharedShaders::SnippetName)
+	?snippetNameStr@QGLEngineSharedShaders@@SA?AVQByteArray@@W4SnippetName@1@@Z @ 820 NONAME ; class QByteArray QGLEngineSharedShaders::snippetNameStr(enum QGLEngineSharedShaders::SnippetName)
 	?glUniformMatrix4fv@QGLFunctions@@QAEXHHEPBM@Z @ 821 NONAME ; void QGLFunctions::glUniformMatrix4fv(int, int, unsigned char, float const *)
 	?setContext@QGLTextureGlyphCache@@QAEXPBVQGLContext@@@Z @ 822 NONAME ; void QGLTextureGlyphCache::setContext(class QGLContext const *)
 	?glDeleteBuffers@QGLFunctions@@QAEXHPBI@Z @ 823 NONAME ; void QGLFunctions::glDeleteBuffers(int, unsigned int const *)
@@ -874,4 +874,6 @@ EXPORTS
 	?staticMetaObjectExtraData@QGraphicsShaderEffect@@0UQMetaObjectExtraData@@B @ 873 NONAME ; struct QMetaObjectExtraData const QGraphicsShaderEffect::staticMetaObjectExtraData
 	?staticMetaObjectExtraData@QGLEngineShaderManager@@0UQMetaObjectExtraData@@B @ 874 NONAME ; struct QMetaObjectExtraData const QGLEngineShaderManager::staticMetaObjectExtraData
 	?qt_static_metacall@QGLShaderProgram@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 875 NONAME ; void QGLShaderProgram::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-
+	?platformExtension@QGLGraphicsSystem@@UAEPAVQGraphicsSystemEx@@XZ @ 876 NONAME ; class QGraphicsSystemEx * QGLGraphicsSystem::platformExtension(void)
+	?releaseCachedGpuResources@QGLGraphicsSystem@@UAEXXZ @ 877 NONAME ; void QGLGraphicsSystem::releaseCachedGpuResources(void)
+	?toVolatileImage@QGLPixmapData@@UBE?AVQVolatileImage@@XZ @ 878 NONAME ; class QVolatileImage QGLPixmapData::toVolatileImage(void) const

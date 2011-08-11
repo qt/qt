@@ -69,6 +69,7 @@ class QDBusError;
 class QDBusMessage;
 class QDBusPendingCall;
 class QDBusConnectionInterface;
+class QDBusVirtualObject;
 class QObject;
 
 class QDBusConnectionPrivate;
@@ -104,14 +105,23 @@ public:
         // Qt 4.2 had a misspelling here
         ExportAllSignal = ExportAllSignals,
 #endif
-
         ExportChildObjects = 0x1000
+        // Reserved = 0xff000000
     };
     enum UnregisterMode {
         UnregisterNode,
         UnregisterTree
     };
     Q_DECLARE_FLAGS(RegisterOptions, RegisterOption)
+
+    enum VirtualObjectRegisterOption {
+        SingleNode = 0x0,
+        SubPath = 0x1
+        // Reserved = 0xff000000
+    };
+#ifndef Q_QDOC
+    Q_DECLARE_FLAGS(VirtualObjectRegisterOptions, VirtualObjectRegisterOption)
+#endif
 
     enum ConnectionCapability {
         UnixFileDescriptorPassing = 0x0001
@@ -163,6 +173,9 @@ public:
     void unregisterObject(const QString &path, UnregisterMode mode = UnregisterNode);
     QObject *objectRegisteredAt(const QString &path) const;
 
+    bool registerVirtualObject(const QString &path, QDBusVirtualObject *object,
+                          VirtualObjectRegisterOption options = SingleNode);
+
     bool registerService(const QString &serviceName);
     bool unregisterService(const QString &serviceName);
 
@@ -175,6 +188,8 @@ public:
     static QDBusConnection connectToPeer(const QString &address, const QString &name);
     static void disconnectFromBus(const QString &name);
     static void disconnectFromPeer(const QString &name);
+
+    static QByteArray localMachineId();
 
     static QDBusConnection sessionBus();
     static QDBusConnection systemBus();
@@ -190,6 +205,7 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDBusConnection::RegisterOptions)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDBusConnection::VirtualObjectRegisterOptions)
 
 QT_END_NAMESPACE
 

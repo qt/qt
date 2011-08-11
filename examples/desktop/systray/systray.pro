@@ -22,3 +22,8 @@ wince* {
 	addPlugins.path = imageformats
 	DEPLOYMENT += addPlugins
 }
+
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+symbian: warning(This example does not work on Symbian platform)
+maemo5: warning(This example does not work on Maemo platform)
+simulator: warning(This example does not work on Simulator platform)

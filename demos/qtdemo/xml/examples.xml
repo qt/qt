@@ -25,7 +25,6 @@
     <example filename="spreadsheet" name="Spreadsheet" />
     <example filename="sqlbrowser" name="SQL Browser" />
     <example filename="arthurplugin" name="Arthur Plugin" executable="false" />
-
   </demos>
   <category dirname="animation" name="Animation Framework">
     <example filename="animatedtiles" name="Animated Tiles" />
@@ -265,6 +264,9 @@
     <example filename="previewer" name="HTML Previewer" />
     <example filename="fancybrowser" name="Fancy Browser" />
     <example filename="googlechat" name="Google Chat" />
+    <example filename="simplewebplugin" name="Simple Web Plugin" />
+    <example filename="webplugin" name="Web Plugin" />
+    <example filename="webftpclient" name="Web FTP Client" />
   </category>
   <category dirname="xml" name="XML">
     <example filename="saxbookmarks" name="SAX Bookmarks" />

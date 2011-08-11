@@ -52,6 +52,8 @@ public:
     QUIKitIntegration();
     ~QUIKitIntegration();
 
+    static QUIKitIntegration *instance();
+
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
@@ -64,6 +66,7 @@ public:
 
 private:
     QList<QPlatformScreen *> mScreens;
+    QPlatformFontDatabase *mFontDb;
 };
 
 QT_END_NAMESPACE

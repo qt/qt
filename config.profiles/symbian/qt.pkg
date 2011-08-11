@@ -68,9 +68,6 @@
 "/epoc32/release/armv5/urel/phonon_mmf.dll"    - "!:\sys\bin\phonon_mmf.dll"
 "/epoc32/data/z/resource/qt/plugins/phonon_backend/phonon_mmf.qtplugin" - "!:\resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin"
 
-
-"/epoc32/release/armv5/urel/qts60plugin_5_0.dll" - "!:\sys\bin\qts60plugin_5_0.dll"
-
 ; localization
 "/epoc32/data/z/resource/qt/translations/qt_ur.qm" - "!:\resource\qt\translations\qt_ur.qm"
 "/epoc32/data/z/resource/qt/translations/qt_fa.qm" - "!:\resource\qt\translations\qt_fa.qm"

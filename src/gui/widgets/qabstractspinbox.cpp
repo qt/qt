@@ -1655,6 +1655,8 @@ void QAbstractSpinBox::initStyleOption(QStyleOptionSpinBox *option) const
                       : (QAbstractSpinBox::StepDownEnabled|QAbstractSpinBox::StepUpEnabled);
 
     option->frame = d->frame;
+    if (d->readOnly)
+        option->state |= QStyle::State_ReadOnly;
 }
 
 /*!

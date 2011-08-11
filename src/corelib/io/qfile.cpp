@@ -358,6 +358,7 @@ QFilePrivate::setError(QFile::FileError err, int errNum)
 
 /*!
     \enum QFile::FileHandleFlag
+    \since 4.8
 
     This enum is used when opening a file to specify additional
     options which only apply to files and not to a generic
@@ -1656,6 +1657,9 @@ bool QFile::atEnd() const
 }
 
 /*!
+    \fn bool QFile::seek(qint64 pos)
+    \since 4.8
+
     For random-access devices, this function sets the current position
     to \a pos, returning true on success, or false if an error occurred.
     For sequential devices, the default behavior is to do nothing and

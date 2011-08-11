@@ -106,12 +106,14 @@ if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
         CTFontDescriptorRef font = (CTFontDescriptorRef)CFArrayGetValueAtIndex(fonts, i);
 
         QCFString family_name = (CFStringRef)CTFontDescriptorCopyAttribute(font, kCTFontFamilyNameAttribute);
+        QCFString style_name = (CFStringRef)CTFontDescriptorCopyAttribute(font, kCTFontStyleNameAttribute);
         QtFontFamily *family = db->family(family_name, true);
         for(int ws = 1; ws < QFontDatabase::WritingSystemsCount; ++ws)
             family->writingSystems[ws] = QtFontFamily::Supported;
         QtFontFoundry *foundry = family->foundry(foundry_name, true);
 
         QtFontStyle::Key styleKey;
+        QString styleName = style_name;
         if(QCFType<CFDictionaryRef> styles = (CFDictionaryRef)CTFontDescriptorCopyAttribute(font, kCTFontTraitsAttribute)) {
             if(CFNumberRef weight = (CFNumberRef)CFDictionaryGetValue(styles, kCTFontWeightTrait)) {
                 Q_ASSERT(CFNumberIsFloatType(weight));
@@ -132,7 +134,7 @@ if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
             }
         }
 
-        QtFontStyle *style = foundry->style(styleKey, true);
+        QtFontStyle *style = foundry->style(styleKey, styleName, true);
         style->smoothScalable = true;
         if(QCFType<CFNumberRef> size = (CFNumberRef)CTFontDescriptorCopyAttribute(font, kCTFontSizeAttribute)) {
             //qDebug() << "WHEE";
@@ -205,7 +207,7 @@ if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
 
                 QtFontFamily *family = db->family(familyName, true);
                 QtFontFoundry *foundry = family->foundry(QString(), true);
-                QtFontStyle *style = foundry->style(styleKey, true);
+                QtFontStyle *style = foundry->style(styleKey, QString(), true);
                 style->pixelSize(0, true);
                 style->smoothScalable = true;
 
@@ -249,6 +251,63 @@ static inline float weightToFloat(unsigned int weight)
     return (weight - 50) / 100.0;
 }
 
+static QFontEngine *loadFromDatabase(const QFontDef &req, const QFontPrivate *d)
+{
+#if defined(QT_MAC_USE_COCOA)
+    QCFString fontName = NULL;
+#else
+    ATSFontFamilyRef familyRef = 0;
+    ATSFontRef fontRef = 0;
+#endif
+
+    QStringList family_list = familyList(req);
+
+    const char *stylehint = styleHint(req);
+    if (stylehint)
+        family_list << QLatin1String(stylehint);
+
+    // add QFont::defaultFamily() to the list, for compatibility with previous versions
+    family_list << QApplication::font().defaultFamily();
+
+    QMutexLocker locker(fontDatabaseMutex());
+    QFontDatabasePrivate *db = privateDb();
+    if (!db->count)
+        initializeDb();
+    for (int i = 0; i < family_list.size(); ++i) {
+        for (int k = 0; k < db->count; ++k) {
+            if (db->families[k]->name.compare(family_list.at(i), Qt::CaseInsensitive) == 0) {
+                QByteArray family_name = db->families[k]->name.toUtf8();
+#if defined(QT_MAC_USE_COCOA)
+                QCFType<CTFontRef> ctFont = CTFontCreateWithName(QCFString(db->families[k]->name), 12, NULL);
+                if (ctFont) {
+                    fontName = CTFontCopyFullName(ctFont);
+                    goto found;
+                }
+#else
+                familyRef = ATSFontFamilyFindFromName(QCFString(db->families[k]->name), kATSOptionFlagsDefault);
+                if (familyRef) {
+                    fontRef = ATSFontFindFromName(QCFString(db->families[k]->name), kATSOptionFlagsDefault);
+                    goto found;
+                }
+#endif
+            }
+        }
+    }
+found:
+#ifdef QT_MAC_USE_COCOA
+    if (fontName)
+        return new QCoreTextFontEngineMulti(fontName, req, d->kerning);
+#else
+    if (familyRef) {
+        QCFString actualName;
+        if (ATSFontFamilyGetName(familyRef, kATSOptionFlagsDefault, &actualName) == noErr)
+            req.family = actualName;
+        return new QFontEngineMacMulti(familyRef, req, fontDef, d->kerning);
+    }
+#endif
+    return NULL;
+}
+
 void QFontDatabase::load(const QFontPrivate *d, int script)
 {
     // sanity checks
@@ -289,69 +348,38 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
         return; // the font info and fontdef should already be filled
     }
 
-    //find the font
-    QStringList family_list = familyList(req);
-
-    const char *stylehint = styleHint(req);
-    if (stylehint)
-        family_list << QLatin1String(stylehint);
-
-    // add QFont::defaultFamily() to the list, for compatibility with
-    // previous versions
-    family_list << QApplication::font().defaultFamily();
-
+    QFontEngine *engine = NULL;
 #if defined(QT_MAC_USE_COCOA)
-    QCFString fontName = NULL, familyName = NULL;
-#else
-    ATSFontFamilyRef familyRef = 0;
-    ATSFontRef fontRef = 0;
-#endif
+    // Shortcut to get the font directly without going through the font database
+    if (!req.family.isEmpty() && !req.styleName.isEmpty()) {
+        QCFString expectedFamily = QCFString(req.family);
+        QCFString expectedStyle = QCFString(req.styleName);
 
-    QMutexLocker locker(fontDatabaseMutex());
-    QFontDatabasePrivate *db = privateDb();
-    if (!db->count)
-        initializeDb();
-    for(int i = 0; i < family_list.size(); ++i) {
-        for (int k = 0; k < db->count; ++k) {
-            if (db->families[k]->name.compare(family_list.at(i), Qt::CaseInsensitive) == 0) {
-                QByteArray family_name = db->families[k]->name.toUtf8();
-#if defined(QT_MAC_USE_COCOA)
-                QCFType<CTFontRef> ctFont = CTFontCreateWithName(QCFString(db->families[k]->name), 12, NULL);
-                if (ctFont) {
-                    fontName = CTFontCopyFullName(ctFont);
-                    familyName = CTFontCopyFamilyName(ctFont);
-                    goto FamilyFound;
-                }
-#else
-                familyRef = ATSFontFamilyFindFromName(QCFString(db->families[k]->name), kATSOptionFlagsDefault);
-                if (familyRef) {
-                    fontRef = ATSFontFindFromName(QCFString(db->families[k]->name), kATSOptionFlagsDefault);
-                    goto FamilyFound;
-                }
-#endif
+        QCFType<CFMutableDictionaryRef> attributes = CFDictionaryCreateMutable(NULL, 0,
+            &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        CFDictionaryAddValue(attributes, kCTFontFamilyNameAttribute, expectedFamily);
+        CFDictionaryAddValue(attributes, kCTFontStyleNameAttribute, expectedStyle);
+
+        QCFType<CTFontDescriptorRef> descriptor = CTFontDescriptorCreateWithAttributes(attributes);
+        CGAffineTransform transform = qt_transform_from_fontdef(req);
+        QCFType<CTFontRef> ctFont = CTFontCreateWithFontDescriptor(descriptor, req.pixelSize, &transform);
+        if (ctFont) {
+            QCFString familyName = CTFontCopyFamilyName(ctFont);
+            // Only accept the font if the family name is exactly the same as we specified
+            if (CFEqual(expectedFamily, familyName)) {
+                engine = new QCoreTextFontEngineMulti(ctFont, req, d->kerning);
             }
         }
     }
-FamilyFound:
-    //fill in the engine's font definition
-    QFontDef fontDef = d->request; //copy..
-    if(fontDef.pointSize < 0)
-        fontDef.pointSize = qt_mac_pointsize(fontDef, d->dpi);
-    else
-        fontDef.pixelSize = qt_mac_pixelsize(fontDef, d->dpi);
-
-#ifdef QT_MAC_USE_COCOA
-    fontDef.family = familyName;
-    QFontEngine *engine = new QCoreTextFontEngineMulti(fontName, fontDef, d->kerning);
-#else
-    QCFString actualName;
-    if (ATSFontFamilyGetName(familyRef, kATSOptionFlagsDefault, &actualName) == noErr)
-        fontDef.family = actualName;
-    QFontEngine *engine = new QFontEngineMacMulti(familyRef, fontRef, fontDef, d->kerning);
 #endif
-    d->engineData->engine = engine;
-    engine->ref.ref(); //a ref for the engineData->engine
-    QFontCache::instance()->insertEngine(key, engine);
+    if (!engine)
+        engine = loadFromDatabase(req, d);
+
+    if (engine) {
+        d->engineData->engine = engine;
+        engine->ref.ref();
+        QFontCache::instance()->insertEngine(key, engine);
+    }
 }
 
 static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
@@ -362,7 +390,6 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
     if(fnt->data.isEmpty()) {
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
-                extern OSErr qt_mac_create_fsref(const QString &, FSRef *); // qglobal.cpp
                 FSRef ref;
                 if(qt_mac_create_fsref(fnt->fileName, &ref) != noErr)
                     return;
@@ -372,7 +399,6 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
 #endif
         {
 #ifndef Q_WS_MAC64
-                extern Q_CORE_EXPORT OSErr qt_mac_create_fsspec(const QString &, FSSpec *); // global.cpp
                 FSSpec spec;
                 if(qt_mac_create_fsspec(fnt->fileName, &spec) != noErr)
                     return;

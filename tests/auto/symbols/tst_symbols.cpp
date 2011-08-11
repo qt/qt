@@ -55,6 +55,8 @@ class tst_Symbols: public QObject
 {
     Q_OBJECT
 private slots:
+    void initTestCase();
+
     void prefix();
     void globalObjects();
 };
@@ -87,6 +89,12 @@ static QString symbolToLine(const QString &symbol, const QString &lib)
     QString result = QString::fromLocal8Bit(proc.readLine());
     result.chop(1); // chop tailing newline
     return result;
+}
+
+void tst_Symbols::initTestCase()
+{
+    QString qtDir = QString::fromLocal8Bit(qgetenv("QTDIR"));
+    QVERIFY2(!qtDir.isEmpty(), "This test needs $QTDIR");
 }
 
 /* This test searches through all Qt libraries and searches for symbols
@@ -264,6 +272,9 @@ void tst_Symbols::prefix()
     excusedPrefixes["QtSql"] =
         QStringList() << "sqlite3";
 
+    excusedPrefixes["QtScript"] =
+        QStringList() << "QTJSC";
+
     excusedPrefixes["QtWebKit"] =
         QStringList() << "WebCore::"
                       << "KJS::"
@@ -294,7 +305,7 @@ void tst_Symbols::prefix()
 
     bool isFailed = false;
     foreach (QString lib, files) {
-        if (lib.contains("Designer") || lib.contains("QtCLucene") || lib.contains("XmlPatternsSDK"))
+        if (lib.contains("Designer") || lib.contains("QtCLucene") || lib.contains("XmlPatternsSDK") || lib.contains("WebKit"))
             continue;
 
         bool isPhonon = lib.contains("phonon");

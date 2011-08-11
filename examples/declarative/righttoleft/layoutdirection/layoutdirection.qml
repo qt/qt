@@ -226,7 +226,17 @@ Rectangle {
     Component {
         id: viewDelegate
         Item {
-            width: (listView.effectiveLayoutDirection == Qt.LeftToRight  ? (index == 48 - 1) : (index == 0)) ? 40 : 50
+            function effectiveLayoutDirection() {
+                if (LayoutMirroring.enabled)
+                    if (listView.layoutDirection == Qt.LeftToRight)
+                        return Qt.RightToLeft;
+                    else
+                        return Qt.LeftToRight;
+                else
+                    return listView.layoutDirection;
+            }
+
+            width: (effectiveLayoutDirection() == Qt.LeftToRight ? (index == 48 - 1) : (index == 0)) ? 40 : 50
             Rectangle {
                 width: 40; height: 40
                 color: Qt.rgba(0.5+(48 - index)*Math.random()/48,

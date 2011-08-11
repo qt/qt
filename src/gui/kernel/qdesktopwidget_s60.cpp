@@ -161,7 +161,7 @@ void QDesktopWidgetPrivate::init(QDesktopWidget *that)
         (*rects)[i] = r;
         QRect wr;
         if (i == 0)
-            wr = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
+            wr = qt_TRect2QRect(S60->clientRect());
         else
             wr = rects->at(i);
         (*workrects)[i].setRect(wr.x(), wr.y(), wr.width(), wr.height());

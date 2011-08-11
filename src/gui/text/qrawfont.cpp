@@ -87,16 +87,16 @@ QT_BEGIN_NAMESPACE
 
    QRawFont can be constructed in a number of ways:
    \list
-   \o \l It can be constructed by calling QTextLayout::glyphRuns() or QTextFragment::glyphRuns().
-         The returned QGlyphRun objects will contain QRawFont objects which represent the actual
-         fonts used to render each portion of the text.
-   \o \l It can be constructed by passing a QFont object to QRawFont::fromFont(). The function
-         will return a QRawFont object representing the font that will be selected as response to
-         the QFont query and the selected writing system.
-   \o \l It can be constructed by passing a file name or QByteArray directly to the QRawFont
-         constructor, or by calling loadFromFile() or loadFromData(). In this case, the
-         font will not be registered in QFontDatabase, and it will not be available as part of
-         regular font selection.
+   \o It can be constructed by calling QTextLayout::glyphs() or QTextFragment::glyphs(). The
+      returned QGlyphs objects will contain QRawFont objects which represent the actual fonts
+      used to render each portion of the text.
+   \o It can be constructed by passing a QFont object to QRawFont::fromFont(). The function
+      will return a QRawFont object representing the font that will be selected as response to
+      the QFont query and the selected writing system.
+   \o It can be constructed by passing a file name or QByteArray directly to the QRawFont
+      constructor, or by calling loadFromFile() or loadFromData(). In this case, the
+      font will not be registered in QFontDatabase, and it will not be available as part of
+      regular font selection.
    \endlist
 
    QRawFont is considered local to the thread in which it is constructed (either using a
@@ -132,13 +132,14 @@ QRawFont::QRawFont()
 }
 
 /*!
-   Constructs a QRawFont representing the font contained in the file referenced by \a fileName,
-   with \a pixelSize size in pixels, and the selected \a hintingPreference.
+   Constructs a QRawFont representing the font contained in the file referenced
+   by \a fileName for the size (in pixels) given by \a pixelSize, and using the
+   hinting preference specified by \a hintingPreference.
 
    \note The referenced file must contain a TrueType or OpenType font.
 */
 QRawFont::QRawFont(const QString &fileName,
-                   int pixelSize,
+                   qreal pixelSize,
                    QFont::HintingPreference hintingPreference)
     : d(new QRawFontPrivate)
 {
@@ -146,12 +147,14 @@ QRawFont::QRawFont(const QString &fileName,
 }
 
 /*!
-   Constructs a QRawFont representing the font contained in \a fontData.
+   Constructs a QRawFont representing the font contained in the supplied
+   \a fontData for the size (in pixels) given by \a pixelSize, and using the
+   hinting preference specified by \a hintingPreference.
 
    \note The data must contain a TrueType or OpenType font.
 */
 QRawFont::QRawFont(const QByteArray &fontData,
-                   int pixelSize,
+                   qreal pixelSize,
                    QFont::HintingPreference hintingPreference)
     : d(new QRawFontPrivate)
 {
@@ -192,14 +195,16 @@ bool QRawFont::isValid() const
 }
 
 /*!
-   Replaces the current QRawFont with the contents of the file references by \a fileName.
+   Replaces the current QRawFont with the contents of the file referenced
+   by \a fileName for the size (in pixels) given by \a pixelSize, and using the
+   hinting preference specified by \a hintingPreference.
 
    The file must reference a TrueType or OpenType font.
 
    \sa loadFromData()
 */
 void QRawFont::loadFromFile(const QString &fileName,
-                            int pixelSize,
+                            qreal pixelSize,
                             QFont::HintingPreference hintingPreference)
 {
     QFile file(fileName);
@@ -208,14 +213,16 @@ void QRawFont::loadFromFile(const QString &fileName,
 }
 
 /*!
-   Replaces the current QRawFont with the contents of \a fontData.
+   Replaces the current QRawFont with the font contained in the supplied
+   \a fontData for the size (in pixels) given by \a pixelSize, and using the
+   hinting preference specified by \a hintingPreference.
 
    The \a fontData must contain a TrueType or OpenType font.
 
    \sa loadFromFile()
 */
 void QRawFont::loadFromData(const QByteArray &fontData,
-                            int pixelSize,
+                            qreal pixelSize,
                             QFont::HintingPreference hintingPreference)
 {
     detach();
@@ -226,8 +233,9 @@ void QRawFont::loadFromData(const QByteArray &fontData,
 }
 
 /*!
-   This function returns a rasterized image of the glyph at a given \a glyphIndex in the underlying
-   font, if the QRawFont is valid, otherwise it will return an invalid QImage.
+   This function returns a rasterized image of the glyph at the given
+   \a glyphIndex in the underlying font, using the \a transform specified.
+   If the QRawFont is not valid, this function will return an invalid QImage.
 
    If \a antialiasingType is set to QRawFont::SubPixelAntialiasing, then the resulting image will be
    in QImage::Format_RGB32 and the RGB values of each pixel will represent the subpixel opacities of
@@ -396,6 +404,19 @@ QString QRawFont::familyName() const
 }
 
 /*!
+   Returns the style name of this QRawFont.
+
+   \sa QFont::styleName()
+*/
+QString QRawFont::styleName() const
+{
+    if (!isValid())
+        return QString();
+
+    return d->fontEngine->fontDef.styleName;
+}
+
+/*!
    Returns the style of this QRawFont.
 
    \sa QFont::style()
@@ -422,11 +443,15 @@ int QRawFont::weight() const
 }
 
 /*!
-   Converts a string of unicode points to glyph indexes using the CMAP table in the
-   underlying font. Note that in cases where there are other tables in the font that affect the
-   shaping of the text, the returned glyph indexes will not correctly represent the rendering
-   of the text. To get the correctly shaped text, you can use QTextLayout to lay out and shape the
-   text, and then call QTextLayout::glyphRuns() to get the set of glyph index list and QRawFont pairs.
+   Converts the string of unicode points given by \a text to glyph indexes
+   using the CMAP table in the underlying font, and returns a vector containing
+   the result.
+
+   Note that, in cases where there are other tables in the font that affect the
+   shaping of the text, the returned glyph indexes will not correctly represent
+   the rendering of the text. To get the correctly shaped text, you can use
+   QTextLayout to lay out and shape the text, then call QTextLayout::glyphs()
+   to get the set of glyph index list and QRawFont pairs.
 
    \sa advancesForGlyphIndexes(), glyphIndexesForChars(), QGlyphRun, QTextLayout::glyphRuns(), QTextFragment::glyphRuns()
 */
@@ -599,7 +624,7 @@ QList<QFontDatabase::WritingSystem> QRawFont::supportedWritingSystems() const
 
     \sa supportedWritingSystems()
 */
-bool QRawFont::supportsCharacter(const QChar &character) const
+bool QRawFont::supportsCharacter(QChar character) const
 {
     if (!isValid())
         return false;
@@ -608,6 +633,7 @@ bool QRawFont::supportsCharacter(const QChar &character) const
 }
 
 /*!
+    \overload
    Returns true if the font has a glyph that corresponds to the UCS-4 encoded character \a ucs4.
 
    \sa supportedWritingSystems()
@@ -617,8 +643,18 @@ bool QRawFont::supportsCharacter(quint32 ucs4) const
     if (!isValid())
         return false;
 
-    QString str = QString::fromUcs4(&ucs4, 1);
-    return d->fontEngine->canRender(str.constData(), str.size());
+    QChar str[2];
+    int len;
+    if (!QChar::requiresSurrogates(ucs4)) {
+        str[0] = QChar(ucs4);
+        len = 1;
+    } else {
+        str[0] = QChar(QChar::highSurrogate(ucs4));
+        str[1] = QChar(QChar::lowSurrogate(ucs4));
+        len = 2;
+    }
+
+    return d->fontEngine->canRender(str, len);
 }
 
 // qfontdatabase.cpp
