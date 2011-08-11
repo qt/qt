@@ -1634,6 +1634,10 @@ bool QDir::operator==(const QDir &dir) const
        && d->sort == other->sort
        && d->nameFilters == other->nameFilters) {
 
+        // Assume directories are the same if path is the same
+        if (d->dirEntry.filePath() == other->dirEntry.filePath())
+            return true;
+
         // Fallback to expensive canonical path computation
         return canonicalPath().compare(dir.canonicalPath(), sensitive) == 0;
     }
