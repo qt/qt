@@ -289,11 +289,8 @@ int QDeclarativeXmlQueryEngine::doQuery(QString query, QString namespaces, QByte
 void QDeclarativeXmlQueryEngine::abort(int id)
 {
     QMutexLocker ml(&m_mutex);
-    if (id != -1) {
+    if (id != -1)
         m_cancelledJobs.insert(id);
-        if (m_threadObject)
-            m_threadObject->processJobs();
-    }
 }
 
 void QDeclarativeXmlQueryEngine::run()
@@ -314,25 +311,19 @@ void QDeclarativeXmlQueryEngine::processJobs()
     QMutexLocker locker(&m_mutex);
 
     while (true) {
-        if (m_cancelledJobs.isEmpty() && m_jobs.isEmpty())
+        if (m_jobs.isEmpty())
             return;
 
-        if (!m_cancelledJobs.isEmpty()) {
-            for (QList<XmlQueryJob>::Iterator it = m_jobs.begin(); it != m_jobs.end(); ++it) {
-                int queryId = (*it).queryId;
-                if (m_cancelledJobs.remove(queryId))
-                    it = m_jobs.erase(it);
-            }
-            m_cancelledJobs.clear();
+        XmlQueryJob currentJob = m_jobs.takeLast();
+        while (m_cancelledJobs.remove(currentJob.queryId)) {
+            if (m_jobs.isEmpty())
+              return;
+            currentJob = m_jobs.takeLast();
         }
-
-        if (!m_jobs.isEmpty()) {
-            XmlQueryJob currentJob = m_jobs.takeLast();
-
-            locker.unlock();
-            processQuery(&currentJob);
-            locker.relock();
-        }
+        
+        locker.unlock();
+        processQuery(&currentJob);
+        locker.relock();
     }
 }
 
