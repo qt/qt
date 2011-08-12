@@ -371,10 +371,6 @@
         <translation>ページ</translation>
     </message>
     <message>
-        <source>page</source>
-        <translation>ページ</translation>
-    </message>
-    <message>
         <source>Insert Page</source>
         <translation>ページを挿入</translation>
     </message>
@@ -483,10 +479,6 @@
         <translation>サブウィンドウを挿入</translation>
     </message>
     <message>
-        <source>subwindow</source>
-        <translation>サブウィンドウ</translation>
-    </message>
-    <message>
         <source>Subwindow</source>
         <translation>サブウィンドウ</translation>
     </message>
@@ -528,6 +520,10 @@
     <message>
         <source>Change layout of &apos;%1&apos; from %2 to %3</source>
         <translation>&apos;%1&apos; のレイアウトを %2 から %3 に変更</translation>
+    </message>
+    <message>
+        <source>Change layout alignment</source>
+        <translation>レイアウトの配置を変更</translation>
     </message>
     <message>
         <source>Change script</source>
@@ -868,16 +864,12 @@
         <source>Invalid stretch value for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing layout stretch values
 ----------
-Parsing layout stretch values
-----------
 Parsing layout stretch values</extracomment>
         <translation>&apos;%1&apos; のストレッチ値が無効です: &apos;%2&apos;</translation>
     </message>
     <message>
         <source>Invalid minimum size for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing grid layout minimum size values
-----------
-Parsing grid layout minimum size values
 ----------
 Parsing grid layout minimum size values</extracomment>
         <translation>&apos;%1&apos; の最小サイズが無効です: &apos;%2&apos;</translation>
@@ -1827,10 +1819,6 @@ Container pages should only be added by specifying them in XML returned by the d
         <translation>ヘルプ(&amp;H)</translation>
     </message>
     <message>
-        <source>Edit</source>
-        <translation>編集</translation>
-    </message>
-    <message>
         <source>Toolbars</source>
         <translation>ツールバー</translation>
     </message>
@@ -1845,6 +1833,10 @@ Container pages should only be added by specifying them in XML returned by the d
     <message>
         <source>&amp;View</source>
         <translation>表示(&amp;V)</translation>
+    </message>
+    <message>
+        <source>&amp;Edit</source>
+        <translation>編集(&amp;E)</translation>
     </message>
     <message>
         <source>&amp;Settings</source>
@@ -1890,8 +1882,6 @@ Container pages should only be added by specifying them in XML returned by the d
     <message>
         <source>An empty class name was passed on to %1 (object name: &apos;%2&apos;).</source>
         <extracomment>Empty class name passed to widget factory method
-----------
-Empty class name passed to widget factory method
 ----------
 Empty class name passed to widget factory method</extracomment>
         <translation>%1 (オブジェクト名: %2)に空のクラス名が渡されました。</translation>
@@ -3725,12 +3715,20 @@ Do you want overwrite the template?</source>
         <translation>親から継承</translation>
     </message>
     <message>
+        <source>[Theme] %1</source>
+        <translation>[テーマ] %1</translation>
+    </message>
+    <message>
         <source>Horizontal</source>
         <translation>横方向</translation>
     </message>
     <message>
         <source>Vertical</source>
         <translation>縦方向</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>テーマ</translation>
     </message>
     <message>
         <source>Normal Off</source>
@@ -4317,6 +4315,17 @@ Do you want overwrite the template?</source>
     </message>
 </context>
 <context>
+    <name>qdesigner_internal::IconThemeDialog</name>
+    <message>
+        <source>Set Icon From Theme</source>
+        <translation>テーマからアイコンを設定する</translation>
+    </message>
+    <message>
+        <source>Input icon name from the current theme:</source>
+        <translation>現在のテーマからアイコンの名前を入力:</translation>
+    </message>
+</context>
+<context>
     <name>qdesigner_internal::ItemListEditor</name>
     <message>
         <source>Properties &amp;&lt;&lt;</source>
@@ -4458,18 +4467,6 @@ Do you want overwrite the template?</source>
         <translation>テキスト(&amp;T):</translation>
     </message>
     <message>
-        <source>Shortcut:</source>
-        <translation>ショートカット:</translation>
-    </message>
-    <message>
-        <source>Checkable:</source>
-        <translation>チェック可:</translation>
-    </message>
-    <message>
-        <source>ToolTip:</source>
-        <translation>ツールチップ:</translation>
-    </message>
-    <message>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -4480,6 +4477,22 @@ Do you want overwrite the template?</source>
     <message>
         <source>Object &amp;name:</source>
         <translation>オブジェクト名(&amp;N):</translation>
+    </message>
+    <message>
+        <source>T&amp;oolTip:</source>
+        <translation>ツールチップ(&amp;O):</translation>
+    </message>
+    <message>
+        <source>Icon th&amp;eme:</source>
+        <translation>アイコンテーマ(&amp;E):</translation>
+    </message>
+    <message>
+        <source>&amp;Checkable:</source>
+        <translation>チェック可(&amp;C):</translation>
+    </message>
+    <message>
+        <source>&amp;Shortcut:</source>
+        <translation>ショートカット(&amp;S):</translation>
     </message>
 </context>
 <context>
@@ -4738,8 +4751,16 @@ Please select another name.</source>
         <translation>ファイルを選択...</translation>
     </message>
     <message>
+        <source>Set Icon From Theme...</source>
+        <translation>テーマからアイコンを設定...</translation>
+    </message>
+    <message>
         <source>...</source>
         <translation>...</translation>
+    </message>
+    <message>
+        <source>[Theme] %1</source>
+        <translation>[テーマ] %1</translation>
     </message>
 </context>
 <context>
@@ -5126,6 +5147,42 @@ Class: %2</source>
         <translation>シグナル/スロットを変更...</translation>
     </message>
     <message>
+        <source>Layout Alignment</source>
+        <translation>レイアウトの配置</translation>
+    </message>
+    <message>
+        <source>No Horizontal Alignment</source>
+        <translation>横方向の調整なし</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>左端揃え</translation>
+    </message>
+    <message>
+        <source>Center Horizontally</source>
+        <translation>中央揃え(横方向)</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>右端揃え</translation>
+    </message>
+    <message>
+        <source>No Vertical Alignment</source>
+        <translation>横方向の調整なし</translation>
+    </message>
+    <message>
+        <source>Top</source>
+        <translation>上端揃え</translation>
+    </message>
+    <message>
+        <source>Center Vertically</source>
+        <translation>中央揃え(縦方向)</translation>
+    </message>
+    <message>
+        <source>Bottom</source>
+        <translation>下端揃え</translation>
+    </message>
+    <message>
         <source>Size Constraints</source>
         <translation>限界サイズ</translation>
     </message>
@@ -5328,6 +5385,10 @@ Class: %2</source>
     <message>
         <source>Insert &amp;Link</source>
         <translation>リンクを挿入(&amp;L)</translation>
+    </message>
+    <message>
+        <source>Simplify Rich Text</source>
+        <translation>リッチテキストを単純化する</translation>
     </message>
 </context>
 <context>

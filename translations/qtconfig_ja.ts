@@ -5,23 +5,23 @@
     <name>MainWindow</name>
     <message>
         <source>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Appearance&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;Use this tab to customize the appearance of your Qt applications.&lt;/p&gt;&lt;p&gt;You can select the default GUI Style from the drop down list and customize the colors.&lt;/p&gt;&lt;p&gt;Any GUI Style plugins in your plugin path will automatically be added to the list of built-in Qt styles. (See the Library Paths tab for information on adding new plugin paths.)&lt;/p&gt;&lt;p&gt;When you choose 3-D Effects and Window Background colors, the Qt Configuration program will automatically generate a palette for you. To customize colors further, press the Tune Palette button to open the advanced palette editor.&lt;p&gt;The Preview Window shows what the selected Style and colors look like.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;外観&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;このタブでは Qt アプリケーションの外観をカスタマイズします。&lt;/p&gt;&lt;p&gt;ドロップダウンリストからデフォルトの GUI スタイルを選択して、その色をカスタマイズできます。&lt;/p&gt;&lt;p&gt;プラグインパスにある全てのプラグインが自動的にQt のビルトインスタイルのリストに追加されます。 (See the Library Paths tab for information on adding new plugin paths.)&lt;/p&gt;&lt;p&gt;3D 効果とウィンドウの背景色を選択した場合、Qt 設定ツールは自動的にパレットを生成します。さらに色をカスタマイズするには、パレットの調整ボタンを押して拡張パレットエディタを開いてください。&lt;p&gt;プレビューウィンドウでは選択したスタイルと色がどのように見えるかを確認できます。</translation>
     </message>
     <message>
         <source>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Fonts&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;Use this tab to select the default font for your Qt applications. The selected font is shown (initially as &apos;Sample Text&apos;) in the line edit below the Family, Style and Point Size drop down lists.&lt;/p&gt;&lt;p&gt;Qt has a powerful font substitution feature that allows you to specify a list of substitute fonts.  Substitute fonts are used when a font cannot be loaded, or if the specified font doesn&apos;t have a particular character.&lt;p&gt;For example, if you select the font Lucida, which doesn&apos;t have Korean characters, but need to show some Korean text using the Mincho font family you can do so by adding Mincho to the list. Once Mincho is added, any Korean characters that are not found in the Lucida font will be taken from the Mincho font.  Because the font substitutions are lists, you can also select multiple families, such as Song Ti (for use with Chinese text).</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;フォント&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;このタブでは Qt アプリケーションのデフォルトフォントの設定を行います。選択したフォントはファミリー、スタイル、ポイントサイズのドロップダウンリストの下にあるラインエディタに(初期値は「テキストのサンプル」で)表示されます。&lt;/p&gt;&lt;p&gt;Qt には強力なフォント置換機能があり、置換するフォントのリストを指定することができます。置換するフォントはフォントが読み込めない場合や指定したフォントが特定の文字を持たない場合に使用されます。&lt;/p&gt;&lt;p&gt;例えば、漢字を持たない Lucida フォントを選択した場合に、リストに明朝体のフォントを追加すれば漢字からなる文字列を明朝体で表示することができます。明朝体のフォントが追加してある場合、Lucida フォントに含まれない全ての漢字が明朝体のフォントから用いられます。フォントの置換機能では、ハングル等の複数のファミリーを指定することができます。</translation>
     </message>
     <message>
         <source>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Interface&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;Use this tab to customize the feel of your Qt applications.&lt;/p&gt;&lt;p&gt;If the Resolve Symlinks checkbox is checked Qt will follow symlinks when handling URLs. For example, in the file dialog, if this setting is turned on and /usr/tmp is a symlink to /var/tmp, entering the /usr/tmp directory will cause the file dialog to change to /var/tmp.  With this setting turned off, symlinks are not resolved or followed.&lt;/p&gt;&lt;p&gt;The Global Strut setting is useful for people who require a minimum size for all widgets (e.g. when using a touch panel or for users who are visually impaired).  Leaving the Global Strut width and height at 0 will disable the Global Strut feature&lt;/p&gt;&lt;p&gt;XIM (Extended Input Methods) are used for entering characters in languages that have large character sets, for example, Chinese and Japanese.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;インターフェース&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;このタブでは Qt アプリケーションの操作感をカスタマイズします。&lt;/p&gt;&lt;p&gt;「URL でのシンボリックリンクを解決」チェックボックスがチェックされている場合、Qt が URL を処理する際にシンボリックリンクを追跡します。例えば、この設定がオンで /usr/tmp が /var/tmp へのシンボリックリンクの場合、ファイルダイアログで /usr/tmp を表示しようとすると /var/tmp へ移動します。この設定がオフの場合、シンボリックリンクの解決や追跡は行われません。&lt;/p&gt;&lt;p&gt;「グローバルな設定」は全てのウィジェットに最小サイズが必要な場合(例えば、タッチパネルを使用していたり、目の不自由な方々など)に有用です。幅の最小値と高さの最小値を0にするとこの機能が無効になります。&lt;/p&gt;&lt;p&gt;XIM (インプットメソッド) は中国語や日本語のような、多数の文字を持つ言語で文字の入力に用いられています。</translation>
     </message>
     <message>
         <source>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Printer&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;Use this tab to configure the way Qt generates output for the printer.You can specify if Qt should try to embed fonts into its generated output.If you enable font embedding, the resulting postscript will be more portable and will more accurately reflect the visual output on the screen; however the resulting postscript file size will be bigger.&lt;p&gt;When using font embedding you can select additional directories where Qt should search for embeddable font files.  By default, the X server font path is used.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;プリンタ&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;このタブでは Qt が印刷する際に生成する出力の設定を行います。Qt が生成された印刷物にフォントを埋め込もうとするかどうかを指定できます。フォントを埋め込む場合、生成された PostScript の可搬性が増し、その見た目は画面上の表示をより正確に反映したものとなります。その反面、生成された PostScript ファイルのサイズが大きくなります。&lt;p&gt;フォントを埋め込む場合、Qt が埋め込むフォントファイルを検索するディレクトリを追加で選択することができます。デフォルトでは X サーバーのフォントパスが使われます。</translation>
     </message>
     <message>
         <source>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Phonon&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;Use this tab to configure the Phonon GStreamer multimedia backend. &lt;p&gt;It is reccommended to leave all settings on &quot;Auto&quot; to let Phonon determine your settings automatically.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Phonon&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;このタブでは Phonon の GStreamer マルチメディアバックエンドの設定を行います。&lt;p&gt;全ての設定を &quot;自動&quot; にして Phonon に自動的に設定させることを推奨します。</translation>
     </message>
     <message>
         <source>Desktop Settings (Default)</source>
@@ -34,6 +34,10 @@
     <message>
         <source>On The Spot</source>
         <translation>On The Spot</translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation>不明</translation>
     </message>
     <message>
         <source>Auto (default)</source>
@@ -92,6 +96,10 @@
         <translation>保存中…</translation>
     </message>
     <message>
+        <source>Saved changes.</source>
+        <translation>変更を保存しました。</translation>
+    </message>
+    <message>
         <source>Over The Spot</source>
         <translation>Over The Spot</translation>
     </message>
@@ -122,25 +130,6 @@
     <message>
         <source>Save changes to settings?</source>
         <translation>変更内容を設定に保存しますか？</translation>
-    </message>
-    <message>
-        <source>&amp;Yes</source>
-        <translation>はい(&amp;Y)</translation>
-    </message>
-    <message>
-        <source>&amp;No</source>
-        <translation>いいえ(&amp;N)</translation>
-    </message>
-    <message>
-        <source>&amp;Cancel</source>
-        <translation>キャンセル(&amp;C)</translation>
-    </message>
-</context>
-<context>
-    <name>MainWindowBase</name>
-    <message>
-        <source>Qt Configuration</source>
-        <translation>Qt 設定ツール</translation>
     </message>
     <message>
         <source>Appearance</source>
@@ -179,8 +168,8 @@
         <translation>パレットの設定</translation>
     </message>
     <message>
-        <source>&amp;3-D Effects:</source>
-        <translation>&amp;3D エフェクト:</translation>
+        <source>&amp;Button Background:</source>
+        <translation>ボタンのバックグラウンド(&amp;B):</translation>
     </message>
     <message>
         <source>Window Back&amp;ground:</source>
@@ -188,11 +177,11 @@
     </message>
     <message>
         <source>&amp;Tune Palette...</source>
-        <translation>パレットを調整(&amp;T)...</translation>
+        <translation>パレットの調整(&amp;T)...</translation>
     </message>
     <message>
         <source>Please use the KDE Control Center to set the palette.</source>
-        <translation>KDE のコントロールセンターでパレットの設定をしてください。</translation>
+        <translation>KDE のシステム設定でパレットの設定をしてください。</translation>
     </message>
     <message>
         <source>Fonts</source>
@@ -284,7 +273,7 @@
     </message>
     <message>
         <source>Resolve symlinks in URLs</source>
-        <translation>URL のシンボリックリンクの解決</translation>
+        <translation>URL でのシンボリックリンクを解決</translation>
     </message>
     <message>
         <source>GUI Effects</source>
@@ -328,7 +317,7 @@
     </message>
     <message>
         <source>Global Strut</source>
-        <translation>Global Strut</translation>
+        <translation>グローバルな設定</translation>
     </message>
     <message>
         <source>Minimum &amp;Width:</source>
@@ -349,22 +338,6 @@
     <message>
         <source>XIM Input Style:</source>
         <translation>XIM のインプットスタイル:</translation>
-    </message>
-    <message>
-        <source>On The Spot</source>
-        <translation>On The Spot</translation>
-    </message>
-    <message>
-        <source>Over The Spot</source>
-        <translation>Over The Spot</translation>
-    </message>
-    <message>
-        <source>Off The Spot</source>
-        <translation>Off The Spot</translation>
-    </message>
-    <message>
-        <source>Root</source>
-        <translation>Root</translation>
     </message>
     <message>
         <source>Default Input Method:</source>
@@ -411,32 +384,16 @@
         <translation>ウェブサイト:</translation>
     </message>
     <message>
-        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://phonon.kde.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://phonon.kde.org&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://phonon.kde.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://phonon.kde.org&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;a href=&quot;http://phonon.kde.org&quot;&gt;http://phonon.kde.org/&lt;/a&gt;</source>
+        <translation>&lt;a href=&quot;http://phonon.kde.org&quot;&gt;http://phonon.kde.org/&lt;/a&gt;</translation>
     </message>
     <message>
         <source>About GStreamer</source>
         <translation>GStreamer について</translation>
     </message>
     <message>
-        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://gstreamer.freedesktop.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://gstreamer.freedesktop.org/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://gstreamer.freedesktop.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://gstreamer.freedesktop.org/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;a href=&quot;http://gstreamer.freedesktop.org/&quot;&gt;http://gstreamer.freedesktop.org/&lt;/a&gt;</source>
+        <translation>&lt;a href=&quot;http://gstreamer.freedesktop.org/&quot;&gt;http://gstreamer.freedesktop.org/&lt;/a&gt;</translation>
     </message>
     <message>
         <source>GStreamer backend settings</source>
@@ -491,6 +448,10 @@ p, li { white-space: pre-wrap; }
         <translation>終了</translation>
     </message>
     <message>
+        <source>Ctrl+Q</source>
+        <translation>Ctrl+Q</translation>
+    </message>
+    <message>
         <source>&amp;About</source>
         <translation>Qt 設定ツールについて(&amp;A)</translation>
     </message>
@@ -508,14 +469,10 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
-    <name>PaletteEditorAdvancedBase</name>
+    <name>PaletteEditorAdvanced</name>
     <message>
         <source>Tune Palette</source>
         <translation>パレットの調整</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;Edit Palette&lt;/b&gt;&lt;p&gt;Change the palette of the current widget or form.&lt;/p&gt;&lt;p&gt;Use a generated palette or select colors for each color group and each color role.&lt;/p&gt;&lt;p&gt;The palette can be tested with different widget layouts in the preview section.&lt;/p&gt;</source>
-        <translation>&lt;b&gt;パレットの編集&lt;/b&gt;&lt;p&gt;現在のウィジェットやフォームのパレットを変更してください。&lt;/p&gt;&lt;p&gt;自動生成されたパレットを使用するか、それぞれのグループ／役割に対して色を選択してください。&lt;/p&gt;&lt;p&gt;パレットの内容のプレビューセクションにある様々なウィジェットのレイアウトで確認できます。&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Select &amp;Palette:</source>
@@ -566,24 +523,36 @@ p, li { white-space: pre-wrap; }
         <translation>ウィンドウテキスト</translation>
     </message>
     <message>
-        <source>Button</source>
-        <translation>ボタン</translation>
-    </message>
-    <message>
         <source>Base</source>
         <translation>ベース</translation>
+    </message>
+    <message>
+        <source>AlternateBase</source>
+        <translation>その他のベース</translation>
+    </message>
+    <message>
+        <source>ToolTipBase</source>
+        <translation>ツールチップのベース</translation>
+    </message>
+    <message>
+        <source>ToolTipText</source>
+        <translation>ツールチップのテキスト</translation>
     </message>
     <message>
         <source>Text</source>
         <translation>テキスト</translation>
     </message>
     <message>
-        <source>BrightText</source>
-        <translation>明るいテキスト</translation>
+        <source>Button</source>
+        <translation>ボタン</translation>
     </message>
     <message>
         <source>ButtonText</source>
-        <translation>ボタンテキスト</translation>
+        <translation>ボタンのテキスト</translation>
+    </message>
+    <message>
+        <source>BrightText</source>
+        <translation>明るいテキスト</translation>
     </message>
     <message>
         <source>Highlight</source>
@@ -591,27 +560,23 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>HighlightedText</source>
-        <translation>ハイライトのテキスト</translation>
+        <translation>ハイライトされたテキスト</translation>
+    </message>
+    <message>
+        <source>Link</source>
+        <translation>リンク</translation>
+    </message>
+    <message>
+        <source>LinkVisited</source>
+        <translation>訪問済みのリンク</translation>
     </message>
     <message>
         <source>&amp;Select Color:</source>
         <translation>色の選択(&amp;S):</translation>
     </message>
     <message>
-        <source>Choose a color</source>
-        <translation>色を選択してください</translation>
-    </message>
-    <message>
-        <source>Choose a color for the selected central color role.</source>
-        <translation>選択された中央部の色の役割に使用する色を選択してください。</translation>
-    </message>
-    <message>
         <source>3-D shadow &amp;effects</source>
         <translation>3Dの影の効果(&amp;E)</translation>
-    </message>
-    <message>
-        <source>Build &amp;from button color</source>
-        <translation>ボタンの色から構築する(&amp;F)</translation>
     </message>
     <message>
         <source>Generate shadings</source>
@@ -620,6 +585,10 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Check to let 3D-effect colors be calculated from button-color.</source>
         <translation>3D効果の色をボタンの色から計算するにはチェックしてください。</translation>
+    </message>
+    <message>
+        <source>Build &amp;from button color</source>
+        <translation>ボタンの色から構築する(&amp;F)</translation>
     </message>
     <message>
         <source>Choose 3D-effect color role</source>
@@ -654,24 +623,16 @@ p, li { white-space: pre-wrap; }
         <translation>色の選択(&amp;L):</translation>
     </message>
     <message>
+        <source>Choose a color</source>
+        <translation>色を選択してください</translation>
+    </message>
+    <message>
+        <source>Choose a color for the selected central color role.</source>
+        <translation>選択された中央部の色の役割に使用する色を選択してください。</translation>
+    </message>
+    <message>
         <source>Choose a color for the selected effect color role.</source>
         <translation>選択の効果の色の役割に使用する色を選択してください。</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation>OK</translation>
-    </message>
-    <message>
-        <source>Close dialog and apply all changes.</source>
-        <translation>全ての変更を適用してダイアログを閉じる。</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>キャンセル</translation>
-    </message>
-    <message>
-        <source>Close dialog and discard all changes.</source>
-        <translation>全ての変更を破棄してダイアログを閉じる。</translation>
     </message>
 </context>
 <context>
@@ -682,14 +643,14 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
-    <name>PreviewWidgetBase</name>
+    <name>PreviewWidget</name>
     <message>
         <source>Preview Window</source>
         <translation>プレビューウィンドウ</translation>
     </message>
     <message>
-        <source>ButtonGroup</source>
-        <translation>ボタングループ</translation>
+        <source>GroupBox</source>
+        <translation>グループボックス</translation>
     </message>
     <message>
         <source>RadioButton1</source>
@@ -704,8 +665,8 @@ p, li { white-space: pre-wrap; }
         <translation>ラジオボタン3</translation>
     </message>
     <message>
-        <source>ButtonGroup2</source>
-        <translation>ボタングループ2</translation>
+        <source>GroupBox2</source>
+        <translation>グループボックス2</translation>
     </message>
     <message>
         <source>CheckBox1</source>
@@ -728,18 +689,9 @@ p, li { white-space: pre-wrap; }
         <translation>プッシュボタン</translation>
     </message>
     <message>
-        <source>&lt;p&gt;
-&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;
-&lt;/p&gt;
-&lt;p&gt;
-&lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;
-&lt;/p&gt;</source>
-        <translation>&lt;p&gt;
-&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;
-&lt;/p&gt;
-&lt;p&gt;
-&lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;
-&lt;/p&gt;</translation>
+        <source>&lt;p&gt;&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;&lt;/p&gt;</source>
+        <translation></translation>
     </message>
 </context>
 </TS>

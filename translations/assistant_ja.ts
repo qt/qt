@@ -76,20 +76,12 @@ Reason:
         <translation>コレクションファイル &apos;%1&apos; の作成中にエラーが発生しました: %2。</translation>
     </message>
     <message>
-        <source>Error reading collection file &apos;%1&apos;: %2</source>
-        <translation type="obsolete">コレクションファイル &apos;%1&apos; の読み込み中にエラーが発生しました: %2</translation>
-    </message>
-    <message>
         <source>Cannot load sqlite database driver!</source>
         <translation>SQLite データベース ドライバーをロードできません!</translation>
     </message>
 </context>
 <context>
     <name>BookmarkDialog</name>
-    <message>
-        <source>Bookmarks</source>
-        <translation type="obsolete">ブックマーク</translation>
-    </message>
     <message>
         <source>Add Bookmark</source>
         <translation>ブックマークの追加</translation>
@@ -111,10 +103,6 @@ Reason:
         <translation>新しいフォルダ</translation>
     </message>
     <message>
-        <source>Delete Folder</source>
-        <translation type="obsolete">フォルダを削除</translation>
-    </message>
-    <message>
         <source>Rename Folder</source>
         <translation>フォルダの名前変更</translation>
     </message>
@@ -132,10 +120,6 @@ Reason:
 </context>
 <context>
     <name>BookmarkManager</name>
-    <message>
-        <source>Bookmarks</source>
-        <translation type="obsolete">ブックマーク</translation>
-    </message>
     <message>
         <source>Untitled</source>
         <translation>タイトルなし</translation>
@@ -183,10 +167,6 @@ Reason:
     <message>
         <source>Rename Bookmark</source>
         <translation>ブックマークの名前変更</translation>
-    </message>
-    <message>
-        <source>New Folder</source>
-        <translation type="obsolete">新しいフォルダ</translation>
     </message>
 </context>
 <context>
@@ -279,6 +259,10 @@ Reason:
         <translation>アドレス</translation>
     </message>
     <message>
+        <source>Toolbar Menu</source>
+        <translation>ツールバーメニュー</translation>
+    </message>
+    <message>
         <source>Bookmarks Menu</source>
         <translation>ブックマークメニュー</translation>
     </message>
@@ -294,30 +278,6 @@ Reason:
         <translation>削除</translation>
     </message>
     <message>
-        <source>Delete Folder</source>
-        <translation type="obsolete">フォルダを削除</translation>
-    </message>
-    <message>
-        <source>Rename Folder</source>
-        <translation type="obsolete">フォルダの名前変更</translation>
-    </message>
-    <message>
-        <source>Show Bookmark</source>
-        <translation type="obsolete">ブックマークを開く</translation>
-    </message>
-    <message>
-        <source>Show Bookmark in New Tab</source>
-        <translation type="obsolete">ブックマークを新しいタブで開く</translation>
-    </message>
-    <message>
-        <source>Delete Bookmark</source>
-        <translation type="obsolete">ブックマークを削除</translation>
-    </message>
-    <message>
-        <source>Rename Bookmark</source>
-        <translation type="obsolete">ブックマークの名前変更</translation>
-    </message>
-    <message>
         <source>Add</source>
         <translation>追加</translation>
     </message>
@@ -329,40 +289,8 @@ Reason:
 <context>
     <name>CentralWidget</name>
     <message>
-        <source>Add new page</source>
-        <translation>新しいページの追加</translation>
-    </message>
-    <message>
-        <source>Close current page</source>
-        <translation>現在のページを閉じる</translation>
-    </message>
-    <message>
         <source>Print Document</source>
         <translation>ドキュメントを印刷</translation>
-    </message>
-    <message>
-        <source>unknown</source>
-        <translation>不明</translation>
-    </message>
-    <message>
-        <source>Add New Page</source>
-        <translation>新しいページの追加</translation>
-    </message>
-    <message>
-        <source>Close This Page</source>
-        <translation>このページを閉じる</translation>
-    </message>
-    <message>
-        <source>Close Other Pages</source>
-        <translation>他のページを閉じる</translation>
-    </message>
-    <message>
-        <source>Add Bookmark for this Page...</source>
-        <translation>このページをブックマークに追加...</translation>
-    </message>
-    <message>
-        <source>Search</source>
-        <translation>検索</translation>
     </message>
 </context>
 <context>
@@ -617,10 +545,6 @@ Reason:
         <translation>大文字/小文字を区別する</translation>
     </message>
     <message>
-        <source>Whole words</source>
-        <translation type="obsolete">単語単位で検索する</translation>
-    </message>
-    <message>
         <source>&lt;img src=&quot;:/trolltech/assistant/images/wrap.png&quot;&gt;&amp;nbsp;Search wrapped</source>
         <translation>&lt;img src=&quot;:/trolltech/assistant/images/wrap.png&quot;&gt;&amp;nbsp;見つからなければ先頭から検索する</translation>
     </message>
@@ -699,6 +623,49 @@ Reason:
     </message>
 </context>
 <context>
+    <name>GlobalActions</name>
+    <message>
+        <source>&amp;Back</source>
+        <translation>戻る(&amp;B)</translation>
+    </message>
+    <message>
+        <source>&amp;Forward</source>
+        <translation>進む(&amp;F)</translation>
+    </message>
+    <message>
+        <source>&amp;Home</source>
+        <translation>ホーム(&amp;H)</translation>
+    </message>
+    <message>
+        <source>ALT+Home</source>
+        <translation>ALT+Home</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;in</source>
+        <translation>拡大(&amp;I)</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;out</source>
+        <translation>縮小(&amp;O)</translation>
+    </message>
+    <message>
+        <source>&amp;Copy selected Text</source>
+        <translation>選択中の文字をコピー(&amp;C)</translation>
+    </message>
+    <message>
+        <source>&amp;Print...</source>
+        <translation>印刷(&amp;P)...</translation>
+    </message>
+    <message>
+        <source>&amp;Find in Text...</source>
+        <translation>検索(&amp;F)...</translation>
+    </message>
+    <message>
+        <source>&amp;Find</source>
+        <translation>検索(&amp;F)</translation>
+    </message>
+</context>
+<context>
     <name>HelpEngineWrapper</name>
     <message>
         <source>Unfiltered</source>
@@ -715,14 +682,6 @@ Reason:
 <context>
     <name>HelpViewer</name>
     <message>
-        <source>Help</source>
-        <translation type="obsolete">ヘルプ</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation type="obsolete">OK</translation>
-    </message>
-    <message>
         <source>&lt;title&gt;about:blank&lt;/title&gt;</source>
         <translation>&lt;title&gt;about:blank&lt;/title&gt;</translation>
     </message>
@@ -731,22 +690,28 @@ Reason:
         <translation>&lt;title&gt;Error 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;ページが見つかりませんでした&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</translation>
     </message>
     <message>
+        <source>Open Link</source>
+        <translation>リンクを開く</translation>
+    </message>
+    <message>
         <source>Copy &amp;Link Location</source>
         <translation>リンクのURLをコピー(&amp;L)</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>コピー</translation>
+    </message>
+    <message>
+        <source>Reload</source>
+        <translation>リロード</translation>
     </message>
     <message>
         <source>Open Link in New Tab	Ctrl+LMB</source>
         <translation>リンクを新しいタブで開く	Ctrl+LMB</translation>
     </message>
     <message>
-        <source>Open Link in New Tab</source>
-        <translation>リンクを新しいタブで開く</translation>
-    </message>
-    <message>
-        <source>Unable to launch external application.
-</source>
-        <translation type="obsolete">外部アプリケーションを起動できません。
-</translation>
+        <source>Open Link in New Page</source>
+        <translation>リンクを新しいページで開く</translation>
     </message>
 </context>
 <context>
@@ -945,20 +910,12 @@ Reason:
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <source>Unfiltered</source>
-        <translation type="obsolete">フィルタなし</translation>
-    </message>
-    <message>
         <source>Page Set&amp;up...</source>
         <translation>ページ設定(&amp;U)...</translation>
     </message>
     <message>
         <source>Print Preview...</source>
         <translation>印刷プレビュー...</translation>
-    </message>
-    <message>
-        <source>&amp;Print...</source>
-        <translation>印刷(&amp;P)...</translation>
     </message>
     <message>
         <source>New &amp;Tab</source>
@@ -977,18 +934,6 @@ Reason:
         <translation>CTRL+Q</translation>
     </message>
     <message>
-        <source>&amp;Copy selected Text</source>
-        <translation>選択中の文字をコピー(&amp;C)</translation>
-    </message>
-    <message>
-        <source>&amp;Find in Text...</source>
-        <translation>検索(&amp;F)...</translation>
-    </message>
-    <message>
-        <source>&amp;Find</source>
-        <translation>検索(&amp;F)</translation>
-    </message>
-    <message>
         <source>Find &amp;Next</source>
         <translation>次を検索(&amp;N)</translation>
     </message>
@@ -999,14 +944,6 @@ Reason:
     <message>
         <source>Preferences...</source>
         <translation>設定...</translation>
-    </message>
-    <message>
-        <source>Zoom &amp;in</source>
-        <translation>拡大(&amp;I)</translation>
-    </message>
-    <message>
-        <source>Zoom &amp;out</source>
-        <translation>縮小(&amp;O)</translation>
     </message>
     <message>
         <source>Normal &amp;Size</source>
@@ -1029,28 +966,12 @@ Reason:
         <translation>ALT+S</translation>
     </message>
     <message>
-        <source>&amp;Home</source>
-        <translation>ホーム(&amp;H)</translation>
-    </message>
-    <message>
         <source>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;</source>
         <translation>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;バージョン %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Could not register file &apos;%1&apos;: %2</source>
         <translation>ファイル &apos;%1&apos; を登録できませんでした: %2</translation>
-    </message>
-    <message>
-        <source>Ctrl+Home</source>
-        <translation type="obsolete">Ctrl+Home</translation>
-    </message>
-    <message>
-        <source>&amp;Back</source>
-        <translation>戻る(&amp;B)</translation>
-    </message>
-    <message>
-        <source>&amp;Forward</source>
-        <translation>進む(&amp;F)</translation>
     </message>
     <message>
         <source>Sync with Table of Contents</source>
@@ -1071,10 +992,6 @@ Reason:
     <message>
         <source>Ctrl+Alt+Left</source>
         <translation>Ctrl+Alt+Left</translation>
-    </message>
-    <message>
-        <source>Add Bookmark...</source>
-        <translation type="obsolete">ブックマークの追加...</translation>
     </message>
     <message>
         <source>About...</source>
@@ -1137,8 +1054,20 @@ Reason:
         <translation>ズーム</translation>
     </message>
     <message>
+        <source>Open Pages</source>
+        <translation>ページを開く</translation>
+    </message>
+    <message>
+        <source>Bookmark Toolbar</source>
+        <translation>ブックマークツールバー</translation>
+    </message>
+    <message>
         <source>&amp;File</source>
         <translation>ファイル(&amp;F)</translation>
+    </message>
+    <message>
+        <source>E&amp;xit</source>
+        <translation>終了(&amp;X)</translation>
     </message>
     <message>
         <source>&amp;Edit</source>
@@ -1149,12 +1078,12 @@ Reason:
         <translation>表示(&amp;V)</translation>
     </message>
     <message>
-        <source>&amp;Go</source>
-        <translation>ジャンプ(&amp;G)</translation>
+        <source>ALT+P</source>
+        <translation>ALT+P</translation>
     </message>
     <message>
-        <source>ALT+Home</source>
-        <translation>ALT+Home</translation>
+        <source>&amp;Go</source>
+        <translation>ジャンプ(&amp;G)</translation>
     </message>
     <message>
         <source>Sync</source>
@@ -1172,9 +1101,16 @@ Reason:
         <source>ALT+O</source>
         <translation>ALT+O</translation>
     </message>
+</context>
+<context>
+    <name>OpenPagesWidget</name>
     <message>
-        <source>CTRL+D</source>
-        <translation type="obsolete">CTRL+D</translation>
+        <source>Close %1</source>
+        <translation>&quot;%1&quot; を閉じる</translation>
+    </message>
+    <message>
+        <source>Close All Except %1</source>
+        <translation>&quot;%1&quot; 以外をすべて閉じる</translation>
     </message>
 </context>
 <context>
@@ -1396,6 +1332,14 @@ Do you want to remove it?</source>
         <source>Blank Page</source>
         <translation>空白ページ</translation>
     </message>
+    <message>
+        <source>Appearance</source>
+        <translation>外観</translation>
+    </message>
+    <message>
+        <source>Show tabs for each individual page</source>
+        <translation>各ページにタブを表示する</translation>
+    </message>
 </context>
 <context>
     <name>QCollectionGenerator</name>
@@ -1567,97 +1511,6 @@ qhelpgenerator &lt;ヘルププロジェクトファイル&gt; [オプション]
     </message>
 </context>
 <context>
-    <name>QObject</name>
-    <message>
-        <source>The specified collection file does not exist!</source>
-        <translation type="obsolete">指定されたコレクションファイルは存在しません!</translation>
-    </message>
-    <message>
-        <source>Missing collection file!</source>
-        <translation type="obsolete">コレクションファイルが見つかりません!</translation>
-    </message>
-    <message>
-        <source>Invalid URL!</source>
-        <translation type="obsolete">不正なURLです!</translation>
-    </message>
-    <message>
-        <source>Missing URL!</source>
-        <translation type="obsolete">URLが見つかりません!</translation>
-    </message>
-    <message>
-        <source>Unknown widget: %1</source>
-        <translation type="obsolete">不明なウィジェット: %1</translation>
-    </message>
-    <message>
-        <source>Missing widget!</source>
-        <translation type="obsolete">ウィジェットが見つかりません!</translation>
-    </message>
-    <message>
-        <source>The specified Qt help file does not exist!</source>
-        <translation type="obsolete">指定された Qt ヘルプ ファイルが存在しません!</translation>
-    </message>
-    <message>
-        <source>Missing help file!</source>
-        <translation type="obsolete">ヘルプファイルが見つかりません!</translation>
-    </message>
-    <message>
-        <source>Missing filter argument!</source>
-        <translation type="obsolete">フィルタ引数が不足しています!</translation>
-    </message>
-    <message>
-        <source>Unknown option: %1</source>
-        <translation type="obsolete">不明なオプション: %1</translation>
-    </message>
-    <message>
-        <source>Qt Assistant</source>
-        <translation type="obsolete">Qt Assistant</translation>
-    </message>
-    <message>
-        <source>Could not register documentation file
-%1
-
-Reason:
-%2</source>
-        <translation type="obsolete">ドキュメントファイルを登録できませんでした。
-%1
-
-原因:
-%2</translation>
-    </message>
-    <message>
-        <source>Documentation successfully registered.</source>
-        <translation type="obsolete">ドキュメントの登録に成功しました。</translation>
-    </message>
-    <message>
-        <source>Could not unregister documentation file
-%1
-
-Reason:
-%2</source>
-        <translation type="obsolete">ドキュメントファイルを解除できませんでした。
-%1
-
-原因:
-%2</translation>
-    </message>
-    <message>
-        <source>Documentation successfully unregistered.</source>
-        <translation type="obsolete">ドキュメントの解放に成功しました。</translation>
-    </message>
-    <message>
-        <source>Cannot load sqlite database driver!</source>
-        <translation type="obsolete">SQLite データベース ドライバーをロードできません!</translation>
-    </message>
-    <message>
-        <source>The specified collection file could not be read!</source>
-        <translation type="obsolete">指定されたコレクションファイルは読み込めません!</translation>
-    </message>
-    <message>
-        <source>Bookmark</source>
-        <translation type="obsolete">ブックマーク</translation>
-    </message>
-</context>
-<context>
     <name>RemoteControl</name>
     <message>
         <source>Debugging Remote Control</source>
@@ -1686,9 +1539,28 @@ Reason:
         <source>Select All</source>
         <translation>すべてを選択</translation>
     </message>
+</context>
+<context>
+    <name>TabBar</name>
     <message>
-        <source>Open Link</source>
-        <translation type="obsolete">リンクを開く</translation>
+        <source>(Untitled)</source>
+        <translation>(タイトルなし)</translation>
+    </message>
+    <message>
+        <source>New &amp;Tab</source>
+        <translation>新しいタブ(&amp;T)</translation>
+    </message>
+    <message>
+        <source>&amp;Close Tab</source>
+        <translation>タブを閉じる(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Close Other Tabs</source>
+        <translation>他のタブを閉じる</translation>
+    </message>
+    <message>
+        <source>Add Bookmark for this Page...</source>
+        <translation>このページをブックマークに追加...</translation>
     </message>
 </context>
 <context>
