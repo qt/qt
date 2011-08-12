@@ -21,8 +21,6 @@ SOURCES += \
     editor/subcomponentmasklayeritem.cpp \
     editor/zoomtool.cpp \
     editor/colorpickertool.cpp \
-    editor/qmltoolbar.cpp \
-    editor/toolbarcolorbox.cpp \
     abstracttool.cpp
 
 HEADERS += \
@@ -43,11 +41,7 @@ HEADERS += \
     editor/subcomponentmasklayeritem.h \
     editor/zoomtool.h \
     editor/colorpickertool.h \
-    editor/qmltoolbar.h \
-    editor/toolbarcolorbox.h \
     abstracttool.h
-
-RESOURCES += editor/editor.qrc
 
 target.path += $$[QT_INSTALL_PLUGINS]/qmltooling
 INSTALLS += target
