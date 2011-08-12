@@ -75,7 +75,9 @@ void ColorPickerTool::mouseMoveEvent(QMouseEvent *event)
 
 void ColorPickerTool::clear()
 {
+#ifndef QT_NO_CURSOR
     view()->setCursor(Qt::CrossCursor);
+#endif
 }
 
 void ColorPickerTool::pickColor(const QPoint &pos)

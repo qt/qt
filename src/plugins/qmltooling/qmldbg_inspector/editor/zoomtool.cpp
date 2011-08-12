@@ -244,7 +244,9 @@ void ZoomTool::keyReleaseEvent(QKeyEvent *event)
 
 void ZoomTool::clear()
 {
+#ifndef QT_NO_CURSOR
     view()->setCursor(Qt::ArrowCursor);
+#endif
 }
 
 void ZoomTool::scaleView(const QPointF &centerPos)
