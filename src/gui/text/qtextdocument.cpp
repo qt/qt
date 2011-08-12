@@ -600,7 +600,7 @@ Qt::CursorMoveStyle QTextDocument::defaultCursorMoveStyle() const
 /*!
     \since 4.8
 
-    Set the default cursor movement style.
+    Sets the default cursor movement style to the given \a style.
 */
 void QTextDocument::setDefaultCursorMoveStyle(Qt::CursorMoveStyle style)
 {
@@ -2709,6 +2709,8 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
     emitBlockAttributes(block);
 
     html += QLatin1Char('>');
+    if (block.begin().atEnd())
+        html += QLatin1String("<br />");
 
     QTextBlock::Iterator it = block.begin();
     if (fragmentMarkers && !it.atEnd() && block == doc->begin())

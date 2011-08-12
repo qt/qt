@@ -191,6 +191,8 @@ void initLogger()
         }
 }
 
+extern Q_TESTLIB_EXPORT bool printAvailableTags;
+
 }
 
 QTestLog::QTestLog()
@@ -203,6 +205,9 @@ QTestLog::~QTestLog()
 
 void QTestLog::enterTestFunction(const char* function)
 {
+    if (QTest::printAvailableTags)
+        return;
+
     QTEST_ASSERT(QTest::testLogger);
     QTEST_ASSERT(function);
 
@@ -222,6 +227,9 @@ int QTestLog::unhandledIgnoreMessages()
 
 void QTestLog::leaveTestFunction()
 {
+    if (QTest::printAvailableTags)
+        return;
+
     QTEST_ASSERT(QTest::testLogger);
 
     QTest::IgnoreResultList::clearList(QTest::ignoreResultList);
@@ -244,6 +252,9 @@ void QTestLog::printUnhandledIgnoreMessages()
 
 void QTestLog::addPass(const char *msg)
 {
+    if (QTest::printAvailableTags)
+        return;
+
     QTEST_ASSERT(QTest::testLogger);
     QTEST_ASSERT(msg);
 

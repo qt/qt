@@ -438,6 +438,7 @@ WebView *TabWidget::newTab(bool makeCurrent)
         addTab(emptyWidget, tr("(Untitled)"));
         connect(this, SIGNAL(currentChanged(int)),
             this, SLOT(currentChanged(int)));
+        currentChanged(currentIndex());
         return 0;
     }
 

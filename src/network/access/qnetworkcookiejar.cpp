@@ -40,12 +40,12 @@
 ****************************************************************************/
 
 #include "qnetworkcookiejar.h"
-#include "qnetworkcookiejartlds_p.h"
 #include "qnetworkcookiejar_p.h"
 
 #include "QtNetwork/qnetworkcookie.h"
 #include "QtCore/qurl.h"
 #include "QtCore/qdatetime.h"
+#include "private/qtldurl_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -216,24 +216,37 @@ bool QNetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieLis
             // the check for effective TLDs makes the "embedded dot" rule from RFC 2109 section 4.3.2
             // redundant; the "leading dot" rule has been relaxed anyway, see above
             // we remove the leading dot for this check
-            if (QNetworkCookieJarPrivate::isEffectiveTLD(domain.remove(0, 1)))
+            if (qIsEffectiveTLD(domain.remove(0, 1)))
                 continue; // not accepted
         }
 
-        QList<QNetworkCookie>::Iterator it = d->allCookies.begin(),
-                                       end = d->allCookies.end();
-        for ( ; it != end; ++it)
+        for (int i = 0; i < d->allCookies.size(); ++i) {
             // does this cookie already exist?
-            if (cookie.name() == it->name() &&
-                cookie.domain() == it->domain() &&
-                cookie.path() == it->path()) {
+            const QNetworkCookie &current = d->allCookies.at(i);
+            if (cookie.name() == current.name() &&
+                cookie.domain() == current.domain() &&
+                cookie.path() == current.path()) {
                 // found a match
-                d->allCookies.erase(it);
+                d->allCookies.removeAt(i);
                 break;
             }
+        }
 
         // did not find a match
         if (!isDeletion) {
+            int countForDomain = 0;
+            for (int i = d->allCookies.size() - 1; i >= 0; --i) {
+                // Start from the end and delete the oldest cookies to keep a maximum count of 50.
+                const QNetworkCookie &current = d->allCookies.at(i);
+                if (isParentDomain(cookie.domain(), current.domain())
+                    || isParentDomain(current.domain(), cookie.domain())) {
+                    if (countForDomain >= 49)
+                        d->allCookies.removeAt(i);
+                    else
+                        ++countForDomain;
+                }
+            }
+
             d->allCookies += cookie;
             ++added;
         }
@@ -302,45 +315,6 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
     }
 
     return result;
-}
-
-bool QNetworkCookieJarPrivate::isEffectiveTLD(const QString &domain)
-{
-    // for domain 'foo.bar.com':
-    // 1. return if TLD table contains 'foo.bar.com'
-    if (containsTLDEntry(domain))
-        return true;
-
-    if (domain.contains(QLatin1Char('.'))) {
-        int count = domain.size() - domain.indexOf(QLatin1Char('.'));
-        QString wildCardDomain;
-        wildCardDomain.reserve(count + 1);
-        wildCardDomain.append(QLatin1Char('*'));
-        wildCardDomain.append(domain.right(count));
-        // 2. if table contains '*.bar.com',
-        // test if table contains '!foo.bar.com'
-        if (containsTLDEntry(wildCardDomain)) {
-            QString exceptionDomain;
-            exceptionDomain.reserve(domain.size() + 1);
-            exceptionDomain.append(QLatin1Char('!'));
-            exceptionDomain.append(domain);
-            return (! containsTLDEntry(exceptionDomain));
-        }
-    }
-    return false;
-}
-
-bool QNetworkCookieJarPrivate::containsTLDEntry(const QString &entry)
-{
-    int index = qHash(entry) % tldCount;
-    int currentDomainIndex = tldIndices[index];
-    while (currentDomainIndex < tldIndices[index+1]) {
-        QString currentEntry = QString::fromUtf8(tldData + currentDomainIndex);
-        if (currentEntry == entry)
-            return true;
-        currentDomainIndex += qstrlen(tldData + currentDomainIndex) + 1; // +1 for the ending \0
-    }
-    return false;
 }
 
 QT_END_NAMESPACE

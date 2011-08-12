@@ -250,7 +250,7 @@ const int RESET = 0;
 
 /*!
     Test plan:
-	insertItem (all flavours and combinations)
+	insertItem (all flavors and combinations)
 	removing menu items
 	clearing the menu
 
@@ -515,6 +515,10 @@ void tst_QMenuBar::activatedCount_noQt3()
 #if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
     QSKIP("On Mac/WinCE, native key events are needed to test menu action activation", SkipAll);
 #endif
+#ifdef Q_OS_SYMBIAN
+    QSKIP("On Symbian OS, native key events are needed to test menu action activation", SkipAll);
+#endif
+
     // create a popup menu with menu items set the accelerators later...
     initSimpleMenubar_noQt3();
 
@@ -1572,6 +1576,12 @@ void tst_QMenuBar::task256322_highlight()
     QAction *file2 = win.menuBar()->addMenu(&menu2);
     file2->setText("file2");
     QAction *nothing = win.menuBar()->addAction("nothing");
+
+#ifdef Q_WS_S60
+    // Set minimum width to ensure that menu items are not added to the menu extension.
+    // Minimum width 360 is the minimal screen width in any supported Symbian device.
+    win.menuBar()->setMinimumWidth(360);
+#endif
 
     win.show();
     QTest::qWait(200);

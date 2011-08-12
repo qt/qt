@@ -108,6 +108,7 @@ private:
     bool needsInputPanel();
     void commitTemporaryPreeditString();
     bool isWidgetVisible(QWidget *widget, int offset = 0);
+    bool isPartialKeyboardSupported();
 
 private Q_SLOTS:
     void ensureInputCapabilitiesChanged();
@@ -159,6 +160,7 @@ private:
     MFepPointerEventHandlerDuringInlineEdit *m_pointerHandler;
     QBasicTimer m_tempPreeditStringTimeout;
     bool m_hasTempPreeditString;
+    QString m_cachedPreeditString;
 
     int m_splitViewResizeBy;
     Qt::WindowStates m_splitViewPreviousWindowStates;

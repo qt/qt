@@ -48,6 +48,7 @@
 #include <qtextstream.h>
 #include <qtextlayout.h>
 #include <qdebug.h>
+#include <QStaticText>
 
 #ifdef QT3_SUPPORT
 #include <q3painter.h>
@@ -464,6 +465,10 @@ void PaintCommands::staticInit()
                       "^drawText\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
                       "drawText <x> <y> <text>",
                       "drawText 10 10 \"my text\"");
+    DECL_PAINTCOMMAND("drawStaticText", command_drawStaticText,
+                      "^drawStaticText\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
+                      "drawStaticText <x> <y> <text>",
+                      "drawStaticText 10 10 \"my text\"");
     DECL_PAINTCOMMAND("drawTiledPixmap", command_drawTiledPixmap,
                       "^drawTiledPixmap\\s+([\\w.:\\/]*)"
                       "\\s+(-?\\w*)\\s+(-?\\w*)\\s*(-?\\w*)\\s*(-?\\w*)"
@@ -1402,6 +1407,21 @@ void PaintCommands::command_drawText(QRegExp re)
         printf(" -(lance) drawText(%d, %d, %s)\n", x, y, qPrintable(txt));
 
     m_painter->drawText(x, y, txt);
+}
+
+void PaintCommands::command_drawStaticText(QRegExp re)
+{
+    if (!m_shouldDrawText)
+        return;
+    QStringList caps = re.capturedTexts();
+    int x = convertToInt(caps.at(1));
+    int y = convertToInt(caps.at(2));
+    QString txt = caps.at(3);
+
+    if (m_verboseMode)
+        printf(" -(lance) drawStaticText(%d, %d, %s)\n", x, y, qPrintable(txt));
+
+    m_painter->drawStaticText(x, y, QStaticText(txt));
 }
 
 /***************************************************************************************************/
@@ -2434,7 +2454,11 @@ void PaintCommands::command_gradient_setRadialExtended(QRegExp re)
                "focal radius=%.2f, spread=%d\n",
                cx, cy, rad, fx, fy, frad, m_gradientSpread);
 
+#if QT_VERSION >= 0x040800
     QRadialGradient rg(QPointF(cx, cy), rad, QPointF(fx, fy), frad);
+#else
+    QRadialGradient rg(QPointF(cx, cy), rad, QPointF(fx, fy));
+#endif
     rg.setStops(m_gradientStops);
     rg.setSpread(m_gradientSpread);
     rg.setCoordinateMode(m_gradientCoordinate);

@@ -230,8 +230,8 @@ void QDeclarativeFlickablePrivate::AxisData::addVelocitySample(qreal v, qreal ma
 
 void QDeclarativeFlickablePrivate::AxisData::updateVelocity()
 {
+    velocity = 0;
     if (velocityBuffer.count() > QML_FLICK_DISCARDSAMPLES) {
-        velocity = 0;
         int count = velocityBuffer.count()-QML_FLICK_DISCARDSAMPLES;
         for (int i = 0; i < count; ++i) {
             qreal v = velocityBuffer.at(i);
@@ -1399,7 +1399,7 @@ void QDeclarativeFlickable::setContentHeight(qreal h)
 /*!
     \qmlmethod Flickable::resizeContent(real width, real height, QPointF center)
     \preliminary
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Resizes the content to \a width x \a height about \a center.
 
@@ -1439,7 +1439,7 @@ void QDeclarativeFlickable::resizeContent(qreal w, qreal h, QPointF center)
 /*!
     \qmlmethod Flickable::returnToBounds()
     \preliminary
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Ensures the content is within legal bounds.
 

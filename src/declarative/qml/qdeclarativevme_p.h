@@ -58,6 +58,7 @@
 
 #include <QtCore/QString>
 #include <QtCore/QStack>
+#include <QtCore/QVarLengthArray>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,34 +68,7 @@ class QDeclarativeCompiledData;
 class QDeclarativeCompiledData;
 class QDeclarativeContextData;
 
-template<typename T, int N = 128>
-class QDeclarativeVMEStack {
-public:
-    QDeclarativeVMEStack() : index(-1), maxSize(N), data((T *)fixedData) {}
-    ~QDeclarativeVMEStack() { if (data != (T *)fixedData) qFree(data); }
-
-    bool isEmpty() const { return index == -1; }
-    const T &top() const { return data[index]; }
-    void push(const T &i) { ++index; if (index == maxSize) realloc(); data[index] = i; }
-    const T &pop() { --index; return data[index + 1]; }
-    int count() const { return index + 1; }
-    const T &at(int idx) { return data[idx]; }
-
-private:
-    void realloc() {
-        maxSize += N;
-        if (data != (T *)fixedData) {
-            data = (T*)qRealloc(data, maxSize * sizeof(T));
-        } else {
-            data = (T*)qMalloc(maxSize * sizeof(T));
-        }
-    }
-    int index;
-    int maxSize;
-    T *data;
-    char fixedData[N * sizeof(T)];
-};
-
+class QDeclarativeVMEObjectStack;
 class QDeclarativeVME
 {
 public:
@@ -109,7 +83,7 @@ public:
     QList<QDeclarativeError> errors() const;
 
 private:
-    QObject *run(QDeclarativeVMEStack<QObject *> &, 
+    QObject *run(QDeclarativeVMEObjectStack &, 
                  QDeclarativeContextData *, QDeclarativeCompiledData *, 
                  int start, int count, 
                  const QBitField &);

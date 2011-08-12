@@ -3272,14 +3272,14 @@ fi
 # process CFG_MAC_ARCHS
 if [ "$PLATFORM_MAC" = "yes" ]; then
 #   check -arch arguments for validity.
-    ALLOWED="x86 ppc x86_64 ppc64 i386"
+    ALLOWED="x86 ppc x86_64 ppc64 i386 arm armv6 armv7"
     # Save the list so we can re-write it using only valid values
     CFG_MAC_ARCHS_IN="$CFG_MAC_ARCHS"
     CFG_MAC_ARCHS=
     for i in $CFG_MAC_ARCHS_IN
     do 
         if echo "$ALLOWED" | grep -w -v "$i" > /dev/null 2>&1; then
-            echo "Unknown architecture: \"$i\". Supported architectures: x86[i386] ppc x86_64 ppc64";
+            echo "Unknown architecture: \"$i\". Supported architectures: x86[i386] ppc x86_64 ppc64 arm armv6 armv7";
             exit 2;
         fi
         if [ "$i" = "i386" -o "$i" = "x86" ]; then
@@ -4885,7 +4885,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             done
         fi
         if [ "$BUILD_ON_MAC" = "yes" ]; then
-            echo "export MACOSX_DEPLOYMENT_TARGET = 10.4" >> "$mkfile"
+            echo "export MACOSX_DEPLOYMENT_TARGET = 10.5" >> "$mkfile"
             echo "CARBON_LFLAGS =-framework ApplicationServices" >>"$mkfile"
             echo "CARBON_CFLAGS =-fconstant-cfstrings" >>"$mkfile"
             EXTRA_LFLAGS="$EXTRA_LFLAGS \$(CARBON_LFLAGS)"
@@ -5108,6 +5108,19 @@ if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
             echo "Testing your compiler failed. Could not compile a simple application."
             echo "Fatal error; Rerun configure with -verbose to get more details."
             exit 1;
+        fi
+    fi
+fi
+
+# check IPC support
+if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipc_sysv "ipc_sysv" $L_FLAGS $I_FLAGS $l_FLAGS ; then
+    # SYSV IPC is not supported - check POSIX IPC
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipc_posix "ipc_posix" $L_FLAGS $I_FLAGS $l_FLAGS ; then
+        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_POSIX_IPC"
+    else
+        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SYSTEMSEMAPHORE QT_NO_SHAREDMEMORY"
+        if [ "$PLATFORM_QWS" = "yes" ]; then
+            QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SEMAPHORE QT_NO_QWS_MULTIPROCESS QT_NO_QWS_SHARE_FONTS"
         fi
     fi
 fi
@@ -7588,7 +7601,7 @@ fi
 
 if [ "$CFG_WEBKIT" != "no" ]; then
     # This include takes care of adding "webkit" to QT_CONFIG.
-    cp -f "$relpath/src/3rdparty/webkit/WebKit/qt/qt_webkit_version.pri" "$outpath/mkspecs/modules/qt_webkit_version.pri"
+    cp -f "$relpath/src/3rdparty/webkit/Source/WebKit/qt/qt_webkit_version.pri" "$outpath/mkspecs/modules/qt_webkit_version.pri"
     # The reason we set CFG_WEBKIT, is such that the printed overview of what will be enabled, shows correctly.
     if [ "$CFG_WEBKIT" = "debug" ]; then
         QMAKE_CONFIG="$QMAKE_CONFIG webkit-debug"

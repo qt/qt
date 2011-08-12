@@ -151,6 +151,11 @@ QT_BEGIN_NAMESPACE
   creates a new semaphore for that key and sets its resource count to
   \a initialValue.
 
+  In QNX, if the \a mode is \l {QSystemSemaphore::} {Create} and the
+  system already has a semaphore identified by \a key, that semaphore
+  will be deleted and the new one will be created for that key with
+  a resource count set to \a initialValue.
+
   In Windows and in Symbian, \a mode is ignored, and the system always tries to
   create a semaphore for the specified \a key. If the system does not
   already have a semaphore identified as \a key, it creates the
@@ -234,7 +239,7 @@ void QSystemSemaphore::setKey(const QString &key, int initialValue, AccessMode m
         return;
     d->error = NoError;
     d->errorString = QString();
-#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN) && !defined(QT_POSIX_IPC)
     // optimization to not destroy/create the file & semaphore
     if (key == d->key && mode == Create && d->createdSemaphore && d->createdFile) {
         d->initialValue = initialValue;

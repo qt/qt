@@ -33,7 +33,7 @@
 
 
 Qt includes a set of examples and demos that show how to use various aspects
-of QML. The examples are small demonstrations of particular QML components, 
+of QML. The examples are small demonstrations of particular QML components,
 while the demos contain more complete and functional applications.
 
 To run the examples and demos, open them in Qt Creator or use the included
@@ -60,43 +60,43 @@ can be used to produce sophisticated interfaces and applications:
 \table
 \row
 
-\o 
+\o
 \l{demos/declarative/calculator}{Calculator}
 \image qml-calculator-example-small.png
 
-\o 
+\o
 \l{demos/declarative/flickr}{Flickr Mobile}
 \image qml-flickr-demo-small.png
 
-\o 
+\o
 \l{demos/declarative/minehunt}{Minehunt}
 \image qml-minehunt-demo-small.png
 
 \row
 
-\o 
+\o
 \l{demos/declarative/photoviewer}{Photo Viewer}
 \image qml-photoviewer-demo-small.png
 
-\o 
+\o
 \l{demos/declarative/rssnews}{RSS News Reader}
 \image qml-rssnews-demo-small.png
 
-\o 
+\o
 \l{demos/declarative/samegame}{Same Game}
 \image qml-samegame-demo-small.png
 
 \row
 
-\o 
+\o
 \l{demos/declarative/snake}{Snake}
 \image qml-snake-demo-small.png
 
-\o 
+\o
 \l{demos/declarative/twitter}{Twitter}
 \image qml-twitter-demo-small.png
 
-\o 
+\o
 \l{demos/declarative/webbrowser}{Web Browser}
 \image qml-webbrowser-demo-small.png
 
@@ -109,7 +109,7 @@ The demos can be found in Qt's \c demos/declarative directory.
 
 The QML examples are small, simple applications that show how to use a particular
 QML component or feature. If you are new
-to QML, you may also find the \l{QML Tutorial}{Hello World} and 
+to QML, you may also find the \l{QML Tutorial}{Hello World} and
 \l {QML Advanced Tutorial}{Same Game} tutorials useful.
 
 The examples can be found in Qt's \c examples/declarative directory.
@@ -234,6 +234,7 @@ The examples can be found in Qt's \c examples/declarative directory.
 
 \list
 \o \l{src/imports/folderlistmodel}{Folder List Model} - a C++ model plugin
+\o \l{declarative/shadereffects}{Shader Effects}
 \endlist
 
 */

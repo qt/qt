@@ -52,6 +52,11 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \since 4.8
+
+    Returns an OpenGL format for the platform window format specified by \a format.
+*/
 QGLFormat QGLFormat::fromPlatformWindowFormat(const QPlatformWindowFormat &format)
 {
     QGLFormat retFormat;
@@ -83,6 +88,11 @@ QGLFormat QGLFormat::fromPlatformWindowFormat(const QPlatformWindowFormat &forma
     return retFormat;
 }
 
+/*!
+    \since 4.8
+
+    Returns a platform window format for the OpenGL format specified by \a format.
+*/
 QPlatformWindowFormat QGLFormat::toPlatformWindowFormat(const QGLFormat &format)
 {
     QPlatformWindowFormat retFormat;
@@ -150,6 +160,8 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
             if (shareContext) {
                 winFormat.setSharedContext(shareContext->d_func()->platformContext);
             }
+            if (widget->testAttribute(Qt::WA_TranslucentBackground))
+                winFormat.setAlpha(true);
             winFormat.setWindowApi(QPlatformWindowFormat::OpenGL);
             winFormat.setWindowSurface(false);
             widget->setPlatformWindowFormat(winFormat);
@@ -378,6 +390,12 @@ QGLContext::QGLContext(QPlatformGLContext *platformContext)
     d->setupSharing();
 }
 
+/*!
+    \since 4.8
+
+    Returns a OpenGL context for the platform-specific OpenGL context given by
+    \a platformContext.
+*/
 QGLContext *QGLContext::fromPlatformGLContext(QPlatformGLContext *platformContext)
 {
     if (!platformContext)

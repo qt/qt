@@ -48,16 +48,13 @@
 
 #ifdef Q_WS_S60
 #include "private/qsoftkeymanager_s60_p.h"
-#endif
-
-#ifdef SYMBIAN_VERSION_SYMBIAN3
 #include "private/qt_s60_p.h"
 #endif
 
 #ifndef QT_NO_SOFTKEYMANAGER
 QT_BEGIN_NAMESPACE
 
-QSoftKeyManager *QSoftKeyManagerPrivate::self = 0;
+QScopedPointer<QSoftKeyManager> QSoftKeyManagerPrivate::self(0);
 
 QString QSoftKeyManager::standardSoftKeyText(StandardSoftKey standardKey)
 {
@@ -88,9 +85,9 @@ QString QSoftKeyManager::standardSoftKeyText(StandardSoftKey standardKey)
 QSoftKeyManager *QSoftKeyManager::instance()
 {
     if (!QSoftKeyManagerPrivate::self)
-        QSoftKeyManagerPrivate::self = new QSoftKeyManager;
+        QSoftKeyManagerPrivate::self.reset(new QSoftKeyManager);
 
-    return QSoftKeyManagerPrivate::self;
+    return QSoftKeyManagerPrivate::self.data();
 }
 
 QSoftKeyManager::QSoftKeyManager() :
@@ -105,7 +102,7 @@ QSoftKeyManager::QSoftKeyManager() :
 QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *actionWidget)
 {
     QAction *action = new QAction(standardSoftKeyText(standardKey), actionWidget);
-#ifdef SYMBIAN_VERSION_SYMBIAN3
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
     int key = 0;
     switch (standardKey) {
     case OkSoftKey:
@@ -171,7 +168,7 @@ void QSoftKeyManager::cleanupHash(QObject *obj)
     Q_D(QSoftKeyManager);
     QAction *action = qobject_cast<QAction*>(obj);
     d->keyedActions.remove(action);
-#ifdef SYMBIAN_VERSION_SYMBIAN3
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
     d->softKeyCommandActions.remove(action);
 #endif
 }
@@ -193,6 +190,11 @@ void QSoftKeyManager::sendKeyEvent()
 
 void QSoftKeyManager::updateSoftKeys()
 {
+#ifdef Q_WS_S60
+    // Do not adjust softkeys if application is not the topmost one
+    if (S60->wsSession().GetFocusWindowGroup() != S60->windowGroup().WindowGroupId())
+        return;
+#endif
     QSoftKeyManager::instance()->d_func()->pendingUpdate = true;
     QEvent *event = new QEvent(QEvent::UpdateSoftKeys);
     QApplication::postEvent(QSoftKeyManager::instance(), event);

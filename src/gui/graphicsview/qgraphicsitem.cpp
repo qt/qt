@@ -3297,7 +3297,7 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     }
 
     if (climb) {
-        while (f->d_ptr->focusScopeItem && f->d_ptr->focusScopeItem->isVisible())
+        while (f->d_ptr->focusScopeItem && f->d_ptr->focusScopeItem->isVisible() && f->d_ptr->focusScopeItem != f)
             f = f->d_ptr->focusScopeItem;
     }
 
@@ -7395,15 +7395,19 @@ void QGraphicsItem::updateMicroFocus()
     if (QWidget *fw = QApplication::focusWidget()) {
         if (scene()) {
             for (int i = 0 ; i < scene()->views().count() ; ++i) {
-                if (scene()->views().at(i) == fw)
-                    if (QInputContext *inputContext = fw->inputContext())
+                if (scene()->views().at(i) == fw) {
+                    if (QInputContext *inputContext = fw->inputContext()) {
                         inputContext->update();
+#ifndef QT_NO_ACCESSIBILITY
+                        // ##### is this correct
+                        if (toGraphicsObject())
+                            QAccessible::updateAccessibility(toGraphicsObject(), 0, QAccessible::StateChanged);
+#endif
+                        break;
+                    }
+                }
             }
         }
-#ifndef QT_NO_ACCESSIBILITY
-        // ##### is this correct
-        QAccessible::updateAccessibility(fw, 0, QAccessible::StateChanged);
-#endif
     }
 #endif
 }

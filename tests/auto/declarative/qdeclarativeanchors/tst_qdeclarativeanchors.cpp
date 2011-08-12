@@ -58,7 +58,6 @@
 Q_DECLARE_METATYPE(QDeclarativeAnchors::Anchor)
 Q_DECLARE_METATYPE(QDeclarativeAnchorLine::AnchorLine)
 
-
 class tst_qdeclarativeanchors : public QObject
 {
     Q_OBJECT
@@ -291,7 +290,7 @@ void tst_qdeclarativeanchors::basicAnchorsRTL()
 
     QDeclarativeItem* rootItem = qobject_cast<QDeclarativeItem*>(view->rootObject());
     foreach(QObject *child, rootItem->children()) {
-        bool mirrored = QDeclarativeItemPrivate::get(qobject_cast<QDeclarativeItem*>(child))->anchors()->property("mirrored").toBool();
+        bool mirrored = QDeclarativeItemPrivate::get(qobject_cast<QDeclarativeItem*>(child))->anchors()->mirrored();
         QCOMPARE(mirrored, false);
     }
 
@@ -299,7 +298,7 @@ void tst_qdeclarativeanchors::basicAnchorsRTL()
         mirrorAnchors(qobject_cast<QDeclarativeItem*>(child));
 
     foreach(QObject *child, rootItem->children()) {
-        bool mirrored = QDeclarativeItemPrivate::get(qobject_cast<QDeclarativeItem*>(child))->anchors()->property("mirrored").toBool();
+        bool mirrored = QDeclarativeItemPrivate::get(qobject_cast<QDeclarativeItem*>(child))->anchors()->mirrored();
         QCOMPARE(mirrored, true);
     }
 
