@@ -121,7 +121,7 @@ static inline bool isBreakable(Q3TextString *string, int pos)
 {
     if (string->at(pos).nobreak)
         return false;
-    return (pos < string->length()-1 && string->at(pos+1).softBreak);
+    return (pos+1 < string->length() && string->at(pos+1).softBreak);
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

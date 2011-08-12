@@ -3531,9 +3531,9 @@ void Q3ListBox::refreshSlot()
     int col = columnAt(x);
     int row = rowAt(y);
     int top = row;
-    while(col < (int)d->columnPos.size()-1 && d->columnPos[col+1] < x)
+    while(col+1 < (int)d->columnPos.size() && d->columnPos[col+1] < x)
         col++;
-    while(top < (int)d->rowPos.size()-1 && d->rowPos[top+1] < y)
+    while(top+1 < (int)d->rowPos.size() && d->rowPos[top+1] < y)
         top++;
     Q3ListBoxItem * i = item(col * numRows() + row);
 
@@ -3684,7 +3684,7 @@ int Q3ListBox::columnAt(int x) const
         return numColumns() - 1;
 
     int col = 0;
-    while(col < (int)d->columnPos.size()-1 && d->columnPos[col+1] < x)
+    while(col+1 < (int)d->columnPos.size() && d->columnPos[col+1] < x)
         col++;
     return col;
 }

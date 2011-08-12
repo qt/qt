@@ -233,7 +233,7 @@ bool QScriptDebuggerCodeView::event(QEvent *e)
             return false;
         }
         int pos2 = linePosition - 1;
-        while ((pos2 < contents.size()-1) && isIdentChar(contents.at(pos2+1)))
+        while ((pos2+1 < contents.size()) && isIdentChar(contents.at(pos2+1)))
             ++pos2;
         QString ident = contents.mid(pos, pos2 - pos + 1);
 
