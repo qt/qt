@@ -501,8 +501,6 @@ QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QIODevice *dev
 }
 
 /*!
-    \fn static QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QRingBuffer *ringBuffer);
-
     Create a QNonContiguousByteDevice out of a QRingBuffer.
 
     \internal
