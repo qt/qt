@@ -420,7 +420,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngHeader()
         return false;
     }
 
-    if (setjmp(png_jmpbuf(png_ptr))) {
+    if (setjmp((*png_set_longjmp_fn((png_ptr), (png_longjmp_ptr)longjmp, sizeof(jmp_buf))))) {
         png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
         png_ptr = 0;
         return false;
@@ -449,7 +449,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
     }
 
     row_pointers = 0;
-    if (setjmp(png_jmpbuf(png_ptr))) {
+    if (setjmp((*png_set_longjmp_fn((png_ptr), (png_longjmp_ptr)longjmp, sizeof(jmp_buf))))) {
         png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
         delete [] row_pointers;
         png_ptr = 0;
@@ -723,7 +723,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image, in
         return false;
     }
 
-    if (setjmp(png_jmpbuf(png_ptr))) {
+    if (setjmp((*png_set_longjmp_fn((png_ptr), (png_longjmp_ptr)longjmp, sizeof(jmp_buf))))) {
         png_destroy_write_struct(&png_ptr, &info_ptr);
         return false;
     }
