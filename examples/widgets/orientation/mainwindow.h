@@ -41,12 +41,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QWidget>
+#include <QAbstractButton>
 
 #include "ui_landscape.h"
 #include "ui_portrait.h"
-
-class QAbstractButton;
 
 //! [0]
 class MainWindow : public QWidget

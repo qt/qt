@@ -46,8 +46,10 @@
 #include <QTableView>
 #include <QWebPluginFactory>
 
+QT_BEGIN_NAMESPACE
 class QNetworkAccessManager;
 class QNetworkReply;
+QT_END_NAMESPACE
 class QWebFrame;
 
 //! [definition]

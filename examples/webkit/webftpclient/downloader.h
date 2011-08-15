@@ -46,10 +46,12 @@
 #include <QObject>
 #include <QUrl>
 
+QT_BEGIN_NAMESPACE
 class QNetworkAccessManager;
 class QNetworkRequest;
 class QNetworkReply;
 class QWidget;
+QT_END_NAMESPACE
 
 class Downloader : public QObject
 {
