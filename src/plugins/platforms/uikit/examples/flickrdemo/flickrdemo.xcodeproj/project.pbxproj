@@ -17,13 +17,14 @@
 		D307DEB213EBCF5500399BD4 /* libQtOpenGL.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D307DEA913EBCF5500399BD4 /* libQtOpenGL.a */; };
 		D307DEB313EBCF5500399BD4 /* libQtScript.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D307DEAA13EBCF5500399BD4 /* libQtScript.a */; };
 		D307DEB413EBCF5500399BD4 /* libQtSql.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D307DEAB13EBCF5500399BD4 /* libQtSql.a */; };
-		D307DEB513EBCF5500399BD4 /* libQtXml.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D307DEAC13EBCF5500399BD4 /* libQtXml.a */; };
 		D307DEB613EBCF5500399BD4 /* libQtXmlPatterns.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D307DEAD13EBCF5500399BD4 /* libQtXmlPatterns.a */; };
 		D307DEB813EBCF6400399BD4 /* libquikit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D307DEB713EBCF6400399BD4 /* libquikit.a */; };
 		D333CCF213B88A4D0070E08E /* moc_qmlapplicationviewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D333CCEF13B88A4D0070E08E /* moc_qmlapplicationviewer.cpp */; };
 		D333CCF313B88A4D0070E08E /* moc_qmlapplicationviewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D333CCEF13B88A4D0070E08E /* moc_qmlapplicationviewer.cpp */; };
 		D333CCF413B88A4D0070E08E /* qmlapplicationviewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D333CCF013B88A4D0070E08E /* qmlapplicationviewer.cpp */; };
 		D333CCF513B88A4D0070E08E /* qmlapplicationviewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D333CCF013B88A4D0070E08E /* qmlapplicationviewer.cpp */; };
+		D36D346513F3CD7E00EC5A41 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D36D346413F3CD7E00EC5A41 /* CoreText.framework */; };
+		D36D346613F3CD8800EC5A41 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D36D346413F3CD7E00EC5A41 /* CoreText.framework */; };
 		D3A51610134B03DE00E30E2F /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D3A5160F134B03DE00E30E2F /* OpenGLES.framework */; };
 		D3A51612134B03E900E30E2F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D3A51611134B03E900E30E2F /* QuartzCore.framework */; };
 		D3A51615134B041500E30E2F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D3A51611134B03E900E30E2F /* QuartzCore.framework */; };
@@ -46,7 +47,6 @@
 		D3D8175B132A184300CDE422 /* libQtNetwork.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D81755132A184300CDE422 /* libQtNetwork.a */; };
 		D3D8175C132A184300CDE422 /* libQtScript.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D81756132A184300CDE422 /* libQtScript.a */; };
 		D3D8175D132A184300CDE422 /* libQtSql.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D81757132A184300CDE422 /* libQtSql.a */; };
-		D3D81760132A185A00CDE422 /* libQtXml.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D8175E132A185A00CDE422 /* libQtXml.a */; };
 		D3D81761132A185A00CDE422 /* libQtXmlPatterns.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D8175F132A185A00CDE422 /* libQtXmlPatterns.a */; };
 		D3D81763132A186B00CDE422 /* libquikit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D81762132A186B00CDE422 /* libquikit.a */; };
 /* End PBXBuildFile section */
@@ -65,12 +65,12 @@
 		D307DEA913EBCF5500399BD4 /* libQtOpenGL.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtOpenGL.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtOpenGL.a"; sourceTree = "<group>"; };
 		D307DEAA13EBCF5500399BD4 /* libQtScript.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtScript.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtScript.a"; sourceTree = "<group>"; };
 		D307DEAB13EBCF5500399BD4 /* libQtSql.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtSql.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtSql.a"; sourceTree = "<group>"; };
-		D307DEAC13EBCF5500399BD4 /* libQtXml.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtXml.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtXml.a"; sourceTree = "<group>"; };
 		D307DEAD13EBCF5500399BD4 /* libQtXmlPatterns.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtXmlPatterns.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtXmlPatterns.a"; sourceTree = "<group>"; };
 		D307DEB713EBCF6400399BD4 /* libquikit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquikit.a; path = "../../../../../../../qt-lighthouse-ios-simulator/plugins/platforms/libquikit.a"; sourceTree = "<group>"; };
 		D333CCEF13B88A4D0070E08E /* moc_qmlapplicationviewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = moc_qmlapplicationviewer.cpp; path = ../share/qmlapplicationviewer/moc_qmlapplicationviewer.cpp; sourceTree = "<group>"; };
 		D333CCF013B88A4D0070E08E /* qmlapplicationviewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = qmlapplicationviewer.cpp; path = ../share/qmlapplicationviewer/qmlapplicationviewer.cpp; sourceTree = "<group>"; };
 		D333CCF113B88A4D0070E08E /* qmlapplicationviewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qmlapplicationviewer.h; path = ../share/qmlapplicationviewer/qmlapplicationviewer.h; sourceTree = "<group>"; };
+		D36D346413F3CD7E00EC5A41 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		D3A5160F134B03DE00E30E2F /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		D3A51611134B03E900E30E2F /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		D3A51617134B042A00E30E2F /* libQtOpenGL.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtOpenGL.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtOpenGL.a"; sourceTree = "<group>"; };
@@ -85,7 +85,6 @@
 		D3D81755132A184300CDE422 /* libQtNetwork.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtNetwork.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtNetwork.a"; sourceTree = SOURCE_ROOT; };
 		D3D81756132A184300CDE422 /* libQtScript.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtScript.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtScript.a"; sourceTree = SOURCE_ROOT; };
 		D3D81757132A184300CDE422 /* libQtSql.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtSql.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtSql.a"; sourceTree = SOURCE_ROOT; };
-		D3D8175E132A185A00CDE422 /* libQtXml.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtXml.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtXml.a"; sourceTree = SOURCE_ROOT; };
 		D3D8175F132A185A00CDE422 /* libQtXmlPatterns.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtXmlPatterns.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtXmlPatterns.a"; sourceTree = SOURCE_ROOT; };
 		D3D81762132A186B00CDE422 /* libquikit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquikit.a; path = "../../../../../../../qt-lighthouse-ios-device/plugins/platforms/libquikit.a"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -95,6 +94,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D36D346613F3CD8800EC5A41 /* CoreText.framework in Frameworks */,
 				D3A51612134B03E900E30E2F /* QuartzCore.framework in Frameworks */,
 				D3A51610134B03DE00E30E2F /* OpenGLES.framework in Frameworks */,
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
@@ -108,7 +108,6 @@
 				D307DEB213EBCF5500399BD4 /* libQtOpenGL.a in Frameworks */,
 				D307DEB313EBCF5500399BD4 /* libQtScript.a in Frameworks */,
 				D307DEB413EBCF5500399BD4 /* libQtSql.a in Frameworks */,
-				D307DEB513EBCF5500399BD4 /* libQtXml.a in Frameworks */,
 				D307DEB613EBCF5500399BD4 /* libQtXmlPatterns.a in Frameworks */,
 				D307DEB813EBCF6400399BD4 /* libquikit.a in Frameworks */,
 			);
@@ -118,6 +117,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D36D346513F3CD7E00EC5A41 /* CoreText.framework in Frameworks */,
 				D3A51618134B042A00E30E2F /* libQtOpenGL.a in Frameworks */,
 				D3CAA7F013264F52008BB877 /* Foundation.framework in Frameworks */,
 				D3CAA7F113264F52008BB877 /* UIKit.framework in Frameworks */,
@@ -131,7 +131,6 @@
 				D3D8175B132A184300CDE422 /* libQtNetwork.a in Frameworks */,
 				D3D8175C132A184300CDE422 /* libQtScript.a in Frameworks */,
 				D3D8175D132A184300CDE422 /* libQtSql.a in Frameworks */,
-				D3D81760132A185A00CDE422 /* libQtXml.a in Frameworks */,
 				D3D81761132A185A00CDE422 /* libQtXmlPatterns.a in Frameworks */,
 				D3D81763132A186B00CDE422 /* libquikit.a in Frameworks */,
 			);
@@ -190,6 +189,7 @@
 				288765A40DF7441C002DB57D /* CoreGraphics.framework */,
 				D3A51611134B03E900E30E2F /* QuartzCore.framework */,
 				D3A5160F134B03DE00E30E2F /* OpenGLES.framework */,
+				D36D346413F3CD7E00EC5A41 /* CoreText.framework */,
 				D3CAA7F913264F8A008BB877 /* libz.1.2.3.dylib */,
 			);
 			name = Frameworks;
@@ -216,7 +216,6 @@
 				D3A51617134B042A00E30E2F /* libQtOpenGL.a */,
 				D3D81756132A184300CDE422 /* libQtScript.a */,
 				D3D81757132A184300CDE422 /* libQtSql.a */,
-				D3D8175E132A185A00CDE422 /* libQtXml.a */,
 				D3D8175F132A185A00CDE422 /* libQtXmlPatterns.a */,
 			);
 			name = Device;
@@ -233,7 +232,6 @@
 				D307DEA913EBCF5500399BD4 /* libQtOpenGL.a */,
 				D307DEAA13EBCF5500399BD4 /* libQtScript.a */,
 				D307DEAB13EBCF5500399BD4 /* libQtSql.a */,
-				D307DEAC13EBCF5500399BD4 /* libQtXml.a */,
 				D307DEAD13EBCF5500399BD4 /* libQtXmlPatterns.a */,
 			);
 			name = Simulator;
