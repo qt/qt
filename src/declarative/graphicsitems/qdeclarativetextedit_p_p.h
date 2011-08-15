@@ -77,7 +77,7 @@ public:
       yoff(0)
     {
 #ifdef Q_OS_SYMBIAN
-        if (QSysInfo::symbianVersion() == QSysInfo::SV_SF_1 || QSysInfo::symbianVersion() == QSysInfo::SV_SF_3) {
+        if (QSysInfo::symbianVersion() >= QSysInfo::SV_SF_1) {
             showInputPanelOnFocus = false;
         }
 #endif

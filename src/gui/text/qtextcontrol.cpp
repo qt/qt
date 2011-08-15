@@ -1665,8 +1665,10 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
 #endif //QT_NO_IM
     } else {
         //emit q->visibilityRequest(QRectF(mousePos, QSizeF(1, 1)));
-        if (cursor.position() != oldCursorPos)
+        if (cursor.position() != oldCursorPos) {
             emit q->cursorPositionChanged();
+            emit q->microFocusChanged();
+        }
     }
     selectionChanged(true);
     repaintOldAndNewSelection(oldSelection);
@@ -1710,8 +1712,10 @@ void QTextControlPrivate::mouseReleaseEvent(QEvent *e, Qt::MouseButton button, c
 
     repaintOldAndNewSelection(oldSelection);
 
-    if (cursor.position() != oldCursorPos)
+    if (cursor.position() != oldCursorPos) {
         emit q->cursorPositionChanged();
+        emit q->microFocusChanged();
+    }
 
     if (interactionFlags & Qt::LinksAccessibleByMouse) {
         if (!(button & Qt::LeftButton))

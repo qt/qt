@@ -2,7 +2,7 @@
 #if 0 /* in case someone actually tries to compile this */
 
 /* example.c - an example of using libpng
- * Last changed in libpng 1.5.0 [January 6, 2011]
+ * Last changed in libpng 1.5.4 [July 7, 2011]
  * This file has been placed in the public domain by the authors.
  * Maintained 1998-2011 Glenn Randers-Pehrson
  * Maintained 1996, 1997 Andreas Dilger)
@@ -21,6 +21,10 @@
  * working PNG reader/writer, see pngtest.c, included in this distribution;
  * see also the programs in the contrib directory.
  */
+
+#define _POSIX_SOURCE 1  /* libpng and zlib are POSIX-compliant.  You may
+                          * change this if your application uses non-POSIX
+                          * extensions. */
 
 #include "png.h"
 
@@ -183,8 +187,15 @@ void read_png(FILE *fp, unsigned int sig_read)  /* File is already open */
     * are mutually exclusive.
     */
 
-   /* Tell libpng to strip 16 bit/color files down to 8 bits/color */
+   /* Tell libpng to strip 16 bit/color files down to 8 bits/color.
+    * Use accurate scaling if it's available, otherwise just chop off the
+    * low byte.
+    */
+#ifdef PNG_READ_SCALE_16_TO_8_SUPPORTED
+    png_set_scale_16(png_ptr);
+#else
    png_set_strip_16(png_ptr);
+#endif
 
    /* Strip alpha bytes from the input data without combining with the
     * background (not recommended).
