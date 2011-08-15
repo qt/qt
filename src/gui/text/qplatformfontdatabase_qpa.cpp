@@ -160,6 +160,9 @@ QSupportedWritingSystems::QSupportedWritingSystems(const QSupportedWritingSystem
     d->ref.ref();
 }
 
+/*!
+    Assigns the \a other supported writing systems object to this object.
+*/
 QSupportedWritingSystems &QSupportedWritingSystems::operator=(const QSupportedWritingSystems &other)
 {
     if (d != other.d) {
@@ -171,6 +174,9 @@ QSupportedWritingSystems &QSupportedWritingSystems::operator=(const QSupportedWr
     return *this;
 }
 
+/*!
+    Destroys the object.
+*/
 QSupportedWritingSystems::~QSupportedWritingSystems()
 {
     if (!d->ref.deref())
@@ -187,12 +193,26 @@ void QSupportedWritingSystems::detach()
     }
 }
 
+/*!
+    Sets the supported state of the writing system given by \a writingSystem to
+    the value specified by \a support. A value of true indicates that the
+    writing system is supported; a value of false indicates that it is
+    unsupported.
+
+    \sa supported()
+*/
 void QSupportedWritingSystems::setSupported(QFontDatabase::WritingSystem writingSystem, bool support)
 {
     detach();
     d->vector[writingSystem] = support;
 }
 
+/*!
+    Returns true if the writing system given by \a writingSystem is supported;
+    otherwise returns false.
+
+    \sa setSupported()
+*/
 bool QSupportedWritingSystems::supported(QFontDatabase::WritingSystem writingSystem) const
 {
     return d->vector.at(writingSystem);
@@ -295,7 +315,7 @@ QStringList QPlatformFontDatabase::addApplicationFont(const QByteArray &fontData
 }
 
 /*!
-
+    Releases the font handle and deletes any associated data loaded from a file.
 */
 void QPlatformFontDatabase::releaseHandle(void *handle)
 {
@@ -304,7 +324,13 @@ void QPlatformFontDatabase::releaseHandle(void *handle)
 }
 
 /*!
+    Returns the path to the font directory.
 
+    The font directory is stored in the general Qt settings unless it has been
+    overridden by the \c QT_QPA_FONTDIR environment variable.
+
+    When using builds of Qt that do not support settings, the \c QT_QPA_FONTDIR
+    environment variable is the only way to specify the font directory.
 */
 QString QPlatformFontDatabase::fontDir() const
 {

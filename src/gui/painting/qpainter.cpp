@@ -5792,16 +5792,19 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
     d->engine->drawImage(QRectF(x, y, w, h), image, QRectF(sx, sy, sw, sh), flags);
 }
 
+#if !defined(QT_NO_RAWFONT)
 /*!
-    Draws the glyphs represented by \a glyphs at \a position. The \a position gives the
-    edge of the baseline for the string of glyphs. The glyphs will be retrieved from the font
-    selected on \a glyphs and at offsets given by the positions in \a glyphs.
+    \fn void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphs)
+
+    Draws the specified \a glyphs at the given \a position.
+    The \a position gives the edge of the baseline for the string of glyphs.
+    The glyphs will be retrieved from the font selected by \a glyphs and at
+    offsets given by the positions in \a glyphs.
 
     \since 4.8
 
     \sa QGlyphRun::setRawFont(), QGlyphRun::setPositions(), QGlyphRun::setGlyphIndexes()
 */
-#if !defined(QT_NO_RAWFONT)
 void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
 {
     Q_D(QPainter);
@@ -9251,9 +9254,9 @@ void QPainter::drawPixmapFragments(const PixmapFragment *fragments, int fragment
     \since 4.8
 
     This function is used to draw the same \a pixmap with multiple target
-    and source rectangles. If \a sourceRects is 0, the whole pixmap will be
-    rendered at each of the target rectangles. The \a hints parameter can be
-    used to pass in drawing hints.
+    and source rectangles specified by \a targetRects. If \a sourceRects is 0,
+    the whole pixmap will be rendered at each of the target rectangles.
+    The \a hints parameter can be used to pass in drawing hints.
 
     This function is potentially faster than multiple calls to drawPixmap(),
     since the backend can optimize state changes.

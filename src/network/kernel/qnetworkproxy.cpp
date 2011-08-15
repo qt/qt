@@ -1197,6 +1197,11 @@ void QNetworkProxyQuery::setUrl(const QUrl &url)
 }
 
 #ifndef QT_NO_BEARERMANAGEMENT
+/*!
+    Returns the network configuration of the proxy query.
+
+    \sa setNetworkConfiguration()
+*/
 QNetworkConfiguration QNetworkProxyQuery::networkConfiguration() const
 {
     return d ? d->config : QNetworkConfiguration();
@@ -1214,7 +1219,7 @@ QNetworkConfiguration QNetworkProxyQuery::networkConfiguration() const
     you should first start the QNetworkSession and obtain the active
     configuration from its properties.
 
-    \sa networkConfiguration
+    \sa networkConfiguration()
 */
 void QNetworkProxyQuery::setNetworkConfiguration(const QNetworkConfiguration &networkConfiguration)
 {
