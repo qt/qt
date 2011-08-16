@@ -283,7 +283,7 @@ private:
     bool findNamespaceCallback(const Namespace *ns, void *context) const;
     const Namespace *findNamespace(const NamespaceList &namespaces, int nsCount = -1) const;
     void enterNamespace(NamespaceList *namespaces, const HashString &name);
-    void truncateNamespaces(NamespaceList *namespaces, int lenght);
+    void truncateNamespaces(NamespaceList *namespaces, int length);
     Namespace *modifyNamespace(NamespaceList *namespaces, bool haveLast = true);
 
     enum {

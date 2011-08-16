@@ -283,7 +283,7 @@ void QOpenKODEWindow::processKeyEvents(const KDEvent *event)
     QEvent::Type keyPressed = QEvent::KeyRelease;
     if (event->data.keyboardInputKey.flags)
         keyPressed = QEvent::KeyPress;
-//KD_KEY_LOCATION_LEFT_ATX // dont care for now
+//KD_KEY_LOCATION_LEFT_ATX // don't care for now
 //KD_KEY_LOCATION_RIGHT_ATX
 //KD_KEY_LOCATION_NUMPAD_ATX
     Qt::KeyboardModifiers mod = Qt::NoModifier;

@@ -1625,7 +1625,7 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
         extra->staticContentsSize = data.crect.size();
     }
 
-#ifdef Q_WS_QPA //Dont even call q->p
+#ifdef Q_WS_QPA //Don't even call q->p
     QPaintEngine *engine = 0;
 #else
     QPaintEngine *engine = q->paintEngine();

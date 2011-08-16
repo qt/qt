@@ -231,7 +231,7 @@ void	ClockCycleCounter::compute_measure_time_total ()
 Name: compute_measure_time_lap
 Description:
 	Computes the duration of one stop_lap() call and store it. It will be used
-	later to get the real duration of the measured operation (by substracting
+	later to get the real duration of the measured operation (by subtracting
 	the measurement duration).
 Throws: Nothing
 ==============================================================================

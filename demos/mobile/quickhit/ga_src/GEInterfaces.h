@@ -57,7 +57,7 @@ namespace GE {
         virtual int pullAudio( AUDIO_SAMPLE_TYPE *target, int bufferLength ) = 0;
         virtual bool canBeDestroyed() { return false; }
 
-        IAudioSource *m_next;                // for listing, do not touch if you dont know what you are doing.
+        IAudioSource *m_next;                // for listing, do not touch if you don't know what you are doing.
     };
 
 
