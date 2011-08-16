@@ -540,6 +540,7 @@ int QTextDocumentPrivate::remove_block(int pos, int *blockFormat, int command, Q
 	int n = blocks.next(b);
 	Q_ASSERT((int)blocks.position(n) == pos + 1);
 	blocks.setSize(b, blocks.size(b) + blocks.size(n) - 1);
+        blocks.fragment(b)->userState = blocks.fragment(n)->userState;
 	b = n;
     }
     *blockFormat = blocks.fragment(b)->format;
