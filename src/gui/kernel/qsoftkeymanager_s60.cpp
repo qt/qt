@@ -117,7 +117,7 @@ void QSoftKeyManagerPrivateS60::ensureCbaVisibilityAndResponsiviness(CEikButtonG
 
 void QSoftKeyManagerPrivateS60::clearSoftkeys(CEikButtonGroupContainer &cba)
 {
-#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4) && !defined(SYMBIAN_VERSION_9_3) && !defined(SYMBIAN_VERSION_9_2)
     QT_TRAP_THROWING(
         //EAknSoftkeyEmpty is used, because using -1 adds softkeys without actions on Symbian3
         cba.SetCommandL(0, EAknSoftkeyEmpty, KNullDesC);
@@ -317,7 +317,7 @@ bool QSoftKeyManagerPrivateS60::setSoftkey(CEikButtonGroupContainer &cba,
         QString text = softkeyText(*action);
         TPtrC nativeText = qt_QString2TPtrC(text);
         int command = S60_COMMAND_START + position;
-#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4) && !defined(SYMBIAN_VERSION_9_3) && !defined(SYMBIAN_VERSION_9_2)
         if (softKeyCommandActions.contains(action))
             command = softKeyCommandActions.value(action);
 #endif

@@ -722,9 +722,9 @@ EXPORTS
 	?releaseNativeImageHandle@QGLPixmapData@@QAEXXZ @ 721 NONAME ; void QGLPixmapData::releaseNativeImageHandle(void)
 	?createFromNativeImageHandleProvider@QGLPixmapData@@QAEXXZ @ 722 NONAME ; void QGLPixmapData::createFromNativeImageHandleProvider(void)
 	?initFromNativeImageHandle@QGLPixmapData@@QAE_NPAXABVQString@@@Z @ 723 NONAME ; bool QGLPixmapData::initFromNativeImageHandle(void *, class QString const &)
-	?glVertexAttrib3f@QGLFunctions@@QAEXIMMM@Z @ 724 NONAME ; void QGLFunctions::glVertexAttrib3f(unsigned int, float, float, float)
-	?glVertexAttrib1fv@QGLFunctions@@QAEXIPBM@Z @ 725 NONAME ; void QGLFunctions::glVertexAttrib1fv(unsigned int, float const *)
-	?glIsBuffer@QGLFunctions@@QAEEI@Z @ 726 NONAME ; unsigned char QGLFunctions::glIsBuffer(unsigned int)
+	?platformExtension@QGLGraphicsSystem@@UAEPAVQGraphicsSystemEx@@XZ @ 724 NONAME ; class QGraphicsSystemEx * QGLGraphicsSystem::platformExtension(void)
+	?releaseCachedGpuResources@QGLGraphicsSystem@@UAEXXZ @ 725 NONAME ; void QGLGraphicsSystem::releaseCachedGpuResources(void)
+	?toVolatileImage@QGLPixmapData@@UBE?AVQVolatileImage@@XZ @ 726 NONAME ; class QVolatileImage QGLPixmapData::toVolatileImage(void) const
 	?glGetActiveAttrib@QGLFunctions@@QAEXIIHPAH0PAIPAD@Z @ 727 NONAME ; void QGLFunctions::glGetActiveAttrib(unsigned int, unsigned int, int, int *, int *, unsigned int *, char *)
 	?glBindFramebuffer@QGLFunctions@@QAEXII@Z @ 728 NONAME ; void QGLFunctions::glBindFramebuffer(unsigned int, unsigned int)
 	?glBufferData@QGLFunctions@@QAEXIHPBXI@Z @ 729 NONAME ; void QGLFunctions::glBufferData(unsigned int, int, void const *, unsigned int)
@@ -874,6 +874,6 @@ EXPORTS
 	?staticMetaObjectExtraData@QGraphicsShaderEffect@@0UQMetaObjectExtraData@@B @ 873 NONAME ; struct QMetaObjectExtraData const QGraphicsShaderEffect::staticMetaObjectExtraData
 	?staticMetaObjectExtraData@QGLEngineShaderManager@@0UQMetaObjectExtraData@@B @ 874 NONAME ; struct QMetaObjectExtraData const QGLEngineShaderManager::staticMetaObjectExtraData
 	?qt_static_metacall@QGLShaderProgram@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 875 NONAME ; void QGLShaderProgram::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?platformExtension@QGLGraphicsSystem@@UAEPAVQGraphicsSystemEx@@XZ @ 876 NONAME ; class QGraphicsSystemEx * QGLGraphicsSystem::platformExtension(void)
-	?releaseCachedGpuResources@QGLGraphicsSystem@@UAEXXZ @ 877 NONAME ; void QGLGraphicsSystem::releaseCachedGpuResources(void)
-	?toVolatileImage@QGLPixmapData@@UBE?AVQVolatileImage@@XZ @ 878 NONAME ; class QVolatileImage QGLPixmapData::toVolatileImage(void) const
+	?glVertexAttrib3f@QGLFunctions@@QAEXIMMM@Z @ 876 NONAME ; void QGLFunctions::glVertexAttrib3f(unsigned int, float, float, float)
+	?glVertexAttrib1fv@QGLFunctions@@QAEXIPBM@Z @ 877 NONAME ; void QGLFunctions::glVertexAttrib1fv(unsigned int, float const *)
+	?glIsBuffer@QGLFunctions@@QAEEI@Z @ 878 NONAME ; unsigned char QGLFunctions::glIsBuffer(unsigned int)

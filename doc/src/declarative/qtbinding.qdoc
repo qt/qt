@@ -511,11 +511,15 @@ the \l {Extending QML Functionalities using C++} reference documentation for
 more information.
 
 
-\section2 Using Enumeration Values as Signal Parameters
+\section2 Using Enumeration Values as Signal and Method Parameters
 
 C++ signals may pass enumeration values as signal parameters to QML, providing that the enumeration
 and the signal are declared within the same class, or that the enumeration value is one of those declared
 in the \l {Qt}{Qt Namespace}.
+
+Likewise, invokable C++ methods parameters may be enumeration values providing that the enumeration and
+the method are declared within the same class, or that the enumeration value is one of those declared in the
+\l {Qt}{Qt Namespace}.
 
 Additionally, if a C++ signal with an enum parameter should be connectable to a QML function using the
 \l{QML Signal and Handler Event System#Connecting Signals to Methods and Signals}{connect()}

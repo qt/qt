@@ -55,16 +55,30 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
+#include <private/qdeclarativedata_p.h>
 
 QT_BEGIN_NAMESPACE
 
+class QDeclarativeGuardImpl 
+{
+public:
+    inline QDeclarativeGuardImpl();
+    inline QDeclarativeGuardImpl(QObject *);
+    inline QDeclarativeGuardImpl(const QDeclarativeGuardImpl &);
+    inline ~QDeclarativeGuardImpl();
+
+    QObject *o;
+    QDeclarativeGuardImpl  *next;
+    QDeclarativeGuardImpl **prev;
+
+    inline void addGuard();
+    inline void remGuard();
+};
+
 class QObject;
 template<class T>
-class QDeclarativeGuard
+class QDeclarativeGuard : private QDeclarativeGuardImpl
 {
-    QObject *o;
-    QDeclarativeGuard<QObject> *next;
-    QDeclarativeGuard<QObject> **prev;
     friend class QDeclarativeData;
 public:
     inline QDeclarativeGuard();
@@ -74,6 +88,9 @@ public:
 
     inline QDeclarativeGuard<T> &operator=(const QDeclarativeGuard<T> &o);
     inline QDeclarativeGuard<T> &operator=(T *);
+
+    inline T *object() const;
+    inline void setObject(T *g);
     
     inline bool isNull() const
         { return !o; }
@@ -89,69 +106,109 @@ public:
 
 protected:
     virtual void objectDestroyed(T *) {}
-
-private:
-    inline void addGuard();
-    inline void remGuard();
 };
 
-QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QDeclarativeGuard<QObject>)
-
-#include "private/qdeclarativedata_p.h"
-
-QT_BEGIN_NAMESPACE
-
-template<class T>
-QDeclarativeGuard<T>::QDeclarativeGuard()
+QDeclarativeGuardImpl::QDeclarativeGuardImpl()
 : o(0), next(0), prev(0)
 {
 }
 
-template<class T>
-QDeclarativeGuard<T>::QDeclarativeGuard(T *g)
+QDeclarativeGuardImpl::QDeclarativeGuardImpl(QObject *g)
 : o(g), next(0), prev(0)
 {
     if (o) addGuard();
 }
 
-template<class T>
-QDeclarativeGuard<T>::QDeclarativeGuard(const QDeclarativeGuard<T> &g)
+QDeclarativeGuardImpl::QDeclarativeGuardImpl(const QDeclarativeGuardImpl &g)
 : o(g.o), next(0), prev(0)
 {
     if (o) addGuard();
 }
 
-template<class T>
-QDeclarativeGuard<T>::~QDeclarativeGuard()
+QDeclarativeGuardImpl::~QDeclarativeGuardImpl()
 {
     if (prev) remGuard();
     o = 0;
 }
 
+void QDeclarativeGuardImpl::addGuard()
+{
+    Q_ASSERT(!prev);
+
+    if (QObjectPrivate::get(o)->wasDeleted) 
+        return;
+
+    QDeclarativeData *data = QDeclarativeData::get(o, true);
+    next = data->guards;
+    if (next) next->prev = &next;
+    data->guards = this;
+    prev = &data->guards;
+}
+
+void QDeclarativeGuardImpl::remGuard()
+{
+    Q_ASSERT(prev);
+
+    if (next) next->prev = prev;
+    *prev = next;
+    next = 0;
+    prev = 0;
+}
+
+template<class T>
+QDeclarativeGuard<T>::QDeclarativeGuard()
+{
+}
+
+template<class T>
+QDeclarativeGuard<T>::QDeclarativeGuard(T *g)
+: QDeclarativeGuardImpl(g)
+{
+}
+
+template<class T>
+QDeclarativeGuard<T>::QDeclarativeGuard(const QDeclarativeGuard<T> &g)
+: QDeclarativeGuardImpl(g)
+{
+}
+
+template<class T>
+QDeclarativeGuard<T>::~QDeclarativeGuard()
+{
+}
+
 template<class T>
 QDeclarativeGuard<T> &QDeclarativeGuard<T>::operator=(const QDeclarativeGuard<T> &g)
 {
-    if (g.o != o) {
-        if (prev) remGuard();
-        o = g.o;
-        if (o) addGuard();
-    }
+    setObject(g.object());
     return *this;
 }
 
 template<class T>
 QDeclarativeGuard<T> &QDeclarativeGuard<T>::operator=(T *g)
 {
+    setObject(g);
+    return *this;
+}
+
+template<class T>
+T *QDeclarativeGuard<T>::object() const 
+{ 
+    return static_cast<T *>(o); 
+};
+
+template<class T>
+void QDeclarativeGuard<T>::setObject(T *g) 
+{
     if (g != o) {
         if (prev) remGuard();
         o = g;
         if (o) addGuard();
     }
-    return *this;
 }
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QDeclarativeGuard<QObject>)
 
 #endif // QDECLARATIVEGUARD_P_H
