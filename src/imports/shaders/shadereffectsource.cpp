@@ -105,11 +105,6 @@ ShaderEffectSource::~ShaderEffectSource()
     sourceItem regardless of its clipping property.
 */
 
-/*!
-    \property ShaderEffectSource::sourceItem
-    \brief the Item which is the source for the effect.
-*/
-
 void ShaderEffectSource::setSourceItem(QDeclarativeItem *item)
 {
     if (item == m_sourceItem)
@@ -159,11 +154,6 @@ void ShaderEffectSource::setSourceItem(QDeclarativeItem *item)
     The default value is Qt.rect(0,0,0,0).
 */
 
-/*!
-    \property ShaderEffectSource::sourceRect
-    \brief the relative sourceRect for the source.
-*/
-
 void ShaderEffectSource::setSourceRect(const QRectF &rect)
 {
     if (rect == m_sourceRect)
@@ -190,11 +180,6 @@ void ShaderEffectSource::setSourceRect(const QRectF &rect)
     the given size.
 
     The default value is QSize(0,0).
-*/
-
-/*!
-    \property ShaderEffectSource::textureSize
-    \brief the texture size for the source.
 */
 
 void ShaderEffectSource::setTextureSize(const QSize &size)
@@ -227,11 +212,6 @@ void ShaderEffectSource::setTextureSize(const QSize &size)
     The default value is true.
 */
 
-/*!
-    \property ShaderEffectSource::live
-    \brief the flag tells whether source item content is changing between frames.
-*/
-
 void ShaderEffectSource::setLive(bool s)
 {
     if (s == m_live)
@@ -249,11 +229,6 @@ void ShaderEffectSource::setLive(bool s)
     hidden when the effect item is drawn.
 
     The default value is false.
-*/
-
-/*!
-    \property ShaderEffectSource::hideSource
-    \brief the flag tells whether original source item content should be hidden.
 */
 
 void ShaderEffectSource::setHideSource(bool hide)
@@ -281,11 +256,6 @@ void ShaderEffectSource::setHideSource(bool hide)
 
     The default value is ClampToEdge.
 
-*/
-
-/*!
-    \property ShaderEffectSource::wrapMode
-    \brief the wrap parameter for the source after it has been mapped as a texture.
 */
 
 void ShaderEffectSource::setWrapMode(WrapMode mode)

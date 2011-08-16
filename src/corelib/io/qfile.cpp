@@ -366,9 +366,11 @@ QFilePrivate::setError(QFile::FileError err, int errNum)
 
     \value AutoCloseHandle The file handle passed into open() should be
     closed by close(), the default behaviour is that close just flushes
-    the file and the app is responsible for closing the file handle. When
-    opening a file by name, this flag is ignored as Qt always "owns" the
+    the file and the application is responsible for closing the file handle.
+    When opening a file by name, this flag is ignored as Qt always "owns" the
     file handle and must close it.
+    \value DontCloseHandle The file handle passed into open() will not be
+    closed by Qt. The application must ensure that close() is called.
  */
 
 #ifdef QT3_SUPPORT
@@ -1210,7 +1212,7 @@ bool QFile::open(int fd, OpenMode mode)
     Returns true if successful; otherwise returns false.
 
     When a QFile is opened using this function, behaviour of close() is
-    controlled by the AutoCloseHandle flag.
+    controlled by the \a handleFlags argument.
     If AutoCloseHandle is specified, and this function succeeds,
     then calling close() closes the adopted handle.
     Otherwise, close() does not actually close the file, but only flushes it.
@@ -1269,7 +1271,7 @@ bool QFile::open(int fd, OpenMode mode, FileHandleFlags handleFlags)
     Returns true if successful; otherwise returns false.
 
     When a QFile is opened using this function, behaviour of close() is
-    controlled by the AutoCloseHandle flag.
+    controlled by the \a handleFlags argument.
     If AutoCloseHandle is specified, and this function succeeds,
     then calling close() closes the adopted handle.
     Otherwise, close() does not actually close the file, but only flushes it.
