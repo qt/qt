@@ -412,11 +412,11 @@ void tst_QTemporaryFile::rename()
     {
         QTemporaryFile file(dir.filePath("temporary-file.XXXXXX"));
 
-        QVERIFY(file.open());
+        QVERIFY2(file.open(), qPrintable(file.errorString()));
         tempname = file.fileName();
         QVERIFY(dir.exists(tempname));
 
-        QVERIFY(file.rename("temporary-file.txt"));
+        QVERIFY2(file.rename("temporary-file.txt"), qPrintable(file.errorString()));
         QVERIFY(!dir.exists(tempname));
         QVERIFY(dir.exists("temporary-file.txt"));
         QCOMPARE(file.fileName(), QString("temporary-file.txt"));
@@ -679,12 +679,21 @@ void tst_QTemporaryFile::QTBUG_4796()
         QTemporaryFile file5("test-XXXXXX/" + fileTemplate1);
         QTemporaryFile file6("test-XXXXXX/" + fileTemplate3);
 
-        QCOMPARE(file1.open(), openResult);
-        QCOMPARE(file2.open(), openResult);
-        QCOMPARE(file3.open(), openResult);
-        QCOMPARE(file4.open(), openResult);
-        QCOMPARE(file5.open(), openResult);
-        QCOMPARE(file6.open(), openResult);
+        if (openResult) {
+            QVERIFY2(file1.open(), qPrintable(file1.errorString()));
+            QVERIFY2(file2.open(), qPrintable(file2.errorString()));
+            QVERIFY2(file3.open(), qPrintable(file3.errorString()));
+            QVERIFY2(file4.open(), qPrintable(file4.errorString()));
+            QVERIFY2(file5.open(), qPrintable(file5.errorString()));
+            QVERIFY2(file6.open(), qPrintable(file6.errorString()));
+        } else {
+            QVERIFY(!file1.open());
+            QVERIFY(!file2.open());
+            QVERIFY(!file3.open());
+            QVERIFY(!file4.open());
+            QVERIFY(!file5.open());
+            QVERIFY(!file6.open());
+        }
 
         QCOMPARE(file1.exists(), openResult);
         QCOMPARE(file2.exists(), openResult);
@@ -710,20 +719,20 @@ void tst_QTemporaryFile::QTBUG_4796()
             QString fileName5 = currentDir.relativeFilePath(file5.fileName());
             QString fileName6 = currentDir.relativeFilePath(file6.fileName());
 
-            QVERIFY(fileName1.startsWith(fileTemplate1 + QLatin1Char('.')));
-            QVERIFY(fileName2.startsWith(fileTemplate2 + QLatin1Char('.')));
-            QVERIFY(fileName5.startsWith("test-XXXXXX/" + fileTemplate1 + QLatin1Char('.')));
-            QVERIFY(fileName6.startsWith("test-XXXXXX/" + prefix));
+            QVERIFY2(fileName1.startsWith(fileTemplate1 + QLatin1Char('.')), qPrintable(file1.fileName()));
+            QVERIFY2(fileName2.startsWith(fileTemplate2 + QLatin1Char('.')), qPrintable(file2.fileName()));
+            QVERIFY2(fileName5.startsWith("test-XXXXXX/" + fileTemplate1 + QLatin1Char('.')), qPrintable(file5.fileName()));
+            QVERIFY2(fileName6.startsWith("test-XXXXXX/" + prefix), qPrintable(file6.fileName()));
 
             if (!prefix.isEmpty()) {
-                QVERIFY(fileName3.startsWith(prefix));
-                QVERIFY(fileName4.startsWith(prefix));
+                QVERIFY2(fileName3.startsWith(prefix), qPrintable(file3.fileName()));
+                QVERIFY2(fileName4.startsWith(prefix), qPrintable(file4.fileName()));
             }
 
             if (!suffix.isEmpty()) {
-                QVERIFY(fileName3.endsWith(suffix));
-                QVERIFY(fileName4.endsWith(suffix));
-                QVERIFY(fileName6.endsWith(suffix));
+                QVERIFY2(fileName3.endsWith(suffix), qPrintable(file3.fileName()));
+                QVERIFY2(fileName4.endsWith(suffix), qPrintable(file4.fileName()));
+                QVERIFY2(fileName6.endsWith(suffix), qPrintable(file6.fileName()));
             }
         }
     }
