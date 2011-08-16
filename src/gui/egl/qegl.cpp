@@ -94,6 +94,7 @@ QEglContext::QEglContext()
     , current(false)
     , ownsContext(true)
     , sharing(false)
+    , apiChanged(false)
 {
     QEglContextTracker::ref();
 }
@@ -435,9 +436,20 @@ bool QEglContext::makeCurrent(EGLSurface surface)
         return false;
     }
 
+#ifdef Q_OS_SYMBIAN
+    apiChanged = false;
+    if (currentContext(apiType)
+            && currentContext(apiType)->ctx != eglGetCurrentContext()) {
+        // some other EGL based API active. Complete its rendering
+        eglWaitClient();
+        apiChanged = true;
+    }
+#endif
+
     // If lazyDoneCurrent() was called on the surface, then we may be able
     // to assume that it is still current within the thread.
-    if (surface == currentSurface && currentContext(apiType) == this) {
+    if (surface == currentSurface && currentContext(apiType) == this
+            && !apiChanged) {
         current = true;
         return true;
     }
@@ -512,6 +524,13 @@ bool QEglContext::swapBuffers(EGLSurface surface)
     bool ok = eglSwapBuffers(QEgl::display(), surface);
     if (!ok)
         qWarning() << "QEglContext::swapBuffers():" << QEgl::errorString();
+
+#ifdef Q_OS_SYMBIAN
+    if (apiChanged) {
+        eglWaitClient();
+        apiChanged = false;
+    }
+#endif
     return ok;
 }
 
