@@ -252,9 +252,6 @@ bool QCoeFepInputContext::needsInputPanel()
 
 bool QCoeFepInputContext::filterEvent(const QEvent *event)
 {
-    // The CloseSoftwareInputPanel event is not handled here, because the VK will automatically
-    // close when it discovers that the underlying widget does not have input capabilities.
-
     if (!focusWidget())
         return false;
 
@@ -317,6 +314,11 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
 
     if (!needsInputPanel())
         return false;
+
+    if (event->type() == QEvent::CloseSoftwareInputPanel) {
+        m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::EAknClosePenInputRequest);
+        return false;
+    }
 
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
         // Only request virtual keyboard if it is not yet active or if this is the first time
