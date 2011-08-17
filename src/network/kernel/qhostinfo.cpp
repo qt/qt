@@ -481,6 +481,7 @@ void QHostInfoRunnable::run()
                 iterator.remove();
                 hostInfo.setLookupId(postponed->id);
                 postponed->resultEmitter.emitResultsReady(hostInfo);
+                delete postponed;
             }
         }
     }

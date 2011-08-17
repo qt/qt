@@ -61,12 +61,14 @@ static QString m_defaultExtensions;
 
 static void printOut(const QString & out)
 {
-    std::cout << qPrintable(out);
+    QTextStream stream(stdout);
+    stream << out;
 }
 
 static void printErr(const QString & out)
 {
-    std::cerr << qPrintable(out);
+    QTextStream stream(stderr);
+    stream << out;
 }
 
 class LU {

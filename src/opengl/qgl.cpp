@@ -93,7 +93,7 @@
 #include "qlibrary.h"
 #include <qmutex.h>
 
-#ifdef QGL_USE_TEXTURE_POOL
+#ifdef Q_OS_SYMBIAN
 #include <private/qgltexturepool_p.h>
 #endif
 
@@ -1835,6 +1835,7 @@ QGLTextureCache::~QGLTextureCache()
 void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, int cost)
 {
     QWriteLocker locker(&m_lock);
+
     if (m_cache.totalCost() + cost > m_cache.maxCost()) {
         // the cache is full - make an attempt to remove something
         const QList<QGLTextureCacheKey> keys = m_cache.keys();
@@ -2025,10 +2026,6 @@ struct DDSFormat {
     indicate that the pixmap should be memory managed along side with
     the pixmap/image that it stems from, e.g. installing destruction
     hooks in them.
-
-    \omitvalue TemporarilyCachedBindOption Used by paint engines on some
-    platforms to indicate that the pixmap or image texture is possibly
-    cached only temporarily and must be destroyed immediately after the use.
 
     \omitvalue InternalBindOption
 */
@@ -2537,7 +2534,8 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #endif
 
     const QImage &constRef = img; // to avoid detach in bits()...
-#ifdef QGL_USE_TEXTURE_POOL
+#ifdef Q_OS_SYMBIAN
+    // On Symbian we always use texture pool to reserve the texture
     QGLTexturePool::instance()->createPermanentTexture(tx_id,
                                                         target,
                                                         0, internalFormat,
@@ -2549,6 +2547,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     glTexImage2D(target, 0, internalFormat, img.width(), img.height(), 0, externalFormat,
                  pixel_type, constRef.bits());
 #endif
+
 #if defined(QT_OPENGL_ES_2)
     if (genMipmap)
         glGenerateMipmap(target);
@@ -2572,6 +2571,13 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     QGLTexture *texture = new QGLTexture(q, tx_id, target, options);
     QGLTextureCache::instance()->insert(q, key, texture, cost);
 
+#ifdef Q_OS_SYMBIAN
+    // Store the key so that QGLTexturePool
+    // is able to release this texture when needed.
+    texture->boundKey = key;
+    // And append to LRU list
+    QGLTexturePool::instance()->useTexture(texture);
+#endif
     return texture;
 }
 
@@ -2651,6 +2657,20 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
 #endif
 
     if (!texture) {
+#ifdef Q_OS_SYMBIAN
+        // On Symbian pixmaps are backed up by native CFbsBitmap
+        // which can be shared across processes. QVolatileImage wraps
+        // it and provides locking mechanism to pixel access.
+        QVolatileImage volatileImage = pd->toVolatileImage();
+        if (volatileImage.isNull()) { // TODO: raster graphics system don't provide volatile image (yet)
+            // NOTE! On Symbian raster graphics system QPixmap::toImage() makes deep copy
+            texture = bindTexture(pixmap.toImage(), target, format, key, options);
+        } else {
+            volatileImage.beginDataAccess();
+            texture = bindTexture(volatileImage.imageRef(), target, format, key, options);
+            volatileImage.endDataAccess(true);
+        }
+#else
         QImage image = pixmap.toImage();
         // If the system depth is 16 and the pixmap doesn't have an alpha channel
         // then we convert it to RGB16 in the hope that it gets uploaded as a 16
@@ -2658,6 +2678,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
         if (pixmap.depth() == 16 && !image.hasAlphaChannel() )
             image = image.convertToFormat(QImage::Format_RGB16);
         texture = bindTexture(image, target, format, key, options);
+#endif
     }
     // NOTE: bindTexture(const QImage&, GLenum, GLint, const qint64, bool) should never return null
     Q_ASSERT(texture);
@@ -5880,5 +5901,28 @@ QSize QGLTexture::bindCompressedTexturePVR(const char *buf, int len)
 }
 
 #undef ctx
+
+#ifdef Q_OS_SYMBIAN
+void QGLTexture::freeTexture()
+{
+    if (!id)
+        return;
+
+    if (inTexturePool)
+        QGLTexturePool::instance()->detachTexture(this);
+
+    if (boundPixmap)
+        boundPixmap->releaseNativeImageHandle();
+
+    if (options & QGLContext::MemoryManagedBindOption) {
+        Q_ASSERT(context);
+        context->d_ptr->texture_destroyer->emitFreeTexture(context, 0, id);
+    }
+
+    id = 0;
+    boundPixmap = 0;
+    boundKey = 0;
+}
+#endif
 
 QT_END_NAMESPACE

@@ -156,12 +156,16 @@
            whole lifetime. This attribute must be set before QApplication is
            constructed.
 
-    \omitvalue AA_S60DisablePartialScreenInputMode By default in Symbian^3,
-           a separate editing window is opened on top of an application. This is exactly
-           like editing on previous versions of Symbian behave. When this attribute
-           is true, a virtual keyboard window is shown on top of application and it
-           is ensured that the focused text widget is visible. This is only supported in
-           Symbian^3. (internal)
+    \value AA_S60DisablePartialScreenInputMode By default in Symbian^3, a separate
+           editing window is opened on top of an application. This is exactly like
+           editing on previous versions of Symbian behave. When this attribute is false,
+           a non-fullscreen virtual keyboard window is shown on top of application and
+           it is ensured that the focused text input widget is visible.
+           The auto-translation of input widget is only supported for applications
+           based on QGraphicsView, but the non-fullscreen virtual keyboard will
+           work for any kind of application (i.e. QWidgets-based). By default this
+           attribute is true. This attribute must be set after QApplication is
+           constructed. This is only supported in Symbian^3 and later Symbian releases.
 
     \omitvalue AA_AttributeCount
 */

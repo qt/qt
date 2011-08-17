@@ -476,6 +476,8 @@ TUint QNetworkSessionPrivateImpl::iapClientCount(TUint aIAPId) const
 {
     TRequestStatus status;
     TUint connectionCount;
+    if (!iConnectionMonitor.Handle())
+        return 0;
     iConnectionMonitor.GetConnectionCount(connectionCount, status);
     User::WaitForRequest(status);
     if (status.Int() == KErrNone) {
@@ -573,7 +575,8 @@ void QNetworkSessionPrivateImpl::stop()
 #endif
     if (!isOpen &&
         publicConfig.isValid() &&
-        publicConfig.type() == QNetworkConfiguration::InternetAccessPoint) {
+        publicConfig.type() == QNetworkConfiguration::InternetAccessPoint &&
+        iConnectionMonitor.Handle()) {
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
     qDebug() << "QNS this : " << QString::number((uint)this) << " - "
             << "since session is not open, using RConnectionMonitor to stop() the interface";
@@ -855,6 +858,8 @@ quint64 QNetworkSessionPrivateImpl::transferredData(TUint dataType) const
         return 0;
     }
     
+    if (!iConnectionMonitor.Handle())
+        return 0;
     TUint count;
     TRequestStatus status;
     iConnectionMonitor.GetConnectionCount(count, status);
@@ -1497,6 +1502,8 @@ bool QNetworkSessionPrivateImpl::easyWlanTrueIapId(TUint32 &trueIapId) const
 
     // Loop through all connections that connection monitor is aware
     // and check for IAPs based on easy WLAN
+    if (!iConnectionMonitor.Handle())
+        return false;
     TRequestStatus status;
     TUint connectionCount;
     iConnectionMonitor.GetConnectionCount(connectionCount, status);

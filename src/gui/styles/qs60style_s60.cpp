@@ -44,8 +44,9 @@
 #include "qpainter.h"
 #include "qstyleoption.h"
 #include "qstyle.h"
+#include "private/qapplication_p.h"
 #include "private/qt_s60_p.h"
-#include "private/qpixmap_s60_p.h"
+#include "private/qpixmap_raster_symbian_p.h"
 #include "private/qcore_symbian_p.h"
 #include "private/qvolatileimage_p.h"
 #include "qapplication.h"
@@ -412,6 +413,106 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrListSideLPressed */       {KAknsIIDQsnFrListSideL,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2691},
     /* SP_QsnFrListSideRPressed */       {KAknsIIDQsnFrListSideR,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2692},
     /* SP_QsnFrListCenterPressed */      {KAknsIIDQsnFrListCenter,      ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2693},
+
+    /* SP_QtgToolBarAdd */               {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x27c0}, //KAknsIIDQtgToolbarAdd
+    /* SP_QtgToolBarAddDetail */         {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2778}, //KAknsIIDQtgToolbarAddDetail
+    /* SP_QtgToolbarAgain */             {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x271a}, //KAknsIIDQtgToolbarAgain
+    /* SP_QtgToolBarAgenda */            {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x281a}, //KAknsIIDQtgToolbarAgenda
+    /* SP_QtgToolBarAudioOff */          {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2751}, //KAknsIIDQtgToolbarAudioOff
+    /* SP_QtgToolBarAudioOn */           {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2752}, //KAknsIIDQtgToolbarAudioOn
+    /* SP_CustomToolBarBack */           {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x271b}, //KAknsIIDQtgToolbarBack
+    /* SP_QtgToolBarBluetoothOff */      {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2753}, //KAknsIIDQtgToolbarBluetoothOff
+    /* SP_QtgToolBarBluetoothOn */       {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2754}, //KAknsIIDQtgToolbarBluetoothOn
+    /* SP_QtgToolBarCancel */            {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2895}, //KAknsIIDQtgToolbarCancel
+    /* SP_QtgToolBarDelete */            {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2755}, //KAknsIIDQtgToolbarDelete
+    /* SP_QtgToolBarDetails */           {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x271e}, //KAknsIIDQtgToolbarDetails
+    /* SP_QtgToolBarDone */              {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x271f}, //KAknsIIDQtgToolbarDone
+    /* SP_QtgToolBarEdit */              {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2720}, //KAknsIIDQtgToolbarEdit
+    /* SP_QtgToolBarEditDisabled */      {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2946}, //KAknsIIDQtgToolbarEditDisabled
+    /* SP_QtgToolBarEmailSend */         {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x292f}, //KAknsIIDQtgToolbarEmailSend
+    /* SP_QtgToolBarEmergencyCall */     {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2721}, //KAknsIIDQtgToolbarEmergencyCall
+    /* SP_QtgToolBarFavouriteAdd */      {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x28ed}, //KAknsIIDQtgToolbarFavouriteAdd
+    /* SP_QtgToolBarFavouriteRemove */   {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x28ee}, //KAknsIIDQtgToolbarFavouriteRemove
+    /* SP_QtgToolBarFavourites */        {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x28b8}, //KAknsIIDQtgToolbarFavourites
+    /* SP_QtgToolBarForward */           {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x281b}, //KAknsIIDQtgToolbarForward
+    /* SP_QtgToolBarGo */                {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2930}, //KAknsIIDQtgToolbarGo
+    /* SP_QtgToolBarHome */              {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2722}, //KAknsIIDQtgToolbarHome
+    /* SP_QtgToolBarImageTools */        {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2947}, //KAknsIIDQtgToolbarImageTools
+    /* SP_QtgToolBarList */              {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x28b9}, //KAknsIIDQtgToolbarList
+    /* SP_QtgToolBarLock */              {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2723}, //KAknsIIDQtgToolbarLock
+    /* SP_QtgToolBarLogs */              {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x281c}, //KAknsIIDQtgToolbarLogs
+    /* SP_QtgToolBarMenu */              {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2724}, //KAknsIIDQtgToolbarMenu
+    /* SP_QtgToolBarNewContact */        {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2779}, //KAknsIIDQtgToolbarNewContact
+    /* SP_QtgToolBarNewGroup */          {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x277a}, //KAknsIIDQtgToolbarNewGroup
+    /* SP_QtgToolBarNext */              {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x281d}, //KAknsIIDQtgToolbarNext
+    /* SP_QtgToolBarNextFrame */         {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2981}, //KAknsIIDQtgToolbarNextFrame
+    /* SP_QtgToolBarNowPlay */           {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x28ef}, //KAknsIIDQtgToolbarNowplay
+    /* SP_QtgToolBarOptions */           {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2725}, //KAknsIIDQtgToolbarOptions
+    /* SP_QtgToolBarOther */             {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2726}, //KAknsIIDQtgToolbarOther
+    /* SP_QtgToolBarOvi */               {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2931}, //KAknsIIDQtgToolbarOvi
+    /* SP_QtgToolBarPause */             {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2727}, //KAknsIIDQtgToolbarPause
+    /* SP_QtgToolBarPlay */              {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2728}, //KAknsIIDQtgToolbarPlay
+    /* SP_QtgToolBarPrevious */          {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x281e}, //KAknsIIDQtgToolbarPrevious
+    /* SP_QtgToolBarPreviousFrame */     {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2982}, //KAknsIIDQtgToolbarPreviousFrame
+    /* SP_QtgToolBarRead */              {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2729}, //KAknsIIDQtgToolbarRead
+    /* SP_QtgToolBarRedo */              {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2948}, //KAknsIIDQtgToolbarRedo
+    /* SP_QtgToolBarRedoDisabled */      {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2949}, //KAknsIIDQtgToolbarRedoDisabled
+    /* SP_QtgToolBarRefresh */           {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2932}, //KAknsIIDQtgToolbarRefresh
+    /* SP_QtgToolBarRemoveDetail */      {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x277b}, //KAknsIIDQtgToolbarRemoveDetail
+    /* SP_QtgToolBarRemoveDisabled */    {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x294a}, //KAknsIIDQtgToolbarRemoveDisabled
+    /* SP_QtgToolBarRepeat */            {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x281f}, //KAknsIIDQtgToolbarRepeat
+    /* SP_QtgToolBarRepeatOff */         {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2820}, //KAknsIIDQtgToolbarRepeatOff
+    /* SP_QtgToolBarRepeatOne */         {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2821}, //KAknsIIDQtgToolbarRepeatOne
+    /* SP_QtgToolBarRewind */            {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2822}, //KAknsIIDQtgToolbarRewind
+    /* SP_QtgToolBarSearch */            {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x272a}, //KAknsIIDQtgToolbarSearch
+    /* SP_QtgToolBarSearchDisabled */    {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x294b}, //KAknsIIDQtgToolbarSearchDisabled
+    /* SP_QtgToolBarSelectContent */     {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x294c}, //KAknsIIDQtgToolbarSelectContent
+    /* SP_QtgToolBarSelfTimer */         {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2756}, //KAknsIIDQtgToolbarSelfTimer
+    /* SP_QtgToolBarSend */              {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x272b}, //KAknsIIDQtgToolbarSend
+    /* SP_QtgToolBarSendDimmed */        {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x29b0}, //KAknsIIDQtgToolbarSendDimmed
+    /* SP_QtgToolBarShare */             {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2823}, //KAknsIIDQtgToolbarShare
+    /* SP_QtgToolBarShift */             {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x272c}, //KAknsIIDQtgToolbarShift
+    /* SP_QtgToolBarShuffle */           {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2824}, //KAknsIIDQtgToolbarShuffle
+    /* SP_QtgToolBarShuffleOff */        {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2825}, //KAknsIIDQtgToolbarShuffleOff
+    /* SP_QtgToolBarSignalOff */         {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2757}, //KAknsIIDQtgToolbarSignalOff
+    /* SP_QtgToolBarSignalOn */          {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2758}, //KAknsIIDQtgToolbarSignalOn
+    /* SP_QtgToolBarStop */              {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x272d}, //KAknsIIDQtgToolbarStop
+    /* SP_QtgToolBarSync */              {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2894}, //KAknsIIDQtgToolbarSync
+    /* SP_QtgToolBarTools */             {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2983}, //KAknsIIDQtgToolbarTools
+    /* SP_QtgToolBarTrim */              {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2954}, //KAknsIIDQtgToolbarTrim
+    /* SP_QtgToolBarUnlock */            {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x272e}, //KAknsIIDQtgToolbarUnlock
+    /* SP_QtgToolBarUnmark */            {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x272f}, //KAknsIIDQtgToolbarUnmark
+    /* SP_QtgToolBarView */              {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2730}, //KAknsIIDQtgToolbarView
+    /* SP_QtgToolBarWlanOff */           {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2759}, //KAknsIIDQtgToolbarWlanOff
+    /* SP_QtgToolBarWlanOn */            {KAknsIIDNone,                 EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x275a}, //KAknsIIDQtgToolbarWlanOn
+
+    /* SP_QtgGrafCameraButtonCaptureNormal */   {KAknsIIDNone,  EDrawIcon,   ES60_Pre52,  EAknsMajorGeneric, 0x2743}, //KAknsIIDQtgGrafCameraButtonCaptureNormal (already in 9.2)
+    /* SP_QtgGrafCameraButtonCapturePressed */  {KAknsIIDNone,  EDrawIcon,   ES60_Pre52,  EAknsMajorGeneric, 0x2744}, //KAknsIIDQtgGrafCameraButtonCapturePressed
+    /* SP_QtgGrafCameraButtonPauseNormal */     {KAknsIIDNone,  EDrawIcon,   ES60_Pre52,  EAknsMajorGeneric, 0x2745}, //KAknsIIDQtgGrafCameraButtonPauseNormal
+    /* SP_QtgGrafCameraButtonPausePressed */    {KAknsIIDNone,  EDrawIcon,   ES60_Pre52,  EAknsMajorGeneric, 0x2746}, //KAknsIIDQtgGrafCameraButtonPausePressed
+    /* SP_QtgGrafCameraButtonPlayNormal */      {KAknsIIDNone,  EDrawIcon,   ES60_Pre52,  EAknsMajorGeneric, 0x2747}, //KAknsIIDQtgGrafCameraButtonPlayNormal
+    /* SP_QtgGrafCameraButtonPlayPressed */     {KAknsIIDNone,  EDrawIcon,   ES60_Pre52,  EAknsMajorGeneric, 0x2748}, //KAknsIIDQtgGrafCameraButtonPlayPressed
+    /* SP_QtgGrafCameraButtonRecNormal */       {KAknsIIDNone,  EDrawIcon,   ES60_Pre52,  EAknsMajorGeneric, 0x2749}, //KAknsIIDQtgGrafCameraButtonRecNormal
+    /* SP_QtgGrafCameraButtonRecPressed */      {KAknsIIDNone,  EDrawIcon,   ES60_Pre52,  EAknsMajorGeneric, 0x274a}, //KAknsIIDQtgGrafCameraButtonRecPressed
+    /* SP_QtgGrafCameraButtonStopNormal */      {KAknsIIDNone,  EDrawIcon,   ES60_Pre52,  EAknsMajorGeneric, 0x274b}, //KAknsIIDQtgGrafCameraButtonStopNormal
+    /* SP_QtgGrafCameraButtonStopPressed */     {KAknsIIDNone,  EDrawIcon,   ES60_Pre52,  EAknsMajorGeneric, 0x274c}, //KAknsIIDQtgGrafCameraButtonStopPressed
+
+    /* SP_QtgTabAll */                          {KAknsIIDNone,  EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2851}, //KAknsIIDQtgTabAll
+    /* SP_QtgTabArtist */                       {KAknsIIDNone,  EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x288f}, //KAknsIIDQtgTabArtist
+    /* SP_QtgTabFavourite */                    {KAknsIIDNone,  EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x28eb}, //KAknsIIDQtgTabFavourite
+    /* SP_QtgTabGenre */                        {KAknsIIDNone,  EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2890}, //KAknsIIDQtgTabGenre
+    /* SP_QtgTabLanguage */                     {KAknsIIDNone,  EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x28ec}, //KAknsIIDQtgTabLanguage
+    /* SP_QtgTabMusicAlbum */                   {KAknsIIDNone,  EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2891}, //KAknsIIDQtgTabMusicAlbum
+    /* SP_QtgTabPhotosAlbum */                  {KAknsIIDNone,  EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2818}, //KAknsIIDQtgTabPhotosAlbum
+    /* SP_QtgTabPhotosAll */                    {KAknsIIDNone,  EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2819}, //KAknsIIDQtgTabPhotosAll
+    /* SP_QtgTabPlaylist */                     {KAknsIIDNone,  EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2892}, //KAknsIIDQtgTabPlaylist
+    /* SP_QtgTabServices */                     {KAknsIIDNone,  EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x274f}, //KAknsIIDQtgTabServices
+    /* SP_QtgTabSongs */                        {KAknsIIDNone,  EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2893}, //KAknsIIDQtgTabSongs
+    /* SP_QtgTabVideos */                       {KAknsIIDNone,  EDrawIcon,   ES60_Pre53,  EAknsMajorGeneric, 0x2750}, //KAknsIIDQtgTabVideos
+
+    /* SP_QgnIndiBrowserTbReload */             {KAknsIIDQgnIndiBrowserTbReload,   EDrawIcon,   ES60_All, -1, -1},
+    /* SP_QgnIndiBrowserTbHome */               {KAknsIIDQgnIndiBrowserTbHome,     EDrawIcon,   ES60_All, -1, -1},
+    /* SP_QgnIndiBrowserTbStop */               {KAknsIIDQgnIndiBrowserTbStop,     EDrawIcon,   ES60_All, -1, -1},
 };
 
 QPixmap QS60StyleModeSpecifics::skinnedGraphics(
@@ -1095,6 +1196,18 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
             centerId.Set(KAknsIIDQsnFrPopupCenterSubmenu);
             frameId.Set(KAknsIIDQsnFrPopupSub);
             break;
+        case QS60StylePrivate::SF_DialogBackground:
+            centerId.Set(KAknsIIDQsnFrPopupCenter);
+            frameId.Set(KAknsIIDQsnFrPopup);
+            break;
+        case QS60StylePrivate::SF_SettingsList:
+            // Starting from S60_5_3, the root theme has been changed so that KAknsIIDQsnFrSetOpt is empty.
+            // Set the theme ID to None, to avoid theme server trying to draw the empty frame.
+            if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_2) {
+                centerId.Set(KAknsIIDNone);
+                frameId.Set(KAknsIIDNone);
+            }
+            break;
         case QS60StylePrivate::SF_PanelBackground:
             // remove center piece for panel graphics, so that only border is drawn
             centerId.Set(KAknsIIDNone);
@@ -1425,12 +1538,26 @@ QPixmap QS60StylePrivate::backgroundTexture(bool skipCreation)
         // Notify all widgets that palette is updated with the actual background texture.
         QPalette pal = QApplication::palette();
         pal.setBrush(QPalette::Window, *m_background);
+
+        //Application palette hash is automatically cleared when QApplication::setPalette is called.
+        //To avoid losing palette hash data, back it up before calling the setPalette() API and
+        //restore it afterwards.
+        typedef QHash<QByteArray, QPalette> PaletteHash;
+        PaletteHash hash;
+        if (qt_app_palettes_hash() || !qt_app_palettes_hash()->isEmpty())
+            hash = *qt_app_palettes_hash();
         QApplication::setPalette(pal);
-        setThemePaletteHash(&pal);
+        if (hash.isEmpty()) {
+            //set default theme palette hash
+            setThemePaletteHash(&pal);
+        } else {
+            for (int i = 0; i < hash.count() - 1; i++) {
+                QByteArray widgetClassName = hash.keys().at(i);
+                QApplication::setPalette(hash.value(widgetClassName), widgetClassName);
+            }
+        }
         storeThemePalette(&pal);
-        foreach (QWidget *widget, QApplication::allWidgets()){
-            QEvent e(QEvent::PaletteChange);
-            QApplication::sendEvent(widget, &e);
+        foreach (QWidget *widget, QApplication::allWidgets()) {
             setThemePalette(widget);
             widget->ensurePolished();
         }

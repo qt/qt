@@ -431,6 +431,12 @@ bool QThread::isRunning() const
 {
     Q_D(const QThread);
     QMutexLocker locker(&d->mutex);
+#ifdef Q_OS_SYMBIAN
+    // app shutdown on Symbian can terminate threads and invalidate their stacks without notification,
+    // check the thread is still alive.
+    if (d->data->symbian_thread_handle.Handle() && d->data->symbian_thread_handle.ExitType() != EExitPending)
+        return false;
+#endif
     return d->running;
 }
 

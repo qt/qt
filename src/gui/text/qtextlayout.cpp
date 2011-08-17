@@ -76,7 +76,7 @@ static QFixed alignLine(QTextEngine *eng, const QScriptLine &line)
         if (align & Qt::AlignRight)
             x = line.width - (line.textAdvance + eng->leadingSpaceWidth(line));
         else if (align & Qt::AlignHCenter)
-            x = (line.width - line.textAdvance)/2;
+            x = (line.width - (line.textAdvance))/2 - eng->leadingSpaceWidth(line);
     }
     return x;
 }
@@ -386,6 +386,7 @@ QTextLayout::~QTextLayout()
 void QTextLayout::setFont(const QFont &font)
 {
     d->fnt = font;
+    d->feCache.reset();
 }
 
 /*!
@@ -518,6 +519,7 @@ void QTextLayout::setAdditionalFormats(const QList<FormatRange> &formatList)
     }
     if (d->block.docHandle())
         d->block.docHandle()->documentChange(d->block.position(), d->block.length());
+    d->feCache.reset();
 }
 
 /*!
@@ -1713,6 +1715,7 @@ namespace {
         QFixed minimumRightBearing;
 
         QFontEngine *fontEngine;
+        QFontEngine *previousFontEngine;
         const unsigned short *logClusters;
 
         bool manualWrap;
@@ -1733,12 +1736,19 @@ namespace {
             return glyphs.glyphs[logClusters[currentPosition - 1]];
         }
 
-        inline void saveCurrentGlyph()
+        inline void resetPreviousGlyph()
         {
             previousGlyph = 0;
+            previousFontEngine = 0;
+        }
+
+        inline void saveCurrentGlyph()
+        {
+            resetPreviousGlyph();
             if (currentPosition > 0 &&
                 logClusters[currentPosition - 1] < glyphs.numGlyphs) {
                 previousGlyph = currentGlyph(); // needed to calculate right bearing later
+                previousFontEngine = fontEngine;
             }
         }
 
@@ -1758,8 +1768,11 @@ namespace {
 
         inline void adjustPreviousRightBearing()
         {
-            if (previousGlyph > 0)
-                adjustRightBearing(previousGlyph);
+            if (previousGlyph > 0 && previousFontEngine) {
+                qreal rb;
+                previousFontEngine->getGlyphBearings(previousGlyph, 0, &rb);
+                rightBearing = qMin(QFixed(), QFixed::fromReal(rb));
+            }
         }
 
         inline void resetRightBearing()
@@ -1849,7 +1862,7 @@ void QTextLine::layout_helper(int maxGlyphs)
     lbh.currentPosition = line.from;
     int end = 0;
     lbh.logClusters = eng->layoutData->logClustersPtr;
-    lbh.previousGlyph = 0;
+    lbh.resetPreviousGlyph();
 
     while (newItem < eng->layoutData->items.size()) {
         lbh.resetRightBearing();
@@ -1867,14 +1880,14 @@ void QTextLine::layout_helper(int maxGlyphs)
             lbh.currentPosition = qMax(line.from, current.position);
             end = current.position + eng->length(item);
             lbh.glyphs = eng->shapedGlyphs(&current);
+            QFontEngine *fontEngine = eng->fontEngine(current);
+            if (lbh.fontEngine != fontEngine) {
+                lbh.fontEngine = fontEngine;
+                lbh.minimumRightBearing = qMin(QFixed(),
+                                               QFixed::fromReal(fontEngine->minRightBearing()));
+            }
         }
         const QScriptItem &current = eng->layoutData->items[item];
-        QFontEngine *fontEngine = eng->fontEngine(current);
-        if (lbh.fontEngine != fontEngine) {
-            lbh.fontEngine = fontEngine;
-            lbh.minimumRightBearing = qMin(QFixed(),
-                                           QFixed::fromReal(fontEngine->minRightBearing()));
-        }
 
         lbh.tmpData.leading = qMax(lbh.tmpData.leading + lbh.tmpData.ascent,
                                    current.leading + current.ascent) - qMax(lbh.tmpData.ascent,
@@ -2319,13 +2332,13 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
         unsigned short *logClusters = eng->logClusters(&si);
         QGlyphLayout glyphs = eng->shapedGlyphs(&si);
 
-        QTextItemInt gf(si, &f, format);
-        gf.glyphs = glyphs.mid(iterator.glyphsStart, iterator.glyphsEnd - iterator.glyphsStart);
-        gf.chars = eng->layoutData->string.unicode() + iterator.itemStart;
+        QTextItemInt gf(glyphs.mid(iterator.glyphsStart, iterator.glyphsEnd - iterator.glyphsStart),
+                        &f, eng->layoutData->string.unicode() + iterator.itemStart,
+                        iterator.itemEnd - iterator.itemStart, eng->fontEngine(si), format);
         gf.logClusters = logClusters + iterator.itemStart - si.position;
-        gf.num_chars = iterator.itemEnd - iterator.itemStart;
         gf.width = iterator.itemWidth;
         gf.justified = line.justified;
+        gf.initWithScriptItem(si);
 
         Q_ASSERT(gf.fontEngine);
 
