@@ -1077,6 +1077,10 @@ void QCoeFepInputContext::CancelFepInlineEdit()
     if (m_hasTempPreeditString)
         return;
 
+    // Sync with native side editor state. Native side can then do various operations
+    // based on editor state, such as removing 'exact word bubble'.
+    ReportAknEdStateEvent(MAknEdStateObserver::EAknSyncEdwinState);
+
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent event(QLatin1String(""), attributes);
     event.setCommitString(QLatin1String(""), 0, 0);
