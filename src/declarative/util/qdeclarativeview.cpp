@@ -319,6 +319,8 @@ QDeclarativeView::~QDeclarativeView()
 
     Ensure that the URL provided is full and correct, in particular, use
     \l QUrl::fromLocalFile() when loading a file from the local filesystem.
+
+    \sa {Network Transparency}{Loading Resources in QML}
  */
 
 /*!
