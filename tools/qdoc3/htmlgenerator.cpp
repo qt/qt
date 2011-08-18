@@ -4409,6 +4409,7 @@ void HtmlGenerator::generateManifestFiles()
 {
     generateManifestFile("examples", "example");
     generateManifestFile("demos", "demo");
+    ExampleNode::exampleNodeMap.clear();
 }
 
 /*!
@@ -4428,6 +4429,25 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
     if (manifest == "demos")
         demos = true;
 
+    bool proceed = false;
+    ExampleNodeMap::Iterator i = ExampleNode::exampleNodeMap.begin();
+    while (i != ExampleNode::exampleNodeMap.end()) {
+        const ExampleNode* en = i.value();
+        if (demos) {
+            if (en->name().startsWith("demos")) {
+                proceed = true;
+                break;
+            }
+        }
+        else if (!en->name().startsWith("demos")) {
+            proceed = true;
+            break;
+        }
+        ++i;
+    }
+    if (!proceed)
+        return;
+
     QXmlStreamWriter writer(&file);
     writer.setAutoFormatting(true);
     writer.writeStartDocument();
@@ -4435,7 +4455,7 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
     writer.writeAttribute("module", project);
     writer.writeStartElement(manifest);
 
-    ExampleNodeMap::Iterator i = ExampleNode::exampleNodeMap.begin();
+    i = ExampleNode::exampleNodeMap.begin();
     while (i != ExampleNode::exampleNodeMap.end()) {
         const ExampleNode* en = i.value();
         if (demos) {
