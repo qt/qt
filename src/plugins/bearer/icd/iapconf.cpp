@@ -143,7 +143,7 @@ QVariant IAPConfPrivate::valueToVariant(ConnSettingsValue *value)
         return QVariant(value->value.bool_val ? true : false);
     
     case CONN_SETTINGS_VALUE_STRING:
-        return QVariant(QString(value->value.string_val));
+        return QVariant(QString::fromUtf8(value->value.string_val));
     
     case CONN_SETTINGS_VALUE_DOUBLE:
         return QVariant(value->value.double_val);
