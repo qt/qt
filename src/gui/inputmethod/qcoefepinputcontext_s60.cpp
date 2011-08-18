@@ -64,6 +64,8 @@
 #define QT_EAknCursorPositionChanged MAknEdStateObserver::EAknEdwinStateEvent(6)
 // MAknEdStateObserver::EAknActivatePenInputRequest
 #define QT_EAknActivatePenInputRequest MAknEdStateObserver::EAknEdwinStateEvent(7)
+// MAknEdStateObserver::EAknClosePenInputRequest
+#define QT_EAknClosePenInputRequest MAknEdStateObserver::EAknEdwinStateEvent(10)
 
 // EAknEditorFlagSelectionVisible is only valid from 3.2 onwards.
 // Sym^3 AVKON FEP manager expects that this flag is used for FEP-aware editors
@@ -315,8 +317,9 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
     if (!needsInputPanel())
         return false;
 
-    if (event->type() == QEvent::CloseSoftwareInputPanel) {
-        m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::EAknClosePenInputRequest);
+    if ((event->type() == QEvent::CloseSoftwareInputPanel)
+        && (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0)) {
+        m_fepState->ReportAknEdStateEventL(QT_EAknClosePenInputRequest);
         return false;
     }
 
