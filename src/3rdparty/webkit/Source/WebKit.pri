@@ -71,6 +71,7 @@ CONFIG(release, debug|release) {
 
 INCLUDEPATH += \
     $$PWD \
+    $$PWD/../include \
     $$OUTPUT_DIR/include/QtWebKit \
     $$OUTPUT_DIR/include \
     $$QT.script.includes
