@@ -252,9 +252,6 @@ bool QCoeFepInputContext::needsInputPanel()
 
 bool QCoeFepInputContext::filterEvent(const QEvent *event)
 {
-    // The CloseSoftwareInputPanel event is not handled here, because the VK will automatically
-    // close when it discovers that the underlying widget does not have input capabilities.
-
     if (!focusWidget())
         return false;
 
@@ -317,6 +314,11 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
 
     if (!needsInputPanel())
         return false;
+
+    if (event->type() == QEvent::CloseSoftwareInputPanel) {
+        m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::EAknClosePenInputRequest);
+        return false;
+    }
 
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
         // Only request virtual keyboard if it is not yet active or if this is the first time
@@ -474,7 +476,7 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
 
     if (!alwaysResize) {
         if (gv->scene()) {
-            if (gv->scene()->focusItem()) {
+            if (gv->scene()->focusItem() && S60->partial_keyboardAutoTranslation) {
                 // Check if the widget contains cursorPositionChanged signal and disconnect from it.
                 QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
                 int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
@@ -580,7 +582,7 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
     if (!moveWithinVisibleArea) {
         // Check if the widget contains cursorPositionChanged signal and connect to it.
         QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
-        if (gv->scene() && gv->scene()->focusItem()) {
+        if (gv->scene() && gv->scene()->focusItem() && S60->partial_keyboardAutoTranslation) {
             int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
             if (index != -1)
                 connect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
