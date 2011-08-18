@@ -1023,3 +1023,7 @@ packagesExist(sqlite3 QtNetwork QtDeclarative) {
     // Use the fancy UI, as we have extra packages available
 #endif
 #! [158]
+
+#! [159]
+RSS_RULES += "graphics_memory=12288;"
+#! [159]
