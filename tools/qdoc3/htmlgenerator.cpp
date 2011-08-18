@@ -4532,7 +4532,9 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
                 if (baseName.toLower() == ename) {
                     if (!usedNames.contains(fileName)) {
                         writer.writeStartElement("fileToOpen");
-                        writer.writeCharacters(fileName);
+                        if (file.startsWith("demos/"))
+                            file = file.mid(6);
+                        writer.writeCharacters(file);
                         writer.writeEndElement(); // fileToOpen
                         usedNames.insert(fileName);
                     }
@@ -4541,7 +4543,9 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
                          fileName.toLower().endsWith("main.qml")) {
                     if (!usedNames.contains(fileName)) {
                         writer.writeStartElement("fileToOpen");
-                        writer.writeCharacters(fileName);
+                        if (file.startsWith("demos/"))
+                            file = file.mid(6);
+                        writer.writeCharacters(file);
                         writer.writeEndElement(); // fileToOpen
                         usedNames.insert(fileName);
                     }
