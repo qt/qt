@@ -840,6 +840,7 @@ static void qt_mac_grabDisplayRect(CGDirectDisplayID display, const QRect &displ
     ptrCGLDestroyContext(glContextObj); // and destroy the context
 }
 
+#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
 // Returns a pixmap containing the screen contents at rect.
 static QPixmap qt_mac_grabScreenRect_10_6(const QRect &rect)
 {
@@ -865,6 +866,7 @@ static QPixmap qt_mac_grabScreenRect_10_6(const QRect &rect)
     }
     return windowPixmap;
 }
+#endif
 
 static QPixmap qt_mac_grabScreenRect(const QRect &rect)
 {
@@ -941,8 +943,12 @@ QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
     QRect rect(globalCoord.x() + x, globalCoord.y() + y, w, h);
 
 #ifdef QT_MAC_USE_COCOA
-    return (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) ?
-        qt_mac_grabScreenRect_10_6(rect) : qt_mac_grabScreenRect(rect);
+#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6)
+        return qt_mac_grabScreenRect_10_6(rect);
+    else
+#endif
+        return qt_mac_grabScreenRect(rect);
 #else
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
