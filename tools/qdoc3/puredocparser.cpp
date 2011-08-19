@@ -55,6 +55,11 @@ PureDocParser::~PureDocParser()
 {
 }
 
+QString PureDocParser::language()
+{
+    return "qdoc";
+}
+
 QStringList PureDocParser::sourceFileNameFilter()
 {
     return QStringList("*.qdoc");

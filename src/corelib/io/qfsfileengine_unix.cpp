@@ -252,6 +252,14 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
     return true;
 }
 
+/*!
+    Opens the file descriptor specified by \a file in the mode given by
+    \a openMode. Returns true on success; otherwise returns false.
+
+    The \a handleFlags argument specifies whether the file handle will be
+    closed by Qt. See the QFile::FileHandleFlags documentation for more
+    information.
+*/
 bool QFSFileEngine::open(QIODevice::OpenMode openMode, const RFile &file, QFile::FileHandleFlags handleFlags)
 {
     Q_D(QFSFileEngine);

@@ -73,7 +73,8 @@ Cpp.ignoretokens        = QAXFACTORY_EXPORT \
                           Q_DECLARATIVE_EXPORT \
                           Q_GADGET \
                           QWEBKIT_EXPORT \
-                          Q_INVOKABLE
+                          Q_INVOKABLE \
+                          Q_DECL_CONSTEXPR
 Cpp.ignoredirectives    = Q_DECLARE_HANDLE \
                           Q_DECLARE_INTERFACE \
                           Q_DECLARE_METATYPE \

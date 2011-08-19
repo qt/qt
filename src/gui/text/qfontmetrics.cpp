@@ -442,9 +442,10 @@ bool QFontMetrics::inFont(QChar ch) const
 }
 
 /*!
+   \fn bool QFontMetrics::inFontUcs4(uint character) const
    \since 4.8
 
-   Returns true if the character encoded in UCS-4/UTF-32 is a valid
+   Returns true if the given \a character encoded in UCS-4/UTF-32 is a valid
    character in the font; otherwise returns false.
 */
 bool QFontMetrics::inFontUcs4(uint ucs4) const
