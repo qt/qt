@@ -1,0 +1,6 @@
+<!DOCTYPE doc [
+<!ELEMENT doc k(#PCDATA)>
+<!ENTITY e SYSTEM "015.ent">
+]>
+<doc>&e;</doc>
+
