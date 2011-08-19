@@ -60,6 +60,7 @@
     \row \o \link #QPSQL QPSQL\endlink \o PostgreSQL (versions 7.3 and above)
     \row \o \link #QSQLITE2 QSQLITE2\endlink \o SQLite version 2
     \row \o \link #QSQLITE QSQLITE\endlink \o SQLite version 3
+    \row \o \link #QSYMSQL QSYMSQL\endlink \o SQLite version 3 for Symbian SQL Database 
     \row \o \link #QTDS QTDS\endlink \o Sybase Adaptive Server \note obsolete from Qt 4.7
     \endtable
 
@@ -665,7 +666,52 @@
     ship your own database plugin with your own SQLite library as illustrated above.
     Some versions of SQLite can be forced to write a specific file format by setting
     the \c{SQLITE_DEFAULT_FILE_FORMAT} define when building SQLite.
+    
+    \target QSYMSQL
+    \section2 QSYMSQL for SQLite (Version 3 and Above) with Symbian SQL Database
 
+    \section3 General Information about QSYMSQL
+    
+    QtSQL is the Qt module which allows clients to access SQL database services. 
+    Database vendors can create QtSQL drivers for their database engines.
+ 
+		QSYMSQL driver enables to access the native Symbian database engine (“Symbian SQL”) 
+		through the QtSQL API.
+		
+		The main difference to QSQLITE is that, with Symbian SQL database client can specify a 
+		set of access control policies when creating a new database with Symbian SQL security policies 
+		within open() method call (security policy is defined with in the connection options).
+		
+		See QSymSQLDriver::open(const QString & db, const QString &, const QString &, const QString &, int, const QString &conOpts) 
+		description for detail information of policy settings.
+		
+		Symbian RSqlSecurityPolicy class is a container for the security policies for a shared SQL database.
+
+		The container can contain:
+			security policies that apply to the database.
+			security policies that apply to individual database objects, i.e. database tables.
+
+		For the database, you use RSqlSecurityPolicy::SetDbPolicy() to apply a separate security policy to:
+			the database schema.
+			read activity on the database.
+			write activity on the database.
+
+		For database tables, you use RSqlSecurityPolicy::SetPolicy() to apply a separate security policy to:
+			write activity on each named database table.
+			read activity on each named database table.
+    
+    More information about Symbian SQL and RSqlSecurityPolicy class reference about policy definitions, 
+    can be found from Forum Nokia Library: http://library.developer.nokia.com/.
+    
+    \section3 How to Build the QSYMSQL Plugin
+    
+    Building QSYMSQL requires symbian platform, since it is using Symbian SQL database.
+    
+    QSYMSQL is a dynamic plugin, which appears to available drivers list, when the binaries are build in.
+    
+    The build sequence is similar to the QSQLITE plugin with installing the plugin in the standard location.
+    
+   
     \target QIBASE
     \section2 QIBASE for Borland InterBase
 
