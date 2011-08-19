@@ -109,6 +109,7 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_textCapabilities(TCoeInputCapabilities::EAllText),
       m_inDestruction(false),
       m_pendingInputCapabilitiesChanged(false),
+      m_pendingTransactionCancel(false),
       m_cursorVisibility(1),
       m_inlinePosition(0),
       m_formatRetriever(0),
@@ -1074,12 +1075,10 @@ void QCoeFepInputContext::CancelFepInlineEdit()
     // We are not supposed to ever have a tempPreeditString and a real preedit string
     // from S60 at the same time, so it should be safe to rely on this test to determine
     // whether we should honor S60's request to clear the text or not.
-    if (m_hasTempPreeditString)
+    if (m_hasTempPreeditString || m_pendingTransactionCancel)
         return;
 
-    // Sync with native side editor state. Native side can then do various operations
-    // based on editor state, such as removing 'exact word bubble'.
-    ReportAknEdStateEvent(MAknEdStateObserver::EAknSyncEdwinState);
+    m_pendingTransactionCancel = true;
 
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent event(QLatin1String(""), attributes);
@@ -1087,6 +1086,13 @@ void QCoeFepInputContext::CancelFepInlineEdit()
     m_preeditString.clear();
     m_inlinePosition = 0;
     sendEvent(event);
+
+    // Sync with native side editor state. Native side can then do various operations
+    // based on editor state, such as removing 'exact word bubble'.
+    if (!m_pendingInputCapabilitiesChanged)
+        ReportAknEdStateEvent(MAknEdStateObserver::EAknSyncEdwinState);
+
+    m_pendingTransactionCancel = false;
 }
 
 TInt QCoeFepInputContext::DocumentLengthForFep() const
