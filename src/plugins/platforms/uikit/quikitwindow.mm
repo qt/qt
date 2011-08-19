@@ -53,6 +53,23 @@
 
 #include <QtDebug>
 
+static GLint stencilBits()
+{
+    static GLint bits;
+    static bool initialized = false;
+    if (!initialized) {
+        glGetIntegerv(GL_STENCIL_BITS, &bits);
+        initialized = true;
+    }
+    return bits;
+}
+
+static GLint depthBits()
+{
+    // we can choose between GL_DEPTH24_STENCIL8_OES and GL_DEPTH_COMPONENT16
+    return stencilBits() > 0 ? 24 : 16;
+}
+
 class EAGLPlatformContext : public QPlatformGLContext
 {
 public:
@@ -60,13 +77,13 @@ public:
         : mView(view)
     {
         mFormat.setWindowApi(QPlatformWindowFormat::OpenGL);
-        mFormat.setDepthBufferSize(24);
+        mFormat.setDepthBufferSize(depthBits());
         mFormat.setAccumBufferSize(0);
         mFormat.setRedBufferSize(8);
         mFormat.setGreenBufferSize(8);
         mFormat.setBlueBufferSize(8);
         mFormat.setAlphaBufferSize(8);
-        mFormat.setStencilBufferSize(8);
+        mFormat.setStencilBufferSize(stencilBits());
         mFormat.setSamples(0);
         mFormat.setSampleBuffers(false);
         mFormat.setDoubleBuffer(true);
@@ -74,7 +91,7 @@ public:
         mFormat.setRgba(true);
         mFormat.setAlpha(true);
         mFormat.setAccum(false);
-        mFormat.setStencil(true);
+        mFormat.setStencil(stencilBits() > 0);
         mFormat.setStereo(false);
         mFormat.setDirectRendering(false);
 
@@ -203,9 +220,13 @@ private:
 
         glGenRenderbuffers(1, &mDepthRenderbuffer);
         glBindRenderbuffer(GL_RENDERBUFFER, mDepthRenderbuffer);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, mFramebufferWidth, mFramebufferHeight);
+        if (stencilBits() > 0) {
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, mFramebufferWidth, mFramebufferHeight);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, mDepthRenderbuffer);
+        } else {
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, mFramebufferWidth, mFramebufferHeight);
+        }
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthRenderbuffer);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, mDepthRenderbuffer);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             NSLog(@"Failed to make complete framebuffer object %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));

@@ -485,7 +485,8 @@ QVector<quint32> QRawFont::glyphIndexesForString(const QString &text) const
    must be at least \a numChars, if that's still not enough, this function will return
    false, then you can resize \a glyphIndexes from the size returned in \a numGlyphs.
 
-   \sa glyphIndexesForString(), advancesForGlyphIndexes(), QGlyphs, QTextLayout::glyphs(), QTextFragment::glyphs()
+   \sa glyphIndexesForString(), advancesForGlyphIndexes(), QGlyphRun,
+       QTextLayout::glyphRuns(), QTextFragment::glyphRuns()
 */
 bool QRawFont::glyphIndexesForChars(const QChar *chars, int numChars, quint32 *glyphIndexes, int *numGlyphs) const
 {
