@@ -545,7 +545,8 @@ void InnerNode::removeFromRelated()
  */
 void InnerNode::deleteChildren()
 {
-    qDeleteAll(children);
+    NodeList childrenCopy = children; // `children` will be changed in ~Node()
+    qDeleteAll(childrenCopy);
 }
 
 /*!
