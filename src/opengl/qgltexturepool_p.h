@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QGLPixmapData;
+class QGLTexture;
 class QGLTexturePoolPrivate;
 
 class QGLTexturePool
@@ -70,18 +70,18 @@ public:
     static QGLTexturePool *instance();
 
     // Create a new texture with the specified parameters and associate
-    // it with "data".  The QGLPixmapData will be notified when the
+    // it with "texture".  The QGLTexture will be notified when the
     // texture needs to be reclaimed by the pool.
     //
     // This function will call reclaimSpace() when texture creation fails.
-    GLuint createTextureForPixmap(GLenum target,
+    GLuint createTexture(GLenum target,
                                             GLint level,
                                             GLint internalformat,
                                             GLsizei width,
                                             GLsizei height,
                                             GLenum format,
                                             GLenum type,
-                                            QGLPixmapData *data);
+                                            QGLTexture *texture);
 
     // Create a permanent texture with the specified parameters.
     // If there is insufficient space for the texture,
@@ -100,40 +100,37 @@ public:
                                             GLenum type,
                                             const GLvoid *data);
 
-    // Release a texture that is no longer required.
-    void releaseTexture(QGLPixmapData *data, GLuint texture);
-
-    // Notify the pool that a QGLPixmapData object is using
+    // Notify the pool that a QGLTexture object is using
     // an texture again.  This allows the pool to move the texture
-    // within a least-recently-used list of QGLPixmapData objects.
-    void useTexture(QGLPixmapData *data);
+    // within a least-recently-used list of QGLTexture objects.
+    void useTexture(QGLTexture *texture);
 
     // Notify the pool that the texture associated with a
-    // QGLPixmapData is being detached from the pool.  The caller
+    // QGLTexture is being detached from the pool.  The caller
     // will become responsible for calling glDeleteTextures().
-    void detachTexture(QGLPixmapData *data);
+    void detachTexture(QGLTexture *texture);
 
     // Reclaim space for an image allocation with the specified parameters.
     // Returns true if space was reclaimed, or false if there is no
-    // further space that can be reclaimed.  The "data" parameter
-    // indicates the pixmap that is trying to obtain space which should
+    // further space that can be reclaimed.  The "texture" parameter
+    // indicates the texture that is trying to obtain space which should
     // not itself be reclaimed.
     bool reclaimSpace(GLint internalformat,
                                 GLsizei width,
                                 GLsizei height,
                                 GLenum format,
                                 GLenum type,
-                                QGLPixmapData *data);
+                                QGLTexture *data);
 
-    // Hibernate the image pool because the context is about to be
+    // Hibernate the texture pool because the context is about to be
     // destroyed.  All textures left in the pool should be released.
     void hibernate();
 
 protected:
-    // Helper functions for managing the LRU list of QGLPixmapData objects.
-    void moveToHeadOfLRU(QGLPixmapData *data);
-    void removeFromLRU(QGLPixmapData *data);
-    QGLPixmapData *pixmapLRU();
+    // Helper functions for managing the LRU list of QGLTexture objects.
+    void moveToHeadOfLRU(QGLTexture *texture);
+    void removeFromLRU(QGLTexture *texture);
+    QGLTexture *textureLRU();
 
 private:
     QScopedPointer<QGLTexturePoolPrivate> d_ptr;

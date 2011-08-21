@@ -56,6 +56,10 @@
 #include <QtGui/qpixmap.h>
 #include <QtCore/qatomic.h>
 
+#ifdef Q_OS_SYMBIAN
+#include <QtGui/private/qvolatileimage_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QImageReader;
@@ -134,6 +138,7 @@ public:
     }
 
 #if defined(Q_OS_SYMBIAN)
+    virtual QVolatileImage toVolatileImage() const;
     virtual void* toNativeType(NativeType type);
     virtual void fromNativeType(void* pixmap, NativeType type);
 #endif
@@ -153,7 +158,7 @@ protected:
 private:
     friend class QPixmap;
     friend class QX11PixmapData;
-    friend class QS60PixmapData;
+    friend class QSymbianRasterPixmapData;
     friend class QImagePixmapCleanupHooks; // Needs to set is_cached
     friend class QGLTextureCache; //Needs to check the reference count
     friend class QExplicitlySharedDataPointer<QPixmapData>;

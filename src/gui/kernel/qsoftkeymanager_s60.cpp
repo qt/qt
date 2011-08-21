@@ -53,6 +53,10 @@
 #include <eiksoftkeyimage.h>
 #include <eikcmbut.h>
 
+#ifndef QT_NO_STYLE_S60
+#include <qs60style.h>
+#endif
+
 #ifndef QT_NO_SOFTKEYMANAGER
 QT_BEGIN_NAMESPACE
 
@@ -113,7 +117,7 @@ void QSoftKeyManagerPrivateS60::ensureCbaVisibilityAndResponsiviness(CEikButtonG
 
 void QSoftKeyManagerPrivateS60::clearSoftkeys(CEikButtonGroupContainer &cba)
 {
-#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4) && !defined(SYMBIAN_VERSION_9_3) && !defined(SYMBIAN_VERSION_9_2)
     QT_TRAP_THROWING(
         //EAknSoftkeyEmpty is used, because using -1 adds softkeys without actions on Symbian3
         cba.SetCommandL(0, EAknSoftkeyEmpty, KNullDesC);
@@ -220,26 +224,42 @@ bool QSoftKeyManagerPrivateS60::isOrientationLandscape()
 
 QSize QSoftKeyManagerPrivateS60::cbaIconSize(CEikButtonGroupContainer *cba, int position)
 {
-
     int index = position;
     index += isOrientationLandscape() ? 0 : 1;
     if(cachedCbaIconSize[index].isNull()) {
-        // Only way I figured out to get CBA icon size without RnD SDK, was
-        // to set some dummy icon to CBA first and then ask CBA button CCoeControl::Size()
-        // The returned value is cached to avoid unnecessary icon setting every time.
-        const bool left = (position == LSK_POSITION);
-        if(position == LSK_POSITION || position == RSK_POSITION) {
-            CEikImage* tmpImage = NULL;
-            QT_TRAP_THROWING(tmpImage = new (ELeave) CEikImage);
-            EikSoftkeyImage::SetImage(cba, *tmpImage, left); // Takes myimage ownership
-            int command = S60_COMMAND_START + position;
-            setNativeSoftkey(*cba, position, command, KNullDesC());
-            cachedCbaIconSize[index] = qt_TSize2QSize(cba->ControlOrNull(command)->Size());
-            EikSoftkeyImage::SetLabel(cba, left);
+        if (QSysInfo::s60Version() >= QSysInfo::SV_S60_5_3) {
+            // S60 5.3 and later have fixed icon size on softkeys, while the button
+            // itself is bigger, so the automatic check doesn't work.
+            // Use custom pixel metrics to deduce the CBA icon size
+            int iconHeight = 30;
+            int iconWidth = 30;
+#ifndef QT_NO_STYLE_S60
+            QS60Style *s60Style = 0;
+            s60Style = qobject_cast<QS60Style *>(QApplication::style());
+            if (s60Style) {
+                iconWidth = s60Style->pixelMetric((QStyle::PixelMetric)PM_CbaIconWidth);
+                iconHeight = s60Style->pixelMetric((QStyle::PixelMetric)PM_CbaIconHeight);
+            }
+#endif
+            cachedCbaIconSize[index] = QSize(iconWidth, iconHeight);
+        } else {
+            // Only way I figured out to get CBA icon size without RnD SDK, was
+            // to set some dummy icon to CBA first and then ask CBA button CCoeControl::Size()
+            // The returned value is cached to avoid unnecessary icon setting every time.
+            const bool left = (position == LSK_POSITION);
+            if (position == LSK_POSITION || position == RSK_POSITION) {
+                CEikImage* tmpImage = NULL;
+                QT_TRAP_THROWING(tmpImage = new (ELeave) CEikImage);
+                EikSoftkeyImage::SetImage(cba, *tmpImage, left); // Takes tmpImage ownership
+                int command = S60_COMMAND_START + position;
+                setNativeSoftkey(*cba, position, command, KNullDesC());
+                cachedCbaIconSize[index] = qt_TSize2QSize(cba->ControlOrNull(command)->Size());
+                EikSoftkeyImage::SetLabel(cba, left);
 
-            if(cachedCbaIconSize[index] == QSize(138,72)) {
-                // Hack for S60 5.0 (5800) landscape orientation, which return wrong icon size
-                cachedCbaIconSize[index] = QSize(60,60);
+                if (cachedCbaIconSize[index] == QSize(138,72)) {
+                    // Hack for S60 5.0 landscape orientation, which return wrong icon size
+                    cachedCbaIconSize[index] = QSize(60,60);
+                }
             }
         }
     }
@@ -303,7 +323,7 @@ bool QSoftKeyManagerPrivateS60::setSoftkey(CEikButtonGroupContainer &cba,
         QString text = softkeyText(*action);
         TPtrC nativeText = qt_QString2TPtrC(text);
         int command = S60_COMMAND_START + position;
-#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4) && !defined(SYMBIAN_VERSION_9_3) && !defined(SYMBIAN_VERSION_9_2)
         if (softKeyCommandActions.contains(action))
             command = softKeyCommandActions.value(action);
 #endif

@@ -248,9 +248,10 @@ void QVGPixmapData::createPixmapForImage(QImage &image, Qt::ImageConversionFlags
         // same. Detaching is needed to prevent issues with painting
         // onto this QPixmap later on.
         convertedImage.detach();
+        if (convertedImage.isNull())
+            qWarning("QVGPixmapData: Failed to convert image data (out of memory? try increasing heap size)");
         source = QVolatileImage(convertedImage);
     }
-
     recreate = true;
 }
 

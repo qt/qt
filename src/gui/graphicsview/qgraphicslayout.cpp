@@ -269,18 +269,8 @@ void QGraphicsLayout::activate()
         return;
     Q_ASSERT(!parentItem->isLayout());
 
-    if (QGraphicsLayout::instantInvalidatePropagation()) {
-        QGraphicsWidget *parentWidget = static_cast<QGraphicsWidget*>(parentItem);
-        if (!parentWidget->parentLayoutItem()) {
-            // we've reached the topmost widget, resize it
-            bool wasResized = parentWidget->testAttribute(Qt::WA_Resized);
-            parentWidget->resize(parentWidget->size());
-            parentWidget->setAttribute(Qt::WA_Resized, wasResized);
-        }
-
-        setGeometry(parentItem->contentsRect());    // relayout children
-    } else {
-        setGeometry(parentItem->contentsRect());    // relayout children
+    setGeometry(parentItem->contentsRect());    // relayout children
+    if (!QGraphicsLayout::instantInvalidatePropagation()) {
         parentLayoutItem()->updateGeometry();
     }
 }

@@ -288,6 +288,11 @@ void* QVGPixmapData::toNativeType(NativeType type)
     return 0;
 }
 
+QVolatileImage QVGPixmapData::toVolatileImage() const
+{
+    return source;
+}
+
 QSymbianVGFontGlyphCache::QSymbianVGFontGlyphCache() : QVGFontGlyphCache()
 {
 #ifdef QT_SYMBIAN_HARDWARE_GLYPH_CACHE

@@ -200,6 +200,16 @@ QImage &QVolatileImage::imageRef() // non-const, in order to cause a detach
     return d->image;
 }
 
+/*!
+  Non-detaching version, for read-only access only.
+  Must be guarded by begin/endDataAccess().
+ */
+const QImage &QVolatileImage::constImageRef() const
+{
+    const_cast<QVolatileImageData *>(d.data())->ensureImage();
+    return d->image;
+}
+
 void *QVolatileImage::duplicateNativeImage() const
 {
     return d->duplicateNativeImage();
@@ -289,12 +299,14 @@ bool QVolatileImagePaintEngine::end()
 void QVolatileImagePaintEngine::drawPixmap(const QPointF &p, const QPixmap &pm)
 {
 #ifdef Q_OS_SYMBIAN
-    void *nativeData = pm.pixmapData()->toNativeType(QPixmapData::VolatileImage);
-    if (nativeData) {
-        QVolatileImage *img = static_cast<QVolatileImage *>(nativeData);
-        img->beginDataAccess();
-        QRasterPaintEngine::drawImage(p, img->imageRef());
-        img->endDataAccess(true);
+    QVolatileImage img = pm.pixmapData()->toVolatileImage();
+    if (!img.isNull()) {
+        img.beginDataAccess();
+        // imageRef() would detach and since we received the QVolatileImage from
+        // toVolatileImage() by value, it would cause a copy which would ruin
+        // our goal. So use constImageRef() instead.
+        QRasterPaintEngine::drawImage(p, img.constImageRef());
+        img.endDataAccess(true);
     } else {
         QRasterPaintEngine::drawPixmap(p, pm);
     }
@@ -306,12 +318,11 @@ void QVolatileImagePaintEngine::drawPixmap(const QPointF &p, const QPixmap &pm)
 void QVolatileImagePaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
 {
 #ifdef Q_OS_SYMBIAN
-    void *nativeData = pm.pixmapData()->toNativeType(QPixmapData::VolatileImage);
-    if (nativeData) {
-        QVolatileImage *img = static_cast<QVolatileImage *>(nativeData);
-        img->beginDataAccess();
-        QRasterPaintEngine::drawImage(r, img->imageRef(), sr);
-        img->endDataAccess(true);
+    QVolatileImage img = pm.pixmapData()->toVolatileImage();
+    if (!img.isNull()) {
+        img.beginDataAccess();
+        QRasterPaintEngine::drawImage(r, img.constImageRef(), sr);
+        img.endDataAccess(true);
     } else {
         QRasterPaintEngine::drawPixmap(r, pm, sr);
     }

@@ -138,6 +138,7 @@ public:
     QSize size() const { return QSize(w, h); }
 
 #if defined(Q_OS_SYMBIAN)
+    QVolatileImage toVolatileImage() const;
     void* toNativeType(NativeType type);
     void fromNativeType(void* pixmap, NativeType type);
     bool initFromNativeImageHandle(void *handle, const QString &type);

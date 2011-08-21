@@ -184,4 +184,5 @@ EXPORTS
 	?createFromNativeImageHandleProvider@QVGPixmapData@@QAEXXZ @ 183 NONAME ; void QVGPixmapData::createFromNativeImageHandleProvider(void)
 	?releaseNativeImageHandle@QVGPixmapData@@QAEXXZ @ 184 NONAME ; void QVGPixmapData::releaseNativeImageHandle(void)
 	?forceToImage@QVGPixmapData@@IAEX_N@Z @ 185 NONAME ; void QVGPixmapData::forceToImage(bool)
+	?toVolatileImage@QVGPixmapData@@UBE?AVQVolatileImage@@XZ @ 186 NONAME ; class QVolatileImage QVGPixmapData::toVolatileImage(void) const
 

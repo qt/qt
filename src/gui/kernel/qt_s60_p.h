@@ -77,8 +77,8 @@
 #include <akncontext.h>             // CAknContextPane
 #include <eikspane.h>               // CEikStatusPane
 #include <AknPopupFader.h>          // MAknFadedComponent and TAknPopupFader
-#include <gfxtranseffect/gfxtranseffect.h> // BeginFullScreen
 #ifdef QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H
+#include <gfxtranseffect/gfxtranseffect.h> // BeginFullScreen
 #include <akntranseffect.h> // BeginFullScreen
 #endif
 #endif
@@ -153,7 +153,9 @@ public:
     int menuBeingConstructed : 1;
     int orientationSet : 1;
     int partial_keyboard : 1;
+    int partial_keyboardAutoTranslation : 1;
     int partialKeyboardOpen : 1;
+    int handleStatusPaneResizeNotifications : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     QPointer<QWidget> splitViewLastWidget;
 
@@ -189,6 +191,7 @@ public:
     static bool setRecursiveDecorationsVisibility(QWidget *window, Qt::WindowStates newState);
 #endif
     static void controlVisibilityChanged(CCoeControl *control, bool visible);
+    static TRect clientRect();
 
 #ifdef Q_OS_SYMBIAN
     TTrapHandler *s60InstalledTrapHandler;
@@ -341,7 +344,9 @@ inline QS60Data::QS60Data()
   menuBeingConstructed(0),
   orientationSet(0),
   partial_keyboard(0),
+  partial_keyboardAutoTranslation(1),
   partialKeyboardOpen(0),
+  handleStatusPaneResizeNotifications(1),
   s60ApplicationFactory(0)
 #ifdef Q_OS_SYMBIAN
   ,s60InstalledTrapHandler(0)

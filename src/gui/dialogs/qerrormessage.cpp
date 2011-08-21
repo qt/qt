@@ -249,12 +249,20 @@ QErrorMessage::QErrorMessage(QWidget * parent)
     d->icon->setPixmap(QMessageBox::standardIcon(QMessageBox::Information));
     d->icon->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
 #endif
-    grid->addWidget(d->icon, 0, 0, Qt::AlignTop);
+#ifdef Q_WS_S60
+    //In Symbian, messagebox icons are in LtR UIs on right. Thus, layout needs to switch icon and text columns.
+    const int preferredIconColumn = (QApplication::layoutDirection() == Qt::LeftToRight) ? 1 : 0;
+    const int preferredTextColumn = (QApplication::layoutDirection() == Qt::LeftToRight) ? 0 : 1;
+#else
+    const int preferredIconColumn = 0;
+    const int preferredTextColumn = 1;
+#endif
+    grid->addWidget(d->icon, 0, preferredIconColumn, Qt::AlignTop);
     d->errors = new QErrorMessageTextView(this);
-    grid->addWidget(d->errors, 0, 1);
+    grid->addWidget(d->errors, 0, preferredTextColumn);
     d->again = new QCheckBox(this);
     d->again->setChecked(true);
-    grid->addWidget(d->again, 1, 1, Qt::AlignTop);
+    grid->addWidget(d->again, 1, preferredTextColumn, Qt::AlignTop);
     d->ok = new QPushButton(this);
 #ifdef QT_SOFTKEYS_ENABLED
     d->okAction = new QAction(d->ok);
@@ -270,7 +278,7 @@ QErrorMessage::QErrorMessage(QWidget * parent)
     connect(d->ok, SIGNAL(clicked()), this, SLOT(accept()));
     d->ok->setFocus();
     grid->addWidget(d->ok, 2, 0, 1, 2, Qt::AlignCenter);
-    grid->setColumnStretch(1, 42);
+    grid->setColumnStretch(preferredTextColumn, 42);
     grid->setRowStretch(0, 42);
     d->retranslateStrings();
 }

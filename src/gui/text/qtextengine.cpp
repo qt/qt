@@ -1385,6 +1385,15 @@ void QTextEngine::shape(int item) const
     }
 }
 
+static inline void releaseCachedFontEngine(QFontEngine *fontEngine)
+{
+    if (fontEngine) {
+        fontEngine->ref.deref();
+        if (fontEngine->cache_count == 0 && fontEngine->ref == 0)
+            delete fontEngine;
+    }
+}
+
 void QTextEngine::invalidate()
 {
     freeMemory();
@@ -1392,6 +1401,10 @@ void QTextEngine::invalidate()
     maxWidth = 0;
     if (specialData)
         specialData->resolvedFormatIndices.clear();
+
+    releaseCachedFontEngine(feCache.prevFontEngine);
+    releaseCachedFontEngine(feCache.prevScaledFontEngine);
+    feCache.reset();
 }
 
 void QTextEngine::clearLineData()
@@ -1564,19 +1577,13 @@ bool QTextEngine::isRightToLeft() const
 int QTextEngine::findItem(int strPos) const
 {
     itemize();
-    int left = 0;
-    int right = layoutData->items.size()-1;
-    while(left <= right) {
-        int middle = ((right-left)/2)+left;
-        if (strPos > layoutData->items[middle].position)
-            left = middle+1;
-        else if(strPos < layoutData->items[middle].position)
-            right = middle-1;
-        else {
-            return middle;
-        }
+
+    int item;
+    for (item = layoutData->items.size()-1; item > 0; --item) {
+        if (layoutData->items[item].position <= strPos)
+            break;
     }
-    return right;
+    return item;
 }
 
 QFixed QTextEngine::width(int from, int len) const
@@ -1783,6 +1790,13 @@ QFont QTextEngine::font(const QScriptItem &si) const
     return font;
 }
 
+QTextEngine::FontEngineCache::FontEngineCache()
+{
+    reset();
+}
+
+//we cache the previous results of this function, as calling it numerous times with the same effective
+//input is common (and hard to cache at a higher level)
 QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFixed *descent, QFixed *leading) const
 {
     QFontEngine *engine = 0;
@@ -1791,28 +1805,53 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
 
     QFont font = fnt;
     if (hasFormats()) {
-        QTextCharFormat f = format(&si);
-        font = f.font();
-
-        if (block.docHandle() && block.docHandle()->layout()) {
-            // Make sure we get the right dpi on printers
-            QPaintDevice *pdev = block.docHandle()->layout()->paintDevice();
-            if (pdev)
-                font = QFont(font, pdev);
+        if (feCache.prevFontEngine && feCache.prevPosition == si.position && feCache.prevLength == length(&si) && feCache.prevScript == script) {
+            engine = feCache.prevFontEngine;
+            scaledEngine = feCache.prevScaledFontEngine;
         } else {
-            font = font.resolve(fnt);
-        }
-        engine = font.d->engineForScript(script);
-        QTextCharFormat::VerticalAlignment valign = f.verticalAlignment();
-        if (valign == QTextCharFormat::AlignSuperScript || valign == QTextCharFormat::AlignSubScript) {
-            if (font.pointSize() != -1)
-                font.setPointSize((font.pointSize() * 2) / 3);
-            else
-                font.setPixelSize((font.pixelSize() * 2) / 3);
-            scaledEngine = font.d->engineForScript(script);
+            QTextCharFormat f = format(&si);
+            font = f.font();
+
+            if (block.docHandle() && block.docHandle()->layout()) {
+                // Make sure we get the right dpi on printers
+                QPaintDevice *pdev = block.docHandle()->layout()->paintDevice();
+                if (pdev)
+                    font = QFont(font, pdev);
+            } else {
+                font = font.resolve(fnt);
+            }
+            engine = font.d->engineForScript(script);
+            QTextCharFormat::VerticalAlignment valign = f.verticalAlignment();
+            if (valign == QTextCharFormat::AlignSuperScript || valign == QTextCharFormat::AlignSubScript) {
+                if (font.pointSize() != -1)
+                    font.setPointSize((font.pointSize() * 2) / 3);
+                else
+                    font.setPixelSize((font.pixelSize() * 2) / 3);
+                scaledEngine = font.d->engineForScript(script);
+            }
+            feCache.prevFontEngine = engine;
+            if (engine)
+                engine->ref.ref();
+            feCache.prevScaledFontEngine = scaledEngine;
+            if (scaledEngine)
+                scaledEngine->ref.ref();
+            feCache.prevScript = script;
+            feCache.prevPosition = si.position;
+            feCache.prevLength = length(&si);
         }
     } else {
-        engine = font.d->engineForScript(script);
+        if (feCache.prevFontEngine && feCache.prevScript == script && feCache.prevPosition == -1)
+            engine = feCache.prevFontEngine;
+        else {
+            engine = font.d->engineForScript(script);
+            feCache.prevFontEngine = engine;
+            if (engine)
+                engine->ref.ref();
+            feCache.prevScript = script;
+            feCache.prevPosition = -1;
+            feCache.prevLength = -1;
+            feCache.prevScaledFontEngine = 0;
+        }
     }
 
     if (si.analysis.flags == QScriptAnalysis::SmallCaps) {
@@ -2744,6 +2783,7 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
     }
 
     const HB_CharAttributes *attrs = attributes();
+    logClusters = this->logClusters(si);
     clusterLength = getClusterLength(logClusters, attrs, 0, end, glyph_pos, &clusterStart);
 
     if (clusterLength) {
@@ -2778,6 +2818,22 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
     : justified(false), underlineStyle(QTextCharFormat::NoUnderline), charFormat(format),
       num_chars(0), chars(0), logClusters(0), f(0), fontEngine(0)
 {
+    f = font;
+    fontEngine = f->d->engineForScript(si.analysis.script);
+    Q_ASSERT(fontEngine);
+
+    initWithScriptItem(si);
+}
+
+QTextItemInt::QTextItemInt(const QGlyphLayout &g, QFont *font, const QChar *chars_, int numChars, QFontEngine *fe, const QTextCharFormat &format)
+    : flags(0), justified(false), underlineStyle(QTextCharFormat::NoUnderline), charFormat(format),
+      num_chars(numChars), chars(chars_), logClusters(0), f(font),  glyphs(g), fontEngine(fe)
+{
+}
+
+// Fix up flags and underlineStyle with given info
+void QTextItemInt::initWithScriptItem(const QScriptItem &si)
+{
     // explicitly initialize flags so that initFontAttributes can be called
     // multiple times on the same TextItem
     flags = 0;
@@ -2785,13 +2841,10 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
         flags |= QTextItem::RightToLeft;
     ascent = si.ascent;
     descent = si.descent;
-    f = font;
-    fontEngine = f->d->engineForScript(si.analysis.script);
-    Q_ASSERT(fontEngine);
 
-    if (format.hasProperty(QTextFormat::TextUnderlineStyle)) {
-        underlineStyle = format.underlineStyle();
-    } else if (format.boolProperty(QTextFormat::FontUnderline)
+    if (charFormat.hasProperty(QTextFormat::TextUnderlineStyle)) {
+        underlineStyle = charFormat.underlineStyle();
+    } else if (charFormat.boolProperty(QTextFormat::FontUnderline)
                || f->d->underline) {
         underlineStyle = QTextCharFormat::SingleUnderline;
     }
@@ -2800,16 +2853,10 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
     if (underlineStyle == QTextCharFormat::SingleUnderline)
         flags |= QTextItem::Underline;
 
-    if (f->d->overline || format.fontOverline())
+    if (f->d->overline || charFormat.fontOverline())
         flags |= QTextItem::Overline;
-    if (f->d->strikeOut || format.fontStrikeOut())
+    if (f->d->strikeOut || charFormat.fontStrikeOut())
         flags |= QTextItem::StrikeOut;
-}
-
-QTextItemInt::QTextItemInt(const QGlyphLayout &g, QFont *font, const QChar *chars_, int numChars, QFontEngine *fe)
-    : flags(0), justified(false), underlineStyle(QTextCharFormat::NoUnderline),
-      num_chars(numChars), chars(chars_), logClusters(0), f(font),  glyphs(g), fontEngine(fe)
-{
 }
 
 QTextItemInt QTextItemInt::midItem(QFontEngine *fontEngine, int firstGlyphIndex, int numGlyphs) const

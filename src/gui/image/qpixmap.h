@@ -265,7 +265,7 @@ private:
     friend class QPixmapData;
     friend class QX11PixmapData;
     friend class QMacPixmapData;
-    friend class QS60PixmapData;
+    friend class QSymbianRasterPixmapData;
     friend class QBitmap;
     friend class QPaintDevice;
     friend class QPainter;

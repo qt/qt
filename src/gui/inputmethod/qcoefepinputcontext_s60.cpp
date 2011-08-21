@@ -54,6 +54,7 @@
 
 #include <fepitfr.h>
 #include <hal.h>
+#include <e32property.h>
 
 #include <limits.h>
 // You only find these enumerations on SDK 5 onwards, so we need to provide our own
@@ -72,11 +73,17 @@
 // EAknEditorFlagEnablePartialScreen is only valid from Sym^3 onwards.
 #define QT_EAknEditorFlagEnablePartialScreen 0x200000
 
+// Properties to detect VKB status from AknFepInternalPSKeys.h
+#define QT_EPSUidAknFep 0x100056de
+#define QT_EAknFepTouchInputActive 0x00000004
+
 QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT void qt_s60_setPartialScreenInputMode(bool enable)
 {
     S60->partial_keyboard = enable;
+
+    QApplication::setAttribute(Qt::AA_S60DisablePartialScreenInputMode, !S60->partial_keyboard);
 
     QInputContext *ic = 0;
     if (QApplication::focusWidget()) {
@@ -86,6 +93,11 @@ Q_GUI_EXPORT void qt_s60_setPartialScreenInputMode(bool enable)
     }
     if (ic)
         ic->update();
+}
+
+Q_GUI_EXPORT void qt_s60_setPartialScreenAutomaticTranslation(bool enable)
+{
+    S60->partial_keyboardAutoTranslation = enable;
 }
 
 QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
@@ -106,7 +118,7 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
     m_fepState->SetObjectProvider(this);
     int defaultFlags = EAknEditorFlagDefault;
     if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0) {
-        if (S60->partial_keyboard) {
+        if (isPartialKeyboardSupported()) {
             defaultFlags |= QT_EAknEditorFlagEnablePartialScreen;
         }
         defaultFlags |= QT_EAknEditorFlagSelectionVisible;
@@ -307,28 +319,46 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         return false;
 
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
-        // Notify S60 that we want the virtual keyboard to show up.
-        QSymbianControl *sControl;
-        sControl = focusWidget()->effectiveWinId()->MopGetObject(sControl);
-        Q_ASSERT(sControl);
+        // Only request virtual keyboard if it is not yet active or if this is the first time
+        // panel is requested for this application.
+        static bool firstTime = true;
+        int vkbActive = 0;
 
-        // The FEP UI temporarily steals focus when it shows up the first time, causing
-        // all sorts of weird effects on the focused widgets. Since it will immediately give
-        // back focus to us, we temporarily disable focus handling until the job's done.
-        if (sControl) {
-            sControl->setIgnoreFocusChanged(true);
+        if (firstTime) {
+            // Sometimes the global QT_EAknFepTouchInputActive value can be left incorrect at
+            // application exit if the application is exited when input panel is active.
+            // Therefore we always want to open the panel the first time application requests it.
+            firstTime = false;
+        } else {
+            const TUid KPSUidAknFep = {QT_EPSUidAknFep};
+            // No need to check for return value, as vkbActive stays zero in that case
+            RProperty::Get(KPSUidAknFep, QT_EAknFepTouchInputActive, vkbActive);
         }
 
-        ensureInputCapabilitiesChanged();
-        m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::QT_EAknActivatePenInputRequest);
+        if (!vkbActive) {
+            // Notify S60 that we want the virtual keyboard to show up.
+            QSymbianControl *sControl;
+            sControl = focusWidget()->effectiveWinId()->MopGetObject(sControl);
+            Q_ASSERT(sControl);
 
-        if (sControl) {
-            sControl->setIgnoreFocusChanged(false);
+            // The FEP UI temporarily steals focus when it shows up the first time, causing
+            // all sorts of weird effects on the focused widgets. Since it will immediately give
+            // back focus to us, we temporarily disable focus handling until the job's done.
+            if (sControl) {
+                sControl->setIgnoreFocusChanged(true);
+            }
+
+            ensureInputCapabilitiesChanged();
+            m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::QT_EAknActivatePenInputRequest);
+
+            if (sControl) {
+                sControl->setIgnoreFocusChanged(false);
+            }
+            //If m_pointerHandler has already been set, it means that fep inline editing is in progress.
+            //When this is happening, do not filter out pointer events.
+            if (!m_pointerHandler)
+                return true;
         }
-        //If m_pointerHandler has already been set, it means that fep inline editing is in progress.
-        //When this is happening, do not filter out pointer events.
-        if (!m_pointerHandler)
-            return true;
     }
 
     return false;
@@ -361,7 +391,8 @@ bool QCoeFepInputContext::symbianFilterEvent(QWidget *keyWidget, const QSymbianE
     }
 
     if (event->type() == QSymbianEvent::ResourceChangeEvent
-         && event->resourceChangeType() == KEikMessageFadeAllWindows) {
+         && (event->resourceChangeType() == KEikMessageFadeAllWindows
+         || event->resourceChangeType() == KEikDynamicLayoutVariantSwitch)) {
         reset();
     }
 
@@ -396,7 +427,8 @@ void QCoeFepInputContext::mouseHandler(int x, QMouseEvent *event)
         //If splitview is open and T9 word is tapped, pass the pointer event to pointer handler.
         //This will open the "suggested words" list. Pass pointer position always as zero, to make
         //full word replacement in case user makes a selection.
-        if (S60->partial_keyboard && S60->partialKeyboardOpen
+        if (isPartialKeyboardSupported()
+            && S60->partialKeyboardOpen
             && m_pointerHandler
             && !(currentHints & Qt::ImhNoPredictiveText)
             && (x > 0 && x < m_preeditString.length())) {
@@ -442,7 +474,7 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
 
     if (!alwaysResize) {
         if (gv->scene()) {
-            if (gv->scene()->focusItem()) {
+            if (gv->scene()->focusItem() && S60->partial_keyboardAutoTranslation) {
                 // Check if the widget contains cursorPositionChanged signal and disconnect from it.
                 QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
                 int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
@@ -462,7 +494,10 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
         }
     } else {
         if (m_splitViewResizeBy)
-            gv->resize(gv->rect().width(), m_splitViewResizeBy);
+            if (m_splitViewPreviousWindowStates & Qt::WindowFullScreen)
+                gv->resize(gv->rect().width(), qApp->desktop()->height());
+            else
+                gv->resize(gv->rect().width(), m_splitViewResizeBy);
     }
     // Resizing might have led to widget losing its original windowstate.
     // Restore previous window state.
@@ -507,6 +542,11 @@ bool QCoeFepInputContext::isWidgetVisible(QWidget *widget, int offset)
     return visible;
 }
 
+bool QCoeFepInputContext::isPartialKeyboardSupported()
+{
+    return (S60->partial_keyboard || !QApplication::testAttribute(Qt::AA_S60DisablePartialScreenInputMode));
+}
+
 // Ensure that the input widget is visible in the splitview rect.
 
 void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
@@ -540,7 +580,7 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
     if (!moveWithinVisibleArea) {
         // Check if the widget contains cursorPositionChanged signal and connect to it.
         QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
-        if (gv->scene() && gv->scene()->focusItem()) {
+        if (gv->scene() && gv->scene()->focusItem() && S60->partial_keyboardAutoTranslation) {
             int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
             if (index != -1)
                 connect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
@@ -577,12 +617,13 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
             widget->resize(widget->width(), splitViewRect.height() - windowTop);
         }
 
-        if (gv->scene()) {
+        if (gv->scene() && S60->partial_keyboardAutoTranslation) {
             const QRectF microFocusRect = gv->scene()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
             gv->ensureVisible(microFocusRect);
         }
     } else {
-        translateInputWidget();
+        if (S60->partial_keyboardAutoTranslation)
+            translateInputWidget();
     }
 
     if (alwaysResize)
@@ -617,7 +658,7 @@ void QCoeFepInputContext::updateHints(bool mustUpdateInputCapabilities)
         // we need to update its state separately.
         if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0) {
             TInt currentFlags = m_fepState->Flags();
-            if (S60->partial_keyboard)
+            if (isPartialKeyboardSupported())
                 currentFlags |= QT_EAknEditorFlagEnablePartialScreen;
             else
                 currentFlags &= ~QT_EAknEditorFlagEnablePartialScreen;
@@ -640,6 +681,7 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
 {
     using namespace Qt;
 
+    reset();
     commitTemporaryPreeditString();
 
     const bool anynumbermodes = hints & (ImhDigitsOnly | ImhFormattedNumbersOnly | ImhDialableCharactersOnly);
@@ -692,11 +734,6 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     }
     else if (anynumbermodes) {
         flags |= EAknEditorNumericInputMode;
-        if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0
-            && ((hints & ImhFormattedNumbersOnly) || (hints & ImhDialableCharactersOnly))) {
-            //workaround - the * key does not launch the symbols menu, making it impossible to use these modes unless text mode is enabled.
-            flags |= EAknEditorTextInputMode;
-        }
     }
     else if (anytextmodes) {
         flags |= EAknEditorTextInputMode;
@@ -738,7 +775,7 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
 
     flags = 0;
     if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0) {
-        if (S60->partial_keyboard)
+        if (isPartialKeyboardSupported())
             flags |= QT_EAknEditorFlagEnablePartialScreen;
         flags |= QT_EAknEditorFlagSelectionVisible;
     }
@@ -776,8 +813,6 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     } else if (hints & ImhEmailCharactersOnly) {
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_EMAIL_ADDR_SPECIAL_CHARACTER_TABLE_DIALOG);
     } else if (needsCharMap) {
-        m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
-    } else if ((hints & ImhFormattedNumbersOnly) || (hints & ImhDialableCharactersOnly)) {
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
     } else {
         m_fepState->SetSpecialCharacterTableResourceId(0);
@@ -896,19 +931,40 @@ void QCoeFepInputContext::translateInputWidget()
 
     m_transformation = (rootItem->transform().isTranslating()) ? QRectF(0,0, gv->width(), rootItem->transform().dy()) : QRectF();
 
-    // Do nothing if the cursor is visible in the splitview area.
-    if (splitViewRect.contains(cursorP.boundingRect()))
+    // Adjust cursor bounding rect to be lower, so that view translates if the cursor gets near
+    // the splitview border.
+    QRect cursorRect = cursorP.boundingRect().adjusted(0, cursor.height(), 0, cursor.height());
+    if (splitViewRect.contains(cursorRect))
         return;
 
-    // New Y position should be ideally at the center of the splitview area.
-    // If that would expose unpainted canvas, limit the tranformation to the visible scene bottom.
+    // New Y position should be ideally just above the keyboard.
+    // If that would expose unpainted canvas, limit the tranformation to the visible scene rect or
+    // to the focus item's shape/clip path.
 
-    const qreal maxY = gv->sceneRect().bottom() - splitViewRect.bottom() + m_transformation.height();
-    qreal dy = -(qMin(maxY, (cursor.bottom() - vkbRect.top() / 2)));
+    const QPainterPath path = gv->scene()->focusItem()->isClipped() ?
+        gv->scene()->focusItem()->clipPath() : gv->scene()->focusItem()->shape();
+    const qreal itemHeight = path.boundingRect().height();
 
-    // Do not allow transform above screen top.
-    if (m_transformation.height() + dy > 0)
+    // Limit the maximum translation so that underlaying window content is not exposed.
+    qreal maxY = gv->sceneRect().bottom() - splitViewRect.bottom();
+    maxY = m_transformation.height() ? (qMin(itemHeight, maxY) + m_transformation.height()) : maxY;
+    if (maxY < 0)
+        maxY = 0;
+
+    // Translation should happen row-by-row, but initially it needs to ensure that cursor is visible.
+    const qreal translation = m_transformation.height() ?
+        cursor.height() : (cursorRect.bottom() - vkbRect.top());
+    const qreal dy = -(qMin(maxY, translation));
+
+    // Do not allow transform above screen top, nor beyond scenerect
+    if (m_transformation.height() + dy > 0 || gv->sceneRect().bottom() + m_transformation.height() < 0) {
+        // If we already have some transformation, remove it.
+        if (m_transformation.height() < 0 || gv->sceneRect().bottom() + m_transformation.height() < 0) {
+            rootItem->resetTransform();
+            translateInputWidget();
+        }
         return;
+    }
 
     rootItem->setTransform(QTransform::fromTranslate(0, dy), true);
 }

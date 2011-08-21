@@ -43,7 +43,6 @@
 #include "private/qwidget_p.h"
 #include "private/qbackingstore_p.h"
 #include "private/qapplication_p.h"
-#include "qwidget_p.h"
 
 #include <e32property.h>
 

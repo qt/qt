@@ -276,6 +276,11 @@ QImage* QPixmapData::buffer()
 }
 
 #if defined(Q_OS_SYMBIAN)
+QVolatileImage QPixmapData::toVolatileImage() const
+{
+    return QVolatileImage();
+}
+
 void* QPixmapData::toNativeType(NativeType /* type */)
 {
     return 0;

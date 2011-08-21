@@ -1555,15 +1555,4 @@
 
     For more information about creating a \c .sis file and installing it to device see also
     \l {The Symbian platform - Introduction to Qt#Installing your own applications}{here}.
-
-    \section1 Further Reading
-
-    This document aims to cover the common case for developers who want to
-    deploy Qt applications on devices using the Smart Installer. It does not
-    aim to cover every possible way of installing applications, Qt and other
-    dependencies on a device.
-
-    A wider selection of deployment methods is described in the
-    \l{Deploying a Qt Application article} on the Symbian Foundation
-    Developer Wiki.
 */

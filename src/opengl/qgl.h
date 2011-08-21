@@ -329,7 +329,6 @@ public:
 
         MemoryManagedBindOption                 = 0x0010, // internal flag
         CanFlipNativePixmapBindOption           = 0x0020, // internal flag
-        TemporarilyCachedBindOption             = 0x0040, // internal flag
 
         DefaultBindOption                       = LinearFilteringBindOption
                                                   | InvertedYBindOption

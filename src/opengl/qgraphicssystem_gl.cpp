@@ -55,9 +55,6 @@
 
 #if defined(Q_OS_SYMBIAN)
 #include <QtGui/private/qapplication_p.h>
-#endif
-
-#ifdef QGL_USE_TEXTURE_POOL
 #include "private/qgltexturepool_p.h"
 #endif
 

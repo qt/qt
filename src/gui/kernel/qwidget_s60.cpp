@@ -235,11 +235,22 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     QSize oldSize(q->size());
     QRect oldGeom(data.crect);
 
+    bool checkExtra = true;
+    if (q->isWindow() && (data.window_state & (Qt::WindowFullScreen | Qt::WindowMaximized))) {
+        // Do not allow fullscreen/maximized windows to expand beyond client rect
+        TRect r = S60->clientRect();
+        w = qMin(w, r.Width());
+        h = qMin(h, r.Height());
+
+        if (w == r.Width() && h == r.Height())
+            checkExtra = false;
+    }
+
     // Lose maximized status if deliberate resize
     if (w != oldSize.width() || h != oldSize.height())
         data.window_state &= ~Qt::WindowMaximized;
 
-    if (extra) {                                // any size restrictions?
+    if (checkExtra && extra) {  // any size restrictions?
         w = qMin(w,extra->maxw);
         h = qMin(h,extra->maxh);
         w = qMax(w,extra->minw);
@@ -348,7 +359,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
     if (popup)
         flags |= Qt::WindowStaysOnTopHint; // a popup stays on top
 
-    TRect clientRect = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+    TRect clientRect = S60->clientRect();
     int sw = clientRect.Width();
     int sh = clientRect.Height();
 
@@ -523,8 +534,6 @@ void QWidgetPrivate::show_sys()
                 QT_TRAP_THROWING(
                     factory->CreateResourceIndependentFurnitureL(ui);
 
-                    TRect boundingRect = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
-
                     CEikButtonGroupContainer *cba = CEikButtonGroupContainer::NewL(CEikButtonGroupContainer::ECba,
                         CEikButtonGroupContainer::EHorizontal,ui,R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
                     if (isFullscreen && !cbaRequested)
@@ -577,11 +586,13 @@ void QWidgetPrivate::show_sys()
         // Fill client area if maximized OR
         // Put window below status pane unless the window has an explicit position.
         if (!isFullscreen) {
+            // Use QS60Data::clientRect to take into account that native keyboard
+            // might affect ClientRect() return value.
             if (q->windowState() & Qt::WindowMaximized) {
-                TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+                TRect r = S60->clientRect();
                 id->SetExtent(r.iTl, r.Size());
             } else if (!q->testAttribute(Qt::WA_Moved) && q->windowType() != Qt::Dialog) {
-                id->SetPosition(static_cast<CEikAppUi*>(S60->appUi())->ClientRect().iTl);
+                id->SetPosition(S60->clientRect().iTl);
             }
         }
 
@@ -1252,7 +1263,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             // normal mode after showing the status pane, the geometry would overlap so we should
             // move it if it never had an explicit position.
             if (!wasMoved && S60->statusPane() && decorationsVisible) {
-                TPoint tl = static_cast<CEikAppUi*>(S60->appUi())->ClientRect().iTl;
+                TPoint tl = S60->clientRect().iTl;
                 normalGeometry.setTopLeft(QPoint(tl.iX, tl.iY));
             }
 #endif

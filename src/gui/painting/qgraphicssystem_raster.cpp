@@ -42,7 +42,7 @@
 #include "qgraphicssystem_raster_p.h"
 
 #ifdef Q_OS_SYMBIAN
-#include "private/qpixmap_s60_p.h"
+#include "private/qpixmap_raster_symbian_p.h"
 #include "private/qwindowsurface_s60_p.h"
 #else
 #include "private/qpixmap_raster_p.h"
@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 QPixmapData *QRasterGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
 {
 #ifdef Q_OS_SYMBIAN
-    return new QS60PixmapData(type);
+    return new QSymbianRasterPixmapData(type);
 #else
     return new QRasterPixmapData(type);
 #endif

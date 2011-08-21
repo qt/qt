@@ -1017,6 +1017,10 @@ void QApplicationPrivate::initialize()
     QApplicationPrivate::wheel_scroll_lines = 3;
 #endif
 
+#ifdef Q_WS_S60
+    q->setAttribute(Qt::AA_S60DisablePartialScreenInputMode);
+#endif
+
     if (qt_is_gui_used)
         initializeMultitouch();
 }

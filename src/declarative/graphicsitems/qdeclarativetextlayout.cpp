@@ -72,14 +72,17 @@ class DrawTextItemRecorder: public QPaintEngine
     public:
         DrawTextItemRecorder(bool untransformedCoordinates, bool useBackendOptimizations)
             : m_inertText(0), m_dirtyPen(false), m_useBackendOptimizations(useBackendOptimizations),
-            m_untransformedCoordinates(untransformedCoordinates)
+              m_untransformedCoordinates(untransformedCoordinates), m_currentColor(Qt::black)
             {
             }
 
         virtual void updateState(const QPaintEngineState &newState)
         {
-            if (newState.state() & QPaintEngine::DirtyPen)
+            if (newState.state() & QPaintEngine::DirtyPen
+                && newState.pen().color() != m_currentColor) {
                 m_dirtyPen = true;
+                m_currentColor = newState.pen().color();
+            }
         }
 
         virtual void drawTextItem(const QPointF &position, const QTextItem &textItem)
@@ -115,7 +118,7 @@ class DrawTextItemRecorder: public QPaintEngine
                 currentItem.positionOffset = positionOffset;
                 currentItem.useBackendOptimizations = m_useBackendOptimizations;
                 if (m_dirtyPen)
-                    currentItem.color = state->pen().color();
+                    currentItem.color = m_currentColor;
 
                 m_inertText->items.append(currentItem);
             }
@@ -172,6 +175,7 @@ class DrawTextItemRecorder: public QPaintEngine
         bool m_dirtyPen;
         bool m_useBackendOptimizations;
         bool m_untransformedCoordinates;
+        QColor m_currentColor;
 };
 
 class DrawTextItemDevice: public QPaintDevice
@@ -299,7 +303,7 @@ void QDeclarativeTextLayout::clearLayout()
     QTextLayout::clearLayout();
 }
 
-void QDeclarativeTextLayout::prepare(QPainter *painter)
+void QDeclarativeTextLayout::prepare()
 {
     if (!d || !d->cached) {
 
@@ -308,7 +312,6 @@ void QDeclarativeTextLayout::prepare(QPainter *painter)
 
         InertTextPainter *itp = inertTextPainter();
         itp->device.begin(d);
-        itp->painter.setPen(painter->pen());
         QTextLayout::draw(&itp->painter, QPointF(0, 0));
 
         glyph_t *glyphPool = d->glyphs.data();
@@ -347,7 +350,7 @@ void QDeclarativeTextLayout::draw(QPainter *painter, const QPointF &p)
         return;
     }
 
-    prepare(painter);
+    prepare();
 
     int itemCount = d->items.count();
 

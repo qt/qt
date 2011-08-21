@@ -108,6 +108,7 @@ private:
     bool needsInputPanel();
     void commitTemporaryPreeditString();
     bool isWidgetVisible(QWidget *widget, int offset = 0);
+    bool isPartialKeyboardSupported();
 
 private Q_SLOTS:
     void ensureInputCapabilitiesChanged();
@@ -169,6 +170,7 @@ private:
 };
 
 Q_GUI_EXPORT void qt_s60_setPartialScreenInputMode(bool enable);
+Q_GUI_EXPORT void qt_s60_setPartialScreenAutomaticTranslation(bool enable);
 
 QT_END_NAMESPACE
 

@@ -175,6 +175,8 @@ Elements that animate properties based on data types
 \o \l {ParticleMotionLinear} - Adds linear motion behavior to \l {Particles}
 \o \l {ParticleMotionGravity} - Adds gravitational motion to \l {Particles}
 \o \l {ParticleMotionWander} - Adds varied motions to \l {Particles}
+\o \l {ShaderEffectItem} - Enables the use of OpenGL Shading Language together with QML
+\o \l {ShaderEffectSource} - Encapsulates QML item tree as a source item for \l {ShaderEffectItem}
 \endlist
 
 \section1 Add-On Elements
@@ -317,6 +319,17 @@ should first be obtained and installed.
     \ingroup qml-groups
 
     \brief Elements for handling particle effects.
+
+    \generatelist{related}
+
+*/
+
+/*!
+    \group qml-shader-elements
+    \title QML Shader Elements
+    \ingroup qml-groups
+
+    \brief Elements for using OpenGL shading language code together with the QML code.
 
     \generatelist{related}
 

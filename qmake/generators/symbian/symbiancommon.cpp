@@ -993,7 +993,12 @@ bool SymbianCommonGenerator::parseTsContent(const QString &tsFilename, SymbianLo
                                     if (xml.name() == sourceElement) {
                                         source = xml.readElementText();
                                     } else if (xml.name() == translationElement) {
-                                        translation = xml.readElementText();
+                                        // Technically translation element can have child elements
+                                        // i.e. numerusform and lengthvariant. We don't support
+                                        // these for actual caption/pkgname translations, but since
+                                        // they may be present on other unrelated message elements,
+                                        // we need to explicitly skip them to avoid parsing errors.
+                                        translation = xml.readElementText(QXmlStreamReader::SkipChildElements);
                                     } else {
                                         xml.skipCurrentElement();
                                     }

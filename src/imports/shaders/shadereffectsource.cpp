@@ -7,29 +7,29 @@
 ** This file is part of the QML Shaders plugin of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -48,7 +48,7 @@
 
 /*!
     \qmlclass ShaderEffectSource ShaderEffectSource
-    \ingroup qmlshadersplugin
+    \ingroup qml-shader-elements
     \brief The ShaderEffectSource object encapsulates the source content for the ShaderEffectItem.
 
     ShaderEffectSource is available in the \bold{Qt.labs.shaders 1.0} module.
@@ -273,10 +273,10 @@ void ShaderEffectSource::setHideSource(bool hide)
     This property defines the wrap parameter for the source after it has been mapped as a texture.
 
     \list
-    \o WrapMode.ClampToEdge - Causes texturecoordinates to be clamped to the range [ 1/2*N , 1 - 1/2*N ], where N is the texture width.
-    \o WrapMode.RepeatHorizontally - Causes the integer part of the horizontal texturecoordinate to be ignored; the GL uses only the fractional part, thereby creating a horizontal repeating pattern.
-    \o WrapMode.RepeatVertically - Causes the integer part of the vertical texturecoordinate to be ignored; the GL uses only the fractional part, thereby creating a vertical repeating pattern.
-    \o WrapMode.Repeat - Causes the integer part of both the horizontal and vertical texturecoordinates to be ignored; the GL uses only the fractional part, thereby creating a repeating pattern.
+    \o ShaderEffectSource.ClampToEdge - Causes texturecoordinates to be clamped to the range [ 1/2*N , 1 - 1/2*N ], where N is the texture width.
+    \o ShaderEffectSource.RepeatHorizontally - Causes the integer part of the horizontal texturecoordinate to be ignored; the GL uses only the fractional part, thereby creating a horizontal repeating pattern.
+    \o ShaderEffectSource.RepeatVertically - Causes the integer part of the vertical texturecoordinate to be ignored; the GL uses only the fractional part, thereby creating a vertical repeating pattern.
+    \o ShaderEffectSource.Repeat - Causes the integer part of both the horizontal and vertical texturecoordinates to be ignored; the GL uses only the fractional part, thereby creating a repeating pattern.
     \endlist
 
     The default value is ClampToEdge.

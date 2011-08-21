@@ -13111,4 +13111,7 @@ EXPORTS
 	?setInstantInvalidatePropagation@QGraphicsLayout@@SAX_N@Z @ 13110 NONAME ; void QGraphicsLayout::setInstantInvalidatePropagation(bool)
 	?instantInvalidatePropagation@QGraphicsLayout@@SA_NXZ @ 13111 NONAME ; bool QGraphicsLayout::instantInvalidatePropagation(void)
 	?hasBCM2727@QSymbianGraphicsSystemEx@@SA_NXZ @ 13112 NONAME ; bool QSymbianGraphicsSystemEx::hasBCM2727(void)
+	?constImageRef@QVolatileImage@@QBEABVQImage@@XZ @ 13113 NONAME ; class QImage const & QVolatileImage::constImageRef(void) const
+	?toVolatileImage@QPixmapData@@UBE?AVQVolatileImage@@XZ @ 13114 NONAME ; class QVolatileImage QPixmapData::toVolatileImage(void) const
+	?qt_s60_setPartialScreenAutomaticTranslation@@YAX_N@Z @ 13115 NONAME ; void qt_s60_setPartialScreenAutomaticTranslation(bool)
 

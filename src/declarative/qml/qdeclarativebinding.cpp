@@ -243,12 +243,13 @@ QDeclarativeBinding::createBinding(Identifier id, QObject *obj, QDeclarativeCont
     if (id < 0)
         return 0;
 
+    Q_ASSERT(ctxt);
     QDeclarativeContextData *ctxtdata = QDeclarativeContextData::get(ctxt);
 
-    QDeclarativeEnginePrivate *engine = QDeclarativeEnginePrivate::get(qmlEngine(obj));
+    QDeclarativeEnginePrivate *engine = QDeclarativeEnginePrivate::get(ctxtdata->engine);
     QDeclarativeCompiledData *cdata = 0;
     QDeclarativeTypeData *typeData = 0;
-    if (engine && ctxtdata && !ctxtdata->url.isEmpty()) {
+    if (!ctxtdata->url.isEmpty()) {
         typeData = engine->typeLoader.get(ctxtdata->url);
         cdata = typeData->compiledData();
     }

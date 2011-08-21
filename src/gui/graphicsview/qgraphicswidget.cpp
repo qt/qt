@@ -347,11 +347,10 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
 {
     QGraphicsWidgetPrivate *wd = QGraphicsWidget::d_func();
     QGraphicsLayoutItemPrivate *d = QGraphicsLayoutItem::d_ptr.data();
-    QRectF newGeom;
+    QRectF newGeom = rect;
     QPointF oldPos = d->geom.topLeft();
     if (!wd->inSetPos) {
         setAttribute(Qt::WA_Resized);
-        newGeom = rect;
         newGeom.setSize(rect.size().expandedTo(effectiveSizeHint(Qt::MinimumSize))
                                    .boundedTo(effectiveSizeHint(Qt::MaximumSize)));
 
@@ -405,14 +404,7 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
                 emit widthChanged();
             if (oldSize.height() != newGeom.size().height())
                 emit heightChanged();
-            QGraphicsLayout *lay = wd->layout;
-            if (QGraphicsLayout::instantInvalidatePropagation()) {
-                if (!lay || lay->isActivated()) {
-                    QApplication::sendEvent(this, &re);
-                }
-            } else {
-                QApplication::sendEvent(this, &re);
-            }
+            QApplication::sendEvent(this, &re);
         }
     }
 
@@ -1091,8 +1083,11 @@ void QGraphicsWidget::updateGeometry()
              * When the event is received, it will start flowing all the way down to the leaf
              * widgets in one go. This will make a relayout flicker-free.
              */
-            if (QGraphicsLayout::instantInvalidatePropagation())
-                QApplication::postEvent(static_cast<QGraphicsWidget *>(this), new QEvent(QEvent::LayoutRequest));
+            if (QGraphicsLayout::instantInvalidatePropagation()) {
+                Q_D(QGraphicsWidget);
+                ++d->refCountInvokeRelayout;
+                QMetaObject::invokeMethod(this, "_q_relayout", Qt::QueuedConnection);
+            }
         }
         if (!QGraphicsLayout::instantInvalidatePropagation()) {
             bool wasResized = testAttribute(Qt::WA_Resized);

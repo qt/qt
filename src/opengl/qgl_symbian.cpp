@@ -39,11 +39,9 @@
 **
 ****************************************************************************/
 
-
 #include "qgl.h"
-#include <fbs.h>
 #include <private/qt_s60_p.h>
-#include <private/qpixmap_s60_p.h>
+#include <private/qpixmap_raster_symbian_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
 #include <private/qgl_p.h>
 #include <private/qpaintengine_opengl_p.h>
@@ -56,7 +54,7 @@
 #include "qpixmapdata_gl_p.h"
 #include "qgltexturepool_p.h"
 #include "qcolormap.h"
-#include <QDebug>
+
 
 QT_BEGIN_NAMESPACE
 
@@ -74,7 +72,7 @@ QT_BEGIN_NAMESPACE
 #endif
 #endif
 
-extern int qt_gl_pixmap_serial;
+Q_OPENGL_EXPORT extern QGLWidget* qt_gl_share_widget();
 
 /*
     QGLTemporaryContext implementation
@@ -267,6 +265,11 @@ void QGLWidget::resizeEvent(QResizeEvent *)
     if (!isValid())
         return;
 
+    // Shared widget can ignore resize events which
+    // may happen due to orientation change
+    if (this == qt_gl_share_widget())
+        return;
+
     if (QGLContext::currentContext())
         doneCurrent();
 
@@ -377,106 +380,6 @@ void QGLWidgetPrivate::recreateEglSurface()
 #endif
 
     eglSurfaceWindowId = currentId;
-}
-
-static inline bool knownGoodFormat(QImage::Format format)
-{
-    switch (format) {
-        case QImage::Format_RGB16: // EColor64K
-        case QImage::Format_RGB32: // EColor16MU
-        case QImage::Format_ARGB32_Premultiplied: // EColor16MAP
-            return true;
-        default:
-            return false;
-    }
-}
-
-void QGLPixmapData::fromNativeType(void* pixmap, NativeType type)
-{
-    if (type == QPixmapData::FbsBitmap) {
-        CFbsBitmap *bitmap = reinterpret_cast<CFbsBitmap *>(pixmap);
-        QSize size(bitmap->SizeInPixels().iWidth, bitmap->SizeInPixels().iHeight);
-        if (size.width() == w && size.height() == h)
-            setSerialNumber(++qt_gl_pixmap_serial);
-        resize(size.width(), size.height());
-        m_source = QVolatileImage(bitmap);
-        if (pixelType() == BitmapType) {
-            m_source.ensureFormat(QImage::Format_MonoLSB);
-        } else if (!knownGoodFormat(m_source.format())) {
-            m_source.beginDataAccess();
-            QImage::Format format = idealFormat(m_source.imageRef(), Qt::AutoColor);
-            m_source.endDataAccess(true);
-            m_source.ensureFormat(format);
-        }
-        m_hasAlpha = m_source.hasAlphaChannel();
-        m_hasFillColor = false;
-        m_dirty = true;
-
-    } else if (type == QPixmapData::VolatileImage && pixmap) {
-        // Support QS60Style in more efficient skin graphics retrieval.
-        QVolatileImage *img = static_cast<QVolatileImage *>(pixmap);
-        if (img->width() == w && img->height() == h)
-            setSerialNumber(++qt_gl_pixmap_serial);
-        resize(img->width(), img->height());
-        m_source = *img;
-        m_hasAlpha = m_source.hasAlphaChannel();
-        m_hasFillColor = false;
-        m_dirty = true;
-    } else if (type == QPixmapData::NativeImageHandleProvider && pixmap) {
-        destroyTexture();
-        nativeImageHandleProvider = static_cast<QNativeImageHandleProvider *>(pixmap);
-        // Cannot defer the retrieval, we need at least the size right away.
-        createFromNativeImageHandleProvider();
-    }
-}
-
-void* QGLPixmapData::toNativeType(NativeType type)
-{
-    if (type == QPixmapData::FbsBitmap) {
-        if (m_source.isNull())
-            m_source = QVolatileImage(w, h, QImage::Format_ARGB32_Premultiplied);
-        return m_source.duplicateNativeImage();
-    }
-
-    return 0;
-}
-
-bool QGLPixmapData::initFromNativeImageHandle(void *handle, const QString &type)
-{
-    if (type == QLatin1String("RSgImage")) {
-        fromNativeType(handle, QPixmapData::SgImage);
-        return true;
-    } else if (type == QLatin1String("CFbsBitmap")) {
-        fromNativeType(handle, QPixmapData::FbsBitmap);
-        return true;
-    }
-    return false;
-}
-
-void QGLPixmapData::createFromNativeImageHandleProvider()
-{
-    void *handle = 0;
-    QString type;
-    nativeImageHandleProvider->get(&handle, &type);
-    if (handle) {
-        if (initFromNativeImageHandle(handle, type)) {
-            nativeImageHandle = handle;
-            nativeImageType = type;
-        } else {
-            qWarning("QGLPixmapData: Unknown native image type '%s'", qPrintable(type));
-        }
-    } else {
-        qWarning("QGLPixmapData: Native handle is null");
-    }
-}
-
-void QGLPixmapData::releaseNativeImageHandle()
-{
-    if (nativeImageHandleProvider && nativeImageHandle) {
-        nativeImageHandleProvider->release(nativeImageHandle, nativeImageType);
-        nativeImageHandle = 0;
-        nativeImageType = QString();
-    }
 }
 
 QT_END_NAMESPACE
