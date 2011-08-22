@@ -354,7 +354,7 @@ QGLWindowSurface::~QGLWindowSurface()
 {
     if (d_ptr->ctx)
         glDeleteTextures(1, &d_ptr->tex_id);
-#ifndef Q_WS_QPA // Dont delete the contexts. Destroying the window does that for us
+#ifndef Q_WS_QPA // Don't delete the contexts. Destroying the window does that for us
     foreach(QGLContext **ctx, d_ptr->contexts) {
         delete *ctx;
         *ctx = 0;
