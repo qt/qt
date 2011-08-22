@@ -360,10 +360,6 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
             if (sControl) {
                 sControl->setIgnoreFocusChanged(false);
             }
-            //If m_pointerHandler has already been set, it means that fep inline editing is in progress.
-            //When this is happening, do not filter out pointer events.
-            if (!m_pointerHandler)
-                return true;
         }
     }
 
