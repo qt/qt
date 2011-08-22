@@ -229,7 +229,6 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
     QRegion wrgn(rgn);
     if (!wOffset.isNull())
         wrgn.translate(-wOffset);
-    QRect wbr = wrgn.boundingRect();
 
     if (wrgn.rectCount() != 1) {
         int num;
@@ -237,23 +236,25 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
         XSetClipRectangles(X11->display, d_ptr->gc, 0, 0, rects, num, YXBanded);
     }
 
-    QRect br = rgn.boundingRect().translated(offset);
+    QPoint widgetOffset = offset + wOffset;
+    QRect clipRect = widget->rect().translated(widgetOffset).intersected(d_ptr->image->image.rect());
+
+    QRect br = rgn.boundingRect().translated(offset).intersected(clipRect);
+    QPoint wpos = br.topLeft() - widgetOffset;
+
 #ifndef QT_NO_MITSHM
     if (d_ptr->image->xshmpm) {
         XCopyArea(X11->display, d_ptr->image->xshmpm, widget->handle(), d_ptr->gc,
-                  br.x(), br.y(), br.width(), br.height(), wbr.x(), wbr.y());
+                  br.x(), br.y(), br.width(), br.height(), wpos.x(), wpos.y());
         d_ptr->needsSync = true;
     } else if (d_ptr->image->xshmimg) {
-        const QImage &src = d->image->image;
-        br = br.intersected(src.rect());
         XShmPutImage(X11->display, widget->handle(), d_ptr->gc, d_ptr->image->xshmimg,
-                     br.x(), br.y(), wbr.x(), wbr.y(), br.width(), br.height(), False);
+                     br.x(), br.y(), wpos.x(), wpos.y(), br.width(), br.height(), False);
         d_ptr->needsSync = true;
     } else
 #endif
     {
         const QImage &src = d->image->image;
-        br = br.intersected(src.rect());
         if (src.format() != QImage::Format_RGB32 || widget->x11Info().depth() < 24) {
             Q_ASSERT(src.depth() >= 16);
             const QImage sub_src(src.scanLine(br.y()) + br.x() * (uint(src.depth()) / 8),
@@ -262,11 +263,11 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
             data->xinfo = widget->x11Info();
             data->fromImage(sub_src, Qt::NoOpaqueDetection);
             QPixmap pm = QPixmap(data);
-            XCopyArea(X11->display, pm.handle(), widget->handle(), d_ptr->gc, 0 , 0 , br.width(), br.height(), wbr.x(), wbr.y());
+            XCopyArea(X11->display, pm.handle(), widget->handle(), d_ptr->gc, 0 , 0 , br.width(), br.height(), wpos.x(), wpos.y());
         } else {
             // qpaintengine_x11.cpp
             extern void qt_x11_drawImage(const QRect &rect, const QPoint &pos, const QImage &image, Drawable hd, GC gc, Display *dpy, Visual *visual, int depth);
-            qt_x11_drawImage(br, wbr.topLeft(), src, widget->handle(), d_ptr->gc, X11->display, (Visual *)widget->x11Info().visual(), widget->x11Info().depth());
+            qt_x11_drawImage(br, wpos, src, widget->handle(), d_ptr->gc, X11->display, (Visual *)widget->x11Info().visual(), widget->x11Info().depth());
         }
     }
 
@@ -311,7 +312,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
     }
     CGContextClip(context);
 
-    QRect r = rgn.boundingRect();
+    QRect r = rgn.boundingRect().intersected(d->image->image.rect());
     const CGRect area = CGRectMake(r.x(), r.y(), r.width(), r.height());
     CGImageRef image = CGBitmapContextCreateImage(d->image->cg);
     CGImageRef subImage = CGImageCreateWithImageInRect(image, area);
