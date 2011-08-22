@@ -66,9 +66,18 @@ public:
     }
 };
 
+static QUIKitIntegration *m_instance = 0;
+
+QUIKitIntegration * QUIKitIntegration::instance()
+{
+    return m_instance;
+}
+
 QUIKitIntegration::QUIKitIntegration()
     :mFontDb(new QUIKitFontDatabase() )
 {
+    if (!m_instance)
+        m_instance = this;
     mScreens << new QUIKitScreen(0);
 }
 

@@ -54,7 +54,53 @@
 #include <QtGui/QPixmap>
 #include <QtGui/QSplashScreen>
 
+#ifdef Q_WS_MAC
+#include <QtCore/QUrl>
+#include <QtGui/QFileOpenEvent>
+#endif // Q_WS_MAC
+
 QT_USE_NAMESPACE
+
+#ifdef Q_WS_MAC
+class ApplicationEventFilter : public QObject
+{
+    Q_OBJECT
+
+public:
+    ApplicationEventFilter()
+        : m_mainWindow(0)
+    {
+    }
+
+    void setMainWindow(MainWindow *mw)
+    {
+        m_mainWindow = mw;
+        if (!m_filesToOpen.isEmpty() && m_mainWindow) {
+            m_mainWindow->openFiles(m_filesToOpen);
+            m_filesToOpen.clear();
+        }
+    }
+
+protected:
+    bool eventFilter(QObject *object, QEvent *event)
+    {
+        if (object == qApp && event->type() == QEvent::FileOpen) {
+            QFileOpenEvent *e = static_cast<QFileOpenEvent*>(event);
+            QString file = e->url().toLocalFile();
+            if (!m_mainWindow)
+                m_filesToOpen << file;
+            else
+                m_mainWindow->openFiles(QStringList() << file);
+            return true;
+        }
+        return QObject::eventFilter(object, event);
+    }
+
+private:
+    MainWindow *m_mainWindow;
+    QStringList m_filesToOpen;
+};
+#endif // Q_WS_MAC
 
 int main(int argc, char **argv)
 {
@@ -62,6 +108,11 @@ int main(int argc, char **argv)
 
     QApplication app(argc, argv);
     QApplication::setOverrideCursor(Qt::WaitCursor);
+
+#ifdef Q_WS_MAC
+    ApplicationEventFilter eventFilter;
+    app.installEventFilter(&eventFilter);
+#endif // Q_WS_MAC
 
     QStringList files;
     QString resourceDir = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
@@ -111,6 +162,9 @@ int main(int argc, char **argv)
     splash->show();
 
     MainWindow mw;
+#ifdef Q_WS_MAC
+    eventFilter.setMainWindow(&mw);
+#endif // Q_WS_MAC
     mw.show();
     splash->finish(&mw);
     QApplication::restoreOverrideCursor();
@@ -119,3 +173,7 @@ int main(int argc, char **argv)
 
     return app.exec();
 }
+
+#ifdef Q_WS_MAC
+#include "main.moc"
+#endif // Q_WS_MAC

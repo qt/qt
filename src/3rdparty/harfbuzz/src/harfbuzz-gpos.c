@@ -3012,6 +3012,9 @@ static HB_Error  Lookup_MarkMarkPos( GPOS_Instance*    gpi,
     j--;
   }
 
+  if ( i > buffer->in_pos )
+    return HB_Err_Not_Covered;
+
   error = _HB_OPEN_Coverage_Index( &mmp->Mark2Coverage, IN_GLYPH( j ),
 			  &mark2_index );
   if ( error )

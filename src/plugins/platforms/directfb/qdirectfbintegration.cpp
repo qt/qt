@@ -112,6 +112,8 @@ QDirectFbIntegration::QDirectFbIntegration()
 QDirectFbIntegration::~QDirectFbIntegration()
 {
     mInput->stopInputEventLoop();
+    mInputRunner->quit();
+    mInputRunner->wait();
     delete mInputRunner;
     delete mInput;
 }

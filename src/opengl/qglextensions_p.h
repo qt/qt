@@ -332,6 +332,8 @@ struct QGLExtensionFuncs
         qt_glMapBufferARB = 0;
         qt_glUnmapBufferARB = 0;
 
+        qt_bufferFuncsResolved = false;
+
         qt_glProgramParameteriEXT = 0;
         qt_glFramebufferTextureEXT = 0;
         qt_glFramebufferTextureLayerEXT = 0;
@@ -456,6 +458,8 @@ struct QGLExtensionFuncs
 #endif
     _glMapBufferARB qt_glMapBufferARB;
     _glUnmapBufferARB qt_glUnmapBufferARB;
+
+    bool qt_bufferFuncsResolved;
 
     // Geometry shaders...
     _glProgramParameteriEXT qt_glProgramParameteriEXT;

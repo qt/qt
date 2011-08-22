@@ -12,7 +12,6 @@ SUBDIRS = \
 
 TRUSTED_BENCHMARKS += \
     graphicsview/functional/GraphicsViewBenchmark \
-    graphicsview/qgraphicsview \
-    painting/qtracebench
+    graphicsview/qgraphicsview
 
 include(../trusted-benchmarks.pri)

@@ -6,7 +6,6 @@ SUBDIRS = \
         socket
 
 TRUSTED_BENCHMARKS += \
-    kernel/qhostinfo \
     socket/qtcpserver \
     ssl/qsslsocket
 

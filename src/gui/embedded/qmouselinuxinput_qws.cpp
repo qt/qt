@@ -43,6 +43,7 @@
 
 #include <QScreen>
 #include <QSocketNotifier>
+#include <QStringList>
 
 #include <qplatformdefs.h>
 #include <private/qcore_unix_p.h> // overrides QT_OPEN
@@ -101,11 +102,19 @@ QWSLinuxInputMousePrivate::QWSLinuxInputMousePrivate(QWSLinuxInputMouseHandler *
     setObjectName(QLatin1String("LinuxInputSubsystem Mouse Handler"));
 
     QString dev = QLatin1String("/dev/input/event0");
-    if (device.startsWith(QLatin1String("/dev/")))
-        dev = device;
+    int grab = 0;
+
+    QStringList args = device.split(QLatin1Char(':'));
+    foreach (const QString &arg, args) {
+        if (arg.startsWith(QLatin1String("grab=")))
+            grab = arg.mid(5).toInt();
+        else if (arg.startsWith(QLatin1String("/dev/")))
+            dev = arg;
+    }
 
     m_fd = QT_OPEN(dev.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
     if (m_fd >= 0) {
+        ::ioctl(m_fd, EVIOCGRAB, grab);
         m_notify = new QSocketNotifier(m_fd, QSocketNotifier::Read, this);
         connect(m_notify, SIGNAL(activated(int)), this, SLOT(readMouseData()));
     } else {

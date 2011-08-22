@@ -61,6 +61,7 @@ public:
 
     UIScreen *uiScreen() const;
 
+    void updateInterfaceOrientation();
 private:
     QRect m_geometry;
     int m_depth;

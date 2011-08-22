@@ -1003,6 +1003,22 @@ void QPaintEngineEx::drawPixmapFragments(const QPainter::PixmapFragment *fragmen
     transformChanged();
 }
 
+void QPaintEngineEx::drawPixmapFragments(const QRectF *targetRects, const QRectF *sourceRects, int fragmentCount,
+                                         const QPixmap &pixmap, QPainter::PixmapFragmentHints /*hints*/)
+{
+    if (pixmap.isNull())
+        return;
+
+    if (sourceRects) {
+        for (int i = 0; i < fragmentCount; ++i)
+            drawPixmap(targetRects[i], pixmap, sourceRects[i]);
+    } else {
+        QRectF sourceRect = pixmap.rect();
+        for (int i = 0; i < fragmentCount; ++i)
+            drawPixmap(targetRects[i], pixmap, sourceRect);
+    }
+}
+
 void QPaintEngineEx::setState(QPainterState *s)
 {
     QPaintEngine::state = s;

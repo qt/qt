@@ -81,6 +81,11 @@ public:
     virtual void drawStaticTextItem(QStaticTextItem *item);
     virtual void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s);
     virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr, Qt::ImageConversionFlags flags);
+
+    virtual void drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,
+                                     QPainter::PixmapFragmentHints hints);
+    virtual void drawPixmapFragments(const QRectF *targetRects, const QRectF *sourceRects, int fragmentCount, const QPixmap &pixmap,
+                                     QPainter::PixmapFragmentHints hints);
     
     virtual void clipEnabledChanged();
     virtual void penChanged();

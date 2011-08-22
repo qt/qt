@@ -62,6 +62,12 @@
 
 #ifdef Q_OS_SYMBIAN
 #include <f32file.h>
+//This macro will be defined if the OS supports memory mapped files
+#if defined (SYMBIAN_FILE_MAPPING_SUPPORTED) && !defined (WINS)
+//simpler define to check in sources
+#define QT_SYMBIAN_USE_NATIVE_FILEMAP
+#include <f32filemap.h>
+#endif
 #endif
 
 #ifndef QT_NO_FSFILEENGINE
@@ -139,8 +145,10 @@ public:
      */
     TInt symbianFilePos;
 #endif
+#ifndef QT_SYMBIAN_USE_NATIVE_FILEMAP
     mutable int fileHandleForMaps;
     int getMapHandle();
+#endif
 #endif
 
 #ifdef Q_WS_WIN
@@ -153,6 +161,8 @@ public:
 #endif
 
     mutable DWORD fileAttrib;
+#elif defined (QT_SYMBIAN_USE_NATIVE_FILEMAP)
+    QHash<uchar *, RFileMap> maps;
 #else
     QHash<uchar *, QPair<int /*offset % PageSize*/, size_t /*length + offset % PageSize*/> > maps;
 #endif

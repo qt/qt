@@ -42,7 +42,7 @@
 #include <remconinterfaceselector.h>
 #include <remconcoreapitarget.h>
 #include <coemain.h>
-#include "qkeymapper_p.h"
+#include <private/qkeymapper_p.h>
 #include "qs60keycapture_p.h"
 
 QT_BEGIN_NAMESPACE

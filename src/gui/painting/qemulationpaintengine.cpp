@@ -222,6 +222,47 @@ void QEmulationPaintEngine::drawImage(const QRectF &r, const QImage &pm, const Q
     real_engine->drawImage(r, pm, sr, flags);
 }
 
+void QEmulationPaintEngine::drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,
+                                                QPainter::PixmapFragmentHints hints)
+{
+    if (state()->bgMode == Qt::OpaqueMode && pixmap.isQBitmap()) {
+        qreal oldOpacity = real_engine->state()->opacity;
+        QTransform oldTransform = real_engine->state()->matrix;
+
+        for (int i = 0; i < fragmentCount; ++i) {
+            QTransform transform = oldTransform;
+            transform.translate(fragments[i].x, fragments[i].y);
+            transform.rotate(fragments[i].rotation);
+            real_engine->state()->opacity = oldOpacity * fragments[i].opacity;
+            real_engine->state()->matrix = transform;
+            real_engine->opacityChanged();
+            real_engine->transformChanged();
+
+            qreal w = fragments[i].scaleX * fragments[i].width;
+            qreal h = fragments[i].scaleY * fragments[i].height;
+            fillBGRect(QRectF(-0.5 * w, -0.5 * h, w, h));
+        }
+
+        real_engine->state()->opacity = oldOpacity;
+        real_engine->state()->matrix = oldTransform;
+        real_engine->opacityChanged();
+        real_engine->transformChanged();
+    }
+
+    real_engine->drawPixmapFragments(fragments, fragmentCount, pixmap, hints);
+}
+
+void QEmulationPaintEngine::drawPixmapFragments(const QRectF *targetRects, const QRectF *sourceRects, int fragmentCount, const QPixmap &pixmap,
+                                                QPainter::PixmapFragmentHints hints)
+{
+    if (state()->bgMode == Qt::OpaqueMode && pixmap.isQBitmap()) {
+        for (int i = 0; i < fragmentCount; ++i)
+            fillBGRect(targetRects[i]);
+    }
+
+    real_engine->drawPixmapFragments(targetRects, sourceRects, fragmentCount, pixmap, hints);
+}
+
 void QEmulationPaintEngine::clipEnabledChanged()
 {
     real_engine->clipEnabledChanged();

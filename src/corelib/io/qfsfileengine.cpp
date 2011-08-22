@@ -120,7 +120,7 @@ void QFSFileEnginePrivate::init()
     openMode = QIODevice::NotOpen;
     fd = -1;
     fh = 0;
-#ifdef Q_OS_SYMBIAN
+#if defined (Q_OS_SYMBIAN) && !defined(QT_SYMBIAN_USE_NATIVE_FILEMAP)
     fileHandleForMaps = -1;
 #endif
     lastIOCommand = IOFlushCommand;
@@ -233,6 +233,14 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh)
     return open(openMode, fh, QFile::DontCloseHandle);
 }
 
+/*!
+    Opens the file handle \a fh in \a openMode mode. Returns true
+    on success; otherwise returns false.
+
+    The \a handleFlags argument specifies whether the file handle will be
+    closed by Qt. See the QFile::FileHandleFlags documentation for more
+    information.
+*/
 bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh, QFile::FileHandleFlags handleFlags)
 {
     Q_D(QFSFileEngine);
@@ -294,6 +302,14 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd)
     return open(openMode, fd, QFile::DontCloseHandle);
 }
 
+/*!
+    Opens the file descriptor \a fd in \a openMode mode. Returns true
+    on success; otherwise returns false.
+
+    The \a handleFlags argument specifies whether the file handle will be
+    closed by Qt. See the QFile::FileHandleFlags documentation for more
+    information.
+*/
 bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd, QFile::FileHandleFlags handleFlags)
 {
     Q_D(QFSFileEngine);
@@ -368,7 +384,9 @@ bool QFSFileEnginePrivate::closeFdFh()
     if (fd == -1 && !fh
 #ifdef Q_OS_SYMBIAN
         && !symbianFile.SubSessionHandle()
+#ifndef QT_SYMBIAN_USE_NATIVE_FILEMAP
         && fileHandleForMaps == -1
+#endif
 #endif
         )
         return false;
@@ -378,7 +396,7 @@ bool QFSFileEnginePrivate::closeFdFh()
     bool closed = true;
     tried_stat = 0;
 
-#ifdef Q_OS_SYMBIAN
+#if defined(Q_OS_SYMBIAN) && !defined(QT_SYMBIAN_USE_NATIVE_FILEMAP)
     // Map handle is always owned by us so always close it
     if (fileHandleForMaps >= 0) {
         QT_CLOSE(fileHandleForMaps);

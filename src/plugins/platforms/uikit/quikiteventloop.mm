@@ -40,6 +40,8 @@
 ****************************************************************************/
 
 #include "quikiteventloop.h"
+#include "quikitintegration.h"
+#include "quikitscreen.h"
 #include "quikitwindow.h"
 #include "quikitwindowsurface.h"
 
@@ -50,7 +52,11 @@
 #include <QtDebug>
 
 @interface QUIKitAppDelegate :  NSObject <UIApplicationDelegate> {
+    UIInterfaceOrientation mOrientation;
 }
+
+- (void)updateOrientation:(NSNotification *)notification;
+
 @end
 
 @interface EventLoopHelper : NSObject {
@@ -69,12 +75,69 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     Q_UNUSED(launchOptions)
-    Q_UNUSED(application)
+    mOrientation = application.statusBarOrientation;
+    [self updateOrientation:nil];
+    if (QUIKitIntegration::instance()->screens().size() > 0) {
+        QUIKitScreen *screen = static_cast<QUIKitScreen *>(QUIKitIntegration::instance()->screens().at(0));
+        screen->updateInterfaceOrientation();
+    }
     foreach (QWidget *widget, qApp->topLevelWidgets()) {
         QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->platformWindow());
         if (platformWindow) platformWindow->ensureNativeWindow();
     }
+    // orientation support
+    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                              selector:@selector(updateOrientation:)
+                              name:UIDeviceOrientationDidChangeNotification
+                              object:nil];
     return YES;
+}
+
+- (void)updateOrientation:(NSNotification *)notification
+{
+    Q_UNUSED(notification)
+    UIInterfaceOrientation newOrientation = mOrientation;
+    NSString *infoValue = @"";
+    switch ([UIDevice currentDevice].orientation) {
+    case UIDeviceOrientationUnknown:
+        break;
+    case UIDeviceOrientationPortrait:
+        newOrientation = UIInterfaceOrientationPortrait;
+        infoValue = @"UIInterfaceOrientationPortrait";
+        break;
+    case UIDeviceOrientationPortraitUpsideDown:
+        newOrientation = UIInterfaceOrientationPortraitUpsideDown;
+        infoValue = @"UIInterfaceOrientationPortraitUpsideDown";
+        break;
+    case UIDeviceOrientationLandscapeLeft:
+        newOrientation = UIInterfaceOrientationLandscapeRight; // as documentated
+        infoValue = @"UIInterfaceOrientationLandscapeRight";
+        break;
+    case UIDeviceOrientationLandscapeRight:
+        newOrientation = UIInterfaceOrientationLandscapeLeft; // as documentated
+        infoValue = @"UIInterfaceOrientationLandscapeLeft";
+        break;
+    case UIDeviceOrientationFaceUp:
+    case UIDeviceOrientationFaceDown:
+        break;
+    }
+
+    if (newOrientation == mOrientation)
+        return;
+
+    // check against supported orientations
+    NSBundle *bundle = [NSBundle mainBundle];
+    NSArray *orientations = [bundle objectForInfoDictionaryKey:@"UISupportedInterfaceOrientations"];
+    if (![orientations containsObject:infoValue])
+        return;
+
+    mOrientation = newOrientation;
+    [UIApplication sharedApplication].statusBarOrientation = mOrientation;
+    if (QUIKitIntegration::instance()->screens().size() > 0) {
+        QUIKitScreen *screen = static_cast<QUIKitScreen *>(QUIKitIntegration::instance()->screens().at(0));
+        screen->updateInterfaceOrientation();
+    }
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
