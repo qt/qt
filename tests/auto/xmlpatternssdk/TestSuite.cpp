@@ -151,6 +151,7 @@ TestSuite *TestSuite::openCatalog(QIODevice *input,
     }
 
     reader.setContentHandler(loader.data());
+    reader.setEntityResolver(loader.data());
 
     QXmlInputSource source(input);
 
