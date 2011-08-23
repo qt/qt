@@ -38,7 +38,7 @@
             \list
             \o \l{Qt Features Overview}
             \o \l{How to Learn Qt}
-            \o \l{Introduction to Qt Quick}
+            \o \l{Introduction to Qt Quick}{Qt Quick}
             \o \l{external: Qt Mobility Manual}{Qt Mobility}
             \o \l{Qt WebKit}
             \endlist

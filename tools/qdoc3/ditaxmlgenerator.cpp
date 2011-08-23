@@ -1180,7 +1180,10 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                   Just output the href as if the image is in
                   the images directory...
                  */
-                fileName = QLatin1String("images/") + protectEnc(atom->string());
+                if (atom->string()[0] == '/')
+                    fileName = QLatin1String("images") + atom->string();
+                else
+                    fileName = QLatin1String("images/") + atom->string();
             }
 
             if (currentTag() != DT_xref)
