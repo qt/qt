@@ -55,10 +55,10 @@
 
 #include <QtScript/qscriptvalue.h>
 #include <private/qobject_p.h>
-#include "private/qdeclarativeguard_p.h"
 
 QT_BEGIN_NAMESPACE
 
+class QDeclarativeGuardImpl;
 class QDeclarativeCompiledData;
 class QDeclarativeAbstractBinding;
 class QDeclarativeContext;
@@ -134,7 +134,7 @@ public:
     quint32 objectDataRefCount;
     QDeclarativePropertyCache *propertyCache;
 
-    QDeclarativeGuard<QObject> *guards;
+    QDeclarativeGuardImpl *guards;
 
     static QDeclarativeData *get(const QObject *object, bool create = false) {
         QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
@@ -159,32 +159,6 @@ private:
     // For objectNameNotifier and attachedProperties
     mutable QDeclarativeDataExtended *extendedData;
 };
-
-template<class T>
-void QDeclarativeGuard<T>::addGuard()
-{
-    Q_ASSERT(!prev);
-
-    if (QObjectPrivate::get(o)->wasDeleted) 
-        return;
-
-    QDeclarativeData *data = QDeclarativeData::get(o, true);
-    next = data->guards;
-    if (next) reinterpret_cast<QDeclarativeGuard<T> *>(next)->prev = &next;
-    data->guards = reinterpret_cast<QDeclarativeGuard<QObject> *>(this);
-    prev = &data->guards;
-}
-
-template<class T>
-void QDeclarativeGuard<T>::remGuard()
-{
-    Q_ASSERT(prev);
-
-    if (next) reinterpret_cast<QDeclarativeGuard<T> *>(next)->prev = prev;
-    *prev = next;
-    next = 0;
-    prev = 0;
-}
 
 QT_END_NAMESPACE
 

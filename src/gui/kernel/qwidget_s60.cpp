@@ -238,7 +238,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     bool checkExtra = true;
     if (q->isWindow() && (data.window_state & (Qt::WindowFullScreen | Qt::WindowMaximized))) {
         // Do not allow fullscreen/maximized windows to expand beyond client rect
-        TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+        TRect r = S60->clientRect();
         w = qMin(w, r.Width());
         h = qMin(h, r.Height());
 

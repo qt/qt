@@ -387,17 +387,17 @@ QUuid::QUuid(const QByteArray &text)
 #endif
 
 /*!
-  Creates a QUuid object from the binary representation of the UUID, as
-  specified by RFC 4122 section 4.1.2. See toRfc4122() for a further
-  explanation of the order of bytes required.
+  \since 4.8
 
-  The byte array accepted is NOT a human readable format.
+  Creates a QUuid object from the binary representation of the UUID given
+  by \a bytes, as specified by RFC 4122 section 4.1.2. See toRfc4122() for a
+  further explanation of the order of bytes required.
+
+  The byte array accepted is \e not a human readable format.
 
   If the conversion fails, a null UUID is created.
 
-    \since 4.8
-
-    \sa toRfc4122(), QUuid()
+  \sa toRfc4122(), QUuid()
 */
 QUuid QUuid::fromRfc4122(const QByteArray &bytes)
 {

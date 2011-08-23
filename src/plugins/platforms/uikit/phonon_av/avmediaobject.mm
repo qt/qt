@@ -60,7 +60,7 @@
 
 - (id)initWithMediaObject:(AVMediaObject *)obj
 {
-    if (self = [self init]) {
+    if ((self = [self init])) {
         mediaObject = obj;
     }
     return self;
