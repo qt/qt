@@ -806,6 +806,10 @@
     \internal
 */
 /*!
+    \fn QSystemLocale::CurrencyToStringArgument::CurrencyToStringArgument(const QVariant &v, const QString &s)
+    \internal
+*/
+/*!
     \variable QSystemLocale::CurrencyToStringArgument::value
 
     An input value that should be converted to its string representation.

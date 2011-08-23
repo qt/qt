@@ -86,14 +86,14 @@ void tst_QAudioInput::initTestCase()
 
     // Only perform tests if audio input device exists!
     QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
-    if(devices.size() > 0)
+    if (devices.size() > 0)
         available = true;
     else {
         qWarning()<<"NOTE: no audio input device found, no test will be performed";
         available = false;
     }
 
-    if(available)
+    if (available)
         audio = new QAudioInput(format, this);
 }
 
@@ -124,6 +124,9 @@ void tst_QAudioInput::invalidFormat_data()
 
 void tst_QAudioInput::invalidFormat()
 {
+    if (!available)
+        QSKIP("No audio input device found, no test will be performed", SkipAll);
+
     QFETCH(QAudioFormat, invalidFormat);
 
     QAudioInput audioInput(invalidFormat, this);
@@ -140,81 +143,85 @@ void tst_QAudioInput::invalidFormat()
 
 void tst_QAudioInput::settings()
 {
-    if(available) {
-        // Confirm the setting we added in the init function.
-        QAudioFormat f = audio->format();
+    if (!available)
+        QSKIP("No audio input device found, no test will be performed", SkipAll);
 
-        QVERIFY(format.channels() == f.channels());
-        QVERIFY(format.frequency() == f.frequency());
-        QVERIFY(format.sampleSize() == f.sampleSize());
-        QVERIFY(format.codec() == f.codec());
-        QVERIFY(format.byteOrder() == f.byteOrder());
-        QVERIFY(format.sampleType() == f.sampleType());
-    }
+    // Confirm the setting we added in the init function.
+    QAudioFormat f = audio->format();
+
+    QVERIFY(format.channels() == f.channels());
+    QVERIFY(format.frequency() == f.frequency());
+    QVERIFY(format.sampleSize() == f.sampleSize());
+    QVERIFY(format.codec() == f.codec());
+    QVERIFY(format.byteOrder() == f.byteOrder());
+    QVERIFY(format.sampleType() == f.sampleType());
 }
 
 void tst_QAudioInput::buffers()
 {
-    if(available) {
-        // Should always have a buffer size greater than zero.
-        int store = audio->bufferSize();
-        audio->setBufferSize(4096);
-        QVERIFY(audio->bufferSize() > 0);
-        audio->setBufferSize(store);
-        QVERIFY(audio->bufferSize() == store);
-    }
+    if (!available)
+        QSKIP("No audio input device found, no test will be performed", SkipAll);
+
+    // Should always have a buffer size greater than zero.
+    int store = audio->bufferSize();
+    audio->setBufferSize(4096);
+    QVERIFY(audio->bufferSize() > 0);
+    audio->setBufferSize(store);
+    QVERIFY(audio->bufferSize() == store);
 }
 
 void tst_QAudioInput::notifyInterval()
 {
-    if(available) {
-        QVERIFY(audio->notifyInterval() == 1000);   // Default
+    if (!available)
+        QSKIP("No audio input device found, no test will be performed", SkipAll);
 
-        audio->setNotifyInterval(500);
-        QVERIFY(audio->notifyInterval() == 500);    // Custom
+    QVERIFY(audio->notifyInterval() == 1000);   // Default
 
-        audio->setNotifyInterval(1000);             // reset
-    }
+    audio->setNotifyInterval(500);
+    QVERIFY(audio->notifyInterval() == 500);    // Custom
+
+    audio->setNotifyInterval(1000);             // reset
 }
 
 void tst_QAudioInput::pullFile()
 {
-    if(available) {
-        QFile filename(SRCDIR"test.raw");
-        filename.open( QIODevice::WriteOnly | QIODevice::Truncate );
+    if (!available)
+        QSKIP("No audio input device found, no test will be performed", SkipAll);
 
-        QSignalSpy readSignal(audio, SIGNAL(notify()));
-        QSignalSpy stateSignal(audio, SIGNAL(stateChanged(QAudio::State)));
+    QFile filename(SRCDIR"test.raw");
+    filename.open( QIODevice::WriteOnly | QIODevice::Truncate );
 
-        // Always have default states, before start
-        QVERIFY(audio->state() == QAudio::StoppedState);
-        QVERIFY(audio->error() == QAudio::NoError);
-        QVERIFY(audio->elapsedUSecs() == 0);
+    QSignalSpy readSignal(audio, SIGNAL(notify()));
+    QSignalSpy stateSignal(audio, SIGNAL(stateChanged(QAudio::State)));
 
-        audio->start(&filename);
-        QTest::qWait(20);
-        // Check state and periodSize() are valid non-zero values.
-        QVERIFY(audio->state() == QAudio::ActiveState);
-        QVERIFY(audio->error() == QAudio::NoError);
-        QVERIFY(audio->elapsedUSecs() > 10000 && audio->elapsedUSecs() < 800000);
-        QVERIFY(audio->periodSize() > 0);
-        QVERIFY(stateSignal.count() == 1); // State changed to QAudio::ActiveState
+    // Always have default states, before start
+    QVERIFY(audio->state() == QAudio::StoppedState);
+    QVERIFY(audio->error() == QAudio::NoError);
+    QVERIFY(audio->elapsedUSecs() == 0);
 
-        // Wait until finished...
-        QTest::qWait(5000);
+    audio->start(&filename);
+    QTest::qWait(20);
+    // Check state and periodSize() are valid non-zero values.
+    QVERIFY(audio->state() == QAudio::ActiveState);
+    QVERIFY(audio->error() == QAudio::NoError);
+    QVERIFY(audio->elapsedUSecs() > 10000 && audio->elapsedUSecs() < 800000);
+    QVERIFY(audio->periodSize() > 0);
+    QVERIFY(stateSignal.count() == 1); // State changed to QAudio::ActiveState
 
-        QVERIFY(readSignal.count() > 0);
-        QVERIFY(audio->processedUSecs() > 0);
+    // Wait until finished...
+    QTest::qWait(5000);
 
-        audio->stop();
-        QTest::qWait(20);
-        QVERIFY(audio->state() == QAudio::StoppedState);
-        QVERIFY(audio->elapsedUSecs() == 0);
-        // Can only check to make sure we got at least 1 more signal, but can be more.
-        QVERIFY(stateSignal.count() > 1);
+    QVERIFY(readSignal.count() > 0);
+    QVERIFY(audio->processedUSecs() > 0);
 
-        filename.close();
-    }
+    audio->stop();
+    QTest::qWait(20);
+    QVERIFY(audio->state() == QAudio::StoppedState);
+    QVERIFY(audio->elapsedUSecs() == 0);
+    // Can only check to make sure we got at least 1 more signal, but can be more.
+    QVERIFY(stateSignal.count() > 1);
+
+    filename.close();
 }
 
 QTEST_MAIN(tst_QAudioInput)
