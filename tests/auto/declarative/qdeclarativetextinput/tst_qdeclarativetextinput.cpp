@@ -1268,7 +1268,7 @@ void tst_qdeclarativetextinput::horizontalAlignment_RightToLeft()
     QTest::qWaitForWindowShown(canvas);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
 
-    // If there is no commited text, the preedit text should determine the alignment.
+    // If there is no committed text, the preedit text should determine the alignment.
     textInput->setText(QString());
     { QInputMethodEvent ev(rtlText, QList<QInputMethodEvent::Attribute>()); QApplication::sendEvent(canvas, &ev); }
     QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
