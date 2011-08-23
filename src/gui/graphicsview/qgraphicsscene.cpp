@@ -2688,11 +2688,10 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
 
     // Ensure that newly added items that have subfocus set, gain
     // focus automatically if there isn't a focus item already.
-    if (!d->focusItem && item != d->lastFocusItem && item->focusItem() == item) {
+    if (!d->focusItem && item != d->lastFocusItem && item->focusItem() == item)
         item->focusItem()->setFocus();
-        // Update input method only if added item got focus
-        d->updateInputMethodSensitivityInViews();
-    }
+
+    d->updateInputMethodSensitivityInViews();
 }
 
 /*!
@@ -2943,9 +2942,6 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
 {
     // ### Refactoring: This function shares much functionality with _q_removeItemLater()
     Q_D(QGraphicsScene);
-
-    bool wasFocused(item == focusItem());
-
     if (!item) {
         qWarning("QGraphicsScene::removeItem: cannot remove 0-item");
         return;
@@ -2972,9 +2968,7 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
     // Deliver post-change notification
     item->itemChange(QGraphicsItem::ItemSceneHasChanged, newSceneVariant);
 
-    // Avoid calling input method update if removed item wasn't focused
-    if (wasFocused)
-        d->updateInputMethodSensitivityInViews();
+    d->updateInputMethodSensitivityInViews();
 }
 
 /*!
