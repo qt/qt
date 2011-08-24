@@ -2087,7 +2087,8 @@ void QTextEngine::justify(const QScriptLine &line)
         }
     }
 
-    QFixed need = line.width - line.textWidth;
+    QFixed leading = leadingSpaceWidth(line);
+    QFixed need = line.width - line.textWidth - leading;
     if (need < 0) {
         // line overflows already!
         const_cast<QScriptLine &>(line).justified = true;
