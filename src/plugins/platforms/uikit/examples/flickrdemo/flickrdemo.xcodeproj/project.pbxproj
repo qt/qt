@@ -37,8 +37,6 @@
 		D3CAA7F213264F52008BB877 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765A40DF7441C002DB57D /* CoreGraphics.framework */; };
 		D3CAA7FA13264F8A008BB877 /* libz.1.2.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA7F913264F8A008BB877 /* libz.1.2.3.dylib */; };
 		D3CAA81113264FF0008BB877 /* libz.1.2.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA7F913264F8A008BB877 /* libz.1.2.3.dylib */; };
-		D3CAA88A132652E5008BB877 /* fonts in Resources */ = {isa = PBXBuildFile; fileRef = D3CAA836132652E5008BB877 /* fonts */; };
-		D3CAA88B132652E5008BB877 /* fonts in Resources */ = {isa = PBXBuildFile; fileRef = D3CAA836132652E5008BB877 /* fonts */; };
 		D3D815F31329339300CDE422 /* flickr in Resources */ = {isa = PBXBuildFile; fileRef = D3D815D31329339300CDE422 /* flickr */; };
 		D3D815F4132933AB00CDE422 /* flickr in Resources */ = {isa = PBXBuildFile; fileRef = D3D815D31329339300CDE422 /* flickr */; };
 		D3D81758132A184300CDE422 /* libQtCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D81752132A184300CDE422 /* libQtCore.a */; };
@@ -77,7 +75,6 @@
 		D3CAA7C713264AAD008BB877 /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		D3CAA7F613264F52008BB877 /* flickrdemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = flickrdemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3CAA7F913264F8A008BB877 /* libz.1.2.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.2.3.dylib; path = usr/lib/libz.1.2.3.dylib; sourceTree = SDKROOT; };
-		D3CAA836132652E5008BB877 /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fonts; path = ../../../../../../lib/fonts; sourceTree = SOURCE_ROOT; };
 		D3D815D31329339300CDE422 /* flickr */ = {isa = PBXFileReference; lastKnownFileType = folder; name = flickr; path = ../../../../../../demos/declarative/flickr; sourceTree = SOURCE_ROOT; };
 		D3D81752132A184300CDE422 /* libQtCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtCore.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtCore.a"; sourceTree = SOURCE_ROOT; };
 		D3D81753132A184300CDE422 /* libQtDeclarative.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtDeclarative.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtDeclarative.a"; sourceTree = SOURCE_ROOT; };
@@ -173,7 +170,6 @@
 			isa = PBXGroup;
 			children = (
 				D3D815D31329339300CDE422 /* flickr */,
-				D3CAA836132652E5008BB877 /* fonts */,
 				8D1107310486CEB800E47090 /* flickrdemo-Info.plist */,
 			);
 			name = Resources;
@@ -304,7 +300,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D3CAA88A132652E5008BB877 /* fonts in Resources */,
 				D3D815F31329339300CDE422 /* flickr in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -313,7 +308,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D3CAA88B132652E5008BB877 /* fonts in Resources */,
 				D3D815F4132933AB00CDE422 /* flickr in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
