@@ -1714,8 +1714,8 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
                         shrg.ptDown.x = GET_X_LPARAM(lParam);
                         shrg.ptDown.y = GET_Y_LPARAM(lParam);
                         shrg.dwFlags = SHRG_RETURNCMD | SHRG_NOANIMATION;
-                        resolveAygLibs();
 #ifndef QT_NO_GESTURES
+                        resolveAygLibs();
                         if (ptrRecognizeGesture && (ptrRecognizeGesture(&shrg) == GN_CONTEXTMENU)) {
                             if (QApplication::activePopupWidget())
                                 QApplication::activePopupWidget()->close();
