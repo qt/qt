@@ -581,6 +581,15 @@ static inline void* currentThreadStackBase()
 #if OS(DARWIN)
     pthread_t thread = pthread_self();
     return pthread_get_stackaddr_np(thread);
+#elif OS(WINCE)
+    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
+    MutexLocker locker(mutex);
+    if (g_stackBase)
+        return g_stackBase;
+    else {
+        int dummy;
+        return getStackBase(&dummy);
+    }
 #elif OS(WINDOWS) && CPU(X86) && COMPILER(MSVC)
     // offset 0x18 from the FS segment register gives a pointer to
     // the thread information block for the current thread
@@ -662,15 +671,6 @@ static inline void* currentThreadStackBase()
         stackThread = thread;
     }
     return static_cast<char*>(stackBase) + stackSize;
-#elif OS(WINCE)
-    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
-    MutexLocker locker(mutex);
-    if (g_stackBase)
-        return g_stackBase;
-    else {
-        int dummy;
-        return getStackBase(&dummy);
-    }
 #else
 #error Need a way to get the stack base on this platform
 #endif
