@@ -1327,20 +1327,32 @@ void tst_qdeclarativetextedit::moveCursorSelectionSequence()
 void tst_qdeclarativetextedit::mouseSelection_data()
 {
     QTest::addColumn<QString>("qmlfile");
-    QTest::addColumn<bool>("expectSelection");
+    QTest::addColumn<int>("from");
+    QTest::addColumn<int>("to");
+    QTest::addColumn<QString>("selectedText");
 
     // import installed
-    QTest::newRow("on") << SRCDIR "/data/mouseselection_true.qml" << true;
-    QTest::newRow("off") << SRCDIR "/data/mouseselection_false.qml" << false;
-    QTest::newRow("default") << SRCDIR "/data/mouseselection_default.qml" << false;
-    QTest::newRow("on word selection") << SRCDIR "/data/mouseselection_true_words.qml" << true;
-    QTest::newRow("off word selection") << SRCDIR "/data/mouseselection_false_words.qml" << false;
+    QTest::newRow("on") << SRCDIR "/data/mouseselection_true.qml" << 4 << 9 << "45678";
+    QTest::newRow("off") << SRCDIR "/data/mouseselection_false.qml" << 4 << 9 << QString();
+    QTest::newRow("default") << SRCDIR "/data/mouseselection_default.qml" << 4 << 9 << QString();
+    QTest::newRow("off word selection") << SRCDIR "/data/mouseselection_false_words.qml" << 4 << 9 << QString();
+    QTest::newRow("on word selection (4,9)") << SRCDIR "/data/mouseselection_true_words.qml" << 4 << 9 << "0123456789";
+    QTest::newRow("on word selection (2,13)") << SRCDIR "/data/mouseselection_true_words.qml" << 2 << 13 << "0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    QTest::newRow("on word selection (2,30)") << SRCDIR "/data/mouseselection_true_words.qml" << 2 << 30 << "0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    QTest::newRow("on word selection (9,13)") << SRCDIR "/data/mouseselection_true_words.qml" << 9 << 13 << "0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    QTest::newRow("on word selection (9,30)") << SRCDIR "/data/mouseselection_true_words.qml" << 9 << 30 << "0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    QTest::newRow("on word selection (13,2)") << SRCDIR "/data/mouseselection_true_words.qml" << 13 << 2 << "0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    QTest::newRow("on word selection (20,2)") << SRCDIR "/data/mouseselection_true_words.qml" << 20 << 2 << "0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    QTest::newRow("on word selection (12,9)") << SRCDIR "/data/mouseselection_true_words.qml" << 12 << 9 << "0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    QTest::newRow("on word selection (30,9)") << SRCDIR "/data/mouseselection_true_words.qml" << 30 << 9 << "0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 }
 
 void tst_qdeclarativetextedit::mouseSelection()
 {
     QFETCH(QString, qmlfile);
-    QFETCH(bool, expectSelection);
+    QFETCH(int, from);
+    QFETCH(int, to);
+    QFETCH(QString, selectedText);
 
     QDeclarativeView *canvas = createView(qmlfile);
 
@@ -1354,25 +1366,20 @@ void tst_qdeclarativetextedit::mouseSelection()
     QVERIFY(textEditObject != 0);
 
     // press-and-drag-and-release from x1 to x2
-    int x1 = 10;
-    int x2 = 70;
-    int y = textEditObject->height()/2;
-    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x1,y)));
+    QPoint p1 = canvas->mapFromScene(textEditObject->positionToRectangle(from).center());
+    QPoint p2 = canvas->mapFromScene(textEditObject->positionToRectangle(to).center());
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, p1);
     //QTest::mouseMove(canvas->viewport(), canvas->mapFromScene(QPoint(x2,y))); // doesn't work
-    QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(x2,y)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+    QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(p2), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
     QApplication::sendEvent(canvas->viewport(), &mv);
-    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x2,y)));
-    QString str = textEditObject->selectedText();
-    if (expectSelection)
-        QVERIFY(str.length() > 3); // don't reallly care *what* was selected (and it's too sensitive to platform)
-    else
-        QVERIFY(str.isEmpty());
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, p2);
+    QCOMPARE(textEditObject->selectedText(), selectedText);
 
     // Clicking and shift to clicking between the same points should select the same text.
     textEditObject->setCursorPosition(0);
-    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, Qt::NoModifier, canvas->mapFromScene(QPoint(x1,y)));
-    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, Qt::ShiftModifier, canvas->mapFromScene(QPoint(x2,y)));
-    QCOMPARE(textEditObject->selectedText(), str);
+    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, Qt::NoModifier, p1);
+    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, Qt::ShiftModifier, p2);
+    QCOMPARE(textEditObject->selectedText(), selectedText);
 
     delete canvas;
 }
