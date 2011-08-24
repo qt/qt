@@ -46,7 +46,6 @@
 #include <QThread>
 
 #include <QtDeclarative/qdeclarativeengine.h>
-#include <private/qdeclarativedebughelper_p.h>
 
 #include <private/qdeclarativedebug_p.h>
 #include <private/qdeclarativeenginedebug_p.h>
@@ -76,9 +75,6 @@ private slots:
 
 void tst_QDeclarativeDebugService::initTestCase()
 {
-    QTest::ignoreMessage(QtWarningMsg, "Qml debugging is enabled. Only use this in a safe environment!");
-    QDeclarativeDebugHelper::enableDebugging();
-
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 13769...");
     new QDeclarativeEngine(this);
 

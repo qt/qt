@@ -44,13 +44,10 @@
 #include <QDeclarativeComponent>
 #include <QDeclarativeEngine>
 #include <QStringList>
-#include <QtDeclarative/private/qdeclarativedebughelper_p.h>
 #include <QtDeclarative/private/qdeclarativedebugservice_p.h>
 
 int main(int argc, char *argv[])
 {
-    QDeclarativeDebugHelper::enableDebugging();
-
     QApplication app(argc, argv);
 
     const QUrl path = QUrl::fromLocalFile(app.arguments().last());
