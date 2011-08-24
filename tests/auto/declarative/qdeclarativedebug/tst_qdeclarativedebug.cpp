@@ -59,7 +59,6 @@
 #include <private/qdeclarativerectangle_p.h>
 #include <private/qdeclarativemetatype_p.h>
 #include <private/qdeclarativeproperty_p.h>
-#include <private/qdeclarativedebughelper_p.h>
 
 #include "../../../shared/util.h"
 #include "../shared/debugutil_p.h"
@@ -295,9 +294,6 @@ void tst_QDeclarativeDebug::initTestCase()
 {
     qRegisterMetaType<QDeclarativeDebugWatch::State>();
     qmlRegisterType<NonScriptProperty>("Test", 1, 0, "NonScriptPropertyElement");
-
-    QTest::ignoreMessage(QtWarningMsg, "Qml debugging is enabled. Only use this in a safe environment!");
-    QDeclarativeDebugHelper::enableDebugging();
 
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 3768...");
     m_engine = new QDeclarativeEngine(this);

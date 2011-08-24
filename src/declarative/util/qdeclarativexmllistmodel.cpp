@@ -537,6 +537,15 @@ public:
         emit q->statusChanged(status);
     }
 
+    void deleteReply() {
+        Q_Q(QDeclarativeXmlListModel);
+        if (reply) {
+            QObject::disconnect(reply, 0, q, 0);
+            reply->deleteLater();
+            reply = 0;
+        }
+    }
+
     bool isComponentComplete;
     QUrl src;
     QString xml;
@@ -546,6 +555,7 @@ public:
     QList<int> roles;
     QStringList roleNames;
     int highestRole;
+
     QNetworkReply *reply;
     QDeclarativeXmlListModel::Status status;
     QString errorString;
@@ -553,6 +563,7 @@ public:
     int queryId;
     QStringList keyRoleResultsCache;
     QList<QDeclarativeXmlListModelRole *> roleObjects;
+
     static void append_role(QDeclarativeListProperty<QDeclarativeXmlListModelRole> *list, QDeclarativeXmlListModelRole *role);
     static void clear_role(QDeclarativeListProperty<QDeclarativeXmlListModelRole> *list);
     QList<QList<QVariant> > data;
@@ -994,11 +1005,7 @@ void QDeclarativeXmlListModel::reload()
 
     if (d->reply) {
         d->reply->abort();
-        if (d->reply) {
-            // abort will generally have already done this (and more)
-            d->reply->deleteLater();
-            d->reply = 0;
-        }
+        d->deleteReply();
     }
 
     if (!d->xml.isEmpty()) {
@@ -1032,8 +1039,7 @@ void QDeclarativeXmlListModel::requestFinished()
         QVariant redirect = d->reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
         if (redirect.isValid()) {
             QUrl url = d->reply->url().resolved(redirect.toUrl());
-            d->reply->deleteLater();
-            d->reply = 0;
+            d->deleteReply();
             setSource(url);
             return;
         }
@@ -1042,9 +1048,7 @@ void QDeclarativeXmlListModel::requestFinished()
 
     if (d->reply->error() != QNetworkReply::NoError) {
         d->errorString = d->reply->errorString();
-        disconnect(d->reply, 0, this, 0);
-        d->reply->deleteLater();
-        d->reply = 0;
+        d->deleteReply();
 
         int count = this->count();
         d->data.clear();
@@ -1065,9 +1069,7 @@ void QDeclarativeXmlListModel::requestFinished()
         } else {
             d->queryId = QDeclarativeXmlQueryEngine::instance(qmlEngine(this))->doQuery(d->query, d->namespaces, data, &d->roleObjects, d->keyRoleResultsCache);
         }
-        disconnect(d->reply, 0, this, 0);
-        d->reply->deleteLater();
-        d->reply = 0;
+        d->deleteReply();
 
         d->progress = 1.0;
         emit progressChanged(d->progress);

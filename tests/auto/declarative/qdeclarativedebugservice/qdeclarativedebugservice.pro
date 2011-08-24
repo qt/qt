@@ -6,5 +6,5 @@ HEADERS += ../shared/debugutil_p.h
 SOURCES += tst_qdeclarativedebugservice.cpp \
            ../shared/debugutil.cpp
 
-CONFIG += parallel_test
+CONFIG += parallel_test declarative_debug
 
