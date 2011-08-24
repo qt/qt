@@ -53,7 +53,12 @@ Rectangle { id: rect1; ... }
 Rectangle { id: rect2; anchors.left: rect1.right; ... }
 \endcode
 
-In this case, the left edge of \e rect2 is bound to the right edge of \e rect1, producing the following:
+Each Item has two properties for each anchor line: one to bind from and one to bind to. The properties to bind
+from are contained in the \l{Item::}{anchors} attached property (seen as \c {anchors.left} above).
+The properties to bind to are normal properties (seen as \c {rect1.right} above).
+This way, each item can have several bindings to the same anchor line. Note that the properties to bind to are
+not visible in the documentation for Item.
+So in the example above, the left edge of \e rect2 is bound to the right edge of \e rect1, producing the following:
 
 \image edge1.png
 
