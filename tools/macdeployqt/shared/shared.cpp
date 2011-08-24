@@ -127,7 +127,7 @@ FrameworkInfo parseOtoolLibraryLine(const QString &line, bool useDebugLibs)
     while (part < parts.count()) {
         const QString currentPart = parts.at(part).simplified() ;
         ++part;
-        if (currentPart == "")
+        if (currentPart.isEmpty())
             continue;
 
         if (state == QtPath) {
