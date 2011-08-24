@@ -107,7 +107,7 @@ TextEdit {
 
 /*!
     \qmlsignal TextEdit::onLinkActivated(string link)
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     This handler is called when the user clicks on a link embedded in the text.
     The link must be in rich text or HTML format and the
@@ -624,7 +624,7 @@ void QDeclarativeTextEdit::setWrapMode(WrapMode mode)
 
 /*!
     \qmlproperty int TextEdit::lineCount
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     Returns the total number of lines in the textEdit item.
 */
@@ -718,7 +718,7 @@ void QDeclarativeTextEdit::moveCursorSelection(int pos)
 
 /*!
     \qmlmethod void TextEdit::moveCursorSelection(int position, SelectionMode mode = TextEdit.SelectCharacters)
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     Moves the cursor to \a position and updates the selection according to the optional \a mode
     parameter. (To only move the cursor, set the \l cursorPosition property.)
@@ -1083,7 +1083,7 @@ void QDeclarativeTextEdit::setSelectByMouse(bool on)
 
 /*!
     \qmlproperty enum TextEdit::mouseSelectionMode
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     Specifies how text should be selected using a mouse.
 
@@ -1229,7 +1229,7 @@ void QDeclarativeTextEditPrivate::focusChanged(bool hasFocus)
 
 /*!
     \qmlmethod void TextEdit::deselect()
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     Removes active text selection.
 */

@@ -126,10 +126,8 @@ QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *act
     default:
         break;
     };
-    if (key != 0) {
+    if (key != 0)
         QSoftKeyManager::instance()->d_func()->softKeyCommandActions.insert(action, key);
-        connect(action, SIGNAL(destroyed(QObject*)), QSoftKeyManager::instance(), SLOT(cleanupHash(QObject*)));
-    }
 #endif
     QAction::SoftKeyRole softKeyRole = QAction::NoSoftKey;
     switch (standardKey) {
@@ -162,13 +160,7 @@ QAction *QSoftKeyManager::createKeyedAction(StandardSoftKey standardKey, Qt::Key
     QScopedPointer<QAction> action(createAction(standardKey, actionWidget));
 
     connect(action.data(), SIGNAL(triggered()), QSoftKeyManager::instance(), SLOT(sendKeyEvent()));
-
-#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4) && !defined(SYMBIAN_VERSION_9_3) && !defined(SYMBIAN_VERSION_9_2)
-    // Don't connect destroyed slot if is was already connected in createAction
-    if (!(QSoftKeyManager::instance()->d_func()->softKeyCommandActions.contains(action.data())))
-#endif
     connect(action.data(), SIGNAL(destroyed(QObject*)), QSoftKeyManager::instance(), SLOT(cleanupHash(QObject*)));
-
     QSoftKeyManager::instance()->d_func()->keyedActions.insert(action.data(), key);
     return action.take();
 #endif //QT_NO_ACTION
@@ -177,9 +169,7 @@ QAction *QSoftKeyManager::createKeyedAction(StandardSoftKey standardKey, Qt::Key
 void QSoftKeyManager::cleanupHash(QObject *obj)
 {
     Q_D(QSoftKeyManager);
-    // Can't use qobject_cast in destroyed() signal handler as that'll return NULL,
-    // so use static_cast instead. Since the pointer is only used as a hash key, it is safe.
-    QAction *action = static_cast<QAction *>(obj);
+    QAction *action = qobject_cast<QAction*>(obj);
     d->keyedActions.remove(action);
 #if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4) && !defined(SYMBIAN_VERSION_9_3) && !defined(SYMBIAN_VERSION_9_2)
     d->softKeyCommandActions.remove(action);

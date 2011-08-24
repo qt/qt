@@ -80,7 +80,7 @@ public:
                  selectPressed(false)
     {
 #ifdef Q_OS_SYMBIAN
-        if (QSysInfo::symbianVersion() >= QSysInfo::SV_SF_1) {
+        if (QSysInfo::symbianVersion() == QSysInfo::SV_SF_1 || QSysInfo::symbianVersion() == QSysInfo::SV_SF_3) {
             showInputPanelOnFocus = false;
         }
 #endif

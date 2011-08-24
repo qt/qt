@@ -1420,7 +1420,7 @@ void QDeclarativeFlickable::setContentHeight(qreal h)
 /*!
     \qmlmethod Flickable::resizeContent(real width, real height, QPointF center)
     \preliminary
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     Resizes the content to \a width x \a height about \a center.
 
@@ -1460,7 +1460,7 @@ void QDeclarativeFlickable::resizeContent(qreal w, qreal h, QPointF center)
 /*!
     \qmlmethod Flickable::returnToBounds()
     \preliminary
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     Ensures the content is within legal bounds.
 

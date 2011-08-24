@@ -132,7 +132,7 @@
 
     In Qt 4.4:
     \list
-    \o \l{WebKit in Qt}{Qt WebKit integration}, making it possible for developers
+    \o \l{Webkit in QT}{Qt WebKit integration}, making it possible for developers
     to use a fully-featured Web browser to display documents and access online
     services.
     \o A multimedia API provided by the \l{Phonon Overview}{Phonon Multimedia Framework}.
@@ -610,6 +610,7 @@
     introduced in Qt 4.7.
 
     \sincelist 4.7
+
 */
 
 /*!
