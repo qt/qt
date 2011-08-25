@@ -711,7 +711,7 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsLX(
         colorIndex,
         icon,
         iconMask,
-        AknIconUtils::AvkonIconFileName(),
+        (fallbackGraphicID != KErrNotFound ? AknIconUtils::AvkonIconFileName() : KNullDesC),
         fallbackGraphicID,
         fallbackGraphicsMaskID,
         defaultColor);
@@ -949,7 +949,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
                 skinId,
                 icon,
                 iconMask,
-                AknIconUtils::AvkonIconFileName(),
+                (fallbackGraphicID != KErrNotFound ? AknIconUtils::AvkonIconFileName() : KNullDesC),
                 fallbackGraphicID ,
                 fallbackGraphicsMaskID);
 
@@ -1043,7 +1043,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
                     KAknsIIDDefault, //animation is not themed, lets force fallback graphics
                     animationFrame,
                     frameMask,
-                    AknIconUtils::AvkonIconFileName(),
+                    (fallbackGraphicID != KErrNotFound ? AknIconUtils::AvkonIconFileName() : KNullDesC),
                     fallbackGraphicID ,
                     fallbackGraphicsMaskID);
             }
