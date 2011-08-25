@@ -7,8 +7,8 @@ There have no tests been run whatsoever.
 
 * Open GL ES 1/2 based backend
 * Single touch
-* Text/font drawing using font shipped with application
-* Text input (Opening/closing software input panel.
+* Text/font drawing using system fonts (CoreText)
+* Text input (Opening/closing software input panel
   Application has to perform necessary layout changes itself.)
 * Initial showing/hiding of status bar (as defined in the Info.plist)
 * Interface orientations as defined in the Info.plist of the application
@@ -21,7 +21,16 @@ Building/Deploying the application has to be done in Xcode. You need to generate
 necessary moc_ files in advance and add these to the Xcode project. More details
 on the Xcode setup see below.
 
-1) Build Qt
+1) Known Issues
+
+* Console message
+  "QEventDispatcherUNIX: internal error, wakeUps.testAndSetRelease(1, 0) failed!"
+  seems to appear sometimes for some people for unknown reasons and
+  unknown effect
+* JavaScript XmlHttpRequest doesn't work reliably even though networking
+  in general seems to
+
+2) Build Qt
 
 The example Xcode project in the examples subdirectory requires that you do shadow
 builds of Qt in qt-lighthouse-ios-simulator and qt-lighthouse-ios-device directories
@@ -43,7 +52,7 @@ Device:
 -------
 configure -qpa -xplatform qpa/macx-iphonedevice-g++ -arch armv7 -no-neon -developer-build -release -opengl es2 -no-accessibility -no-qt3support -no-multimedia -no-phonon-backend -no-webkit -no-scripttools -no-openssl -no-sql-mysql -no-sql-odbc -no-cups -no-iconv -no-dbus -static -nomake tools -nomake demos -nomake docs -nomake examples -nomake translations
 
-2) XCode setup:
+3) XCode setup:
 - there are examples in the examples subdirectory of the platform plugin
 - to create something fresh do something like:
   - Xcode: Create a "View-based Appplication"
@@ -64,5 +73,5 @@ configure -qpa -xplatform qpa/macx-iphonedevice-g++ -arch armv7 -no-neon -develo
     and call Phonon::Factory::setBackend(qt_plugin_instance_phonon_av());
     Link to libphonon and to plugins/phonon/phonon_av
 
-3) Done: Build and Run.
+4) Done: Build and Run.
 
