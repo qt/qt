@@ -1,3 +1,246 @@
+2011-08-23  Chang Shu  <cshu@webkit.org>
+
+        Added support for momentarily revealing last typed character in password input.
+        Code change was partially based on Apple's iOS code and Samuel Nevala's work.
+        https://bugs.webkit.org/show_bug.cgi?id=32509
+
+        Reviewed by Alexey Proskuryakov.
+
+        * editing/InsertIntoTextNodeCommand.cpp:
+        (WebCore::InsertIntoTextNodeCommand::doApply):
+        * rendering/RenderText.cpp:
+        (WebCore::SecureTextTimer::SecureTextTimer):
+        (WebCore::SecureTextTimer::restartWithNewText):
+        (WebCore::SecureTextTimer::invalidate):
+        (WebCore::SecureTextTimer::lastTypedCharacterOffset):
+        (WebCore::SecureTextTimer::fired):
+        (WebCore::RenderText::willBeDestroyed):
+        (WebCore::RenderText::setTextInternal):
+        (WebCore::RenderText::secureText):
+        (WebCore::RenderText::momentarilyRevealLastTypedCharacter):
+        * rendering/RenderText.h:
+        (WebCore::RenderText::isSecure):
+        * testing/Internals.cpp:
+        (WebCore::Internals::setPasswordEchoEnabled): Fixed some silly coding in Internals.
+        (WebCore::Internals::setPasswordEchoDurationInSeconds):
+        (WebCore::Internals::reset):
+
+2011-07-08  Chang Shu  <cshu@webkit.org>
+
+        Update calling sites after function renamed.
+        https://bugs.webkit.org/show_bug.cgi?id=59114
+
+        Reviewed by Alexey Proskuryakov.
+
+        No new tests, just refactoring.
+
+        * editing/visible_units.cpp:
+        (WebCore::previousBoundary):
+        (WebCore::nextBoundary):
+        * rendering/RenderText.cpp:
+        (WebCore::RenderText::setTextInternal):
+
+2011-08-18  Chang Shu  <cshu@webkit.org>
+
+        Add support of setPasswordEchoEnabled and setPasswordEchoDuration for password echo feature
+        https://bugs.webkit.org/show_bug.cgi?id=66052
+
+        Reviewed by Alexey Proskuryakov.
+
+        Added runtime settings in WebCore.
+        Added support in window.internals for testing.
+
+        Tests: editing/input/password-echo-passnode.html
+               editing/input/password-echo-passnode2.html
+               editing/input/password-echo-passnode3.html
+               editing/input/password-echo-textnode.html
+
+        * page/Settings.cpp:
+        (WebCore::Settings::Settings):
+        * page/Settings.h:
+        (WebCore::Settings::setPasswordEchoEnabled):
+        (WebCore::Settings::passwordEchoEnabled):
+        (WebCore::Settings::setPasswordEchoDurationInSeconds):
+        (WebCore::Settings::passwordEchoDurationInSeconds):
+        * testing/Internals.cpp:
+        (WebCore::Internals::Internals):
+        (WebCore::Internals::setPasswordEchoEnabled):
+        (WebCore::Internals::setPasswordEchoDurationInSeconds):
+        (WebCore::Internals::reset):
+        * testing/Internals.h:
+        * testing/Internals.idl:
+
+2011-08-16  Chang Shu  <cshu@webkit.org>
+
+        Support reset in WebCore::Internals
+        https://bugs.webkit.org/show_bug.cgi?id=66307
+
+        Reviewed by Dimitri Glazkov.
+
+        New tests will be added when function reset is implemented.
+
+        Added framework code in WebCoreTestSupport. The real implementation of
+        Internals::reset() depends on the need from the settings that require a reset.
+
+        * testing/Internals.cpp:
+        (WebCore::Internals::reset):
+        * testing/Internals.h:
+        * testing/js/WebCoreTestSupport.cpp:
+        (WebCoreTestSupport::resetInternalsObject):
+        * testing/js/WebCoreTestSupport.h:
+        * testing/v8/WebCoreTestSupport.cpp:
+        (WebCoreTestSupport::resetInternalsObject):
+        * testing/v8/WebCoreTestSupport.h:
+
+2011-06-09  Robert Hogan  <robert@webkit.org>
+
+        Reviewed by Andreas Kling.
+
+        Teach Qt about window.internals
+        https://bugs.webkit.org/show_bug.cgi?id=61074
+
+        A weakness of the Qt DRT setup is that things like JSContextRef are abstracted
+        away from the QtWebKit API so we need DumpRenderTreeSupportQt to access WebCore internals.
+        Since the window.internals object requires JSContextRef we need to implement it in DumpRenderTreeSupportQt
+        where we can access it. DumpRenderTreeSupportQt cannot be compiled outside Qt's WebCore and as it
+        is our only possible route into the WebCoreTestSupport class neither can the new window.internals plumbing.
+        Likewise we can't put the accessor in WebCoreTestSupport because it would then need to know about QWebFrame
+        and others. The only alternative seems like a compile time guard which we would have to teach the bots about.
+
+        * CodeGenerators.pri:
+        * WebCore.pri:
+        * WebCore.pro:
+
+2011-06-02  Dimitri Glazkov  <dglazkov@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Add build logistics and plumbing for window.internals object.
+        https://bugs.webkit.org/show_bug.cgi?id=60313
+
+        Test: fast/harness/internals-object.html
+
+        * Configurations/WebCoreTestSupport.xcconfig: Added.
+        * DerivedSources.make: Added support for generating from Internals.idl.
+        * WebCore.gyp/WebCore.gyp: Added new webcore_test_support library.
+        * WebCore.gypi: Ditto.
+        * WebCore.xcodeproj/project.pbxproj: Added WebCoreTestSupport library.
+        * testing/Internals.cpp: Added.
+        * testing/Internals.h: Added.
+        * testing/Internals.idl: Added.
+        * testing/js/WebCoreTestSupport.cpp: Added.
+        * testing/js/WebCoreTestSupport.h: Added.
+        * testing/v8/WebCoreTestSupport.cpp: Added.
+        * testing/v8/WebCoreTestSupport.h: Added.
+
+2011-08-22  Abhishek Arya  <inferno@chromium.org>
+
+        Crash in FocusController::advanceFocusInDocumentOrder
+        https://bugs.webkit.org/show_bug.cgi?id=66678
+
+        RefPtr the focusable node to prevent getting deleted by mutation
+        event.
+
+        Reviewed by Dave Hyatt.
+
+        Test: fast/frames/focus-controller-crash-change-event.html
+
+        * page/FocusController.cpp:
+        (WebCore::FocusController::advanceFocusInDocumentOrder):
+
+2011-08-18  Ryosuke Niwa  <rniwa@webkit.org>
+
+        SimplifiedBackwardsTextIterator returns incorrect offset with first-letter rule
+        https://bugs.webkit.org/show_bug.cgi?id=66086
+
+        Reviewed by Darin Adler.
+
+        The bug was caused by SimplifiedBackwardsTextIterator's not taking care of first-letter at all.
+        Fixing the bug by detecting RenderTextFragment in handleTextNode.
+
+        Also added m_shouldHandleFirstLetter to SimplifiedBackwardsTextIterator to keep track of whether or not
+        the next call to handleTextNode needs to process the first-letter part of the text fragment.
+
+        Test: editing/text-iterator/backward-textiterator-first-letter-crash.html
+
+        * editing/TextIterator.cpp:
+        (WebCore::firstRenderTextInFirstLetter): Extracted from handleTextNodeFirstLetter.
+        (WebCore::TextIterator::handleTextNodeFirstLetter): Calls firstRenderTextInFirstLetter.
+        (WebCore::SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator):
+        (WebCore::SimplifiedBackwardsTextIterator::handleTextNode):
+        (WebCore::SimplifiedBackwardsTextIterator::handleFirstLetter): Added.
+        * editing/TextIterator.h:
+
+2011-08-23  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        [Qt] Fix build on Lion
+
+        https://bugs.webkit.org/show_bug.cgi?id=66770
+
+        Reviewed by Andreas Kling.
+
+        We were mistakenly picking up mac/WebCoreSystemInterface.h instead of
+        the Qt one, and building on Lion revealed this when a typedef for
+        IOSurfaceRef was wrapped in PLATFORM(MAC).
+
+        For now we fix this by including WebCoreSystemInterface using
+        brackets, so that we'll pick up the right file based on the
+        include paths. This also means exposing a few missing enums
+        in our own version of the file, so those were added.
+
+        Lasty, we need to link against the right system interface library
+        on Lion.
+
+        * platform/mac/WebVideoFullscreenHUDWindowController.mm:
+        * platform/qt/WebCoreSystemInterface.h:
+
+2011-08-08  Cris Neckar  <cdn@chromium.org>
+
+        Remove counter nodes from the tree and fix-up children when they are removed from the counter map.
+        https://bugs.webkit.org/show_bug.cgi?id=65346
+
+        Reviewed by Adam Barth.
+
+        Covered by existing CSS counter tests.
+
+        * rendering/CounterNode.cpp:
+        (WebCore::CounterNode::~CounterNode):
+
+2011-08-17  Oliver Hunt  <oliver@apple.com>
+
+        Move towards supporting user controlled prototypes on CanvasPixelArray
+        https://bugs.webkit.org/show_bug.cgi?id=66429
+
+        Reviewed by Gavin Barraclough.
+
+        Start using a per-global object structure for canvas pixel array.
+
+        * bindings/js/JSImageDataCustom.cpp:
+        (WebCore::toJS):
+
+2011-08-17  Abhishek Arya  <inferno@chromium.org>
+
+        Crash in Document::recalcStyleSelector
+        https://bugs.webkit.org/show_bug.cgi?id=66335
+
+        Reviewed by Simon Fraser.
+
+        When node is getting destroyed and its removedFromDocument
+        is not called due to entire document structure torn down(using
+        removeAllChildren), make sure to clear out the stylesheet
+        candidate node from document's structures in its destructor.
+
+        Test: svg/dom/stylesheet-candidate-node-crash-main.html
+
+        * dom/ProcessingInstruction.cpp:
+        (WebCore::ProcessingInstruction::~ProcessingInstruction):
+        * html/HTMLLinkElement.cpp:
+        (WebCore::HTMLLinkElement::~HTMLLinkElement):
+        * html/HTMLStyleElement.cpp:
+        (WebCore::HTMLStyleElement::~HTMLStyleElement):
+        * svg/SVGStyleElement.cpp:
+        (WebCore::SVGStyleElement::~SVGStyleElement):
+
 2011-08-12  Abhishek Arya  <inferno@chromium.org>
 
         Crash in WebCore::editingIgnoresContent
