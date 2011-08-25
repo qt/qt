@@ -126,8 +126,7 @@ QString SymbianMakefileGenerator::absolutizePath(const QString& origPath)
     if (resultPath.startsWith("/epoc32/", Qt::CaseInsensitive))
         resultPath = QDir::fromNativeSeparators(qt_epocRoot()) + resultPath.mid(1);
 
-    QFileInfo fi(fileInfo(resultPath));
-
+    QFileInfo fi(outputDir, resultPath);
     // Since origPath can be something given in HEADERS, we need to check if we are dealing
     // with a file or a directory. In case the origPath doesn't yet exist, isFile() returns
     // false and we default to assuming it is a dir.
@@ -271,6 +270,8 @@ void SymbianMakefileGenerator::init()
     MakefileGenerator::init();
     SymbianCommonGenerator::init();
 
+    outputDir = QDir(Option::output_dir);
+
     if (0 != project->values("QMAKE_PLATFORM").size())
         platform = varGlue("QMAKE_PLATFORM", "", " ", "");
 
@@ -338,7 +339,6 @@ void SymbianMakefileGenerator::initMmpVariables()
     srcpaths << project->values("UNUSED_SOURCES") << project->values("UI_SOURCES_DIR");
     srcpaths << project->values("UI_DIR");
 
-    QDir current = QDir::current();
     QString absolutizedCurrent = absolutizePath(".");
 
     for (int j = 0; j < srcpaths.size(); ++j) {
@@ -373,12 +373,12 @@ void SymbianMakefileGenerator::initMmpVariables()
     QStringList temporary;
     for (int i = 0; i < sysincspaths.size(); ++i) {
         QString origPath = sysincspaths.at(i);
-        QFileInfo origPathInfo(fileInfo(origPath));
+        QFileInfo origPathInfo(outputDir, origPath);
         bool bFound = false;
 
         for (int j = 0; j < temporary.size(); ++j) {
             QString tmpPath = temporary.at(j);
-            QFileInfo tmpPathInfo(fileInfo(tmpPath));
+            QFileInfo tmpPathInfo(outputDir, tmpPath);
 
             if (origPathInfo.absoluteFilePath() == tmpPathInfo.absoluteFilePath()) {
                 bFound = true;
@@ -515,14 +515,12 @@ void SymbianMakefileGenerator::writeMmpFile(QString &filename, const SymbianLoca
 
         writeMmpFileIncludePart(t);
 
-        QDir current = QDir::current();
-
         for (QMap<QString, QStringList>::iterator it = sources.begin(); it != sources.end(); ++it) {
             QStringList values = it.value();
             QString currentSourcePath = it.key();
 
             if (values.size())
-                t << "SOURCEPATH \t" <<  fixPathForMmp(currentSourcePath, current) << endl;
+                t << "SOURCEPATH \t" <<  fixPathForMmp(currentSourcePath, Option::output_dir) << endl;
 
             for (int i = 0; i < values.size(); ++i) {
                 QString sourceFileName = values.at(i);
@@ -709,13 +707,11 @@ void SymbianMakefileGenerator::writeMmpFileResourcePart(QTextStream& t, const Sy
 
 void SymbianMakefileGenerator::writeMmpFileSystemIncludePart(QTextStream& t)
 {
-    QDir current = QDir::current();
-
     for (QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
         QStringList values = it.value();
         for (int i = 0; i < values.size(); ++i) {
             QString handledPath = values.at(i);
-            t << "SYSTEMINCLUDE\t\t" << fixPathForMmp(handledPath, current) << endl;
+            t << "SYSTEMINCLUDE\t\t" << fixPathForMmp(handledPath, Option::output_dir) << endl;
         }
     }
 
@@ -1105,7 +1101,7 @@ void SymbianMakefileGenerator::generateDistcleanTargets(QTextStream& t)
             fromFile = item.endsWith(Option::pro_ext);
             fixedItem = item;
         }
-        QFileInfo fi(fileInfo(fixedItem));
+        QFileInfo fi(outputDir, fixedItem);
         if (!fromFile) {
             t << "\t-$(MAKE) -f \"" << Option::fixPathToTargetOS(fi.absoluteFilePath() + "/Makefile") << "\" dodistclean" << endl;
         } else {
@@ -1118,19 +1114,19 @@ void SymbianMakefileGenerator::generateDistcleanTargets(QTextStream& t)
 
     }
 
-    generatedFiles << Option::fixPathToTargetOS(fileInfo(Option::output.fileName()).absoluteFilePath()); // bld.inf
+    generatedFiles << Option::output.fileName(); // bld.inf
     generatedFiles << project->values("QMAKE_INTERNAL_PRL_FILE"); // Add generated prl files for cleanup
     generatedFiles << project->values("QMAKE_DISTCLEAN"); // Add any additional files marked for distclean
     QStringList fixedFiles;
     QStringList fixedDirs;
     foreach(QString item, generatedFiles) {
-        QString fixedItem = Option::fixPathToTargetOS(fileInfo(item).absoluteFilePath());
+        QString fixedItem = Option::fixPathToTargetOS(outputDir.absoluteFilePath(item));
         if (!fixedFiles.contains(fixedItem)) {
             fixedFiles << fixedItem;
         }
     }
     foreach(QString item, generatedDirs) {
-        QString fixedItem = Option::fixPathToTargetOS(fileInfo(item).absoluteFilePath());
+        QString fixedItem = Option::fixPathToTargetOS(outputDir.absoluteFilePath(item));
         if (!fixedDirs.contains(fixedItem)) {
             fixedDirs << fixedItem;
         }

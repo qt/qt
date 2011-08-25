@@ -1184,6 +1184,10 @@
     Any rules you define will be added after automatically generated
     rules in each section.
 
+    \note Content specified using \c BLD_INF_RULES is inserted as-is into the \c bld.inf
+    file, so any rules that specify host side paths may not work correctly when doing
+    a shadow build.
+
     \target CONFIG
     \section1 CONFIG
 
@@ -1520,6 +1524,10 @@
     attention that also other statements stay valid. For example if you
     override languages statement, you must override also package-header
     statement and all other statements which are language specific.
+
+    \note Custom deployments specified using \c pkg_postrules are inserted
+    as-is into the \c PKG file, so any rules that specify host side paths may not
+    work correctly when doing a shadow build.
 
     On the Symbian platform, three separate PKG files are generated:
 
@@ -1910,6 +1918,10 @@
     explicitly supported by their own variables, such as
     \c TARGET.EPOCSTACKSIZE.
     Doing so could result in duplicate statements in the MMP file.
+
+    \note Content specified using \c MMP_RULES is inserted as-is into the \c MMP
+    file, so any rules that specify host side paths may not work correctly when doing
+    a shadow build.
 
     \target MOC_DIR
     \section1 MOC_DIR
