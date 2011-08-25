@@ -1545,6 +1545,7 @@ QImage::Format QScreenPrivate::preferredImageFormat() const
     \value SvgalibClass QSvgalibScreen
     \value ProxyClass QProxyScreen
     \value GLClass QGLScreen
+    \value IntfbClass QIntfbScreen
     \value CustomClass Unknown QScreen subclass
 
     \sa classId()

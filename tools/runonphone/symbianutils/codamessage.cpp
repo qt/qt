@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "tcftrkmessage.h"
+#include "codamessage.h"
 #include "json.h"
 
 #include <QtCore/QString>
@@ -48,10 +48,11 @@
 // Names matching the enum
 static const char *serviceNamesC[] =
 { "Locator", "RunControl", "Processes", "Memory", "Settings", "Breakpoints",
-  "Registers", "SimpleRegisters",
+  "Registers", "Logging", "FileSystem", "SymbianInstall", "SymbianOSData",
+  "DebugSessionControl",
   "UnknownService"};
 
-namespace tcftrk {
+namespace Coda {
 
 SYMBIANUTILS_EXPORT QString joinByteArrays(const QVector<QByteArray> &a, char sep)
 {
@@ -341,7 +342,7 @@ QString Breakpoint::toString() const
 JsonInputStream &operator<<(JsonInputStream &str, const Breakpoint &b)
 {
     if (b.contextIds.isEmpty())
-        qWarning("tcftrk::Breakpoint: No context ids specified");
+        qWarning("Coda::Breakpoint: No context ids specified");
 
     str << '{' << "ID" << ':' << QString::fromUtf8(b.id) << ','
         << "BreakpointType" << ':' << breakPointTypesC[b.type] << ','
@@ -356,27 +357,27 @@ JsonInputStream &operator<<(JsonInputStream &str, const Breakpoint &b)
 }
 
 // --- Events
-TcfTrkEvent::TcfTrkEvent(Type type) : m_type(type)
+CodaEvent::CodaEvent(Type type) : m_type(type)
 {
 }
 
-TcfTrkEvent::~TcfTrkEvent()
+CodaEvent::~CodaEvent()
 {
 }
 
-TcfTrkEvent::Type TcfTrkEvent::type() const
+CodaEvent::Type CodaEvent::type() const
 {
     return m_type;
 }
 
-QString TcfTrkEvent::toString() const
+QString CodaEvent::toString() const
 {
     return QString();
 }
 
 static const char sharedLibrarySuspendReasonC[] = "Shared Library";
 
-TcfTrkEvent *TcfTrkEvent::parseEvent(Services s, const QByteArray &nameBA, const QVector<JsonValue> &values)
+CodaEvent *CodaEvent::parseEvent(Services s, const QByteArray &nameBA, const QVector<JsonValue> &values)
 {
     switch (s) {
     case LocatorService:
@@ -384,7 +385,7 @@ TcfTrkEvent *TcfTrkEvent::parseEvent(Services s, const QByteArray &nameBA, const
             QStringList services;
             foreach (const JsonValue &jv, values.front().children())
                 services.push_back(QString::fromUtf8(jv.data()));
-            return new TcfTrkLocatorHelloEvent(services);
+            return new CodaLocatorHelloEvent(services);
         }
         break;
     case RunControlService:
@@ -395,23 +396,37 @@ TcfTrkEvent *TcfTrkEvent::parseEvent(Services s, const QByteArray &nameBA, const
             const QByteArray idBA = values.at(0).data();
             const quint64 pc = values.at(1).data().toULongLong();
             const QByteArray reasonBA = values.at(2).data();
+            QByteArray messageBA;
             // Module load: Special
             if (reasonBA == sharedLibrarySuspendReasonC) {
                 ModuleLoadEventInfo info;
                 if (!info.parse(values.at(3)))
                     return 0;
-                return new TcfTrkRunControlModuleLoadContextSuspendedEvent(idBA, reasonBA, pc, info);
+                return new CodaRunControlModuleLoadContextSuspendedEvent(idBA, reasonBA, pc, info);
+            } else {
+                // hash containing a 'message'-key with a verbose crash message.
+                if (values.at(3).type() == JsonValue::Object && values.at(3).childCount()
+                    && values.at(3).children().at(0).type() == JsonValue::String)
+                    messageBA = values.at(3).children().at(0).data();
             }
-            return new TcfTrkRunControlContextSuspendedEvent(idBA, reasonBA, pc);
+            return new CodaRunControlContextSuspendedEvent(idBA, reasonBA, messageBA, pc);
         } // "contextSuspended"
         if (nameBA == "contextAdded")
-            return TcfTrkRunControlContextAddedEvent::parseEvent(values);
+            return CodaRunControlContextAddedEvent::parseEvent(values);
         if (nameBA == "contextRemoved" && values.front().type() == JsonValue::Array) {
             QVector<QByteArray> ids;
             foreach(const JsonValue &c, values.front().children())
                 ids.push_back(c.data());
-            return new TcfTrkRunControlContextRemovedEvent(ids);
+            return new CodaRunControlContextRemovedEvent(ids);
         }
+        break;
+    case LoggingService:
+        if ((nameBA == "writeln" || nameBA == "write" /*not yet used*/) && values.size() >= 2)
+            return new CodaLoggingWriteEvent(values.at(0).data(), values.at(1).data());
+        break;
+    case ProcessesService:
+        if (nameBA == "exited" && values.size() >= 2)
+            return new CodaProcessExitedEvent(values.at(0).data());
         break;
    default:
         break;
@@ -419,43 +434,58 @@ TcfTrkEvent *TcfTrkEvent::parseEvent(Services s, const QByteArray &nameBA, const
     return 0;
 }
 
-// -------------- TcfTrkServiceHelloEvent
-TcfTrkLocatorHelloEvent::TcfTrkLocatorHelloEvent(const QStringList &s) :
-    TcfTrkEvent(LocatorHello),
+// -------------- CodaServiceHelloEvent
+CodaLocatorHelloEvent::CodaLocatorHelloEvent(const QStringList &s) :
+    CodaEvent(LocatorHello),
     m_services(s)
 {
 }
 
-QString TcfTrkLocatorHelloEvent::toString() const
+QString CodaLocatorHelloEvent::toString() const
 {
     return QLatin1String("ServiceHello: ") + m_services.join(QLatin1String(", "));
 }
 
-// -------------- TcfTrkIdEvent
-TcfTrkIdEvent::TcfTrkIdEvent(Type t, const QByteArray &id) :
-   TcfTrkEvent(t), m_id(id)
+// --------------  Logging event
+
+CodaLoggingWriteEvent::CodaLoggingWriteEvent(const QByteArray &console, const QByteArray &message) :
+    CodaEvent(LoggingWriteEvent), m_console(console), m_message(message)
 {
 }
 
-// ---------- TcfTrkIdsEvent
-TcfTrkIdsEvent::TcfTrkIdsEvent(Type t, const QVector<QByteArray> &ids) :
-    TcfTrkEvent(t), m_ids(ids)
+QString CodaLoggingWriteEvent::toString() const
+{
+    QByteArray msgBA = m_console;
+    msgBA += ": ";
+    msgBA += m_message;
+    return QString::fromUtf8(msgBA);
+}
+
+// -------------- CodaIdEvent
+CodaIdEvent::CodaIdEvent(Type t, const QByteArray &id) :
+   CodaEvent(t), m_id(id)
 {
 }
 
-QString TcfTrkIdsEvent::joinedIdString(const char sep) const
+// ---------- CodaIdsEvent
+CodaIdsEvent::CodaIdsEvent(Type t, const QVector<QByteArray> &ids) :
+    CodaEvent(t), m_ids(ids)
+{
+}
+
+QString CodaIdsEvent::joinedIdString(const char sep) const
 {
     return joinByteArrays(m_ids, sep);
 }
 
-//  ---------------- TcfTrkRunControlContextAddedEvent
-TcfTrkRunControlContextAddedEvent::TcfTrkRunControlContextAddedEvent(const RunControlContexts &c) :
-        TcfTrkEvent(RunControlContextAdded), m_contexts(c)
+//  ---------------- CodaRunControlContextAddedEvent
+CodaRunControlContextAddedEvent::CodaRunControlContextAddedEvent(const RunControlContexts &c) :
+        CodaEvent(RunControlContextAdded), m_contexts(c)
 {
 }
 
-TcfTrkRunControlContextAddedEvent
-        *TcfTrkRunControlContextAddedEvent::parseEvent(const QVector<JsonValue> &values)
+CodaRunControlContextAddedEvent
+        *CodaRunControlContextAddedEvent::parseEvent(const QVector<JsonValue> &values)
 {
     // Parse array of contexts
     if (values.size() < 1 || values.front().type() != JsonValue::Array)
@@ -467,10 +497,10 @@ TcfTrkRunControlContextAddedEvent
         if (context.parse(v))
             contexts.push_back(context);
     }
-    return new TcfTrkRunControlContextAddedEvent(contexts);
+    return new CodaRunControlContextAddedEvent(contexts);
 }
 
-QString TcfTrkRunControlContextAddedEvent::toString() const
+QString CodaRunControlContextAddedEvent::toString() const
 {
     QString rc;
     QTextStream str(&rc);
@@ -484,42 +514,45 @@ QString TcfTrkRunControlContextAddedEvent::toString() const
     return rc;
 }
 
-// --------------- TcfTrkRunControlContextRemovedEvent
-TcfTrkRunControlContextRemovedEvent::TcfTrkRunControlContextRemovedEvent(const QVector<QByteArray> &ids) :
-        TcfTrkIdsEvent(RunControlContextRemoved, ids)
+// --------------- CodaRunControlContextRemovedEvent
+CodaRunControlContextRemovedEvent::CodaRunControlContextRemovedEvent(const QVector<QByteArray> &ids) :
+        CodaIdsEvent(RunControlContextRemoved, ids)
 {
 }
 
-QString TcfTrkRunControlContextRemovedEvent::toString() const
+QString CodaRunControlContextRemovedEvent::toString() const
 {
     return QLatin1String("RunControl: Removed contexts '") + joinedIdString() + ("'.");
 }
 
-// --------------- TcfTrkRunControlContextSuspendedEvent
-TcfTrkRunControlContextSuspendedEvent::TcfTrkRunControlContextSuspendedEvent(const QByteArray &id,
+// --------------- CodaRunControlContextSuspendedEvent
+CodaRunControlContextSuspendedEvent::CodaRunControlContextSuspendedEvent(const QByteArray &id,
                                                                              const QByteArray &reason,
+                                                                             const QByteArray &message,
                                                                              quint64 pc) :
-        TcfTrkIdEvent(RunControlSuspended, id), m_pc(pc), m_reason(reason)
+        CodaIdEvent(RunControlSuspended, id), m_pc(pc), m_reason(reason), m_message(message)
 {
 }
 
-TcfTrkRunControlContextSuspendedEvent::TcfTrkRunControlContextSuspendedEvent(Type t,
+CodaRunControlContextSuspendedEvent::CodaRunControlContextSuspendedEvent(Type t,
                                                                              const QByteArray &id,
                                                                              const QByteArray &reason,
                                                                              quint64 pc) :
-        TcfTrkIdEvent(t, id), m_pc(pc), m_reason(reason)
+        CodaIdEvent(t, id), m_pc(pc), m_reason(reason)
 {
 }
 
-void TcfTrkRunControlContextSuspendedEvent::format(QTextStream &str) const
+void CodaRunControlContextSuspendedEvent::format(QTextStream &str) const
 {
     str.setIntegerBase(16);
     str << "RunControl: '" << idString()  << "' suspended at 0x"
             << m_pc << ": '" << m_reason << "'.";
     str.setIntegerBase(10);
+    if (!m_message.isEmpty())
+        str << " (" <<m_message << ')';
 }
 
-QString TcfTrkRunControlContextSuspendedEvent::toString() const
+QString CodaRunControlContextSuspendedEvent::toString() const
 {
     QString rc;
     QTextStream str(&rc);
@@ -527,36 +560,46 @@ QString TcfTrkRunControlContextSuspendedEvent::toString() const
     return rc;
 }
 
-TcfTrkRunControlContextSuspendedEvent::Reason TcfTrkRunControlContextSuspendedEvent::reason() const
+CodaRunControlContextSuspendedEvent::Reason CodaRunControlContextSuspendedEvent::reason() const
 {
     if (m_reason == sharedLibrarySuspendReasonC)
         return ModuleLoad;
     if (m_reason == "Breakpoint")
         return BreakPoint;
     // 'Data abort exception'/'Thread has panicked' ... unfortunately somewhat unspecific.
-    if (m_reason.contains("exception") || m_reason.contains("panick"))
+    if (m_reason.contains("Exception") || m_reason.contains("panick"))
         return Crash;
     return Other;
 }
 
-TcfTrkRunControlModuleLoadContextSuspendedEvent::TcfTrkRunControlModuleLoadContextSuspendedEvent(const QByteArray &id,
+CodaRunControlModuleLoadContextSuspendedEvent::CodaRunControlModuleLoadContextSuspendedEvent(const QByteArray &id,
                                                                                                  const QByteArray &reason,
                                                                                                  quint64 pc,
                                                                                                  const ModuleLoadEventInfo &mi) :
-    TcfTrkRunControlContextSuspendedEvent(RunControlModuleLoadSuspended, id, reason, pc),
+    CodaRunControlContextSuspendedEvent(RunControlModuleLoadSuspended, id, reason, pc),
     m_mi(mi)
 {
 }
 
-QString TcfTrkRunControlModuleLoadContextSuspendedEvent::toString() const
+QString CodaRunControlModuleLoadContextSuspendedEvent::toString() const
 {
     QString rc;
     QTextStream str(&rc);
-    TcfTrkRunControlContextSuspendedEvent::format(str);
+    CodaRunControlContextSuspendedEvent::format(str);
     str <<  ' ';
     m_mi.format(str);
     return rc;
 }
 
+// -------------- CodaIdEvent
+CodaProcessExitedEvent::CodaProcessExitedEvent(const QByteArray &id) :
+   CodaEvent(ProcessExitedEvent), m_id(id)
+{
+}
 
-} // namespace tcftrk
+QString CodaProcessExitedEvent::toString() const
+{
+    return QString("Process \"%1\" exited").arg(idString());
+}
+
+} // namespace Coda

@@ -56,7 +56,7 @@ QUIKitScreen::QUIKitScreen(int screenIndex)
     CGRect bounds = [uiScreen() bounds];
     m_geometry = QRect(bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
 
-    m_format = QImage::Format_ARGB32;
+    m_format = QImage::Format_ARGB32_Premultiplied;
 
     m_depth = 24;
 

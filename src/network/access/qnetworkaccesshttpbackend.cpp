@@ -961,9 +961,9 @@ bool QNetworkAccessHttpBackend::sendCacheContents(const QNetworkCacheMetaData &m
     // This needs to be emitted in the event loop because it can be reached at
     // the direct code path of qnam.get(...) before the user has a chance
     // to connect any signals.
-    QMetaObject::invokeMethod(this, "metaDataChanged", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "metaDataChanged", isSynchronous() ? Qt::DirectConnection : Qt::QueuedConnection);
     qRegisterMetaType<QIODevice*>("QIODevice*");
-    QMetaObject::invokeMethod(this, "writeDownstreamData", Qt::QueuedConnection, Q_ARG(QIODevice*, contents));
+    QMetaObject::invokeMethod(this, "writeDownstreamData", isSynchronous() ? Qt::DirectConnection : Qt::QueuedConnection, Q_ARG(QIODevice*, contents));
 
 
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)

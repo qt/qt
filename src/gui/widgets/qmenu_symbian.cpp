@@ -357,7 +357,7 @@ QMenuPrivate::QSymbianMenuPrivate::QSymbianMenuPrivate()
 
 QMenuPrivate::QSymbianMenuPrivate::~QSymbianMenuPrivate()
 {
-
+    qDeleteAll(actionItems);
 }
 
 void QMenuPrivate::QSymbianMenuPrivate::addAction(QAction *a, QSymbianMenuAction *before)

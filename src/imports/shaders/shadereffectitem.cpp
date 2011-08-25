@@ -243,11 +243,6 @@ ShaderEffectItem::~ShaderEffectItem()
 
 */
 
-/*!
-    \property ShaderEffectItem::fragmentShader
-    \brief the OpenGL fragment shader code.
-*/
-
 void ShaderEffectItem::setFragmentShader(const QString &code)
 {
     if (m_fragment_code.constData() == code.constData())
@@ -279,11 +274,6 @@ void ShaderEffectItem::setFragmentShader(const QString &code)
         }
     \endcode
 
-*/
-
-/*!
-    \property ShaderEffectItem::vertexShader
-    \brief the OpenGL vertex shader code.
 */
 
 void ShaderEffectItem::setVertexShader(const QString &code)
@@ -320,11 +310,6 @@ void ShaderEffectItem::setVertexShader(const QString &code)
     The default value is true.
 */
 
-/*!
-    \property ShaderEffectItem::blending
-    \brief the drawing is done using blending.
-*/
-
 void ShaderEffectItem::setBlending(bool enable)
 {
     if (m_blending == enable)
@@ -345,11 +330,6 @@ void ShaderEffectItem::setBlending(bool enable)
     separately for x and y-axis.
 
     The default value is QSize(1,1).
-*/
-
-/*!
-    \property ShaderEffectItem::meshResolution
-    \brief the amount of triangles in the mesh for both x and y-axis.
 */
 
 void ShaderEffectItem::setMeshResolution(const QSize &size)
