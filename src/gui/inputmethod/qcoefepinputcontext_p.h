@@ -154,6 +154,7 @@ private:
     TUint m_textCapabilities;
     bool m_inDestruction;
     bool m_pendingInputCapabilitiesChanged;
+    bool m_pendingTransactionCancel;
     int m_cursorVisibility;
     int m_inlinePosition;
     MFepInlineTextFormatRetriever *m_formatRetriever;
