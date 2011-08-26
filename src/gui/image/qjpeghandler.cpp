@@ -74,6 +74,11 @@ extern "C" {
 #endif
 }
 
+#if defined(JPEG_TRUE) && !defined(HAVE_BOOLEAN)
+// this jpeglib.h uses JPEG_boolean
+typedef JPEG_boolean boolean;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 void QT_FASTCALL convert_rgb888_to_rgb32_C(quint32 *dst, const uchar *src, int len)

@@ -1180,7 +1180,10 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                   Just output the href as if the image is in
                   the images directory...
                  */
-                fileName = QLatin1String("images/") + protectEnc(atom->string());
+                if (atom->string()[0] == '/')
+                    fileName = QLatin1String("images") + atom->string();
+                else
+                    fileName = QLatin1String("images/") + atom->string();
             }
 
             if (currentTag() != DT_xref)
@@ -2098,9 +2101,10 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateSince(qcn, marker);
         enterSection("h2","Detailed Description");
         generateBody(qcn, marker);
-        if (cn)
+        if (cn) {
             generateQmlText(cn->doc().body(), cn, marker, qcn->name());
-        generateAlsoList(cn, marker);
+            generateAlsoList(cn, marker);
+        }
         leaveSection();
         leaveSection(); // </apiDesc>
 
