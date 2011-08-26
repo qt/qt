@@ -2,6 +2,9 @@
 
 contains(QT_CONFIG, qpa)|contains(QT_CONFIG, embedded): CONFIG += embedded
 
+contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
+unix:contains(QT_CONFIG, reduce_relocations):CONFIG += bsymbolic_functions
+
 # Detect that we are building as a standalone package by the presence of
 # either the generated files directory or as part of the Qt package through
 # QTDIR_build
