@@ -76,7 +76,9 @@ QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
                 break;
             case QAbstractFileEngine::AbsoluteName:
             case QAbstractFileEngine::AbsolutePathName: {
-                QFileSystemEntry entry = QFileSystemEngine::absoluteName(fileEntry);
+                QFileSystemEntry entry = QFileSystemEntry(
+                        QDir::cleanPath(QFileSystemEngine::absoluteName(fileEntry).filePath()),
+                        QFileSystemEntry::FromInternalPath());
                 if (cache_enabled) { // be smart and store both
                     fileNames[QAbstractFileEngine::AbsoluteName] = entry.filePath();
                     fileNames[QAbstractFileEngine::AbsolutePathName] = entry.path();
