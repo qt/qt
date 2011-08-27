@@ -605,6 +605,12 @@ void QTextEngine::shapeTextMac(int item) const
     unsigned short *log_clusters = logClusters(&si);
 
     bool stringToCMapFailed = false;
+    // Skip shaping of line or paragraph separators since we are not
+    // going to draw them anyway
+    if (si.analysis.flags == QScriptAnalysis::LineOrParagraphSeparator
+        && !(option.flags() & QTextOption::ShowLineAndParagraphSeparators))
+        goto cleanUp;
+
     if (!fe->stringToCMap(str, len, &g, &num_glyphs, flags, log_clusters, attributes(), &si)) {
         ensureSpace(num_glyphs);
         g = availableGlyphs(&si);
@@ -645,6 +651,7 @@ void QTextEngine::shapeTextMac(int item) const
         }
     }
 
+cleanUp:
     const ushort *uc = reinterpret_cast<const ushort *>(str);
 
     if ((si.analysis.flags == QScriptAnalysis::SmallCaps || si.analysis.flags == QScriptAnalysis::Uppercase

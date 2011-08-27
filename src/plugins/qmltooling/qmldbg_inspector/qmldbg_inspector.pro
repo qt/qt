@@ -7,6 +7,7 @@ QTDIR_build:DESTDIR  = $$QT_BUILD_TREE/plugins/qmltooling
 QTDIR_build:REQUIRES += "contains(QT_CONFIG, declarative)"
 
 SOURCES += \
+    abstractviewinspector.cpp \
     qdeclarativeinspectorplugin.cpp \
     qdeclarativeviewinspector.cpp \
     editor/abstractliveedittool.cpp \
@@ -21,27 +22,30 @@ SOURCES += \
     editor/zoomtool.cpp \
     editor/colorpickertool.cpp \
     editor/qmltoolbar.cpp \
-    editor/toolbarcolorbox.cpp
+    editor/toolbarcolorbox.cpp \
+    abstracttool.cpp
 
 HEADERS += \
+    abstractviewinspector.h \
     qdeclarativeinspectorplugin.h \
     qdeclarativeinspectorprotocol.h \
+    qdeclarativeviewinspector.h \
     qdeclarativeviewinspector_p.h \
-    qdeclarativeviewinspector_p_p.h \
-    qmlinspectorconstants_p.h \
-    editor/abstractliveedittool_p.h \
-    editor/liveselectiontool_p.h \
-    editor/livelayeritem_p.h \
-    editor/livesingleselectionmanipulator_p.h \
-    editor/liverubberbandselectionmanipulator_p.h \
-    editor/liveselectionrectangle_p.h \
-    editor/liveselectionindicator_p.h \
-    editor/boundingrecthighlighter_p.h \
-    editor/subcomponentmasklayeritem_p.h \
-    editor/zoomtool_p.h \
-    editor/colorpickertool_p.h \
-    editor/qmltoolbar_p.h \
-    editor/toolbarcolorbox_p.h
+    qmlinspectorconstants.h \
+    editor/abstractliveedittool.h \
+    editor/liveselectiontool.h \
+    editor/livelayeritem.h \
+    editor/livesingleselectionmanipulator.h \
+    editor/liverubberbandselectionmanipulator.h \
+    editor/liveselectionrectangle.h \
+    editor/liveselectionindicator.h \
+    editor/boundingrecthighlighter.h \
+    editor/subcomponentmasklayeritem.h \
+    editor/zoomtool.h \
+    editor/colorpickertool.h \
+    editor/qmltoolbar.h \
+    editor/toolbarcolorbox.h \
+    abstracttool.h
 
 RESOURCES += editor/editor.qrc
 

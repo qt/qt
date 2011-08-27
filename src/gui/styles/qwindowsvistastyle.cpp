@@ -76,6 +76,10 @@ static const int windowsRightBorder      = 15; // right border on windows
 #  define CMDLGS_PRESSED 3
 #  define CMDLGS_DISABLED 4
 #endif
+#ifndef PP_TRANSPARENTBAR
+#  define PP_TRANSPARENTBAR 11
+#  define PP_TRANSPARENTBARVERT 12
+#endif
 
 // Runtime resolved theme engine function calls
 
@@ -1059,6 +1063,19 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
         }
         break;
 #ifndef QT_NO_PROGRESSBAR
+    case CE_ProgressBarGroove:
+        {
+            Qt::Orientation orient = Qt::Horizontal;
+            if (const QStyleOptionProgressBarV2 *pb2 = qstyleoption_cast<const QStyleOptionProgressBarV2 *>(option))
+                orient = pb2->orientation;
+            partId = (orient == Qt::Horizontal) ? PP_TRANSPARENTBAR : PP_TRANSPARENTBARVERT;
+            name = QLatin1String("PROGRESS");
+            stateId = 1;
+
+            XPThemeData theme(widget, painter, name, partId, stateId, rect);
+            d->drawBackground(theme);
+        }
+        break;
     case CE_ProgressBarContents:
         if (const QStyleOptionProgressBar *bar
                 = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {

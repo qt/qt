@@ -560,13 +560,11 @@ QRect QDeclarativeTextInput::cursorRectangle() const
     \qmlproperty int TextInput::selectionStart
 
     The cursor position before the first character in the current selection.
-    Setting this and selectionEnd allows you to specify a selection in the
-    text edit.
 
-    Note that if selectionStart == selectionEnd then there is no current
-    selection.
+    This property is read-only. To change the selection, use select(start,end),
+    selectAll(), or selectWord().
 
-    \sa selectionEnd, cursorPosition, selectedText, select()
+    \sa selectionEnd, cursorPosition, selectedText
 */
 int QDeclarativeTextInput::selectionStart() const
 {
@@ -578,13 +576,11 @@ int QDeclarativeTextInput::selectionStart() const
     \qmlproperty int TextInput::selectionEnd
 
     The cursor position after the last character in the current selection.
-    Setting this and selectionStart allows you to specify a selection in the
-    text edit.
 
-    Note that if selectionStart == selectionEnd then there is no current
-    selection.
+    This property is read-only. To change the selection, use select(start,end),
+    selectAll(), or selectWord().
 
-    \sa selectionStart, cursorPosition, selectedText, select()
+    \sa selectionStart, cursorPosition, selectedText
 */
 int QDeclarativeTextInput::selectionEnd() const
 {
@@ -1014,7 +1010,7 @@ int QDeclarativeTextInput::positionAt(int x) const
 
 /*!
     \qmlmethod int TextInput::positionAt(int x, CursorPosition position = CursorBetweenCharacters)
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     This function returns the character position at
     x pixels from the left of the textInput. Position 0 is before the
@@ -1050,7 +1046,7 @@ void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
     Q_Q(QDeclarativeTextInput);
     focused = hasFocus;
     q->setCursorVisible(hasFocus && scene && scene->hasFocus());
-    if(q->echoMode() == QDeclarativeTextInput::PasswordEchoOnEdit && !hasFocus)
+    if(!hasFocus && control->passwordEchoEditing())
         control->updatePasswordEchoEditing(false);//QLineControl sets it on key events, but doesn't deal with focus events
     if (!hasFocus)
         control->deselect();
@@ -1402,7 +1398,7 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
 
 /*!
     \qmlmethod void TextInput::deselect()
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Removes active text selection.
 */
@@ -1574,7 +1570,7 @@ void QDeclarativeTextInput::setSelectByMouse(bool on)
 
 /*!
     \qmlproperty enum TextInput::mouseSelectionMode
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Specifies how text should be selected using a mouse.
 
@@ -1622,7 +1618,7 @@ void QDeclarativeTextInput::moveCursorSelection(int position)
 
 /*!
     \qmlmethod void TextInput::moveCursorSelection(int position, SelectionMode mode = TextInput.SelectCharacters)
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Moves the cursor to \a position and updates the selection according to the optional \a mode
     parameter.  (To only move the cursor, set the \l cursorPosition property.)

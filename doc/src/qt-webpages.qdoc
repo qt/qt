@@ -539,3 +539,18 @@
     \externalpage http://qt.nokia.com/partners/qt-in-education/qt-in-education-course-material/
     \title Qt in Education Course Material
 */
+
+/*!
+    \externalpage http://developer.qt.nokia.com/
+    \title Qt Developer Network
+*/
+
+/*!
+    \externalpage http://developer.qt.nokia.com/wiki/Qt_Modules_Maturity_Level
+    \title Qt Modules' Maturity Levels - Modules List
+*/
+
+/*!
+    \externalpage http://labs.qt.nokia.com/2011/05/03/qt-modules-maturity-level/
+    \title Qt Modules' Maturity Level - Description
+*/

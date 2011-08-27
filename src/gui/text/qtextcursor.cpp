@@ -2569,6 +2569,7 @@ QTextDocument *QTextCursor::document() const
 
 /*!
     \enum Qt::CursorMoveStyle
+    \since 4.8
 
     This enum describes the movement style available to text cursors. The options
     are:

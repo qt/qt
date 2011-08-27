@@ -198,7 +198,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         Coord c = { 0, 0, // will be filled in later
                     glyph_width,
                     glyph_height, // texture coords
-                    metrics.x.round().truncate(),
+                    metrics.x.truncate(),
                     -metrics.y.truncate() }; // baseline for horizontal scripts
 
         listItemCoordinates.insert(key, c);
@@ -367,9 +367,7 @@ void QImageTextureGlyphCache::createTextureData(int width, int height)
 
 int QImageTextureGlyphCache::glyphMargin() const
 {
-#if (defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA))
-    return 1;
-#elif defined(Q_WS_X11)
+#if (defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)) || defined(Q_WS_X11)
     return 0;
 #else
     return m_type == QFontEngineGlyphCache::Raster_RGBMask ? 2 : 0;

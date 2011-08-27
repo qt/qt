@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "liveselectionrectangle_p.h"
+#include "liveselectionrectangle.h"
 
-#include "../qmlinspectorconstants_p.h"
+#include "../qmlinspectorconstants.h"
 
 #include <QtGui/QPen>
 #include <QtGui/QGraphicsRectItem>
@@ -52,7 +52,7 @@
 
 #include <cmath>
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
 class SelectionRectShape : public QGraphicsRectItem
 {
@@ -110,4 +110,4 @@ void LiveSelectionRectangle::setRect(const QPointF &firstPoint,
     m_controlShape->setRect(rect);
 }
 
-QT_END_NAMESPACE
+}

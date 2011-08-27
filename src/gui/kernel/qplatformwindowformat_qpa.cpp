@@ -101,10 +101,10 @@ public:
 
 /*!
     \class QPlatformWindowFormat
+    \ingroup painting
+    \since 4.8
     \brief The QPlatformWindowFormat class specifies the display format of an OpenGL
     rendering context and if possible attributes of the corresponding QPlatformWindow.
-
-    \ingroup painting
 
     QWidget has a setter and getter function for QPlatformWindowFormat. These functions can be used
     by the application programmer to signal what kind of format he wants to the window and glcontext
@@ -937,6 +937,8 @@ void QPlatformWindowFormat::setDefaultFormat(const QPlatformWindowFormat &f)
 
 
 /*!
+    \since 4.8
+
     Returns true if all the options of the two QPlatformWindowFormat objects
     \a a and \a b are equal; otherwise returns false.
 
@@ -960,6 +962,8 @@ bool operator==(const QPlatformWindowFormat& a, const QPlatformWindowFormat& b)
 
 
 /*!
+    \since 4.8
+
     Returns false if all the options of the two QPlatformWindowFormat objects
     \a a and \a b are equal; otherwise returns true.
 

@@ -11,3 +11,8 @@ CONFIG += release
 
 # Input
 SOURCES += main.cpp
+
+symbian: {
+    TARGET.CAPABILITY = NetworkServices
+    INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE
+}

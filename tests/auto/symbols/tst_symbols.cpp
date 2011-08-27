@@ -55,6 +55,8 @@ class tst_Symbols: public QObject
 {
     Q_OBJECT
 private slots:
+    void initTestCase();
+
     void prefix();
     void globalObjects();
 };
@@ -87,6 +89,12 @@ static QString symbolToLine(const QString &symbol, const QString &lib)
     QString result = QString::fromLocal8Bit(proc.readLine());
     result.chop(1); // chop tailing newline
     return result;
+}
+
+void tst_Symbols::initTestCase()
+{
+    QString qtDir = QString::fromLocal8Bit(qgetenv("QTDIR"));
+    QVERIFY2(!qtDir.isEmpty(), "This test needs $QTDIR");
 }
 
 /* This test searches through all Qt libraries and searches for symbols

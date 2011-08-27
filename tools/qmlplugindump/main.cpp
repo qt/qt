@@ -68,6 +68,9 @@
 QString pluginImportPath;
 bool verbose = false;
 
+QString currentProperty;
+QString inObjectInstantiation;
+
 void collectReachableMetaObjects(const QMetaObject *meta, QSet<const QMetaObject *> *metas)
 {
     if (! meta || metas->contains(meta))
@@ -80,8 +83,6 @@ void collectReachableMetaObjects(const QMetaObject *meta, QSet<const QMetaObject
 
     collectReachableMetaObjects(meta->superClass(), metas);
 }
-
-QString currentProperty;
 
 void collectReachableMetaObjects(QObject *object, QSet<const QMetaObject *> *metas)
 {
@@ -160,29 +161,36 @@ QSet<const QMetaObject *> collectReachableMetaObjects(const QString &importCode,
         collectReachableMetaObjects(ty, &metas);
     }
 
-    // Adjust ids of extended objects.
-    // The chain ends up being:
-    // __extended__.originalname - the base object
-    // __extension_0_.originalname - first extension
-    // ..
-    // __extension_n-2_.originalname - second to last extension
-    // originalname - last extension
-    // ### does this actually work for multiple extensions? it seems like the prototypes might be wrong
-    foreach (const QByteArray &extendedCpp, extensions.keys()) {
-        cppToId.remove(extendedCpp);
-        const QByteArray extendedId = convertToId(extendedCpp);
-        cppToId.insert(extendedCpp, "__extended__." + extendedId);
-        QSet<QByteArray> extensionCppNames = extensions.value(extendedCpp);
-        int c = 0;
+    // Adjust exports of the base object if there are extensions.
+    // For each export of a base object there can be a single extension object overriding it.
+    // Example: QDeclarativeGraphicsWidget overrides the QtQuick/QGraphicsWidget export
+    //          of QGraphicsWidget.
+    foreach (const QByteArray &baseCpp, extensions.keys()) {
+        QSet<const QDeclarativeType *> baseExports = qmlTypesByCppName.value(baseCpp);
+
+        const QSet<QByteArray> extensionCppNames = extensions.value(baseCpp);
         foreach (const QByteArray &extensionCppName, extensionCppNames) {
-            if (c != extensionCppNames.size() - 1) {
-                QByteArray adjustedName = QString("__extension__%1.%2").arg(QString::number(c), QString(extendedId)).toAscii();
-                cppToId.insert(extensionCppName, adjustedName);
-            } else {
-                cppToId.insert(extensionCppName, extendedId);
+            const QSet<const QDeclarativeType *> extensionExports = qmlTypesByCppName.value(extensionCppName);
+
+            // remove extension exports from base imports
+            // unfortunately the QDeclarativeType pointers don't match, so can't use QSet::substract
+            QSet<const QDeclarativeType *> newBaseExports;
+            foreach (const QDeclarativeType *baseExport, baseExports) {
+                bool match = false;
+                foreach (const QDeclarativeType *extensionExport, extensionExports) {
+                    if (baseExport->qmlTypeName() == extensionExport->qmlTypeName()
+                            && baseExport->majorVersion() == extensionExport->majorVersion()
+                            && baseExport->minorVersion() == extensionExport->minorVersion()) {
+                        match = true;
+                        break;
+                    }
+                }
+                if (!match)
+                    newBaseExports.insert(baseExport);
             }
-            ++c;
+            baseExports = newBaseExports;
         }
+        qmlTypesByCppName[baseCpp] = baseExports;
     }
 
     // find even more QMetaObjects by instantiating QML types and running
@@ -207,7 +215,10 @@ QSet<const QMetaObject *> collectReachableMetaObjects(const QString &importCode,
         QDeclarativeComponent c(engine);
         c.setData(code, QUrl::fromLocalFile(pluginImportPath + "/typeinstance.qml"));
 
+        inObjectInstantiation = tyName;
         QObject *object = c.create();
+        inObjectInstantiation.clear();
+
         if (object)
             collectReachableMetaObjects(object, &metas);
         else
@@ -260,6 +271,9 @@ public:
                     continue;
                 if (qmlTyName.startsWith(relocatableModuleUri + QLatin1Char('/'))) {
                     qmlTyName.remove(0, relocatableModuleUri.size() + 1);
+                }
+                if (qmlTyName.startsWith("./")) {
+                    qmlTyName.remove(0, 2);
                 }
                 exports += enquote(QString("%1 %2.%3").arg(
                                        qmlTyName,
@@ -426,6 +440,8 @@ void sigSegvHandler(int) {
     fprintf(stderr, "Error: SEGV\n");
     if (!currentProperty.isEmpty())
         fprintf(stderr, "While processing the property '%s', which probably has uninitialized data.\n", currentProperty.toLatin1().constData());
+    if (!inObjectInstantiation.isEmpty())
+        fprintf(stderr, "While instantiating the object '%s'.\n", inObjectInstantiation.toLatin1().constData());
     exit(EXIT_SEGV);
 }
 #endif
@@ -523,11 +539,16 @@ int main(int argc, char *argv[])
 
     QDeclarativeView view;
     QDeclarativeEngine *engine = view.engine();
-    if (!pluginImportPath.isEmpty())
+    if (!pluginImportPath.isEmpty()) {
+        QDir cur = QDir::current();
+        cur.cd(pluginImportPath);
+        pluginImportPath = cur.absolutePath();
+        QDir::setCurrent(pluginImportPath);
         engine->addImportPath(pluginImportPath);
+    }
 
     // find all QMetaObjects reachable from the builtin module
-    QByteArray importCode("import QtQuick 1.1\n");
+    QByteArray importCode("import QtQuick 1.0\n");
     QSet<const QMetaObject *> defaultReachable = collectReachableMetaObjects(importCode, engine);
 
     // this will hold the meta objects we want to dump information of

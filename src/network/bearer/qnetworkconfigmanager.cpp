@@ -126,6 +126,7 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 
 /*!
     \fn void QNetworkConfigurationManager::configurationRemoved(const QNetworkConfiguration &config)
+    \since 4.8
 
     This signal is emitted when a configuration is about to be removed from the system. The removed
     configuration, specified by \a config, is invalid but retains name and identifier.

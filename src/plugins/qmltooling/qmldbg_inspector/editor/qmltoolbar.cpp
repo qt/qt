@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmltoolbar_p.h"
-#include "toolbarcolorbox_p.h"
+#include "qmltoolbar.h"
+#include "toolbarcolorbox.h"
 
 #include <QtGui/QLabel>
 #include <QtGui/QIcon>
@@ -49,7 +49,7 @@
 
 #include <QtCore/QDebug>
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
 QmlToolBar::QmlToolBar(QWidget *parent)
     : QToolBar(parent)
@@ -325,4 +325,4 @@ void QmlToolBar::activateToQml()
         emit applyChangesToQmlFileSelected();
 }
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger

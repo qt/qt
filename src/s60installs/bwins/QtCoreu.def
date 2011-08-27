@@ -4486,9 +4486,9 @@ EXPORTS
 	?objectNameChanged@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@@ZA @ 4485 NONAME ; void (*QAbstractDeclarativeData::objectNameChanged)(class QAbstractDeclarativeData *, class QObject *)
 	?queueDeferredActiveObjectsCompletion@QEventDispatcherSymbian@@QAEXXZ @ 4486 NONAME ABSENT ; void QEventDispatcherSymbian::queueDeferredActiveObjectsCompletion(void)
 	?reactivateDeferredActiveObjects@QEventDispatcherSymbian@@UAEXXZ @ 4487 NONAME ABSENT ; void QEventDispatcherSymbian::reactivateDeferredActiveObjects(void)
-	?contains@QString@@QBE?AVQBool@@ABVQStringRef@@W4CaseSensitivity@Qt@@@Z @ 4488 NONAME ; class QBool QString::contains(class QStringRef const &, enum Qt::CaseSensitivity) const
-	?swap@QRegExp@@QAEXAAV1@@Z @ 4489 NONAME ; void QRegExp::swap(class QRegExp &)
-	?indexOf@QStringRef@@QBEHABVQString@@HW4CaseSensitivity@Qt@@@Z @ 4490 NONAME ; int QStringRef::indexOf(class QString const &, int, enum Qt::CaseSensitivity) const
+	?symbianCommandLine@QCoreApplicationPrivate@@SAPAVCApaCommandLine@@XZ @ 4488 NONAME ; class CApaCommandLine * QCoreApplicationPrivate::symbianCommandLine(void)
+	?revision@QMetaProperty@@QBEHXZ @ 4489 NONAME ; int QMetaProperty::revision(void) const
+	?revision@QMetaMethod@@QBEHXZ @ 4490 NONAME ; int QMetaMethod::revision(void) const
 	?indexOf@QStringRef@@QBEHABV1@HW4CaseSensitivity@Qt@@@Z @ 4491 NONAME ; int QStringRef::indexOf(class QStringRef const &, int, enum Qt::CaseSensitivity) const
 	?count@QString@@QBEHABVQStringRef@@W4CaseSensitivity@Qt@@@Z @ 4492 NONAME ; int QString::count(class QStringRef const &, enum Qt::CaseSensitivity) const
 	?swap@QString@@QAEXAAV1@@Z @ 4493 NONAME ; void QString::swap(class QString &)
@@ -4598,13 +4598,13 @@ EXPORTS
 	?open@QFile@@QAE_NABVRFile@@V?$QFlags@W4OpenModeFlag@QIODevice@@@@V?$QFlags@W4FileHandleFlag@QFile@@@@@Z @ 4597 NONAME ; bool QFile::open(class RFile const &, class QFlags<enum QIODevice::OpenModeFlag>, class QFlags<enum QFile::FileHandleFlag>)
 	?open@QFile@@QAE_NHV?$QFlags@W4OpenModeFlag@QIODevice@@@@V?$QFlags@W4FileHandleFlag@QFile@@@@@Z @ 4598 NONAME ; bool QFile::open(int, class QFlags<enum QIODevice::OpenModeFlag>, class QFlags<enum QFile::FileHandleFlag>)
 	?open@QFile@@QAE_NPAU__sFILE@@V?$QFlags@W4OpenModeFlag@QIODevice@@@@V?$QFlags@W4FileHandleFlag@QFile@@@@@Z @ 4599 NONAME ; bool QFile::open(struct __sFILE *, class QFlags<enum QIODevice::OpenModeFlag>, class QFlags<enum QFile::FileHandleFlag>)
-	?symbianCommandLine@QCoreApplicationPrivate@@SAPAVCApaCommandLine@@XZ @ 4600 NONAME ; class CApaCommandLine * QCoreApplicationPrivate::symbianCommandLine(void)
+	?contains@QString@@QBE?AVQBool@@ABVQStringRef@@W4CaseSensitivity@Qt@@@Z @ 4600 NONAME ; class QBool QString::contains(class QStringRef const &, enum Qt::CaseSensitivity) const
 	?nsecsElapsed@QElapsedTimer@@QBE_JXZ @ 4601 NONAME ; long long QElapsedTimer::nsecsElapsed(void) const
 	??XQPoint@@QAEAAV0@N@Z @ 4602 NONAME ; class QPoint & QPoint::operator*=(double)
 	??XQPoint@@QAEAAV0@H@Z @ 4603 NONAME ; class QPoint & QPoint::operator*=(int)
 	?hasError@QXmlStreamWriter@@QBE_NXZ @ 4604 NONAME ; bool QXmlStreamWriter::hasError(void) const
-	?revision@QMetaProperty@@QBEHXZ @ 4605 NONAME ; int QMetaProperty::revision(void) const
-	?revision@QMetaMethod@@QBEHXZ @ 4606 NONAME ; int QMetaMethod::revision(void) const
+	?swap@QRegExp@@QAEXAAV1@@Z @ 4605 NONAME ; void QRegExp::swap(class QRegExp &)
+	?indexOf@QStringRef@@QBEHABVQString@@HW4CaseSensitivity@Qt@@@Z @ 4606 NONAME ; int QStringRef::indexOf(class QString const &, int, enum Qt::CaseSensitivity) const
 	gzungetc @ 4607 NONAME
 	?addSocket@QSymbianSocketManager@@QAEHABVRSocket@@@Z @ 4608 NONAME ; int QSymbianSocketManager::addSocket(class RSocket const &)
 	??0QActiveObject@@QAE@HPAVQEventDispatcherSymbian@@@Z @ 4609 NONAME ; QActiveObject::QActiveObject(int, class QEventDispatcherSymbian *)
@@ -4881,4 +4881,5 @@ EXPORTS
 	?resume@QFutureWatcherBase@@QAEXXZ @ 4880 NONAME ; void QFutureWatcherBase::resume(void)
 	?resultsReadyAt@QFutureWatcherBase@@IAEXHH@Z @ 4881 NONAME ; void QFutureWatcherBase::resultsReadyAt(int, int)
 	?started@QFutureWatcherBase@@IAEXXZ @ 4882 NONAME ; void QFutureWatcherBase::started(void)
+	?resetInternalData@QAbstractItemModel@@IAEXXZ @ 4883 NONAME ; void QAbstractItemModel::resetInternalData(void)
 

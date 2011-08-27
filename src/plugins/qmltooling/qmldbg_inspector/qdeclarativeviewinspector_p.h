@@ -42,106 +42,76 @@
 #ifndef QDECLARATIVEVIEWINSPECTOR_P_H
 #define QDECLARATIVEVIEWINSPECTOR_P_H
 
-#include <private/qdeclarativeglobal_p.h>
-#include "qmlinspectorconstants_p.h"
+#include "qdeclarativeviewinspector.h"
 
-#include <QtCore/QScopedPointer>
-#include <QtDeclarative/QDeclarativeView>
+#include <QtCore/QWeakPointer>
+#include <QtCore/QPointF>
 
-QT_FORWARD_DECLARE_CLASS(QDeclarativeItem)
-QT_FORWARD_DECLARE_CLASS(QMouseEvent)
-QT_FORWARD_DECLARE_CLASS(QToolBar)
+#include "QtDeclarative/private/qdeclarativeinspectorservice_p.h"
 
-QT_BEGIN_HEADER
+namespace QmlJSDebugger {
 
-QT_BEGIN_NAMESPACE
+class QDeclarativeViewInspector;
+class LiveSelectionTool;
+class ZoomTool;
+class ColorPickerTool;
+class LiveLayerItem;
+class BoundingRectHighlighter;
+class AbstractLiveEditTool;
 
-QT_MODULE(Declarative)
-
-class QDeclarativeViewInspectorPrivate;
-
-class QDeclarativeViewInspector : public QObject
+class QDeclarativeViewInspectorPrivate : public QObject
 {
     Q_OBJECT
-
 public:
-    explicit QDeclarativeViewInspector(QDeclarativeView *view, QObject *parent = 0);
-    ~QDeclarativeViewInspector();
+    QDeclarativeViewInspectorPrivate(QDeclarativeViewInspector *);
+    ~QDeclarativeViewInspectorPrivate();
 
-    void setSelectedItems(QList<QGraphicsItem *> items);
+    QDeclarativeView *view;
+    QDeclarativeViewInspector *q;
+    QWeakPointer<QWidget> viewport;
+
+    QList<QWeakPointer<QGraphicsObject> > currentSelection;
+
+    LiveSelectionTool *selectionTool;
+    ZoomTool *zoomTool;
+    ColorPickerTool *colorPickerTool;
+    LiveLayerItem *manipulatorLayer;
+
+    BoundingRectHighlighter *boundingRectHighlighter;
+
+    void setViewport(QWidget *widget);
+
+    void clearEditorItems();
+    void changeToSelectTool();
+    QList<QGraphicsItem*> filterForSelection(QList<QGraphicsItem*> &itemlist) const;
+
+    QList<QGraphicsItem*> selectableItems(const QPoint &pos) const;
+    QList<QGraphicsItem*> selectableItems(const QPointF &scenePos) const;
+    QList<QGraphicsItem*> selectableItems(const QRectF &sceneRect, Qt::ItemSelectionMode selectionMode) const;
+
+    void setSelectedItemsForTools(const QList<QGraphicsItem *> &items);
+    void setSelectedItems(const QList<QGraphicsItem *> &items);
     QList<QGraphicsItem *> selectedItems() const;
 
-    QDeclarativeView *declarativeView();
+    void clearHighlight();
+    void highlight(const QList<QGraphicsObject *> &item);
+    inline void highlight(QGraphicsObject *item)
+    { highlight(QList<QGraphicsObject*>() << item); }
 
-    QRectF adjustToScreenBoundaries(const QRectF &boundingRectInSceneSpace);
+    void changeToSingleSelectTool();
+    void changeToMarqueeSelectTool();
+    void changeToZoomTool();
+    void changeToColorPickerTool();
 
-    bool showAppOnTop() const;
+public slots:
+    void _q_onStatusChanged(QDeclarativeView::Status status);
 
-    void sendDesignModeBehavior(bool inDesignMode);
-    void sendCurrentObjects(const QList<QObject*> &);
-    void sendAnimationSpeed(qreal slowDownFactor);
-    void sendAnimationPaused(bool paused);
-    void sendCurrentTool(Constants::DesignTool toolId);
-    void sendReloaded();
-    void sendShowAppOnTop(bool showAppOnTop);
+    void _q_removeFromSelection(QObject *);
 
-    QString idStringForObject(QObject *obj) const;
-
-public Q_SLOTS:
-    void sendColorChanged(const QColor &color);
-
-    void setDesignModeBehavior(bool value);
-    bool designModeBehavior();
-
-    void setShowAppOnTop(bool appOnTop);
-
-    void setAnimationSpeed(qreal factor);
-    void setAnimationPaused(bool paused);
-
-Q_SIGNALS:
-    void designModeBehaviorChanged(bool inDesignMode);
-    void showAppOnTopChanged(bool showAppOnTop);
-    void reloadRequested();
-    void marqueeSelectToolActivated();
-    void selectToolActivated();
-    void zoomToolActivated();
-    void colorPickerActivated();
-    void selectedColorChanged(const QColor &color);
-
-    void animationSpeedChanged(qreal factor);
-    void animationPausedChanged(bool paused);
-
-protected:
-    bool eventFilter(QObject *obj, QEvent *event);
-
-    bool leaveEvent(QEvent *);
-    bool mousePressEvent(QMouseEvent *event);
-    bool mouseMoveEvent(QMouseEvent *event);
-    bool mouseReleaseEvent(QMouseEvent *event);
-    bool keyPressEvent(QKeyEvent *event);
-    bool keyReleaseEvent(QKeyEvent *keyEvent);
-    bool mouseDoubleClickEvent(QMouseEvent *event);
-    bool wheelEvent(QWheelEvent *event);
-
-    void setSelectedItemsForTools(QList<QGraphicsItem *> items);
-
-private slots:
-    void handleMessage(const QByteArray &message);
-
-    void animationSpeedChangeRequested(qreal factor);
-    void animationPausedChangeRequested(bool paused);
-
-private:
-    Q_DISABLE_COPY(QDeclarativeViewInspector)
-
-    inline QDeclarativeViewInspectorPrivate *d_func() { return data.data(); }
-    QScopedPointer<QDeclarativeViewInspectorPrivate> data;
-    friend class QDeclarativeViewInspectorPrivate;
-    friend class AbstractLiveEditTool;
+public:
+    static QDeclarativeViewInspectorPrivate *get(QDeclarativeViewInspector *v) { return v->d_func(); }
 };
 
-QT_END_NAMESPACE
-
-QT_END_HEADER
+} // namespace QmlJSDebugger
 
 #endif // QDECLARATIVEVIEWINSPECTOR_P_H

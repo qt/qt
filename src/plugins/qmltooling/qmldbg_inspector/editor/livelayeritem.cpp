@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 
-#include "livelayeritem_p.h"
+#include "livelayeritem.h"
 
-#include "../qmlinspectorconstants_p.h"
+#include "../qmlinspectorconstants.h"
 
 #include <QGraphicsScene>
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
 LiveLayerItem::LiveLayerItem(QGraphicsScene* scene)
     : QGraphicsObject()
@@ -89,4 +89,4 @@ QList<QGraphicsItem*> LiveLayerItem::findAllChildItems(const QGraphicsItem *item
     return itemList;
 }
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger

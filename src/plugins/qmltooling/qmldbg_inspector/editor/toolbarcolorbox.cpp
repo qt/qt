@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "toolbarcolorbox_p.h"
+#include "toolbarcolorbox.h"
 
-#include "../qmlinspectorconstants_p.h"
+#include "../qmlinspectorconstants.h"
 
 #include <QtGui/QPixmap>
 #include <QtGui/QPainter>
@@ -56,7 +56,7 @@
 #include <QtCore/QMimeData>
 #include <QtCore/QDebug>
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
 ToolBarColorBox::ToolBarColorBox(QWidget *parent) :
     QLabel(parent)
@@ -131,4 +131,4 @@ void ToolBarColorBox::copyColorToClipboard()
     clipboard->setText(m_color.name());
 }
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger

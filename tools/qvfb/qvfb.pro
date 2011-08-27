@@ -8,9 +8,6 @@ DESTDIR         = ../../bin
 target.path=$$[QT_INSTALL_BINS]
 INSTALLS += target
 
-DEPENDPATH      = ../../include
-INCLUDEPATH     += ../../src/gui/embedded
-
 FORMS           = config.ui
 HEADERS         = qvfb.h \
 		  qvfbview.h \
@@ -19,10 +16,7 @@ HEADERS         = qvfb.h \
                   gammaview.h \
                   qvfbprotocol.h \
                   qvfbshmem.h \
-                  qvfbmmap.h \
-                  ../../src/gui/embedded/qvfbhdr.h \
-                  ../../src/gui/embedded/qlock_p.h \
-                  ../../src/gui/embedded/qwssignalhandler_p.h
+                  qvfbmmap.h
 
 SOURCES         = qvfb.cpp \
 		  qvfbview.cpp \
@@ -31,9 +25,7 @@ SOURCES         = qvfb.cpp \
 		  qanimationwriter.cpp \
                   qvfbprotocol.cpp \
                   qvfbshmem.cpp \
-                  qvfbmmap.cpp \
-                  ../../src/gui/embedded/qlock.cpp \
-                  ../../src/gui/embedded/qwssignalhandler.cpp
+                  qvfbmmap.cpp
 
 include(../shared/deviceskin/deviceskin.pri)
 

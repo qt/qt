@@ -45,6 +45,8 @@
 #define QUIKITSOFTWAREINPUTHANDLER_H
 
 #include <QtCore/QObject>
+#include <QtCore/QPointer>
+#include <QtGui/QWidget>
 
 QT_BEGIN_NAMESPACE
 
@@ -53,7 +55,17 @@ class QUIKitSoftwareInputHandler : public QObject
     Q_OBJECT
 
 public:
+    QUIKitSoftwareInputHandler() : mCurrentFocusWidget(0), mCurrentFocusObject(0) {}
     bool eventFilter(QObject *obj, QEvent *event);
+
+private slots:
+    void activeFocusChanged(bool focus);
+
+private:
+    bool closeSoftwareInputPanel(QWidget *widget);
+
+    QPointer<QWidget> mCurrentFocusWidget;
+    QPointer<QObject> mCurrentFocusObject;
 };
 
 QT_END_NAMESPACE

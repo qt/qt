@@ -546,6 +546,7 @@ public:
         AA_S60DontConstructApplicationPanes = 8,
         AA_S60DisablePartialScreenInputMode = 9,
         AA_X11InitThreads = 10,
+        AA_CaptureMultimediaKeys = 11,
 
         // Add new attributes before this line
         AA_AttributeCount

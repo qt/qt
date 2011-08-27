@@ -1611,6 +1611,8 @@ void QX11PaintEnginePrivate::fillPolygon_dev(const QPointF *polygonPoints, int p
         && (fill.style() != Qt::NoBrush)
         && ((has_fill_texture && fill.texture().hasAlpha()) || antialias || !solid_fill || has_alpha_pen != has_alpha_brush))
     {
+        tessellator->tessellate((QPointF *)clippedPoints, clippedCount,
+                                mode == QPaintEngine::WindingMode);
         if (tessellator->size > 0) {
             XRenderPictureAttributes attrs;
             attrs.poly_edge = antialias ? PolyEdgeSmooth : PolyEdgeSharp;

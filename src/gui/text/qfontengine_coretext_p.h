@@ -103,9 +103,6 @@ private:
     int synthesisFlags;
     CGAffineTransform transform;
     QFixed avgCharWidth;
-    qreal ctMaxCharWidth;
-    qreal ctMinLeftBearing;
-    qreal ctMinRightBearing;
     friend class QCoreTextFontEngineMulti;
 };
 

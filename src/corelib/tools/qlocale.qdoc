@@ -608,6 +608,7 @@
 
 /*!
     \enum QLocale::Script
+    \since 4.8
 
     This enumerated type is used to specify a script.
 

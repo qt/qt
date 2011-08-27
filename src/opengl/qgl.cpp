@@ -6102,6 +6102,7 @@ void QGLTexture::freeTexture()
     }
 
     id = 0;
+    boundPixmap = 0;
     boundKey = 0;
 }
 #endif

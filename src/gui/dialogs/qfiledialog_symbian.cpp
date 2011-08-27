@@ -59,7 +59,7 @@ extern QStringList qt_clean_filter_list(const QString &filter); // defined in qf
 
 enum DialogMode { DialogOpen, DialogSave, DialogFolder };
 #if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
-class CExtensionFilter : public MAknFileFilter
+class CExtensionFilter : public CBase, public MAknFileFilter
 {
 public:
     void setFilter(const QString filter)
@@ -127,7 +127,7 @@ static QString launchSymbianDialog(const QString dialogCaption, const QString st
                 extensionFilter->setFilter(filter);
                 select = AknCommonDialogsDynMem::RunSelectDlgLD(types, target,
                          startFolder, 0, 0, titlePtr, extensionFilter);
-                CleanupStack::Pop(extensionFilter);
+                CleanupStack::PopAndDestroy(extensionFilter);
             } else if (dialogMode == DialogSave) {
                 QString defaultFileName = QFileDialogPrivate::initialSelection(startDirectory);
                 target = qt_QString2TPtrC(defaultFileName);

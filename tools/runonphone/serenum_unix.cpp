@@ -148,7 +148,8 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
                 foreach (int i, usableInterfaces) {
 #ifdef Q_OS_MAC
                     eligibleInterfaces << QString("^cu\\.usbmodem.*%1$")
-                        .arg(QString("%1").arg(descriptor.bInterfaceNumber, 1, 16).toUpper());
+                        .arg(QString("%1").arg(i, 1, 16).toUpper());
+                    eligibleInterfacesInfo << InterfaceInfo(manufacturerString, productString, device->descriptor.idVendor, device->descriptor.idProduct);
 #else
                     // ### manufacturer and product strings are only readable as root :(
                     if (!manufacturerString.isEmpty() && !productString.isEmpty()) {
@@ -161,7 +162,11 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
                     }
 #endif
                 }
+#ifndef Q_OS_MAC
+                // On mac, we need a 1-1 mapping between eligibleInterfaces and eligibleInterfacesInfo
+                // in order to find the friendly name for an interface
                 eligibleInterfacesInfo << InterfaceInfo(manufacturerString, productString, device->descriptor.idVendor, device->descriptor.idProduct);
+#endif
             }
         }
     }
@@ -185,7 +190,8 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
                     if (loglevel > 1)
                         qDebug() << "      found device file:" << info.fileName() << endl;
 #ifdef Q_OS_MAC
-                    friendlyName = eligibleInterfacesInfo[eligibleInterfaces.indexOf(iface)].product;
+                    InterfaceInfo info = eligibleInterfacesInfo[eligibleInterfaces.indexOf(iface)];
+                    friendlyName = info.manufacturer + " " + info.product;
 #endif
                     usable = true;
                     break;

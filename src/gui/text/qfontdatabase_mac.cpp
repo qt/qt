@@ -106,12 +106,14 @@ if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
         CTFontDescriptorRef font = (CTFontDescriptorRef)CFArrayGetValueAtIndex(fonts, i);
 
         QCFString family_name = (CFStringRef)CTFontDescriptorCopyAttribute(font, kCTFontFamilyNameAttribute);
+        QCFString style_name = (CFStringRef)CTFontDescriptorCopyAttribute(font, kCTFontStyleNameAttribute);
         QtFontFamily *family = db->family(family_name, true);
         for(int ws = 1; ws < QFontDatabase::WritingSystemsCount; ++ws)
             family->writingSystems[ws] = QtFontFamily::Supported;
         QtFontFoundry *foundry = family->foundry(foundry_name, true);
 
         QtFontStyle::Key styleKey;
+        QString styleName = style_name;
         if(QCFType<CFDictionaryRef> styles = (CFDictionaryRef)CTFontDescriptorCopyAttribute(font, kCTFontTraitsAttribute)) {
             if(CFNumberRef weight = (CFNumberRef)CFDictionaryGetValue(styles, kCTFontWeightTrait)) {
                 Q_ASSERT(CFNumberIsFloatType(weight));
@@ -132,7 +134,7 @@ if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
             }
         }
 
-        QtFontStyle *style = foundry->style(styleKey, true);
+        QtFontStyle *style = foundry->style(styleKey, styleName, true);
         style->smoothScalable = true;
         if(QCFType<CFNumberRef> size = (CFNumberRef)CTFontDescriptorCopyAttribute(font, kCTFontSizeAttribute)) {
             //qDebug() << "WHEE";
@@ -205,7 +207,7 @@ if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
 
                 QtFontFamily *family = db->family(familyName, true);
                 QtFontFoundry *foundry = family->foundry(QString(), true);
-                QtFontStyle *style = foundry->style(styleKey, true);
+                QtFontStyle *style = foundry->style(styleKey, QString(), true);
                 style->pixelSize(0, true);
                 style->smoothScalable = true;
 

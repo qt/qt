@@ -3381,7 +3381,10 @@ int QXmlStreamWriter::autoFormattingIndent() const
 }
 
 /*!
-    Returns \c true if the stream failed to write to the underlying device.
+    \since 4.8
+
+    Returns true if the stream failed to write to the underlying device;
+    otherwise returns false.
 
     The error status is never reset. Writes happening after the error
     occurred are ignored, even if the error condition is cleared.

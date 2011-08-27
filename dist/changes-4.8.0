@@ -27,7 +27,9 @@ General Improvements
 Third party components
 ----------------------
 
- - Updated libpng to version x.y.z
+ - Updated libpng to version 1.5.1
+ - Updated libjpeg to version 8c
+ - Updated zlib to version 1.2.5
 
 
 ****************************************************************************
@@ -62,10 +64,32 @@ QtGui
 
  - QTabBar: reduced minimumSizeHint if ElideMode is set.
  - QComboBox: Fixed a color propagation issue with the lineedit. [QTBUG-5950]
+ - QGraphicsLayout: Made setInstantInvalidatePropagation() public
  - Deprecate qGenericMatrixFromMatrix4x4 and qGenericMatrixToMatrix4x4
  - QListView diverses optimisations [QTBUG-11438]
  - QTreeWidget/QListWidget: use localeAwareCompare for string comparisons [QTBUG-10839]
+ - PNG image I/O: Much improved support for text annotations, including iTXt fields.
+ - QRawFont and QGlyphRun are introduced for low-level text rendering. [QTBUG-18252]
+ - QFont: hintingPreference() is introduced to control hinting in font rendering and
+   subpixel positioning of glyphs for Windows, Mac OS X and X11/raster. [QTBUG-10615]
+ - Subpixel positioned text layout is supported in raster and OpenGL paint engines.
+ - QFont: styleName() is added to allow selecting fonts with irregular style names
+   like UltraLight. [QTBUG-19366]
+ - Visual text cursor movement behavior is added to QTextEdit and QLineEdit controls,
+   which can be used as an optional mode for bi-directional text editing. [QTBUG-13859]
  - Fixed a rare race condition when showing toplevel windows on X11
+ - Accessibility: Fix potential crash in QDockWidget.
+ - Accessibility: Fix crash when asking for relations of child accessibles.
+ - Accessibility: More consistency in reporting names (especially when widget is invisible).
+ - Accessibility: Make focus handling more consistent.
+ - Accessibility: Send updates when text changes.
+ - Accessibility: Add IAccessible2 events.
+ - Accessibility: Fix crash when accessing ItemViews during initialization.
+ - Accessibility: Make QTabWidget child hierarchy consistent.
+ - Accessibility: Report correct window title and application name.
+ - Accessibility: Return text attributes for QTextEdit.
+ - Accessibility: Make accessibility work on Windows with alien widgets
+ - Accessibility: Several enablers for accessible graphicsview and Qt Quick applications.
 
 QtNetwork
 ---------
@@ -95,7 +119,10 @@ QtScript
 --------
  - Deprecated qScriptValueFromQMetaObject, qScriptValueToValue, qScriptValueFromValue
 
+QtSql
+-----
 
+ - Update sqlite to 3.7.7.1
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
@@ -107,16 +134,23 @@ QtScript
 
 Qt for Linux/X11
 ----------------
+ - Now takes font hinting settings from GConf by default if running in
+   GNOME desktop.
+ - Various fixes to FontConfig font matching code to make it consistent
+   with other X11 programs. [QTBUG-2148, QTBUG-19947, QTBUG-14269]
  - Added experimental support for armCC
-
 
 Qt for Windows
 --------------
-
+ - DirectWrite experimental text shaping engine is added with subpixel
+   positioning support. [QTBUG-12678]
 
 Qt for Mac OS X
 ---------------
-
+ - raster graphics system is now made as the default paint engine for
+   Mac OS X. [QTBUG-12615]
+ - HarfBuzz can now be used as an optional text layout engine on Mac OS X.
+   [QTBUG-17728]
 
 Qt for Embedded Linux
 ---------------------
@@ -145,7 +179,8 @@ Qt for Windows CE
 ****************************************************************************
 *                      Compiler Specific Changes                           *
 ****************************************************************************
-
+- Sun Studio 12
+    * Fixed build issues in the OpenGL module on Solaris with CC 5.9. [QTBUG-19641]
 
 ****************************************************************************
 *                          Tools                                           *
@@ -199,6 +234,9 @@ Qt for Windows CE
 
 - qt3to4
 
+- qmlplugindump
+    * New tool to generate text descriptions of the QML components defined
+      in plugins loaded by a QML module.
 
 ****************************************************************************
 *                          Plugins                                         *

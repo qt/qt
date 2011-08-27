@@ -450,12 +450,12 @@ void tst_QDeclarativeGridView::removed()
     model.removeItem(1);
 
     // Confirm items positioned correctly
-    for (int i = 6; i < 18; ++i) {
+    for (int i = 3; i < 15; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QTRY_VERIFY(item);
-        QTRY_VERIFY(item->x() == (i%3)*80);
-        QTRY_VERIFY(item->y() == (i/3)*60);
+        QTRY_COMPARE(item->x(), (i%3)*80.0);
+        QTRY_COMPARE(item->y(), 60+(i/3)*60.0);
     }
 
     // Remove currentIndex
@@ -476,7 +476,7 @@ void tst_QDeclarativeGridView::removed()
         if (!item) qWarning() << "Item" << i << "not found";
         QTRY_VERIFY(item);
         QTRY_VERIFY(item->x() == (i%3)*80);
-        QTRY_VERIFY(item->y() == (i/3)*60);
+        QTRY_VERIFY(item->y() == 60+(i/3)*60);
     }
 
     // remove item outside current view.

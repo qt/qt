@@ -2007,4 +2007,5 @@ EXPORTS
 	_ZNK28QDeclarativeInspectorService10metaObjectEv @ 2006 NONAME
 	_ZTI28QDeclarativeInspectorService @ 2007 NONAME
 	_ZTV28QDeclarativeInspectorService @ 2008 NONAME
+	_ZN28QDeclarativeInspectorService12updateStatusEv @ 2009 NONAME
 

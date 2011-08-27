@@ -53,8 +53,13 @@
 #include <qlistmodelinterface_p.h>
 #include <qmath.h>
 #include <QKeyEvent>
+#include "qplatformdefs.h"
 
 QT_BEGIN_NAMESPACE
+
+#ifndef QML_FLICK_SNAPONETHRESHOLD
+#define QML_FLICK_SNAPONETHRESHOLD 30
+#endif
 
 void QDeclarativeViewSection::setProperty(const QString &property)
 {
@@ -232,21 +237,6 @@ public:
                 return item;
         }
         return visibleItems.count() ? visibleItems.first() : 0;
-    }
-
-    FxListItem *nextVisibleItem() const {
-        const qreal pos = isRightToLeft() ? -position()-size() : position();
-        bool foundFirst = false;
-        for (int i = 0; i < visibleItems.count(); ++i) {
-            FxListItem *item = visibleItems.at(i);
-            if (item->index != -1) {
-                if (foundFirst)
-                    return item;
-                else if (item->position() < pos && item->endPosition() > pos)
-                    foundFirst = true;
-            }
-        }
-        return 0;
     }
 
     // Returns the item before modelIndex, if created.
@@ -1009,7 +999,7 @@ void QDeclarativeListViewPrivate::updateHighlight()
 {
     if ((!currentItem && highlight) || (currentItem && !highlight))
         createHighlight();
-    if (currentItem && autoHighlight && highlight && !movingHorizontally && !movingVertically) {
+    if (currentItem && autoHighlight && highlight && !hData.moving && !vData.moving) {
         // auto-update highlight
         highlightPosAnimator->to = isRightToLeft()
                 ? -currentItem->itemPosition()-currentItem->itemSize()
@@ -1320,8 +1310,56 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
         highlightEnd = highlightRangeEnd;
     }
 
-    if (currentItem && haveHighlightRange && highlightRange == QDeclarativeListView::StrictlyEnforceRange
-            && moveReason != QDeclarativeListViewPrivate::SetIndex) {
+    if (snapMode != QDeclarativeListView::NoSnap && moveReason != QDeclarativeListViewPrivate::SetIndex) {
+        qreal tempPosition = isRightToLeft() ? -position()-size() : position();
+        if (snapMode == QDeclarativeListView::SnapOneItem && moveReason == Mouse) {
+            // if we've been dragged < averageSize/2 then bias towards the next item
+            qreal dist = data.move.value() - (data.pressPos - data.dragStartOffset);
+            qreal bias = 0;
+            if (data.velocity > 0 && dist > QML_FLICK_SNAPONETHRESHOLD && dist < averageSize/2)
+                bias = averageSize/2;
+            else if (data.velocity < 0 && dist < -QML_FLICK_SNAPONETHRESHOLD && dist > -averageSize/2)
+                bias = -averageSize/2;
+            if (isRightToLeft())
+                bias = -bias;
+            tempPosition -= bias;
+        }
+        FxListItem *topItem = snapItemAt(tempPosition+highlightStart);
+        FxListItem *bottomItem = snapItemAt(tempPosition+highlightEnd);
+        qreal pos;
+        bool isInBounds = -position() > maxExtent && -position() < minExtent;
+        if (topItem && isInBounds) {
+            if (topItem->index == 0 && header && tempPosition+highlightStart < header->position()+header->size()/2) {
+                pos = isRightToLeft() ? - header->position() + highlightStart - size() : header->position() - highlightStart;
+            } else {
+                if (isRightToLeft())
+                    pos = qMax(qMin(-topItem->position() + highlightStart - size(), -maxExtent), -minExtent);
+                else
+                    pos = qMax(qMin(topItem->position() - highlightStart, -maxExtent), -minExtent);
+            }
+        } else if (bottomItem && isInBounds) {
+            if (isRightToLeft())
+                pos = qMax(qMin(-bottomItem->position() + highlightEnd - size(), -maxExtent), -minExtent);
+            else
+                pos = qMax(qMin(bottomItem->position() - highlightEnd, -maxExtent), -minExtent);
+        } else {
+            QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
+            return;
+        }
+
+        qreal dist = qAbs(data.move + pos);
+        if (dist > 0) {
+            timeline.reset(data.move);
+            if (fixupMode != Immediate) {
+                timeline.move(data.move, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration/2);
+                data.fixingUp = true;
+            } else {
+                timeline.set(data.move, -pos);
+            }
+            vTime = timeline.time();
+        }
+    } else if (currentItem && haveHighlightRange && highlightRange == QDeclarativeListView::StrictlyEnforceRange
+                && moveReason != QDeclarativeListViewPrivate::SetIndex) {
         updateHighlight();
         qreal pos = currentItem->itemPosition();
         if (viewPos < pos + currentItem->itemSize() - highlightEnd)
@@ -1341,42 +1379,6 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
             }
         }
         vTime = timeline.time();
-    } else if (snapMode != QDeclarativeListView::NoSnap && moveReason != QDeclarativeListViewPrivate::SetIndex) {
-        qreal tempPosition = isRightToLeft() ? -position()-size() : position();
-        FxListItem *topItem = snapItemAt(tempPosition+highlightStart);
-        FxListItem *bottomItem = snapItemAt(tempPosition+highlightEnd);
-        qreal pos;
-        bool isInBounds = -position() > maxExtent && -position() < minExtent;
-        if (topItem && isInBounds) {
-            if (topItem->index == 0 && header && tempPosition+highlightStart < header->position()+header->size()/2) {
-                pos = isRightToLeft() ? - header->position() + highlightStart - size() : header->position() - highlightStart;
-            } else {
-                if (isRightToLeft())
-                    pos = qMax(qMin(-topItem->position() + highlightStart - size(), -maxExtent), -minExtent);
-                else
-                    pos = qMax(qMin(topItem->position() - highlightStart, -maxExtent), -minExtent);
-            }
-        } else if (bottomItem && isInBounds) {
-            if (isRightToLeft())
-                pos = qMax(qMin(-bottomItem->position() + highlightStart - size(), -maxExtent), -minExtent);
-            else
-                pos = qMax(qMin(bottomItem->position() - highlightStart, -maxExtent), -minExtent);
-        } else {
-            QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
-            return;
-        }
-
-        qreal dist = qAbs(data.move + pos);
-        if (dist > 0) {
-            timeline.reset(data.move);
-            if (fixupMode != Immediate) {
-                timeline.move(data.move, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration/2);
-                data.fixingUp = true;
-            } else {
-                timeline.set(data.move, -pos);
-            }
-            vTime = timeline.time();
-        }
     } else {
         QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
     }
@@ -1398,12 +1400,19 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     }
     qreal maxDistance = 0;
     qreal dataValue = isRightToLeft() ? -data.move.value()+size() : data.move.value();
+    qreal highlightStart = isRightToLeft() && highlightRangeStartValid ? size()-highlightRangeEnd : highlightRangeStart;
     // -ve velocity means list is moving up/left
     if (velocity > 0) {
         if (data.move.value() < minExtent) {
-            if (snapMode == QDeclarativeListView::SnapOneItem) {
-                if (FxListItem *item = isRightToLeft() ? nextVisibleItem() : firstVisibleItem())
-                    maxDistance = qAbs(item->position() + dataValue);
+            if (snapMode == QDeclarativeListView::SnapOneItem && !hData.flicking && !vData.flicking) {
+                // if we've been dragged < averageSize/2 then bias towards the next item
+                qreal dist = data.move.value() - (data.pressPos - data.dragStartOffset);
+                qreal bias = dist < averageSize/2 ? averageSize/2 : 0;
+                if (isRightToLeft())
+                    bias = -bias;
+                data.flickTarget = -snapPosAt(-(dataValue - highlightStart) - bias) + highlightStart;
+                maxDistance = qAbs(data.flickTarget - data.move.value());
+                velocity = maxVelocity;
             } else {
                 maxDistance = qAbs(minExtent - data.move.value());
             }
@@ -1412,9 +1421,15 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             data.flickTarget = minExtent;
     } else {
         if (data.move.value() > maxExtent) {
-            if (snapMode == QDeclarativeListView::SnapOneItem) {
-                if (FxListItem *item = isRightToLeft() ? firstVisibleItem() : nextVisibleItem())
-                    maxDistance = qAbs(item->position() + dataValue);
+            if (snapMode == QDeclarativeListView::SnapOneItem && !hData.flicking && !vData.flicking) {
+                // if we've been dragged < averageSize/2 then bias towards the next item
+                qreal dist = data.move.value() - (data.pressPos - data.dragStartOffset);
+                qreal bias = -dist < averageSize/2 ? averageSize/2 : 0;
+                if (isRightToLeft())
+                    bias = -bias;
+                data.flickTarget = -snapPosAt(-(dataValue - highlightStart) + bias) + highlightStart;
+                maxDistance = qAbs(data.flickTarget - data.move.value());
+                velocity = -maxVelocity;
             } else {
                 maxDistance = qAbs(maxExtent - data.move.value());
             }
@@ -1424,7 +1439,6 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     }
 
     bool overShoot = boundsBehavior == QDeclarativeFlickable::DragAndOvershootBounds;
-    qreal highlightStart = isRightToLeft() && highlightRangeStartValid ? size()-highlightRangeEnd : highlightRangeStart;
 
     if (maxDistance > 0 || overShoot) {
         // These modes require the list to stop exactly on an item boundary.
@@ -1438,7 +1452,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             else
                 v = maxVelocity;
         }
-        if (!flickingHorizontally && !flickingVertically) {
+        if (!hData.flicking && !vData.flicking) {
             // the initial flick - estimate boundary
             qreal accel = deceleration;
             qreal v2 = v * v;
@@ -1450,8 +1464,10 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             if (v > 0)
                 dist = -dist;
             if ((maxDistance > 0.0 && v2 / (2.0f * maxDistance) < accel) || snapMode == QDeclarativeListView::SnapOneItem) {
-                qreal distTemp = isRightToLeft() ? -dist : dist;
-                data.flickTarget = -snapPosAt(-(dataValue - highlightStart) + distTemp) + highlightStart;
+                if (snapMode != QDeclarativeListView::SnapOneItem) {
+                    qreal distTemp = isRightToLeft() ? -dist : dist;
+                    data.flickTarget = -snapPosAt(-(dataValue - highlightStart) + distTemp) + highlightStart;
+                }
                 data.flickTarget = isRightToLeft() ? -data.flickTarget+size() : data.flickTarget;
                 if (overShoot) {
                     if (data.flickTarget >= minExtent) {
@@ -1489,14 +1505,14 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             timeline.reset(data.move);
             timeline.accel(data.move, v, accel, maxDistance + overshootDist);
             timeline.callback(QDeclarativeTimeLineCallback(&data.move, fixupCallback, this));
-            if (!flickingHorizontally && q->xflick()) {
-                flickingHorizontally = true;
+            if (!hData.flicking && q->xflick()) {
+                hData.flicking = true;
                 emit q->flickingChanged();
                 emit q->flickingHorizontallyChanged();
                 emit q->flickStarted();
             }
-            if (!flickingVertically && q->yflick()) {
-                flickingVertically = true;
+            if (!vData.flicking && q->yflick()) {
+                vData.flicking = true;
                 emit q->flickingChanged();
                 emit q->flickingVerticallyChanged();
                 emit q->flickStarted();
@@ -1872,6 +1888,8 @@ void QDeclarativeListView::setCurrentIndex(int index)
     if (index == d->currentIndex)
         return;
     if (isComponentComplete() && d->isValid()) {
+        if (d->layoutScheduled)
+            d->layout();
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
         d->updateCurrent(index);
     } else if (d->currentIndex != index) {
@@ -2557,7 +2575,8 @@ bool QDeclarativeListView::event(QEvent *event)
 {
     Q_D(QDeclarativeListView);
     if (event->type() == QEvent::User) {
-        d->layout();
+        if (d->layoutScheduled)
+            d->layout();
         return true;
     }
 
@@ -2576,7 +2595,7 @@ void QDeclarativeListView::viewportMoved()
     d->inViewportMoved = true;
     d->lazyRelease = true;
     refill();
-    if (d->flickingHorizontally || d->flickingVertically || d->movingHorizontally || d->movingVertically)
+    if (d->hData.flicking || d->vData.flicking || d->hData.moving || d->vData.moving)
         d->moveReason = QDeclarativeListViewPrivate::Mouse;
     if (d->moveReason != QDeclarativeListViewPrivate::SetIndex) {
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange && d->highlight) {
@@ -2610,7 +2629,7 @@ void QDeclarativeListView::viewportMoved()
         }
     }
 
-    if ((d->flickingHorizontally || d->flickingVertically) && d->correctFlick && !d->inFlickCorrection) {
+    if ((d->hData.flicking || d->vData.flicking) && d->correctFlick && !d->inFlickCorrection) {
         d->inFlickCorrection = true;
         // Near an end and it seems that the extent has changed?
         // Recalculate the flick so that we don't end up in an odd position.
@@ -3009,7 +3028,7 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
 /*!
     \qmlmethod ListView::positionViewAtBeginning()
     \qmlmethod ListView::positionViewAtEnd()
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Positions the view at the beginning or end, taking into account any header or footer.
 

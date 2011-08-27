@@ -51,6 +51,15 @@ StringImpl* StringImpl::empty()
     return &emptyString;
 }
 
+#if COMPILER(WINSCW)
+static AtomicString nullAtom1;
+static AtomicString emptyAtom1;
+static AtomicString textAtom1;
+static AtomicString commentAtom1;
+static AtomicString starAtom1;
+static AtomicString xmlAtom1;
+static AtomicString xmlnsAtom1;
+#else
 JS_EXPORTDATA DEFINE_GLOBAL(AtomicString, nullAtom)
 JS_EXPORTDATA DEFINE_GLOBAL(AtomicString, emptyAtom, "")
 JS_EXPORTDATA DEFINE_GLOBAL(AtomicString, textAtom, "#text")
@@ -58,6 +67,7 @@ JS_EXPORTDATA DEFINE_GLOBAL(AtomicString, commentAtom, "#comment")
 JS_EXPORTDATA DEFINE_GLOBAL(AtomicString, starAtom, "*")
 JS_EXPORTDATA DEFINE_GLOBAL(AtomicString, xmlAtom, "xml")
 JS_EXPORTDATA DEFINE_GLOBAL(AtomicString, xmlnsAtom, "xmlns")
+#endif
 
 void AtomicString::init()
 {
@@ -67,6 +77,15 @@ void AtomicString::init()
         ASSERT(isMainThread());
 
         // Use placement new to initialize the globals.
+#if COMPILER(WINSCW)
+        new ((void*)&nullAtom1) AtomicString;
+        new ((void*)&emptyAtom1) AtomicString("");
+        new ((void*)&textAtom1) AtomicString("#text");
+        new ((void*)&commentAtom1) AtomicString("#comment");
+        new ((void*)&starAtom1) AtomicString("*");
+        new ((void*)&xmlAtom1) AtomicString("xml");
+        new ((void*)&xmlnsAtom1) AtomicString("xmlns");
+#else
         new ((void*)&nullAtom) AtomicString;
         new ((void*)&emptyAtom) AtomicString("");
         new ((void*)&textAtom) AtomicString("#text");
@@ -74,9 +93,19 @@ void AtomicString::init()
         new ((void*)&starAtom) AtomicString("*");
         new ((void*)&xmlAtom) AtomicString("xml");
         new ((void*)&xmlnsAtom) AtomicString("xmlns");
-
+#endif
         initialized = true;
     }
 }
+
+#if COMPILER(WINSCW)
+const AtomicString& AtomicString::nullAtom2() { return nullAtom1;}
+const AtomicString& AtomicString::emptyAtom2() { return emptyAtom1;}
+const AtomicString& AtomicString::textAtom2() { return textAtom1;}
+const AtomicString& AtomicString::commentAtom2() { return commentAtom1;}
+const AtomicString& AtomicString::starAtom2() { return starAtom1;}
+const AtomicString& AtomicString::xmlAtom2() { return xmlAtom1;}
+const AtomicString& AtomicString::xmlnsAtom2() { return xmlnsAtom1;}
+#endif
 
 }

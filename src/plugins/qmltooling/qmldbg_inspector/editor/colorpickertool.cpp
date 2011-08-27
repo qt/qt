@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "colorpickertool_p.h"
+#include "colorpickertool.h"
 
-#include "../qdeclarativeviewinspector_p.h"
+#include "../qdeclarativeviewinspector.h"
 
 #include <QtGui/QMouseEvent>
 #include <QtGui/QKeyEvent>
@@ -51,7 +51,7 @@
 #include <QtGui/QApplication>
 #include <QtGui/QPalette>
 
-QT_BEGIN_NAMESPACE
+namespace QmlJSDebugger {
 
 ColorPickerTool::ColorPickerTool(QDeclarativeViewInspector *view) :
     AbstractLiveEditTool(view)
@@ -61,11 +61,11 @@ ColorPickerTool::ColorPickerTool(QDeclarativeViewInspector *view) :
 
 ColorPickerTool::~ColorPickerTool()
 {
-
 }
 
-void ColorPickerTool::mousePressEvent(QMouseEvent * /*event*/)
+void ColorPickerTool::mousePressEvent(QMouseEvent *event)
 {
+    pickColor(event->pos());
 }
 
 void ColorPickerTool::mouseMoveEvent(QMouseEvent *event)
@@ -73,42 +73,9 @@ void ColorPickerTool::mouseMoveEvent(QMouseEvent *event)
     pickColor(event->pos());
 }
 
-void ColorPickerTool::mouseReleaseEvent(QMouseEvent *event)
-{
-    pickColor(event->pos());
-}
-
-void ColorPickerTool::mouseDoubleClickEvent(QMouseEvent * /*event*/)
-{
-}
-
-
-void ColorPickerTool::hoverMoveEvent(QMouseEvent * /*event*/)
-{
-}
-
-void ColorPickerTool::keyPressEvent(QKeyEvent * /*event*/)
-{
-}
-
-void ColorPickerTool::keyReleaseEvent(QKeyEvent * /*keyEvent*/)
-{
-}
-void ColorPickerTool::wheelEvent(QWheelEvent * /*event*/)
-{
-}
-
-void ColorPickerTool::itemsAboutToRemoved(const QList<QGraphicsItem*> &/*itemList*/)
-{
-}
-
 void ColorPickerTool::clear()
 {
     view()->setCursor(Qt::CrossCursor);
-}
-
-void ColorPickerTool::selectedItemsChanged(const QList<QGraphicsItem*> &/*itemList*/)
-{
 }
 
 void ColorPickerTool::pickColor(const QPoint &pos)
@@ -128,4 +95,4 @@ void ColorPickerTool::pickColor(const QPoint &pos)
     emit selectedColorChanged(m_selectedColor);
 }
 
-QT_END_NAMESPACE
+} // namespace QmlJSDebugger

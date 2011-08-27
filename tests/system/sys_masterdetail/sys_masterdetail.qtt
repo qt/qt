@@ -1,0 +1,74 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the FOO module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights. These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+
+testcase = {
+
+    // ?? How to select image??
+    // ?? How to compare image??
+    test_masterdetail: function() {
+
+        startApplication("$QTDIR/examples/sql/masterdetail/masterdetail");
+        // need to verifyImage
+        verifyImage("masterdetail_1");
+
+        //select an art form artilst
+        var artist = findWidget({className: "QComboBox"});
+        select("Ane Brun",artist);
+        //print(getLabels());
+        verify(getLabels().join().contains("Details/Artist : Ane Brun"));
+        verify(getLabels().join().contains("Number of Albums: 2"));
+
+        verifyImage("masterdetail_2");
+
+        // choose the albums, please see the chages in the datails.
+        var album = findWidget({className: "QTableView"});
+        select("Spending Time With Morgan",album);
+        //print(getLabels());
+        verify(getLabels().join().contains("Details/Title: Spending Time With Morgan (2003)"));
+        verifyImage("masterdetail_3");
+
+        select("A Temporary Dive",album);
+        //print(getLabels());
+        verify(getLabels().join().contains("Details/Title: A Temporary Dive (2005)"));
+        verifyImage("masterdetail_4");
+    }
+}

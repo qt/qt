@@ -602,7 +602,7 @@ int QFSFileEnginePrivate::nativeHandle() const
     return fh ? fileno(fh) : fd;
 }
 
-#ifdef Q_OS_SYMBIAN
+#if defined(Q_OS_SYMBIAN) && !defined(QT_SYMBIAN_USE_NATIVE_FILEMAP)
 int QFSFileEnginePrivate::getMapHandle()
 {
     if (symbianFile.SubSessionHandle()) {
@@ -925,6 +925,7 @@ QString QFSFileEngine::owner(FileOwner own) const
         return QFileSystemEngine::resolveUserName(ownerId(own));
     return QFileSystemEngine::resolveGroupName(ownerId(own));
 #else
+    Q_UNUSED(own)
     return QString();
 #endif
 }
@@ -1045,9 +1046,47 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
     QT_OFF_T realOffset = QT_OFF_T(offset);
     realOffset &= ~(QT_OFF_T(pageSize - 1));
 
+#ifdef QT_SYMBIAN_USE_NATIVE_FILEMAP
+    TInt nativeMapError = KErrNone;
+    RFileMap mapping;
+    TUint mode(EFileMapRemovableMedia);
+    //If the file was opened for write or read/write, then open the map for read/write
+    if (openMode & QIODevice::WriteOnly)
+        mode |= EFileMapWrite;
+    if (symbianFile.SubSessionHandle()) {
+        nativeMapError = mapping.Open(symbianFile, offset, size, mode);
+    } else {
+        //map file by name if we don't have a native handle
+        QString fn = QFileSystemEngine::absoluteName(fileEntry).nativeFilePath();
+        TUint filemode = EFileShareReadersOrWriters | EFileRead;
+        if (openMode & QIODevice::WriteOnly)
+            filemode |= EFileWrite;
+        nativeMapError = mapping.Open(qt_s60GetRFs(), qt_QString2TPtrC(fn), filemode, offset, size, mode);
+    }
+    if (nativeMapError == KErrNone) {
+        QScopedResource<RFileMap> ptr(mapping); //will call Close if adding to mapping throws an exception
+        uchar *address = mapping.Base();
+        maps[address] = mapping;
+        ptr.take();
+        return address;
+    }
+    QFile::FileError reportedError = QFile::UnspecifiedError;
+    switch (nativeMapError) {
+    case KErrAccessDenied:
+    case KErrPermissionDenied:
+        reportedError = QFile::PermissionsError;
+        break;
+    case KErrNoMemory:
+        reportedError = QFile::ResourceError;
+        break;
+    }
+    q->setError(reportedError, QSystemError(nativeMapError, QSystemError::NativeError).toString());
+    return 0;
+#else
 #ifdef Q_OS_SYMBIAN
+    //older phones & emulator don't support native mapping, so need to keep the open C way around for those.
     void *mapAddress;
-    TRAPD(err,     mapAddress = QT_MMAP((void*)0, realSize,
+    TRAPD(err, mapAddress = QT_MMAP((void*)0, realSize,
                    access, MAP_SHARED, getMapHandle(), realOffset));
     if (err != KErrNone) {
         qWarning("OpenC bug: leave from mmap %d", err);
@@ -1079,6 +1118,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
         break;
     }
     return 0;
+#endif
 }
 
 bool QFSFileEnginePrivate::unmap(uchar *ptr)
@@ -1090,6 +1130,17 @@ bool QFSFileEnginePrivate::unmap(uchar *ptr)
         return false;
     }
 
+#ifdef QT_SYMBIAN_USE_NATIVE_FILEMAP
+    RFileMap mapping = maps.value(ptr);
+    TInt err = mapping.Flush();
+    mapping.Close();
+    maps.remove(ptr);
+    if (err) {
+        q->setError(QFile::WriteError, QSystemError(err, QSystemError::NativeError).toString());
+        return false;
+    }
+    return true;
+#else
     uchar *start = ptr - maps[ptr].first;
     size_t len = maps[ptr].second;
     if (-1 == munmap(start, len)) {
@@ -1098,6 +1149,7 @@ bool QFSFileEnginePrivate::unmap(uchar *ptr)
     }
     maps.remove(ptr);
     return true;
+#endif
 #else
     return false;
 #endif

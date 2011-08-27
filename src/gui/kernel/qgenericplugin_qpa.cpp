@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
     \class QGenericPlugin
     \ingroup plugins
     \ingroup qpa
+    \since 4.8
 
     \brief The QGenericPlugin class is an abstract base class for
     window-system related plugins in Qt QPA.

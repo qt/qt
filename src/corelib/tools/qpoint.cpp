@@ -188,6 +188,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn QPoint &QPoint::operator*=(float factor)
+    \since 4.8
 
     Multiplies this point's coordinates by the given \a factor, and
     returns a reference to this point.
@@ -200,6 +201,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn QPoint &QPoint::operator*=(double factor)
+    \since 4.8
 
     Multiplies this point's coordinates by the given \a factor, and
     returns a reference to this point. For example:
@@ -214,6 +216,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn QPoint &QPoint::operator*=(int factor)
+    \since 4.8
 
     Multiplies this point's coordinates by the given \a factor, and
     returns a reference to this point.
@@ -259,6 +262,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn const QPoint operator*(const QPoint &point, float factor)
     \relates QPoint
+    \since 4.8
 
     Returns a copy of the given \a point multiplied by the given \a factor.
 
@@ -271,6 +275,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn const QPoint operator*(const QPoint &point, double factor)
     \relates QPoint
+    \since 4.8
 
     Returns a copy of the given \a point multiplied by the given \a factor.
 
@@ -283,6 +288,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn const QPoint operator*(const QPoint &point, int factor)
     \relates QPoint
+    \since 4.8
 
     Returns a copy of the given \a point multiplied by the given \a factor.
 
@@ -293,6 +299,7 @@ QT_BEGIN_NAMESPACE
     \fn const QPoint operator*(float factor, const QPoint &point)
     \overload
     \relates QPoint
+    \since 4.8
 
     Returns a copy of the given \a point multiplied by the given \a factor.
 */
@@ -301,6 +308,7 @@ QT_BEGIN_NAMESPACE
     \fn const QPoint operator*(double factor, const QPoint &point)
     \overload
     \relates QPoint
+    \since 4.8
 
     Returns a copy of the given \a point multiplied by the given \a factor.
 */
@@ -309,6 +317,7 @@ QT_BEGIN_NAMESPACE
     \fn const QPoint operator*(int factor, const QPoint &point)
     \overload
     \relates QPoint
+    \since 4.8
 
     Returns a copy of the given \a point multiplied by the given \a factor.
 */

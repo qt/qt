@@ -108,6 +108,7 @@ private:
     bool needsInputPanel();
     void commitTemporaryPreeditString();
     bool isWidgetVisible(QWidget *widget, int offset = 0);
+    bool isPartialKeyboardSupported();
 
 private Q_SLOTS:
     void ensureInputCapabilitiesChanged();

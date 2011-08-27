@@ -298,6 +298,7 @@ bool QAbstractProxyModel::setHeaderData(int section, Qt::Orientation orientation
 
 /*!
     \reimp
+    \since 4.8
  */
 QModelIndex QAbstractProxyModel::buddy(const QModelIndex &index) const
 {
@@ -307,6 +308,7 @@ QModelIndex QAbstractProxyModel::buddy(const QModelIndex &index) const
 
 /*!
     \reimp
+    \since 4.8
  */
 bool QAbstractProxyModel::canFetchMore(const QModelIndex &parent) const
 {
@@ -316,6 +318,7 @@ bool QAbstractProxyModel::canFetchMore(const QModelIndex &parent) const
 
 /*!
     \reimp
+    \since 4.8
  */
 void QAbstractProxyModel::fetchMore(const QModelIndex &parent)
 {
@@ -325,6 +328,7 @@ void QAbstractProxyModel::fetchMore(const QModelIndex &parent)
 
 /*!
     \reimp
+    \since 4.8
  */
 void QAbstractProxyModel::sort(int column, Qt::SortOrder order)
 {
@@ -334,6 +338,7 @@ void QAbstractProxyModel::sort(int column, Qt::SortOrder order)
 
 /*!
     \reimp
+    \since 4.8
  */
 QSize QAbstractProxyModel::span(const QModelIndex &index) const
 {
@@ -343,6 +348,7 @@ QSize QAbstractProxyModel::span(const QModelIndex &index) const
 
 /*!
     \reimp
+    \since 4.8
  */
 bool QAbstractProxyModel::hasChildren(const QModelIndex &parent) const
 {
@@ -352,6 +358,7 @@ bool QAbstractProxyModel::hasChildren(const QModelIndex &parent) const
 
 /*!
     \reimp
+    \since 4.8
  */
 QMimeData* QAbstractProxyModel::mimeData(const QModelIndexList &indexes) const
 {
@@ -364,6 +371,7 @@ QMimeData* QAbstractProxyModel::mimeData(const QModelIndexList &indexes) const
 
 /*!
     \reimp
+    \since 4.8
  */
 QStringList QAbstractProxyModel::mimeTypes() const
 {
@@ -373,6 +381,7 @@ QStringList QAbstractProxyModel::mimeTypes() const
 
 /*!
     \reimp
+    \since 4.8
  */
 Qt::DropActions QAbstractProxyModel::supportedDropActions() const
 {

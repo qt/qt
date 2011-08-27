@@ -80,10 +80,8 @@ public:
     virtual bool supportsStaticContents() const { return false; }
     virtual bool scroll(QWidget *, const QRegion&, int, int) { return false; }
 
-private:
-    QVGPaintEngine *engine;
-
 protected:
+    QVGPaintEngine *engine;
     QWindowSurface *winSurface;
 
     void destroyPaintEngine();
