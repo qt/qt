@@ -51,6 +51,12 @@
 
 QT_BEGIN_NAMESPACE
 
+typedef QMultiMap<QString, Node*> NodeMultiMap;
+typedef QMap<QString, NodeMultiMap> NewSinceMaps;
+typedef QMap<Node*, NodeMultiMap> ParentMaps;
+typedef QMap<QString, const Node*> NodeMap;
+typedef QMap<QString, NodeMap> NewClassMaps;
+
 typedef QMap<QString, QString> GuidMap;
 typedef QMap<QString, GuidMap*> GuidMaps;
 
@@ -412,6 +418,7 @@ class DitaXmlGenerator : public PageGenerator
     void findAllFunctions(const InnerNode *node);
     void findAllLegaleseTexts(const InnerNode *node);
     void findAllNamespaces(const InnerNode *node);
+    void findAllSince(const InnerNode *node);
     static int hOffset(const Node *node);
     static bool isThreeColumnEnumValueTable(const Atom *atom);
     virtual QString getLink(const Atom *atom, 
@@ -508,6 +515,10 @@ class DitaXmlGenerator : public PageGenerator
 #endif
     QMap<QString, NodeMap > funcIndex;
     QMap<Text, const Node*> legaleseTexts;
+    NewSinceMaps newSinceMaps;
+    static QString sinceTitles[];
+    NewClassMaps newClassMaps;
+    NewClassMaps newQmlClassMaps;
     static int id;
     static QString ditaTags[];
     QStack<QXmlStreamWriter*> xmlWriterStack;

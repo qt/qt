@@ -407,7 +407,11 @@ bool QDeclarativeTextInputPrivate::determineHorizontalAlignment()
     if (hAlignImplicit) {
         // if no explicit alignment has been set, follow the natural layout direction of the text
         QString text = control->text();
-        bool isRightToLeft = text.isEmpty() ? QApplication::keyboardInputDirection() == Qt::RightToLeft : text.isRightToLeft();
+        if (text.isEmpty())
+            text = control->preeditAreaText();
+        bool isRightToLeft = text.isEmpty()
+                ? QApplication::keyboardInputDirection() == Qt::RightToLeft
+                : text.isRightToLeft();
         return setHAlign(isRightToLeft ? QDeclarativeTextInput::AlignRight : QDeclarativeTextInput::AlignLeft);
     }
     return false;
@@ -1011,7 +1015,7 @@ int QDeclarativeTextInput::positionAt(int x) const
 
 /*!
     \qmlmethod int TextInput::positionAt(int x, CursorPosition position = CursorBetweenCharacters)
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     This function returns the character position at
     x pixels from the left of the textInput. Position 0 is before the
@@ -1399,7 +1403,7 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
 
 /*!
     \qmlmethod void TextInput::deselect()
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     Removes active text selection.
 */
@@ -1571,7 +1575,7 @@ void QDeclarativeTextInput::setSelectByMouse(bool on)
 
 /*!
     \qmlproperty enum TextInput::mouseSelectionMode
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     Specifies how text should be selected using a mouse.
 
@@ -1619,7 +1623,7 @@ void QDeclarativeTextInput::moveCursorSelection(int position)
 
 /*!
     \qmlmethod void TextInput::moveCursorSelection(int position, SelectionMode mode = TextInput.SelectCharacters)
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     Moves the cursor to \a position and updates the selection according to the optional \a mode
     parameter.  (To only move the cursor, set the \l cursorPosition property.)
@@ -1907,6 +1911,7 @@ void QDeclarativeTextInput::cursorPosChanged()
 void QDeclarativeTextInput::updateCursorRectangle()
 {
     Q_D(QDeclarativeTextInput);
+    d->determineHorizontalAlignment();
     d->updateHorizontalScroll();
     updateRect();//TODO: Only update rect between pos's
     updateMicroFocus();
