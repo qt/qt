@@ -44,6 +44,12 @@
 
 #include <private/qfontengine_p.h>
 
+#ifdef QT_NO_CORESERVICES
+#include <CoreText/CoreText.h>
+#include <CoreGraphics/CoreGraphics.h>
+#include <private/qcore_mac_p.h>
+#endif
+
 #if !defined(Q_WS_MAC) || (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
 
 class QRawFontPrivate;
