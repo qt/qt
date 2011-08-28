@@ -135,7 +135,7 @@ void QCoreTextFontEngineMulti::init(bool kerning)
     attributeDict = CFDictionaryCreateMutable(0, 2,
                                        &kCFTypeDictionaryKeyCallBacks,
                                        &kCFTypeDictionaryValueCallBacks);
-    CFDictionaryAddValue(attributeDict, NSFontAttributeName, ctfont);
+    CFDictionaryAddValue(attributeDict, kCTFontAttributeName, ctfont);
     if (!kerning) {
         float zero = 0.0;
         QCFType<CFNumberRef> noKern = CFNumberCreate(kCFAllocatorDefault, kCFNumberFloatType, &zero);
@@ -257,7 +257,7 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
             //NSLog(@"Dictionary %@", runAttribs);
             if (!runAttribs)
                 runAttribs = attributeDict;
-            CTFontRef runFont = static_cast<CTFontRef>(CFDictionaryGetValue(runAttribs, NSFontAttributeName));
+            CTFontRef runFont = static_cast<CTFontRef>(CFDictionaryGetValue(runAttribs, kCTFontAttributeName));
             uint fontIndex = fontIndexForFont(runFont);
             const QFontEngine *engine = engineAt(fontIndex);
             fontIndex <<= 24;
@@ -547,7 +547,6 @@ glyph_metrics_t QCoreTextFontEngine::boundingBox(glyph_t glyph)
         ret.xoff = ret.xoff.round();
         ret.yoff = ret.yoff.round();
     }
-
     return ret;
 }
 
@@ -723,7 +722,12 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     QImage im(qRound(br.width) + 2, qRound(br.height) + 2, QImage::Format_RGB32);
     im.fill(0);
 
-    CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+    CGColorSpaceRef colorspace =
+#ifdef Q_WS_MAC
+            CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+#else
+            CGColorSpaceCreateDeviceRGB();
+#endif
     uint cgflags = kCGImageAlphaNoneSkipFirst;
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
     cgflags |= kCGBitmapByteOrder32Host;

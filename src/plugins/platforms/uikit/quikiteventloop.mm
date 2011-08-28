@@ -67,7 +67,6 @@
 
 - (id)initWithEventLoopIntegration:(QUIKitEventLoop *)integration;
 
-- (void)processEvents;
 - (void)processEventsAndSchedule;
 
 @end
@@ -160,17 +159,11 @@
     return self;
 }
 
-- (void)processEvents
-{
-    QPlatformEventLoopIntegration::processEvents();
-}
-
 - (void)processEventsAndSchedule
 {
     QPlatformEventLoopIntegration::processEvents();
-    qint64 nextTime = qMin((qint64)33, mIntegration->nextTimerEvent()); // at least 30fps
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-    NSDate *nextDate = [[NSDate date] dateByAddingTimeInterval:((double)nextTime/1000)];
+    NSDate *nextDate = [[NSDate date] dateByAddingTimeInterval:((double)mIntegration->nextTimerEvent()/1000.)];
     [mIntegration->mTimer setFireDate:nextDate];
     [pool release];
 }
@@ -211,7 +204,7 @@ void QUIKitEventLoop::quitEventLoop()
 
 void QUIKitEventLoop::qtNeedsToProcessEvents()
 {
-    [mHelper performSelectorOnMainThread:@selector(processEvents) withObject:nil waitUntilDone:NO];
+    [mHelper performSelectorOnMainThread:@selector(processEventsAndSchedule) withObject:nil waitUntilDone:NO];
 }
 
 static UIReturnKeyType keyTypeForObject(QObject *obj)
