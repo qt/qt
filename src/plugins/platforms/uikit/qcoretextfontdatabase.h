@@ -39,72 +39,20 @@
 **
 ****************************************************************************/
 
-#include "quikitintegration.h"
-#include "quikitwindow.h"
-#include "quikitwindowsurface.h"
-#include "quikitscreen.h"
-#include "quikiteventloop.h"
-#include "qcoretextfontdatabase.h"
+#ifndef QCORETEXTFONTDATABASE_H
+#define QCORETEXTFONTDATABASE_H
 
-#include <QtGui/QApplication>
-
-#include <private/qpixmap_raster_p.h>
-
-#include <UIKit/UIKit.h>
-
-#include <QtDebug>
+#include <QtGui/QPlatformFontDatabase>
 
 QT_BEGIN_NAMESPACE
 
-static QUIKitIntegration *m_instance = 0;
-
-QUIKitIntegration * QUIKitIntegration::instance()
+class QCoreTextFontDatabase : public QPlatformFontDatabase
 {
-    return m_instance;
-}
-
-QUIKitIntegration::QUIKitIntegration()
-    :mFontDb(new QCoreTextFontDatabase)
-{
-    if (!m_instance)
-        m_instance = this;
-    mScreens << new QUIKitScreen(0);
-}
-
-QUIKitIntegration::~QUIKitIntegration()
-{
-}
-
-QPixmapData *QUIKitIntegration::createPixmapData(QPixmapData::PixelType type) const
-{
-    return new QRasterPixmapData(type);
-}
-
-QPlatformWindow *QUIKitIntegration::createPlatformWindow(QWidget *widget, WId winId) const
-{
-    Q_UNUSED(winId);
-    return new QUIKitWindow(widget);
-}
-
-QList<QPlatformScreen *> QUIKitIntegration::screens() const
-{
-    return mScreens;
-}
-
-QWindowSurface *QUIKitIntegration::createWindowSurface(QWidget *widget, WId winId) const
-{
-    Q_UNUSED(winId);
-    return new QUIKitWindowSurface(widget);
-}
-
-QPlatformEventLoopIntegration *QUIKitIntegration::createEventLoopIntegration() const
-{
-    return new QUIKitEventLoop();
-}
-
-QPlatformFontDatabase * QUIKitIntegration::fontDatabase() const
-{
-    return mFontDb;
-}
+public:
+    void populateFontDatabase();
+    QFontEngine *fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *handle);
+};
 
 QT_END_NAMESPACE
+
+#endif // QCORETEXTFONTDATABASE_H

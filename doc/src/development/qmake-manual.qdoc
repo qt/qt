@@ -3116,6 +3116,23 @@
     platform application shell. In addition it will make the application to
     be launched in background.
 
+    From S60 version 5.4 onwards, you can specify \c graphics_memory value using \c RSS_RULES
+    to specify the graphics memory quota for the application. The value is in kilobytes and
+    defaults to 24576 (i.e. 24MB) for applications that link against QtGui. The default for all
+    other applications is zero.
+
+    The graphics memory quota tells the operating system how much graphics memory the
+    application is likely to need so that it can free up enough graphics memory prior to
+    application launch. If the value is too small, it can cause random slowdowns later when
+    the memory is freed on on-demand basis. On the other hand, too large values can delay
+    the application launch unnecessarily.
+
+    For example:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 159
+
+    This example sets the graphics memory quota to 12MB.
+
     For detailed list of possible \c APP_REGISTRATION_INFO statements, please refer to the
     Symbian platform help.
 
