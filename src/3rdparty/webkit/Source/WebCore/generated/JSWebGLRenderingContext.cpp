@@ -30,6 +30,7 @@
 #include "JSDOMBinding.h"
 #include "JSHTMLCanvasElement.h"
 #include "JSHTMLImageElement.h"
+#include "JSHTMLVideoElement.h"
 #include "JSImageData.h"
 #include "JSWebGLActiveInfo.h"
 #include "JSWebGLBuffer.h"
@@ -2985,6 +2986,40 @@ static EncodedJSValue JSC_HOST_CALL jsWebGLRenderingContextPrototypeFunctionTexI
     return JSValue::encode(jsUndefined());
 }
 
+static EncodedJSValue JSC_HOST_CALL jsWebGLRenderingContextPrototypeFunctionTexImage2D5(ExecState* exec)
+{
+    JSValue thisValue = exec->hostThisValue();
+    if (!thisValue.inherits(&JSWebGLRenderingContext::s_info))
+        return throwVMTypeError(exec);
+    JSWebGLRenderingContext* castedThis = static_cast<JSWebGLRenderingContext*>(asObject(thisValue));
+    WebGLRenderingContext* imp = static_cast<WebGLRenderingContext*>(castedThis->impl());
+    ExceptionCode ec = 0;
+    unsigned target(exec->argument(0).toUInt32(exec));
+    if (exec->hadException())
+        return JSValue::encode(jsUndefined());
+    int level(exec->argument(1).toInt32(exec));
+    if (exec->hadException())
+        return JSValue::encode(jsUndefined());
+    unsigned internalformat(exec->argument(2).toUInt32(exec));
+    if (exec->hadException())
+        return JSValue::encode(jsUndefined());
+    unsigned format(exec->argument(3).toUInt32(exec));
+    if (exec->hadException())
+        return JSValue::encode(jsUndefined());
+    unsigned type(exec->argument(4).toUInt32(exec));
+    if (exec->hadException())
+        return JSValue::encode(jsUndefined());
+    if (exec->argumentCount() > 5 && !exec->argument(5).isUndefinedOrNull() && !exec->argument(5).inherits(&JSHTMLVideoElement::s_info))
+        return throwVMTypeError(exec);
+    HTMLVideoElement* video(toHTMLVideoElement(exec->argument(5)));
+    if (exec->hadException())
+        return JSValue::encode(jsUndefined());
+
+    imp->texImage2D(target, level, internalformat, format, type, video, ec);
+    setDOMException(exec, ec);
+    return JSValue::encode(jsUndefined());
+}
+
 EncodedJSValue JSC_HOST_CALL jsWebGLRenderingContextPrototypeFunctionTexImage2D(ExecState* exec)
 {
     if ((exec->argumentCount() == 9 && (exec->argument(8).isNull() || (exec->argument(8).isObject() && asObject(exec->argument(8))->inherits(&JSArrayBufferView::s_info)))))
@@ -2995,6 +3030,8 @@ EncodedJSValue JSC_HOST_CALL jsWebGLRenderingContextPrototypeFunctionTexImage2D(
         return jsWebGLRenderingContextPrototypeFunctionTexImage2D3(exec);
     if ((exec->argumentCount() == 6 && (exec->argument(5).isNull() || (exec->argument(5).isObject() && asObject(exec->argument(5))->inherits(&JSHTMLCanvasElement::s_info)))))
         return jsWebGLRenderingContextPrototypeFunctionTexImage2D4(exec);
+    if ((exec->argumentCount() == 6 && (exec->argument(5).isNull() || (exec->argument(5).isObject() && asObject(exec->argument(5))->inherits(&JSHTMLVideoElement::s_info)))))
+        return jsWebGLRenderingContextPrototypeFunctionTexImage2D5(exec);
     return throwVMTypeError(exec);
 }
 
@@ -3152,6 +3189,43 @@ static EncodedJSValue JSC_HOST_CALL jsWebGLRenderingContextPrototypeFunctionTexS
     return JSValue::encode(jsUndefined());
 }
 
+static EncodedJSValue JSC_HOST_CALL jsWebGLRenderingContextPrototypeFunctionTexSubImage2D5(ExecState* exec)
+{
+    JSValue thisValue = exec->hostThisValue();
+    if (!thisValue.inherits(&JSWebGLRenderingContext::s_info))
+        return throwVMTypeError(exec);
+    JSWebGLRenderingContext* castedThis = static_cast<JSWebGLRenderingContext*>(asObject(thisValue));
+    WebGLRenderingContext* imp = static_cast<WebGLRenderingContext*>(castedThis->impl());
+    ExceptionCode ec = 0;
+    unsigned target(exec->argument(0).toUInt32(exec));
+    if (exec->hadException())
+        return JSValue::encode(jsUndefined());
+    int level(exec->argument(1).toInt32(exec));
+    if (exec->hadException())
+        return JSValue::encode(jsUndefined());
+    int xoffset(exec->argument(2).toInt32(exec));
+    if (exec->hadException())
+        return JSValue::encode(jsUndefined());
+    int yoffset(exec->argument(3).toInt32(exec));
+    if (exec->hadException())
+        return JSValue::encode(jsUndefined());
+    unsigned format(exec->argument(4).toUInt32(exec));
+    if (exec->hadException())
+        return JSValue::encode(jsUndefined());
+    unsigned type(exec->argument(5).toUInt32(exec));
+    if (exec->hadException())
+        return JSValue::encode(jsUndefined());
+    if (exec->argumentCount() > 6 && !exec->argument(6).isUndefinedOrNull() && !exec->argument(6).inherits(&JSHTMLVideoElement::s_info))
+        return throwVMTypeError(exec);
+    HTMLVideoElement* video(toHTMLVideoElement(exec->argument(6)));
+    if (exec->hadException())
+        return JSValue::encode(jsUndefined());
+
+    imp->texSubImage2D(target, level, xoffset, yoffset, format, type, video, ec);
+    setDOMException(exec, ec);
+    return JSValue::encode(jsUndefined());
+}
+
 EncodedJSValue JSC_HOST_CALL jsWebGLRenderingContextPrototypeFunctionTexSubImage2D(ExecState* exec)
 {
     if ((exec->argumentCount() == 9 && (exec->argument(8).isNull() || (exec->argument(8).isObject() && asObject(exec->argument(8))->inherits(&JSArrayBufferView::s_info)))))
@@ -3162,6 +3236,8 @@ EncodedJSValue JSC_HOST_CALL jsWebGLRenderingContextPrototypeFunctionTexSubImage
         return jsWebGLRenderingContextPrototypeFunctionTexSubImage2D3(exec);
     if ((exec->argumentCount() == 7 && (exec->argument(6).isNull() || (exec->argument(6).isObject() && asObject(exec->argument(6))->inherits(&JSHTMLCanvasElement::s_info)))))
         return jsWebGLRenderingContextPrototypeFunctionTexSubImage2D4(exec);
+    if ((exec->argumentCount() == 7 && (exec->argument(6).isNull() || (exec->argument(6).isObject() && asObject(exec->argument(6))->inherits(&JSHTMLVideoElement::s_info)))))
+        return jsWebGLRenderingContextPrototypeFunctionTexSubImage2D5(exec);
     return throwVMTypeError(exec);
 }
 
