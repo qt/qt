@@ -209,7 +209,7 @@ public:
         
         bool checkSelector(const RuleData&);
 
-        template <bool firstPass>
+        template <bool applyFirst>
         void applyDeclarations(bool important, int startIndex, int endIndex);
 
         void matchPageRules(RuleSet*, bool isLeftPage, bool isFirstPage, const String& pageName);
