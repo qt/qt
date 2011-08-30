@@ -3444,7 +3444,7 @@ qreal QDeclarativeItem::implicitHeight() const
 /*!
     \qmlproperty real Item::implicitWidth
     \qmlproperty real Item::implicitHeight
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Defines the natural width or height of the Item if no \l width or \l height is specified.
 

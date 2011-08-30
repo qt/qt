@@ -334,8 +334,8 @@
 
     \section2 Advanced Text Layout Engine
 
-    Qt for Windows CE supports TrueType® and raster fonts. Qt also has
-    extended Unicode support and right-to-left languages. Qt’s rich text
+    Qt for Windows CE supports TrueType and raster fonts. Qt also has
+    extended Unicode support and right-to-left languages. Qt's rich text
     engine adds capabilities for complex text layouts including tables,
     path tracing and text which flows around shapes.
 
@@ -373,7 +373,7 @@
     by embedded Linux. You can use Qt to create highly memory efficient
     devices and applications that have completely unique user experiences.
 
-    Qt runs anywhere Linux runs. Qt’s intuitive API means fewer lines of
+    Qt runs anywhere Linux runs. Qt's intuitive API means fewer lines of
     code and higher level functionality in less time. Use the code from
     one single code-base and rebuild for all \l{Supported Platforms}
     {supported platforms}.
@@ -410,7 +410,7 @@
     frame buffer} that will match the physical device display, pixel for
     pixel. This gives the developer a realistic testing infrastructure
     testing on the desktop where the frame buffer simulates the physical
-    device display’s width, height and color depth.
+    device display's width, height and color depth.
 
     \section2 Inter-Process Communication (IPC)
 
@@ -421,7 +421,7 @@
     \section2 Extended Font Format
 
     Qt supports a wide range of font formats on embedded Linux including:
-    TrueType®, Postscript® Type1 and Qt pre-rendered fonts. Qt has
+    TrueType, Postscript Type1 and Qt pre-rendered fonts. Qt has
     extended Unicode support including automatic data extraction at build
     time and automatic update at runtime.
 
@@ -681,7 +681,7 @@
     \group platform-details
 
     Qt is a cross-platform application and UI framework. Using Qt,
-    you can write web-enabled applications once and deploy them
+    you can write GUI applications once and deploy them
     across desktop, mobile and embedded operating systems without
     rewriting the source code.
 
