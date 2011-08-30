@@ -53,7 +53,6 @@
 
 #include <private/qdeclarativebinding_p.h>
 #include <private/qdeclarativedebug_p.h>
-#include <private/qdeclarativeenginedebug_p.h>
 #include <private/qdeclarativedebugclient_p.h>
 #include <private/qdeclarativedebugservice_p.h>
 #include <private/qdeclarativerectangle_p.h>
