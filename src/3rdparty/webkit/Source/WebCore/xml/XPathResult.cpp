@@ -35,6 +35,12 @@
 #include "XPathEvaluator.h"
 #include "XPathException.h"
 
+#if COMPILER(WINSCW)
+#define BOOL_TO_VALUE_CAST (unsigned long)
+#else
+#define BOOL_TO_VALUE_CAST
+#endif
+
 namespace WebCore {
 
 using namespace XPath;
@@ -84,7 +90,7 @@ void XPathResult::convertTo(unsigned short type, ExceptionCode& ec)
             break;
         case BOOLEAN_TYPE:
             m_resultType = type;
-            m_value = m_value.toBoolean();
+            m_value = BOOL_TO_VALUE_CAST (m_value.toBoolean());
             break;
         case UNORDERED_NODE_ITERATOR_TYPE:
         case UNORDERED_NODE_SNAPSHOT_TYPE:

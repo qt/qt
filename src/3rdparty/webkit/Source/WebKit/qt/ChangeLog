@@ -1,3 +1,306 @@
+2011-08-25  Ademar de Souza Reis Jr.  <ademar.reis@openbossa.org>
+
+        Unreviewed QtWebKit.pro fix for when building inside Qt
+
+        Patch by Simo Fält <simo.falt@nokia.com>
+
+        The QtWebKit version was being overwritten by a global Qt version when
+        QtWebKit was built inside Qt. Fixed by moving the version
+        definition after the inclusion of qbase.pri.
+
+        * QtWebKit.pro:
+
+2011-08-18  Chang Shu  <cshu@webkit.org>
+
+        Add support of setPasswordEchoEnabled and setPasswordEchoDuration for password echo feature
+        https://bugs.webkit.org/show_bug.cgi?id=66052
+
+        Reviewed by Alexey Proskuryakov.
+
+        Enable password echo under the build flag.
+
+        * Api/qwebsettings.cpp:
+        (QWebSettingsPrivate::apply):
+
+2011-08-16  Chang Shu  <cshu@webkit.org>
+
+        Support reset in WebCore::Internals
+        https://bugs.webkit.org/show_bug.cgi?id=66307
+
+        Reviewed by Dimitri Glazkov.
+
+        Added framework code in WebKit.
+
+        * WebCoreSupport/DumpRenderTreeSupportQt.cpp:
+        (DumpRenderTreeSupportQt::resetInternalsObject):
+        * WebCoreSupport/DumpRenderTreeSupportQt.h:
+
+2011-06-09  Robert Hogan  <robert@webkit.org>
+
+        Reviewed by Andreas Kling.
+
+        Teach Qt about window.internals
+        https://bugs.webkit.org/show_bug.cgi?id=61074
+
+        * WebCoreSupport/DumpRenderTreeSupportQt.cpp:
+        (DumpRenderTreeSupportQt::injectInternalsObject):
+        * WebCoreSupport/DumpRenderTreeSupportQt.h:
+
+2011-08-23  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        [Qt] Fix build on Lion
+
+        https://bugs.webkit.org/show_bug.cgi?id=66770
+
+        Reviewed by Andreas Kling.
+
+        We were mistakenly picking up mac/WebCoreSystemInterface.h instead of
+        the Qt one, and building on Lion revealed this when a typedef for
+        IOSurfaceRef was wrapped in PLATFORM(MAC).
+
+        For now we fix this by including WebCoreSystemInterface using
+        brackets, so that we'll pick up the right file based on the
+        include paths. This also means exposing a few missing enums
+        in our own version of the file, so those were added.
+
+        Lasty, we need to link against the right system interface library
+        on Lion.
+
+        * QtWebKit.pro:
+
+2011-08-05  Dawit Alemayehu  <adawit@kde.org>
+
+        Reviewed by Andreas Kling.
+
+        Reverted commit r87797, http://trac.webkit.org/changeset/87797, because it
+        causes the regression reported under bug# 63582.
+
+        [Qt] REGRESSION(r87797): Broke KDEWebKit's custom QNAM.
+        https://bugs.webkit.org/show_bug.cgi?id=63582
+
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::setFrame):
+
+2011-07-26  Alexis Menard  <alexis.menard@openbossa.org>
+
+        Reviewed by Andreas Kling.
+
+        [Qt] Change default backend to use GStreamer on Linux and QuickTime on Mac.
+        https://bugs.webkit.org/show_bug.cgi?id=63472
+
+        Use the flag WTF_USE_QTKIT=1 rather than USE_QTKIT=1 because that flag doesn't
+        exist anymore, it's the default. Ditto for GStreamer.
+
+        * QtWebKit.pro:
+
+2011-06-23  Alexis Menard  <alexis.menard@openbossa.org>
+
+        Reviewed by Eric Carlson.
+
+        [Qt] Implement fullscreen support on Mac with the QuickTime backend.
+        https://bugs.webkit.org/show_bug.cgi?id=61728
+
+        Implement fullscreen support for Qt when using the QuickTime backend.
+        We mostly use what is already done for the Mac port.
+
+        * QtWebKit.pro:
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::ChromeClientQt):
+        (WebCore::ChromeClientQt::~ChromeClientQt):
+        * WebCoreSupport/ChromeClientQt.h:
+        * WebCoreSupport/FullScreenVideoQt.cpp:
+        (WebCore::FullScreenVideoQt::FullScreenVideoQt):
+        (WebCore::FullScreenVideoQt::~FullScreenVideoQt):
+        (WebCore::FullScreenVideoQt::enterFullScreenForNode):
+        (WebCore::FullScreenVideoQt::exitFullScreenForNode):
+        (WebCore::FullScreenVideoQt::requiresFullScreenForVideoPlayback):
+        (WebCore::FullScreenVideoQt::isValid):
+        * WebCoreSupport/FullScreenVideoQt.h:
+        * WebCoreSupport/QTKitFullScreenVideoHandler.h: Added.
+        * WebCoreSupport/QTKitFullScreenVideoHandler.mm: Added.
+        (QTKitFullScreenVideoHandler::QTKitFullScreenVideoHandler):
+        (QTKitFullScreenVideoHandler::~QTKitFullScreenVideoHandler):
+        (QTKitFullScreenVideoHandler::enterFullScreen):
+        (QTKitFullScreenVideoHandler::exitFullScreen):
+        * WebCoreSupport/WebSystemInterface.mm:
+        (InitWebCoreSystemInterface):
+
+2011-07-27  Caio Marcelo de Oliveira Filho  <caio.oliveira@openbossa.org>
+
+        [Qt] QtWebkit never finishes loading sites when they are loaded after an initial QUrl fails to load.
+        https://bugs.webkit.org/show_bug.cgi?id=61328
+
+        Reviewed by Andreas Kling.
+
+        Change the hooks in FrameLoaderClient we use for emitting signals. Instead of
+        emitting signals in the progress notification functions, we use the
+        dispatchDid{Start,Finish,Fail}* functions. The main reason behind this change is
+        that loading code is prepared to handle load() when inside those functions.
+
+        The crash was being caused by setUrl() (and load()) being called when
+        loadFinished(false) was emitted. The problem here is that when
+        postProgressFinishedNotification the FrameLoader wasn't ready for taking a load()
+        call again, because it was still the ProvisionalLoadState but with the
+        provisionalDocumentLoader already removed.
+
+        To emulate the same behavior that QtWebKit had when using
+        postProgressFinishedNotification, we now keep track of the frame originating the
+        load, and emit the signals when this frame's client is called.
+
+        The patch keeps the existing semantics for QWebPage signals, but we now emit the
+        QWebFrame signals everytime, not only when they are the originating frame for
+        loading.
+
+        * Api/qwebframe.cpp:
+        (clearCoreFrame): Document our assumption that activeDocumentLoader will exist.
+
+        * WebCoreSupport/FrameLoaderClientQt.h: Remove m_loadError, add a boolean to keep
+        track whether the frame is originating the load. Remove the signals from
+        FrameLoaderClientQt since we will emit QWebFrame and QWebPage signals directly.
+
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::FrameLoaderClientQt): Initialize m_isOriginatingLoad.
+
+        (WebCore::FrameLoaderClientQt::setFrame): Do not connect QWebFrame and QWebPage
+        signals to our signals for load/finished, signal emission will be done manually.
+
+        (WebCore::FrameLoaderClientQt::dispatchDidStartProvisionalLoad): Emit
+        loadStarted() signal and make the first notification of estimation change, that
+        Qt API tests expect to exist and notify 10%.
+
+        (WebCore::FrameLoaderClientQt::dispatchDidFinishLoad): Remove reference to
+        m_loadError and emit loadFinished() signal.
+
+        (WebCore::FrameLoaderClientQt::postProgressStartedNotification): Remove signal
+        emission and mark the originating load as true, since only the originating frame
+        gets this call in its client.
+
+        (WebCore::FrameLoaderClientQt::postProgressFinishedNotification): Remove signal
+        emission.
+
+        (WebCore::FrameLoaderClientQt::callErrorPageExtension): Return whether the call
+        was successful or not. This wasn't necessary before because a successful call for
+        error page would lead to a load(), that cleared the m_loadError.
+        (WebCore::FrameLoaderClientQt::dispatchDidFailProvisionalLoad): Remove reference
+        to m_loadError and emit finished signal indicating error if ErrorPage extension
+        doesn't handle it.
+        (WebCore::FrameLoaderClientQt::dispatchDidFailLoad): Ditto.
+
+        (WebCore::FrameLoaderClientQt::emitLoadStarted): Emit the loadStarted() signal
+        for the QWebFrame, and if the originating load also do for the QWebPage.
+
+        (WebCore::FrameLoaderClientQt::emitLoadFinished): Same as before but for
+        loadFinished(). Take care to reset the originating load flag before the signals
+        are emitted, since they might want to set it back again.
+
+        * tests/qwebframe/tst_qwebframe.cpp:
+        (URLSetter::URLSetter): Object that sets the url using either load() or setUrl()
+        when a certain signal is emitted in the frame.
+
+        (URLSetter::execute):
+        (tst_QWebFrame::loadInSignalHandlers_data):
+        (tst_QWebFrame::loadInSignalHandlers): New test inspired by the bug test case. This test
+        crashes without this patch applied.
+
+2011-07-25  Caio Marcelo de Oliveira Filho  <caio.oliveira@openbossa.org>
+
+        [Qt] Add more tests to cover the behavior of loadFinished() signal
+        https://bugs.webkit.org/show_bug.cgi?id=63490
+
+        Reviewed by Benjamin Poulain.
+
+        * tests/qwebframe/tst_qwebframe.cpp:
+        (FakeReply::FakeReply):
+        (FakeNetworkManager::createRequest): Add a fake reply that gives 404 error code.
+
+        (tst_QWebFrame::loadFinishedAfterNotFoundError): Verify that we get loadFinished(false)
+        after a 404 error without contents.
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::errorPageExtensionLoadFinished): Verify if the argument of loadFinished()
+        is true when we use error page extension to produce our own error pages.
+
+2011-07-12  Hui Huang  <Hui.2.Huang@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] Fix compiling errors with QtWebkit 2.2 WINSCW build.
+        https://bugs.webkit.org/show_bug.cgi?id=64391
+
+        (QtWebKit-2.2 only, patch not in webkit trunk)
+
+        * symbian/bwins/QtWebKitu.def:
+
+2011-07-19  Caio Marcelo de Oliveira Filho  <caio.oliveira@openbossa.org>
+
+        [Qt] Improve documentation of QWebView::setPage()
+        https://bugs.webkit.org/show_bug.cgi?id=64827
+
+        Reviewed by Noam Rosenthal.
+
+        * Api/qwebview.cpp: Use the word 'page' to refer to a QWebPage instead of 'document'.
+
+2011-05-16  Robert Hogan  <robert@webkit.org>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        plugins/invalidate_rect.html fails on linux ports
+
+        Add ChromeClientQt::allowsAcceleratedCompositing().
+
+        https://bugs.webkit.org/show_bug.cgi?id=54051
+
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::allowsAcceleratedCompositing):
+        * WebCoreSupport/ChromeClientQt.h:
+
+2011-07-01  Jade Han  <jade.han@nokia.com>
+
+        [Qt][Symbian] Update .def file for Symbian to build Tools
+        https://bugs.webkit.org/show_bug.cgi?id=61200
+
+        Reviewed by Laszlo Gombos.
+
+        Add newly introduced symbols to fix building the Tools directory for Symbian.
+
+        * symbian/eabi/QtWebKitu.def:
+
+2011-06-30  Rafael Brandao  <rafael.lobo@openbossa.org>
+
+        Reviewed by Benjamin Poulain.
+
+        [Qt] Fix tst_QWebFrame::renderGeometry() API test
+        https://bugs.webkit.org/show_bug.cgi?id=63236
+        
+        This test required a security origin with granted permission to request local resources.
+        By default, only local files can load local resources. So modified baseUrl to be a local file.
+
+        * tests/qwebframe/tst_qwebframe.cpp:
+        (tst_QWebFrame::renderGeometry):
+
+2011-07-01  Jade Han  <jade.han@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt][Symbian] Update .def file for Symbian
+        https://bugs.webkit.org/show_bug.cgi?id=61200
+
+        Add newly introduced symbols to fix the Symbian build.
+
+        * symbian/eabi/QtWebKitu.def:
+
+2011-06-30  Fabrizio Machado  <fabrizio.machado@nokia.com>
+
+        Reviewed by Benjamin Poulain.
+        
+        [Qt] QML Webview causes performance drops
+        https://bugs.webkit.org/show_bug.cgi?id=57554
+
+        Remove tiledBackingStoreEnabled from QML WebView.
+        
+        * declarative/qdeclarativewebview.cpp:
+        (QDeclarativeWebView::setPage):
+
 2011-06-29  Alexis Menard  <alexis.menard@openbossa.org>
 
         Reviewed by Benjamin Poulain.
@@ -12,23 +315,6 @@
         we did in WebCore.pro.
 
         * QtWebKit.pro:
-
-2011-06-23  Csaba Osztrogonác  <ossy@webkit.org>
-
-        Rubber-stamped by Andreas Kling.
-
-        [Qt] Fix tst_QWebFrame::setHtmlWithResource() API test
-        https://bugs.webkit.org/show_bug.cgi?id=63235
-
-        [Qt] Fix tst_QWebFrame::renderGeometry() API test
-        https://bugs.webkit.org/show_bug.cgi?id=63236
-
-        [Qt] Fix tst_QWebFrame::setUrlWithPendingLoads() API test
-        https://bugs.webkit.org/show_bug.cgi?id=63237
-
-        * tests/qwebframe/tst_qwebframe.cpp: Mark failing test cases as expected fails until real fix.
-        (tst_QWebFrame::setHtmlWithResource):
-        (tst_QWebFrame::renderGeometry):
 
 2011-06-23  Csaba Osztrogonác  <ossy@webkit.org>
 

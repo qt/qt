@@ -27,6 +27,8 @@
 #include "InsertIntoTextNodeCommand.h"
 
 #include "AXObjectCache.h"
+#include "RenderText.h"
+#include "Settings.h"
 #include "Text.h"
 
 namespace WebCore {
@@ -46,7 +48,13 @@ void InsertIntoTextNodeCommand::doApply()
 {
     if (!m_node->rendererIsEditable())
         return;
-    
+
+    if (document()->settings() && document()->settings()->passwordEchoEnabled()) {
+        RenderText* renderText = toRenderText(m_node->renderer());
+        if (renderText && renderText->isSecure())
+            renderText->momentarilyRevealLastTypedCharacter(m_offset + m_text.length() - 1);
+    }
+
     ExceptionCode ec;
     m_node->insertData(m_offset, m_text, ec);
 
