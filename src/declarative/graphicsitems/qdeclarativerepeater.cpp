@@ -128,7 +128,7 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
 
 /*!
     \qmlsignal Repeater::onItemAdded(int index, Item item)
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     This handler is called when an item is added to the repeater. The \a index
     parameter holds the index at which the item has been inserted within the
@@ -137,7 +137,7 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
 
 /*!
     \qmlsignal Repeater::onItemRemoved(int index, Item item)
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     This handler is called when an item is removed from the repeater. The \a index
     parameter holds the index at which the item was removed from the repeater,
@@ -306,7 +306,7 @@ int QDeclarativeRepeater::count() const
 
 /*!
     \qmlmethod Item Repeater::itemAt(index)
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     Returns the \l Item that has been created at the given \a index, or \c null
     if no item exists at \a index.

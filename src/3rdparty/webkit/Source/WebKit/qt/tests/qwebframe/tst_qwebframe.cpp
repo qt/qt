@@ -649,7 +649,7 @@ private slots:
     void setContent_data();
     void setContent();
     void setCacheLoadControlAttribute();
-    //void setUrlWithPendingLoads();
+    void setUrlWithPendingLoads();
     void setUrlWithFragment_data();
     void setUrlWithFragment();
     void setUrlToEmpty();
@@ -658,6 +658,9 @@ private slots:
     void setUrlSameUrl();
     void setUrlThenLoads_data();
     void setUrlThenLoads();
+    void loadFinishedAfterNotFoundError();
+    void loadInSignalHandlers_data();
+    void loadInSignalHandlers();
 
 private:
     QString  evalJS(const QString&s) {
@@ -2301,6 +2304,8 @@ class FakeReply : public QNetworkReply {
     Q_OBJECT
 
 public:
+    static const QUrl urlFor404ErrorWithoutContents;
+
     FakeReply(const QNetworkRequest& request, QObject* parent = 0)
         : QNetworkReply(parent)
     {
@@ -2319,6 +2324,10 @@ public:
 #endif
         else if (request.url().host() == QLatin1String("abcdef.abcdef")) {
             setError(QNetworkReply::HostNotFoundError, tr("Invalid URL"));
+            QTimer::singleShot(0, this, SLOT(continueError()));
+        } else if (request.url() == FakeReply::urlFor404ErrorWithoutContents) {
+            setError(QNetworkReply::ContentNotFoundError, "Not found");
+            setAttribute(QNetworkRequest::HttpStatusCodeAttribute, 404);
             QTimer::singleShot(0, this, SLOT(continueError()));
         }
 
@@ -2351,6 +2360,8 @@ private slots:
     }
 };
 
+const QUrl FakeReply::urlFor404ErrorWithoutContents = QUrl("http://this.will/return-http-404-error-without-contents.html");
+
 class FakeNetworkManager : public QNetworkAccessManager {
     Q_OBJECT
 
@@ -2362,17 +2373,17 @@ protected:
     {
         QString url = request.url().toString();
         if (op == QNetworkAccessManager::GetOperation) {
-            if (url == "qrc:/test1.html" ||  url == "http://abcdef.abcdef/")
-                return new FakeReply(request, this);
 #ifndef QT_NO_OPENSSL
-            else if (url == "qrc:/fake-ssl-error.html") {
+            if (url == "qrc:/fake-ssl-error.html") {
                 FakeReply* reply = new FakeReply(request, this);
                 QList<QSslError> errors;
                 emit sslErrors(reply, errors << QSslError(QSslError::UnspecifiedError));
                 return reply;
             }
 #endif
-       }
+            if (url == "qrc:/test1.html" || url == "http://abcdef.abcdef/" || request.url() == FakeReply::urlFor404ErrorWithoutContents)
+                return new FakeReply(request, this);
+        }
 
         return QNetworkAccessManager::createRequest(op, request, outgoingData);
     }
@@ -2502,9 +2513,7 @@ void tst_QWebFrame::setHtmlWithResource()
     QCOMPARE(spy.count(), 1);
 
     QCOMPARE(frame->evaluateJavaScript("document.images.length").toInt(), 1);
-    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=63235", Continue);
     QCOMPARE(frame->evaluateJavaScript("document.images[0].width").toInt(), 128);
-    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=63235", Continue);
     QCOMPARE(frame->evaluateJavaScript("document.images[0].height").toInt(), 128);
 
     QString html2 =
@@ -2523,7 +2532,6 @@ void tst_QWebFrame::setHtmlWithResource()
     QCOMPARE(spy.size(), 2);
 
     QWebElement p = frame->documentElement().findAll("p").at(0);
-    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=63235", Continue);
     QCOMPARE(p.styleProperty("color", QWebElement::CascadedStyle), QLatin1String("red"));
 }
 
@@ -2898,7 +2906,10 @@ void tst_QWebFrame::renderGeometry()
     QList<QWebFrame*> frames = page.mainFrame()->childFrames();
     QWebFrame *frame = frames.at(0);
     QString innerHtml("<body style='margin: 0px;'><img src='qrc:/image.png'/></body>");
-    frame->setHtml(innerHtml);
+
+    // By default, only security origins of local files can load local resources.
+    // So we should specify baseUrl to be a local file in order to get a proper origin.
+    frame->setHtml(innerHtml, QUrl("file:///path/to/file"));
     waitForSignal(frame, SIGNAL(loadFinished(bool)), 200);
 
     QPicture picture;
@@ -2911,9 +2922,7 @@ void tst_QWebFrame::renderGeometry()
     frame->render(&painter1, QWebFrame::ContentsLayer);
     painter1.end();
 
-    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=63236", Continue);
     QCOMPARE(size.width(), picture.boundingRect().width() + frame->scrollBarGeometry(Qt::Vertical).width());
-    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=63236", Continue);
     QCOMPARE(size.height(), picture.boundingRect().height() + frame->scrollBarGeometry(Qt::Horizontal).height());
 
     // render everything, should be the size of the iframe
@@ -2921,9 +2930,7 @@ void tst_QWebFrame::renderGeometry()
     frame->render(&painter2, QWebFrame::AllLayers);
     painter2.end();
 
-    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=63236", Continue);
     QCOMPARE(size.width(), picture.boundingRect().width());   // width: 100px
-    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=63236", Continue);
     QCOMPARE(size.height(), picture.boundingRect().height()); // height: 100px
 }
 
@@ -3359,16 +3366,12 @@ void tst_QWebFrame::webElementSlotOnly()
     QCOMPARE(evalJS("myWebElementSlotObject.tagName"), QString("BODY"));
 }
 
-// [Qt] Fix tst_QWebFrame::setUrlWithPendingLoads() API test
-// https://bugs.webkit.org/show_bug.cgi?id=63237
-/*
 void tst_QWebFrame::setUrlWithPendingLoads()
 {
     QWebPage page;
     page.mainFrame()->setHtml("<img src='dummy:'/>");
     page.mainFrame()->setUrl(QUrl("about:blank"));
 }
-*/
 
 void tst_QWebFrame::setUrlWithFragment_data()
 {
@@ -3656,6 +3659,114 @@ void tst_QWebFrame::setUrlThenLoads()
     QCOMPARE(frame->url(), urlToLoad2);
     QCOMPARE(frame->requestedUrl(), urlToLoad2);
     QCOMPARE(frame->baseUrl(), extractBaseUrl(urlToLoad2));
+}
+
+void tst_QWebFrame::loadFinishedAfterNotFoundError()
+{
+    QWebPage page;
+    QWebFrame* frame = page.mainFrame();
+
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+    FakeNetworkManager* networkManager = new FakeNetworkManager(&page);
+    page.setNetworkAccessManager(networkManager);
+
+    frame->setUrl(FakeReply::urlFor404ErrorWithoutContents);
+    QTRY_COMPARE(spy.count(), 1);
+    const bool wasLoadOk = spy.at(0).at(0).toBool();
+    QVERIFY(!wasLoadOk);
+}
+
+class URLSetter : public QObject {
+    Q_OBJECT
+
+public:
+    enum Signal {
+        LoadStarted,
+        LoadFinished,
+        ProvisionalLoad
+    };
+
+    enum Type {
+        UseLoad,
+        UseSetUrl
+    };
+
+    URLSetter(QWebFrame*, Signal, Type, const QUrl&);
+
+public slots:
+    void execute();
+
+signals:
+    void finished();
+
+private:
+    QWebFrame* m_frame;
+    QUrl m_url;
+    Type m_type;
+};
+
+Q_DECLARE_METATYPE(URLSetter::Signal)
+Q_DECLARE_METATYPE(URLSetter::Type)
+
+URLSetter::URLSetter(QWebFrame* frame, Signal signal, URLSetter::Type type, const QUrl& url)
+    : m_frame(frame), m_url(url), m_type(type)
+{
+    if (signal == LoadStarted)
+        connect(m_frame, SIGNAL(loadStarted()), SLOT(execute()));
+    else if (signal == LoadFinished)
+        connect(m_frame, SIGNAL(loadFinished(bool)), SLOT(execute()));
+    else
+        connect(m_frame, SIGNAL(provisionalLoad()), SLOT(execute()));
+}
+
+void URLSetter::execute()
+{
+    // We track only the first emission.
+    m_frame->disconnect(this);
+    if (m_type == URLSetter::UseLoad)
+        m_frame->load(m_url);
+    else
+        m_frame->setUrl(m_url);
+    connect(m_frame, SIGNAL(loadFinished(bool)), SIGNAL(finished()));
+}
+
+void tst_QWebFrame::loadInSignalHandlers_data()
+{
+    QTest::addColumn<URLSetter::Type>("type");
+    QTest::addColumn<URLSetter::Signal>("signal");
+    QTest::addColumn<QUrl>("url");
+
+    const QUrl validUrl("qrc:/test2.html");
+    const QUrl invalidUrl("qrc:/invalid");
+
+    QTest::newRow("call load() in loadStarted() after valid url") << URLSetter::UseLoad << URLSetter::LoadStarted << validUrl;
+    QTest::newRow("call load() in loadStarted() after invalid url") << URLSetter::UseLoad << URLSetter::LoadStarted << invalidUrl;
+    QTest::newRow("call load() in loadFinished() after valid url") << URLSetter::UseLoad << URLSetter::LoadFinished << validUrl;
+    QTest::newRow("call load() in loadFinished() after invalid url") << URLSetter::UseLoad << URLSetter::LoadFinished << invalidUrl;
+    QTest::newRow("call load() in provisionalLoad() after valid url") << URLSetter::UseLoad << URLSetter::ProvisionalLoad << validUrl;
+    QTest::newRow("call load() in provisionalLoad() after invalid url") << URLSetter::UseLoad << URLSetter::ProvisionalLoad << invalidUrl;
+
+    QTest::newRow("call setUrl() in loadStarted() after valid url") << URLSetter::UseSetUrl << URLSetter::LoadStarted << validUrl;
+    QTest::newRow("call setUrl() in loadStarted() after invalid url") << URLSetter::UseSetUrl << URLSetter::LoadStarted << invalidUrl;
+    QTest::newRow("call setUrl() in loadFinished() after valid url") << URLSetter::UseSetUrl << URLSetter::LoadFinished << validUrl;
+    QTest::newRow("call setUrl() in loadFinished() after invalid url") << URLSetter::UseSetUrl << URLSetter::LoadFinished << invalidUrl;
+    QTest::newRow("call setUrl() in provisionalLoad() after valid url") << URLSetter::UseSetUrl << URLSetter::ProvisionalLoad << validUrl;
+    QTest::newRow("call setUrl() in provisionalLoad() after invalid url") << URLSetter::UseSetUrl << URLSetter::ProvisionalLoad << invalidUrl;
+}
+
+void tst_QWebFrame::loadInSignalHandlers()
+{
+    QFETCH(URLSetter::Type, type);
+    QFETCH(URLSetter::Signal, signal);
+    QFETCH(QUrl, url);
+
+    QWebFrame* frame = m_page->mainFrame();
+    const QUrl urlForSetter("qrc:/test1.html");
+    URLSetter setter(frame, signal, type, urlForSetter);
+
+    frame->load(url);
+    waitForSignal(&setter, SIGNAL(finished()), 200);
+    QCOMPARE(frame->url(), urlForSetter);
 }
 
 QTEST_MAIN(tst_QWebFrame)
