@@ -56,14 +56,13 @@ QUIKitScreen::QUIKitScreen(int screenIndex)
     CGRect bounds = [uiScreen() bounds];
     m_geometry = QRect(bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
 
-    m_format = QImage::Format_ARGB32;
+    m_format = QImage::Format_ARGB32_Premultiplied;
 
     m_depth = 24;
 
     const qreal inch = 25.4;
     qreal dpi = 160.;
     int dragDistance = 12;
-    int defaultFontPixelSize = 14;
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
         dpi = 132.;
         dragDistance = 10;
@@ -71,8 +70,8 @@ QUIKitScreen::QUIKitScreen(int screenIndex)
     m_physicalSize = QSize(qRound(bounds.size.width * inch / dpi), qRound(bounds.size.height * inch / dpi));
     qApp->setStartDragDistance(dragDistance);
 
-    QFont font(QLatin1String("Bitstream Vera Sans"));
-    font.setPixelSize(defaultFontPixelSize);
+    QFont font; // system font is helvetica, so that is fine already
+    font.setPixelSize([UIFont systemFontSize]);
     qApp->setFont(font);
 
     [pool release];

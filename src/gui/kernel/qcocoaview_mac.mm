@@ -66,9 +66,14 @@
 #include <qdebug.h>
 
 @interface NSEvent (Qt_Compile_Leopard_DeviceDelta)
+  // SnowLeopard:
   - (CGFloat)deviceDeltaX;
   - (CGFloat)deviceDeltaY;
   - (CGFloat)deviceDeltaZ;
+  // Lion:
+  - (CGFloat)scrollingDeltaX;
+  - (CGFloat)scrollingDeltaY;
+  - (CGFloat)scrollingDeltaZ;
 @end
 
 @interface NSEvent (Qt_Compile_Leopard_Gestures)
@@ -614,7 +619,6 @@ static int qCocoaViewCount = 0;
 
     int deltaX = 0;
     int deltaY = 0;
-    int deltaZ = 0;
 
     const EventRef carbonEvent = (EventRef)[theEvent eventRef];
     const UInt32 carbonEventKind = carbonEvent ? ::GetEventKind(carbonEvent) : 0;
@@ -627,15 +631,20 @@ static int qCocoaViewCount = 0;
         // It looks like 1/4 degrees per pixel behaves most native.
         // (NB: Qt expects the unit for delta to be 8 per degree):
         const int pixelsToDegrees = 2; // 8 * 1/4
-        deltaX = [theEvent deviceDeltaX] * pixelsToDegrees;
-        deltaY = [theEvent deviceDeltaY] * pixelsToDegrees;
-        deltaZ = [theEvent deviceDeltaZ] * pixelsToDegrees;
+        if (QSysInfo::MacintoshVersion <= QSysInfo::MV_10_6) {
+            // Mac OS 10.6
+            deltaX = [theEvent deviceDeltaX] * pixelsToDegrees;
+            deltaY = [theEvent deviceDeltaY] * pixelsToDegrees;
+        } else {
+            // Mac OS 10.7+
+            deltaX = [theEvent scrollingDeltaX] * pixelsToDegrees;
+            deltaY = [theEvent scrollingDeltaY] * pixelsToDegrees;
+        }
     } else {
         // carbonEventKind == kEventMouseWheelMoved
         // Remove acceleration, and use either -120 or 120 as delta:
         deltaX = qBound(-120, int([theEvent deltaX] * 10000), 120);
         deltaY = qBound(-120, int([theEvent deltaY] * 10000), 120);
-        deltaZ = qBound(-120, int([theEvent deltaZ] * 10000), 120);
     }
 
 #ifndef QT_NO_WHEELEVENT
@@ -651,13 +660,6 @@ static int qCocoaViewCount = 0;
 
     if (deltaY != 0) {
         QWheelEvent qwe(qlocal, qglobal, deltaY, buttons, keyMods, Qt::Vertical);
-        qt_sendSpontaneousEvent(widgetToGetMouse, &qwe);
-    }
-
-    if (deltaZ != 0) {
-        // Qt doesn't explicitly support wheels with a Z component. In a misguided attempt to
-        // try to be ahead of the pack, I'm adding this extra value.
-        QWheelEvent qwe(qlocal, qglobal, deltaZ, buttons, keyMods, (Qt::Orientation)3);
         qt_sendSpontaneousEvent(widgetToGetMouse, &qwe);
     }
 

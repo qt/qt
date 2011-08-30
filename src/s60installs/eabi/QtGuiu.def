@@ -12758,4 +12758,45 @@ EXPORTS
 	_ZN5QFont12setStyleNameERK7QString @ 12757 NONAME
 	_ZNK5QFont9styleNameEv @ 12758 NONAME
 	_ZNK9QFontInfo9styleNameEv @ 12759 NONAME
+	_ZN14QPaintEngineEx19drawPixmapFragmentsEPK6QRectFS2_iRK7QPixmap6QFlagsIN8QPainter18PixmapFragmentHintEE @ 12760 NONAME
+	_ZN16QTreeViewPrivate10initializeEv @ 12761 NONAME
+	_ZN16QTreeViewPrivate15insertViewItemsEiiRK13QTreeViewItem @ 12762 NONAME
+	_ZN16QTreeViewPrivate15removeViewItemsEii @ 12763 NONAME
+	_ZN16QTreeViewPrivate16updateScrollBarsEv @ 12764 NONAME
+	_ZN16QTreeViewPrivate17_q_columnsRemovedERK11QModelIndexii @ 12765 NONAME
+	_ZN16QTreeViewPrivate17_q_modelDestroyedEv @ 12766 NONAME
+	_ZN16QTreeViewPrivate22_q_modelAboutToBeResetEv @ 12767 NONAME
+	_ZN16QTreeViewPrivate22beginAnimatedOperationEv @ 12768 NONAME
+	_ZN16QTreeViewPrivate23_q_endAnimatedOperationEv @ 12769 NONAME
+	_ZN16QTreeViewPrivate23_q_sortIndicatorChangedEiN2Qt9SortOrderE @ 12770 NONAME
+	_ZN16QTreeViewPrivate24prepareAnimatedOperationEiN18QAbstractAnimation9DirectionE @ 12771 NONAME
+	_ZN16QTreeViewPrivate25expandOrCollapseItemAtPosERK6QPoint @ 12772 NONAME
+	_ZN16QTreeViewPrivate26_q_columnsAboutToBeRemovedERK11QModelIndexii @ 12773 NONAME
+	_ZN16QTreeViewPrivate6expandEib @ 12774 NONAME
+	_ZN16QTreeViewPrivate6layoutEibb @ 12775 NONAME
+	_ZN16QTreeViewPrivate6selectERK11QModelIndexS2_6QFlagsIN19QItemSelectionModel13SelectionFlagEE @ 12776 NONAME
+	_ZN16QTreeViewPrivate8collapseEib @ 12777 NONAME
+	_ZN8QPainter19drawPixmapFragmentsEPK6QRectFS2_iRK7QPixmap6QFlagsINS_18PixmapFragmentHintEE @ 12778 NONAME
+	_ZNK13QFontDatabase9hasFamilyERK7QString @ 12779 NONAME
+	_ZNK16QTreeViewPrivate10itemHeightEi @ 12780 NONAME
+	_ZNK16QTreeViewPrivate10modelIndexEii @ 12781 NONAME
+	_ZNK16QTreeViewPrivate12columnRangesERK11QModelIndexS2_ @ 12782 NONAME
+	_ZNK16QTreeViewPrivate16firstVisibleItemEPi @ 12783 NONAME
+	_ZNK16QTreeViewPrivate16itemAtCoordinateEi @ 12784 NONAME
+	_ZNK16QTreeViewPrivate16itemDecorationAtERK6QPoint @ 12785 NONAME
+	_ZNK16QTreeViewPrivate17coordinateForItemEi @ 12786 NONAME
+	_ZNK16QTreeViewPrivate18hasVisibleChildrenERK11QModelIndex @ 12787 NONAME
+	_ZNK16QTreeViewPrivate18indentationForItemEi @ 12788 NONAME
+	_ZNK16QTreeViewPrivate18itemDecorationRectERK11QModelIndex @ 12789 NONAME
+	_ZNK16QTreeViewPrivate18startAndEndColumnsERK5QRect @ 12790 NONAME
+	_ZNK16QTreeViewPrivate19draggablePaintPairsERK5QListI11QModelIndexEP5QRect @ 12791 NONAME
+	_ZNK16QTreeViewPrivate21drawAnimatedOperationEP8QPainter @ 12792 NONAME
+	_ZNK16QTreeViewPrivate25paintAlternatingRowColorsEP8QPainterP22QStyleOptionViewItemV4ii @ 12793 NONAME
+	_ZNK16QTreeViewPrivate30renderTreeToPixmapForAnimationERK5QRect @ 12794 NONAME
+	_ZNK16QTreeViewPrivate6pageUpEi @ 12795 NONAME
+	_ZNK16QTreeViewPrivate8columnAtEi @ 12796 NONAME
+	_ZNK16QTreeViewPrivate8pageDownEi @ 12797 NONAME
+	_ZNK16QTreeViewPrivate9viewIndexERK11QModelIndex @ 12798 NONAME
+	_ZTI16QTreeViewPrivate @ 12799 NONAME
+	_ZTV16QTreeViewPrivate @ 12800 NONAME
 

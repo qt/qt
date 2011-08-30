@@ -49,10 +49,9 @@ template<bool IsForGlobal>
 EvaluationCache<IsForGlobal>::EvaluationCache(const Expression::Ptr &op,
                                               const VariableDeclaration *varDecl,
                                               const VariableSlotID aSlot) : SingleContainer(op)
-                                                                          , m_declaration(varDecl)
+                                                                          , m_declarationUsedByMany(varDecl->usedByMany())
                                                                           , m_varSlot(aSlot)
 {
-    Q_ASSERT(m_declaration);
     Q_ASSERT(m_varSlot > -1);
 }
 
@@ -199,7 +198,7 @@ Expression::Ptr EvaluationCache<IsForGlobal>::compress(const StaticContext::Ptr 
     if(m_operand->is(IDRangeVariableReference))
         return m_operand;
 
-    if(m_declaration->usedByMany())
+    if (m_declarationUsedByMany)
     {
         /* If it's only an atomic value an EvaluationCache is overkill. However,
          * it's still needed for functions like fn:current-time() that must adhere to

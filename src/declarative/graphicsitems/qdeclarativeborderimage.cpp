@@ -215,7 +215,7 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
 
 /*!
     \qmlproperty bool BorderImage::cache
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     Specifies whether the image should be cached. The default value is
     true. Setting \a cache to false is useful when dealing with large images,
@@ -224,7 +224,7 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
 
 /*!
     \qmlproperty bool BorderImage::mirror
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     This property holds whether the image should be horizontally inverted
     (effectively displaying a mirrored image).

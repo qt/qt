@@ -55,6 +55,13 @@ PrintContext::~PrintContext()
         end();
 }
 
+#if COMPILER(WINSCW)
+const IntRect& PrintContext::pageRect(size_t pageNumber) const
+{
+    return m_pageRects[pageNumber];
+}
+#endif
+
 void PrintContext::computePageRects(const FloatRect& printRect, float headerHeight, float footerHeight, float userScaleFactor, float& outPageHeight, bool allowHorizontalTiling)
 {
     m_pageRects.clear();
