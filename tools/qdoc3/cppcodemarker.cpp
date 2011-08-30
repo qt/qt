@@ -483,10 +483,10 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                                         "",
                                         "public function",
                                         "public functions");
-	    FastSection publicSignals(classe, "Signals", "", "signal", "signals");
-	    FastSection publicSlots(classe, "Public Slots", "", "public slot", "public slots");
-	    FastSection publicTypes(classe, "Public Types", "", "public type", "public types");
-	    FastSection publicVariables(classe,
+            FastSection publicSignals(classe, "Signals", "", "signal", "signal");
+            FastSection publicSlots(classe, "Public Slots", "", "public slot", "public slots");
+            FastSection publicTypes(classe, "Public Types", "", "public type", "public types");
+            FastSection publicVariables(classe,
                                         "Public Variables",
                                         "",
                                         "public variable",
@@ -878,6 +878,7 @@ static const char * const keywordTable[] = {
     "signals", "slots", "emit", 0
 };
 
+#if 0
 static QString untabified(const QString &in)
 {
     QString res;
@@ -897,6 +898,7 @@ static QString untabified(const QString &in)
 
     return res;
 }
+#endif
 
 /*
     @char
@@ -955,7 +957,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 		ident += ch;
                 finish = i;
 		readChar();
-            } while (ch >= 0 && isalnum(ch) || ch == '_');
+	    } while (isalnum(ch) || ch == '_');
 
 	    if (classRegExp.exactMatch(ident)) {
 		tag = QLatin1String("type");
@@ -1157,15 +1159,15 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                                               "property",
                                               "properties");
 	    FastSection qmlsignals(qmlClassNode,
-                                   "Signals",
+                                   "Signal Handlers",
                                    "",
-                                   "signal",
-                                   "signals");
+                                   "signal handler",
+                                   "signal handlers");
 	    FastSection qmlattachedsignals(qmlClassNode,
-                                           "Attached Signals",
+                                           "Attached Signal Handlers",
                                            "",
-                                           "signal",
-                                           "signals");
+                                           "signal handler",
+                                           "signal handlers");
 	    FastSection qmlmethods(qmlClassNode,
                                    "Methods",
                                    "",
@@ -1220,9 +1222,9 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
             FastSection qmlproperties(qmlClassNode, "Property Documentation","qmlprop","member","members");
 	    FastSection qmlattachedproperties(qmlClassNode,"Attached Property Documentation","qmlattprop",
                                               "member","members");
-            FastSection qmlsignals(qmlClassNode,"Signal Documentation","qmlsig","member","members");
-	    FastSection qmlattachedsignals(qmlClassNode,"Attached Signal Documentation","qmlattsig",
-                                           "member","members");
+            FastSection qmlsignals(qmlClassNode,"Signal Handler Documentation","qmlsig","handler","handlers");
+	    FastSection qmlattachedsignals(qmlClassNode,"Attached Signal Handler Documentation","qmlattsig",
+                                           "handler","handlers");
             FastSection qmlmethods(qmlClassNode,"Method Documentation","qmlmeth","member","members");
 	    FastSection qmlattachedmethods(qmlClassNode,"Attached Method Documentation","qmlattmeth",
                                            "member","members");

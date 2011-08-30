@@ -73,7 +73,7 @@ symbian {
 defineTest(prependWebKit2Lib) {
     pathToWebKit2Output = $$ARGS/$$WEBKIT2_DESTDIR
 
-    win32-msvc*|wince* {
+    win32-msvc*|wince*|win32-icc {
         LIBS = -l$$WEBKIT2_TARGET $$LIBS
         LIBS = -L$$pathToWebKit2Output $$LIBS
         POST_TARGETDEPS += $${pathToWebKit2Output}$${QMAKE_DIR_SEP}$${WEBKIT2_TARGET}.lib

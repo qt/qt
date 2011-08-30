@@ -10,13 +10,23 @@
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		288765A50DF7441C002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765A40DF7441C002DB57D /* CoreGraphics.framework */; };
+		D307DEAE13EBCF5500399BD4 /* libQtCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D307DEA513EBCF5500399BD4 /* libQtCore.a */; };
+		D307DEAF13EBCF5500399BD4 /* libQtDeclarative.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D307DEA613EBCF5500399BD4 /* libQtDeclarative.a */; };
+		D307DEB013EBCF5500399BD4 /* libQtGui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D307DEA713EBCF5500399BD4 /* libQtGui.a */; };
+		D307DEB113EBCF5500399BD4 /* libQtNetwork.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D307DEA813EBCF5500399BD4 /* libQtNetwork.a */; };
+		D307DEB213EBCF5500399BD4 /* libQtOpenGL.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D307DEA913EBCF5500399BD4 /* libQtOpenGL.a */; };
+		D307DEB313EBCF5500399BD4 /* libQtScript.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D307DEAA13EBCF5500399BD4 /* libQtScript.a */; };
+		D307DEB413EBCF5500399BD4 /* libQtSql.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D307DEAB13EBCF5500399BD4 /* libQtSql.a */; };
+		D307DEB613EBCF5500399BD4 /* libQtXmlPatterns.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D307DEAD13EBCF5500399BD4 /* libQtXmlPatterns.a */; };
+		D307DEB813EBCF6400399BD4 /* libquikit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D307DEB713EBCF6400399BD4 /* libquikit.a */; };
 		D333CCF213B88A4D0070E08E /* moc_qmlapplicationviewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D333CCEF13B88A4D0070E08E /* moc_qmlapplicationviewer.cpp */; };
 		D333CCF313B88A4D0070E08E /* moc_qmlapplicationviewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D333CCEF13B88A4D0070E08E /* moc_qmlapplicationviewer.cpp */; };
 		D333CCF413B88A4D0070E08E /* qmlapplicationviewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D333CCF013B88A4D0070E08E /* qmlapplicationviewer.cpp */; };
 		D333CCF513B88A4D0070E08E /* qmlapplicationviewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D333CCF013B88A4D0070E08E /* qmlapplicationviewer.cpp */; };
+		D36D346513F3CD7E00EC5A41 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D36D346413F3CD7E00EC5A41 /* CoreText.framework */; };
+		D36D346613F3CD8800EC5A41 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D36D346413F3CD7E00EC5A41 /* CoreText.framework */; };
 		D3A51610134B03DE00E30E2F /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D3A5160F134B03DE00E30E2F /* OpenGLES.framework */; };
 		D3A51612134B03E900E30E2F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D3A51611134B03E900E30E2F /* QuartzCore.framework */; };
-		D3A51614134B040600E30E2F /* libQtOpenGL_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3A51613134B040600E30E2F /* libQtOpenGL_debug.a */; };
 		D3A51615134B041500E30E2F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D3A51611134B03E900E30E2F /* QuartzCore.framework */; };
 		D3A51616134B041500E30E2F /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D3A5160F134B03DE00E30E2F /* OpenGLES.framework */; };
 		D3A51618134B042A00E30E2F /* libQtOpenGL.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3A51617134B042A00E30E2F /* libQtOpenGL.a */; };
@@ -27,26 +37,14 @@
 		D3CAA7F213264F52008BB877 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765A40DF7441C002DB57D /* CoreGraphics.framework */; };
 		D3CAA7FA13264F8A008BB877 /* libz.1.2.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA7F913264F8A008BB877 /* libz.1.2.3.dylib */; };
 		D3CAA81113264FF0008BB877 /* libz.1.2.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA7F913264F8A008BB877 /* libz.1.2.3.dylib */; };
-		D3CAA81B13265056008BB877 /* libQtCore_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA81613265056008BB877 /* libQtCore_debug.a */; };
-		D3CAA81C13265056008BB877 /* libQtDeclarative_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA81713265056008BB877 /* libQtDeclarative_debug.a */; };
-		D3CAA81D13265056008BB877 /* libQtGui_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA81813265056008BB877 /* libQtGui_debug.a */; };
-		D3CAA81E13265056008BB877 /* libQtScript_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA81913265056008BB877 /* libQtScript_debug.a */; };
-		D3CAA81F13265056008BB877 /* libQtSql_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA81A13265056008BB877 /* libQtSql_debug.a */; };
-		D3CAA8211326507D008BB877 /* libquikit_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA8201326507D008BB877 /* libquikit_debug.a */; };
-		D3CAA82813265220008BB877 /* libQtNetwork_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA82713265220008BB877 /* libQtNetwork_debug.a */; };
-		D3CAA88A132652E5008BB877 /* fonts in Resources */ = {isa = PBXBuildFile; fileRef = D3CAA836132652E5008BB877 /* fonts */; };
-		D3CAA88B132652E5008BB877 /* fonts in Resources */ = {isa = PBXBuildFile; fileRef = D3CAA836132652E5008BB877 /* fonts */; };
 		D3D815F31329339300CDE422 /* flickr in Resources */ = {isa = PBXBuildFile; fileRef = D3D815D31329339300CDE422 /* flickr */; };
 		D3D815F4132933AB00CDE422 /* flickr in Resources */ = {isa = PBXBuildFile; fileRef = D3D815D31329339300CDE422 /* flickr */; };
-		D3D8160A13293C9B00CDE422 /* libQtXml_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D8160813293C9B00CDE422 /* libQtXml_debug.a */; };
-		D3D8160B13293C9B00CDE422 /* libQtXmlPatterns_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D8160913293C9B00CDE422 /* libQtXmlPatterns_debug.a */; };
 		D3D81758132A184300CDE422 /* libQtCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D81752132A184300CDE422 /* libQtCore.a */; };
 		D3D81759132A184300CDE422 /* libQtDeclarative.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D81753132A184300CDE422 /* libQtDeclarative.a */; };
 		D3D8175A132A184300CDE422 /* libQtGui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D81754132A184300CDE422 /* libQtGui.a */; };
 		D3D8175B132A184300CDE422 /* libQtNetwork.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D81755132A184300CDE422 /* libQtNetwork.a */; };
 		D3D8175C132A184300CDE422 /* libQtScript.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D81756132A184300CDE422 /* libQtScript.a */; };
 		D3D8175D132A184300CDE422 /* libQtSql.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D81757132A184300CDE422 /* libQtSql.a */; };
-		D3D81760132A185A00CDE422 /* libQtXml.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D8175E132A185A00CDE422 /* libQtXml.a */; };
 		D3D81761132A185A00CDE422 /* libQtXmlPatterns.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D8175F132A185A00CDE422 /* libQtXmlPatterns.a */; };
 		D3D81763132A186B00CDE422 /* libquikit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D81762132A186B00CDE422 /* libquikit.a */; };
 /* End PBXBuildFile section */
@@ -58,34 +56,32 @@
 		288765A40DF7441C002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		32CA4F630368D1EE00C91783 /* flickrdemo_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = flickrdemo_Prefix.pch; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* flickrdemo-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "flickrdemo-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
+		D307DEA513EBCF5500399BD4 /* libQtCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtCore.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtCore.a"; sourceTree = "<group>"; };
+		D307DEA613EBCF5500399BD4 /* libQtDeclarative.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtDeclarative.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtDeclarative.a"; sourceTree = "<group>"; };
+		D307DEA713EBCF5500399BD4 /* libQtGui.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtGui.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtGui.a"; sourceTree = "<group>"; };
+		D307DEA813EBCF5500399BD4 /* libQtNetwork.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtNetwork.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtNetwork.a"; sourceTree = "<group>"; };
+		D307DEA913EBCF5500399BD4 /* libQtOpenGL.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtOpenGL.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtOpenGL.a"; sourceTree = "<group>"; };
+		D307DEAA13EBCF5500399BD4 /* libQtScript.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtScript.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtScript.a"; sourceTree = "<group>"; };
+		D307DEAB13EBCF5500399BD4 /* libQtSql.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtSql.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtSql.a"; sourceTree = "<group>"; };
+		D307DEAD13EBCF5500399BD4 /* libQtXmlPatterns.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtXmlPatterns.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtXmlPatterns.a"; sourceTree = "<group>"; };
+		D307DEB713EBCF6400399BD4 /* libquikit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquikit.a; path = "../../../../../../../qt-lighthouse-ios-simulator/plugins/platforms/libquikit.a"; sourceTree = "<group>"; };
 		D333CCEF13B88A4D0070E08E /* moc_qmlapplicationviewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = moc_qmlapplicationviewer.cpp; path = ../share/qmlapplicationviewer/moc_qmlapplicationviewer.cpp; sourceTree = "<group>"; };
 		D333CCF013B88A4D0070E08E /* qmlapplicationviewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = qmlapplicationviewer.cpp; path = ../share/qmlapplicationviewer/qmlapplicationviewer.cpp; sourceTree = "<group>"; };
 		D333CCF113B88A4D0070E08E /* qmlapplicationviewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qmlapplicationviewer.h; path = ../share/qmlapplicationviewer/qmlapplicationviewer.h; sourceTree = "<group>"; };
+		D36D346413F3CD7E00EC5A41 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		D3A5160F134B03DE00E30E2F /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		D3A51611134B03E900E30E2F /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
-		D3A51613134B040600E30E2F /* libQtOpenGL_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtOpenGL_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtOpenGL_debug.a"; sourceTree = "<group>"; };
 		D3A51617134B042A00E30E2F /* libQtOpenGL.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtOpenGL.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtOpenGL.a"; sourceTree = "<group>"; };
 		D3CAA7C713264AAD008BB877 /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		D3CAA7F613264F52008BB877 /* flickrdemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = flickrdemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3CAA7F913264F8A008BB877 /* libz.1.2.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.2.3.dylib; path = usr/lib/libz.1.2.3.dylib; sourceTree = SDKROOT; };
-		D3CAA81613265056008BB877 /* libQtCore_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtCore_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtCore_debug.a"; sourceTree = SOURCE_ROOT; };
-		D3CAA81713265056008BB877 /* libQtDeclarative_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtDeclarative_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtDeclarative_debug.a"; sourceTree = SOURCE_ROOT; };
-		D3CAA81813265056008BB877 /* libQtGui_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtGui_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtGui_debug.a"; sourceTree = SOURCE_ROOT; };
-		D3CAA81913265056008BB877 /* libQtScript_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtScript_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtScript_debug.a"; sourceTree = SOURCE_ROOT; };
-		D3CAA81A13265056008BB877 /* libQtSql_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtSql_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtSql_debug.a"; sourceTree = SOURCE_ROOT; };
-		D3CAA8201326507D008BB877 /* libquikit_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquikit_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/plugins/platforms/libquikit_debug.a"; sourceTree = SOURCE_ROOT; };
-		D3CAA82713265220008BB877 /* libQtNetwork_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtNetwork_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtNetwork_debug.a"; sourceTree = SOURCE_ROOT; };
-		D3CAA836132652E5008BB877 /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fonts; path = ../../../../../../lib/fonts; sourceTree = SOURCE_ROOT; };
 		D3D815D31329339300CDE422 /* flickr */ = {isa = PBXFileReference; lastKnownFileType = folder; name = flickr; path = ../../../../../../demos/declarative/flickr; sourceTree = SOURCE_ROOT; };
-		D3D8160813293C9B00CDE422 /* libQtXml_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtXml_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtXml_debug.a"; sourceTree = SOURCE_ROOT; };
-		D3D8160913293C9B00CDE422 /* libQtXmlPatterns_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtXmlPatterns_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtXmlPatterns_debug.a"; sourceTree = SOURCE_ROOT; };
 		D3D81752132A184300CDE422 /* libQtCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtCore.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtCore.a"; sourceTree = SOURCE_ROOT; };
 		D3D81753132A184300CDE422 /* libQtDeclarative.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtDeclarative.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtDeclarative.a"; sourceTree = SOURCE_ROOT; };
 		D3D81754132A184300CDE422 /* libQtGui.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtGui.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtGui.a"; sourceTree = SOURCE_ROOT; };
 		D3D81755132A184300CDE422 /* libQtNetwork.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtNetwork.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtNetwork.a"; sourceTree = SOURCE_ROOT; };
 		D3D81756132A184300CDE422 /* libQtScript.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtScript.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtScript.a"; sourceTree = SOURCE_ROOT; };
 		D3D81757132A184300CDE422 /* libQtSql.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtSql.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtSql.a"; sourceTree = SOURCE_ROOT; };
-		D3D8175E132A185A00CDE422 /* libQtXml.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtXml.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtXml.a"; sourceTree = SOURCE_ROOT; };
 		D3D8175F132A185A00CDE422 /* libQtXmlPatterns.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtXmlPatterns.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtXmlPatterns.a"; sourceTree = SOURCE_ROOT; };
 		D3D81762132A186B00CDE422 /* libquikit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquikit.a; path = "../../../../../../../qt-lighthouse-ios-device/plugins/platforms/libquikit.a"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -95,22 +91,22 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D3A51614134B040600E30E2F /* libQtOpenGL_debug.a in Frameworks */,
+				D36D346613F3CD8800EC5A41 /* CoreText.framework in Frameworks */,
 				D3A51612134B03E900E30E2F /* QuartzCore.framework in Frameworks */,
 				D3A51610134B03DE00E30E2F /* OpenGLES.framework in Frameworks */,
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
 				288765A50DF7441C002DB57D /* CoreGraphics.framework in Frameworks */,
 				D3CAA7FA13264F8A008BB877 /* libz.1.2.3.dylib in Frameworks */,
-				D3CAA81B13265056008BB877 /* libQtCore_debug.a in Frameworks */,
-				D3CAA81C13265056008BB877 /* libQtDeclarative_debug.a in Frameworks */,
-				D3CAA81D13265056008BB877 /* libQtGui_debug.a in Frameworks */,
-				D3CAA81E13265056008BB877 /* libQtScript_debug.a in Frameworks */,
-				D3CAA81F13265056008BB877 /* libQtSql_debug.a in Frameworks */,
-				D3CAA8211326507D008BB877 /* libquikit_debug.a in Frameworks */,
-				D3CAA82813265220008BB877 /* libQtNetwork_debug.a in Frameworks */,
-				D3D8160A13293C9B00CDE422 /* libQtXml_debug.a in Frameworks */,
-				D3D8160B13293C9B00CDE422 /* libQtXmlPatterns_debug.a in Frameworks */,
+				D307DEAE13EBCF5500399BD4 /* libQtCore.a in Frameworks */,
+				D307DEAF13EBCF5500399BD4 /* libQtDeclarative.a in Frameworks */,
+				D307DEB013EBCF5500399BD4 /* libQtGui.a in Frameworks */,
+				D307DEB113EBCF5500399BD4 /* libQtNetwork.a in Frameworks */,
+				D307DEB213EBCF5500399BD4 /* libQtOpenGL.a in Frameworks */,
+				D307DEB313EBCF5500399BD4 /* libQtScript.a in Frameworks */,
+				D307DEB413EBCF5500399BD4 /* libQtSql.a in Frameworks */,
+				D307DEB613EBCF5500399BD4 /* libQtXmlPatterns.a in Frameworks */,
+				D307DEB813EBCF6400399BD4 /* libquikit.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -118,6 +114,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D36D346513F3CD7E00EC5A41 /* CoreText.framework in Frameworks */,
 				D3A51618134B042A00E30E2F /* libQtOpenGL.a in Frameworks */,
 				D3CAA7F013264F52008BB877 /* Foundation.framework in Frameworks */,
 				D3CAA7F113264F52008BB877 /* UIKit.framework in Frameworks */,
@@ -131,7 +128,6 @@
 				D3D8175B132A184300CDE422 /* libQtNetwork.a in Frameworks */,
 				D3D8175C132A184300CDE422 /* libQtScript.a in Frameworks */,
 				D3D8175D132A184300CDE422 /* libQtSql.a in Frameworks */,
-				D3D81760132A185A00CDE422 /* libQtXml.a in Frameworks */,
 				D3D81761132A185A00CDE422 /* libQtXmlPatterns.a in Frameworks */,
 				D3D81763132A186B00CDE422 /* libquikit.a in Frameworks */,
 			);
@@ -174,7 +170,6 @@
 			isa = PBXGroup;
 			children = (
 				D3D815D31329339300CDE422 /* flickr */,
-				D3CAA836132652E5008BB877 /* fonts */,
 				8D1107310486CEB800E47090 /* flickrdemo-Info.plist */,
 			);
 			name = Resources;
@@ -190,6 +185,7 @@
 				288765A40DF7441C002DB57D /* CoreGraphics.framework */,
 				D3A51611134B03E900E30E2F /* QuartzCore.framework */,
 				D3A5160F134B03DE00E30E2F /* OpenGLES.framework */,
+				D36D346413F3CD7E00EC5A41 /* CoreText.framework */,
 				D3CAA7F913264F8A008BB877 /* libz.1.2.3.dylib */,
 			);
 			name = Frameworks;
@@ -216,7 +212,6 @@
 				D3A51617134B042A00E30E2F /* libQtOpenGL.a */,
 				D3D81756132A184300CDE422 /* libQtScript.a */,
 				D3D81757132A184300CDE422 /* libQtSql.a */,
-				D3D8175E132A185A00CDE422 /* libQtXml.a */,
 				D3D8175F132A185A00CDE422 /* libQtXmlPatterns.a */,
 			);
 			name = Device;
@@ -225,16 +220,15 @@
 		D3CAA81513265035008BB877 /* Simulator */ = {
 			isa = PBXGroup;
 			children = (
-				D3CAA8201326507D008BB877 /* libquikit_debug.a */,
-				D3CAA81613265056008BB877 /* libQtCore_debug.a */,
-				D3CAA81713265056008BB877 /* libQtDeclarative_debug.a */,
-				D3CAA81813265056008BB877 /* libQtGui_debug.a */,
-				D3CAA82713265220008BB877 /* libQtNetwork_debug.a */,
-				D3A51613134B040600E30E2F /* libQtOpenGL_debug.a */,
-				D3CAA81913265056008BB877 /* libQtScript_debug.a */,
-				D3CAA81A13265056008BB877 /* libQtSql_debug.a */,
-				D3D8160813293C9B00CDE422 /* libQtXml_debug.a */,
-				D3D8160913293C9B00CDE422 /* libQtXmlPatterns_debug.a */,
+				D307DEB713EBCF6400399BD4 /* libquikit.a */,
+				D307DEA513EBCF5500399BD4 /* libQtCore.a */,
+				D307DEA613EBCF5500399BD4 /* libQtDeclarative.a */,
+				D307DEA713EBCF5500399BD4 /* libQtGui.a */,
+				D307DEA813EBCF5500399BD4 /* libQtNetwork.a */,
+				D307DEA913EBCF5500399BD4 /* libQtOpenGL.a */,
+				D307DEAA13EBCF5500399BD4 /* libQtScript.a */,
+				D307DEAB13EBCF5500399BD4 /* libQtSql.a */,
+				D307DEAD13EBCF5500399BD4 /* libQtXmlPatterns.a */,
 			);
 			name = Simulator;
 			sourceTree = "<group>";
@@ -306,7 +300,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D3CAA88A132652E5008BB877 /* fonts in Resources */,
 				D3D815F31329339300CDE422 /* flickr in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -315,7 +308,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D3CAA88B132652E5008BB877 /* fonts in Resources */,
 				D3D815F4132933AB00CDE422 /* flickr in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

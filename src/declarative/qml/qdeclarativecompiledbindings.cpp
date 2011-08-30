@@ -143,17 +143,17 @@ struct Register {
     void setNaN() { setqreal(qSNaN()); }
     bool isUndefined() const { return type == 0; }
 
-    void setQObject(QObject *o) { *((QObject **)data) = o; type = QMetaType::QObjectStar; }
-    QObject *getQObject() const { return *((QObject **)data); }
+    void setQObject(QObject *o) { qobjectValue = o; type = QMetaType::QObjectStar; }
+    QObject *getQObject() const { return qobjectValue; }
 
-    void setqreal(qreal v) { *((qreal *)data) = v; type = QMetaType::QReal; }
-    qreal getqreal() const { return *((qreal *)data); }
+    void setqreal(qreal v) { qrealValue = v; type = QMetaType::QReal; }
+    qreal getqreal() const { return qrealValue; }
 
-    void setint(int v) { *((int *)data) = v; type = QMetaType::Int; }
-    int getint() const { return *((int *)data); }
+    void setint(int v) { intValue = v; type = QMetaType::Int; }
+    int getint() const { return intValue; }
 
-    void setbool(bool v) { *((bool *)data) = v; type = QMetaType::Bool; }
-    bool getbool() const { return *((bool *)data); }
+    void setbool(bool v) { boolValue = v; type = QMetaType::Bool; }
+    bool getbool() const { return boolValue; }
 
     QVariant *getvariantptr() { return (QVariant *)typeDataPtr(); }
     QString *getstringptr() { return (QString *)typeDataPtr(); }
@@ -171,7 +171,15 @@ struct Register {
     void settype(int t) { type = t; }
 
     int type;          // Optional type
-    void *data[2];     // Object stored here
+    union {
+        QObject *qobjectValue;
+        qreal qrealValue;
+        int intValue;
+        bool boolValue;
+        char data[sizeof(QVariant)];
+        qint64 q_for_alignment_1;
+        double q_for_alignment_2;
+    };
 
 #ifdef REGISTER_CLEANUP_DEBUG
     Register() {
@@ -2388,7 +2396,7 @@ bool QDeclarativeBindingCompilerPrivate::parseConditional(QDeclarativeJS::AST::N
     skip.skip.reg = -1;
     bytecode << skip;
 
-    // Release to allow reuse of reg
+    // Release to allow reuse of reg in else path
     releaseReg(ok.reg);
     bytecode[skipIdx].skip.count = bytecode.count() - skipIdx - 1;
 
@@ -2398,8 +2406,7 @@ bool QDeclarativeBindingCompilerPrivate::parseConditional(QDeclarativeJS::AST::N
     if (!parseExpression(expression->ko, ko)) return false;
     if (ko.unknownType) return false;
 
-    // Release to allow reuse of reg
-    releaseReg(ko.reg);
+    // Do not release reg here, so that its ownership passes to the caller
     bytecode[skipIdx2].skip.count = bytecode.count() - skipIdx2 - 1;
 
     if (ok != ko)

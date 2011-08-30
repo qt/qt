@@ -1,7 +1,7 @@
 
 /* pngpread.c - read a png file in push mode
  *
- * Last changed in libpng 1.5.1 [February 3, 2011]
+ * Last changed in libpng 1.5.2 [March 31, 2011]
  * Copyright (c) 1998-2011 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
@@ -1026,8 +1026,10 @@ png_push_process_row(png_structp png_ptr)
 
    png_memcpy(png_ptr->prev_row, png_ptr->row_buf, png_ptr->rowbytes + 1);
 
-   if (png_ptr->transformations || (png_ptr->flags&PNG_FLAG_STRIP_ALPHA))
+#ifdef PNG_READ_TRANSFORMS_SUPPORTED
+   if (png_ptr->transformations)
       png_do_read_transformations(png_ptr);
+#endif
 
 #ifdef PNG_READ_INTERLACING_SUPPORTED
    /* Blow up interlaced rows to full size */
@@ -1288,7 +1290,7 @@ png_push_handle_tEXt(png_structp png_ptr, png_infop info_ptr, png_uint_32
       {
          PNG_UNUSED(info_ptr) /* To quiet some compiler warnings */
          png_error(png_ptr, "Out of place tEXt");
-         /*NOT REACHED*/
+         /* NOT REACHED */
       }
 
 #ifdef PNG_MAX_MALLOC_64K
@@ -1385,7 +1387,7 @@ png_push_handle_zTXt(png_structp png_ptr, png_infop info_ptr, png_uint_32
    {
       PNG_UNUSED(info_ptr) /* To quiet some compiler warnings */
       png_error(png_ptr, "Out of place zTXt");
-      /*NOT REACHED*/
+      /* NOT REACHED */
    }
 
 #ifdef PNG_MAX_MALLOC_64K
@@ -1589,7 +1591,7 @@ png_push_handle_iTXt(png_structp png_ptr, png_infop info_ptr, png_uint_32
    {
       PNG_UNUSED(info_ptr) /* To quiet some compiler warnings */
       png_error(png_ptr, "Out of place iTXt");
-      /*NOT REACHED*/
+      /* NOT REACHED */
    }
 
 #ifdef PNG_MAX_MALLOC_64K

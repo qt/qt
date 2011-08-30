@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-  node.cpp
-*/
-
 #include "node.h"
 #include "tree.h"
 #include "codemarker.h"
@@ -50,6 +46,8 @@
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
+
+ExampleNodeMap ExampleNode::exampleNodeMap;
 
 /*!
   \class Node
@@ -154,16 +152,6 @@ void Node::setLink(LinkType linkType, const QString &link, const QString &desc)
     linkPair.first = link;
     linkPair.second = desc;
     linkMap[linkType] = linkPair;
-}
-
-/*!
-    Sets the information about the project and version a node was introduced
-    in. The string is simplified, removing excess whitespace before being
-    stored.
-*/
-void Node::setSince(const QString &since)
-{
-    sinc = since.simplified();
 }
 
 /*!
@@ -314,6 +302,38 @@ QString Node::ditaXmlHref()
     if (!href.endsWith(".xml"))
         href += ".xml";
     return href + "#" + guid();
+}
+
+/*!
+  If this node is a QML class node, return a pointer to it.
+  If it is a child of a QML class node, return a pointer to
+  the QML class node. Otherwise, return 0;
+ */
+const QmlClassNode* Node::qmlClassNode() const
+{
+    if (isQmlNode()) {
+        const Node* n = this;
+        while (n && n->subType() != Node::QmlClass)
+            n = n->parent();
+        if (n && n->subType() == Node::QmlClass)
+            return static_cast<const QmlClassNode*>(n);
+    }
+    return 0;
+}
+
+/*!
+  If this node is a QML node, find its QML class node,
+  and return a pointer to the C++ class node from the
+  QML class node. That pointer will be null if the QML
+  class node is a component. It will be non-null if
+  the QML class node is a QML element.
+ */
+const ClassNode* Node::declarativeCppNode() const
+{
+    const QmlClassNode* qcn = qmlClassNode();
+    if (qcn)
+        return qcn->classNode();
+    return 0;
 }
 
 /*!
@@ -555,7 +575,8 @@ void InnerNode::removeFromRelated()
  */
 void InnerNode::deleteChildren()
 {
-    qDeleteAll(children);
+    NodeList childrenCopy = children; // `children` will be changed in ~Node()
+    qDeleteAll(childrenCopy);
 }
 
 /*!
@@ -1069,6 +1090,16 @@ QString FakeNode::subTitle() const
             return name();
     }
     return QString();
+}
+
+/*!
+  The constructor calls the FakeNode constructor with
+  \a parent, \a name, and Node::Example.
+ */
+ExampleNode::ExampleNode(InnerNode* parent, const QString& name)
+    : FakeNode(parent, name, Node::Example)
+{
+    // nothing
 }
 
 /*!
@@ -1693,6 +1724,7 @@ bool QmlPropertyNode::fromTrool(Trool troolean, bool defaultValue)
     }
 }
 
+#if 0
 static QString valueType(const QString &n)
 {
     if (n == "QPoint")
@@ -1723,6 +1755,7 @@ static QString valueType(const QString &n)
         return "QDeclarativeFontValueType";
     return QString();
 }
+#endif
 
 /*!
   Returns true if a QML property or attached property is

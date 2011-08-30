@@ -407,7 +407,7 @@ In case you have to create a qmltypes file manually or need to adjust
 an existing one, this is the file format:
 
 \qml
-import QtQuick.tooling 1.0
+import QtQuick.tooling 1.1
 
 // There always is a single Module object that contains all
 // Component objects.
@@ -454,6 +454,8 @@ Module {
             isPointer: true
             // defaults to false: whether the type actually is a QDeclarativeListProperty<type>
             isList: true
+            // defaults to 0: the minor version that introduced this property
+            revision: 1
         }
         Property { name: "loops"; type: "int" }
         Property { name: "name"; type: "string" }
@@ -471,7 +473,7 @@ Module {
         // declarations also support the isReadonly, isPointer and isList
         // attributes which mean the same as for Property
         Method { name: "restart" }
-        Signal { name: "started" }
+        Signal { name: "started"; revision: 2 }
         Signal {
             name: "runningChanged"
             Parameter { type: "bool" }

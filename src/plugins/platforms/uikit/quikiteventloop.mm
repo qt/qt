@@ -49,6 +49,8 @@
 
 #include <QtGui/QApplication>
 #include <QtGui/QWidget>
+#include <QtDeclarative/QDeclarativeView>
+#include <QtDeclarative/QDeclarativeItem>
 #include <QtDebug>
 
 @interface QUIKitAppDelegate :  NSObject <UIApplicationDelegate> {
@@ -65,7 +67,6 @@
 
 - (id)initWithEventLoopIntegration:(QUIKitEventLoop *)integration;
 
-- (void)processEvents;
 - (void)processEventsAndSchedule;
 
 @end
@@ -158,17 +159,11 @@
     return self;
 }
 
-- (void)processEvents
-{
-    QPlatformEventLoopIntegration::processEvents();
-}
-
 - (void)processEventsAndSchedule
 {
     QPlatformEventLoopIntegration::processEvents();
-    qint64 nextTime = qMin((qint64)33, mIntegration->nextTimerEvent()); // at least 30fps
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-    NSDate *nextDate = [[NSDate date] dateByAddingTimeInterval:((double)nextTime/1000)];
+    NSDate *nextDate = [[NSDate date] dateByAddingTimeInterval:((double)mIntegration->nextTimerEvent()/1000.)];
     [mIntegration->mTimer setFireDate:nextDate];
     [pool release];
 }
@@ -209,27 +204,72 @@ void QUIKitEventLoop::quitEventLoop()
 
 void QUIKitEventLoop::qtNeedsToProcessEvents()
 {
-    [mHelper performSelectorOnMainThread:@selector(processEvents) withObject:nil waitUntilDone:NO];
+    [mHelper performSelectorOnMainThread:@selector(processEventsAndSchedule) withObject:nil waitUntilDone:NO];
+}
+
+static UIReturnKeyType keyTypeForObject(QObject *obj)
+{
+    if (strcmp(obj->metaObject()->className(), "QDeclarativeTextEdit") == 0)
+        return UIReturnKeyDefault;
+    return UIReturnKeyDone;
 }
 
 bool QUIKitSoftwareInputHandler::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
+        UIReturnKeyType returnKeyType = UIReturnKeyDone;
+        if (QDeclarativeView *declarativeView = qobject_cast<QDeclarativeView *>(obj)) {
+            // register on loosing the focus, so we can auto-remove the input panel again
+            QGraphicsScene *scene = declarativeView->scene();
+            if (scene) {
+                if (mCurrentFocusObject)
+                    disconnect(mCurrentFocusObject, 0, this, SLOT(activeFocusChanged(bool)));
+                QDeclarativeItem *focus = static_cast<QDeclarativeItem *>(scene->focusItem());
+                mCurrentFocusObject = focus;
+                if (focus) {
+                    connect(mCurrentFocusObject, SIGNAL(activeFocusChanged(bool)), this, SLOT(activeFocusChanged(bool)));
+                    returnKeyType = keyTypeForObject(mCurrentFocusObject);
+                }
+            }
+        }
         QWidget *widget = qobject_cast<QWidget *>(obj);
         if (widget) {
+            mCurrentFocusWidget = widget;
             QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->window()->platformWindow());
-            if (platformWindow) [platformWindow->nativeView() becomeFirstResponder];
+            if (platformWindow) {
+                platformWindow->nativeView().returnKeyType = returnKeyType;
+                [platformWindow->nativeView() becomeFirstResponder];
+            }
             return true;
         }
     } else if (event->type() == QEvent::CloseSoftwareInputPanel) {
         QWidget *widget = qobject_cast<QWidget *>(obj);
-        if (widget) {
-            QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->window()->platformWindow());
-            if (platformWindow) [platformWindow->nativeView() resignFirstResponder];
-            return true;
-        }
+        return closeSoftwareInputPanel(widget);
     }
     return false;
+}
+
+bool QUIKitSoftwareInputHandler::closeSoftwareInputPanel(QWidget *widget)
+{
+    if (widget) {
+        QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->window()->platformWindow());
+        if (platformWindow) {
+            [platformWindow->nativeView() resignFirstResponder];
+            mCurrentFocusWidget = 0;
+            if (mCurrentFocusObject)
+                disconnect(mCurrentFocusObject, 0, this, SLOT(activeFocusChanged(bool)));
+            mCurrentFocusObject = 0;
+        }
+        return true;
+    }
+    return false;
+}
+
+void QUIKitSoftwareInputHandler::activeFocusChanged(bool focus)
+{
+    if (!focus && mCurrentFocusWidget && mCurrentFocusObject) {
+        closeSoftwareInputPanel(mCurrentFocusWidget);
+    }
 }
 
 QT_END_NAMESPACE

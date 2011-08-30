@@ -56,6 +56,12 @@
 
 QT_BEGIN_NAMESPACE
 
+typedef QMultiMap<QString, Node*> NodeMultiMap;
+typedef QMap<QString, NodeMultiMap> NewSinceMaps;
+typedef QMap<Node*, NodeMultiMap> ParentMaps;
+typedef QMap<QString, const Node*> NodeMap;
+typedef QMap<QString, NodeMap> NewClassMaps;
+
 class HelpProjectWriter;
 
 class HtmlGenerator : public PageGenerator
@@ -87,6 +93,7 @@ class HtmlGenerator : public PageGenerator
     virtual void terminateGenerator();
     virtual QString format();
     virtual void generateTree(const Tree *tree);
+    void generateManifestFiles();
 
     QString protectEnc(const QString &string);
     static QString protect(const QString &string, const QString &encoding = "ISO-8859-1");
@@ -105,6 +112,8 @@ class HtmlGenerator : public PageGenerator
     virtual QString refForNode(const Node *node);
     virtual QString linkForNode(const Node *node, const Node *relative);
     virtual QString refForAtom(Atom *atom, const Node *node);
+
+    void generateManifestFile(QString manifest, QString element);
 
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
@@ -218,6 +227,7 @@ class HtmlGenerator : public PageGenerator
     void findAllFunctions(const InnerNode *node);
     void findAllLegaleseTexts(const InnerNode *node);
     void findAllNamespaces(const InnerNode *node);
+    void findAllSince(const InnerNode *node);
     static int hOffset(const Node *node);
     static bool isThreeColumnEnumValueTable(const Atom *atom);
     virtual QString getLink(const Atom *atom, 
@@ -266,6 +276,7 @@ class HtmlGenerator : public PageGenerator
     QString footer;
     QString address;
     bool pleaseGenerateMacRef;
+    bool noBreadCrumbs;
     QString project;
     QString projectDescription;
     QString projectUrl;
@@ -285,6 +296,10 @@ class HtmlGenerator : public PageGenerator
     NodeMap qmlClasses;
     QMap<QString, NodeMap > funcIndex;
     QMap<Text, const Node *> legaleseTexts;
+    NewSinceMaps newSinceMaps;
+    static QString sinceTitles[];
+    NewClassMaps newClassMaps;
+    NewClassMaps newQmlClassMaps;
     static int id;
  public:
     static bool debugging_on;
@@ -296,6 +311,7 @@ class HtmlGenerator : public PageGenerator
 #define HTMLGENERATOR_GENERATEMACREFS   "generatemacrefs" // ### document me
 #define HTMLGENERATOR_POSTHEADER        "postheader"
 #define HTMLGENERATOR_POSTPOSTHEADER    "postpostheader"
+#define HTMLGENERATOR_NOBREADCRUMBS     "nobreadcrumbs"
 
 QT_END_NAMESPACE
 
