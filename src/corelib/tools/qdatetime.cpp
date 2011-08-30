@@ -2788,6 +2788,8 @@ int QDateTime::secsTo(const QDateTime &other) const
 }
 
 /*!
+    \since 4.7
+
     Returns the number of milliseconds from this datetime to the \a other
     datetime. If the \a other datetime is earlier than this datetime,
     the value returned is negative.
