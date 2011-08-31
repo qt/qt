@@ -44,8 +44,7 @@
 #include <QNetworkReply>
 #include <QStringList>
 #include <QUrlInfo>
-
-class QFtp;
+#include <QFtp>
 
 //! [class definition]
 class FtpReply : public QNetworkReply

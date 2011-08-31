@@ -39,6 +39,10 @@
 **
 ****************************************************************************/
 
+/*
+  node.cpp
+*/
+
 #include "node.h"
 #include "tree.h"
 #include "codemarker.h"
@@ -1723,39 +1727,6 @@ bool QmlPropertyNode::fromTrool(Trool troolean, bool defaultValue)
         return defaultValue;
     }
 }
-
-#if 0
-static QString valueType(const QString &n)
-{
-    if (n == "QPoint")
-        return "QDeclarativePointValueType";
-    if (n == "QPointF")
-        return "QDeclarativePointFValueType";
-    if (n == "QSize")
-        return "QDeclarativeSizeValueType";
-    if (n == "QSizeF")
-        return "QDeclarativeSizeFValueType";
-    if (n == "QRect")
-        return "QDeclarativeRectValueType";
-    if (n == "QRectF")
-        return "QDeclarativeRectFValueType";
-    if (n == "QVector2D")
-        return "QDeclarativeVector2DValueType";
-    if (n == "QVector3D")
-        return "QDeclarativeVector3DValueType";
-    if (n == "QVector4D")
-        return "QDeclarativeVector4DValueType";
-    if (n == "QQuaternion")
-        return "QDeclarativeQuaternionValueType";
-    if (n == "QMatrix4x4")
-        return "QDeclarativeMatrix4x4ValueType";
-    if (n == "QEasingCurve")
-        return "QDeclarativeEasingValueType";
-    if (n == "QFont")
-        return "QDeclarativeFontValueType";
-    return QString();
-}
-#endif
 
 /*!
   Returns true if a QML property or attached property is

@@ -483,10 +483,10 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                                         "",
                                         "public function",
                                         "public functions");
-            FastSection publicSignals(classe, "Signals", "", "signal", "signal");
-            FastSection publicSlots(classe, "Public Slots", "", "public slot", "public slots");
-            FastSection publicTypes(classe, "Public Types", "", "public type", "public types");
-            FastSection publicVariables(classe,
+	    FastSection publicSignals(classe, "Signals", "", "signal", "signals");
+	    FastSection publicSlots(classe, "Public Slots", "", "public slot", "public slots");
+	    FastSection publicTypes(classe, "Public Types", "", "public type", "public types");
+	    FastSection publicVariables(classe,
                                         "Public Variables",
                                         "",
                                         "public variable",
@@ -877,28 +877,6 @@ static const char * const keywordTable[] = {
     // Qt specific
     "signals", "slots", "emit", 0
 };
-
-#if 0
-static QString untabified(const QString &in)
-{
-    QString res;
-    int col = 0;
-    int i = 0;
-
-    for (; i < (int) in.length(); i++) {
-	if (in[i] == QChar('\t')) {
-	    res += QString("        " + (col & 0x7));
-	    col = (col + 8) & ~0x7;
-	} else {
-	    res += in[i];
-	    if (in[i] == QChar('\n'))
-		col = 0;
-	}
-    }
-
-    return res;
-}
-#endif
 
 /*
     @char
