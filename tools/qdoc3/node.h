@@ -159,7 +159,7 @@ class Node
     void setDoc(const Doc& doc, bool replace = false);
     void setStatus(Status status) { sta = status; }
     void setThreadSafeness(ThreadSafeness safeness) { saf = safeness; }
-    void setSince(const QString &since);
+    void setSince(const QString &since) { sinc = since; }
     void setRelates(InnerNode* pseudoParent);
     void setModuleName(const QString &module) { mod = module; }
     void setLink(LinkType linkType, const QString &link, const QString &desc);

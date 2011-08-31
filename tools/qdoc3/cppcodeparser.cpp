@@ -2349,8 +2349,8 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
                                         proFileName,
                                         userFriendlyFilePath);
             if (fullPath.isEmpty()) {
-                fake->doc().location().warning(
-                    tr("Cannot find file '%1' or '%2'").arg(tmp).arg(proFileName));
+                fake->doc().location().warning(tr("Cannot find file '%1' or '%2'").arg(tmp).arg(proFileName));
+                fake->doc().location().warning(tr("EXAMPLE PATH DOES NOT EXIST: %1").arg(examplePath));
                 return;
             }
         }

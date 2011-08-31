@@ -155,16 +155,6 @@ void Node::setLink(LinkType linkType, const QString &link, const QString &desc)
 }
 
 /*!
-    Sets the information about the project and version a node was introduced
-    in. The string is simplified, removing excess whitespace before being
-    stored.
-*/
-void Node::setSince(const QString &since)
-{
-    sinc = since.simplified();
-}
-
-/*!
   Returns a string representing the access specifier.
  */
 QString Node::accessString() const
@@ -585,7 +575,8 @@ void InnerNode::removeFromRelated()
  */
 void InnerNode::deleteChildren()
 {
-    qDeleteAll(children);
+    NodeList childrenCopy = children; // `children` will be changed in ~Node()
+    qDeleteAll(childrenCopy);
 }
 
 /*!

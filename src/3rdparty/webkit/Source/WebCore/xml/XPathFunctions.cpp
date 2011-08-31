@@ -39,6 +39,12 @@
 #include "XPathValue.h"
 #include <wtf/MathExtras.h>
 
+#if COMPILER(WINSCW)
+#define BOOL_TO_VALUE_CAST (unsigned long)
+#else
+#define BOOL_TO_VALUE_CAST
+#endif
+
 namespace WebCore {
 namespace XPath {
 
@@ -453,9 +459,9 @@ Value FunStartsWith::evaluate() const
     String s2 = arg(1)->evaluate().toString();
 
     if (s2.isEmpty())
-        return true;
+        return BOOL_TO_VALUE_CAST true;
 
-    return s1.startsWith(s2);
+    return BOOL_TO_VALUE_CAST (s1.startsWith(s2));
 }
 
 Value FunContains::evaluate() const
@@ -463,10 +469,10 @@ Value FunContains::evaluate() const
     String s1 = arg(0)->evaluate().toString();
     String s2 = arg(1)->evaluate().toString();
 
-    if (s2.isEmpty()) 
-        return true;
+    if (s2.isEmpty())
+        return BOOL_TO_VALUE_CAST true;
 
-    return s1.contains(s2) != 0;
+    return BOOL_TO_VALUE_CAST (s1.contains(s2) != 0);
 }
 
 Value FunSubstringBefore::evaluate() const
@@ -571,17 +577,17 @@ Value FunTranslate::evaluate() const
 
 Value FunBoolean::evaluate() const
 {
-    return arg(0)->evaluate().toBoolean();
+    return BOOL_TO_VALUE_CAST (arg(0)->evaluate().toBoolean());
 }
 
 Value FunNot::evaluate() const
 {
-    return !arg(0)->evaluate().toBoolean();
+    return BOOL_TO_VALUE_CAST (!arg(0)->evaluate().toBoolean());
 }
 
 Value FunTrue::evaluate() const
 {
-    return true;
+    return BOOL_TO_VALUE_CAST true;
 }
 
 Value FunLang::evaluate() const
@@ -600,12 +606,12 @@ Value FunLang::evaluate() const
     }
 
     if (!languageAttribute)
-        return false;
+        return BOOL_TO_VALUE_CAST false;
 
     String langValue = languageAttribute->value();
     while (true) {
         if (equalIgnoringCase(langValue, lang))
-            return true;
+            return BOOL_TO_VALUE_CAST true;
 
         // Remove suffixes one by one.
         size_t index = langValue.reverseFind('-');
@@ -614,12 +620,12 @@ Value FunLang::evaluate() const
         langValue = langValue.left(index);
     }
 
-    return false;
+    return BOOL_TO_VALUE_CAST false;
 }
 
 Value FunFalse::evaluate() const
 {
-    return false;
+    return BOOL_TO_VALUE_CAST false;
 }
 
 Value FunNumber::evaluate() const

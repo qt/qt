@@ -470,4 +470,5 @@ EXPORTS
 	?qt_static_metacall@QSqlRelationalTableModel@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 469 NONAME ; void QSqlRelationalTableModel::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?staticMetaObjectExtraData@QSqlRelationalTableModel@@0UQMetaObjectExtraData@@B @ 470 NONAME ; struct QMetaObjectExtraData const QSqlRelationalTableModel::staticMetaObjectExtraData
 	?qt_static_metacall@QSqlDriverPlugin@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 471 NONAME ; void QSqlDriverPlugin::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?setJoinMode@QSqlRelationalTableModel@@QAEXW4JoinMode@1@@Z @ 472 NONAME ; void QSqlRelationalTableModel::setJoinMode(enum QSqlRelationalTableModel::JoinMode)
 

@@ -423,6 +423,8 @@ QIODevice::~QIODevice()
     seeking backwards and forwards in the data stream. Regular files
     are non-sequential.
 
+    The QIODevice implementation returns false.
+
     \sa bytesAvailable()
 */
 bool QIODevice::isSequential() const
