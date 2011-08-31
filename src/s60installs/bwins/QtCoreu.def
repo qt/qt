@@ -4513,7 +4513,7 @@ EXPORTS
 	??_EQTextDecoder@@QAE@I@Z @ 4512 NONAME ABSENT ; QTextDecoder::~QTextDecoder(unsigned int)
 	??_EQMutex@@QAE@I@Z @ 4513 NONAME ABSENT ; QMutex::~QMutex(unsigned int)
 	??0QTimerEvent@@QAE@ABV0@@Z @ 4514 NONAME ABSENT ; QTimerEvent::QTimerEvent(class QTimerEvent const &)
-	??0QXmlStreamAttributes@@QAE@XZ @ 4515 NONAME ABSENT ; QXmlStreamAttributes::QXmlStreamAttributes(void)
+	??0QXmlStreamAttributes@@QAE@XZ @ 4515 NONAME ; QXmlStreamAttributes::QXmlStreamAttributes(void)
 	??_EConverterState@QTextCodec@@QAE@I@Z @ 4516 NONAME ABSENT ; QTextCodec::ConverterState::~ConverterState(unsigned int)
 	??4QTime@@QAEAAV0@ABV0@@Z @ 4517 NONAME ABSENT ; class QTime & QTime::operator=(class QTime const &)
 	??0QMetaMethod@@QAE@ABV0@@Z @ 4518 NONAME ABSENT ; QMetaMethod::QMetaMethod(class QMetaMethod const &)
