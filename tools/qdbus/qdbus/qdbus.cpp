@@ -59,7 +59,7 @@ static bool printArgumentsLiterally = false;
 
 static void showUsage()
 {
-    printf("Usage: qdbus [--system] [--literal] [servicename] [path] [method] [args]\n"
+    printf("Usage: qdbus [--system | --address ADDRESS] [--literal] [servicename] [path] [method] [args]\n"
            "\n"
            "  servicename       the service to connect to (e.g., org.freedesktop.DBus)\n"
            "  path              the path to the object (e.g., /)\n"
@@ -71,6 +71,7 @@ static void showUsage()
            "\n"
            "Options:\n"
            "  --system          connect to the system bus\n"
+           "  --address ADDRESS connect to the given bus\n"
            "  --literal         print replies literally\n");
 }
 
@@ -453,6 +454,10 @@ int main(int argc, char **argv)
         QString arg = args.takeFirst();
         if (arg == QLatin1String("--system")) {
             connection = QDBusConnection::systemBus();
+            connectionOpened = true;
+	} else
+        if (arg == QLatin1String("--address")) {
+	    connection = QDBusConnection::connectToBus(args.takeFirst(), "bus");
             connectionOpened = true;
         } else if (arg == QLatin1String("--literal")) {
             printArgumentsLiterally = true;
