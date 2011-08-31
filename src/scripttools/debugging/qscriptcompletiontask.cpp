@@ -172,7 +172,7 @@ void QScriptCompletionTaskPrivate::completeScriptExpression()
     while ((pos > 0) && isIdentChar(contents.at(pos-1)))
         --pos;
     int pos2 = cursorPosition - 1;
-    while ((pos2 < contents.size()-1) && isIdentChar(contents.at(pos2+1)))
+    while ((pos2+1 < contents.size()) && isIdentChar(contents.at(pos2+1)))
         ++pos2;
     QString ident = contents.mid(pos, pos2 - pos + 1);
     position = pos;
