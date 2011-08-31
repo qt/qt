@@ -820,19 +820,12 @@ void QWidgetPrivate::setConstraints_sys()
 void QWidgetPrivate::s60UpdateIsOpaque()
 {
     Q_Q(QWidget);
-
     if (!q->testAttribute(Qt::WA_WState_Created))
         return;
-
     const bool writeAlpha = extraData()->nativePaintMode == QWExtra::BlitWriteAlpha;
-    if (!q->testAttribute(Qt::WA_TranslucentBackground) && !writeAlpha)
-        return;
     const bool requireAlphaChannel = !isOpaque || writeAlpha;
-
     createTLExtra();
-
     RWindow *const window = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
-
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
     if (QApplicationPrivate::instance()->useTranslucentEGLSurfaces
             && !extra->topextra->forcedToRaster) {
@@ -841,25 +834,47 @@ void QWidgetPrivate::s60UpdateIsOpaque()
         return;
     }
 #endif
+    const bool recreateBackingStore = extra->topextra->backingStore.data() && (
+                                          QApplicationPrivate::graphics_system_name == QLatin1String("openvg") ||
+                                          QApplicationPrivate::graphics_system_name == QLatin1String("opengl")
+                                      );
     if (requireAlphaChannel) {
-        const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
-        if (window->SetTransparencyAlphaChannel() == KErrNone) {
+        window->SetRequiredDisplayMode(EColor16MA);
+        if (window->SetTransparencyAlphaChannel() == KErrNone)
             window->SetBackgroundColor(TRgb(255, 255, 255, 0));
-            extra->topextra->nativeWindowTransparencyEnabled = 1;
-            if (extra->topextra->backingStore.data() && (
-                    QApplicationPrivate::graphics_system_name == QLatin1String("openvg")
-                    || QApplicationPrivate::graphics_system_name == QLatin1String("opengl"))) {
-                // Semi-transparent EGL surfaces aren't supported. We need to
-                // recreate backing store to get translucent surface (raster surface).
-                extra->topextra->backingStore.create(q);
-                extra->topextra->backingStore.registerWidget(q);
-                // FixNativeOrientation() will not work without an EGL surface.
-                q->setAttribute(Qt::WA_SymbianNoSystemRotation, false);
+    } else {
+        if (recreateBackingStore) {
+            // Clear the UI surface to ensure that the EGL surface content is visible
+            CWsScreenDevice *screenDevice = S60->screenDevice(q);
+            QScopedPointer<CWindowGc> gc(new CWindowGc(screenDevice));
+            const int err = gc->Construct();
+            if (!err) {
+                gc->Activate(*window);
+                window->BeginRedraw();
+                gc->SetDrawMode(CWindowGc::EDrawModeWriteAlpha);
+                gc->SetBrushColor(TRgb(0, 0, 0, 0));
+                gc->Clear(TRect(0, 0, q->width(), q->height()));
+                window->EndRedraw();
             }
         }
-    } else if (extra->topextra->nativeWindowTransparencyEnabled) {
-        window->SetTransparentRegion(TRegionFix<1>());
-        extra->topextra->nativeWindowTransparencyEnabled = 0;
+        if (extra->topextra->nativeWindowTransparencyEnabled)
+            window->SetTransparentRegion(TRegionFix<1>());
+    }
+    extra->topextra->nativeWindowTransparencyEnabled = requireAlphaChannel;
+    if (recreateBackingStore) {
+        extra->topextra->backingStore.create(q);
+        extra->topextra->backingStore.registerWidget(q);
+        bool noSystemRotationDisabled = false;
+        if (requireAlphaChannel) {
+            if (q->testAttribute(Qt::WA_SymbianNoSystemRotation)) {
+                // FixNativeOrientation() will not work without an EGL surface
+                q->setAttribute(Qt::WA_SymbianNoSystemRotation, false);
+                noSystemRotationDisabled = true;
+            }
+        } else {
+            q->setAttribute(Qt::WA_SymbianNoSystemRotation, extra->topextra->noSystemRotationDisabled);
+        }
+        extra->topextra->noSystemRotationDisabled = noSystemRotationDisabled;
     }
 }
 
@@ -1020,6 +1035,7 @@ void QWidgetPrivate::createTLSysExtra()
     extra->topextra->inExpose = 0;
     extra->topextra->nativeWindowTransparencyEnabled = 0;
     extra->topextra->forcedToRaster = 0;
+    extra->topextra->noSystemRotationDisabled = 0;
 }
 
 void QWidgetPrivate::deleteTLSysExtra()
