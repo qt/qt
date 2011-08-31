@@ -1014,7 +1014,7 @@ int QDeclarativeTextInput::positionAt(int x) const
 
 /*!
     \qmlmethod int TextInput::positionAt(int x, CursorPosition position = CursorBetweenCharacters)
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     This function returns the character position at
     x pixels from the left of the textInput. Position 0 is before the
@@ -1402,7 +1402,7 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
 
 /*!
     \qmlmethod void TextInput::deselect()
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Removes active text selection.
 */
@@ -1574,7 +1574,7 @@ void QDeclarativeTextInput::setSelectByMouse(bool on)
 
 /*!
     \qmlproperty enum TextInput::mouseSelectionMode
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Specifies how text should be selected using a mouse.
 
@@ -1622,7 +1622,7 @@ void QDeclarativeTextInput::moveCursorSelection(int position)
 
 /*!
     \qmlmethod void TextInput::moveCursorSelection(int position, SelectionMode mode = TextInput.SelectCharacters)
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Moves the cursor to \a position and updates the selection according to the optional \a mode
     parameter.  (To only move the cursor, set the \l cursorPosition property.)
