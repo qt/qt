@@ -455,10 +455,11 @@ int main(int argc, char **argv)
         if (arg == QLatin1String("--system")) {
             connection = QDBusConnection::systemBus();
             connectionOpened = true;
-	} else
-        if (arg == QLatin1String("--address")) {
-	    connection = QDBusConnection::connectToBus(args.takeFirst(), "bus");
-            connectionOpened = true;
+        } else if (arg == QLatin1String("--address")) {
+            if (!args.isEmpty()) {
+                connection = QDBusConnection::connectToBus(args.takeFirst(), "bus");
+                connectionOpened = true;
+            }
         } else if (arg == QLatin1String("--literal")) {
             printArgumentsLiterally = true;
         } else if (arg == QLatin1String("--help")) {
