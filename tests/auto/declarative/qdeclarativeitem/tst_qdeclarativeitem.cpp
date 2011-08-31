@@ -90,6 +90,7 @@ private slots:
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
     void qtbug_16871();
+    void qtbug_21045();
 private:
     QDeclarativeEngine engine;
 };
@@ -1236,6 +1237,18 @@ void tst_QDeclarativeItem::qtbug_16871()
     QObject *o = component.create();
     QVERIFY(o != 0);
     delete o;
+}
+
+void tst_QDeclarativeItem::qtbug_21045()
+{
+    QDeclarativeComponent component(&engine);
+    QGraphicsScene scene;
+    component.setData("import QtQuick 1.1\nItem{visible: false; focus: true}", QUrl::fromLocalFile("file:"));
+    QObject *o = component.create();
+    QDeclarativeItem* i = qobject_cast<QDeclarativeItem*>(o);
+    QVERIFY(i);
+    scene.addItem(i);
+    QVERIFY(!i->hasActiveFocus());
 }
 
 QTEST_MAIN(tst_QDeclarativeItem)

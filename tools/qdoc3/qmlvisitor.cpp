@@ -69,18 +69,30 @@ QmlDocVisitor::~QmlDocVisitor()
 
 QDeclarativeJS::AST::SourceLocation QmlDocVisitor::precedingComment(quint32 offset) const
 {
-    QDeclarativeJS::AST::SourceLocation currentLoc;
+    QListIterator<QDeclarativeJS::AST::SourceLocation> it(engine->comments());
+    it.toBack();
 
-    foreach (const QDeclarativeJS::AST::SourceLocation &loc, engine->comments()) {
-        if (loc.begin() >= offset)
+    while (it.hasPrevious()) {
+
+        QDeclarativeJS::AST::SourceLocation loc = it.previous();
+
+        if (loc.begin() <= lastEndOffset)
+            // Return if we reach the end of the preceding structure.
             break;
-        else if (loc.begin() > lastEndOffset && loc.end() < offset)
-            currentLoc = loc;
-    }
-    if (currentLoc.isValid()) {
-        QString comment = document.mid(currentLoc.offset, currentLoc.length);
-        if (comment.startsWith("!") || comment.startsWith("*"))
-            return currentLoc;
+
+        else if (usedComments.contains(loc.begin()))
+            // Return if we encounter a previously used comment.
+            break;
+
+        else if (loc.begin() > lastEndOffset && loc.end() < offset) {
+
+            // Only examine multiline comments in order to avoid snippet markers.
+            if (document.mid(loc.offset - 1, 1) == "*") {
+                QString comment = document.mid(loc.offset, loc.length);
+                if (comment.startsWith("!") || comment.startsWith("*"))
+                    return loc;
+            }
+        }
     }
 
     return QDeclarativeJS::AST::SourceLocation();
@@ -93,20 +105,18 @@ void QmlDocVisitor::applyDocumentation(QDeclarativeJS::AST::SourceLocation locat
 
     if (loc.isValid()) {
         QString source = document.mid(loc.offset, loc.length);
-        if (source.startsWith(QLatin1String("!")) ||
-            (source.startsWith(QLatin1String("*")) &&
-             source[1] != QLatin1Char('*'))) {
 
-            Location start(filePath);
-            start.setLineNo(loc.startLine);
-            start.setColumnNo(loc.startColumn);
-            Location finish(filePath);
-            finish.setLineNo(loc.startLine);
-            finish.setColumnNo(loc.startColumn);
+        Location start(filePath);
+        start.setLineNo(loc.startLine);
+        start.setColumnNo(loc.startColumn);
+        Location finish(filePath);
+        finish.setLineNo(loc.startLine);
+        finish.setColumnNo(loc.startColumn);
 
-            Doc doc(start, finish, source.mid(1), commands);
-            node->setDoc(doc);
-        }
+        Doc doc(start, finish, source.mid(1), commands);
+        node->setDoc(doc);
+
+        usedComments.insert(loc.offset);
     }
 }
 
@@ -150,6 +160,11 @@ bool QmlDocVisitor::visit(QDeclarativeJS::AST::UiImportList *imports)
     importList.append(QPair<QString, QString>(module, version));
 
     return true;
+}
+
+void QmlDocVisitor::endVisit(QDeclarativeJS::AST::UiImportList *definition)
+{
+    lastEndOffset = definition->lastSourceLocation().end();
 }
 
 /*!

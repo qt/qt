@@ -30,28 +30,32 @@ symbian-abld|symbian-sbsv2 {
         # statements - they use the qmake generated statements instead
         # Static libraries obviously don't have DEF files, as they don't take part in dynamic linkage
         !contains(TEMPLATE, app):!contains(CONFIG, plugin):!contains(CONFIG, staticlib): {
+            # Symbian DEFFILE statements do not like drive letters, so remove it from the pro path.
+            FIXED_PRO_PATH = $$replace(_PRO_FILE_PWD_, "^.:", "")/
             !isEmpty(DEF_FILE) {
+                contains(DEF_FILE,"^/.*"): FIXED_PRO_PATH =
                 defBlock = \
                 "$${LITERAL_HASH}ifdef WINSCW" \
-                "DEFFILE $$DEF_FILE/bwins/$${clean_TARGET}.def" \
+                "DEFFILE $$FIXED_PRO_PATH$$DEF_FILE/bwins/$${clean_TARGET}.def" \
                 "$${LITERAL_HASH}elif defined EABI" \
-                "DEFFILE $$DEF_FILE/eabi/$${clean_TARGET}.def" \
+                "DEFFILE $$FIXED_PRO_PATH$$DEF_FILE/eabi/$${clean_TARGET}.def" \
                 "$${LITERAL_HASH}endif"
             } else:!isEmpty(defFilePath) {
+                contains(defFilePath,"^/.*"): FIXED_PRO_PATH =
                 defBlock = \
                 "$${LITERAL_HASH}ifdef WINSCW" \
-                "DEFFILE $$defFilePath/bwins/$${clean_TARGET}.def" \
+                "DEFFILE $$FIXED_PRO_PATH$$defFilePath/bwins/$${clean_TARGET}.def" \
                 "$${LITERAL_HASH}elif defined EABI" \
-                "DEFFILE $$defFilePath/eabi/$${clean_TARGET}.def" \
+                "DEFFILE $$FIXED_PRO_PATH$$defFilePath/eabi/$${clean_TARGET}.def" \
                 "$${LITERAL_HASH}endif"
             } else {
                 # If defFilePath is not defined, then put the folders containing the DEF files at the
                 # same level as the .pro (and generated MMP) file(s)
                 defBlock = \
                 "$${LITERAL_HASH}ifdef WINSCW" \
-                "DEFFILE ./bwins/$${clean_TARGET}.def" \
+                "DEFFILE $${FIXED_PRO_PATH}bwins/$${clean_TARGET}.def" \
                 "$${LITERAL_HASH}elif defined EABI" \
-                "DEFFILE ./eabi/$${clean_TARGET}.def" \
+                "DEFFILE $${FIXED_PRO_PATH}eabi/$${clean_TARGET}.def" \
                 "$${LITERAL_HASH}endif"
             }
             MMP_RULES += defBlock

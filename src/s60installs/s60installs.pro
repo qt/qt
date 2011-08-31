@@ -27,13 +27,16 @@ symbian: {
         $$QMAKE_LIBDIR_QT/QtTest$${QT_LIBINFIX}.dll \
         $$QMAKE_LIBDIR_QT/QtSql$${QT_LIBINFIX}.dll
 
+    # Symbian exports do not like absolute paths, so generate a relative path to original .pro file dir
+    S60_INSTALLS_SOURCE_DIR = $$relativeProPath()
+
     symbian-abld|symbian-sbsv2 {
         pluginLocations = $${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET)
         bearerPluginLocation = $${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET)
         bearerStubZ = $${EPOCROOT}$${HW_ZDIR}$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin
         BLD_INF_RULES.prj_exports += \
-            "qsymbianbearer.qtplugin /$${HW_ZDIR}$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin" \
-            "qsymbianbearer.qtplugin /epoc32/winscw/c$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin"
+            "$$S60_INSTALLS_SOURCE_DIR/qsymbianbearer.qtplugin /$${HW_ZDIR}$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin" \
+            "$$S60_INSTALLS_SOURCE_DIR/qsymbianbearer.qtplugin /epoc32/winscw/c$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin"
     } else {
         pluginLocations = $$QT_BUILD_TREE/plugins/s60
         bearerPluginLocation = $$QT_BUILD_TREE/plugins/bearer
@@ -171,5 +174,5 @@ symbian: {
         qtlibraries.files += $$QMAKE_LIBDIR_QT/QtMultimedia$${QT_LIBINFIX}.dll
     }
 
-    BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
+    BLD_INF_RULES.prj_exports += "$$S60_INSTALLS_SOURCE_DIR/qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
 }

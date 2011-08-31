@@ -1928,12 +1928,8 @@ found:
 
     if (line.textWidth > 0 && item < eng->layoutData->items.size())
         eng->maxWidth += lbh.spaceData.textWidth;
-    // In the latter case, text are drawn with trailing spaces at the beginning
-    // of a line, so the naturalTextWidth should contain the space width
-    if ((eng->option.flags() & QTextOption::IncludeTrailingSpaces) ||
-        (line.width == QFIXED_MAX && eng->isRightToLeft())) {
+    if (eng->option.flags() & QTextOption::IncludeTrailingSpaces)
         line.textWidth += lbh.spaceData.textWidth;
-    }
     if (lbh.spaceData.length) {
         line.length += lbh.spaceData.length;
         line.hasTrailingSpaces = true;

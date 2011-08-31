@@ -64,6 +64,7 @@ public:
     PureDocParser();
     virtual ~PureDocParser();
 
+    virtual QString language();
     virtual QStringList sourceFileNameFilter();
 };
 

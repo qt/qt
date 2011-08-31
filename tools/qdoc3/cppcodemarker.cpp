@@ -878,26 +878,6 @@ static const char * const keywordTable[] = {
     "signals", "slots", "emit", 0
 };
 
-static QString untabified(const QString &in)
-{
-    QString res;
-    int col = 0;
-    int i = 0;
-
-    for (; i < (int) in.length(); i++) {
-	if (in[i] == QChar('\t')) {
-	    res += QString("        " + (col & 0x7));
-	    col = (col + 8) & ~0x7;
-	} else {
-	    res += in[i];
-	    if (in[i] == QChar('\n'))
-		col = 0;
-	}
-    }
-
-    return res;
-}
-
 /*
     @char
     @class

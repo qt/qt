@@ -2788,6 +2788,8 @@ int QDateTime::secsTo(const QDateTime &other) const
 }
 
 /*!
+    \since 4.7
+
     Returns the number of milliseconds from this datetime to the \a other
     datetime. If the \a other datetime is earlier than this datetime,
     the value returned is negative.
@@ -4040,8 +4042,11 @@ static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time)
             RTz tz;
             User::LeaveIfError(tz.Connect());
             CleanupClosePushL(tz);
-            res.tm_isdst = tz.IsDaylightSavingOnL(*tz.GetTimeZoneIdL(),utcTTime);
+            CTzId *tzId = tz.GetTimeZoneIdL();
+            CleanupStack::PushL(tzId);
+            res.tm_isdst = tz.IsDaylightSavingOnL(*tzId,utcTTime);
             User::LeaveIfError(tz.ConvertToLocalTime(utcTTime));
+            CleanupStack::PopAndDestroy(tzId);
             CleanupStack::PopAndDestroy(&tz));
         if (KErrNone == err) {
             TDateTime localDateTime = utcTTime.DateTime();

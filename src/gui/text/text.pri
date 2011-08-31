@@ -106,14 +106,17 @@ unix:x11 {
 !embedded:!qpa:!x11:mac {
         HEADERS += \
                 text/qfontengine_mac_p.h
-        OBJECTIVE_HEADERS += \
-                text/qfontengine_coretext_p.h
 	SOURCES += \
                 text/qfont_mac.cpp \
                 text/qrawfont_mac.cpp
         OBJECTIVE_SOURCES += \
-                text/qfontengine_coretext.mm \
                 text/qfontengine_mac.mm
+}
+!embedded:!x11:mac {
+        OBJECTIVE_HEADERS += \
+                text/qfontengine_coretext_p.h
+        OBJECTIVE_SOURCES += \
+                text/qfontengine_coretext.mm
         contains(QT_CONFIG, harfbuzz) {
             DEFINES += QT_ENABLE_HARFBUZZ_FOR_MAC
         }
