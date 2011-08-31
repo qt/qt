@@ -784,6 +784,7 @@ void QDeclarativeListModelParser::setCustomData(QObject *obj, const QByteArray &
     QDeclarativeListModel *rv = static_cast<QDeclarativeListModel *>(obj);
 
     ModelNode *root = new ModelNode(rv->m_nested);
+    rv->m_nested->m_ownsRoot = true;
     rv->m_nested->_root = root;
     QStack<ModelNode *> nodes;
     nodes << root;

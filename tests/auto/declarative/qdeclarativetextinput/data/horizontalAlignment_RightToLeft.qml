@@ -18,6 +18,7 @@ Rectangle {
             objectName: "text"
             anchors.fill: parent
             text: top.text
+            focus: true
         }
     }
 }

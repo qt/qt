@@ -1667,7 +1667,7 @@ void DOMWindow::setLocation(const String& urlString, DOMWindow* activeWindow, DO
     if (completedURL.isNull())
         return;
 
-    if (isInsecureScriptAccess(activeWindow, urlString))
+    if (isInsecureScriptAccess(activeWindow, completedURL))
         return;
 
     // We want a new history item if we are processing a user gesture.
@@ -1746,7 +1746,7 @@ Frame* DOMWindow::createWindow(const String& urlString, const AtomicString& fram
     newFrame->loader()->setOpener(openerFrame);
     newFrame->page()->setOpenedByDOM();
 
-    if (newFrame->domWindow()->isInsecureScriptAccess(activeWindow, urlString))
+    if (newFrame->domWindow()->isInsecureScriptAccess(activeWindow, completedURL))
         return newFrame;
 
     if (function)
@@ -1796,7 +1796,9 @@ PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicStrin
         if (!activeFrame->loader()->shouldAllowNavigation(targetFrame))
             return 0;
 
-        if (isInsecureScriptAccess(activeWindow, urlString))
+        KURL completedURL = firstFrame->document()->completeURL(urlString);
+
+        if (targetFrame->domWindow()->isInsecureScriptAccess(activeWindow, completedURL))
             return targetFrame->domWindow();
 
         if (urlString.isEmpty())
@@ -1805,7 +1807,7 @@ PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicStrin
         // For whatever reason, Firefox uses the first window rather than the active window to
         // determine the outgoing referrer. We replicate that behavior here.
         targetFrame->navigationScheduler()->scheduleLocationChange(activeFrame->document()->securityOrigin(),
-            firstFrame->document()->completeURL(urlString).string(),
+            completedURL,
             firstFrame->loader()->outgoingReferrer(),
             !activeFrame->script()->anyPageIsProcessingUserGesture(), false);
 

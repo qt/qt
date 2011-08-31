@@ -2618,7 +2618,7 @@ void QDeclarativeGridView::positionViewAtIndex(int index, int mode)
 /*!
     \qmlmethod GridView::positionViewAtBeginning()
     \qmlmethod GridView::positionViewAtEnd()
-    \since QtQuick 1.1
+    \since Quick 1.1
 
     Positions the view at the beginning or end, taking into account any header or footer.
 
