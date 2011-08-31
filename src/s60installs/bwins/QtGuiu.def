@@ -13982,4 +13982,5 @@ EXPORTS
 	?qt_static_metacall@QGraphicsWidget@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13981 NONAME ; void QGraphicsWidget::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?qt_static_metacall@QShortcut@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13982 NONAME ; void QShortcut::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?endOfLine@QTextEngine@@AAEHH@Z @ 13983 NONAME ; int QTextEngine::endOfLine(int)
+	?queryKeyboardModifiers@QApplication@@SA?AV?$QFlags@W4KeyboardModifier@Qt@@@@XZ @ 13984 NONAME ; class QFlags<enum Qt::KeyboardModifier> QApplication::queryKeyboardModifiers(void)
 

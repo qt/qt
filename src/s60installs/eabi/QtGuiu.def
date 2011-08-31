@@ -12795,4 +12795,5 @@ EXPORTS
 	_ZTV19QIdentityProxyModel @ 12794 NONAME
 	_ZTV20QBlittablePixmapData @ 12795 NONAME
 	_Zls6QDebugPK13QSymbianEvent @ 12796 NONAME
+	_ZN12QApplication22queryKeyboardModifiersEv @ 12797 NONAME
 
