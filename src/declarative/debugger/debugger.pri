@@ -27,4 +27,5 @@ HEADERS += \
     $$PWD/qdeclarativeinspectorservice_p.h \
     $$PWD/qdeclarativeinspectorinterface_p.h \
     $$PWD/qjsdebuggeragent_p.h \
-    $$PWD/qjsdebugservice_p.h
+    $$PWD/qjsdebugservice_p.h \
+    $$PWD/qdeclarativedebug.h
