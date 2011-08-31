@@ -48,9 +48,7 @@ defineTest(qtAddLibrary) {
     symbian {
         isEqual(LIB_NAME, QtCore) {
             #workaround for dependency from f32file.h on e32svr.h which has moved location in symbian3
-            contains(SYMBIAN_VERSION, Symbian3) {
-                INCLUDEPATH *= $$OS_LAYER_SYSTEMINCLUDE
-            }
+            INCLUDEPATH *= $$OS_LAYER_SYSTEMINCLUDE
         } else:isEqual(LIB_NAME, QtGui) {
             # Needed for #include <QtGui> because qs60mainapplication.h includes aknapp.h
             INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE
