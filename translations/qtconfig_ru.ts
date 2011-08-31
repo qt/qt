@@ -5,23 +5,23 @@
     <name>MainWindow</name>
     <message>
         <source>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Appearance&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;Use this tab to customize the appearance of your Qt applications.&lt;/p&gt;&lt;p&gt;You can select the default GUI Style from the drop down list and customize the colors.&lt;/p&gt;&lt;p&gt;Any GUI Style plugins in your plugin path will automatically be added to the list of built-in Qt styles. (See the Library Paths tab for information on adding new plugin paths.)&lt;/p&gt;&lt;p&gt;When you choose 3-D Effects and Window Background colors, the Qt Configuration program will automatically generate a palette for you. To customize colors further, press the Tune Palette button to open the advanced palette editor.&lt;p&gt;The Preview Window shows what the selected Style and colors look like.</source>
-        <translation type="unfinished">&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Внешний вид&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;На этой вкладке можно настроить внешний вид приложений Qt.&lt;/p&gt;&lt;p&gt;Позволяет выбрать стиль интерфейса по умолчанию из выпадающего списка и настроить используемые стилем цвета.&lt;/p&gt;&lt;p&gt;Каждый стиль интерфейса, содержащийся в модулях, найденных в путях к модулям, автоматически добавляется в список встроенных стилей Qt (на вкладке Пути к библиотекам имеется более подробная информация о добавлении путей к модулям).&lt;/p&gt;&lt;p&gt;При выборе эффектов 3D и фоновых цветов окна программа настройки Qt автоматически создаст подходящую палитру. Для дальнейшей настройки цветов следует зайти в расширенный редактор палитры, нажав кнопку Настроить палитру.&lt;p&gt;В окне предпросмотра можно увидеть как будет выглядеть интерфейс с выбранными стилем и цветами.</translation>
+        <translation>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Внешний вид&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;На этой вкладке можно настроить внешний вид приложений Qt.&lt;/p&gt;&lt;p&gt;Позволяет выбрать стиль интерфейса по умолчанию из выпадающего списка и настроить используемые стилем цвета.&lt;/p&gt;&lt;p&gt;Каждый стиль интерфейса, содержащийся в модулях, найденных в путях к модулям, автоматически добавляется в список встроенных стилей Qt (на вкладке Пути к библиотекам имеется более подробная информация о добавлении путей к модулям).&lt;/p&gt;&lt;p&gt;При выборе эффектов 3D и фоновых цветов окна программа настройки Qt автоматически создаст подходящую палитру. Для дальнейшей настройки цветов следует зайти в расширенный редактор палитры, нажав кнопку Настроить палитру.&lt;p&gt;В окне предпросмотра можно увидеть как будет выглядеть интерфейс с выбранными стилем и цветами.</translation>
     </message>
     <message>
         <source>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Fonts&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;Use this tab to select the default font for your Qt applications. The selected font is shown (initially as &apos;Sample Text&apos;) in the line edit below the Family, Style and Point Size drop down lists.&lt;/p&gt;&lt;p&gt;Qt has a powerful font substitution feature that allows you to specify a list of substitute fonts.  Substitute fonts are used when a font cannot be loaded, or if the specified font doesn&apos;t have a particular character.&lt;p&gt;For example, if you select the font Lucida, which doesn&apos;t have Korean characters, but need to show some Korean text using the Mincho font family you can do so by adding Mincho to the list. Once Mincho is added, any Korean characters that are not found in the Lucida font will be taken from the Mincho font.  Because the font substitutions are lists, you can also select multiple families, such as Song Ti (for use with Chinese text).</source>
-        <translation type="unfinished">&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Шрифты&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;На этой вкладке можно выбрать шрифт по умолчанию для приложений Qt. Выбранный шрифт отображается в строке редактирования ниже выпадающих списков &quot;Шрифт&quot;, &quot;Начертание&quot; и &quot;Размер&quot; (по умолчанию это текст &quot;Текст для примера (Sample Text)&quot;).&lt;/p&gt;&lt;p&gt;Qt обладает мощным механизмом подмены шрифтов, который позволяет задавать список подставляемых шрифтов. Подставляемые шрифты используются, когда шрифт не удаётся загрузить или в нём отсутствуют необходимые символы.&lt;p&gt;Например, если требуется, чтобы при выборе шрифта Lucida, в котором отсутствуют корейские иероглифы, для отображения корейского текста использовался шрифт Mincho,то можно добавить его в список. После этого все корейские символы, отсутствующие в шрифте Lucida, будут браться из шрифта Mincho. Так как для замены используется список, то можно добавлять несколько шрифтов, например, можно также добавить шрифт Song Ti для отображения китайского текста.</translation>
+        <translation>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Шрифты&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;На этой вкладке можно выбрать шрифт по умолчанию для приложений Qt. Выбранный шрифт отображается в строке редактирования ниже выпадающих списков &quot;Шрифт&quot;, &quot;Начертание&quot; и &quot;Размер&quot; (по умолчанию это текст &quot;Текст для примера (Sample Text)&quot;).&lt;/p&gt;&lt;p&gt;Qt обладает мощным механизмом подмены шрифтов, который позволяет задавать список подставляемых шрифтов. Подставляемые шрифты используются, когда шрифт не удаётся загрузить или в нём отсутствуют необходимые символы.&lt;p&gt;Например, если требуется, чтобы при выборе шрифта Lucida, в котором отсутствуют корейские иероглифы, для отображения корейского текста использовался шрифт Mincho,то можно добавить его в список. После этого все корейские символы, отсутствующие в шрифте Lucida, будут браться из шрифта Mincho. Так как для замены используется список, то можно добавлять несколько шрифтов, например, можно также добавить шрифт Song Ti для отображения китайского текста.</translation>
     </message>
     <message>
         <source>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Interface&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;Use this tab to customize the feel of your Qt applications.&lt;/p&gt;&lt;p&gt;If the Resolve Symlinks checkbox is checked Qt will follow symlinks when handling URLs. For example, in the file dialog, if this setting is turned on and /usr/tmp is a symlink to /var/tmp, entering the /usr/tmp directory will cause the file dialog to change to /var/tmp.  With this setting turned off, symlinks are not resolved or followed.&lt;/p&gt;&lt;p&gt;The Global Strut setting is useful for people who require a minimum size for all widgets (e.g. when using a touch panel or for users who are visually impaired).  Leaving the Global Strut width and height at 0 will disable the Global Strut feature&lt;/p&gt;&lt;p&gt;XIM (Extended Input Methods) are used for entering characters in languages that have large character sets, for example, Chinese and Japanese.</source>
-        <translation type="unfinished">&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Интерфейс&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;На этой вкладке можно настроить поведение приложений Qt.&lt;/p&gt;&lt;p&gt;Если включено &quot;Разрешать символьные ссылки&quot;, Qt будет следовать по символьным ссылкам при обработке путей URL. Например, если эта функция включена и /usr/tmp является символьной ссылкой на /var/tmp, то в диалоге выбора файла при вводе пути к каталогу /usr/tmp он будет изменён на /var/tmp.&lt;/p&gt;&lt;p&gt;Функция &quot;Минимальные размеры&quot; предназначены для тех, кому необходимо чтобы элементы интерфейса были не менее заданного размера (например, при использовании сенсорной панели или для людей с проблемами зрения). Если задать 0 в полях &quot;минимальная ширина&quot; и &quot;минимальная высота&quot;, то данная функция будет отключена.&lt;/p&gt;&lt;p&gt;Метод ввода XIM (расширенные методы ввода) используется для ввода символов на языках с большим набором символов (например, китайском или японском).</translation>
+        <translation>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Интерфейс&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;На этой вкладке можно настроить поведение приложений Qt.&lt;/p&gt;&lt;p&gt;Если включено &quot;Разрешать символьные ссылки&quot;, Qt будет следовать по символьным ссылкам при обработке путей URL. Например, если эта функция включена и /usr/tmp является символьной ссылкой на /var/tmp, то в диалоге выбора файла при вводе пути к каталогу /usr/tmp он будет изменён на /var/tmp.&lt;/p&gt;&lt;p&gt;Функция &quot;Минимальные размеры&quot; предназначены для тех, кому необходимо чтобы элементы интерфейса были не менее заданного размера (например, при использовании сенсорной панели или для людей с проблемами зрения). Если задать 0 в полях &quot;минимальная ширина&quot; и &quot;минимальная высота&quot;, то данная функция будет отключена.&lt;/p&gt;&lt;p&gt;Метод ввода XIM (расширенные методы ввода) используется для ввода символов на языках с большим набором символов (например, китайском или японском).</translation>
     </message>
     <message>
         <source>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Printer&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;Use this tab to configure the way Qt generates output for the printer.You can specify if Qt should try to embed fonts into its generated output.If you enable font embedding, the resulting postscript will be more portable and will more accurately reflect the visual output on the screen; however the resulting postscript file size will be bigger.&lt;p&gt;When using font embedding you can select additional directories where Qt should search for embeddable font files.  By default, the X server font path is used.</source>
-        <translation type="unfinished">&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Принтер&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;На этой вкладке можно настроить способ, которым Qt будет подготавливать данные для печати. Можно указать следует ли встраивать шрифты - в этом случае напечатанные документы будут более похожи на те, что на экране, но при этом увеличится объём данных, передаваемых на печатающее устройство.&lt;p&gt;При использовании встраивания шрифтов можно указать дополнительные каталоги, в которых Qt будет искать файлы шрифтов для встраивания. По умолчанию используется путь к шрифтам X сервера.</translation>
+        <translation>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Принтер&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;На этой вкладке можно настроить способ, которым Qt будет подготавливать данные для печати. Можно указать следует ли встраивать шрифты - в этом случае напечатанные документы будут более похожи на те, что на экране, но при этом увеличится объём данных, передаваемых на печатающее устройство.&lt;p&gt;При использовании встраивания шрифтов можно указать дополнительные каталоги, в которых Qt будет искать файлы шрифтов для встраивания. По умолчанию используется путь к шрифтам X сервера.</translation>
     </message>
     <message>
         <source>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Phonon&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;Use this tab to configure the Phonon GStreamer multimedia backend. &lt;p&gt;It is reccommended to leave all settings on &quot;Auto&quot; to let Phonon determine your settings automatically.</source>
-        <translation type="unfinished">&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Phonon&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;На этой вкладке можно настроить мультимедийную подсистему Phonon GStreamer.&lt;p&gt;Рекомендуется оставить значение &quot;Автоматически&quot; для всех настроек, чтобы Phonon определил параметры самостоятельно.</translation>
+        <translation>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Phonon&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;На этой вкладке можно настроить мультимедийную подсистему Phonon GStreamer.&lt;p&gt;Рекомендуется оставить значение &quot;Автоматически&quot; для всех настроек, чтобы Phonon определил параметры самостоятельно.</translation>
     </message>
     <message>
         <source>Desktop Settings (Default)</source>
@@ -34,6 +34,10 @@
     <message>
         <source>On The Spot</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation>Неизвестный</translation>
     </message>
     <message>
         <source>Auto (default)</source>
@@ -92,6 +96,10 @@
         <translation>Сохранение изменений...</translation>
     </message>
     <message>
+        <source>Saved changes.</source>
+        <translation>Сохранённые изменения.</translation>
+    </message>
+    <message>
         <source>Over The Spot</source>
         <translation type="unfinished"></translation>
     </message>
@@ -124,25 +132,6 @@
         <translation>Сохранить изменения настроек?</translation>
     </message>
     <message>
-        <source>&amp;Yes</source>
-        <translation>&amp;Да</translation>
-    </message>
-    <message>
-        <source>&amp;No</source>
-        <translation>&amp;Нет</translation>
-    </message>
-    <message>
-        <source>&amp;Cancel</source>
-        <translation>От&amp;мена</translation>
-    </message>
-</context>
-<context>
-    <name>MainWindowBase</name>
-    <message>
-        <source>Qt Configuration</source>
-        <translation>Конфигурация Qt</translation>
-    </message>
-    <message>
         <source>Appearance</source>
         <translation>Внешний вид</translation>
     </message>
@@ -153,26 +142,6 @@
     <message>
         <source>Select GUI &amp;Style:</source>
         <translation>&amp;Стиль интерфейса:</translation>
-    </message>
-    <message>
-        <source>Build Palette</source>
-        <translation>Палитра</translation>
-    </message>
-    <message>
-        <source>&amp;3-D Effects:</source>
-        <translation>Эффекты &amp;3D:</translation>
-    </message>
-    <message>
-        <source>Window Back&amp;ground:</source>
-        <translation>&amp;Фон окна:</translation>
-    </message>
-    <message>
-        <source>&amp;Tune Palette...</source>
-        <translation>&amp;Настроить палитру...</translation>
-    </message>
-    <message>
-        <source>Please use the KDE Control Center to set the palette.</source>
-        <translation>Используйте Центр управления KDE для настройки цветов.</translation>
     </message>
     <message>
         <source>Preview</source>
@@ -193,6 +162,26 @@
     <message>
         <source>Disabled Palette</source>
         <translation>Палитра выключенных элементов</translation>
+    </message>
+    <message>
+        <source>Build Palette</source>
+        <translation>Палитра</translation>
+    </message>
+    <message>
+        <source>&amp;Button Background:</source>
+        <translation>Фон &amp;кнопки:</translation>
+    </message>
+    <message>
+        <source>Window Back&amp;ground:</source>
+        <translation>&amp;Фон окна:</translation>
+    </message>
+    <message>
+        <source>&amp;Tune Palette...</source>
+        <translation>&amp;Настроить палитру...</translation>
+    </message>
+    <message>
+        <source>Please use the KDE Control Center to set the palette.</source>
+        <translation>Используйте Центр управления KDE для настройки цветов.</translation>
     </message>
     <message>
         <source>Fonts</source>
@@ -256,7 +245,7 @@
     </message>
     <message>
         <source>Feel Settings</source>
-        <translation type="unfinished">Настройки поведения</translation>
+        <translation>Настройки поведения</translation>
     </message>
     <message>
         <source> ms</source>
@@ -296,7 +285,7 @@
     </message>
     <message>
         <source>Alt+E</source>
-        <translation>Alt+D</translation>
+        <translation></translation>
     </message>
     <message>
         <source>&amp;Menu Effect:</source>
@@ -351,22 +340,6 @@
         <translation>Стиль ввода XIM:</translation>
     </message>
     <message>
-        <source>On The Spot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Over The Spot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Off The Spot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Root</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Default Input Method:</source>
         <translation>Метод ввода по умолчанию:</translation>
     </message>
@@ -411,32 +384,16 @@
         <translation>Вэб-сайт:</translation>
     </message>
     <message>
-        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://phonon.kde.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://phonon.kde.org&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://phonon.kde.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://phonon.kde.org&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;a href=&quot;http://phonon.kde.org&quot;&gt;http://phonon.kde.org/&lt;/a&gt;</source>
+        <translation></translation>
     </message>
     <message>
         <source>About GStreamer</source>
         <translation>О GStreamer</translation>
     </message>
     <message>
-        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://gstreamer.freedesktop.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://gstreamer.freedesktop.org/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://gstreamer.freedesktop.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://gstreamer.freedesktop.org/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;a href=&quot;http://gstreamer.freedesktop.org/&quot;&gt;http://gstreamer.freedesktop.org/&lt;/a&gt;</source>
+        <translation></translation>
     </message>
     <message>
         <source>GStreamer backend settings</source>
@@ -480,7 +437,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Ctrl+S</source>
-        <translation>Ctrl+S</translation>
+        <translation></translation>
     </message>
     <message>
         <source>E&amp;xit</source>
@@ -489,6 +446,10 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Exit</source>
         <translation>Выход</translation>
+    </message>
+    <message>
+        <source>Ctrl+Q</source>
+        <translation></translation>
     </message>
     <message>
         <source>&amp;About</source>
@@ -508,14 +469,10 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
-    <name>PaletteEditorAdvancedBase</name>
+    <name>PaletteEditorAdvanced</name>
     <message>
         <source>Tune Palette</source>
         <translation>Настройка палитры</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;Edit Palette&lt;/b&gt;&lt;p&gt;Change the palette of the current widget or form.&lt;/p&gt;&lt;p&gt;Use a generated palette or select colors for each color group and each color role.&lt;/p&gt;&lt;p&gt;The palette can be tested with different widget layouts in the preview section.&lt;/p&gt;</source>
-        <translation>&lt;b&gt;Изменение палитры&lt;/b&gt;&lt;p&gt;Изменение палитры текущего виджета или формы.&lt;/p&gt;&lt;p&gt;Используйте сформированную палитру или выберите цвета для каждой группы цветов и каждой их роли.&lt;/p&gt;&lt;p&gt;Палитру можно проверить на виджетах в разных режимах отображения в разделе предпросмотра.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Select &amp;Palette:</source>
@@ -566,24 +523,37 @@ p, li { white-space: pre-wrap; }
         <translation>Текст окна</translation>
     </message>
     <message>
-        <source>Button</source>
-        <translation>Кнопка</translation>
-    </message>
-    <message>
         <source>Base</source>
         <translation>Фон</translation>
+    </message>
+    <message>
+        <source>AlternateBase</source>
+        <translation>Альтернативный Фон
+</translation>
+    </message>
+    <message>
+        <source>ToolTipBase</source>
+        <translation>Фон подсказки</translation>
+    </message>
+    <message>
+        <source>ToolTipText</source>
+        <translation>Текст подсказки</translation>
     </message>
     <message>
         <source>Text</source>
         <translation>Текст</translation>
     </message>
     <message>
-        <source>BrightText</source>
-        <translation>Светлый текст</translation>
+        <source>Button</source>
+        <translation>Кнопка</translation>
     </message>
     <message>
         <source>ButtonText</source>
         <translation>Текст на кнопке</translation>
+    </message>
+    <message>
+        <source>BrightText</source>
+        <translation>Светлый текст</translation>
     </message>
     <message>
         <source>Highlight</source>
@@ -594,24 +564,20 @@ p, li { white-space: pre-wrap; }
         <translation>Выделенный текст</translation>
     </message>
     <message>
+        <source>Link</source>
+        <translation>Ссылка</translation>
+    </message>
+    <message>
+        <source>LinkVisited</source>
+        <translation>Посещённая ссылка</translation>
+    </message>
+    <message>
         <source>&amp;Select Color:</source>
         <translation>&amp;Выбор цвета:</translation>
     </message>
     <message>
-        <source>Choose a color</source>
-        <translation>Выберите цвет</translation>
-    </message>
-    <message>
-        <source>Choose a color for the selected central color role.</source>
-        <translation>Выберите цвет для указанной роли.</translation>
-    </message>
-    <message>
         <source>3-D shadow &amp;effects</source>
         <translation>Эффекты т&amp;рехмерной тени</translation>
-    </message>
-    <message>
-        <source>Build &amp;from button color</source>
-        <translation>Получ&amp;ить из цвета кнопки</translation>
     </message>
     <message>
         <source>Generate shadings</source>
@@ -620,6 +586,10 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Check to let 3D-effect colors be calculated from button-color.</source>
         <translation>Создать цвета эффекта трёхмерности из цвета кнопки.</translation>
+    </message>
+    <message>
+        <source>Build &amp;from button color</source>
+        <translation>Получ&amp;ить из цвета кнопки</translation>
     </message>
     <message>
         <source>Choose 3D-effect color role</source>
@@ -654,24 +624,16 @@ p, li { white-space: pre-wrap; }
         <translation>Выбор &amp;цвета:</translation>
     </message>
     <message>
+        <source>Choose a color</source>
+        <translation>Выберите цвет</translation>
+    </message>
+    <message>
+        <source>Choose a color for the selected central color role.</source>
+        <translation>Выберите цвет для указанной роли.</translation>
+    </message>
+    <message>
         <source>Choose a color for the selected effect color role.</source>
         <translation>Выбор цвета для указанной роли.</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation>Принять</translation>
-    </message>
-    <message>
-        <source>Close dialog and apply all changes.</source>
-        <translation>Закрыть окно с применением изменений.</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>Отмена</translation>
-    </message>
-    <message>
-        <source>Close dialog and discard all changes.</source>
-        <translation>Закрыть окно с отменой изменений.</translation>
     </message>
 </context>
 <context>
@@ -682,64 +644,55 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
-    <name>PreviewWidgetBase</name>
+    <name>PreviewWidget</name>
     <message>
         <source>Preview Window</source>
         <translation>Окно предпросмотра</translation>
     </message>
     <message>
-        <source>ButtonGroup</source>
-        <translation>ButtonGroup</translation>
+        <source>GroupBox</source>
+        <translation type="unfinished">Объединение</translation>
     </message>
     <message>
         <source>RadioButton1</source>
-        <translation>RadioButton1</translation>
+        <translation type="unfinished">Переключатель1</translation>
     </message>
     <message>
         <source>RadioButton2</source>
-        <translation>RadioButton2</translation>
+        <translation type="unfinished">Переключатель2</translation>
     </message>
     <message>
         <source>RadioButton3</source>
-        <translation>RadioButton3</translation>
+        <translation type="unfinished">Переключатель3</translation>
     </message>
     <message>
-        <source>ButtonGroup2</source>
-        <translation>ButtonGroup2</translation>
+        <source>GroupBox2</source>
+        <translation type="unfinished">Объединение2</translation>
     </message>
     <message>
         <source>CheckBox1</source>
-        <translation>CheckBox1</translation>
+        <translation type="unfinished">Выключатель1</translation>
     </message>
     <message>
         <source>CheckBox2</source>
-        <translation>CheckBox2</translation>
+        <translation type="unfinished">Выключатель2</translation>
     </message>
     <message>
         <source>LineEdit</source>
-        <translation>LineEdit</translation>
+        <translation type="unfinished">Строка редактирования</translation>
     </message>
     <message>
         <source>ComboBox</source>
-        <translation>ComboBox</translation>
+        <translation type="unfinished">Выпадающий список</translation>
     </message>
     <message>
         <source>PushButton</source>
-        <translation>PushButton</translation>
+        <translation type="unfinished">Простая кнопка</translation>
     </message>
     <message>
-        <source>&lt;p&gt;
-&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;
-&lt;/p&gt;
-&lt;p&gt;
-&lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;
-&lt;/p&gt;</source>
-        <translation>&lt;p&gt;
-&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;
-&lt;/p&gt;
-&lt;p&gt;
-&lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;
-&lt;/p&gt;</translation>
+        <source>&lt;p&gt;&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;&lt;/p&gt;</source>
+        <translation></translation>
     </message>
 </context>
 </TS>

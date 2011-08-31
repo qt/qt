@@ -48,7 +48,7 @@
 
     \o \c :/qt/etc/qt.conf using the resource system
 
-    \o on Mac OS X, in the Resource directory inside the appliction
+    \o on Mac OS X, in the Resource directory inside the application
     bundle, for example \c assistant.app/Contents/Resources/qt.conf
 
     \o in the directory containing the application executable, i.e.
