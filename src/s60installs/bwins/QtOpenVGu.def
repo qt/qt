@@ -187,3 +187,4 @@ EXPORTS
 	?toVolatileImage@QVGPixmapData@@UBE?AVQVolatileImage@@XZ @ 186 NONAME ; class QVolatileImage QVGPixmapData::toVolatileImage(void) const
 	?supportsTransformations@QVGPaintEngine@@UBE_NMABVQTransform@@@Z @ 187 NONAME ; bool QVGPaintEngine::supportsTransformations(float, class QTransform const &) const
 	?features@QVGWindowSurface@@UBE?AV?$QFlags@W4WindowSurfaceFeature@QWindowSurface@@@@XZ @ 188 NONAME ; class QFlags<enum QWindowSurface::WindowSurfaceFeature> QVGWindowSurface::features(void) const
+
