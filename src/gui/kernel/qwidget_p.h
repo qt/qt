@@ -409,7 +409,7 @@ public:
 #ifdef Q_OS_SYMBIAN
     void setSoftKeys_sys(const QList<QAction*> &softkeys);
     void activateSymbianWindow(WId wid = 0);
-    void _q_delayedDestroy(WId winId);
+    void _q_cleanupWinIds();
 #endif
 
     void raise_sys();
@@ -889,6 +889,7 @@ public:
     void s60UpdateIsOpaque();
     void reparentChildren();
     void registerTouchWindow();
+    QList<WId> widCleanupList;
 #endif
 
 };
