@@ -400,4 +400,11 @@ EXPORTS
 	?warning@QXmlDefaultHandler@@UAE_NABVQXmlParseException@@@Z @ 399 NONAME ; bool QXmlDefaultHandler::warning(class QXmlParseException const &)
 	?EndOfDocument@QXmlInputSource@@2GB @ 400 NONAME ; unsigned short const QXmlInputSource::EndOfDocument
 	?EndOfData@QXmlInputSource@@2GB @ 401 NONAME ; unsigned short const QXmlInputSource::EndOfData
+	??0QXmlContentHandler@@QAE@XZ @ 402 NONAME ABSENT ; QXmlContentHandler::QXmlContentHandler(void)
+	??0QXmlDTDHandler@@QAE@XZ @ 403 NONAME ABSENT ; QXmlDTDHandler::QXmlDTDHandler(void)
+	??0QXmlReader@@QAE@XZ @ 404 NONAME ABSENT ; QXmlReader::QXmlReader(void)
+	??0QXmlLexicalHandler@@QAE@XZ @ 405 NONAME ABSENT ; QXmlLexicalHandler::QXmlLexicalHandler(void)
+	??0QXmlDeclHandler@@QAE@XZ @ 406 NONAME ABSENT ; QXmlDeclHandler::QXmlDeclHandler(void)
+	??0QXmlEntityResolver@@QAE@XZ @ 407 NONAME ABSENT ; QXmlEntityResolver::QXmlEntityResolver(void)
+	??0QXmlErrorHandler@@QAE@XZ @ 408 NONAME ABSENT ; QXmlErrorHandler::QXmlErrorHandler(void)
 
