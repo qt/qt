@@ -473,7 +473,7 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
     windowToMove->setUpdatesEnabled(false);
 
     if (!alwaysResize) {
-        if (gv->scene()) {
+        if (gv->scene() && S60->partial_keyboardAutoTranslation) {
             if (gv->scene()->focusItem()) {
                 // Check if the widget contains cursorPositionChanged signal and disconnect from it.
                 QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
