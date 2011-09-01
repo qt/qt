@@ -727,60 +727,59 @@ EXPORTS
 	_ZN17QGLGraphicsSystem17platformExtensionEv @ 726 NONAME
 	_ZN17QGLGraphicsSystem25releaseCachedGpuResourcesEv @ 727 NONAME
 	_ZThn4_N17QGLGraphicsSystem25releaseCachedGpuResourcesEv @ 728 NONAME
-	_ZN12QGLFunctionsC1Ev @ 729 NONAME
-	_ZN12QGLFunctionsC2EPK10QGLContext @ 730 NONAME
-	_ZN12QGLFunctionsC2Ev @ 731 NONAME
-	_ZN17QGLContextPrivate17qt_extensionFuncsE @ 732 NONAME DATA 60
-	_ZN20QGLTextureGlyphCache10setContextEPK10QGLContext @ 733 NONAME
-	_ZN20QGLTextureGlyphCache11fillTextureERKN18QTextureGlyphCache5CoordEj6QFixed @ 734 NONAME
-	_ZN20QGLTextureGlyphCacheC1EPK10QGLContextN21QFontEngineGlyphCache4TypeERK10QTransform @ 735 NONAME
-	_ZN20QGLTextureGlyphCacheC2EPK10QGLContextN21QFontEngineGlyphCache4TypeERK10QTransform @ 736 NONAME
-	_ZN22QGLEngineSharedShaders15qShaderSnippetsE @ 737 NONAME DATA 216
-	_ZN22QGLEngineSharedShaders16staticMetaObjectE @ 738 NONAME DATA 16
-	_ZN22QGLEngineSharedShaders17shadersForContextEPK10QGLContext @ 739 NONAME
-	_ZN22QGLEngineSharedShaders18cleanupCustomStageEP20QGLCustomShaderStage @ 740 NONAME
-	_ZN22QGLEngineSharedShaders18findProgramInCacheERK19QGLEngineShaderProg @ 741 NONAME
-	_ZN22QGLEngineSharedShaders19getStaticMetaObjectEv @ 742 NONAME
-	_ZN22QGLEngineSharedShadersC1EPK10QGLContext @ 743 NONAME
-	_ZN22QGLEngineSharedShadersC2EPK10QGLContext @ 744 NONAME
-	_ZN22QGLEngineSharedShadersD1Ev @ 745 NONAME
-	_ZN22QGLEngineSharedShadersD2Ev @ 746 NONAME
-	_ZN26QGLFramebufferObjectFormat9setMipmapEb @ 747 NONAME
-	_ZN27QGLContextGroupResourceBase5valueEPK10QGLContext @ 748 NONAME
-	_ZN27QGLContextGroupResourceBase6insertEPK10QGLContextPv @ 749 NONAME
-	_ZN27QGLContextGroupResourceBase7cleanupEPK10QGLContext @ 750 NONAME
-	_ZN27QGLContextGroupResourceBase7cleanupEPK10QGLContextPv @ 751 NONAME
-	_ZN27QGLContextGroupResourceBaseC2Ev @ 752 NONAME
-	_ZN27QGLContextGroupResourceBaseD0Ev @ 753 NONAME
-	_ZN27QGLContextGroupResourceBaseD1Ev @ 754 NONAME
-	_ZN27QGLContextGroupResourceBaseD2Ev @ 755 NONAME
-	_ZNK12QGLFunctions14openGLFeaturesEv @ 756 NONAME
-	_ZNK12QGLFunctions16hasOpenGLFeatureENS_13OpenGLFeatureE @ 757 NONAME
-	_ZNK14QGLPaintDevice9isFlippedEv @ 758 NONAME
-	_ZNK16QGLWindowSurface8featuresEv @ 759 NONAME
-	_ZNK26QGLFramebufferObjectFormat6mipmapEv @ 760 NONAME
-	_ZTI22QGLContextResourceBase @ 761 NONAME ABSENT
-	_ZTI27QGLContextGroupResourceBase @ 762 NONAME ABSENT
-	_ZTV22QGLContextResourceBase @ 763 NONAME ABSENT
-	_ZTV27QGLContextGroupResourceBase @ 764 NONAME ABSENT
-	_ZThn104_N20QGLTextureGlyphCacheD0Ev @ 765 NONAME
-	_ZThn104_N20QGLTextureGlyphCacheD1Ev @ 766 NONAME
-	_ZThn8_NK16QGLWindowSurface8featuresEv @ 767 NONAME
-	_ZN14QGLSignalProxy18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 768 NONAME
-	_ZN14QGLSignalProxy25staticMetaObjectExtraDataE @ 769 NONAME DATA 8
-	_ZN16QGLShaderProgram18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 770 NONAME
-	_ZN16QGLShaderProgram25staticMetaObjectExtraDataE @ 771 NONAME DATA 8
-	_ZN16QGLWindowSurface18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 772 NONAME
-	_ZN16QGLWindowSurface25staticMetaObjectExtraDataE @ 773 NONAME DATA 8
-	_ZN21QGraphicsShaderEffect18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 774 NONAME
-	_ZN21QGraphicsShaderEffect25staticMetaObjectExtraDataE @ 775 NONAME DATA 8
-	_ZN22QGLEngineShaderManager18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 776 NONAME
-	_ZN22QGLEngineShaderManager25staticMetaObjectExtraDataE @ 777 NONAME DATA 8
-	_ZN9QGLShader18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 778 NONAME
-	_ZN9QGLShader25staticMetaObjectExtraDataE @ 779 NONAME DATA 8
-	_ZN9QGLWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 780 NONAME
-	_ZN9QGLWidget25staticMetaObjectExtraDataE @ 781 NONAME DATA 8
-	_Z28qt_resolve_buffer_extensionsP10QGLContext @ 782 NONAME
-	_ZN12QGLFunctions21initializeGLFunctionsEPK10QGLContext @ 783 NONAME
-	_ZN12QGLFunctionsC1EPK10QGLContext @ 784 NONAME
+	_Z28qt_resolve_buffer_extensionsP10QGLContext @ 729 NONAME
+	_ZN12QGLFunctions21initializeGLFunctionsEPK10QGLContext @ 730 NONAME
+	_ZN12QGLFunctionsC1EPK10QGLContext @ 731 NONAME
+	_ZN12QGLFunctionsC1Ev @ 732 NONAME
+	_ZN12QGLFunctionsC2EPK10QGLContext @ 733 NONAME
+	_ZN12QGLFunctionsC2Ev @ 734 NONAME
+	_ZN14QGLSignalProxy18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 735 NONAME
+	_ZN14QGLSignalProxy25staticMetaObjectExtraDataE @ 736 NONAME DATA 8
+	_ZN16QGLShaderProgram18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 737 NONAME
+	_ZN16QGLShaderProgram25staticMetaObjectExtraDataE @ 738 NONAME DATA 8
+	_ZN16QGLWindowSurface18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 739 NONAME
+	_ZN16QGLWindowSurface25staticMetaObjectExtraDataE @ 740 NONAME DATA 8
+	_ZN17QGL2PaintEngineEx19drawPixmapFragmentsEPK6QRectFS2_iRK7QPixmap6QFlagsIN8QPainter18PixmapFragmentHintEE @ 741 NONAME
+	_ZN17QGLContextPrivate17qt_extensionFuncsE @ 742 NONAME DATA 64
+	_ZN20QGLTextureGlyphCache10setContextEPK10QGLContext @ 743 NONAME
+	_ZN20QGLTextureGlyphCache11fillTextureERKN18QTextureGlyphCache5CoordEj6QFixed @ 744 NONAME
+	_ZN20QGLTextureGlyphCacheC1EPK10QGLContextN21QFontEngineGlyphCache4TypeERK10QTransform @ 745 NONAME
+	_ZN20QGLTextureGlyphCacheC2EPK10QGLContextN21QFontEngineGlyphCache4TypeERK10QTransform @ 746 NONAME
+	_ZN21QGraphicsShaderEffect18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 747 NONAME
+	_ZN21QGraphicsShaderEffect25staticMetaObjectExtraDataE @ 748 NONAME DATA 8
+	_ZN22QGLEngineShaderManager18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 749 NONAME
+	_ZN22QGLEngineShaderManager25staticMetaObjectExtraDataE @ 750 NONAME DATA 8
+	_ZN22QGLEngineSharedShaders15qShaderSnippetsE @ 751 NONAME DATA 216
+	_ZN22QGLEngineSharedShaders16staticMetaObjectE @ 752 NONAME DATA 16
+	_ZN22QGLEngineSharedShaders17shadersForContextEPK10QGLContext @ 753 NONAME
+	_ZN22QGLEngineSharedShaders18cleanupCustomStageEP20QGLCustomShaderStage @ 754 NONAME
+	_ZN22QGLEngineSharedShaders18findProgramInCacheERK19QGLEngineShaderProg @ 755 NONAME
+	_ZN22QGLEngineSharedShaders19getStaticMetaObjectEv @ 756 NONAME
+	_ZN22QGLEngineSharedShadersC1EPK10QGLContext @ 757 NONAME
+	_ZN22QGLEngineSharedShadersC2EPK10QGLContext @ 758 NONAME
+	_ZN22QGLEngineSharedShadersD1Ev @ 759 NONAME
+	_ZN22QGLEngineSharedShadersD2Ev @ 760 NONAME
+	_ZN26QGLFramebufferObjectFormat9setMipmapEb @ 761 NONAME
+	_ZN27QGLContextGroupResourceBase5valueEPK10QGLContext @ 762 NONAME
+	_ZN27QGLContextGroupResourceBase6insertEPK10QGLContextPv @ 763 NONAME
+	_ZN27QGLContextGroupResourceBase7cleanupEPK10QGLContext @ 764 NONAME
+	_ZN27QGLContextGroupResourceBase7cleanupEPK10QGLContextPv @ 765 NONAME
+	_ZN27QGLContextGroupResourceBaseC2Ev @ 766 NONAME
+	_ZN27QGLContextGroupResourceBaseD0Ev @ 767 NONAME
+	_ZN27QGLContextGroupResourceBaseD1Ev @ 768 NONAME
+	_ZN27QGLContextGroupResourceBaseD2Ev @ 769 NONAME
+	_ZN9QGLShader18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 770 NONAME
+	_ZN9QGLShader25staticMetaObjectExtraDataE @ 771 NONAME DATA 8
+	_ZN9QGLWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 772 NONAME
+	_ZN9QGLWidget25staticMetaObjectExtraDataE @ 773 NONAME DATA 8
+	_ZNK12QGLFunctions14openGLFeaturesEv @ 774 NONAME
+	_ZNK12QGLFunctions16hasOpenGLFeatureENS_13OpenGLFeatureE @ 775 NONAME
+	_ZNK14QGLPaintDevice9isFlippedEv @ 776 NONAME
+	_ZNK16QGLWindowSurface8featuresEv @ 777 NONAME
+	_ZNK26QGLFramebufferObjectFormat6mipmapEv @ 778 NONAME
+	_ZTI27QGLContextGroupResourceBase @ 779 NONAME
+	_ZTV27QGLContextGroupResourceBase @ 780 NONAME
+	_ZThn104_N20QGLTextureGlyphCacheD0Ev @ 781 NONAME
+	_ZThn104_N20QGLTextureGlyphCacheD1Ev @ 782 NONAME
+	_ZThn8_NK16QGLWindowSurface8featuresEv @ 783 NONAME
 

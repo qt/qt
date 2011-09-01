@@ -365,7 +365,7 @@
 
 #endif /* ARM */
 
-#if CPU(ARM) || CPU(MIPS)
+#if CPU(ARM) || CPU(MIPS) || CPU(SH4)
 #define WTF_CPU_NEEDS_ALIGNED_ACCESS 1
 #endif
 
@@ -581,7 +581,7 @@
 #define WTF_USE_PTHREAD_BASED_QT 1
 #endif
 
-#if (PLATFORM(GTK) || PLATFORM(IOS) || PLATFORM(MAC) || PLATFORM(WIN) || (PLATFORM(QT) && (OS(DARWIN) || USE(PTHREAD_BASED_QT)) && !ENABLE(SINGLE_THREADED))) && !defined(ENABLE_JSC_MULTIPLE_THREADS)
+#if (PLATFORM(GTK) || PLATFORM(IOS) || PLATFORM(MAC) || PLATFORM(WIN) || (PLATFORM(QT) && (OS(DARWIN) || USE(PTHREAD_BASED_QT)) && !ENABLE(SINGLE_THREADED))) && !OS(QNX) && !defined(ENABLE_JSC_MULTIPLE_THREADS)
 #define ENABLE_JSC_MULTIPLE_THREADS 1
 #endif
 
@@ -1019,11 +1019,17 @@
 #define ENABLE_JIT 0
 #endif
 
+/* Disable JIT for WINSCW Symbian Emulator */
+#if !defined(ENABLE_JIT) && COMPILER(WINSCW)
+#define ENABLE_JIT 0
+#endif
+
 /* The JIT is enabled by default on all x86, x64-64, ARM & MIPS platforms. */
 #if !defined(ENABLE_JIT) \
     && (CPU(X86) || CPU(X86_64) || CPU(ARM) || CPU(MIPS)) \
     && (OS(DARWIN) || !COMPILER(GCC) || GCC_VERSION_AT_LEAST(4, 1, 0)) \
-    && !OS(WINCE)
+    && !OS(WINCE) \
+    && !OS(QNX)
 #define ENABLE_JIT 1
 #endif
 
@@ -1215,7 +1221,11 @@
    since most ports try to support sub-project independence, adding new headers
    to WTF causes many ports to break, and so this way we can address the build
    breakages one port at a time. */
+#if PLATFORM(QT)
+#define WTF_USE_EXPORT_MACROS 1
+#else
 #define WTF_USE_EXPORT_MACROS 0
+#endif
 
 #if PLATFORM(QT) || PLATFORM(GTK)
 #define WTF_USE_UNIX_DOMAIN_SOCKETS 1

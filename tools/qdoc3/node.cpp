@@ -157,16 +157,6 @@ void Node::setLink(LinkType linkType, const QString &link, const QString &desc)
 }
 
 /*!
-    Sets the information about the project and version a node was introduced
-    in. The string is simplified, removing excess whitespace before being
-    stored.
-*/
-void Node::setSince(const QString &since)
-{
-    sinc = since.simplified();
-}
-
-/*!
   Returns a string representing the access specifier.
  */
 QString Node::accessString() const
@@ -555,7 +545,8 @@ void InnerNode::removeFromRelated()
  */
 void InnerNode::deleteChildren()
 {
-    qDeleteAll(children);
+    NodeList childrenCopy = children; // `children` will be changed in ~Node()
+    qDeleteAll(childrenCopy);
 }
 
 /*!
@@ -1691,37 +1682,6 @@ bool QmlPropertyNode::fromTrool(Trool troolean, bool defaultValue)
     default:
         return defaultValue;
     }
-}
-
-static QString valueType(const QString &n)
-{
-    if (n == "QPoint")
-        return "QDeclarativePointValueType";
-    if (n == "QPointF")
-        return "QDeclarativePointFValueType";
-    if (n == "QSize")
-        return "QDeclarativeSizeValueType";
-    if (n == "QSizeF")
-        return "QDeclarativeSizeFValueType";
-    if (n == "QRect")
-        return "QDeclarativeRectValueType";
-    if (n == "QRectF")
-        return "QDeclarativeRectFValueType";
-    if (n == "QVector2D")
-        return "QDeclarativeVector2DValueType";
-    if (n == "QVector3D")
-        return "QDeclarativeVector3DValueType";
-    if (n == "QVector4D")
-        return "QDeclarativeVector4DValueType";
-    if (n == "QQuaternion")
-        return "QDeclarativeQuaternionValueType";
-    if (n == "QMatrix4x4")
-        return "QDeclarativeMatrix4x4ValueType";
-    if (n == "QEasingCurve")
-        return "QDeclarativeEasingValueType";
-    if (n == "QFont")
-        return "QDeclarativeFontValueType";
-    return QString();
 }
 
 /*!

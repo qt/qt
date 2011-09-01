@@ -64,8 +64,6 @@
 #define QT_EAknCursorPositionChanged MAknEdStateObserver::EAknEdwinStateEvent(6)
 // MAknEdStateObserver::EAknActivatePenInputRequest
 #define QT_EAknActivatePenInputRequest MAknEdStateObserver::EAknEdwinStateEvent(7)
-// MAknEdStateObserver::EAknClosePenInputRequest
-#define QT_EAknClosePenInputRequest MAknEdStateObserver::EAknEdwinStateEvent(10)
 
 // EAknEditorFlagSelectionVisible is only valid from 3.2 onwards.
 // Sym^3 AVKON FEP manager expects that this flag is used for FEP-aware editors
@@ -254,6 +252,9 @@ bool QCoeFepInputContext::needsInputPanel()
 
 bool QCoeFepInputContext::filterEvent(const QEvent *event)
 {
+    // The CloseSoftwareInputPanel event is not handled here, because the VK will automatically
+    // close when it discovers that the underlying widget does not have input capabilities.
+
     if (!focusWidget())
         return false;
 
@@ -316,12 +317,6 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
 
     if (!needsInputPanel())
         return false;
-
-    if ((event->type() == QEvent::CloseSoftwareInputPanel)
-        && (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0)) {
-        m_fepState->ReportAknEdStateEventL(QT_EAknClosePenInputRequest);
-        return false;
-    }
 
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
         // Only request virtual keyboard if it is not yet active or if this is the first time
@@ -479,7 +474,7 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
 
     if (!alwaysResize) {
         if (gv->scene()) {
-            if (gv->scene()->focusItem() && S60->partial_keyboardAutoTranslation) {
+            if (gv->scene()->focusItem()) {
                 // Check if the widget contains cursorPositionChanged signal and disconnect from it.
                 QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
                 int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
@@ -585,7 +580,7 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
     if (!moveWithinVisibleArea) {
         // Check if the widget contains cursorPositionChanged signal and connect to it.
         QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
-        if (gv->scene() && gv->scene()->focusItem() && S60->partial_keyboardAutoTranslation) {
+        if (gv->scene() && gv->scene()->focusItem()) {
             int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
             if (index != -1)
                 connect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
@@ -1085,18 +1080,7 @@ TInt QCoeFepInputContext::DocumentLengthForFep() const
         return 0;
 
     QVariant variant = w->inputMethodQuery(Qt::ImSurroundingText);
-
-    int size = variant.value<QString>().size() + m_preeditString.size();
-
-    // To fix an issue with backspaces not being generated if document size is zero,
-    // fake document length to be at least one always, except when dealing with
-    // hidden text widgets, where this faking would generate extra asterisk. Since the
-    // primary use of hidden text widgets is password fields, they are unlikely to
-    // support multiple lines anyway.
-    if (size == 0 && !(m_textCapabilities & TCoeInputCapabilities::ESecretText))
-        size = 1;
-
-    return size;
+    return variant.value<QString>().size() + m_preeditString.size();
 }
 
 TInt QCoeFepInputContext::DocumentMaximumLengthForFep() const
@@ -1179,12 +1163,6 @@ void QCoeFepInputContext::GetEditorContentForFep(TDes& aEditorContent, TInt aDoc
     // FEP expects the preedit string to be part of the editor content, so let's mix it in.
     int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
     text.insert(cursor, m_preeditString);
-
-    // Add additional space to empty non-password text to compensate
-    // for the fake length we specified in DocumentLengthForFep().
-    if (text.size() == 0 && !(m_textCapabilities & TCoeInputCapabilities::ESecretText))
-        text += QChar(0x20);
-
     aEditorContent.Copy(qt_QString2TPtrC(text.mid(aDocumentPosition, aLengthToRetrieve)));
 }
 

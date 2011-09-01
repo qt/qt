@@ -3098,7 +3098,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     ensurePen();
     ensureState();
 
-#if defined (Q_WS_WIN) || defined(Q_WS_MAC)
+#if defined (Q_WS_WIN) || defined(Q_WS_MAC) || (defined(Q_OS_MAC) && defined(Q_WS_QPA))
 
     if (!supportsTransformations(ti.fontEngine)) {
         QVarLengthArray<QFixedPoint> positions;
@@ -3438,7 +3438,7 @@ bool QRasterPaintEngine::supportsTransformations(const QFontEngine *fontEngine) 
 
 bool QRasterPaintEngine::supportsTransformations(qreal pixelSize, const QTransform &m) const
 {
-#if defined(Q_WS_MAC)
+#if defined(Q_WS_MAC) || (defined(Q_OS_MAC) && defined(Q_WS_QPA))
     // Mac font engines don't support scaling and rotation
     if (m.type() > QTransform::TxTranslate)
 #else
@@ -3552,7 +3552,7 @@ void QRasterPaintEngine::drawBitmap(const QPointF &pos, const QImage &image, QSp
                     spans[n].y = y;
                     spans[n].coverage = 255;
                     int len = 1;
-                    while (src_x < w-1 && src[(src_x+1) >> 3] & (0x1 << ((src_x+1) & 7))) {
+                    while (src_x+1 < w && src[(src_x+1) >> 3] & (0x1 << ((src_x+1) & 7))) {
                         ++src_x;
                         ++len;
                     }
@@ -3578,7 +3578,7 @@ void QRasterPaintEngine::drawBitmap(const QPointF &pos, const QImage &image, QSp
                     spans[n].y = y;
                     spans[n].coverage = 255;
                     int len = 1;
-                    while (src_x < w-1 && src[(src_x+1) >> 3] & (0x80 >> ((src_x+1) & 7))) {
+                    while (src_x+1 < w && src[(src_x+1) >> 3] & (0x80 >> ((src_x+1) & 7))) {
                         ++src_x;
                         ++len;
                     }

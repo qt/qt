@@ -4536,11 +4536,14 @@ struct QGLGlyphCoord {
 };
 
 struct QGLFontTexture {
+    QGLFontTexture() : data(0) { }
+    ~QGLFontTexture() { free(data); }
     int x_offset; // glyph offset within the
     int y_offset;
     GLuint texture;
     int width;
     int height;
+    uchar *data;
 };
 
 typedef QHash<glyph_t, QGLGlyphCoord*>  QGLGlyphHash;
@@ -4563,7 +4566,7 @@ public:
     QGLGlyphCoord *lookup(QFontEngine *, glyph_t);
     void cacheGlyphs(QGLContext *, QFontEngine *, glyph_t *glyphs, int numGlyphs);
     void cleanCache();
-    void allocTexture(int width, int height, GLuint texture);
+    void allocTexture(QGLFontTexture *);
 
 public slots:
     void cleanupContext(const QGLContext *);
@@ -4681,19 +4684,18 @@ void QGLGlyphCache::cleanCache()
     qt_context_cache.clear();
 }
 
-void QGLGlyphCache::allocTexture(int width, int height, GLuint texture)
+void QGLGlyphCache::allocTexture(QGLFontTexture *font_tex)
 {
-    uchar *tex_data = (uchar *) malloc(width*height*2);
-    memset(tex_data, 0, width*height*2);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    font_tex->data = (uchar *) malloc(font_tex->width*font_tex->height*2);
+    memset(font_tex->data, 0, font_tex->width*font_tex->height*2);
+    glBindTexture(GL_TEXTURE_2D, font_tex->texture);
 #ifndef QT_OPENGL_ES
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE8_ALPHA8,
-                 width, height, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, tex_data);
+                 font_tex->width, font_tex->height, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, font_tex->data);
 #else
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA,
-                 width, height, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, tex_data);
+                 font_tex->width, font_tex->height, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, font_tex->data);
 #endif
-    free(tex_data);
 }
 
 #if 0
@@ -4777,13 +4779,13 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, QFontEngine *fontEngine,
         Q_ASSERT(max_tex_size > 0);
         if (tex_width > max_tex_size)
             tex_width = max_tex_size;
-        allocTexture(tex_width, tex_height, font_texture);
         font_tex = new QGLFontTexture;
         font_tex->texture = font_texture;
         font_tex->x_offset = x_margin;
         font_tex->y_offset = y_margin;
         font_tex->width = tex_width;
         font_tex->height = tex_height;
+        allocTexture(font_tex);
 //         qDebug() << "new font tex - width:" << tex_width << "height:"<< tex_height
 //                  << hex << "tex id:" << font_tex->texture << "key:" << font_key << "num cached:" << qt_font_textures.size();
         qt_font_textures.insert(font_key, font_tex);
@@ -4806,21 +4808,19 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, QFontEngine *fontEngine,
                 font_tex->y_offset += strip_height;
                 if (font_tex->y_offset >= font_tex->height) {
                     // get hold of the old font texture
-                    uchar *old_tex_data = (uchar *) malloc(font_tex->width*font_tex->height*2);
+                    uchar *old_tex_data = font_tex->data;
                     int old_tex_height = font_tex->height;
-#ifndef QT_OPENGL_ES
-                    glGetTexImage(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, old_tex_data);
-#endif
 
                     // realloc a larger texture
                     glDeleteTextures(1, &font_tex->texture);
                     glGenTextures(1, &font_tex->texture);
                     font_tex->height = qt_next_power_of_two(font_tex->height + strip_height);
-                    allocTexture(font_tex->width, font_tex->height, font_tex->texture);
+                    allocTexture(font_tex);
 
                     // write back the old texture data
                     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, font_tex->width, old_tex_height,
                                     GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, old_tex_data);
+                    memcpy(font_tex->data, old_tex_data, font_tex->width*old_tex_height*2);
                     free(old_tex_data);
 
                     // update the texture coords and the y offset for the existing glyphs in
@@ -4868,8 +4868,10 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, QFontEngine *fontEngine,
                 }
 #endif
                 glyph_im = glyph_im.convertToFormat(QImage::Format_Indexed8);
+                int cacheLineStart = (font_tex->x_offset + font_tex->y_offset*font_tex->width)*2;
                 for (int y=0; y<glyph_im.height(); ++y) {
                     uchar *s = (uchar *) glyph_im.scanLine(y);
+                    int lineStart = idx;
                     for (int x=0; x<glyph_im.width(); ++x) {
                         uchar alpha = is8BitGray ? *s : qAlpha(glyph_im.color(*s));
                         tex_data[idx] = alpha;
@@ -4879,6 +4881,9 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, QFontEngine *fontEngine,
                     }
                     if (glyph_im.width()%2 != 0)
                         idx += 2;
+                    // update cache
+                    memcpy(font_tex->data+cacheLineStart, tex_data+lineStart, glyph_width*2);
+                    cacheLineStart += font_tex->width*2;
                 }
                 glTexSubImage2D(GL_TEXTURE_2D, 0, font_tex->x_offset, font_tex->y_offset,
                                 glyph_width, glyph_im.height(),
@@ -4950,7 +4955,7 @@ void QOpenGLPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     bool antialias = !(textItem->fontEngine()->fontDef.styleStrategy & QFont::NoAntialias)
-				   && (d->matrix.type() > QTransform::TxTranslate);
+                                   && (d->matrix.type() > QTransform::TxTranslate);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, antialias ? GL_LINEAR : GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, antialias ? GL_LINEAR : GL_NEAREST);
 
