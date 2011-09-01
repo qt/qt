@@ -29,7 +29,7 @@
     \page activeqt-dotnet.html
     \title Dot Net Example (ActiveQt)
 
-    The Dot Net example demonstrates how Qt objects can be used in a
+    \brief The Dot Net example demonstrates how Qt objects can be used in a
     .NET environment, and how .NET objects can be used in a Qt
     environment.
 

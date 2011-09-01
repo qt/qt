@@ -29,9 +29,11 @@
     \example script/helloscript
     \title Hello Script Example
 
-    The Hello Script example shows the basic use of Qt Script: How to embed
+    \brief The Hello Script example shows the basic use of Qt Script: How to embed
     a script engine into the application, how to evaluate a script, and how
-    to process the result of the evaluation. The example also shows how to
+    to process the result of the evaluation.
+    
+    The example also shows how to
     apply internationalization to scripts.
 
     \snippet examples/script/helloscript/main.cpp 0

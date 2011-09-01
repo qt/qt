@@ -3600,8 +3600,8 @@ void QDeclarativeItem::setSize(const QSizeF &size)
 bool QDeclarativeItem::hasActiveFocus() const
 {
     Q_D(const QDeclarativeItem);
-    return focusItem() == this ||
-           (d->flags & QGraphicsItem::ItemIsFocusScope && focusItem() != 0);
+    return (focusItem() && focusItem()->isVisible()) && (focusItem() == this ||
+           (d->flags & QGraphicsItem::ItemIsFocusScope && focusItem() != 0));
 }
 
 /*!

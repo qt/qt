@@ -29,9 +29,10 @@
   \example ipc/sharedmemory
   \title Shared Memory Example
 
-  The Shared Memory example shows how to use the QSharedMemory class
-  to implement inter-process communication using shared memory. To
-  build the example, run make. To run the example, start two instances
+  \brief The Shared Memory example shows how to use the QSharedMemory class
+  to implement inter-process communication using shared memory.
+  
+  To build the example, run make. To run the example, start two instances
   of the executable. The main() function creates an \l {QApplication}
   {application} and an instance of our example's Dialog class. The
   dialog is displayed and then control is passed to the application in

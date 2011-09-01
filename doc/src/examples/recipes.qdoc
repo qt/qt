@@ -29,7 +29,7 @@
   \example xmlpatterns/recipes
   \title Recipes Example
 
-  The Recipes example shows how to use QtXmlPatterns to query XML data
+  \brief The Recipes example shows how to use QtXmlPatterns to query XML data
   loaded from a file. 
 
   \tableofcontents

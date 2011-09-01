@@ -29,5 +29,7 @@
     \example demos/embedded/raycasting
     \title Ray Casting Demonstration
 
+    \brief The Ray Casting demo shows how to use ray casting to build a mid-1990s style first-person game.
+
     \image raycasting-demo.png
 */

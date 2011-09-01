@@ -29,7 +29,7 @@
     \example webkit/framecapture
     \title WebKit Frame Capture Example
 
-    The Frame Capture example shows how to use the WebKit browser engine to
+    \brief The Frame Capture example shows how to use the WebKit browser engine to
     obtain images of frames in a Web page.
 
     This example is designed to be run from the command line. Run the

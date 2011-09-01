@@ -29,7 +29,7 @@
     \example webkit/googlechat
     \title Google Chat Example
 
-    The Google Chat example shows how to use implement a simple Google Chat
+    \brief The Google Chat example shows how to use implement a simple Google Chat
     client with QtWebKit.
 
     \image googlechat-example.png
