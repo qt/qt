@@ -68,7 +68,7 @@ public:
 // Size of the large up-front reservation
 #if defined(__WINS__) 
 // Emulator has limited virtual address space
-const size_t largeReservationSize = 96*1024*1024;
+const size_t largeReservationSize = 64*1024*1024;
 #else
 // HW has plenty of virtual addresses
 const size_t largeReservationSize = 256*1024*1024;

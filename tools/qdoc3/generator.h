@@ -57,6 +57,12 @@
 
 QT_BEGIN_NAMESPACE
 
+typedef QMap<QString, const Node*> NodeMap;
+typedef QMultiMap<QString, Node*> NodeMultiMap;
+typedef QMap<QString, NodeMultiMap> NewSinceMaps;
+typedef QMap<Node*, NodeMultiMap> ParentMaps;
+typedef QMap<QString, NodeMap> NewClassMaps;
+
 class ClassNode;
 class Config;
 class CodeMarker;

@@ -1538,7 +1538,7 @@ int QTime::msec() const
 
     If \a format is Qt::ISODate, the string format corresponds to the
     ISO 8601 extended specification for representations of dates,
-    which is also HH:MM:SS. (However, contrary to ISO 8601, dates
+    which is also HH:mm:ss. (However, contrary to ISO 8601, dates
     before 15 October 1582 are handled as Julian dates, not Gregorian
     dates. See \l{QDate G and J} {Use of Gregorian and Julian
     Calendars}. This might change in a future version of Qt.)
@@ -2461,7 +2461,7 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
 
     If the \a format is Qt::ISODate, the string format corresponds
     to the ISO 8601 extended specification for representations of
-    dates and times, taking the form YYYY-MM-DDTHH:MM:SS[Z|[+|-]HH:MM],
+    dates and times, taking the form YYYY-MM-DDTHH:mm:ss[Z|[+|-]HH:mm],
     depending on the timeSpec() of the QDateTime. If the timeSpec()
     is Qt::UTC, Z will be appended to the string; if the timeSpec() is
     Qt::OffsetFromUTC the offset in hours and minutes from UTC will
@@ -2788,6 +2788,8 @@ int QDateTime::secsTo(const QDateTime &other) const
 }
 
 /*!
+    \since 4.7
+
     Returns the number of milliseconds from this datetime to the \a other
     datetime. If the \a other datetime is earlier than this datetime,
     the value returned is negative.

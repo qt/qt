@@ -432,9 +432,10 @@ int QMetaObject::constructorCount() const
 }
 
 /*!
-    Returns the number of methods in this class, including the number of
-    properties provided by each base class. These include signals and slots
-    as well as normal member functions.
+    Returns the number of methods known to the meta-object system in this class,
+    including the number of properties provided by each base class. These
+    include signals and slots as well as member functions declared with the
+    Q_INVOKABLE macro.
 
     Use code like the following to obtain a QStringList containing the methods
     specific to a given class:
@@ -1244,6 +1245,10 @@ bool QMetaObject::invokeMethod(QObject *obj,
     parameterTypes() and parameterNames(), a return typeName(), a
     tag(), and an access() specifier. You can use invoke() to invoke
     the method on an arbitrary QObject.
+
+    A method will only be registered with the meta-object system if it
+    is a slot, a signal, or declared with the Q_INVOKABLE macro.
+    Constructors can also be registered with Q_INVOKABLE.
 
     \sa QMetaObject, QMetaEnum, QMetaProperty, {Qt's Property System}
 */

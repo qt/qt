@@ -784,7 +784,7 @@ MakefileGenerator::init()
             (*it) = Option::fixPathToLocalOS((*it));
     }
 
-    { //get the output_dir into the pwd
+    if(!project->isActiveConfig("no_include_pwd")) { //get the output_dir into the pwd
         if(Option::output_dir != qmake_getpwd())
             project->values("INCLUDEPATH").append(".");
     }
@@ -1769,6 +1769,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
 {
     QString clean_targets;
     const QStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
+    QDir outputDir(Option::output_dir);
     for(QStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
         QString tmp_out = fileFixify(project->values((*it) + ".output").first(),
                                      Option::output_dir, Option::output_dir);
@@ -1960,9 +1961,11 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             QString cmd;
             if (isForSymbianSbsv2()) {
                 // In sbsv2 the command inputs and outputs need to use absolute paths
-                cmd = replaceExtraCompilerVariables(tmp_cmd,
-                    fileFixify(escapeFilePaths(inputs), FileFixifyAbsolute),
-                    fileFixify(QStringList(tmp_out), FileFixifyAbsolute));
+                QStringList absoluteInputs;
+                for (int i = 0; i < inputs.size(); ++i)
+                    absoluteInputs.append(escapeFilePath(outputDir.absoluteFilePath(inputs.at(i))));
+                cmd = replaceExtraCompilerVariables(tmp_cmd, absoluteInputs,
+                    QStringList(outputDir.absoluteFilePath(tmp_out)));
             } else {
                 cmd = replaceExtraCompilerVariables(tmp_cmd, escapeFilePaths(inputs), QStringList(tmp_out));
             }
@@ -1996,8 +1999,8 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             if (isForSymbianSbsv2()) {
                 // In sbsv2 the command inputs and outputs need to use absolute paths
                 cmd = replaceExtraCompilerVariables(tmp_cmd,
-                    fileFixify((*input), FileFixifyAbsolute),
-                    fileFixify(out, FileFixifyAbsolute));
+                    outputDir.absoluteFilePath(*input),
+                    outputDir.absoluteFilePath(out));
             } else {
                 cmd = replaceExtraCompilerVariables(tmp_cmd, (*input), out);
             }

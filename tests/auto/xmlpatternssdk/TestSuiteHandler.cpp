@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtDebug>
+#include <QDir>
 
 #include "qacceltreeresourceloader_p.h"
 #include "qnetworkaccessdelegator_p.h"
@@ -307,6 +308,22 @@ TestSuite *TestSuiteHandler::testSuite() const
 {
     return m_ts;
 }
+
+bool TestSuiteHandler::resolveEntity(const QString& publicId,
+                           const QString& systemId,
+                           QXmlInputSource*& ret)
+{
+    QFileInfo catFileName(m_catalogFile.path());
+    QFileInfo externalFileName(catFileName.absolutePath(), systemId);
+    QFile *file = new QFile(externalFileName.absoluteFilePath());
+    if (file->open(QIODevice::ReadOnly | QIODevice::Text)) {
+        ret = new QXmlInputSource(file);
+        return true;
+    }
+    return false;
+    //return QXmlDefaultHandler::resolveEntity(publicId, systemId, ret);
+}
+
 
 // vim: et:ts=4:sw=4:sts=4
 
