@@ -76,7 +76,7 @@ CodeMarker::~CodeMarker()
   A code market performs no initialization by default. Marker-specific
   initialization is performed in subclasses.
  */
-void CodeMarker::initializeMarker(const Config &config)
+void CodeMarker::initializeMarker(const Config& ) // config
 {
 }
 

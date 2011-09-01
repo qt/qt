@@ -62,6 +62,25 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_VERSION                         Doc::alias("version")
 int DitaXmlGenerator::id = 0;
 
+QString DitaXmlGenerator::sinceTitles[] =
+    {
+        "    New Namespaces",
+        "    New Classes",
+        "    New Member Functions",
+        "    New Functions in Namespaces",
+        "    New Global Functions",
+        "    New Macros",
+        "    New Enum Types",
+        "    New Typedefs",
+        "    New Properties",
+        "    New Variables",
+        "    New QML Elements",
+        "    New Qml Properties",
+        "    New Qml Signal Handlers",
+        "    New Qml Methods",
+        ""
+    };
+
 /*
   The strings in this array must appear in the same order as
   the values in enum DitaXmlGenerator::DitaTag.
@@ -751,7 +770,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         {
             writeStartTag(DT_codeblock);
             xmlWriter().writeAttribute("outputclass","cpp");
-            QString chars = trimmedTrailing(atom->string()); 
+            QString chars = trimmedTrailing(atom->string());
             writeText(chars, marker, relative);
             writeEndTag(); // </codeblock>
         }
@@ -3392,6 +3411,7 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
         "<@type>",         "<@type>",
         "<@headerfile>",   "<@headerfile>",
         "<@func>",         "<@func>",
+        "<@func ",         "<@func ",
         "<@param>",        "<@param>",
         "<@extra>",        "<@extra>",
         "</@link>",        "</@link>",
@@ -3404,7 +3424,7 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
     for (int i = 0, n = src.size(); i < n;) {
         if (src.at(i) == charLangle) {
             bool handled = false;
-            for (int k = 0; k != 12; ++k) {
+            for (int k = 0; k != 13; ++k) {
                 const QString & tag = spanTags[2 * k];
                 if (tag == QStringRef(&src, i, tag.length())) {
                     html += spanTags[2 * k + 1];
@@ -4317,7 +4337,8 @@ void DitaXmlGenerator::generateDetailedQmlMember(const Node* node,
                 writeStartTag(DT_li);
                 writeGuidAttribute((Node*)qpn);
                 QString attr;
-                if (!qpn->isWritable(myTree))
+                const ClassNode* cn = qpn->declarativeCppNode();
+                if (cn && !qpn->isWritable(myTree))
                     attr = "read-only";
                 if (qpgn->isDefault()) {
                     if (!attr.isEmpty())
