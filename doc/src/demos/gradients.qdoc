@@ -29,7 +29,7 @@
     \example demos/gradients
     \title Gradients
 
-    In this demo we show the various types of gradients that can
+    \brief The Gradients demo shows the various types of gradients that can
     be used in Qt.
 
     \image gradients-demo.png

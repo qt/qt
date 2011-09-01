@@ -29,6 +29,6 @@
     \example qtconcurrent/imagescaling
     \title QtConcurrent Image Scaling Example
 
-    The QtConcurrent Map example shows how to use the asynchronous
+    \brief The QtConcurrent Image Scaling example shows how to use the asynchronous
     QtConcurrent API to load and scale a collection of images.
 */

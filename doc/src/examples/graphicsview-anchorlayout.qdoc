@@ -29,6 +29,6 @@
     \example graphicsview/anchorlayout
     \title Anchor Layout Example
 
-    The Anchor Layout example demonstrates the use of the QGraphicsAnchorLayout
+    \brief The Anchor Layout example demonstrates the use of the QGraphicsAnchorLayout
     class.
 */

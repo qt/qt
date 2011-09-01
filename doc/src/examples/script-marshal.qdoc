@@ -29,6 +29,6 @@
     \example script/marshal
     \title Qt Script Marshalling Example
 
-    The Qt Script Marshalling example demonstrates the marshalling of value
+    \brief The Qt Script Marshalling example demonstrates the marshalling of value
     types between C++ and Qt Script.
 */

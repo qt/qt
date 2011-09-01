@@ -29,7 +29,7 @@
     \example qws/dbscreen
     \title Double Buffered Graphics Driver Example
 
-    The Double Buffered Graphics Driver example shows how to write your own
+    \brief The Double Buffered Graphics Driver example shows how to write your own
     double buffered graphics driver and add it to Qt for Embedded Linux.
 
     Similar to the \l{Accelerated Graphics Driver Example}, there are three steps

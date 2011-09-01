@@ -29,5 +29,7 @@
     \example effects/lighting
     \title Lighting Effect Example
 
+    \brief The Lighting Effect Example shows the QGraphicsDropShadowEffect in action.
+    
     \image lightingeffect-example.png
 */

@@ -29,9 +29,8 @@
     \example effects/fademessage
     \title Fade Message Effect Example
 
-    \div { style="text-align: center"}
-    \inlineimage fademessageeffect-example.png
-    \inlineimage fademessageeffect-example-faded.png
-    \enddiv
-
+    \brief The Fade Message Example shows the QGraphicsColorizeEffect in action.
+    
+    \image fademessageeffect-example.png
+    \image fademessageeffect-example-faded.png
 */

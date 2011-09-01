@@ -29,7 +29,7 @@
     \example script/customclass
     \title Custom Script Class Example
 
-    The Custom Script Class example shows how to use QScriptClass and QScriptClassPropertyIterator
+    \brief The Custom Script Class example shows how to use QScriptClass and QScriptClassPropertyIterator
     to implement a custom script class.
 
     The script class we are going to implement is called \c{ByteArray}. It provides a wrapper around

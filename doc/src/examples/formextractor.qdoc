@@ -29,7 +29,7 @@
     \example webkit/formextractor
     \title Form Extractor Example
 
-    The Form Extractor example shows how to use QWebFrame with JavaScript to
+    \brief The Form Extractor example shows how to use QWebFrame with JavaScript to
     extract form data.
 
     \image formextractor-example.png
