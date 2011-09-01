@@ -198,7 +198,7 @@ inline void QDirPrivate::resolveAbsoluteEntry() const
 
     QString absoluteName;
     if (fileEngine.isNull()) {
-        if (!dirEntry.isRelative()) {
+        if (!dirEntry.isRelative() && dirEntry.isClean()) {
             absoluteDirEntry = dirEntry;
             return;
         }
