@@ -29,7 +29,7 @@
     \example webkit/simplewebplugin
     \title Simple Web Plugin Example
 
-    The Simple Web Plugin example shows how to embed a regular Qt widget into a
+    \brief The Simple Web Plugin example shows how to embed a regular Qt widget into a
     Web page displayed using QWebView.
 
     \image webkit-simplewebplugin.png A table widget embedded in a Web page.
