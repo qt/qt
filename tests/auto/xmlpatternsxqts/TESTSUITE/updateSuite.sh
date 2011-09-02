@@ -47,21 +47,26 @@
 # when the test suite is publically released, it is possible as
 # according to W3C's usual license agreements.
 
-echo "*** This script typically doesn't need to be run. Test Suite is not available. So, this test is only a place holder! ***"
-exit 0
+echo "*** This script typically doesn't need to be run."
 
-# Download the test suite
+# There are two ways to retrieve test suites, via  cvs or direct downloading.
+# CVS always receive the latest release.
+
+# download test suite from http://dev.w3.org/2006/xquery-test-suite/
+
 TMPFILE='tmpfile'
-wget http://www.w3.org/Style/XSL/XSL-TestSuite.zip -O $TMPFILE
+wget http://dev.w3.org/2006/xquery-test-suite/PublicPagesStagingArea/XQTS_1_0_3.zip -O $TMPFILE
 unzip $TMPFILE
 rm $TMPFILE
 
-
 # This is W3C's internal CVS server, not the public dev.w3.org.
-# export CVSROOT="fenglich@cvs.w3.org:path is currently unknown"
+# export CVSROOT=":pserver:anonymous@dev.w3.org:/sources/public"
 
 # echo "*** Enter 'anonymous' as password. ***"
 # cvs login
+# cvs get 2006/xquery-test-suite
 
-mv catalog.xml catalogUnresolved.xml
-xmllint --noent  --output catalog.xml catalogUnresolved.xml
+# Substitute entity values for entity references
+mv XQTSCatalog.xml XQTSCatalogUnsolved.xml
+xmllint -noent -output XQTSCatalog.xml XQTSCatalogUnsolved.xml
+
