@@ -294,6 +294,9 @@ bool QGlyphRun::overline() const
 */
 void QGlyphRun::setOverline(bool overline)
 {
+    if (d->overline == overline)
+        return;
+
     detach();
     d->overline = overline;
 }
@@ -316,6 +319,9 @@ bool QGlyphRun::underline() const
 */
 void QGlyphRun::setUnderline(bool underline)
 {
+    if (d->underline == underline)
+        return;
+
     detach();
     d->underline = underline;
 }
@@ -338,6 +344,9 @@ bool QGlyphRun::strikeOut() const
 */
 void QGlyphRun::setStrikeOut(bool strikeOut)
 {
+    if (d->strikeOut == strikeOut)
+        return;
+
     detach();
     d->strikeOut = strikeOut;
 }
