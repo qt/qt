@@ -985,8 +985,8 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
             break;
         }
         case EDrawAnimation: {
-            CFbsBitmap* animationFrame;
-            CFbsBitmap* frameMask;
+            CFbsBitmap* animationFrame = 0;
+            CFbsBitmap* frameMask = 0;
             CAknBitmapAnimation* aknAnimation = 0;
             TBool constructedFromTheme = ETrue;
 

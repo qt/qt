@@ -2539,13 +2539,17 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             //Make toolbuttons in toolbar stretch the whole screen area
             if (widget && qobject_cast<const QToolBar *>(widget->parentWidget())) {
                 const QToolBar *tb = qobject_cast<const QToolBar *>(widget->parentWidget());
-                const bool parentCanGrowHorizontally = !(tb->sizePolicy().horizontalPolicy() == QSizePolicy::Fixed ||
-                        tb->sizePolicy().horizontalPolicy() == QSizePolicy::Maximum) && tb->orientation() == Qt::Horizontal;
+                bool parentCanGrowHorizontally = false;
+                if (tb) {
+                    parentCanGrowHorizontally = !(tb->sizePolicy().horizontalPolicy() == QSizePolicy::Fixed
+                       || tb->sizePolicy().horizontalPolicy() == QSizePolicy::Maximum)
+                       && tb->orientation() == Qt::Horizontal;
+                }
 
                 if (parentCanGrowHorizontally) {
                     int buttons = 0;
                     //Make the auto-stretch to happen only for horizontal orientation
-                    if (tb && tb->orientation() == Qt::Horizontal) {
+                    if (tb->orientation() == Qt::Horizontal) {
                         QList<QAction*> actionList =  tb->actions();
                         for (int i = 0; i < actionList.count(); i++) {
                             buttons++;
