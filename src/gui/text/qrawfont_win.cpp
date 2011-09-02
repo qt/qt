@@ -40,14 +40,15 @@
 ****************************************************************************/
 
 #include "qrawfont_p.h"
+
+#if !defined(QT_NO_RAWFONT)
+
 #include <private/qsystemlibrary_p.h>
 
 #if !defined(QT_NO_DIRECTWRITE)
 #  include "qfontenginedirectwrite_p.h"
 #  include <dwrite.h>
 #endif
-
-#if !defined(QT_NO_RAWFONT)
 
 QT_BEGIN_NAMESPACE
 
@@ -155,7 +156,7 @@ namespace {
     class EmbeddedFont
     {
     public:
-        EmbeddedFont(const QByteArray &fontData);
+        EmbeddedFont(const QByteArray &fontData) : m_fontData(fontData) {}
 
         QString changeFamilyName(const QString &newFamilyName);
         QByteArray data() const { return m_fontData; }
@@ -165,10 +166,6 @@ namespace {
     private:
         QByteArray m_fontData;
     };
-
-    EmbeddedFont::EmbeddedFont(const QByteArray &fontData) : m_fontData(fontData)
-    {
-    }
 
     TableDirectory *EmbeddedFont::tableDirectoryEntry(const QByteArray &tagName)
     {
@@ -551,22 +548,21 @@ void QRawFontPrivate::platformCleanUp()
     }
 }
 
-void QRawFontPrivate::platformLoadFromData(const QByteArray &_fontData,
+void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData,
                                            qreal pixelSize,
                                            QFont::HintingPreference hintingPreference)
 {
-    QByteArray fontData(_fontData);
     EmbeddedFont font(fontData);
 
 #if !defined(QT_NO_DIRECTWRITE)
     if (hintingPreference == QFont::PreferDefaultHinting
-     || hintingPreference == QFont::PreferFullHinting)
+        || hintingPreference == QFont::PreferFullHinting)
 #endif
     {
         GUID guid;
         CoCreateGuid(&guid);
 
-        QString uniqueFamilyName = QString::fromLatin1("f")
+        QString uniqueFamilyName = QLatin1Char('f')
                 + QString::number(guid.Data1, 36) + QLatin1Char('-')
                 + QString::number(guid.Data2, 36) + QLatin1Char('-')
                 + QString::number(guid.Data3, 36) + QLatin1Char('-')
@@ -582,9 +578,7 @@ void QRawFontPrivate::platformLoadFromData(const QByteArray &_fontData,
         resolveGdi32();
         if (ptrAddFontMemResourceEx && ptrRemoveFontMemResourceEx) {
             DWORD count = 0;
-            fontData = font.data();
-            fontHandle = ptrAddFontMemResourceEx(fontData.data(), fontData.size(), 0, &count);
-
+            fontHandle = ptrAddFontMemResourceEx((void *)fontData.constData(), fontData.size(), 0, &count);
             if (count == 0 && fontHandle != NULL) {
                 ptrRemoveFontMemResourceEx(fontHandle);
                 fontHandle = NULL;

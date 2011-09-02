@@ -135,9 +135,6 @@ public:
 
 private:
     friend class QRawFontPrivate;
-
-    void detach();
-
     QExplicitlySharedDataPointer<QRawFontPrivate> d;
 };
 
