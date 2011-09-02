@@ -110,7 +110,7 @@ typedef struct {
     TDrawType drawType; // Determines which native drawing routine is used to draw this item.
     int supportInfo;    // Defines the S60 versions that use the default graphics.
     // These two, define new graphics that are used in releases other than partMapEntry.supportInfo defined releases.
-    // In general, these are given in numeric form to allow style compilation in earlier 
+    // In general, these are given in numeric form to allow style compilation in earlier
     // native releases that do not contain the new graphics.
     int newMajorSkinId;
     int newMinorSkinId;
