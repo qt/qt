@@ -61,18 +61,16 @@ namespace {
         operator T() const
         {
             T littleEndian = 0;
-            for (int i=0; i<sizeof(T); ++i) {
+            for (int i = 0; i < int(sizeof(T)); ++i)
                 littleEndian |= data[i] << ((sizeof(T) - i - 1) * 8);
-            }
 
             return littleEndian;
         }
 
         BigEndian<T> &operator=(const T &t)
         {
-            for (int i=0; i<sizeof(T); ++i) {
+            for (int i = 0; i < int(sizeof(T)); ++i)
                 data[i] = ((t >> (sizeof(T) - i - 1) * 8) & 0xff);
-            }
 
             return *this;
         }
@@ -214,9 +212,9 @@ namespace {
                                                         + nameRecord->offset;
 
                     const BigEndian<quint16> *s = reinterpret_cast<const BigEndian<quint16> *>(ptr);
-                    for (int j=0; j<nameRecord->length / sizeof(quint16); ++j)
-                        name += QChar(s[j]);
-
+                    const BigEndian<quint16> *e = s + nameRecord->length / sizeof(quint16);
+                    while (s != e)
+                        name += QChar(*s++);
                     break;
                 }
             }
