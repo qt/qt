@@ -63,9 +63,6 @@ class Q_AUTOTEST_EXPORT QDeclarativeBorderImage : public QDeclarativeImageBase
     Q_PROPERTY(TileMode horizontalTileMode READ horizontalTileMode WRITE setHorizontalTileMode NOTIFY horizontalTileModeChanged)
     Q_PROPERTY(TileMode verticalTileMode READ verticalTileMode WRITE setVerticalTileMode NOTIFY verticalTileModeChanged)
 
-    // read-only for BorderImage
-    Q_PROPERTY(QSize sourceSize READ sourceSize NOTIFY sourceSizeChanged)
-
 public:
     QDeclarativeBorderImage(QDeclarativeItem *parent=0);
     ~QDeclarativeBorderImage();
@@ -83,10 +80,11 @@ public:
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
     void setSource(const QUrl &url);
 
+    void setSourceSize(const QSize&);
+
 Q_SIGNALS:
     void horizontalTileModeChanged();
     void verticalTileModeChanged();
-    void sourceSizeChanged();
 
 protected:
     virtual void load();
