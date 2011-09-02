@@ -1520,9 +1520,9 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 if (tabOverlap > borderThickness)
                     tabOverlap -= borderThickness;
 
-                const bool usesScrollButtons = 
+                const bool usesScrollButtons =
                     (widget) ? (qobject_cast<const QTabBar*>(widget))->usesScrollButtons() : false;
-                const int roomForScrollButton = 
+                const int roomForScrollButton =
                     usesScrollButtons ? QS60StylePrivate::pixelMetric(PM_TabBarScrollButtonWidth) : 0;
 
                 // adjust for overlapping tabs and scrollbuttons, if necessary
@@ -1563,9 +1563,9 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             int tabOverlap = pixelMetric(PM_TabBarTabOverlap);
             if (tabOverlap > borderThickness)
                 tabOverlap -= borderThickness;
-            const bool usesScrollButtons = 
+            const bool usesScrollButtons =
                 (widget) ? (qobject_cast<const QTabBar*>(widget))->usesScrollButtons() : false;
-            const int roomForScrollButton = 
+            const int roomForScrollButton =
                 usesScrollButtons ? QS60StylePrivate::pixelMetric(PM_TabBarScrollButtonWidth) : 0;
 
             switch (tab->shape) {
@@ -1771,7 +1771,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             //highlight and then it needs one to separate it whatever is shown after it (text/icon/both).
             const int moveByX = optionCheckBox.rect.width() + 2 * vSpacing;
             optionCheckBox.rect.moveCenter(QPoint(
-                    optionCheckBox.rect.center().x() + moveByX >> 1, 
+                    optionCheckBox.rect.center().x() + moveByX >> 1,
                     menuItem->rect.center().y()));
 
             if (optionMenuItem.direction != Qt::LeftToRight)
@@ -1785,11 +1785,11 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 const int end = optionMenuItem.rect.right() - spacing;
                 //-1 adjustment to avoid highlight being on top of possible separator item
                 const QRect highlightRect = QRect(
-                        QPoint(start, option->rect.top()), 
+                        QPoint(start, option->rect.top()),
                         QPoint(end, option->rect.bottom() - 1));
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, highlightRect, flags);
             }
-            
+
             if (checkable && !ignoreCheckMark)
                 drawPrimitive(PE_IndicatorMenuCheckMark, &optionCheckBox, painter, widget);
 
@@ -2072,8 +2072,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 if ((qstyleoption_cast<const QStyleOptionFocusRect *>(option) &&
                     (qobject_cast<const QRadioButton *>(widget) || qobject_cast<const QCheckBox *>(widget))))
                         QS60StylePrivate::drawSkinElement(
-                            QS60StylePrivate::isWidgetPressed(widget) ? 
-                                QS60StylePrivate::SE_ListItemPressed : 
+                            QS60StylePrivate::isWidgetPressed(widget) ?
+                                QS60StylePrivate::SE_ListItemPressed :
                                 QS60StylePrivate::SE_ListHighlight, painter, option->rect, flags);
             } else {
                 commonStyleDraws = true;
@@ -2831,9 +2831,9 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             // Normally spinbuttons should be side-by-side, but if spinbox grows very big
             // and spinbuttons reach their maximum size, they can be deployed one top of the other.
             const bool sideBySide = (buttonSize.height() * 2 < spinbox->rect.height()) ? false : true;
-            const int y = frameThickness + spinbox->rect.y() +  
+            const int y = frameThickness + spinbox->rect.y() +
                           (spinbox->rect.height() - (sideBySide ? 1 : 2) * buttonSize.height()) / 2;
-            const int x = spinbox->rect.x() + 
+            const int x = spinbox->rect.x() +
                           spinbox->rect.width() - frameThickness - (sideBySide ? 2 : 1) * buttonSize.width();
 
             switch (scontrol) {
@@ -2845,8 +2845,8 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 case SC_SpinBoxDown:
                     if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
                         return QRect();
-                    ret = QRect(x + (sideBySide ? buttonSize.width() : 0), 
-                                y + (sideBySide ? 0 : buttonSize.height()), 
+                    ret = QRect(x + (sideBySide ? buttonSize.width() : 0),
+                                y + (sideBySide ? 0 : buttonSize.height()),
                                 buttonSize.width(), buttonSize.height());
                     break;
                 case SC_SpinBoxEditField:
@@ -3780,7 +3780,7 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
 
     const QS60StylePrivate::SkinElementFlags flags = adjustedFlags;
     const int iconDimension = QS60StylePrivate::pixelMetric(metric);
-    const QRect iconSize = (!option) ? 
+    const QRect iconSize = (!option) ?
         QRect(0, 0, iconDimension * iconWidthMultiplier, iconDimension * iconHeightMultiplier) : option->rect;
     const QPixmap cachedPixMap(QS60StylePrivate::cachedPart(part, iconSize.size(), 0, flags));
     return cachedPixMap.isNull() ?
