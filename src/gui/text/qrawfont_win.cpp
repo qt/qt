@@ -525,22 +525,31 @@ extern QFontEngine *qt_load_font_engine_win(const QFontDef &request);
 // From qfontdatabase.cpp
 extern QFont::Weight weightFromInteger(int weight);
 
+typedef HANDLE (WINAPI *PtrAddFontMemResourceEx)(PVOID, DWORD, PVOID, DWORD *);
+static PtrAddFontMemResourceEx ptrAddFontMemResourceEx = 0;
+typedef BOOL (WINAPI *PtrRemoveFontMemResourceEx)(HANDLE);
+static PtrRemoveFontMemResourceEx ptrRemoveFontMemResourceEx = 0;
+
+static void resolveGdi32()
+{
+    static bool triedResolve = false;
+    if (!triedResolve) {
+        QSystemLibrary gdi32(QLatin1String("gdi32"));
+        if (gdi32.load()) {
+            ptrAddFontMemResourceEx = (PtrAddFontMemResourceEx)gdi32.resolve("AddFontMemResourceEx");
+            ptrRemoveFontMemResourceEx = (PtrRemoveFontMemResourceEx)gdi32.resolve("RemoveFontMemResourceEx");
+        }
+
+        triedResolve = true;
+    }
+}
+
 void QRawFontPrivate::platformCleanUp()
 {
     if (fontHandle != NULL) {
-        if (ptrRemoveFontMemResourceEx == NULL) {
-            void *func = QSystemLibrary::resolve(QLatin1String("gdi32"), "RemoveFontMemResourceEx");
-            ptrRemoveFontMemResourceEx =
-                    reinterpret_cast<QRawFontPrivate::PtrRemoveFontMemResourceEx>(func);
-        }
-
-        if (ptrRemoveFontMemResourceEx == NULL) {
-            qWarning("QRawFont::platformCleanUp: Can't find RemoveFontMemResourceEx in gdi32");
-            fontHandle = NULL;
-        } else {
+        if (ptrRemoveFontMemResourceEx)
             ptrRemoveFontMemResourceEx(fontHandle);
-            fontHandle = NULL;
-        }
+        fontHandle = NULL;
     }
 }
 
@@ -571,18 +580,9 @@ void QRawFontPrivate::platformLoadFromData(const QByteArray &_fontData,
             return;
         }
 
-        if (ptrAddFontMemResourceEx == NULL || ptrRemoveFontMemResourceEx == NULL) {
-            void *func = QSystemLibrary::resolve(QLatin1String("gdi32"), "RemoveFontMemResourceEx");
-            ptrRemoveFontMemResourceEx =
-                    reinterpret_cast<QRawFontPrivate::PtrRemoveFontMemResourceEx>(func);
-
-            func = QSystemLibrary::resolve(QLatin1String("gdi32"), "AddFontMemResourceEx");
-            ptrAddFontMemResourceEx =
-                    reinterpret_cast<QRawFontPrivate::PtrAddFontMemResourceEx>(func);
-        }
-
         Q_ASSERT(fontHandle == NULL);
-        if (ptrAddFontMemResourceEx != NULL && ptrRemoveFontMemResourceEx != NULL) {
+        resolveGdi32();
+        if (ptrAddFontMemResourceEx && ptrRemoveFontMemResourceEx) {
             DWORD count = 0;
             fontData = font.data();
             fontHandle = ptrAddFontMemResourceEx(fontData.data(), fontData.size(), 0, &count);

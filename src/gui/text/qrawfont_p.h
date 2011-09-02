@@ -71,21 +71,17 @@ public:
         , thread(0)
 #if defined(Q_WS_WIN)
         , fontHandle(NULL)
-        , ptrAddFontMemResourceEx(NULL)
-        , ptrRemoveFontMemResourceEx(NULL)
 #endif
     {}
 
     QRawFontPrivate(const QRawFontPrivate &other)
-        : hintingPreference(other.hintingPreference)
+        : fontEngine(other.fontEngine)
+        , hintingPreference(other.hintingPreference)
         , thread(other.thread)
 #if defined(Q_WS_WIN)
         , fontHandle(NULL)
-        , ptrAddFontMemResourceEx(other.ptrAddFontMemResourceEx)
-        , ptrRemoveFontMemResourceEx(other.ptrRemoveFontMemResourceEx)
 #endif
     {
-        fontEngine = other.fontEngine;
         if (fontEngine != 0)
             fontEngine->ref.ref();
     }
@@ -111,14 +107,7 @@ public:
 
 #if defined(Q_WS_WIN)
     HANDLE fontHandle;
-
-    typedef HANDLE (WINAPI *PtrAddFontMemResourceEx)(PVOID, DWORD, PVOID, DWORD *);
-    typedef BOOL (WINAPI *PtrRemoveFontMemResourceEx)(HANDLE);
-
-    PtrAddFontMemResourceEx ptrAddFontMemResourceEx;
-    PtrRemoveFontMemResourceEx ptrRemoveFontMemResourceEx;
-
-#endif // Q_WS_WIN
+#endif
 };
 
 QT_END_NAMESPACE
