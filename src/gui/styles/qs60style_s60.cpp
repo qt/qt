@@ -91,6 +91,7 @@ enum TSupportRelease {
     ES60_5_1      = 0x0008,
     ES60_5_2      = 0x0010,
     ES60_5_3      = 0x0020,
+    ES60_5_4      = 0x0040,
     ES60_3_X      = ES60_3_1 | ES60_3_2,
     // Releases before Symbian Foundation
     ES60_PreSF    = ES60_3_1 | ES60_3_2 | ES60_5_0,
@@ -98,8 +99,10 @@ enum TSupportRelease {
     ES60_Pre52    = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1,
     // Releases before S60 5.3
     ES60_Pre53    = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1 | ES60_5_2,
+    // Releases before S60 5.4
+    ES60_Pre54    = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1 | ES60_5_2 | ES60_5_3,
     // Add all new releases here
-    ES60_All = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1 | ES60_5_2 | ES60_5_3
+    ES60_All = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1 | ES60_5_2 | ES60_5_3 | ES60_5_4
 };
 
 typedef struct {
@@ -708,7 +711,7 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsLX(
         colorIndex,
         icon,
         iconMask,
-        AknIconUtils::AvkonIconFileName(),
+        (fallbackGraphicID != KErrNotFound ? AknIconUtils::AvkonIconFileName() : KNullDesC),
         fallbackGraphicID,
         fallbackGraphicsMaskID,
         defaultColor);
@@ -946,7 +949,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
                 skinId,
                 icon,
                 iconMask,
-                AknIconUtils::AvkonIconFileName(),
+                (fallbackGraphicID != KErrNotFound ? AknIconUtils::AvkonIconFileName() : KNullDesC),
                 fallbackGraphicID ,
                 fallbackGraphicsMaskID);
 
@@ -1040,7 +1043,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
                     KAknsIIDDefault, //animation is not themed, lets force fallback graphics
                     animationFrame,
                     frameMask,
-                    AknIconUtils::AvkonIconFileName(),
+                    (fallbackGraphicID != KErrNotFound ? AknIconUtils::AvkonIconFileName() : KNullDesC),
                     fallbackGraphicID ,
                     fallbackGraphicsMaskID);
             }
@@ -1264,7 +1267,8 @@ bool QS60StyleModeSpecifics::checkSupport(const int supportedRelease)
              (currentRelease == QSysInfo::SV_S60_5_0 && supportedRelease & ES60_5_0) ||
              (currentRelease == QSysInfo::SV_S60_5_1 && supportedRelease & ES60_5_1) ||
              (currentRelease == QSysInfo::SV_S60_5_2 && supportedRelease & ES60_5_2) ||
-             (currentRelease == QSysInfo::SV_S60_5_3 && supportedRelease & ES60_5_3) );
+             (currentRelease == QSysInfo::SV_S60_5_3 && supportedRelease & ES60_5_3) ||
+             (currentRelease == QSysInfo::SV_S60_5_4 && supportedRelease & ES60_5_4) );
 }
 
 TAknsItemID QS60StyleModeSpecifics::partSpecificThemeId(int part)

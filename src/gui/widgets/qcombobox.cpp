@@ -2473,7 +2473,7 @@ void QComboBox::showPopup()
         } else {
             TRect staConTopRect = TRect();
             AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStaconTop, staConTopRect);
-            listRect.setWidth(listRect.height());
+            listRect.setWidth(screen.height());
             //by default popup is centered on screen in landscape
             listRect.moveCenter(screen.center());
             if (staConTopRect.IsEmpty()) {

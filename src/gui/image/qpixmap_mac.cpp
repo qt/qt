@@ -840,7 +840,33 @@ static void qt_mac_grabDisplayRect(CGDirectDisplayID display, const QRect &displ
     ptrCGLDestroyContext(glContextObj); // and destroy the context
 }
 
+#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
 // Returns a pixmap containing the screen contents at rect.
+static QPixmap qt_mac_grabScreenRect_10_6(const QRect &rect)
+{
+    const int maxDisplays = 128; // 128 displays should be enough for everyone.
+    CGDirectDisplayID displays[maxDisplays];
+    CGDisplayCount displayCount;
+    const CGRect cgRect = CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
+    const CGDisplayErr err = CGGetDisplaysWithRect(cgRect, maxDisplays, displays, &displayCount);
+
+    if (err && displayCount == 0)
+        return QPixmap();
+    QPixmap windowPixmap(rect.size());
+    for (uint i = 0; i < displayCount; ++i) {
+        const CGRect bounds = CGDisplayBounds(displays[i]);
+        // Translate to display-local coordinates
+        QRect displayRect = rect.translated(qRound(-bounds.origin.x), qRound(-bounds.origin.y));
+        QCFType<CGImageRef> image = CGDisplayCreateImageForRect(displays[i],
+            CGRectMake(displayRect.x(), displayRect.y(), displayRect.width(), displayRect.height()));
+        QPixmap pix = QPixmap::fromMacCGImageRef(image);
+        QPainter painter(&windowPixmap);
+        painter.drawPixmap(-bounds.origin.x, -bounds.origin.y, pix);
+    }
+    return windowPixmap;
+}
+#endif
+
 static QPixmap qt_mac_grabScreenRect(const QRect &rect)
 {
     if (!resolveOpenGLSymbols())
@@ -916,7 +942,12 @@ QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
     QRect rect(globalCoord.x() + x, globalCoord.y() + y, w, h);
 
 #ifdef QT_MAC_USE_COCOA
-    return qt_mac_grabScreenRect(rect);
+#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6)
+        return qt_mac_grabScreenRect_10_6(rect);
+    else
+#endif
+        return qt_mac_grabScreenRect(rect);
 #else
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {

@@ -199,8 +199,13 @@ Rectangle {
 
 */
 
+#ifdef Q_OS_SYMBIAN
+#define OBSERVE_GL_CONTEXT_LOSS 1
+#endif
+
 ShaderEffectItem::ShaderEffectItem(QDeclarativeItem *parent)
     : QDeclarativeItem(parent)
+    , m_program(0)
     , m_meshResolution(1, 1)
     , m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4)
     , m_blending(true)
@@ -214,15 +219,21 @@ ShaderEffectItem::ShaderEffectItem(QDeclarativeItem *parent)
     , m_hasShaderPrograms(false)
     , m_mirrored(false)
     , m_defaultVertexShader(true)
+    , m_contextObserver(0)
 {
     setFlag(QGraphicsItem::ItemHasNoContents, false);
     connect(this, SIGNAL(visibleChanged()), this, SLOT(handleVisibilityChange()));
     m_active = isVisible();
+
+#ifndef OBSERVE_GL_CONTEXT_LOSS
+    m_program = new QGLShaderProgram(this);
+#endif
 }
 
 ShaderEffectItem::~ShaderEffectItem()
 {
     reset();
+    delete m_contextObserver;
 }
 
 
@@ -422,10 +433,38 @@ void ShaderEffectItem::renderEffect(QPainter *painter, const QMatrix4x4 &matrix)
     if (!painter || !painter->device())
         return;
 
-    if (!m_program.isLinked() || m_program_dirty)
+#ifdef OBSERVE_GL_CONTEXT_LOSS
+    QGLContext *context = const_cast <QGLContext*> (QGLContext::currentContext());
+    if (!m_program || !m_contextObserver || !m_contextObserver->isValid()) {
+        // Context has changed, re-create QGLShaderProgram
+        if (context) {
+            delete m_program;
+            m_program = 0;
+
+            delete m_contextObserver;
+            m_contextObserver = 0;
+
+            m_program = new QGLShaderProgram(this);
+            m_contextObserver = new QGLFramebufferObject(QSize(2,2));
+
+            if (!m_contextObserver || !m_program) {
+                delete m_program;
+                m_program = 0;
+                delete m_contextObserver;
+                m_contextObserver = 0;
+                qWarning() << "ShaderEffectItem::renderEffect - Creating QGLShaderProgram or QGLFrameBufferObject failed!";
+            }
+        }
+    }
+#endif
+
+    if (!m_program)
+        return;
+
+    if (!m_program->isLinked() || m_program_dirty)
         updateShaderProgram();
 
-    m_program.bind();
+    m_program->bind();
 
     QMatrix4x4 combinedMatrix;
     combinedMatrix.scale(2.0 / painter->device()->width(), -2.0 / painter->device()->height(), 1.0);
@@ -434,7 +473,7 @@ void ShaderEffectItem::renderEffect(QPainter *painter, const QMatrix4x4 &matrix)
     updateEffectState(combinedMatrix);
 
     for (int i = 0; i < m_attributeNames.size(); ++i) {
-        m_program.enableAttributeArray(m_geometry.attributes()[i].position);
+        m_program->enableAttributeArray(m_geometry.attributes()[i].position);
     }
 
     bindGeometry();
@@ -472,11 +511,14 @@ void ShaderEffectItem::renderEffect(QPainter *painter, const QMatrix4x4 &matrix)
     glDisable(GL_DEPTH_TEST);
 
    for (int i = 0; i < m_attributeNames.size(); ++i)
-        m_program.disableAttributeArray(m_geometry.attributes()[i].position);
+        m_program->disableAttributeArray(m_geometry.attributes()[i].position);
 }
 
 void ShaderEffectItem::updateEffectState(const QMatrix4x4 &matrix)
 {
+    if (!m_program)
+        return;
+
     for (int i = m_sources.size() - 1; i >= 0; --i) {
         const ShaderEffectItem::SourceData &source = m_sources.at(i);
         if (!source.source)
@@ -487,10 +529,10 @@ void ShaderEffectItem::updateEffectState(const QMatrix4x4 &matrix)
     }
 
     if (m_respectsOpacity)
-        m_program.setUniformValue("qt_Opacity", static_cast<float> (effectiveOpacity()));
+        m_program->setUniformValue("qt_Opacity", static_cast<float> (effectiveOpacity()));
 
     if (m_respectsMatrix){
-        m_program.setUniformValue("qt_ModelViewProjectionMatrix", matrix);
+        m_program->setUniformValue("qt_ModelViewProjectionMatrix", matrix);
     }
 
     QSet<QByteArray>::const_iterator it;
@@ -500,37 +542,37 @@ void ShaderEffectItem::updateEffectState(const QMatrix4x4 &matrix)
 
         switch (v.type()) {
         case QVariant::Color:
-            m_program.setUniformValue(name.constData(), qvariant_cast<QColor>(v));
+            m_program->setUniformValue(name.constData(), qvariant_cast<QColor>(v));
             break;
         case QVariant::Double:
-            m_program.setUniformValue(name.constData(), (float) qvariant_cast<double>(v));
+            m_program->setUniformValue(name.constData(), (float) qvariant_cast<double>(v));
             break;
         case QVariant::Transform:
-            m_program.setUniformValue(name.constData(), qvariant_cast<QTransform>(v));
+            m_program->setUniformValue(name.constData(), qvariant_cast<QTransform>(v));
             break;
         case QVariant::Int:
-            m_program.setUniformValue(name.constData(), v.toInt());
+            m_program->setUniformValue(name.constData(), GLint(v.toInt()));
             break;
         case QVariant::Bool:
-            m_program.setUniformValue(name.constData(), GLint(v.toBool()));
+            m_program->setUniformValue(name.constData(), GLint(v.toBool()));
             break;
         case QVariant::Size:
         case QVariant::SizeF:
-            m_program.setUniformValue(name.constData(), v.toSizeF());
+            m_program->setUniformValue(name.constData(), v.toSizeF());
             break;
         case QVariant::Point:
         case QVariant::PointF:
-            m_program.setUniformValue(name.constData(), v.toPointF());
+            m_program->setUniformValue(name.constData(), v.toPointF());
             break;
         case QVariant::Rect:
         case QVariant::RectF:
         {
             QRectF r = v.toRectF();
-            m_program.setUniformValue(name.constData(), r.x(), r.y(), r.width(), r.height());
+            m_program->setUniformValue(name.constData(), r.x(), r.y(), r.width(), r.height());
         }
             break;
         case QVariant::Vector3D:
-            m_program.setUniformValue(name.constData(), qvariant_cast<QVector3D>(v));
+            m_program->setUniformValue(name.constData(), qvariant_cast<QVector3D>(v));
             break;
         default:
             break;
@@ -558,6 +600,9 @@ static inline int size_of_type(GLenum type)
 
 void ShaderEffectItem::bindGeometry()
 {
+    if (!m_program)
+        return;
+
     char const *const *attrNames = m_attributeNames.constData();
     int offset = 0;
         for (int j = 0; j < m_attributeNames.size(); ++j) {
@@ -574,7 +619,7 @@ void ShaderEffectItem::bindGeometry()
         if (normalize)
             qWarning() << "ShaderEffectItem::bindGeometry() - non supported attribute type!";
 
-        m_program.setAttributeArray(a.position, (GLfloat*) (((char*) m_geometry.vertexData()) + offset), a.tupleSize, m_geometry.stride());
+        m_program->setAttributeArray(a.position, (GLfloat*) (((char*) m_geometry.vertexData()) + offset), a.tupleSize, m_geometry.stride());
         //glVertexAttribPointer(a.position, a.tupleSize, a.type, normalize, m_geometry.stride(), (char *) m_geometry.vertexData() + offset);
         offset += a.tupleSize * size_of_type(a.type);
     }
@@ -656,6 +701,16 @@ void ShaderEffectItem::setActive(bool enable)
             connect(source, SIGNAL(repaintRequired()), this, SLOT(markDirty()));
         }
     }
+
+    // QGLShaderProgram is deleted when not active (to minimize GPU memory usage).
+#ifdef OBSERVE_GL_CONTEXT_LOSS
+    if (!m_active && m_program) {
+        delete m_program;
+        m_program = 0;
+        delete m_contextObserver;
+        m_contextObserver = 0;
+    }
+#endif
 
     emit activeChanged();
     markDirty();
@@ -776,7 +831,9 @@ void ShaderEffectItem::reset()
 {
     disconnectPropertySignals();
 
-    m_program.removeAllShaders();
+    if (m_program)
+        m_program->removeAllShaders();
+
     m_attributeNames.clear();
     m_uniformNames.clear();
     for (int i = 0; i < m_sources.size(); ++i) {
@@ -821,6 +878,9 @@ void ShaderEffectItem::updateProperties()
 
 void ShaderEffectItem::updateShaderProgram()
 {
+    if (!m_program)
+        return;
+
     QString vertexCode = m_vertex_code;
     QString fragmentCode = m_fragment_code;
 
@@ -830,16 +890,16 @@ void ShaderEffectItem::updateShaderProgram()
     if (fragmentCode.isEmpty())
         fragmentCode = QString::fromLatin1(qt_default_fragment_code);
 
-    m_program.addShaderFromSourceCode(QGLShader::Vertex, vertexCode);
-    m_program.addShaderFromSourceCode(QGLShader::Fragment, fragmentCode);
+    m_program->addShaderFromSourceCode(QGLShader::Vertex, vertexCode);
+    m_program->addShaderFromSourceCode(QGLShader::Fragment, fragmentCode);
 
     for (int i = 0; i < m_attributeNames.size(); ++i) {
-        m_program.bindAttributeLocation(m_attributeNames.at(i), m_geometry.attributes()[i].position);
+        m_program->bindAttributeLocation(m_attributeNames.at(i), m_geometry.attributes()[i].position);
     }
 
-    if (!m_program.link()) {
+    if (!m_program->link()) {
         qWarning("ShaderEffectItem: Shader compilation failed:");
-        qWarning() << m_program.log();
+        qWarning() << m_program->log();
     }
 
     if (!m_attributeNames.contains(qt_postion_attribute_name))
@@ -849,10 +909,10 @@ void ShaderEffectItem::updateShaderProgram()
     if (!m_respectsMatrix)
         qWarning("ShaderEffectItem: Missing reference to \'qt_ModelViewProjectionMatrix\'.");
 
-    if (m_program.isLinked()) {
-        m_program.bind();
+    if (m_program->isLinked()) {
+        m_program->bind();
         for (int i = 0; i < m_sources.size(); ++i)
-            m_program.setUniformValue(m_sources.at(i).name.constData(), i);
+            m_program->setUniformValue(m_sources.at(i).name.constData(), (GLint) i);
     }
 
     m_program_dirty = false;

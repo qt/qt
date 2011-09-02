@@ -309,12 +309,12 @@ static void handleUrlL(const TDesC& aUrl)
     CleanupStack::PopAndDestroy();
 }
 
-static bool handleUrl(const QUrl &url)
+static bool handleUrl(const QUrl &url, bool useEncodedUrl)
 {
     if (!url.isValid())
         return false;
 
-    QString urlString(url.toEncoded());
+    QString urlString(useEncodedUrl ? url.toEncoded() : url.toString());
     TPtrC urlPtr(qt_QString2TPtrC(urlString));
     TRAPD( err, handleUrlL(urlPtr));
     return err ? false : true;
@@ -322,12 +322,12 @@ static bool handleUrl(const QUrl &url)
 
 static bool launchWebBrowser(const QUrl &url)
 {
-    return handleUrl(url);
+    return handleUrl(url, true);
 }
 
 static bool openDocument(const QUrl &file)
 {
-    return handleUrl(file);
+    return handleUrl(file, false);
 }
 
 #endif //USE_SCHEMEHANDLER
