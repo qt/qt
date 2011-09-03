@@ -62,25 +62,6 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_VERSION                         Doc::alias("version")
 int DitaXmlGenerator::id = 0;
 
-QString DitaXmlGenerator::sinceTitles[] =
-    {
-        "    New Namespaces",
-        "    New Classes",
-        "    New Member Functions",
-        "    New Functions in Namespaces",
-        "    New Global Functions",
-        "    New Macros",
-        "    New Enum Types",
-        "    New Typedefs",
-        "    New Properties",
-        "    New Variables",
-        "    New QML Elements",
-        "    New Qml Properties",
-        "    New Qml Signal Handlers",
-        "    New Qml Methods",
-        ""
-    };
-
 /*
   The strings in this array must appear in the same order as
   the values in enum DitaXmlGenerator::DitaTag.

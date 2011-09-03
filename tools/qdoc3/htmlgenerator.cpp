@@ -66,25 +66,6 @@ bool HtmlGenerator::debugging_on = false;
 
 QString HtmlGenerator::divNavTop = "";
 
-QString HtmlGenerator::sinceTitles[] =
-    {
-        "    New Namespaces",
-        "    New Classes",
-        "    New Member Functions",
-        "    New Functions in Namespaces",
-        "    New Global Functions",
-        "    New Macros",
-        "    New Enum Types",
-        "    New Typedefs",
-        "    New Properties",
-        "    New Variables",
-        "    New QML Elements",
-        "    New QML Properties",
-        "    New QML Signal Handlers",
-        "    New QML Methods",
-        ""
-    };
-
 static bool showBrokenLinks = false;
 
 static QRegExp linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
