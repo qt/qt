@@ -828,7 +828,7 @@ void DocParser::parse(const QString& source,
                         append(Atom::AnnotatedList, getArgument());
                         break;
                     case CMD_SINCELIST:
-                        append(Atom::SinceList, getArgument());
+                        append(Atom::SinceList, getRestOfLine().simplified());
                         break;
                     case CMD_GENERATELIST:
                         append(Atom::GeneratedList, getArgument());
