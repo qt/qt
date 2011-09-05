@@ -947,13 +947,13 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 	QString tag;
         bool target = false;
 
-	if (isalpha(ch) || ch == '_') {
+	if (isalpha((unsigned char) ch) || ch == '_') {
 	    QString ident;
 	    do {
 		ident += ch;
                 finish = i;
 		readChar();
-            } while (ch >= 0 && isalnum(ch) || ch == '_');
+            } while (isalnum((unsigned char) ch) || ch == '_');
 
 	    if (classRegExp.exactMatch(ident)) {
 		tag = QLatin1String("type");
@@ -970,11 +970,11 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 		    tag = QLatin1String("func");
                     target = true;
 	    }
-	} else if (isdigit(ch)) {
+	} else if (isdigit((unsigned char) ch)) {
 	    do {
                 finish = i;
 		readChar();
-	    } while (isalnum(ch) || ch == '.');
+	    } while (isalnum((unsigned char) ch) || ch == '.');
 	    tag = QLatin1String("number");
 	} else {
 	    switch (ch) {

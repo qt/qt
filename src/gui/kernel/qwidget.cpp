@@ -334,6 +334,10 @@ QWidgetPrivate::QWidgetPrivate(int version)
 
 QWidgetPrivate::~QWidgetPrivate()
 {
+#ifdef Q_OS_SYMBIAN
+    _q_cleanupWinIds();
+#endif
+
     if (widgetItem)
         widgetItem->wid = 0;
 
@@ -12561,9 +12565,11 @@ void QWidget::clearMask()
 */
 
 #ifdef Q_OS_SYMBIAN
-void QWidgetPrivate::_q_delayedDestroy(WId winId)
+void QWidgetPrivate::_q_cleanupWinIds()
 {
-    delete winId;
+    foreach (WId wid, widCleanupList)
+        delete wid;
+    widCleanupList.clear();
 }
 #endif
 

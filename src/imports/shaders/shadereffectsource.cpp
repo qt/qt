@@ -170,15 +170,11 @@ void ShaderEffectSource::setSourceRect(const QRectF &rect)
         return;
     m_sourceRect = rect;
     updateSizeAndTexture();
-    updateBackbuffer();
     emit sourceRectChanged();
     emit repaintRequired();
 
-    if (m_sourceItem) {
-        ShaderEffect* effect = qobject_cast<ShaderEffect*> (m_sourceItem->graphicsEffect());
-        if (effect)
-            effect->m_changed = true;
-    }
+    m_dirtyTexture = true;
+    markSourceItemDirty();
 }
 
 /*!
@@ -207,11 +203,8 @@ void ShaderEffectSource::setTextureSize(const QSize &size)
     emit textureSizeChanged();
     emit repaintRequired();
 
-    if (m_sourceItem) {
-        ShaderEffect* effect = qobject_cast<ShaderEffect*> (m_sourceItem->graphicsEffect());
-        if (effect)
-            effect->m_changed = true;
-    }
+    m_dirtyTexture = true;
+    markSourceItemDirty();
 }
 
 /*!
@@ -294,8 +287,10 @@ void ShaderEffectSource::setWrapMode(WrapMode mode)
         return;
 
     m_wrapMode = mode;
-    updateBackbuffer();
     emit wrapModeChanged();
+
+    m_dirtyTexture = true;
+    markSourceItemDirty();
 }
 
 /*!
@@ -314,7 +309,7 @@ void ShaderEffectSource::grab()
     emit repaintRequired();
 }
 
-void ShaderEffectSource::bind() const
+void ShaderEffectSource::bind()
 {
     GLint filtering = smooth() ? GL_LINEAR : GL_NEAREST;
     GLuint hwrap = (m_wrapMode == Repeat || m_wrapMode == RepeatHorizontally) ? GL_REPEAT : GL_CLAMP_TO_EDGE;
@@ -323,9 +318,13 @@ void ShaderEffectSource::bind() const
 #if !defined(QT_OPENGL_ES_2)
     glEnable(GL_TEXTURE_2D);
 #endif
-    if (m_fbo) {
+
+    if (m_fbo && m_fbo->isValid()) {
         glBindTexture(GL_TEXTURE_2D, m_fbo->texture());
     } else {
+        m_dirtyTexture = true;
+        emit repaintRequired();
+        markSourceItemDirty();
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
@@ -354,7 +353,7 @@ void ShaderEffectSource::derefFromEffectItem()
 
 void ShaderEffectSource::updateBackbuffer()
 {
-    if (!m_sourceItem)
+    if (!m_sourceItem || !QGLContext::currentContext())
         return;
 
     // Multisampling is not (for now) supported.
@@ -370,7 +369,7 @@ void ShaderEffectSource::updateBackbuffer()
         if (!m_fbo) {
             m_fbo =  new ShaderEffectBuffer(size, format);
         } else {
-            if (m_fbo->size() != size || m_fbo->format().internalTextureFormat() != GLenum(m_format)) {
+            if (!m_fbo->isValid() || m_fbo->size() != size || m_fbo->format().internalTextureFormat() != GLenum(m_format)) {
                 delete m_fbo;
                 m_fbo = 0;
                 m_fbo =  new ShaderEffectBuffer(size, format);
@@ -397,6 +396,16 @@ void ShaderEffectSource::markSourceSizeDirty()
         emit repaintRequired();
 }
 
+void ShaderEffectSource::markSourceItemDirty()
+{
+    m_dirtyTexture = true;
+    if (m_sourceItem) {
+        ShaderEffect* effect = qobject_cast<ShaderEffect*> (m_sourceItem->graphicsEffect());
+        if (effect)
+            effect->m_changed = true;
+    }
+}
+
 void ShaderEffectSource::updateSizeAndTexture()
 {
     if (m_sourceItem) {
@@ -407,7 +416,7 @@ void ShaderEffectSource::updateSizeAndTexture()
             size.setWidth(1);
         if (size.height() < 1)
             size.setHeight(1);
-        if (m_fbo && m_fbo->size() != size) {
+        if (m_fbo && (m_fbo->size() != size || !m_fbo->isValid())) {
             delete m_fbo;
             m_fbo = 0;
             delete m_multisampledFbo;
