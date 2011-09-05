@@ -77,8 +77,8 @@
 #include <akncontext.h>             // CAknContextPane
 #include <eikspane.h>               // CEikStatusPane
 #include <AknPopupFader.h>          // MAknFadedComponent and TAknPopupFader
-#include <gfxtranseffect/gfxtranseffect.h> // BeginFullScreen
 #ifdef QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H
+#include <gfxtranseffect/gfxtranseffect.h> // BeginFullScreen
 #include <akntranseffect.h> // BeginFullScreen
 #endif
 #endif
@@ -97,10 +97,6 @@ static const int qt_symbian_max_screens = 4;
 //this macro exists because EColor16MAP enum value doesn't exist in Symbian OS 9.2
 #define Q_SYMBIAN_ECOLOR16MAP TDisplayMode(13)
 
-class QSymbianTypeFaceExtras;
-typedef QHash<QString, const QSymbianTypeFaceExtras *> QSymbianTypeFaceExtrasHash;
-typedef void (*QThreadLocalReleaseFunc)();
-
 class Q_AUTOTEST_EXPORT QS60ThreadLocalData
 {
 public:
@@ -109,8 +105,6 @@ public:
     bool usingCONEinstances;
     RWsSession wsSession;
     CWsScreenDevice *screenDevice;
-    QSymbianTypeFaceExtrasHash fontData;
-    QVector<QThreadLocalReleaseFunc> releaseFuncs;
 };
 
 class QS60Data
@@ -184,8 +178,6 @@ public:
     inline CWsScreenDevice* screenDevice(const QWidget *widget);
     inline CWsScreenDevice* screenDevice(int screenNumber);
     static inline int screenNumberForWidget(const QWidget *widget);
-    inline QSymbianTypeFaceExtrasHash& fontData();
-    inline void addThreadLocalReleaseFunc(QThreadLocalReleaseFunc func);
     static inline CCoeAppUi* appUi();
     static inline CEikMenuBar* menuBar();
 #ifdef Q_WS_S60
@@ -484,24 +476,6 @@ inline int QS60Data::screenNumberForWidget(const QWidget *widget)
     while (w->parentWidget())
         w = w->parentWidget();
     return qt_widget_private(const_cast<QWidget *>(w))->symbianScreenNumber;
-}
-
-inline QSymbianTypeFaceExtrasHash& QS60Data::fontData()
-{
-    if (!tls.hasLocalData()) {
-        tls.setLocalData(new QS60ThreadLocalData);
-    }
-    return tls.localData()->fontData;
-}
-
-inline void QS60Data::addThreadLocalReleaseFunc(QThreadLocalReleaseFunc func)
-{
-    if (!tls.hasLocalData()) {
-        tls.setLocalData(new QS60ThreadLocalData);
-    }
-    QS60ThreadLocalData *data = tls.localData();
-    if (!data->releaseFuncs.contains(func))
-        data->releaseFuncs.append(func);
 }
 
 inline CCoeAppUi* QS60Data::appUi()

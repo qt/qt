@@ -10,10 +10,10 @@ symbian: {
     TARGET = "Qt$${QT_LIBINFIX}"
 
     isEmpty(QT_LIBINFIX) {
-        TARGET.UID3 = 0x2001e61c
+        TARGET.UID3 = 0x2001E61C
     } else {
         # Always use experimental UID for infixed configuration to avoid UID clash
-        TARGET.UID3 = 0xe001e61c
+        TARGET.UID3 = 0xE001E61C
     }
     VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 
@@ -103,7 +103,7 @@ symbian: {
 
     # Support backup & restore for Qt libraries
     qtbackup.files = backup_registration.xml
-    qtbackup.path = c:/private/10202d56/import/packages/$$replace(TARGET.UID3, 0x,)
+    qtbackup.path = c:/private/10202d56/import/packages/$$lower($$replace(TARGET.UID3, 0x,))
 
     DEPLOYMENT += qtlibraries \
                   qtbackup \

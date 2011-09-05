@@ -195,7 +195,7 @@ static bool appendVariantToDBusMessage(const QVariant& argument,
             break;
 
         case QVariant::String: {
-            QByteArray data = argument.toString().toLatin1();
+            QByteArray data = argument.toString().toUtf8();
             str_data = data.data();
             dbus_message_iter_append_basic(dbus_iter, DBUS_TYPE_STRING,
                                            &str_data);
@@ -363,7 +363,7 @@ static QVariant getVariantFromDBusMessage(DBusMessageIter *iter) {
         case DBUS_TYPE_STRING:
         {
             dbus_message_iter_get_basic(iter, &str_data);
-            QString str(str_data);
+            QString str(QString::fromUtf8(str_data));
             QVariant variant(str);
             return variant;
         }

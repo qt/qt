@@ -147,12 +147,6 @@ QDeclarativeEngineDebugServer::propertyData(QObject *obj, int propIdx)
     if (binding)
         rv.binding = binding->expression();
 
-    QVariant value;
-    if (prop.userType() != 0) {
-        value = prop.read(obj);
-    }
-    rv.value = valueContents(value);
-
     if (QDeclarativeValueTypeFactory::isValueType(prop.userType())) {
         rv.type = QDeclarativeObjectProperty::Basic;
     } else if (QDeclarativeMetaType::isQObject(prop.userType()))  {
@@ -160,6 +154,12 @@ QDeclarativeEngineDebugServer::propertyData(QObject *obj, int propIdx)
     } else if (QDeclarativeMetaType::isList(prop.userType())) {
         rv.type = QDeclarativeObjectProperty::List;
     }
+
+    QVariant value;
+    if (rv.type != QDeclarativeObjectProperty::Unknown && prop.userType() != 0) {
+        value = prop.read(obj);
+    }
+    rv.value = valueContents(value);
 
     return rv;
 }
