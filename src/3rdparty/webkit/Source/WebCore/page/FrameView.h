@@ -267,6 +267,8 @@ public:
 
     virtual bool shouldSuspendScrollAnimations() const;
 
+    void clearOwningRendererForCustomScrollbars(RenderBox*);
+
 protected:
     virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect);
     virtual void scrollContentsSlowPath(const IntRect& updateRect);
