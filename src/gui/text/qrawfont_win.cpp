@@ -40,14 +40,15 @@
 ****************************************************************************/
 
 #include "qrawfont_p.h"
+
+#if !defined(QT_NO_RAWFONT)
+
 #include <private/qsystemlibrary_p.h>
 
 #if !defined(QT_NO_DIRECTWRITE)
 #  include "qfontenginedirectwrite_p.h"
 #  include <dwrite.h>
 #endif
-
-#if !defined(QT_NO_RAWFONT)
 
 QT_BEGIN_NAMESPACE
 
@@ -61,18 +62,16 @@ namespace {
         operator T() const
         {
             T littleEndian = 0;
-            for (int i=0; i<sizeof(T); ++i) {
+            for (int i = 0; i < int(sizeof(T)); ++i)
                 littleEndian |= data[i] << ((sizeof(T) - i - 1) * 8);
-            }
 
             return littleEndian;
         }
 
         BigEndian<T> &operator=(const T &t)
         {
-            for (int i=0; i<sizeof(T); ++i) {
+            for (int i = 0; i < int(sizeof(T)); ++i)
                 data[i] = ((t >> (sizeof(T) - i - 1) * 8) & 0xff);
-            }
 
             return *this;
         }
@@ -157,7 +156,7 @@ namespace {
     class EmbeddedFont
     {
     public:
-        EmbeddedFont(const QByteArray &fontData);
+        EmbeddedFont(const QByteArray &fontData) : m_fontData(fontData) {}
 
         QString changeFamilyName(const QString &newFamilyName);
         QByteArray data() const { return m_fontData; }
@@ -167,10 +166,6 @@ namespace {
     private:
         QByteArray m_fontData;
     };
-
-    EmbeddedFont::EmbeddedFont(const QByteArray &fontData) : m_fontData(fontData)
-    {
-    }
 
     TableDirectory *EmbeddedFont::tableDirectoryEntry(const QByteArray &tagName)
     {
@@ -214,9 +209,9 @@ namespace {
                                                         + nameRecord->offset;
 
                     const BigEndian<quint16> *s = reinterpret_cast<const BigEndian<quint16> *>(ptr);
-                    for (int j=0; j<nameRecord->length / sizeof(quint16); ++j)
-                        name += QChar(s[j]);
-
+                    const BigEndian<quint16> *e = s + nameRecord->length / sizeof(quint16);
+                    while (s != e)
+                        name += QChar(*s++);
                     break;
                 }
             }
@@ -525,41 +520,49 @@ extern QFontEngine *qt_load_font_engine_win(const QFontDef &request);
 // From qfontdatabase.cpp
 extern QFont::Weight weightFromInteger(int weight);
 
-void QRawFontPrivate::platformCleanUp()
+typedef HANDLE (WINAPI *PtrAddFontMemResourceEx)(PVOID, DWORD, PVOID, DWORD *);
+static PtrAddFontMemResourceEx ptrAddFontMemResourceEx = 0;
+typedef BOOL (WINAPI *PtrRemoveFontMemResourceEx)(HANDLE);
+static PtrRemoveFontMemResourceEx ptrRemoveFontMemResourceEx = 0;
+
+static void resolveGdi32()
 {
-    if (fontHandle != NULL) {
-        if (ptrRemoveFontMemResourceEx == NULL) {
-            void *func = QSystemLibrary::resolve(QLatin1String("gdi32"), "RemoveFontMemResourceEx");
-            ptrRemoveFontMemResourceEx =
-                    reinterpret_cast<QRawFontPrivate::PtrRemoveFontMemResourceEx>(func);
+    static bool triedResolve = false;
+    if (!triedResolve) {
+        QSystemLibrary gdi32(QLatin1String("gdi32"));
+        if (gdi32.load()) {
+            ptrAddFontMemResourceEx = (PtrAddFontMemResourceEx)gdi32.resolve("AddFontMemResourceEx");
+            ptrRemoveFontMemResourceEx = (PtrRemoveFontMemResourceEx)gdi32.resolve("RemoveFontMemResourceEx");
         }
 
-        if (ptrRemoveFontMemResourceEx == NULL) {
-            qWarning("QRawFont::platformCleanUp: Can't find RemoveFontMemResourceEx in gdi32");
-            fontHandle = NULL;
-        } else {
-            ptrRemoveFontMemResourceEx(fontHandle);
-            fontHandle = NULL;
-        }
+        triedResolve = true;
     }
 }
 
-void QRawFontPrivate::platformLoadFromData(const QByteArray &_fontData,
+void QRawFontPrivate::platformCleanUp()
+{
+    if (fontHandle != NULL) {
+        if (ptrRemoveFontMemResourceEx)
+            ptrRemoveFontMemResourceEx(fontHandle);
+        fontHandle = NULL;
+    }
+}
+
+void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData,
                                            qreal pixelSize,
                                            QFont::HintingPreference hintingPreference)
 {
-    QByteArray fontData(_fontData);
     EmbeddedFont font(fontData);
 
 #if !defined(QT_NO_DIRECTWRITE)
     if (hintingPreference == QFont::PreferDefaultHinting
-     || hintingPreference == QFont::PreferFullHinting)
+        || hintingPreference == QFont::PreferFullHinting)
 #endif
     {
         GUID guid;
         CoCreateGuid(&guid);
 
-        QString uniqueFamilyName = QString::fromLatin1("f")
+        QString uniqueFamilyName = QLatin1Char('f')
                 + QString::number(guid.Data1, 36) + QLatin1Char('-')
                 + QString::number(guid.Data2, 36) + QLatin1Char('-')
                 + QString::number(guid.Data3, 36) + QLatin1Char('-')
@@ -571,22 +574,11 @@ void QRawFontPrivate::platformLoadFromData(const QByteArray &_fontData,
             return;
         }
 
-        if (ptrAddFontMemResourceEx == NULL || ptrRemoveFontMemResourceEx == NULL) {
-            void *func = QSystemLibrary::resolve(QLatin1String("gdi32"), "RemoveFontMemResourceEx");
-            ptrRemoveFontMemResourceEx =
-                    reinterpret_cast<QRawFontPrivate::PtrRemoveFontMemResourceEx>(func);
-
-            func = QSystemLibrary::resolve(QLatin1String("gdi32"), "AddFontMemResourceEx");
-            ptrAddFontMemResourceEx =
-                    reinterpret_cast<QRawFontPrivate::PtrAddFontMemResourceEx>(func);
-        }
-
         Q_ASSERT(fontHandle == NULL);
-        if (ptrAddFontMemResourceEx != NULL && ptrRemoveFontMemResourceEx != NULL) {
+        resolveGdi32();
+        if (ptrAddFontMemResourceEx && ptrRemoveFontMemResourceEx) {
             DWORD count = 0;
-            fontData = font.data();
-            fontHandle = ptrAddFontMemResourceEx(fontData.data(), fontData.size(), 0, &count);
-
+            fontHandle = ptrAddFontMemResourceEx((void *)fontData.constData(), fontData.size(), 0, &count);
             if (count == 0 && fontHandle != NULL) {
                 ptrRemoveFontMemResourceEx(fontHandle);
                 fontHandle = NULL;
