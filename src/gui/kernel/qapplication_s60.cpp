@@ -2767,6 +2767,9 @@ QS60ThreadLocalData::QS60ThreadLocalData()
 
 QS60ThreadLocalData::~QS60ThreadLocalData()
 {
+    for (int i = 0; i < releaseFuncs.count(); ++i)
+        releaseFuncs[i]();
+    releaseFuncs.clear();
     if (!usingCONEinstances) {
         delete screenDevice;
         wsSession.Close();
