@@ -962,8 +962,6 @@ bool SymbianCommonGenerator::parseTsContent(const QString &tsFilename, SymbianLo
             static QString longCaptionSource = QLatin1String("Application long caption");
             static QString pkgDisplayNameSource = QLatin1String("Package name");
             static QString installerPkgDisplayNameSource = QLatin1String("Smart installer package name");
-            static QString languageAttribute = QLatin1String("language");
-            static QChar underscoreChar = QLatin1Char('_');
 
             enum CurrentContext {
                 ContextUnknown,
