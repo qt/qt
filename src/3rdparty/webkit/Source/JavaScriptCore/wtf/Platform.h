@@ -1221,11 +1221,7 @@
    since most ports try to support sub-project independence, adding new headers
    to WTF causes many ports to break, and so this way we can address the build
    breakages one port at a time. */
-#if PLATFORM(QT)
-#define WTF_USE_EXPORT_MACROS 1
-#else
 #define WTF_USE_EXPORT_MACROS 0
-#endif
 
 #if PLATFORM(QT) || PLATFORM(GTK)
 #define WTF_USE_UNIX_DOMAIN_SOCKETS 1
