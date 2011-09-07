@@ -46,6 +46,10 @@
 #include "ui_landscape.h"
 #include "ui_portrait.h"
 
+class QAbstractButton;
+
+QT_BEGIN_NAMESPACE
+
 //! [0]
 class MainWindow : public QWidget
 {
@@ -67,5 +71,7 @@ private:
     QWidget *portraitWidget;
 };
 //! [0]
+
+QT_END_NAMESPACE
 
 #endif // MAINWINDOW_H

@@ -44,10 +44,10 @@
 #include <QNetworkRequest>
 #include <QWebPluginFactory>
 
-QT_BEGIN_NAMESPACE
 class QNetworkAccessManager;
 class QNetworkReply;
-QT_END_NAMESPACE
+
+QT_BEGIN_NAMESPACE
 
 //! [plugin factory]
 class CSVFactory : public QWebPluginFactory
@@ -65,5 +65,7 @@ private:
     QNetworkAccessManager *manager;
 };
 //! [plugin factory]
+
+QT_END_NAMESPACE
 
 #endif
