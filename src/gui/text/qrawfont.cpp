@@ -637,9 +637,9 @@ QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writ
         // Pick the one matches the family name we originally requested,
         // if none of them match, just pick the first one
         for (int i = 0; i < list.size(); i++) {
-            rawfont = list.at(i).rawFont();
-            if (rawfont.familyName() == font.family())
-                return rawfont;
+            rawFont = list.at(i).rawFont();
+            if (rawFont.familyName() == font.family())
+                return rawFont;
         }
         return list.at(0).rawFont();
     }
