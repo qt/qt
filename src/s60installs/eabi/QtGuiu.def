@@ -11593,7 +11593,7 @@ EXPORTS
 	_ZN13QSymbianEventD2Ev @ 11592 NONAME
 	_ZN14QFileOpenEventC1ERK4QUrl @ 11593 NONAME
 	_ZN14QFileOpenEventC2ERK4QUrl @ 11594 NONAME
-	_ZN14QWidgetPrivate17_q_delayedDestroyEP11CCoeControl @ 11595 NONAME
+	_ZN14QWidgetPrivate17_q_delayedDestroyEP11CCoeControl @ 11595 NONAME ABSENT
 	_ZN14QWidgetPrivate21activateSymbianWindowEP11CCoeControl @ 11596 NONAME
 	_ZN14QWidgetPrivate26nearestGraphicsProxyWidgetEPK7QWidget @ 11597 NONAME
 	_ZN14QWidgetPrivate36invalidateGraphicsEffectsRecursivelyEv @ 11598 NONAME

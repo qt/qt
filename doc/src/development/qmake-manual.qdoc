@@ -3263,6 +3263,29 @@
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 150
 
+    \section2 Ordered Targets and Visual Studio Solution Files
+
+    The \c ordered option is not supported for Visual Studio. The following list describes how
+    you can get around without it--dependencies are generated automatically if:
+
+    \list
+        \o 1a) There is a Lib/DLL project of which TARGET (the .lib is used and not the .dll)
+        is used on the link line of another project in your solution (you can modify the link
+        line with LIBS).
+
+        \o 1b) There is an Exe project of which TARGET is used in a custom
+        build-step of another project in your solution.
+
+        \o 2) You don't use paths in the TARGET variable (use DESTDIR/DLLDESTDIR for that),
+        e.g, TARGET=$(SOME_VARIABLE)/myLib, won't work.
+
+        \o 3) If you have a special location for your libs, you specify the -Lmy/library/path and
+        LIBS += mylib, instead of just using LIBS += my/library/path/mylib
+
+        \o 4) The leaf projects are created before you generate the solution file. (You can use the
+        recursive flag for qmake to do this, like "qmake -tp vc -r [yourproject.pro]" 
+    \endlist
+
     \target SYMBIAN_VERSION
     \section1 SYMBIAN_VERSION
 

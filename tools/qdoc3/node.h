@@ -58,7 +58,15 @@
 
 QT_BEGIN_NAMESPACE
 
+class Node;
+class ClassNode;
 class InnerNode;
+class ExampleNode;
+class QmlClassNode;
+
+typedef QMap<QString, const Node*> NodeMap;
+typedef QMultiMap<QString, Node*> NodeMultiMap;
+typedef QMap<QString, const ExampleNode*> ExampleNodeMap;
 
 class Node
 {
@@ -151,7 +159,7 @@ class Node
     void setDoc(const Doc& doc, bool replace = false);
     void setStatus(Status status) { sta = status; }
     void setThreadSafeness(ThreadSafeness safeness) { saf = safeness; }
-    void setSince(const QString &since) { sinc = since; }
+    void setSince(const QString &since);
     void setRelates(InnerNode* pseudoParent);
     void setModuleName(const QString &module) { mod = module; }
     void setLink(LinkType linkType, const QString &link, const QString &desc);
@@ -194,6 +202,8 @@ class Node
     QString guid() const;
     QString ditaXmlHref();
     QString extractClassName(const QString &string) const;
+    const QmlClassNode* qmlClassNode() const;
+    const ClassNode* declarativeCppNode() const;
 
  protected:
     Node(Type type, InnerNode* parent, const QString& name);
@@ -380,8 +390,10 @@ class FakeNode : public InnerNode
     virtual QString title() const;
     virtual QString fullTitle() const;
     virtual QString subTitle() const;
+    virtual QString imageFileName() const { return QString(); }
     const NodeList &groupMembers() const { return gr; }
     virtual QString nameForLists() const { return title(); }
+    virtual void setImageFileName(const QString& ) { }
 
  private:
     SubType sub;
@@ -390,7 +402,21 @@ class FakeNode : public InnerNode
     NodeList gr;
 };
 
-#ifdef QDOC_QML
+class ExampleNode : public FakeNode
+{
+ public:
+    ExampleNode(InnerNode* parent, const QString& name);
+    virtual ~ExampleNode() { }
+    virtual QString imageFileName() const { return imageFileName_; }
+    virtual void setImageFileName(const QString& ifn) { imageFileName_ = ifn; }
+
+ public:
+    static ExampleNodeMap exampleNodeMap;
+
+ private:
+    QString imageFileName_;
+};
+
 class QmlClassNode : public FakeNode
 {
  public:
@@ -482,7 +508,6 @@ class QmlPropertyNode : public LeafNode
     Trool   wri;
     bool    att;
 };
-#endif
 
 class EnumItem
 {

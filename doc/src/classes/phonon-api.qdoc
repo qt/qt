@@ -5131,6 +5131,30 @@
 */
 
 /*!
+    \class Phonon::GlobalConfigPrivate
+    \inmodule Phonon
+    \internal
+*/
+
+/*!
+    \class Phonon::AudioDataOutputPrivate
+    \inmodule Phonon
+    \internal
+*/
+
+/*!
+    \class Phonon::AudioDataOutputInterface
+    \inmodule Phonon
+    \internal
+*/
+
+/*!
+    \class Phonon::SwiftSlider
+    \inmodule Phonon
+    \internal
+*/
+
+/*!
     \fn Phonon::GlobalConfigPrivate::GlobalConfigPrivate()
     \internal
 */
