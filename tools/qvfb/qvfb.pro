@@ -8,6 +8,9 @@ DESTDIR         = ../../bin
 target.path=$$[QT_INSTALL_BINS]
 INSTALLS += target
 
+DEPENDPATH      += ../../include
+INCLUDEPATH     += ../../src/gui/embedded
+
 FORMS           = config.ui
 HEADERS         = qvfb.h \
 		  qvfbview.h \
@@ -26,6 +29,12 @@ SOURCES         = qvfb.cpp \
                   qvfbprotocol.cpp \
                   qvfbshmem.cpp \
                   qvfbmmap.cpp
+
+!embedded {
+    DEFINES         += QT_NO_QWS_SIGNALHANDLER
+    HEADERS         += ../../src/gui/embedded/qlock_p.h
+    SOURCES         += ../../src/gui/embedded/qlock.cpp
+}
 
 include(../shared/deviceskin/deviceskin.pri)
 
