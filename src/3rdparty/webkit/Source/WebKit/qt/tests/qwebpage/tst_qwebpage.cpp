@@ -28,6 +28,7 @@
 #include <QMainWindow>
 #include <QMenu>
 #include <QPushButton>
+#include <QStateMachine>
 #include <QStyle>
 #include <QtTest/QtTest>
 #include <QTextCharFormat>
@@ -155,6 +156,8 @@ private slots:
     void navigatorCookieEnabled();
     void deleteQWebViewTwice();
     void renderOnRepaintRequestedShouldNotRecurse();
+    void loadSignalsOrder_data();
+    void loadSignalsOrder();
 
 #ifdef Q_OS_MAC
     void macCopyUnicodeToClipboard();
@@ -3063,6 +3066,58 @@ void tst_QWebPage::renderOnRepaintRequestedShouldNotRecurse()
     page.mainFrame()->setHtml("zalan loves trunk", QUrl());
 
     QVERIFY(::waitForSignal(&r, SIGNAL(finished())));
+}
+
+class SpyForLoadSignalsOrder : public QStateMachine {
+    Q_OBJECT
+public:
+    SpyForLoadSignalsOrder(QWebPage* page, QObject* parent = 0)
+        : QStateMachine(parent)
+    {
+        connect(page, SIGNAL(loadProgress(int)), SLOT(onLoadProgress(int)));
+
+        QState* waitingForLoadStarted = new QState(this);
+        QState* waitingForLastLoadProgress = new QState(this);
+        QState* waitingForLoadFinished = new QState(this);
+        QFinalState* final = new QFinalState(this);
+
+        waitingForLoadStarted->addTransition(page, SIGNAL(loadStarted()), waitingForLastLoadProgress);
+        waitingForLastLoadProgress->addTransition(this, SIGNAL(lastLoadProgress()), waitingForLoadFinished);
+        waitingForLoadFinished->addTransition(page, SIGNAL(loadFinished(bool)), final);
+
+        setInitialState(waitingForLoadStarted);
+        start();
+    }
+    bool isFinished() const
+    {
+        return !isRunning();
+    }
+public Q_SLOTS:
+    void onLoadProgress(int progress)
+    {
+        if (progress == 100)
+            emit lastLoadProgress();
+    }
+signals:
+    void lastLoadProgress();
+};
+
+void tst_QWebPage::loadSignalsOrder_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::newRow("inline data") << QUrl("data:text/html,This is first page");
+    QTest::newRow("simple page") << QUrl("qrc:///resources/content.html");
+    QTest::newRow("frameset page") << QUrl("qrc:///resources/index.html");
+}
+
+void tst_QWebPage::loadSignalsOrder()
+{
+    QFETCH(QUrl, url);
+    QWebPage page;
+    SpyForLoadSignalsOrder loadSpy(&page);
+    waitForSignal(&loadSpy, SIGNAL(started()));
+    page.mainFrame()->load(url);
+    QTRY_VERIFY(loadSpy.isFinished());
 }
 
 QTEST_MAIN(tst_QWebPage)
