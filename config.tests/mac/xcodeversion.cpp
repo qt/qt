@@ -73,7 +73,7 @@ int main(int argc, const char **argv)
     const char * ok3  ="3.0";
 //    ptr = fail1;
 //    printf ("string: %s\n", ptr);
-   
+
     int length = strlen(ptr);
     if (length < 3) // expect "x.y" at least
         return internal_error;
@@ -94,6 +94,6 @@ int main(int argc, const char **argv)
 
     if (ptr[4] < '1')
         return fail;
-    
+
     return success;
 }

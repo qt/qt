@@ -83,6 +83,9 @@ HTMLLinkElement::~HTMLLinkElement()
     if (m_cachedLinkResource)
         m_cachedLinkResource->removeClient(this);
 #endif
+
+    if (inDocument())
+        document()->removeStyleSheetCandidateNode(this);
 }
 
 void HTMLLinkElement::setDisabled(bool disabled)

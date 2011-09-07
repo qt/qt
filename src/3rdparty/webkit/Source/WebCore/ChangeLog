@@ -1,3 +1,1070 @@
+2011-08-30  Ademar de Souza Reis Jr.  <ademar.reis@openbossa.org>
+
+        [Qt] Do not unconditionally use pkg-config in .pro files
+        https://bugs.webkit.org/show_bug.cgi?id=67055
+
+        Reviewed by Andreas Kling.
+
+        Original patch from Rohan McGovern <rohan.mcgovern@nokia.com>
+
+        Using the first pkg-config in PATH is prone to errors when cross
+        compiling inside the Qt repository (using Qt's build-system).
+
+        This patch protect calls for pkg-config with
+        !contains(QT_CONFIG, no-pkg-config). no-pkg-config is added to
+        QT_CONFIG by Qt's 'configure' when cross-compiling on systems
+        without pkg-config.
+
+        The respective change in Qt's configure has been submited already.
+
+        No new tests as this is just a build change.
+
+        * features.pri: protect pkg-config calls
+
+2011-08-25  Ademar de Souza Reis Jr.  <ademar.reis@openbossa.org>
+
+        [Qt] Enable password echo on Symbian builds
+        https://bugs.webkit.org/show_bug.cgi?id=66954
+
+        Reviewed by Chang Shu.
+
+        No tests, as this is just a build change.
+
+        * config.h:
+
+2011-08-23  Chang Shu  <cshu@webkit.org>
+
+        Added support for momentarily revealing last typed character in password input.
+        Code change was partially based on Apple's iOS code and Samuel Nevala's work.
+        https://bugs.webkit.org/show_bug.cgi?id=32509
+
+        Reviewed by Alexey Proskuryakov.
+
+        * editing/InsertIntoTextNodeCommand.cpp:
+        (WebCore::InsertIntoTextNodeCommand::doApply):
+        * rendering/RenderText.cpp:
+        (WebCore::SecureTextTimer::SecureTextTimer):
+        (WebCore::SecureTextTimer::restartWithNewText):
+        (WebCore::SecureTextTimer::invalidate):
+        (WebCore::SecureTextTimer::lastTypedCharacterOffset):
+        (WebCore::SecureTextTimer::fired):
+        (WebCore::RenderText::willBeDestroyed):
+        (WebCore::RenderText::setTextInternal):
+        (WebCore::RenderText::secureText):
+        (WebCore::RenderText::momentarilyRevealLastTypedCharacter):
+        * rendering/RenderText.h:
+        (WebCore::RenderText::isSecure):
+        * testing/Internals.cpp:
+        (WebCore::Internals::setPasswordEchoEnabled): Fixed some silly coding in Internals.
+        (WebCore::Internals::setPasswordEchoDurationInSeconds):
+        (WebCore::Internals::reset):
+
+2011-07-08  Chang Shu  <cshu@webkit.org>
+
+        Update calling sites after function renamed.
+        https://bugs.webkit.org/show_bug.cgi?id=59114
+
+        Reviewed by Alexey Proskuryakov.
+
+        No new tests, just refactoring.
+
+        * editing/visible_units.cpp:
+        (WebCore::previousBoundary):
+        (WebCore::nextBoundary):
+        * rendering/RenderText.cpp:
+        (WebCore::RenderText::setTextInternal):
+
+2011-08-18  Chang Shu  <cshu@webkit.org>
+
+        Add support of setPasswordEchoEnabled and setPasswordEchoDuration for password echo feature
+        https://bugs.webkit.org/show_bug.cgi?id=66052
+
+        Reviewed by Alexey Proskuryakov.
+
+        Added runtime settings in WebCore.
+        Added support in window.internals for testing.
+
+        Tests: editing/input/password-echo-passnode.html
+               editing/input/password-echo-passnode2.html
+               editing/input/password-echo-passnode3.html
+               editing/input/password-echo-textnode.html
+
+        * page/Settings.cpp:
+        (WebCore::Settings::Settings):
+        * page/Settings.h:
+        (WebCore::Settings::setPasswordEchoEnabled):
+        (WebCore::Settings::passwordEchoEnabled):
+        (WebCore::Settings::setPasswordEchoDurationInSeconds):
+        (WebCore::Settings::passwordEchoDurationInSeconds):
+        * testing/Internals.cpp:
+        (WebCore::Internals::Internals):
+        (WebCore::Internals::setPasswordEchoEnabled):
+        (WebCore::Internals::setPasswordEchoDurationInSeconds):
+        (WebCore::Internals::reset):
+        * testing/Internals.h:
+        * testing/Internals.idl:
+
+2011-08-16  Chang Shu  <cshu@webkit.org>
+
+        Support reset in WebCore::Internals
+        https://bugs.webkit.org/show_bug.cgi?id=66307
+
+        Reviewed by Dimitri Glazkov.
+
+        New tests will be added when function reset is implemented.
+
+        Added framework code in WebCoreTestSupport. The real implementation of
+        Internals::reset() depends on the need from the settings that require a reset.
+
+        * testing/Internals.cpp:
+        (WebCore::Internals::reset):
+        * testing/Internals.h:
+        * testing/js/WebCoreTestSupport.cpp:
+        (WebCoreTestSupport::resetInternalsObject):
+        * testing/js/WebCoreTestSupport.h:
+        * testing/v8/WebCoreTestSupport.cpp:
+        (WebCoreTestSupport::resetInternalsObject):
+        * testing/v8/WebCoreTestSupport.h:
+
+2011-06-09  Robert Hogan  <robert@webkit.org>
+
+        Reviewed by Andreas Kling.
+
+        Teach Qt about window.internals
+        https://bugs.webkit.org/show_bug.cgi?id=61074
+
+        A weakness of the Qt DRT setup is that things like JSContextRef are abstracted
+        away from the QtWebKit API so we need DumpRenderTreeSupportQt to access WebCore internals.
+        Since the window.internals object requires JSContextRef we need to implement it in DumpRenderTreeSupportQt
+        where we can access it. DumpRenderTreeSupportQt cannot be compiled outside Qt's WebCore and as it
+        is our only possible route into the WebCoreTestSupport class neither can the new window.internals plumbing.
+        Likewise we can't put the accessor in WebCoreTestSupport because it would then need to know about QWebFrame
+        and others. The only alternative seems like a compile time guard which we would have to teach the bots about.
+
+        * CodeGenerators.pri:
+        * WebCore.pri:
+        * WebCore.pro:
+
+2011-06-02  Dimitri Glazkov  <dglazkov@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Add build logistics and plumbing for window.internals object.
+        https://bugs.webkit.org/show_bug.cgi?id=60313
+
+        Test: fast/harness/internals-object.html
+
+        * Configurations/WebCoreTestSupport.xcconfig: Added.
+        * DerivedSources.make: Added support for generating from Internals.idl.
+        * WebCore.gyp/WebCore.gyp: Added new webcore_test_support library.
+        * WebCore.gypi: Ditto.
+        * WebCore.xcodeproj/project.pbxproj: Added WebCoreTestSupport library.
+        * testing/Internals.cpp: Added.
+        * testing/Internals.h: Added.
+        * testing/Internals.idl: Added.
+        * testing/js/WebCoreTestSupport.cpp: Added.
+        * testing/js/WebCoreTestSupport.h: Added.
+        * testing/v8/WebCoreTestSupport.cpp: Added.
+        * testing/v8/WebCoreTestSupport.h: Added.
+
+2011-08-22  Abhishek Arya  <inferno@chromium.org>
+
+        Crash in FocusController::advanceFocusInDocumentOrder
+        https://bugs.webkit.org/show_bug.cgi?id=66678
+
+        RefPtr the focusable node to prevent getting deleted by mutation
+        event.
+
+        Reviewed by Dave Hyatt.
+
+        Test: fast/frames/focus-controller-crash-change-event.html
+
+        * page/FocusController.cpp:
+        (WebCore::FocusController::advanceFocusInDocumentOrder):
+
+2011-08-18  Ryosuke Niwa  <rniwa@webkit.org>
+
+        SimplifiedBackwardsTextIterator returns incorrect offset with first-letter rule
+        https://bugs.webkit.org/show_bug.cgi?id=66086
+
+        Reviewed by Darin Adler.
+
+        The bug was caused by SimplifiedBackwardsTextIterator's not taking care of first-letter at all.
+        Fixing the bug by detecting RenderTextFragment in handleTextNode.
+
+        Also added m_shouldHandleFirstLetter to SimplifiedBackwardsTextIterator to keep track of whether or not
+        the next call to handleTextNode needs to process the first-letter part of the text fragment.
+
+        Test: editing/text-iterator/backward-textiterator-first-letter-crash.html
+
+        * editing/TextIterator.cpp:
+        (WebCore::firstRenderTextInFirstLetter): Extracted from handleTextNodeFirstLetter.
+        (WebCore::TextIterator::handleTextNodeFirstLetter): Calls firstRenderTextInFirstLetter.
+        (WebCore::SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator):
+        (WebCore::SimplifiedBackwardsTextIterator::handleTextNode):
+        (WebCore::SimplifiedBackwardsTextIterator::handleFirstLetter): Added.
+        * editing/TextIterator.h:
+
+2011-08-23  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        [Qt] Fix build on Lion
+
+        https://bugs.webkit.org/show_bug.cgi?id=66770
+
+        Reviewed by Andreas Kling.
+
+        We were mistakenly picking up mac/WebCoreSystemInterface.h instead of
+        the Qt one, and building on Lion revealed this when a typedef for
+        IOSurfaceRef was wrapped in PLATFORM(MAC).
+
+        For now we fix this by including WebCoreSystemInterface using
+        brackets, so that we'll pick up the right file based on the
+        include paths. This also means exposing a few missing enums
+        in our own version of the file, so those were added.
+
+        Lasty, we need to link against the right system interface library
+        on Lion.
+
+        * platform/mac/WebVideoFullscreenHUDWindowController.mm:
+        * platform/qt/WebCoreSystemInterface.h:
+
+2011-08-08  Cris Neckar  <cdn@chromium.org>
+
+        Remove counter nodes from the tree and fix-up children when they are removed from the counter map.
+        https://bugs.webkit.org/show_bug.cgi?id=65346
+
+        Reviewed by Adam Barth.
+
+        Covered by existing CSS counter tests.
+
+        * rendering/CounterNode.cpp:
+        (WebCore::CounterNode::~CounterNode):
+
+2011-08-17  Oliver Hunt  <oliver@apple.com>
+
+        Move towards supporting user controlled prototypes on CanvasPixelArray
+        https://bugs.webkit.org/show_bug.cgi?id=66429
+
+        Reviewed by Gavin Barraclough.
+
+        Start using a per-global object structure for canvas pixel array.
+
+        * bindings/js/JSImageDataCustom.cpp:
+        (WebCore::toJS):
+
+2011-08-17  Abhishek Arya  <inferno@chromium.org>
+
+        Crash in Document::recalcStyleSelector
+        https://bugs.webkit.org/show_bug.cgi?id=66335
+
+        Reviewed by Simon Fraser.
+
+        When node is getting destroyed and its removedFromDocument
+        is not called due to entire document structure torn down(using
+        removeAllChildren), make sure to clear out the stylesheet
+        candidate node from document's structures in its destructor.
+
+        Test: svg/dom/stylesheet-candidate-node-crash-main.html
+
+        * dom/ProcessingInstruction.cpp:
+        (WebCore::ProcessingInstruction::~ProcessingInstruction):
+        * html/HTMLLinkElement.cpp:
+        (WebCore::HTMLLinkElement::~HTMLLinkElement):
+        * html/HTMLStyleElement.cpp:
+        (WebCore::HTMLStyleElement::~HTMLStyleElement):
+        * svg/SVGStyleElement.cpp:
+        (WebCore::SVGStyleElement::~SVGStyleElement):
+
+2011-08-12  Abhishek Arya  <inferno@chromium.org>
+
+        Crash in WebCore::editingIgnoresContent
+        https://bugs.webkit.org/show_bug.cgi?id=66125
+
+        Reviewed by Ryosuke Niwa.
+
+        RefPtr a few nodes in case they get blown away in
+        dispatchEvent calls.
+
+        Test: editing/selection/select-start-remove-root-crash.html
+
+        * editing/FrameSelection.cpp:
+        (WebCore::FrameSelection::selectAll):
+        * editing/ReplaceSelectionCommand.cpp:
+        (WebCore::ReplacementFragment::ReplacementFragment):
+
+2011-08-13  Abhishek Arya  <inferno@chromium.org>
+
+        Crash in HTMLTreeBuilder::processAnyOtherEndTagForInBody
+        https://bugs.webkit.org/show_bug.cgi?id=66187
+
+        Reviewed by Adam Barth.
+
+        RefPtr a few ContainerNodes to prevent premature deletion.
+
+        Test: fast/html/process-end-tag-for-inbody-crash.html
+
+        * html/parser/HTMLTreeBuilder.cpp:
+        (WebCore::HTMLTreeBuilder::processCloseWhenNestedTag):
+        (WebCore::HTMLTreeBuilder::processAnyOtherEndTagForInBody):
+        (WebCore::HTMLTreeBuilder::callTheAdoptionAgency):
+
+2011-08-10  Abhishek Arya  <inferno@chromium.org>
+
+        Check that we do not need layout before trying to dirty
+        m_originatingLine for our floats.
+        https://bugs.webkit.org/show_bug.cgi?id=65938
+
+        Reviewed by Dave Hyatt.
+
+        Test: fast/block/float/float-originating-line-deleted-crash.html
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::removeFloatingObject):
+        (WebCore::RenderBlock::clearFloats):
+
+2011-08-11  Alexis Menard  <alexis.menard@openbossa.org>
+
+        Unreviewed build fix for Qt.
+
+        Make sure we build when Qt is namespaced.
+
+        * platform/graphics/gstreamer/PlatformVideoWindowPrivate.h:
+
+2011-08-06  Aron Rosenberg  <arosenberg@logitech.com>
+
+        Reviewed by Benjamin Poulain.
+
+        [Qt] Fix build with Intel compiler on Windows
+        https://bugs.webkit.org/show_bug.cgi?id=65088
+
+        Intel compiler needs .lib suffixes instead of .a
+
+        * WebCore.pri:
+
+2011-08-03  Kent Tamura  <tkent@chromium.org>
+
+        Fix incorrect checks for HTMLMediaElement
+        https://bugs.webkit.org/show_bug.cgi?id=65590
+
+        Reviewed by Dimitri Glazkov.
+
+        <video> and <audio> can be an HTMLElement instance instead of
+        HTMLMediaElement if MediaPlayer::isAvailable() returns false or
+        the media feature is disabled at runtime.
+
+        * html/HTMLSourceElement.cpp:
+        (WebCore::HTMLSourceElement::insertedIntoTree):
+        (WebCore::HTMLSourceElement::willRemove):
+        * html/HTMLTrackElement.cpp:
+        (WebCore::HTMLTrackElement::insertedIntoTree):
+        (WebCore::HTMLTrackElement::willRemove):
+        * html/shadow/MediaControlElements.cpp:
+        (WebCore::toParentMediaElement):
+        * page/FrameView.cpp:
+        (WebCore::FrameView::updateWidget):
+        * platform/efl/RenderThemeEfl.cpp:
+        (WebCore::RenderThemeEfl::paintMediaMuteButton):
+        * platform/gtk/RenderThemeGtk.cpp:
+        (WebCore::getMediaElementFromRenderObject):
+        * rendering/RenderThemeMac.mm:
+        (WebCore::RenderThemeMac::paintMediaSliderTrack):
+        * rendering/RenderThemeWinCE.cpp:
+        (WebCore::mediaElementParent):
+
+2011-07-28  Abhishek Arya  <inferno@chromium.org>
+
+        Regression(82144): Crash in TrailingObjects::updateMidpointsForTrailingBoxes
+        https://bugs.webkit.org/show_bug.cgi?id=65137
+
+        Fix the looping condition to prevent trailingSpaceMidpoint from becoming negative.
+
+        Reviewed by Dave Hyatt.
+
+        Test: fast/block/update-midpoints-for-trailing-boxes-crash.html
+
+        * rendering/RenderBlockLineLayout.cpp:
+        (WebCore::TrailingObjects::updateMidpointsForTrailingBoxes):
+
+2011-08-01  Jochen Eisinger  <jochen@chromium.org>
+
+        Never override the policy URL on form submissions.
+        https://bugs.webkit.org/show_bug.cgi?id=61809
+
+        Reviewed by Adam Barth.
+
+        Tests: http/tests/security/cookies/third-party-cookie-blocking-main-frame.html
+               http/tests/security/cookies/third-party-cookie-blocking-user-action.html
+               http/tests/security/cookies/third-party-cookie-blocking.html
+
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::loadURL):
+        (WebCore::FrameLoader::addExtraFieldsToSubresourceRequest):
+        (WebCore::FrameLoader::addExtraFieldsToMainResourceRequest):
+        (WebCore::FrameLoader::addExtraFieldsToRequest):
+        (WebCore::FrameLoader::loadPostRequest):
+        (WebCore::FrameLoader::loadDifferentDocumentItem):
+        * loader/FrameLoader.h:
+
+
+2011-07-27  Alexis Menard  <alexis.menard@openbossa.org>
+
+        [Qt] Unreviewed build fix for mac.
+
+        QtKit is now our default media player, the define is WTF_USE_QTKIT and it's not part
+        of the options passed to build-webkit, therefore DerivedSources should now generate the
+        includes when it's mac.
+
+        * DerivedSources.pro:
+        * WebCore.pro:
+
+2011-07-07  Julien Chaffraix  <jchaffraix@webkit.org>
+
+        Reviewed by David Hyatt.
+
+        Partial layout when a flex-box has visibility: collapse
+        https://bugs.webkit.org/show_bug.cgi?id=63776
+
+        Tests: fast/flexbox/crash-button-input-autofocus.html
+               fast/flexbox/crash-button-keygen.html
+               fast/flexbox/crash-button-relayout.html
+
+        The issue is that FlexBoxIterator would skip any child if it has visibility: collapsed.
+        However if one of the child is anonymous, it may wrap some other child that would be skipped.
+        Now FlexBoxIterator is called during the layout phase and thus some nodes would not relayouted
+        as expected.
+
+        * rendering/RenderDeprecatedFlexibleBox.cpp:
+        (WebCore::FlexBoxIterator::next): When iterating, don't skip anonymous content as there may
+        be real content hiding below.
+
+2011-06-30  Julien Chaffraix  <jchaffraix@webkit.org>
+
+        Reviewed by Nikolas Zimmermann.
+
+        Update SVG position values on SVG DOM updates
+        https://bugs.webkit.org/show_bug.cgi?id=62439
+
+        Test: svg/custom/crash-textPath-attributes.html
+
+        * rendering/svg/RenderSVGInline.cpp:
+        (WebCore::RenderSVGInline::destroy): Notify our containing RenderSVGText that it needs
+        to update its positioning information.
+
+        * rendering/svg/SVGInlineFlowBox.cpp:
+        (WebCore::SVGInlineFlowBox::calculateBoundaries): Check the type of the InlineBox
+        like the rest of the code (fixes an ASSERT_NOT_REACHED in InlineBox::calculateBoudaries).
+
+        * rendering/svg/SVGTextLayoutAttributesBuilder.cpp:
+        (WebCore::SVGTextLayoutAttributesBuilder::buildLayoutAttributesForTextSubtree): Clear
+        our cached layout attributes every time we invalidate them. This avoids keeping stale
+        attribute that have a backpointer to a RenderObject.
+
+2011-07-13  John Knottenbelt  <jknotten@chromium.org>
+
+        Reference Geolocation object from GeoNotifier and Geolocation::setIsAllowed.
+        https://bugs.webkit.org/show_bug.cgi?id=64363
+
+        Reviewed by Tony Gentilcore.
+
+        Test: fast/dom/Geolocation/remove-remote-context-in-error-callback-crash.html
+
+        * page/Geolocation.cpp:
+        (WebCore::Geolocation::setIsAllowed):
+        * page/Geolocation.h:
+
+2011-06-26  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Kent Tamura.
+
+        m_formElementsWithFormAttribute doesn't ref the objects it holds
+        https://bugs.webkit.org/show_bug.cgi?id=62956
+
+        Test: fast/forms/form-associated-element-crash3.html
+
+        * dom/Document.h:
+
+2011-05-26  David Levin  <levin@chromium.org>
+
+        Reviewed by Dmitry Titov.
+
+        WebKit's font notification has problems when the WebKit main thread != UI thread.
+        https://bugs.webkit.org/show_bug.cgi?id=61391
+
+        This doesn't happen in DumpRenderTree, so it needs a unit test which is taking me
+        some time to write correctly. In the meantime, this issues happens to be causing
+        some crashes in Chrome so here's the fix alone for the time being.
+
+        * platform/graphics/mac/FontCacheMac.mm:
+        (WebCore::invalidateFontCache): Ensure that FontCache::invalidate is only called on WebKit's main thread.
+        (WebCore::fontCacheRegisteredFontsChangedNotificationCallback): Call common function for font cache invalidation.
+         Note that the call to fontCache() is fine since the singleton is initialized well before calling this function. Theoretically,
+         there could be a problem due to a lack of a memory barrier but that is highly unlikely and this is debug only code.
+        (WebCore::fontCacheATSNotificationCallback): Ditto.
+
+2011-07-07  Gavin Peters  <gavinp@chromium.org>
+
+        Reviewed by Alexey Proskuryakov.
+
+        fast/dom/HTMLLinkElement/link-and-subresource-test.html is flaky on chromium debug bots
+        https://bugs.webkit.org/show_bug.cgi?id=60097
+
+        The culprit was that CachedResource:stopLoading() was using *this
+        after a call to checkNotify(), which isn't kosher.  This patch
+        uses a CachedResourceHandle to keep the CachedResource alive.
+
+        The test is a very close copy of the eponymous
+        link-and-subresource-test.html, only substituting invalid
+        resources for the valid ones in that test.  The reproduction is
+        timing related, and happens much more consistantly with an invalid
+        resource for whatever reason.
+        Test: fast/dom/HTMLLinkElement/link-and-subresource-test-nonexistent.html
+
+        * loader/cache/CachedResource.cpp:
+        (WebCore::CachedResource::stopLoading):
+
+2011-06-08  Mikołaj Małecki  <m.malecki@samsung.com>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: Crash by buffer overrun crash when serializing inspector object tree.
+        https://bugs.webkit.org/show_bug.cgi?id=52791
+
+        No new tests. The problem can be reproduced by trying to create InspectorValue
+        from 1.0e-100 and call ->toJSONString() on this.
+
+        * inspector/InspectorValues.cpp:
+        (WebCore::InspectorBasicValue::writeJSON):
+        Added checking the predicted buffer size and choosing exponential format, or
+        eventually "NaN" if the buffer is too small for decimal format.
+
+2011-07-26  Alexis Menard  <alexis.menard@openbossa.org>
+
+        [Qt] Disable video support on linux if the dependencies are not found.
+
+        If we can't find the necessary dependencies to build the GStreamer media player
+        we disable the video support. This is related to http://trac.webkit.org/changeset/91752.
+
+        Reviewed by Holger Freyther.
+
+        No new tests, it's a build fix.
+
+        * features.pri:
+
+2011-07-26  Alexis Menard  <alexis.menard@openbossa.org>
+
+        Reviewed by Andreas Kling.
+
+        [Qt] Change default backend to use GStreamer on Linux and QuickTime on Mac.
+        https://bugs.webkit.org/show_bug.cgi?id=63472
+
+        Enable the GStreamer backend and the QuickTime backend as default media players
+        for the Qt port on Mac and Linux. QtMultimedia is now a fallback option that you
+        can enable by passing DEFINES+=USE_QT_MULTIMEDIA=1 to enforce its usage.
+
+        No new tests. The media layout tests are disabled on the Qt port but hopefully with this
+        switch we can enable them again.
+
+        * WebCore.pri:
+        * WebCore.pro:
+        * features.pri:
+
+2011-06-23  Alexis Menard  <alexis.menard@openbossa.org>
+
+        Reviewed by Eric Carlson.
+
+        [Qt] Implement fullscreen support on Mac with the QuickTime backend.
+        https://bugs.webkit.org/show_bug.cgi?id=61728
+
+        Implement fullscreen support for Qt when using the QuickTime backend.
+        We mostly use what is already done for the Mac port.
+
+        * DerivedSources.pro: We use the mac files and they have <WebCore/x> type
+        of includes. We need to generate those headers.
+        * WebCore.pro:
+        * platform/mac/WebVideoFullscreenController.h:
+        * platform/mac/WebVideoFullscreenController.mm:
+        * platform/mac/WebVideoFullscreenHUDWindowController.h:
+        * platform/mac/WebVideoFullscreenHUDWindowController.mm:
+        * platform/qt/WebCoreSystemInterface.h:
+        * platform/qt/WebCoreSystemInterface.mm:
+
+2011-06-21  Alexey Proskuryakov  <ap@apple.com>
+
+        Fix Mac build in some configurations.
+
+        * platform/mac/WebCoreSystemInterface.h: Added an enum matching WKSI one, since we cannot use
+        WKSI in WebCore.
+
+        * platform/mac/WebVideoFullscreenHUDWindowController.mm: Removed an include of WebKitSystemInterface.h.
+        It's not meant to be used from WebCore, and if included, a wrong copy may be used.
+        (createControlWithMediaUIControlType): Added a FIXME about problems with Leopard build.
+        (-[WebVideoFullscreenHUDWindowController windowDidLoad]): Ditto. Switched enum values to
+        WCSI style (lower level "wk").
+
+2011-06-20  Jer Noble  <jer.noble@apple.com>
+
+        Unreviewed build fix; Fix Leopard WebCore build.
+
+        * platform/mac/WebVideoFullscreenHUDWindowController.mm: On Leopard, NSWindowDelegate
+            is a category, not a protocol.
+
+2011-06-20  Jer Noble  <jer.noble@apple.com>
+
+        Unreviewed build fix; Fix 32-bit build.
+
+        Code recently moved from WebKit -> WebCore does not pass WebCore's more strict compiler warnings.  Use 
+        CGFloat, and float constants wherever possible, and use narrowPrecisionToFloat() where not.
+
+        * WebCore.xcodeproj/project.pbxproj: Add '-Wno-undef' flag for WebVideoFullScreenController.mm 
+        * platform/mac/WebVideoFullscreenController.mm:
+        (constrainFrameToRatioOfFrame): Use CGFloat instead of Double.
+        (-[WebVideoFullscreenWindow animateFromRect:toRect:withSubAnimation:controllerAction:]): Use float constant.
+        * platform/mac/WebVideoFullscreenHUDWindowController.mm:
+        (-[WebVideoFullscreenHUDWindowController updateVolume]): Use float for volume.
+        (-[WebVideoFullscreenHUDWindowController maxVolume]): Ditto.
+        (-[WebVideoFullscreenHUDWindowController volumeChanged:]): Ditto.
+        (-[WebVideoFullscreenHUDWindowController decrementVolume]): Ditto.
+        (-[WebVideoFullscreenHUDWindowController incrementVolume]): Ditto.
+        (-[WebVideoFullscreenHUDWindowController volume]): Ditto.
+        (-[WebVideoFullscreenHUDWindowController setVolume:]): Ditto. 
+        (timeToString): Narrow precision to float when converting to seconds.
+        * platform/mac/WebWindowAnimation.mm:
+        (scaledRect): Use CGFloat.
+        (-[WebWindowScaleAnimation init]): Use float constant.
+        (-[WebWindowScaleAnimation currentValue]): Ditto.
+        (-[WebWindowScaleAnimation additionalDurationNeededToReachFinalFrame]): Ditto.
+        (-[WebWindowFadeAnimation currentAlpha]): Ditto.
+
+2011-06-01  Jer Noble  <jer.noble@apple.com>
+
+        Reviewed by Eric Carlson.
+
+        Move Full Screen Controllers into WebCore.
+
+        Remove dependency on QTKit from wekitExitFullscreen()
+        https://bugs.webkit.org/show_bug.cgi?id=61843
+
+        No new tests; the existing media full screen tests are sufficient.
+
+        * WebCore.exp.in: Add new exports.
+        * WebCore.xcodeproj/project.pbxproj: Add references to moved files.
+        * platform/mac/WebCoreSystemInterface.h: Add new WCSI interfaces to WKSI functions.
+        * platform/mac/WebCoreSystemInterface.mm:
+        * platform/mac/WebVideoFullscreenController.h: Renamed from Source/WebKit/mac/WebView/WebVideoFullscreenController.h.
+        * platform/mac/WebVideoFullscreenController.mm: Renamed from Source/WebKit/mac/WebView/WebVideoFullscreenController.mm.
+        
+        The following functions have had UNUSED_PARAM added:
+        (-[WebVideoFullscreenController applicationDidResignActive:]):
+        (-[WebVideoFullscreenController applicationDidChangeScreenParameters:]):
+        (-[WebVideoFullscreenWindow mouseMoved:]):
+
+Source/WebKit/mac/WebView/WebVideoFullscreenHUDWindowController.h.
+        * platform/mac/WebVideoFullscreenHUDWindowController.mm: Renamed from Source/WebKit/mac/WebView/WebVideoFullscreenHUDWindowController.mm.
+        
+        The following functions have had UNUSED_PARAM added:
+        (-[WebVideoFullscreenHUDWindow cancelOperation:]):
+        (-[WebVideoFullscreenHUDWindowController timelinePositionChanged:]):
+        (-[WebVideoFullscreenHUDWindowController setVolumeToZero:]):
+        (-[WebVideoFullscreenHUDWindowController setVolumeToMaximum:]):
+        (-[WebVideoFullscreenHUDWindowController togglePlaying:]):
+        (-[WebVideoFullscreenHUDWindowController mouseEntered:]):
+        (-[WebVideoFullscreenHUDWindowController mouseExited:]):
+        (-[WebVideoFullscreenHUDWindowController rewind:]):
+        (-[WebVideoFullscreenHUDWindowController fastForward:]):
+        (-[WebVideoFullscreenHUDWindowController windowDidExpose:]):
+        (-[WebVideoFullscreenHUDWindowController windowDidClose:]):
+
+        The following functions have had WKSI calls converted to WCSI ones:
+        (createControlWithMediaUIControlType):
+        (createTimeTextField):
+        
+        * platform/mac/WebWindowAnimation.h: Renamed from Source/WebKit/mac/WebView/WebWindowAnimation.h.
+        * platform/mac/WebWindowAnimation.mm: Renamed from Source/WebKit/mac/WebView/WebWindowAnimation.m.
+        (WebWindowAnimationDurationFromDuration):
+
+        The following functions have had WKSI calls converted to WCSI ones:
+        (-[WebWindowScaleAnimation setCurrentProgress:]):
+        (-[WebWindowFadeAnimation initWithDuration:window:initialAlpha:finalAlpha:]):
+
+2011-07-27  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Calling window.find immediately after mutating the document crashes WebKit.
+        https://bugs.webkit.org/show_bug.cgi?id=65296
+
+        Reviewed by Darin Adler.
+
+        Don't forget to layout first.
+
+        Test: editing/text-iterator/find-after-mutation.html
+
+        * editing/TextIterator.cpp:
+        (WebCore::findPlainText):
+
+2011-07-27  MORITA Hajime  <morrita@google.com>
+
+        Inconsistent state of TreeScope reference.
+        https://bugs.webkit.org/show_bug.cgi?id=65235
+        
+        The tree scope pointers on shadow tree nodes didn't cleared.
+        even when the tree scope (shadow root) is destroyed.
+        This change clear these poitners before detaching the shadow root.
+
+        Reviewed by Dimitri Glazkov.
+
+        Test: fast/dom/shadow/tree-scope-crash.html
+
+        * dom/Element.cpp:
+        (WebCore::Element::removeShadowRoot):
+
+2011-05-22  Dominic Cooney  <dominicc@chromium.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        When removing a shadow root, also remove it from the render tree.
+        https://bugs.webkit.org/show_bug.cgi?id=61245
+
+        Test: existing fast/dom/shadow/layout-tests-can-access-shadow.html
+
+        * dom/Element.cpp:
+        (WebCore::Element::removeShadowRoot): Call detach if attached.
+
+2011-07-22  Sergey Glazunov  <serg.glazunov@gmail.com>
+
+        Perform the JavaScript navigation check on a complete URL
+        https://bugs.webkit.org/show_bug.cgi?id=65038
+
+        Reviewed by Adam Barth.
+
+        Test: http/tests/security/xss-DENIED-document-baseURI-javascript.html
+
+        * page/DOMWindow.cpp:
+        (WebCore::DOMWindow::setLocation):
+        (WebCore::DOMWindow::createWindow):
+        (WebCore::DOMWindow::open):
+
+2011-07-22  David Grogan  <dgrogan@chromium.org>
+
+        Fix crash in IDBRequest::abort
+        https://bugs.webkit.org/show_bug.cgi?id=64740
+
+        Reviewed by Nate Chapin.
+
+        Tested manually with the testcase in the bug.
+
+        * storage/IDBRequest.cpp:
+        (WebCore::IDBRequest::~IDBRequest):
+        (WebCore::IDBRequest::abort):
+
+2011-07-25  Daniel Bates  <dbates@rim.com>
+
+        REGRESSION (r85964): Improper relayout of some nested positioned elements
+        https://bugs.webkit.org/show_bug.cgi?id=64286
+
+        Reviewed by David Hyatt.
+
+        Fixes an issue when traversing up the containing block hierarchy after skipping
+        relatively positioned inlines.
+
+        When processing a positioned element we skip any intermediate inlines to get to
+        to enclosing block B, but don't use the containing block for B (call this P_B) to
+        properly continue traversing up the containing block hierarchy. So, B may be
+        considered again instead of looking at P_B. Hence, we don't set the correct dirty
+        bits for P_B and may not schedule a relayout with respect to the correct layout node.
+
+        Test: fast/block/positioning/relayout-nested-positioned-elements-crash.html
+
+        * rendering/RenderObject.h:
+        (WebCore::RenderObject::markContainingBlocksForLayout):
+
+2011-07-26  David Hyatt  <hyatt@apple.com>
+
+        https://bugs.webkit.org/show_bug.cgi?id=60778
+
+        Use after free because of line box culling optimization regression.
+
+        In the case of a child with no line box being removed (typically
+        a <br> in quirks mode), if there is no previous sibling with a line
+        box, then we have a potential problem with the culling optimization.
+
+        The culled inline may still have other leaf line box children, but
+        they may follow the removed <br>. In this case we can't rely on
+        them, since we need a line box that comes before the <br>.
+
+        The fix is to simply recur up to the parent if we are a culled inline
+        and could not find a previous line box.
+
+        Reviewed by Dan Bernstein.
+
+        Added editing/execCommand/crash-line-break-after-outdent.html
+
+        * rendering/RenderLineBoxList.cpp:
+        (WebCore::RenderLineBoxList::dirtyLinesFromChangedChild):
+
+2011-07-19  Abhishek Arya  <inferno@chromium.org>
+
+        Crash when removing unrenderered nodes in replacement fragment.
+        https://bugs.webkit.org/show_bug.cgi?id=64801
+
+        Reviewed by Ryosuke Niwa.
+
+        Test: editing/pasteboard/replacement-fragment-remove-unrendered-node-crash.html
+
+        * editing/ReplaceSelectionCommand.cpp:
+        (WebCore::ReplacementFragment::removeUnrenderedNodes):
+
+2011-07-21  Gavin Peters  <gavinp@chromium.org>
+
+        Extend the protector of a CSS style sheet.  Because checkLoaded() can recursively delete
+        parent style elements, the protector should be extended to include the parent call.
+
+        https://bugs.webkit.org/show_bug.cgi?id=64736
+
+        Reviewed by Simon Fraser.
+
+        Test: fast/css/css-imports-2.html
+
+        * css/CSSStyleSheet.cpp:
+        (WebCore::CSSStyleSheet::checkLoaded):
+
+2011-07-20  Tony Chang  <tony@chromium.org>
+
+        Stale pointer due to floats not removed (flexible box display)
+        https://bugs.webkit.org/show_bug.cgi?id=64603
+
+        Reviewed by David Hyatt.
+
+        Flexbox items should avoid floats.
+
+        Test: fast/flexbox/horizontal-box-float-crash.html
+
+        * rendering/RenderBox.cpp:
+        (WebCore::RenderBox::avoidsFloats):
+        * rendering/RenderBox.h:
+        (WebCore::RenderBox::isDeprecatedFlexItem):
+
+2011-07-12  Hui Huang  <Hui.2.Huang@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] Fix compiling errors with QtWebkit 2.2 WINSCW build.
+        https://bugs.webkit.org/show_bug.cgi?id=64391
+
+        (QtWebKit-2.2 only, patch not in webkit trunk)
+
+        * bindings/generic/ActiveDOMCallback.cpp:
+        * css/CSSStyleSelector.h:
+        * page/PrintContext.cpp:
+        * page/PrintContext.h:
+        * platform/network/HTTPHeaderMap.cpp:
+        * xml/XPathFunctions.cpp:
+        * xml/XPathPredicate.cpp:
+        * xml/XPathResult.cpp:
+
+2011-07-16  Sergey Glazunov  <serg.glazunov@gmail.com>
+
+        DOMWindow::open performs a security check on a wrong window
+        https://bugs.webkit.org/show_bug.cgi?id=64651
+
+        Reviewed by Adam Barth.
+
+        Test: http/tests/security/xss-DENIED-window-open-parent.html
+
+        * page/DOMWindow.cpp:
+        (WebCore::DOMWindow::open):
+
+2011-07-14  Adam Barth  <abarth@webkit.org>
+
+        The beforeload event allows tracking URI changes in a frame
+        https://bugs.webkit.org/show_bug.cgi?id=64482
+
+        Reviewed by Nate Chapin.
+
+        Tests: http/tests/security/beforeload-iframe-client-redirect.html
+               http/tests/security/beforeload-iframe-server-redirect.html
+
+        Only dispatch the beforeload event for a frame if we haven't yet
+        committed our first real load.  The URL that we send to our parent will
+        be the same URL the parent seens in the src attribute.
+
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::loadWithDocumentLoader):
+
+2011-07-14  Tim Horton  <timothy_horton@apple.com>
+
+        Clear SVGElementInstance's children immediately upon detachment
+        https://bugs.webkit.org/show_bug.cgi?id=63739
+        <rdar://problem/9705708>
+
+        Reviewed by Nikolas Zimmermann.
+
+        In addition to clearing the instance's children in the destructor,
+        clear them when the instance is detached from its <use>. This way,
+        we won't attempt to use them after we're detached but before the
+        destructor has been called.
+
+        Test: svg/custom/use-crash-using-children-before-destroy.svg
+
+        * svg/SVGElementInstance.cpp:
+        (WebCore::SVGElementInstance::~SVGElementInstance):
+        (WebCore::SVGElementInstance::clearChildren):
+        * svg/SVGElementInstance.h:
+        * svg/SVGUseElement.cpp:
+        (WebCore::SVGUseElement::detachInstance):
+
+2011-06-20  Andras Becsi  <abecsi@webkit.org>
+
+        Reviewed by Csaba Osztrogonác.
+
+        make-hash-tools.pl: Perl 5.14 compatibility
+        https://bugs.webkit.org/show_bug.cgi?id=61890
+
+        No new tests needed.
+
+        * make-hash-tools.pl: Use if/elsif instead of switch/case.
+
+2011-07-13  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        Issue with Frame lifetime due to deletion in beforeload event.
+        https://bugs.webkit.org/show_bug.cgi?id=64457
+
+        Copy the Frame protector higher in the stack from loadWithDocumentLoader
+        to loadFrameRequest since any of loadPostRequest or loadURL can call
+        loadWithDocumentLoader, thereby dispatching the beforeload event and
+        blowing away the frame. This deleted frame will be later accessed in
+        the loadFrameRequest function causing a crash.       
+ 
+        Test: fast/events/form-iframe-target-before-load-crash2.html
+
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::loadFrameRequest):
+        (WebCore::FrameLoader::loadWithDocumentLoader):
+
+2011-06-03  Yael Aharon  <yael.aharon@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Frame flattening is broken with nested frames
+        https://bugs.webkit.org/show_bug.cgi?id=61491
+
+        Do not flatten offscreen iframes during frame flattening, as flattening might make them visible.
+
+        Test: fast/frames/flattening/iframe-flattening-out-of-view.html
+              fast/frames/flattening/iframe-flattening-out-of-view-and-scroll.html
+              fast/frames/flattening/iframe-flattening-out-of-view-scroll-and-relayout.html
+
+        * rendering/RenderIFrame.cpp:
+        (WebCore::RenderIFrame::flattenFrame):
+
+2011-06-23  Robert Hogan  <robert@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Windowless Plugins : <input> cursor blinks even after transferring focus to plugin
+        https://bugs.webkit.org/show_bug.cgi?id=30355
+
+        Test: plugins/mouse-click-plugin-clears-selection.html
+
+        PluginView needs to use page->focusController()->setFocusedNode() when focusing a plugin
+        in order to clear the FrameSelection in the currently focused node. In its platform-specific
+        code Chromium already does this (WebPluginContainerImpl.cpp).
+
+        * WebCore.exp.in: Add symbol for FocusController::setFocusedNode
+        * plugins/PluginView.cpp:
+        (WebCore::PluginView::focusPluginElement): Using FocusController::setFocusedNode() makes
+                                                   the call to FocusController:setFocusedFrame() and Document::setFocusedNode()
+                                                   redundant, since it calls both.
+
+2011-06-30  Julien Chaffraix  <jchaffraix@webkit.org>
+
+        Reviewed by Nikolas Zimmermann.
+
+        Assertion failure in RenderSVGInlineText::characterStartsNewTextChunk
+        https://bugs.webkit.org/show_bug.cgi?id=63076
+
+        Tests: svg/custom/crash-text-in-textpath.svg
+               svg/custom/text-node-in-text-invalidated.svg
+
+        The problem was that we did not call setNeedsPositionUpdate on RenderSVGText. When
+        doing our layout, we would not update the attributes on our SVGRenderInlineText as
+        we would not lay it out.
+
+        This was caused by childrenChanged being overridden on SVGTextPositioningElement but
+        not on SVGTextPathElement.
+
+        As both classes shared the same mother class, it made sense to move the logic here.
+        There should be no other side effects as SVGTextPathElement and SVGTextPositioningElement
+        are the only classes deriving from SVGTextContentElement.
+
+        * svg/SVGTextContentElement.cpp:
+        (WebCore::SVGTextContentElement::childrenChanged): Moved this method from SVGTextPositioningElement.
+        * svg/SVGTextContentElement.h:
+        * svg/SVGTextPositioningElement.cpp:
+        (WebCore::SVGTextPositioningElement::svgAttributeChanged): Updated after updatePositioningValuesInRenderer
+        removal, replaced by RenderSVGText::locateRenderSVGTextAncestor.
+        * svg/SVGTextPositioningElement.h:
+
+2011-06-30  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Ryosuke Niwa.
+
+        Crash when calling DOMSubtreeModified event when extracting range
+        contents.
+        https://bugs.webkit.org/show_bug.cgi?id=63650
+
+        Convert a few nodes to RefPtrs and add commonRoot verification checks
+        for Range::processContents.
+
+        Tests: fast/dom/Range/range-extract-contents-event-fire-crash.html
+               fast/dom/Range/range-extract-contents-event-fire-crash2.html
+
+        * dom/Range.cpp:
+        (WebCore::childOfCommonRootBeforeOffset):
+        (WebCore::Range::processContents):
+        (WebCore::Range::processContentsBetweenOffsets):
+        (WebCore::Range::processAncestorsAndTheirSiblings):
+
+2011-06-23  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by James Robinson.
+
+        In RenderBlock, RenderWidget and RenderReplaced destroy functions,
+        call dirtyLinesFromChangedChild to tell our parent that we are going away.
+        https://bugs.webkit.org/show_bug.cgi?id=60307
+
+        Test: fast/block/child-not-removed-from-parent-lineboxes-crash.html
+              fast/block/block-not-removed-from-parent-lineboxes-crash.html
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::destroy):
+        * rendering/RenderReplaced.cpp:
+        (WebCore::RenderReplaced::destroy):
+        * rendering/RenderReplaced.h:
+        * rendering/RenderWidget.cpp:
+        (WebCore::RenderWidget::destroy):
+
+2011-05-05  David Hyatt  <hyatt@apple.com>
+
+        Reviewed by Darin Adler.
+
+        <rdar://problem/9354979> REGRESSION (r83070-r83126): Conversation takes 10 seconds to load and makes mail unresponsive
+
+        Culled inlines were triggering some pathological line box tree groveling that isn't even necessary.
+        Removed the ancient code (that used to be in RenderFlow), since it made no sense in the RenderBlock case
+        (it was running for inline blocks, which was definitely not even the intent) or in the RenderInline case
+        (the object being removed has no effect on any lines).
+        
+        Also tweaked culledInlineFirstLineBox and culledInlineLastLineBox to avoid bailing if the first replaced object that
+        is encountered has a null inlineBoxWrapper().  Just a slight speed optimization to avoid an extra null check.
+        
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::destroy):
+        * rendering/RenderInline.cpp:
+        (WebCore::RenderInline::destroy):
+        (WebCore::RenderInline::culledInlineFirstLineBox):
+        (WebCore::RenderInline::culledInlineLastLineBox):
+
 2011-06-28  Roland Steiner  <rolandsteiner@chromium.org>
 
         Reviewed by Eric Seidel.
@@ -241,17 +1308,6 @@
 
         * loader/DocumentLoader.cpp: (WebCore::DocumentLoader::detachFromFrame): Rollout the fix
         for bug 62764.
-
-2011-06-24  Alexis Menard  <alexis.menard@openbossa.org>
-
-        Unreviewed build fix.
-
-        Build fix on Linux when using the GStreamer backend.
-
-        No new tests, just a build fix.
-
-        * platform/graphics/gstreamer/PlatformVideoWindowQt.cpp:
-        (FullScreenVideoWindow::keyPressEvent):
 
 2011-06-23  Abhishek Arya  <inferno@chromium.org>
 

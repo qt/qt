@@ -1,3 +1,246 @@
+2011-08-30  Ademar de Souza Reis Jr.  <ademar.reis@openbossa.org>
+
+        [Qt] Do not unconditionally use pkg-config in .pro files
+        https://bugs.webkit.org/show_bug.cgi?id=67055
+
+        Reviewed by Andreas Kling.
+
+        Original patch from Rohan McGovern <rohan.mcgovern@nokia.com>
+
+        Using the first pkg-config in PATH is prone to errors when cross
+        compiling inside the Qt repository (using Qt's build-system).
+
+        This patch protect calls for pkg-config with
+        !contains(QT_CONFIG, no-pkg-config). no-pkg-config is added to
+        QT_CONFIG by Qt's 'configure' when cross-compiling on systems
+        without pkg-config.
+
+        The respective change in Qt's configure has been submited already.
+
+        No new tests as this is just a build change.
+
+        * wtf/wtf.pri: protect pkg-config calls
+
+2011-08-28  Jonathan Liu  <net147@gmail.com>
+
+        Fix build error when compiling with MinGW-w64 by disabling JIT
+        on Windows 64-bit
+        https://bugs.webkit.org/show_bug.cgi?id=61235
+
+        Reviewed by Gavin Barraclough.
+
+        The fixed mmap executable allocator for JIT on x86_64 requires
+        sys/mman.h which is not available on Windows.
+
+        * wtf/Platform.h:
+
+2011-08-26  Ademar de Souza Reis Jr.  <ademar.reis@openbossa.org>
+
+        [Qt] libwebcore.a source is compiled without -fvisibility=hidden
+        -fvisibility-inlines-hidden
+        https://bugs.webkit.org/show_bug.cgi?id=65470
+
+        Patch by Holger Freyther <zecke@selfish.org>
+        Rubberstamped by Andreas Kling.
+
+        (qtwebkit-2.2 only by now)
+
+        WTF_USE_EXPORT_MACROS is still not enabled on trunk because there are
+        pending issues with WebKit2, but it appears to be safe to enable this
+        on QtWebKit, so this change is being added to the qtwebkit-2.2 branch.
+
+        The patch also adds CONFIG += hide_symbols and on Unix, +=
+        bsymbolic_functions, which should help reduce the library binary size.
+
+        Testing this is quite easy, so if there's any problem we'll soon
+        know. :-)
+
+        * wtf/Platform.h:
+
+2011-07-08  Chang Shu  <cshu@webkit.org>
+
+        Rename "makeSecure" to "fill" and remove the support for displaying last character
+        to avoid layering violatation.
+        https://bugs.webkit.org/show_bug.cgi?id=59114
+
+        Reviewed by Alexey Proskuryakov.
+
+        * JavaScriptCore.exp:
+        * JavaScriptCore.order:
+        * wtf/text/StringImpl.cpp:
+        (WTF::StringImpl::fill):
+        * wtf/text/StringImpl.h:
+        * wtf/text/WTFString.h:
+        (WTF::String::fill):
+
+2011-08-15  Gavin Barraclough  <barraclough@apple.com>
+
+        Crash accessing static property on sealed object
+        https://bugs.webkit.org/show_bug.cgi?id=66242
+
+        Reviewed by Sam Weinig.
+
+        * runtime/JSObject.h:
+        (JSC::JSObject::putDirectInternal):
+            - should only check isExtensible if checkReadOnly.
+
+2011-08-06  Aron Rosenberg  <arosenberg@logitech.com>
+
+        Reviewed by Benjamin Poulain.
+
+        [Qt] Fix build with Intel compiler on Windows
+        https://bugs.webkit.org/show_bug.cgi?id=65088
+
+        Intel compiler needs .lib suffixes instead of .a
+        Intel compiler doesn't support nullptr
+        Intel compiler supports unsized arrays
+
+        * JavaScriptCore.pri:
+        * jsc.cpp:
+        * wtf/ByteArray.h:
+        * wtf/NullPtr.h:
+
+2011-05-15  Gavin Barraclough  <barraclough@apple.com>
+
+        Reviewed by Geoff Garen & Michael Saboff.
+
+        https://bugs.webkit.org/show_bug.cgi?id=60860
+        Simplify backtracking in YARR JIT
+
+        YARR JIT currently performs a single pass of code generation over the pattern,
+        with special handling to allow the code generation for some backtracking code
+        out of line. We can simplify things by moving to a common mechanism whereby all
+        forwards matching code is generated in one pass, and all backtracking code is
+        generated in another. Backtracking code can be generated in reverse order, to
+        optimized the common fall-through case.
+
+        To make it easier to walk over the pattern, we can first convert to a more
+        byte-code like format before JIT generating. In time we should unify this with
+        the YARR interpreter to more closely unify the two.
+
+        * yarr/YarrJIT.cpp:
+        (JSC::Yarr::YarrGenerator::jumpIfNoAvailableInput):
+        (JSC::Yarr::YarrGenerator::YarrOp::YarrOp):
+        (JSC::Yarr::YarrGenerator::BacktrackingState::BacktrackingState):
+        (JSC::Yarr::YarrGenerator::BacktrackingState::append):
+        (JSC::Yarr::YarrGenerator::BacktrackingState::fallthrough):
+        (JSC::Yarr::YarrGenerator::BacktrackingState::link):
+        (JSC::Yarr::YarrGenerator::BacktrackingState::linkTo):
+        (JSC::Yarr::YarrGenerator::BacktrackingState::takeBacktracksToJumpList):
+        (JSC::Yarr::YarrGenerator::BacktrackingState::isEmpty):
+        (JSC::Yarr::YarrGenerator::BacktrackingState::linkDataLabels):
+        (JSC::Yarr::YarrGenerator::BacktrackingState::ReturnAddressRecord::ReturnAddressRecord):
+        (JSC::Yarr::YarrGenerator::generateAssertionBOL):
+        (JSC::Yarr::YarrGenerator::backtrackAssertionBOL):
+        (JSC::Yarr::YarrGenerator::generateAssertionEOL):
+        (JSC::Yarr::YarrGenerator::backtrackAssertionEOL):
+        (JSC::Yarr::YarrGenerator::matchAssertionWordchar):
+        (JSC::Yarr::YarrGenerator::generateAssertionWordBoundary):
+        (JSC::Yarr::YarrGenerator::backtrackAssertionWordBoundary):
+        (JSC::Yarr::YarrGenerator::generatePatternCharacterOnce):
+        (JSC::Yarr::YarrGenerator::backtrackPatternCharacterOnce):
+        (JSC::Yarr::YarrGenerator::generatePatternCharacterFixed):
+        (JSC::Yarr::YarrGenerator::backtrackPatternCharacterFixed):
+        (JSC::Yarr::YarrGenerator::generatePatternCharacterGreedy):
+        (JSC::Yarr::YarrGenerator::backtrackPatternCharacterGreedy):
+        (JSC::Yarr::YarrGenerator::generatePatternCharacterNonGreedy):
+        (JSC::Yarr::YarrGenerator::backtrackPatternCharacterNonGreedy):
+        (JSC::Yarr::YarrGenerator::generateCharacterClassOnce):
+        (JSC::Yarr::YarrGenerator::backtrackCharacterClassOnce):
+        (JSC::Yarr::YarrGenerator::generateCharacterClassFixed):
+        (JSC::Yarr::YarrGenerator::backtrackCharacterClassFixed):
+        (JSC::Yarr::YarrGenerator::generateCharacterClassGreedy):
+        (JSC::Yarr::YarrGenerator::backtrackCharacterClassGreedy):
+        (JSC::Yarr::YarrGenerator::generateCharacterClassNonGreedy):
+        (JSC::Yarr::YarrGenerator::backtrackCharacterClassNonGreedy):
+        (JSC::Yarr::YarrGenerator::generateTerm):
+        (JSC::Yarr::YarrGenerator::backtrackTerm):
+        (JSC::Yarr::YarrGenerator::generate):
+        (JSC::Yarr::YarrGenerator::backtrack):
+        (JSC::Yarr::YarrGenerator::opCompileParenthesesSubpattern):
+        (JSC::Yarr::YarrGenerator::opCompileParentheticalAssertion):
+        (JSC::Yarr::YarrGenerator::opCompileAlternative):
+        (JSC::Yarr::YarrGenerator::opCompileBody):
+        (JSC::Yarr::YarrGenerator::YarrGenerator):
+        (JSC::Yarr::YarrGenerator::compile):
+
+2011-06-08  Mikołaj Małecki  <m.malecki@samsung.com>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: Crash by buffer overrun crash when serializing inspector object tree.
+        https://bugs.webkit.org/show_bug.cgi?id=52791
+
+        No new tests. The problem can be reproduced by trying to create InspectorValue
+        from 1.0e-100 and call ->toJSONString() on this.
+
+        * JavaScriptCore.exp:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+        export 2 functions DecimalNumber::bufferLengthForStringExponential and
+        DecimalNumber::toStringExponential.
+
+2011-07-26  Alexis Menard  <alexis.menard@openbossa.org>
+
+        Unreviewed build fix for Qt/Linux.
+
+        On platforms with no glib and gstreamer we should not build javascriptcore
+        with the Glib support. This is related to http://trac.webkit.org/changeset/91752.
+
+        * wtf/wtf.pri:
+
+2011-07-26  Alexis Menard  <alexis.menard@openbossa.org>
+
+        Reviewed by Andreas Kling.
+
+        [Qt] Change default backend to use GStreamer on Linux and QuickTime on Mac.
+        https://bugs.webkit.org/show_bug.cgi?id=63472
+
+        Enable the bits needed for GStreamer only when QtMultimedia is not used.
+
+        * wtf/wtf.pri:
+
+2011-07-12  Hui Huang  <Hui.2.Huang@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] Fix compiling errors with QtWebkit 2.2 WINSCW build.
+        https://bugs.webkit.org/show_bug.cgi?id=64391
+
+        (QtWebKit-2.2 only, patch not in webkit trunk)
+
+        * parser/JSParser.cpp:
+        * runtime/JSONObject.cpp:
+        * wtf/PageAllocatorSymbian.h:
+        * wtf/Platform.h:
+        * wtf/text/AtomicString.h:
+        * wtf/text/StringStatics.cpp:
+
+
+2011-07-13  Ademar de Souza Reis Jr.  <ademar.reis@openbossa.org>
+
+        Reviewed by Andreas Kling.
+
+        Broken build on QNX
+        https://bugs.webkit.org/show_bug.cgi?id=63717
+
+        QNX doesn't support pthread's SA_RESTART (required by
+        JSC_MULTIPLE_THREADS), JIT is broken at runtime and there a
+        few minor compilation errors here and there.
+
+        Original patch by Ritt Konstantin <ritt.ks@gmail.com>, also
+        tested by him on QNX v6.5 (x86)
+
+        * wtf/DateMath.cpp: fix usage of abs/labs
+        * wtf/Platform.h: Disable JIT and JSC_MULTIPLE_THREADS
+        * wtf/StackBounds.cpp: Add a couple of missing includes (and sort them)
+
+2011-07-09  Thouraya Andolsi  <thouraya.andolsi@st.com>
+
+        Fix unaligned userspace access for SH4 platforms. 
+        https://bugs.webkit.org/show_bug.cgi?id=62993
+
+        * wtf/Platform.h:
+
 2011-05-23  Matthew Delaney  <mdelaney@apple.com>
 
         Reviewed by Simon Fraser.

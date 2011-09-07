@@ -218,6 +218,7 @@ public:
     static QString layerTreeAsText(QWebFrame*);
 
     static void injectInternalsObject(QWebFrame*);
+    static void resetInternalsObject(QWebFrame*);
 };
 
 #endif

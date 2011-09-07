@@ -1375,7 +1375,7 @@ void QDeclarativeVisualDataModel::_q_rowsMoved(const QModelIndex &sourceParent, 
     Q_D(QDeclarativeVisualDataModel);
     const int count = sourceEnd - sourceStart + 1;
     if (destinationParent == d->m_root && sourceParent == d->m_root) {
-        _q_itemsMoved(sourceStart, sourceStart > destinationRow ? destinationRow : destinationRow-1, count);
+        _q_itemsMoved(sourceStart, sourceStart > destinationRow ? destinationRow : destinationRow-count, count);
     } else if (sourceParent == d->m_root) {
         _q_itemsRemoved(sourceStart, count);
     } else if (destinationParent == d->m_root) {
