@@ -101,9 +101,9 @@ const int QS60StylePrivate::m_numberOfLayouts =
 
 const short QS60StylePrivate::data[][MAX_PIXELMETRICS] = {
 // *** generated pixel metrics ***
-{7,0,-909,0,0,2,0,5,-1,25,69,46,37,37,9,258,-909,-909,-909,23,19,11,0,0,32,25,72,44,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,3,3,6,8,19,-909,7,74,19,7,0,5,5,8,5,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135,30,30},
-{7,0,-909,0,0,2,0,5,-1,25,68,46,37,37,9,258,-909,-909,-909,31,19,13,0,0,32,25,60,52,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,3,3,6,8,19,-909,7,74,22,7,0,5,5,8,5,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135,30,30},
-{9,0,-909,0,0,2,0,5,-1,30,99,76,51,51,25,352,-909,-909,-909,29,25,7,0,0,43,34,42,76,7,7,2,-909,-909,0,9,14,0,23,39,30,30,37,37,9,391,40,0,-909,-909,-909,-909,0,0,29,2,-909,0,0,-909,29,-909,-909,-909,-909,115,37,96,48,96,2,2,9,1,25,-909,9,101,24,9,0,7,7,7,7,7,7,-909,3,-909,-909,-909,-909,9,9,3,1,184,30,30}
+{7,0,-909,0,0,2,5,5,-1,25,69,46,37,37,9,258,-909,-909,-909,23,19,11,0,0,32,25,72,44,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,3,3,6,8,19,-909,7,74,19,7,0,5,5,8,5,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135,30,30},
+{7,0,-909,0,0,2,5,5,-1,25,68,46,37,37,9,258,-909,-909,-909,31,19,13,0,0,32,25,60,52,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,3,3,6,8,19,-909,7,74,22,7,0,5,5,8,5,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135,30,30},
+{9,0,-909,0,0,2,5,5,-1,30,99,76,51,51,25,352,-909,-909,-909,29,25,7,0,0,43,34,42,76,7,7,2,-909,-909,0,9,14,0,23,39,30,30,37,37,9,391,40,0,-909,-909,-909,-909,0,0,29,2,-909,0,0,-909,29,-909,-909,-909,-909,115,37,96,48,96,2,2,9,1,25,-909,9,101,24,9,0,7,7,7,7,7,7,-909,3,-909,-909,-909,-909,9,9,3,1,184,30,30}
 // *** End of generated data ***
 };
 
@@ -2606,7 +2606,7 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             break;
         case CT_LineEdit:
             if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt))
-                sz += QSize(2 * f->lineWidth, 4 * f->lineWidth);
+                sz += QSize(2 * f->lineWidth, 4 * f->lineWidth + 2 * pixelMetric(PM_FocusFrameHMargin));
             break;
         case CT_TabBarTab: {
                 sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
@@ -2649,6 +2649,12 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget).
                         boundedTo(desktopContentSize);
             }
+            break;
+#endif
+#ifndef QT_NO_SPINBOX
+        case CT_SpinBox:
+            // Add margin to the spinbox height
+            sz.setHeight(sz.height() + 2 * pixelMetric(PM_SpinBoxFrameWidth));
             break;
 #endif
         default:
@@ -2824,7 +2830,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             // Thus, side-by-side buttons would take half of the total width.
             const int maxSize = qMax(spinbox->rect.width() / 4, buttonContentWidth);
             QSize buttonSize;
-            buttonSize.setHeight(qMin(maxSize, qMax(8, spinbox->rect.height() - frameThickness)));
+            buttonSize.setHeight(qMin(maxSize, qMax(8, spinbox->rect.height() - 2 * frameThickness)));
             //width should at least be equal to height
             buttonSize.setWidth(qMax(buttonSize.height(), buttonContentWidth));
             buttonSize = buttonSize.expandedTo(QApplication::globalStrut());
@@ -2832,7 +2838,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             // Normally spinbuttons should be side-by-side, but if spinbox grows very big
             // and spinbuttons reach their maximum size, they can be deployed one top of the other.
             const bool sideBySide = (buttonSize.height() * 2 < spinbox->rect.height()) ? false : true;
-            const int y = frameThickness + spinbox->rect.y() +
+            const int y = spinbox->rect.y() +
                           (spinbox->rect.height() - (sideBySide ? 1 : 2) * buttonSize.height()) / 2;
             const int x = spinbox->rect.x() +
                           spinbox->rect.width() - frameThickness - (sideBySide ? 2 : 1) * buttonSize.width();
