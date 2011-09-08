@@ -1014,8 +1014,8 @@
 #define ENABLE_JIT 0
 #endif
 
-/* JIT is not implemented for 64 bit on MSVC */
-#if !defined(ENABLE_JIT) && COMPILER(MSVC) && CPU(X86_64)
+/* JIT is not implemented for Windows 64-bit */
+#if !defined(ENABLE_JIT) && OS(WINDOWS) && CPU(X86_64)
 #define ENABLE_JIT 0
 #endif
 
@@ -1221,11 +1221,7 @@
    since most ports try to support sub-project independence, adding new headers
    to WTF causes many ports to break, and so this way we can address the build
    breakages one port at a time. */
-#if PLATFORM(QT)
-#define WTF_USE_EXPORT_MACROS 1
-#else
 #define WTF_USE_EXPORT_MACROS 0
-#endif
 
 #if PLATFORM(QT) || PLATFORM(GTK)
 #define WTF_USE_UNIX_DOMAIN_SOCKETS 1

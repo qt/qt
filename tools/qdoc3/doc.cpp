@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 Q_GLOBAL_STATIC(QSet<QString>, null_Set_QString)
 Q_GLOBAL_STATIC(QStringList, null_QStringList)
 Q_GLOBAL_STATIC(QList<Text>, null_QList_Text)
-Q_GLOBAL_STATIC(QStringMap, null_QStringMap)
+//Q_GLOBAL_STATIC(QStringMap, null_QStringMap)
 Q_GLOBAL_STATIC(QStringMultiMap, null_QStringMultiMap)
 
 struct Macro
@@ -828,7 +828,7 @@ void DocParser::parse(const QString& source,
                         append(Atom::AnnotatedList, getArgument());
                         break;
                     case CMD_SINCELIST:
-                        append(Atom::SinceList, getArgument());
+                        append(Atom::SinceList, getRestOfLine().simplified());
                         break;
                     case CMD_GENERATELIST:
                         append(Atom::GeneratedList, getArgument());
@@ -1861,7 +1861,7 @@ void DocParser::startSection(Doc::Sections unit, int cmd)
 
 }
 
-void DocParser::endSection(int unit, int endCmd)
+void DocParser::endSection(int , int) // (int unit, int endCmd)
 {
     leavePara();
     append(Atom::SectionRight, QString::number(currentSection));

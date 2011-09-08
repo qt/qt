@@ -55,6 +55,9 @@
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #include <qwhatsthis.h>
+#ifdef Q_WS_X11
+#include <qpluginloader.h>
+#endif
 
 #ifndef QT_NO_MENUBAR
 
@@ -66,6 +69,9 @@
 #include "qmenu_p.h"
 #include "qmenubar_p.h"
 #include "qdebug.h"
+#ifdef Q_WS_X11
+#include "qmenubar_x11_p.h"
+#endif
 
 #ifdef Q_WS_WINCE
 extern bool qt_wince_is_mobile(); //defined in qguifunctions_wce.cpp
@@ -173,7 +179,11 @@ void QMenuBarPrivate::updateGeometries()
         return;
     int q_width = q->width()-(q->style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, q)*2);
     int q_start = -1;
-    if(leftWidget || rightWidget) {
+    if(
+#ifdef Q_WS_X11
+        platformMenuBar->allowCornerWidgets() &&
+#endif
+        (leftWidget || rightWidget)) {
         int vmargin = q->style()->pixelMetric(QStyle::PM_MenuBarVMargin, 0, q)
                       + q->style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, q);
         int hmargin = q->style()->pixelMetric(QStyle::PM_MenuBarHMargin, 0, q)
@@ -204,12 +214,22 @@ void QMenuBarPrivate::updateGeometries()
     calcActionRects(q_width, q_start);
     currentAction = 0;
 #ifndef QT_NO_SHORTCUT
-    if(itemsDirty) {
+    if(
+#ifdef Q_WS_X11
+        !platformMenuBar->shortcutsHandledByNativeMenuBar() &&
+#endif
+        itemsDirty) {
         for(int j = 0; j < shortcutIndexMap.size(); ++j)
             q->releaseShortcut(shortcutIndexMap.value(j));
         shortcutIndexMap.resize(0); // faster than clear
         for(int i = 0; i < actions.count(); i++)
             shortcutIndexMap.append(q->grabShortcut(QKeySequence::mnemonic(actions.at(i)->text())));
+    }
+#endif
+#ifdef Q_WS_X11
+    if(q->isNativeMenuBar()) {//nothing to see here folks, move along..
+        itemsDirty = false;
+        return;
     }
 #endif
     itemsDirty = false;
@@ -743,6 +763,11 @@ void QMenuBarPrivate::init()
         QApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, true);
     }
 #endif
+#ifdef Q_WS_X11
+    platformMenuBar = qt_guiPlatformMenuBarFactory()->create();
+    platformMenuBar->init(q);
+#endif
+
     q->setBackgroundRole(QPalette::Button);
     oldWindow = oldParent = 0;
 #ifdef QT3_SUPPORT
@@ -750,6 +775,10 @@ void QMenuBarPrivate::init()
 #endif
 #ifdef QT_SOFTKEYS_ENABLED
     menuBarAction = 0;
+#endif
+#ifdef Q_WS_X11
+    cornerWidgetToolBar = 0;
+    cornerWidgetContainer = 0;
 #endif
     handleReparent();
     q->setMouseTracking(q->style()->styleHint(QStyle::SH_MenuBar_MouseTracking, 0, q));
@@ -820,6 +849,10 @@ QMenuBar::~QMenuBar()
 #ifdef Q_WS_S60
     Q_D(QMenuBar);
     d->symbianDestroyMenuBar();
+#endif
+#ifdef Q_WS_X11
+    Q_D(QMenuBar);
+    delete d->cornerWidgetToolBar;
 #endif
 }
 
@@ -1072,6 +1105,10 @@ void QMenuBar::paintEvent(QPaintEvent *e)
 */
 void QMenuBar::setVisible(bool visible)
 {
+#ifdef Q_WS_X11
+    Q_D(QMenuBar);
+    d->platformMenuBar->setVisible(visible);
+#else
 #if defined(Q_WS_MAC) || defined(Q_OS_WINCE) || defined(Q_WS_S60)
     if (isNativeMenuBar()) {
         if (!visible)
@@ -1080,6 +1117,7 @@ void QMenuBar::setVisible(bool visible)
     }
 #endif
     QWidget::setVisible(visible);
+#endif // Q_WS_X11
 }
 
 /*!
@@ -1275,6 +1313,9 @@ void QMenuBar::actionEvent(QActionEvent *e)
 {
     Q_D(QMenuBar);
     d->itemsDirty = true;
+#ifdef Q_WS_X11
+    d->platformMenuBar->actionEvent(e);
+#endif
 #if defined (Q_WS_MAC) || defined(Q_OS_WINCE) || defined(Q_WS_S60)
     if (isNativeMenuBar()) {
 #ifdef Q_WS_MAC
@@ -1287,7 +1328,7 @@ void QMenuBar::actionEvent(QActionEvent *e)
         if (!nativeMenuBar)
             return;
         if(e->type() == QEvent::ActionAdded)
-            nativeMenuBar->addAction(e->action(), nativeMenuBar->findAction(e->before()));
+            nativeMenuBar->addAction(e->action(), e->before());
         else if(e->type() == QEvent::ActionRemoved)
             nativeMenuBar->removeAction(e->action());
         else if(e->type() == QEvent::ActionChanged)
@@ -1368,6 +1409,10 @@ void QMenuBarPrivate::handleReparent()
         if (newParent && newParent != newWindow)
             newWindow->installEventFilter(q);
     }
+
+#ifdef Q_WS_X11
+    platformMenuBar->handleReparent(oldParent, newParent, oldWindow, newWindow);
+#endif
 
     oldParent = newParent;
     oldWindow = newWindow;
@@ -1566,6 +1611,11 @@ bool QMenuBar::event(QEvent *e)
 bool QMenuBar::eventFilter(QObject *object, QEvent *event)
 {
     Q_D(QMenuBar);
+#ifdef Q_WS_X11
+    if (d->platformMenuBar->menuBarEventFilter(object, event)) {
+        return true;
+    }
+#endif
     if (object == parent() && object) {
 #ifdef QT3_SUPPORT
         if (d->doAutoResize && event->type() == QEvent::Resize) {
@@ -1659,7 +1709,7 @@ QRect QMenuBar::actionGeometry(QAction *act) const
 QSize QMenuBar::minimumSizeHint() const
 {
     Q_D(const QMenuBar);
-#if defined(Q_WS_MAC) || defined(Q_WS_WINCE) || defined(Q_WS_S60)
+#if defined(Q_WS_MAC) || defined(Q_WS_WINCE) || defined(Q_WS_S60) || defined(Q_WS_X11)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
@@ -1682,6 +1732,9 @@ QSize QMenuBar::minimumSizeHint() const
         ret += QSize(2*fw + hmargin, 2*fw + vmargin);
     }
     int margin = 2*vmargin + 2*fw + spaceBelowMenuBar;
+#ifdef Q_WS_X11
+    if (d->platformMenuBar->allowCornerWidgets()) {
+#endif
     if(d->leftWidget) {
         QSize sz = d->leftWidget->minimumSizeHint();
         ret.setWidth(ret.width() + sz.width());
@@ -1694,6 +1747,9 @@ QSize QMenuBar::minimumSizeHint() const
         if(sz.height() + margin > ret.height())
             ret.setHeight(sz.height() + margin);
     }
+#ifdef Q_WS_X11
+    }
+#endif
     if(as_gui_menubar) {
         QStyleOptionMenuItem opt;
         opt.rect = rect();
@@ -1715,7 +1771,7 @@ QSize QMenuBar::minimumSizeHint() const
 QSize QMenuBar::sizeHint() const
 {
     Q_D(const QMenuBar);
-#if defined(Q_WS_MAC) || defined(Q_WS_WINCE) || defined(Q_WS_S60)
+#if defined(Q_WS_MAC) || defined(Q_WS_WINCE) || defined(Q_WS_S60) || defined(Q_WS_X11)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
@@ -1741,6 +1797,9 @@ QSize QMenuBar::sizeHint() const
         ret += QSize(fw + hmargin, fw + vmargin);
     }
     int margin = 2*vmargin + 2*fw + spaceBelowMenuBar;
+#ifdef Q_WS_X11
+    if(d->platformMenuBar->allowCornerWidgets()) {
+#endif
     if(d->leftWidget) {
         QSize sz = d->leftWidget->sizeHint();
         ret.setWidth(ret.width() + sz.width());
@@ -1753,6 +1812,9 @@ QSize QMenuBar::sizeHint() const
         if(sz.height() + margin > ret.height())
             ret.setHeight(sz.height() + margin);
     }
+#ifdef Q_WS_X11
+    }
+#endif
     if(as_gui_menubar) {
         QStyleOptionMenuItem opt;
         opt.rect = rect();
@@ -1774,7 +1836,7 @@ QSize QMenuBar::sizeHint() const
 int QMenuBar::heightForWidth(int) const
 {
     Q_D(const QMenuBar);
-#if defined(Q_WS_MAC) || defined(Q_WS_WINCE) || defined(Q_WS_S60)
+#if defined(Q_WS_MAC) || defined(Q_WS_WINCE) || defined(Q_WS_S60) || defined(Q_WS_X11)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
@@ -1794,10 +1856,16 @@ int QMenuBar::heightForWidth(int) const
         height += 2*vmargin;
     }
     int margin = 2*vmargin + 2*fw + spaceBelowMenuBar;
+#ifdef Q_WS_X11
+    if(d->platformMenuBar->allowCornerWidgets()) {
+#endif
     if(d->leftWidget)
         height = qMax(d->leftWidget->sizeHint().height() + margin, height);
     if(d->rightWidget)
         height = qMax(d->rightWidget->sizeHint().height() + margin, height);
+#ifdef Q_WS_X11
+    }
+#endif
     if(as_gui_menubar) {
         QStyleOptionMenuItem opt;
         opt.init(this);
@@ -1817,7 +1885,15 @@ void QMenuBarPrivate::_q_internalShortcutActivated(int id)
 {
     Q_Q(QMenuBar);
     QAction *act = actions.at(id);
-    setCurrentAction(act, true, true);
+#ifdef Q_WS_X11
+    if (q->isNativeMenuBar()) {
+        platformMenuBar->popupAction(act);
+    } else {
+#endif
+        setCurrentAction(act, true, true);
+#ifdef Q_WS_X11
+    }
+#endif
     if (act && !act->menu()) {
         activateAction(act, QAction::Trigger);
         //100 is the same as the default value in QPushButton::animateClick
@@ -1837,6 +1913,39 @@ void QMenuBarPrivate::_q_updateLayout()
         q->update();
     }
 }
+
+#ifdef Q_WS_X11
+void QMenuBarPrivate::updateCornerWidgetToolBar()
+{
+    Q_Q(QMenuBar);
+    if (!cornerWidgetToolBar) {
+        QMainWindow *window = qobject_cast<QMainWindow *>(q->window());
+        if (!window) {
+            qWarning() << "Menubar parent is not a QMainWindow, not showing corner widgets";
+            return;
+        }
+        cornerWidgetToolBar = window->addToolBar(QApplication::translate("QMenuBar", "Corner Toolbar"));
+        cornerWidgetToolBar->setObjectName(QLatin1String("CornerToolBar"));
+        cornerWidgetContainer = new QWidget;
+        cornerWidgetToolBar->addWidget(cornerWidgetContainer);
+        new QHBoxLayout(cornerWidgetContainer);
+    } else {
+        QLayout *layout = cornerWidgetContainer->layout();
+        while (layout->count() > 0) {
+            layout->takeAt(0);
+        }
+    }
+    if (leftWidget) {
+        leftWidget->setParent(cornerWidgetContainer);
+        cornerWidgetContainer->layout()->addWidget(leftWidget);
+    }
+    if (rightWidget) {
+        rightWidget->setParent(cornerWidgetContainer);
+        cornerWidgetContainer->layout()->addWidget(rightWidget);
+    }
+}
+#endif
+
 
 /*!
     \fn void QMenuBar::setCornerWidget(QWidget *widget, Qt::Corner corner)
@@ -1870,10 +1979,18 @@ void QMenuBar::setCornerWidget(QWidget *w, Qt::Corner corner)
         return;
     }
 
+#ifdef Q_WS_X11
+    if(!d->platformMenuBar->allowCornerWidgets()) {
+        d->updateCornerWidgetToolBar();
+    } else {
+#endif
     if (w) {
         w->setParent(this);
         w->installEventFilter(this);
     }
+#ifdef Q_WS_X11
+    }
+#endif
 
     d->_q_updateLayout();
 }
@@ -1923,6 +2040,9 @@ QWidget *QMenuBar::cornerWidget(Qt::Corner corner) const
 void QMenuBar::setNativeMenuBar(bool nativeMenuBar)
 {
     Q_D(QMenuBar);
+#ifdef Q_WS_X11
+    d->platformMenuBar->setNativeMenuBar(nativeMenuBar);
+#else
     if (d->nativeMenuBar == -1 || (nativeMenuBar != bool(d->nativeMenuBar))) {
         d->nativeMenuBar = nativeMenuBar;
 #ifdef Q_WS_MAC
@@ -1947,15 +2067,20 @@ void QMenuBar::setNativeMenuBar(bool nativeMenuBar)
 	    setVisible(true);
 #endif
     }
+#endif // Q_WS_X11
 }
 
 bool QMenuBar::isNativeMenuBar() const
 {
     Q_D(const QMenuBar);
+#ifdef Q_WS_X11
+    return d->platformMenuBar->isNativeMenuBar();
+#else
     if (d->nativeMenuBar == -1) {
         return !QApplication::instance()->testAttribute(Qt::AA_DontUseNativeMenuBar);
     }
     return d->nativeMenuBar;
+#endif
 }
 
 /*!

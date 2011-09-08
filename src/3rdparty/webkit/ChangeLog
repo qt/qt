@@ -1,26 +1,3 @@
-2011-08-26  Ademar de Souza Reis Jr.  <ademar.reis@openbossa.org>
-
-        [Qt] libwebcore.a source is compiled without -fvisibility=hidden
-        -fvisibility-inlines-hidden
-        https://bugs.webkit.org/show_bug.cgi?id=65470
-
-        Patch by Holger Freyther <zecke@selfish.org>
-        Rubberstamped by Andreas Kling.
-
-        (qtwebkit-2.2 only by now)
-
-        WTF_USE_EXPORT_MACROS is still not enabled on trunk because there are
-        pending issues with WebKit2, but it appears to be safe to enable this
-        on QtWebKit, so this change is being added to the qtwebkit-2.2 branch.
-
-        The patch also adds CONFIG += hide_symbols and on Unix, +=
-        bsymbolic_functions, which should help reduce the library binary size.
-
-        Testing this is quite easy, so if there's any problem we'll soon
-        know. :-)
-
-        * Source/WebKit.pri:
-
 2011-08-06  Aron Rosenberg  <arosenberg@logitech.com>
 
         Reviewed by Benjamin Poulain.

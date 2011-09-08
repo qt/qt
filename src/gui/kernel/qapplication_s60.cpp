@@ -582,13 +582,20 @@ QPoint QSymbianControl::translatePointForFixedNativeOrientation(const TPoint &po
 {
     QPoint pos(pointerEventPos.iX, pointerEventPos.iY);
     if (qwidget->d_func()->fixNativeOrientationCalled) {
-        QSize wsize = qwidget->size();
-        TSize size = Size();
+        QSize wsize = qwidget->size(); // always same as the size in the native orientation
+        TSize size = Size(); // depends on the current orientation
         if (size.iWidth == wsize.height() && size.iHeight == wsize.width()) {
             qreal x = pos.x();
             qreal y = pos.y();
-            pos.setX(size.iHeight - y);
-            pos.setY(x);
+            if (S60->screenRotation == QS60Data::ScreenRotation90) {
+                // DisplayRightUp
+                pos.setX(size.iHeight - y);
+                pos.setY(x);
+            } else if (S60->screenRotation == QS60Data::ScreenRotation270) {
+                // DisplayLeftUp
+                pos.setX(y);
+                pos.setY(size.iWidth - x);
+            }
         }
     }
     return pos;
@@ -2760,6 +2767,9 @@ QS60ThreadLocalData::QS60ThreadLocalData()
 
 QS60ThreadLocalData::~QS60ThreadLocalData()
 {
+    for (int i = 0; i < releaseFuncs.count(); ++i)
+        releaseFuncs[i]();
+    releaseFuncs.clear();
     if (!usingCONEinstances) {
         delete screenDevice;
         wsSession.Close();
