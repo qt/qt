@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qplatformdefs.h"
 #include "qvfbshmem.h"
 #include <qvfbhdr.h>
 #include <private/qlock_p.h>
