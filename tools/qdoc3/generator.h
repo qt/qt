@@ -57,6 +57,12 @@
 
 QT_BEGIN_NAMESPACE
 
+typedef QMap<QString, const Node*> NodeMap;
+typedef QMultiMap<QString, Node*> NodeMultiMap;
+typedef QMap<QString, NodeMultiMap> NewSinceMaps;
+typedef QMap<Node*, NodeMultiMap> ParentMaps;
+typedef QMap<QString, NodeMap> NewClassMaps;
+
 class ClassNode;
 class Config;
 class CodeMarker;
@@ -152,6 +158,7 @@ class Generator
 
     QString getMetadataElement(const InnerNode* inner, const QString& t);
     QStringList getMetadataElements(const InnerNode* inner, const QString& t);
+    void findAllSince(const InnerNode *node);
 
  private:
     void generateReimplementedFrom(const FunctionNode *func,
@@ -179,6 +186,11 @@ class Generator
                               const Node* base,
                               const NodeList& subs,
                               CodeMarker *marker);
+
+    static QString sinceTitles[];
+    NewSinceMaps newSinceMaps;
+    NewClassMaps newClassMaps;
+    NewClassMaps newQmlClassMaps;
 
  private:
     QString amp;

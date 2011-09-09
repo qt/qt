@@ -1880,6 +1880,20 @@ void FrameLoader::setDocumentLoader(DocumentLoader* loader)
         m_documentLoader->detachFromFrame();
 
     m_documentLoader = loader;
+
+    // The following abomination is brought to you by the unload event.
+    // The detachChildren() call above may trigger a child frame's unload event,
+    // which could do something obnoxious like call document.write("") on
+    // the main frame, which results in detaching children while detaching children.
+    // This can cause the new m_documentLoader to be detached from its Frame*, but still
+    // be alive. To make matters worse, DocumentLoaders with a null Frame* aren't supposed
+    // to happen when they're still alive (and many places below us on the stack think the
+    // DocumentLoader is still usable). Ergo, we reattach loader to its Frame, and pretend
+    // like nothing ever happened.
+    if (m_documentLoader && !m_documentLoader->frame()) {
+        ASSERT(!m_documentLoader->isLoading());
+        m_documentLoader->setFrame(m_frame);
+    }
 }
 
 void FrameLoader::setPolicyDocumentLoader(DocumentLoader* loader)
@@ -2506,14 +2520,15 @@ void FrameLoader::checkLoadCompleteForThisFrame()
             if (m_stateMachine.creatingInitialEmptyDocument() || !m_stateMachine.committedFirstRealDocumentLoad())
                 return;
 
+            if (Page* page = m_frame->page())
+                page->progress()->progressCompleted(m_frame);
+
             const ResourceError& error = dl->mainDocumentError();
             if (!error.isNull())
                 m_client->dispatchDidFailLoad(error);
             else
                 m_client->dispatchDidFinishLoad();
 
-            if (Page* page = m_frame->page())
-                page->progress()->progressCompleted(m_frame);
             return;
         }
         
@@ -2589,12 +2604,14 @@ void FrameLoader::frameLoadCompleted()
 
 void FrameLoader::detachChildren()
 {
-    // FIXME: Is it really necessary to do this in reverse order?
-    Frame* previous;
-    for (Frame* child = m_frame->tree()->lastChild(); child; child = previous) {
-        previous = child->tree()->previousSibling();
-        child->loader()->detachFromParent();
-    }
+    typedef Vector<RefPtr<Frame> > FrameVector;
+    FrameVector childrenToDetach;
+    childrenToDetach.reserveCapacity(m_frame->tree()->childCount());
+    for (Frame* child = m_frame->tree()->lastChild(); child; child = child->tree()->previousSibling())
+        childrenToDetach.append(child);
+    FrameVector::iterator end = childrenToDetach.end();
+    for (FrameVector::iterator it = childrenToDetach.begin(); it != end; it++)
+        (*it)->loader()->detachFromParent();
 }
 
 void FrameLoader::closeAndRemoveChild(Frame* child)
