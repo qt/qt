@@ -1708,6 +1708,7 @@ void QTextLine::layout_helper(int maxGlyphs)
 {
     QScriptLine &line = eng->lines[i];
     line.length = 0;
+    line.trailingSpaces = 0;
     line.textWidth = 0;
     line.hasTrailingSpaces = false;
 
