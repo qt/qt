@@ -147,6 +147,8 @@ private slots:
     void pastingRichText_QTBUG_14003();
     void implicitSize_data();
     void implicitSize();
+    void implicitSizePreedit_data();
+    void implicitSizePreedit();
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
 
@@ -2366,6 +2368,48 @@ void tst_qdeclarativetextedit::implicitSize()
     textObject->resetWidth();
     QVERIFY(textObject->width() == textObject->implicitWidth());
     QVERIFY(textObject->height() == textObject->implicitHeight());
+}
+
+void tst_qdeclarativetextedit::implicitSizePreedit_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<QString>("wrap");
+    QTest::addColumn<bool>("wrapped");
+    QTest::newRow("plain") << "The quick red fox jumped over the lazy brown dog" << "TextEdit.NoWrap" << false;
+    QTest::newRow("plain_wrap") << "The quick red fox jumped over the lazy brown dog" << "TextEdit.Wrap" << true;
+
+}
+
+void tst_qdeclarativetextedit::implicitSizePreedit()
+{
+    QFETCH(QString, text);
+    QFETCH(QString, wrap);
+    QFETCH(bool, wrapped);
+
+    QString componentStr = "import QtQuick 1.1\nTextEdit { focus: true; width: 50; wrapMode: " + wrap + " }";
+    QDeclarativeComponent textComponent(&engine);
+    textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeTextEdit *textObject = qobject_cast<QDeclarativeTextEdit*>(textComponent.create());
+
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    scene.addItem(textObject);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+
+    QInputMethodEvent event(text, QList<QInputMethodEvent::Attribute>());
+    QCoreApplication::sendEvent(&view, &event);
+
+    QVERIFY(textObject->width() < textObject->implicitWidth());
+    QVERIFY(textObject->height() == textObject->implicitHeight());
+    qreal wrappedHeight = textObject->height();
+
+    textObject->resetWidth();
+    QVERIFY(textObject->width() == textObject->implicitWidth());
+    QVERIFY(textObject->height() == textObject->implicitHeight());
+    QCOMPARE(textObject->height() < wrappedHeight, wrapped);
 }
 
 void tst_qdeclarativetextedit::testQtQuick11Attributes()
