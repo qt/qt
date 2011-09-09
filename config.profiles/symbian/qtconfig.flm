@@ -65,6 +65,19 @@ $(SOURCEDIR)/qmake$(DOTEXE): $(EXTENSION_ROOT)/$(QT_ROOT)/$(CONFIGURE_APP)
 	$(call startrule,mkspecexport) \
 	$(GNUCP) -R $(EXTENSION_ROOT)/$(QT_ROOT)/mkspecs $(MKSPECDIR)
 	$(call endrule,mkspecexport)
+
+WHAT::
+	$(call startrawoutput) \
+	echo "$(call whatLogOpen)"; \
+	perl headerexport -base-dir $(EXTENSION_ROOT)/$(QT_ROOT) -outdir $(EPOCROOT)/epoc32/include/ -what | \
+		(read -r LINE; \
+		while [ $$$$? -eq 0 ]; do \
+			echo "$(call whatLogItem,,$$$$LINE)"; \
+			read -r LINE; \
+		done; \
+		); \
+	echo "$(call whatLogClose)" \
+	$(call endrawoutput)
 endef
 
 # Here a variable named "done_<sanitised $SISFILE>" gets created
