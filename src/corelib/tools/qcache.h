@@ -205,8 +205,7 @@ void QCache<Key,T>::trim(int m)
     while (n && total > m) {
         Node *u = n;
         n = n->p;
-        if (qIsDetached(*u->t))
-            unlink(*u);
+        unlink(*u);
     }
 }
 
