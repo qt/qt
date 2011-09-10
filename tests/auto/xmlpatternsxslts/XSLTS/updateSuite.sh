@@ -47,14 +47,21 @@
 # when the test suite is publically released, it is possible as
 # according to W3C's usual license agreements.
 
-echo "*** This script typically doesn't need to be run, and it needs to be updated anyway."
-exit 1
+echo "*** This script typically doesn't need to be run. Test Suite is not available. So, this test is only a place holder! ***"
+exit 0
+
+# Download the test suite
+TMPFILE='tmpfile'
+wget http://www.w3.org/Style/XSL/XSL-TestSuite.zip -O $TMPFILE
+unzip $TMPFILE
+rm $TMPFILE
+
 
 # This is W3C's internal CVS server, not the public dev.w3.org.
-export CVSROOT="fenglich@cvs.w3.org:path is currently unknown"
+# export CVSROOT="fenglich@cvs.w3.org:path is currently unknown"
 
-echo "*** Enter 'anonymous' as password. ***"
-cvs login
+# echo "*** Enter 'anonymous' as password. ***"
+# cvs login
 
 mv catalog.xml catalogUnresolved.xml
 xmllint --noent  --output catalog.xml catalogUnresolved.xml

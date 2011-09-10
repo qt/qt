@@ -94,6 +94,10 @@ namespace QPatternistSDK
                                   const QString &qName,
                                   const QXmlAttributes &atts);
 
+        virtual bool resolveEntity(const QString& publicId,
+                                   const QString& systemId,
+                                   QXmlInputSource*& ret);
+
         virtual TestSuite *testSuite() const;
 
     private:

@@ -55,6 +55,7 @@
 #include <QXmlQuery>
 #include <QXmlResultItems>
 #include <QXmlSerializer>
+#include <QDebug>
 
 #include "MessageSilencer.h"
 #include "MessageValidator.h"

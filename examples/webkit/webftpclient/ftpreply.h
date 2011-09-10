@@ -44,8 +44,11 @@
 #include <QNetworkReply>
 #include <QStringList>
 #include <QUrlInfo>
+#include <QFtp>
 
+QT_BEGIN_NAMESPACE
 class QFtp;
+QT_END_NAMESPACE
 
 //! [class definition]
 class FtpReply : public QNetworkReply

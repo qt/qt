@@ -1,23 +1,36 @@
-2011-08-26  Ademar de Souza Reis Jr.  <ademar.reis@openbossa.org>
+2011-08-30  Ademar de Souza Reis Jr.  <ademar.reis@openbossa.org>
 
-        [Qt] libwebcore.a source is compiled without -fvisibility=hidden
-        -fvisibility-inlines-hidden
-        https://bugs.webkit.org/show_bug.cgi?id=65470
+        [Qt] Do not unconditionally use pkg-config in .pro files
+        https://bugs.webkit.org/show_bug.cgi?id=67055
 
-        Patch by Holger Freyther <zecke@selfish.org>
-        Rubberstamped by Andreas Kling.
+        Reviewed by Andreas Kling.
 
-        (qtwebkit-2.2 only by now)
+        Original patch from Rohan McGovern <rohan.mcgovern@nokia.com>
 
-        WTF_USE_EXPORT_MACROS is still not enabled on trunk because there are
-        pending issues with WebKit2, but it appears to be safe to enable this
-        on QtWebKit, so this change is being added to the qtwebkit-2.2 branch.
+        Using the first pkg-config in PATH is prone to errors when cross
+        compiling inside the Qt repository (using Qt's build-system).
 
-        The patch also adds CONFIG += hide_symbols and on Unix, +=
-        bsymbolic_functions, which should help reduce the library binary size.
+        This patch protect calls for pkg-config with
+        !contains(QT_CONFIG, no-pkg-config). no-pkg-config is added to
+        QT_CONFIG by Qt's 'configure' when cross-compiling on systems
+        without pkg-config.
 
-        Testing this is quite easy, so if there's any problem we'll soon
-        know. :-)
+        The respective change in Qt's configure has been submited already.
+
+        No new tests as this is just a build change.
+
+        * wtf/wtf.pri: protect pkg-config calls
+
+2011-08-28  Jonathan Liu  <net147@gmail.com>
+
+        Fix build error when compiling with MinGW-w64 by disabling JIT
+        on Windows 64-bit
+        https://bugs.webkit.org/show_bug.cgi?id=61235
+
+        Reviewed by Gavin Barraclough.
+
+        The fixed mmap executable allocator for JIT on x86_64 requires
+        sys/mman.h which is not available on Windows.
 
         * wtf/Platform.h:
 

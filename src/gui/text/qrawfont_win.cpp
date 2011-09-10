@@ -578,7 +578,9 @@ void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData,
         resolveGdi32();
         if (ptrAddFontMemResourceEx && ptrRemoveFontMemResourceEx) {
             DWORD count = 0;
-            fontHandle = ptrAddFontMemResourceEx((void *)fontData.constData(), fontData.size(), 0, &count);
+            QByteArray newFontData = font.data();
+            fontHandle = ptrAddFontMemResourceEx((void *)newFontData.constData(), newFontData.size(),
+                                                 0, &count);
             if (count == 0 && fontHandle != NULL) {
                 ptrRemoveFontMemResourceEx(fontHandle);
                 fontHandle = NULL;

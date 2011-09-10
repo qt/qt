@@ -65,6 +65,11 @@ The QDeclarativeDataLoader invokes callbacks on the QDeclarativeDataBlob as data
 */
 
 /*!
+    \class QDeclarativeTypeLoader
+    \internal
+*/
+
+/*!
 \enum QDeclarativeDataBlob::Status
 
 This enum describes the status of the data blob.

@@ -901,6 +901,12 @@ QUuid QUuid::createUuid()
             uint randNumber = 0;
             for (int filled = 0; filled < intbits; filled += randbits)
                 randNumber |= qrand()<<filled;
+#if defined(Q_OS_SYMBIAN)
+            // Symbian does not have /dev/urandom, so entropy is low.
+            // Add more entropy from the kernel tick count (1ms resolution).
+            // big multipler used to splatter the tick count bits over the whole 32 bits
+            randNumber ^= User::NTickCount() * 0x3b9aca07;
+#endif
             *(data+chunks) = randNumber;
         }
     }
