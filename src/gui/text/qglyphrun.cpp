@@ -140,14 +140,18 @@ bool QGlyphRun::operator==(const QGlyphRun &other) const
         return false;
     }
 
-    for (int i=0; i<qMax(d->glyphIndexDataSize, d->glyphPositionDataSize); ++i) {
-        if (i < d->glyphIndexDataSize && d->glyphIndexData[i] != other.d->glyphIndexData[i])
-           return false;
-
-        if (i < d->glyphPositionDataSize && d->glyphPositionData[i] != other.d->glyphPositionData[i])
-           return false;
+    if (d->glyphIndexData != other.d->glyphIndexData) {
+        for (int i = 0; i < d->glyphIndexDataSize; ++i) {
+            if (d->glyphIndexData[i] != other.d->glyphIndexData[i])
+               return false;
+        }
     }
-
+    if (d->glyphPositionData != other.d->glyphPositionData) {
+        for (int i = 0; i < d->glyphPositionDataSize; ++i) {
+            if (d->glyphPositionData[i] != other.d->glyphPositionData[i])
+               return false;
+        }
+    }
 
     return (d->overline == other.d->overline
             && d->underline == other.d->underline
@@ -156,13 +160,11 @@ bool QGlyphRun::operator==(const QGlyphRun &other) const
 }
 
 /*!
+    \fn bool QGlyphRun::operator!=(const QGlyphRun &other) const
+
     Compares \a other to this QGlyphRun object. Returns true if any of the list of glyph
     indexes, the list of positions or the font are different, otherwise returns false.
 */
-bool QGlyphRun::operator!=(const QGlyphRun &other) const
-{
-    return !(*this == other);
-}
 
 /*!
     Returns the font selected for this QGlyphRun object.
@@ -294,6 +296,9 @@ bool QGlyphRun::overline() const
 */
 void QGlyphRun::setOverline(bool overline)
 {
+    if (d->overline == overline)
+        return;
+
     detach();
     d->overline = overline;
 }
@@ -316,6 +321,9 @@ bool QGlyphRun::underline() const
 */
 void QGlyphRun::setUnderline(bool underline)
 {
+    if (d->underline == underline)
+        return;
+
     detach();
     d->underline = underline;
 }
@@ -338,6 +346,9 @@ bool QGlyphRun::strikeOut() const
 */
 void QGlyphRun::setStrikeOut(bool strikeOut)
 {
+    if (d->strikeOut == strikeOut)
+        return;
+
     detach();
     d->strikeOut = strikeOut;
 }
