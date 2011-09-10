@@ -3480,7 +3480,7 @@ qreal QDeclarativeItem::implicitHeight() const
 /*!
     \qmlproperty real Item::implicitWidth
     \qmlproperty real Item::implicitHeight
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Defines the natural width or height of the Item if no \l width or \l height is specified.
 
@@ -3600,8 +3600,8 @@ void QDeclarativeItem::setSize(const QSizeF &size)
 bool QDeclarativeItem::hasActiveFocus() const
 {
     Q_D(const QDeclarativeItem);
-    return focusItem() == this ||
-           (d->flags & QGraphicsItem::ItemIsFocusScope && focusItem() != 0);
+    return (focusItem() && focusItem()->isVisible()) && (focusItem() == this ||
+           (d->flags & QGraphicsItem::ItemIsFocusScope && focusItem() != 0));
 }
 
 /*!

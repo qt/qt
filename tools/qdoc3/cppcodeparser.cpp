@@ -47,7 +47,7 @@
 
 #include <stdio.h>
 #include <errno.h>
-
+#include <qdebug.h>
 #include "codechunk.h"
 #include "config.h"
 #include "cppcodeparser.h"
@@ -704,7 +704,7 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
         if (command == COMMAND_CLASS) {
             if (paths.size() > 1) {
                 if (!paths[1].endsWith(".h")) {
-                    ClassNode*cnode = static_cast<ClassNode*>(node);
+                    ClassNode* cnode = static_cast<ClassNode*>(node);
                     cnode->setQmlElement(paths[1]);
                 }
             }
@@ -712,9 +712,9 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
         return node;
     }
     else if (command == COMMAND_EXAMPLE) {
-        FakeNode *fake = new FakeNode(tre->root(), arg, Node::Example);
-        createExampleFileNodes(fake);
-        return fake;
+        ExampleNode* en = new ExampleNode(tre->root(), arg);
+        createExampleFileNodes(en);
+        return en;
     }
     else if (command == COMMAND_EXTERNALPAGE) {
         return new FakeNode(tre->root(), arg, Node::ExternalPage);
@@ -2349,8 +2349,8 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
                                         proFileName,
                                         userFriendlyFilePath);
             if (fullPath.isEmpty()) {
-                fake->doc().location().warning(
-                    tr("Cannot find file '%1' or '%2'").arg(tmp).arg(proFileName));
+                fake->doc().location().warning(tr("Cannot find file '%1' or '%2'").arg(tmp).arg(proFileName));
+                fake->doc().location().warning(tr("EXAMPLE PATH DOES NOT EXIST: %1").arg(examplePath));
                 return;
             }
         }
@@ -2362,7 +2362,6 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
     QStringList exampleFiles = Config::getFilesHere(fullPath,exampleNameFilter);
     QString imagesPath = fullPath + "/images";
     QStringList imageFiles = Config::getFilesHere(imagesPath,exampleImageFilter);
-
     if (!exampleFiles.isEmpty()) {
         // move main.cpp and to the end, if it exists
         QString mainCpp;
@@ -2382,7 +2381,7 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
             exampleFiles.append(mainCpp);
 
         // add any qmake Qt resource files and qmake project files
-        exampleFiles += Config::getFilesHere(fullPath, "*.qrc *.pro qmldir");
+        exampleFiles += Config::getFilesHere(fullPath, "*.qrc *.pro *.qmlproject qmldir");
     }
 
     foreach (const QString &exampleFile, exampleFiles)

@@ -39,10 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qplatformdefs.h"
+#include <qplatformdefs.h>
+
 #include "qvfbshmem.h"
-#include <qvfbhdr.h>
-#include <private/qlock_p.h>
+#include "qvfbhdr.h"
+#include "qlock_p.h"
 
 #include <QFile>
 #include <QTimer>

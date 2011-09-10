@@ -4,15 +4,8 @@
 
 INCLUDEPATH += $$PWD
 
-# --- Property browser is also linked into the designer_shared library.
-#     Avoid conflict when linking statically
-contains(CONFIG, static) {
-    INCLUDEPATH *= $$QT_SOURCE_TREE/tools/shared/qtpropertybrowser
-    INCLUDEPATH *= $$QT_SOURCE_TREE/tools/shared/qtgradienteditor
-} else {
-    include(../../../../shared/qtpropertybrowser/qtpropertybrowser.pri)
-    include(../../../../shared/qtgradienteditor/qtcolorbutton.pri)
-}
+include(../../../../shared/qtpropertybrowser/qtpropertybrowser.pri)
+include(../../../../shared/qtgradienteditor/qtcolorbutton.pri)
 
 FORMS += $$PWD/paletteeditor.ui \
     $$PWD/stringlisteditor.ui \

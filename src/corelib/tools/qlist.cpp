@@ -460,8 +460,8 @@ void **QListData::erase(void **xi)
 
     Note that the internal array only ever gets bigger over the life
     of the list. It never shrinks. The internal array is deallocated
-    by the destructor and by the assignment operator, when one list
-    is assigned to another.
+    by the destructor, by clear(), and by the assignment operator,
+    when one list is assigned to another.
 
     Here's an example of a QList that stores integers and
     a QList that stores QDate values:

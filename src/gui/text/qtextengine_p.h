@@ -376,7 +376,7 @@ struct Q_AUTOTEST_EXPORT QScriptLine
 {
     // created and filled in QTextLine::layout_helper
     QScriptLine()
-        : from(0), length(0),
+        : from(0), trailingSpaces(0), length(0),
         justified(0), gridfitted(0),
         hasTrailingSpaces(0), leadingIncluded(0) {}
     QFixed descent;
@@ -388,6 +388,7 @@ struct Q_AUTOTEST_EXPORT QScriptLine
     QFixed textWidth;
     QFixed textAdvance;
     int from;
+    unsigned short trailingSpaces;
     signed int length : 28;
     mutable uint justified : 1;
     mutable uint gridfitted : 1;
