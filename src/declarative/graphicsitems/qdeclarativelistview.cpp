@@ -1293,6 +1293,7 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
 
     correctFlick = false;
     fixupMode = moveReason == Mouse ? fixupMode : Immediate;
+    bool strictHighlightRange = haveHighlightRange && highlightRange == QDeclarativeListView::StrictlyEnforceRange;
 
     qreal highlightStart;
     qreal highlightEnd;
@@ -1325,9 +1326,9 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
         FxListItem *topItem = snapItemAt(tempPosition+highlightStart);
         FxListItem *bottomItem = snapItemAt(tempPosition+highlightEnd);
         qreal pos;
-        bool isInBounds = -position() > maxExtent && -position() < minExtent;
+        bool isInBounds = -position() > maxExtent && -position() <= minExtent;
         if (topItem && isInBounds) {
-            if (topItem->index == 0 && header && tempPosition+highlightStart < header->position()+header->size()/2) {
+            if (topItem->index == 0 && header && tempPosition+highlightStart < header->position()+header->size()/2 && !strictHighlightRange) {
                 pos = isRightToLeft() ? - header->position() + highlightStart - size() : header->position() - highlightStart;
             } else {
                 if (isRightToLeft())
@@ -1356,7 +1357,7 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
             }
             vTime = timeline.time();
         }
-    } else if (currentItem && haveHighlightRange && highlightRange == QDeclarativeListView::StrictlyEnforceRange
+    } else if (currentItem && strictHighlightRange
                 && moveReason != QDeclarativeListViewPrivate::SetIndex) {
         updateHighlight();
         qreal pos = currentItem->itemPosition();
