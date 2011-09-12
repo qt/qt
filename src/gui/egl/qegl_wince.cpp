@@ -56,7 +56,7 @@ EGLNativeDisplayType QEgl::nativeDisplay()
     HDC myDc = GetDC(0);
     if (!myDc) {
         qWarning("QEglContext::nativeDisplay(): WinCE display is not open");
-        return EGL_DEFAULT_DISPLAY;
+        return EGLNativeDisplayType(EGL_DEFAULT_DISPLAY);
     }
     return EGLNativeDisplayType(myDc);
 }
