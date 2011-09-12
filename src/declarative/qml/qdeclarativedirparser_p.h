@@ -73,6 +73,9 @@ public:
     QString source() const;
     void setSource(const QString &source);
 
+    QString fileSource() const;
+    void setFileSource(const QString &filePath);
+
     bool isParsed() const;
     bool parse();
 
@@ -116,6 +119,7 @@ private:
     QList<QDeclarativeError> _errors;
     QUrl _url;
     QString _source;
+    QString _filePathSouce;
     QList<Component> _components;
     QList<Plugin> _plugins;
     unsigned _isParsed: 1;

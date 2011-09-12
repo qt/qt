@@ -41,8 +41,10 @@
 
 #include "private/qdeclarativedirparser_p.h"
 #include "qdeclarativeerror.h"
+#include <private/qdeclarativeglobal_p.h>
 
 #include <QtCore/QTextStream>
+#include <QtCore/QFile>
 #include <QtCore/QtDebug>
 
 QT_BEGIN_NAMESPACE
@@ -64,6 +66,16 @@ QUrl QDeclarativeDirParser::url() const
 void QDeclarativeDirParser::setUrl(const QUrl &url)
 {
     _url = url;
+}
+
+QString QDeclarativeDirParser::fileSource() const
+{
+    return _filePathSouce;
+}
+
+void QDeclarativeDirParser::setFileSource(const QString &filePath)
+{
+    _filePathSouce = filePath;
 }
 
 QString QDeclarativeDirParser::source() const
@@ -91,6 +103,23 @@ bool QDeclarativeDirParser::parse()
     _errors.clear();
     _plugins.clear();
     _components.clear();
+
+    if (_source.isEmpty() && !_filePathSouce.isEmpty()) {
+        QFile file(_filePathSouce);
+        if (!QDeclarative_isFileCaseCorrect(_filePathSouce)) {
+            QDeclarativeError error;
+            error.setDescription(QString::fromUtf8("cannot load module \"%1\": File name case mismatch for \"%2\"").arg(_url.toString()).arg(_filePathSouce));
+            _errors.prepend(error);
+            return false;
+        } else if (file.open(QFile::ReadOnly)) {
+            _source = QString::fromUtf8(file.readAll());
+        } else {
+            QDeclarativeError error;
+            error.setDescription(QString::fromUtf8("module \"%1\" definition \"%2\" not readable").arg(_url.toString()).arg(_filePathSouce));
+            _errors.prepend(error);
+            return false;
+        }
+    }
 
     QTextStream stream(&_source);
     int lineNumber = 0;

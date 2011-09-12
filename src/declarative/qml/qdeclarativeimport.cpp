@@ -79,16 +79,16 @@ public:
     QList<QDeclarativeDirComponents> qmlDirComponents;
 
 
-    bool find_helper(int i, const QByteArray& type, int *vmajor, int *vminor,
+    bool find_helper(QDeclarativeTypeLoader *typeLoader, int i, const QByteArray& type, int *vmajor, int *vminor,
                                  QDeclarativeType** type_return, QUrl* url_return,
                                  QUrl *base = 0, bool *typeRecursionDetected = 0);
-    bool find(const QByteArray& type, int *vmajor, int *vminor, QDeclarativeType** type_return,
+    bool find(QDeclarativeTypeLoader *typeLoader, const QByteArray& type, int *vmajor, int *vminor, QDeclarativeType** type_return,
               QUrl* url_return, QUrl *base = 0, QString *errorString = 0);
 };
 
 class QDeclarativeImportsPrivate {
 public:
-    QDeclarativeImportsPrivate();
+    QDeclarativeImportsPrivate(QDeclarativeTypeLoader *loader);
     ~QDeclarativeImportsPrivate();
 
     bool importExtension(const QString &absoluteFilePath, const QString &uri, 
@@ -111,6 +111,7 @@ public:
     QSet<QString> qmlDirFilesForWhichPluginsHaveBeenLoaded;
     QDeclarativeImportedNamespace unqualifiedset;
     QHash<QString,QDeclarativeImportedNamespace* > set;
+    QDeclarativeTypeLoader *typeLoader;
 };
 
 /*!
@@ -134,9 +135,12 @@ QDeclarativeImports::operator =(const QDeclarativeImports &copy)
     return *this;
 }
 
-QDeclarativeImports::QDeclarativeImports() 
-: d(new QDeclarativeImportsPrivate)
-{
+QDeclarativeImports::QDeclarativeImports()
+    : d(new QDeclarativeImportsPrivate(0)){
+}
+
+QDeclarativeImports::QDeclarativeImports(QDeclarativeTypeLoader *typeLoader)
+    : d(new QDeclarativeImportsPrivate(typeLoader)){
 }
 
 QDeclarativeImports::~QDeclarativeImports()
@@ -268,10 +272,11 @@ bool QDeclarativeImports::resolveType(QDeclarativeImportedNamespace* ns, const Q
                                       QDeclarativeType** type_return, QUrl* url_return, 
                                       int *vmaj, int *vmin) const
 {
-    return ns->find(type,vmaj,vmin,type_return,url_return);
+    Q_ASSERT(d->typeLoader);
+    return ns->find(d->typeLoader,type,vmaj,vmin,type_return,url_return);
 }
 
-bool QDeclarativeImportedNamespace::find_helper(int i, const QByteArray& type, int *vmajor, int *vminor,
+bool QDeclarativeImportedNamespace::find_helper(QDeclarativeTypeLoader *typeLoader, int i, const QByteArray& type, int *vmajor, int *vminor,
                                  QDeclarativeType** type_return, QUrl* url_return,
                                  QUrl *base, bool *typeRecursionDetected)
 {
@@ -291,7 +296,6 @@ bool QDeclarativeImportedNamespace::find_helper(int i, const QByteArray& type, i
         return true;
     }
 
-    QUrl url = QUrl(urls.at(i) + QLatin1Char('/') + QString::fromUtf8(type) + QLatin1String(".qml"));
     QDeclarativeDirComponents qmldircomponents = qmlDirComponents.at(i);
 
     bool typeWasDeclaredInQmldir = false;
@@ -303,6 +307,7 @@ bool QDeclarativeImportedNamespace::find_helper(int i, const QByteArray& type, i
 
                 // importing version -1 means import ALL versions
                 if ((vmaj == -1) || (c.majorVersion < vmaj || (c.majorVersion == vmaj && vmin >= c.minorVersion))) {
+                    QUrl url = QUrl(urls.at(i) + QLatin1Char('/') + QString::fromUtf8(type) + QLatin1String(".qml"));
                     QUrl candidate = url.resolved(QUrl(c.fileName));
                     if (c.internal && base) {
                         if (base->resolved(QUrl(c.fileName)) != candidate)
@@ -323,8 +328,9 @@ bool QDeclarativeImportedNamespace::find_helper(int i, const QByteArray& type, i
 
     if (!typeWasDeclaredInQmldir  && !isLibrary.at(i)) {
         // XXX search non-files too! (eg. zip files, see QT-524)
-        QFileInfo f(QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url));
-        if (f.exists()) {
+        QUrl url = QUrl(urls.at(i) + QLatin1Char('/') + QString::fromUtf8(type) + QLatin1String(".qml"));
+        QString file = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
+        if (!typeLoader->absoluteFilePath(file).isEmpty()) {
             if (base && *base == url) { // no recursion
                 if (typeRecursionDetected)
                     *typeRecursionDetected = true;
@@ -338,9 +344,8 @@ bool QDeclarativeImportedNamespace::find_helper(int i, const QByteArray& type, i
     return false;
 }
 
-QDeclarativeImportsPrivate::QDeclarativeImportsPrivate() 
-: ref(1)
-{
+QDeclarativeImportsPrivate::QDeclarativeImportsPrivate(QDeclarativeTypeLoader *loader)
+    : ref(1), typeLoader(loader){
 }
 
 QDeclarativeImportsPrivate::~QDeclarativeImportsPrivate()
@@ -353,33 +358,19 @@ bool QDeclarativeImportsPrivate::importExtension(const QString &absoluteFilePath
                                                  QDeclarativeImportDatabase *database, 
                                                  QDeclarativeDirComponents* components, QString *errorString) 
 {
-    QFile file(absoluteFilePath);
-    QString filecontent;
-    if (!QDeclarative_isFileCaseCorrect(absoluteFilePath)) {
-        if (errorString)
-            *errorString = QDeclarativeImportDatabase::tr("cannot load module \"%1\": File name case mismatch for \"%2\"").arg(uri).arg(absoluteFilePath);
-        return false;
-    } else if (file.open(QFile::ReadOnly)) {
-        filecontent = QString::fromUtf8(file.readAll());
-        if (qmlImportTrace())
-            qDebug().nospace() << "QDeclarativeImports(" << qPrintable(base.toString()) << "::importExtension: "
-                               << "loaded " << absoluteFilePath;
-    } else {
+    Q_ASSERT(typeLoader);
+    const QDeclarativeDirParser *qmldirParser = typeLoader->qmlDirParser(absoluteFilePath);
+    if (qmldirParser->hasError()) {
         if (errorString)
             *errorString = QDeclarativeImportDatabase::tr("module \"%1\" definition \"%2\" not readable").arg(uri).arg(absoluteFilePath);
         return false;
     }
-    QDir dir = QFileInfo(file).dir();
-
-    QDeclarativeDirParser qmldirParser;
-    qmldirParser.setSource(filecontent);
-    qmldirParser.parse();
 
     if (! qmlDirFilesForWhichPluginsHaveBeenLoaded.contains(absoluteFilePath)) {
         qmlDirFilesForWhichPluginsHaveBeenLoaded.insert(absoluteFilePath);
 
-
-        foreach (const QDeclarativeDirParser::Plugin &plugin, qmldirParser.plugins()) {
+        QDir dir = QFileInfo(absoluteFilePath).dir();
+        foreach (const QDeclarativeDirParser::Plugin &plugin, qmldirParser->plugins()) {
 
             QString resolvedFilePath = database->resolvePlugin(dir, plugin.path, plugin.name);
 #if defined(QT_LIBINFIX) && defined(Q_OS_SYMBIAN)
@@ -404,7 +395,7 @@ bool QDeclarativeImportsPrivate::importExtension(const QString &absoluteFilePath
     }
 
     if (components)
-        *components = qmldirParser.components();
+        *components = qmldirParser->components();
 
     return true;
 }
@@ -445,6 +436,7 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
                                      QDeclarativeScriptParser::Import::Type importType, 
                                      QDeclarativeImportDatabase *database, QString *errorString)
 {
+    Q_ASSERT(typeLoader);
     QDeclarativeDirComponents qmldircomponents = qmldircomponentsnetwork;
     QString uri = uri_arg;
     QDeclarativeImportedNamespace *s;
@@ -462,20 +454,20 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
         url.replace(QLatin1Char('.'), QLatin1Char('/'));
         bool found = false;
         QString dir;
-
+        QString qmldir;
 
         // step 1: search for extension with fully encoded version number
         if (vmaj >= 0 && vmin >= 0) {
             foreach (const QString &p, database->fileImportPath) {
                 dir = p+QLatin1Char('/')+url;
+                qmldir = dir+QString(QLatin1String(".%1.%2")).arg(vmaj).arg(vmin)+QLatin1String("/qmldir");
 
-                QFileInfo fi(dir+QString(QLatin1String(".%1.%2")).arg(vmaj).arg(vmin)+QLatin1String("/qmldir"));
-                const QString absoluteFilePath = fi.absoluteFilePath();
-
-                if (fi.isFile()) {
+                QString absoluteFilePath = typeLoader->absoluteFilePath(qmldir);
+                if (!absoluteFilePath.isEmpty()) {
                     found = true;
 
-                    url = QUrl::fromLocalFile(fi.absolutePath()).toString();
+                    QString absolutePath = absoluteFilePath.left(absoluteFilePath.lastIndexOf(QLatin1Char('/')));
+                    url = QUrl::fromLocalFile(absolutePath).toString();
                     uri = resolvedUri(dir, database);
                     if (!importExtension(absoluteFilePath, uri, database, &qmldircomponents, errorString))
                         return false;
@@ -487,14 +479,14 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
         if (vmaj >= 0 && vmin >= 0) {
             foreach (const QString &p, database->fileImportPath) {
                 dir = p+QLatin1Char('/')+url;
+                qmldir = dir+QString(QLatin1String(".%1")).arg(vmaj)+QLatin1String("/qmldir");
 
-                QFileInfo fi(dir+QString(QLatin1String(".%1")).arg(vmaj)+QLatin1String("/qmldir"));
-                const QString absoluteFilePath = fi.absoluteFilePath();
-
-                if (fi.isFile()) {
+                QString absoluteFilePath = typeLoader->absoluteFilePath(qmldir);
+                if (!absoluteFilePath.isEmpty()) {
                     found = true;
 
-                    url = QUrl::fromLocalFile(fi.absolutePath()).toString();
+                    QString absolutePath = absoluteFilePath.left(absoluteFilePath.lastIndexOf(QLatin1Char('/')));
+                    url = QUrl::fromLocalFile(absolutePath).toString();
                     uri = resolvedUri(dir, database);
                     if (!importExtension(absoluteFilePath, uri, database, &qmldircomponents, errorString))
                         return false;
@@ -507,14 +499,14 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
 
             foreach (const QString &p, database->fileImportPath) {
                 dir = p+QLatin1Char('/')+url;
+                qmldir = dir+QLatin1String("/qmldir");
 
-                QFileInfo fi(dir+QLatin1String("/qmldir"));
-                const QString absoluteFilePath = fi.absoluteFilePath();
-
-                if (fi.isFile()) {
+                QString absoluteFilePath = typeLoader->absoluteFilePath(qmldir);
+                if (!absoluteFilePath.isEmpty()) {
                     found = true;
 
-                    url = QUrl::fromLocalFile(fi.absolutePath()).toString();
+                    QString absolutePath = absoluteFilePath.left(absoluteFilePath.lastIndexOf(QLatin1Char('/')));
+                    url = QUrl::fromLocalFile(absolutePath).toString();
                     uri = resolvedUri(dir, database);
                     if (!importExtension(absoluteFilePath, uri, database, &qmldircomponents, errorString))
                         return false;
@@ -552,7 +544,7 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
                 uri = resolvedUri(QDeclarativeEnginePrivate::urlToLocalFileOrQrc(base.resolved(QUrl(uri))), database);
                 if (uri.endsWith(QLatin1Char('/')))
                     uri.chop(1);
-                if (QFile::exists(localFileOrQrc)) {
+                if (!typeLoader->absoluteFilePath(localFileOrQrc).isEmpty()) {
                     if (!importExtension(localFileOrQrc,uri,database,&qmldircomponents,errorString))
                         return false;
                 }
@@ -615,6 +607,7 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
 bool QDeclarativeImportsPrivate::find(const QByteArray& type, int *vmajor, int *vminor, QDeclarativeType** type_return,
                                       QUrl* url_return, QString *errorString)
 {
+    Q_ASSERT(typeLoader);
     QDeclarativeImportedNamespace *s = 0;
     int slash = type.indexOf('/');
     if (slash >= 0) {
@@ -636,7 +629,7 @@ bool QDeclarativeImportsPrivate::find(const QByteArray& type, int *vmajor, int *
     }
     QByteArray unqualifiedtype = slash < 0 ? type : type.mid(slash+1); // common-case opt (QString::mid works fine, but slower)
     if (s) {
-        if (s->find(unqualifiedtype,vmajor,vminor,type_return,url_return, &base, errorString))
+        if (s->find(typeLoader, unqualifiedtype,vmajor,vminor,type_return,url_return, &base, errorString))
             return true;
         if (s->urls.count() == 1 && !s->isLibrary[0] && url_return && s != &unqualifiedset) {
             // qualified, and only 1 url
@@ -653,16 +646,16 @@ QDeclarativeImportedNamespace *QDeclarativeImportsPrivate::findNamespace(const Q
     return set.value(type);
 }
 
-bool QDeclarativeImportedNamespace::find(const QByteArray& type, int *vmajor, int *vminor, QDeclarativeType** type_return,
+bool QDeclarativeImportedNamespace::find(QDeclarativeTypeLoader *typeLoader, const QByteArray& type, int *vmajor, int *vminor, QDeclarativeType** type_return,
           QUrl* url_return, QUrl *base, QString *errorString)
 {
     bool typeRecursionDetected = false;
     for (int i=0; i<urls.count(); ++i) {
-        if (find_helper(i, type, vmajor, vminor, type_return, url_return, base, &typeRecursionDetected)) {
+        if (find_helper(typeLoader, i, type, vmajor, vminor, type_return, url_return, base, &typeRecursionDetected)) {
             if (qmlCheckTypes()) {
                 // check for type clashes
                 for (int j = i+1; j<urls.count(); ++j) {
-                    if (find_helper(j, type, vmajor, vminor, 0, 0, base)) {
+                    if (find_helper(typeLoader, j, type, vmajor, vminor, 0, 0, base)) {
                         if (errorString) {
                             QString u1 = urls.at(i);
                             QString u2 = urls.at(j);
