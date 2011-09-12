@@ -29,6 +29,7 @@ SOURCES += \
            $$QT_SOURCE_TREE/src/corelib/tools/qvsnprintf.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qlist.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qhash.cpp \
+           $$QT_SOURCE_TREE/src/corelib/tools/qlocale_tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/global/qglobal.cpp \
            $$QT_BUILD_TREE/src/corelib/global/qconfig.cpp \
            $$QT_SOURCE_TREE/src/corelib/global/qmalloc.cpp \
@@ -39,7 +40,8 @@ SOURCES += \
            $$QT_SOURCE_TREE/src/corelib/tools/qbitarray.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qmetatype.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qvariant.cpp \
+           $$QT_SOURCE_TREE/src/corelib/kernel/qsystemerror.cpp \
+           $$QT_SOURCE_TREE/src/corelib/plugin/qsystemlibrary.cpp \
            $$QT_SOURCE_TREE/src/corelib/codecs/qutfcodec.cpp \
            $$QT_SOURCE_TREE/src/corelib/xml/qxmlstream.cpp \
            $$QT_SOURCE_TREE/src/corelib/xml/qxmlutils.cpp
-
