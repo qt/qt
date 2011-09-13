@@ -505,8 +505,33 @@ SymbianNetworkConfigurationPrivate *SymbianEngine::configFromConnectionMethodL(
         cpPriv->bearerType = QNetworkConfiguration::Bearer2G;
         break;
     case KCommDbBearerWcdma:
-        cpPriv->bearerType = QNetworkConfiguration::BearerWCDMA;
-        break;
+        {
+            //This is ambiguous, check the network status to find out what the expected connection will be
+            TUint mode;
+            TRequestStatus status;
+            iConnectionMonitor.GetUintAttribute(0, 0, KMobilePhoneNetworkMode, mode, status);
+            User::WaitForRequest(status);
+            if (status != KErrNone)
+                cpPriv->bearerType = QNetworkConfiguration::BearerUnknown;
+            else switch (mode) {
+            case EConnMonNetworkModeCdma2000:
+                cpPriv->bearerType = QNetworkConfiguration::BearerCDMA2000;
+                break;
+            case EConnMonNetworkModeWcdma:
+            case EConnMonNetworkModeTdcdma:
+                cpPriv->bearerType = QNetworkConfiguration::BearerWCDMA; //includes HSDPA, as this API can't detect it
+                break;
+            case EConnMonNetworkModeGsm:
+            case EConnMonNetworkModeAmps:
+            case EConnMonNetworkModeCdma95:
+                cpPriv->bearerType = QNetworkConfiguration::Bearer2G; //includes GPRS and EDGE, Qt API treats them both as 2G
+                break;
+            default:
+                cpPriv->bearerType = QNetworkConfiguration::BearerUnknown;
+                break;
+            }
+            break;
+        }
     case KCommDbBearerLAN:
         cpPriv->bearerType = QNetworkConfiguration::BearerEthernet;
         break;
@@ -1122,6 +1147,13 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
                     }
                 );
             }
+
+            //update bearer type for 2G/3G connections
+            TInt bearer;
+            iConnectionMonitor.GetIntAttribute(connectionId, 0, KBearerInfo, bearer, status);
+            User::WaitForRequest(status);
+            if (status == KErrNone)
+                updateMobileBearerToConfigs(TConnMonBearerInfo(bearer));
         } else if (connectionStatus == KConfigDaemonStartingDeregistration) {
             TUint connectionId = realEvent->ConnectionId();
             QNetworkConfigurationPrivatePointer ptr = dataByConnectionId(connectionId);

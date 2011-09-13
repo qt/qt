@@ -2338,6 +2338,25 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     %COMMON_APPDATA% path is usually \tt{C:\\Documents and
     Settings\\All Users\\Application Data}.
 
+    On Symbian, the following files are used for both IniFormat and
+    NativeFormat (in this example, we assume that the application is
+    installed on the \c e-drive and its Secure ID is \c{0xECB00931}):
+
+    \list 1
+    \o \c{c:\data\.config\MySoft\Star Runner.conf}
+    \o \c{c:\data\.config\MySoft.conf}
+    \o \c{e:\private\ecb00931\MySoft\Star Runner.conf}
+    \o \c{e:\private\ecb00931\MySoft.conf}
+    \endlist
+
+    The SystemScope settings location is determined from the installation
+    drive and Secure ID (UID3) of the application. If the application is
+    built-in on the ROM, the drive used for SystemScope is \c c:.
+
+    \note Symbian SystemScope settings are by default private to the
+    application and not shared between applications, unlike other
+    environments.
+
     The paths for the \c .ini and \c .conf files can be changed using
     setPath(). On Unix and Mac OS X, the user can override them by by
     setting the \c XDG_CONFIG_HOME environment variable; see
@@ -2394,6 +2413,32 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     On other platforms than Windows, "Default" and "." would be
     treated as regular subkeys.
+
+    \section2 Securing application settings in Symbian
+
+    UserScope settings in Symbian are writable by any application by
+    default. To protect the application settings from access and tampering
+    by other applications, the settings need to be placed in the private
+    secure area of the application. This can be done by specifying the
+    settings storage path directly to the private area. The following
+    snippet changes the UserScope to \c{c:/private/ecb00931/MySoft.conf}
+    (provided the application is installed on the \c{c-drive} and its
+    Secure ID is \c{0xECB00931}:
+
+    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 30
+
+    Framework libraries (like Qt itself) may store configuration and cache
+    settings using UserScope, which is accessible and writable by other
+    applications. If the application is very security sensitive or uses
+    high platform security capabilities, it may be prudent to also force
+    framework settings to be stored in the private directory of the
+    application. This can be done by changing the default path of UserScope
+    before QApplication is created:
+
+    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 31
+
+    Note that this may affect framework libraries' functionality if they expect
+    the settings to be shared between applications.
 
     \section2 Platform Limitations
 
@@ -3429,6 +3474,8 @@ void QSettings::setUserIniPath(const QString &dir)
     \row                                                        \o SystemScope \o \c /etc/xdg
     \row    \o{1,2} Mac OS X    \o{1,2} IniFormat               \o UserScope   \o \c $HOME/.config
     \row                                                        \o SystemScope \o \c /etc/xdg
+    \row    \o{1,2} Symbian     \o{1,2} NativeFormat, IniFormat \o UserScope   \o \c c:/data/.config
+    \row                                                        \o SystemScope \o \c <drive>/private/<uid>
     \endtable
 
     The default UserScope paths on Unix and Mac OS X (\c
