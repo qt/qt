@@ -51,11 +51,12 @@ int main(int argc, char **argv)
         qDebug() << "Usage: macdeployqt app-bundle [options]";
         qDebug() << "";
         qDebug() << "Options:";
-        qDebug() << "   -verbose=<0-3>  : 0 = no output, 1 = error/warning (default), 2 = normal, 3 = debug";
-        qDebug() << "   -no-plugins     : Skip plugin deployment";
-        qDebug() << "   -dmg            : Create a .dmg disk image";
-        qDebug() << "   -no-strip       : Don't run 'strip' on the binaries";
-        qDebug() << "   -use-debug-libs : Deploy with debug versions of frameworks and plugins (implies -no-strip)";
+        qDebug() << "   -verbose=<0-3>     : 0 = no output, 1 = error/warning (default), 2 = normal, 3 = debug";
+        qDebug() << "   -no-plugins        : Skip plugin deployment";
+        qDebug() << "   -dmg               : Create a .dmg disk image";
+        qDebug() << "   -no-strip          : Don't run 'strip' on the binaries";
+        qDebug() << "   -use-debug-libs    : Deploy with debug versions of frameworks and plugins (implies -no-strip)";
+        qDebug() << "   -executable=<path> : Let the given executable use the deployed frameworks too";
         qDebug() << "";
         qDebug() << "macdeployqt takes an application bundle as input and makes it";
         qDebug() << "self-contained by copying in the Qt frameworks and plugins that";
@@ -83,6 +84,7 @@ int main(int argc, char **argv)
     bool dmg = false;
     bool useDebugLibs = false;
     extern bool runStripEnabled;
+    QStringList additionalExecutables;
 
     for (int i = 2; i < argc; ++i) {
         QByteArray argument = QByteArray(argv[i]);
@@ -108,13 +110,20 @@ int main(int argc, char **argv)
                 LogError() << "Could not parse verbose level";
             else
                 logLevel = number;
+        } else if (argument.startsWith(QByteArray("-executable"))) {
+            LogDebug() << "Argument found:" << argument;
+            int index = argument.indexOf("=");
+            if (index < 0 || index >= argument.size())
+                LogError() << "Missing executable path";
+            else
+                additionalExecutables << argument.mid(index+1);
         } else if (argument.startsWith("-")) {
             LogError() << "Unknown argument" << argument << "\n";
             return 0;
         }
      }
 
-    DeploymentInfo deploymentInfo  = deployQtFrameworks(appBundlePath, useDebugLibs);
+    DeploymentInfo deploymentInfo  = deployQtFrameworks(appBundlePath, additionalExecutables, useDebugLibs);
 
     if (plugins) {
         if (deploymentInfo.qtPath.isEmpty())

@@ -86,6 +86,7 @@ public:
     QString qtPath;
     QString pluginPath;
     QStringList deployedFrameworks;
+    bool useLoaderPath;
 };
 
 
@@ -99,12 +100,12 @@ QString findAppBinary(const QString &appBundlePath);
 QList<FrameworkInfo> getQtFrameworks(const QString &path, bool useDebugLibs);
 QList<FrameworkInfo> getQtFrameworks(const QStringList &otoolLines, bool useDebugLibs);
 QString copyFramework(const FrameworkInfo &framework, const QString path);
-DeploymentInfo deployQtFrameworks(const QString &appBundlePath, bool useDebugLibs);
+DeploymentInfo deployQtFrameworks(const QString &appBundlePath, const QStringList &additionalExecutables, bool useDebugLibs);
 DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks, const QString &bundlePath, const QString &binaryPath);
 void createQtConf(const QString &appBundlePath);
 void deployPlugins(const QString &appBundlePath, DeploymentInfo deploymentInfo, bool useDebugLibs);
 void changeIdentification(const QString &id, const QString &binaryPath);
-void changeInstallName(const QString &oldName, const QString &newName, const QStringList &binaryPaths);
+void changeInstallName(const QString &oldName, const QString &newName, const QString &binaryPath);
 QString findAppBinary(const QString &appBundlePath);
 void createDiskImage(const QString &appBundlePath);
 

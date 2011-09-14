@@ -362,14 +362,28 @@ void changeIdentification(const QString &id, const QString &binaryPath)
     runInstallNameTool(QStringList() << "-id" << id << binaryPath);
 }
 
-void changeInstallName(const QString &oldName, const QString &newName, const QStringList &binaryPaths)
+void changeInstallName(const QString &bundlePath, const FrameworkInfo &framework, const QStringList &binaryPaths, bool useLoaderPath)
+{
+    const QString absBundlePath = QFileInfo(bundlePath).absoluteFilePath();
+    foreach (const QString &binary, binaryPaths) {
+        QString deployedInstallName;
+        if (useLoaderPath) {
+            deployedInstallName = QLatin1String("@loader_path/")
+                    + QFileInfo(binary).absoluteDir().relativeFilePath(absBundlePath + QLatin1Char('/') + framework.destinationDirectory + QLatin1Char('/') + framework.binaryName);
+        } else {
+            deployedInstallName = framework.deployedInstallName;
+        }
+        changeInstallName(framework.installName, deployedInstallName, binary);
+    }
+}
+
+void changeInstallName(const QString &oldName, const QString &newName, const QString &binaryPath)
 {
     LogDebug() << "Using install_name_tool:";
-    LogDebug() << " in" << binaryPaths;
+    LogDebug() << " in" << binaryPath;
     LogDebug() << " change reference" << oldName;
     LogDebug() << " to" << newName;
-    foreach (const QString &path, binaryPaths)
-        runInstallNameTool(QStringList() << "-change" << oldName << newName << path);
+    runInstallNameTool(QStringList() << "-change" << oldName << newName << binaryPath);
 }
 
 void runStrip(const QString &binaryPath)
@@ -396,12 +410,14 @@ void runStrip(const QString &binaryPath)
     a list of actually deployed frameworks.
 */
 DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks,
-        const QString &bundlePath, const QStringList &binaryPaths, bool useDebugLibs)
+        const QString &bundlePath, const QStringList &binaryPaths, bool useDebugLibs,
+                                  bool useLoaderPath)
 {
     LogNormal();
     LogNormal() << "Deploying Qt frameworks found inside:" << binaryPaths;
     QStringList copiedFrameworks;
     DeploymentInfo deploymentInfo;
+    deploymentInfo.useLoaderPath = useLoaderPath;
 
     while (frameworks.isEmpty() == false) {
         const FrameworkInfo framework = frameworks.takeFirst();
@@ -420,8 +436,8 @@ DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks,
             continue;
         }
 
-        // Install_name_tool the new id into the binary
-        changeInstallName(framework.installName, framework.deployedInstallName, binaryPaths);
+        // Install_name_tool the new id into the binaries
+        changeInstallName(bundlePath, framework, binaryPaths, useLoaderPath);
 
         // Copy farmework to app bundle.
         const QString deployedBinaryPath = copyFramework(framework, bundlePath);
@@ -437,7 +453,7 @@ DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks,
         QList<FrameworkInfo> dependencies = getQtFrameworks(deployedBinaryPath, useDebugLibs);
 
         foreach (FrameworkInfo dependency, dependencies) {
-            changeInstallName(dependency.installName, dependency.deployedInstallName, QStringList() << deployedBinaryPath);
+            changeInstallName(bundlePath, dependency, QStringList() << deployedBinaryPath, useLoaderPath);
 
             // Deploy framework if necessary.
             if (copiedFrameworks.contains(dependency.frameworkName) == false && frameworks.contains(dependency) == false) {
@@ -449,13 +465,14 @@ DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks,
     return deploymentInfo;
 }
 
-DeploymentInfo deployQtFrameworks(const QString &appBundlePath, bool useDebugLibs)
+DeploymentInfo deployQtFrameworks(const QString &appBundlePath, const QStringList &additionalExecutables, bool useDebugLibs)
 {
    ApplicationBundleInfo applicationBundle;
    applicationBundle.path = appBundlePath;
    applicationBundle.binaryPath = findAppBinary(appBundlePath);
    applicationBundle.libraryPaths = findAppLibraries(appBundlePath);
-   QStringList allBinaryPaths = QStringList() << applicationBundle.binaryPath << applicationBundle.libraryPaths;
+   QStringList allBinaryPaths = QStringList() << applicationBundle.binaryPath << applicationBundle.libraryPaths
+                                                 << additionalExecutables;
    QList<FrameworkInfo> frameworks = getQtFrameworksForPaths(allBinaryPaths, useDebugLibs);
    if (frameworks.isEmpty()) {
         LogWarning();
@@ -464,7 +481,7 @@ DeploymentInfo deployQtFrameworks(const QString &appBundlePath, bool useDebugLib
         LogWarning() << "If so, you will need to rebuild" << appBundlePath << "before trying again.";
         return DeploymentInfo();
    } else {
-       return deployQtFrameworks(frameworks, applicationBundle.path, allBinaryPaths, useDebugLibs);
+       return deployQtFrameworks(frameworks, applicationBundle.path, allBinaryPaths, useDebugLibs, !additionalExecutables.isEmpty());
    }
 }
 
@@ -530,11 +547,11 @@ void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pl
             if (pluginName.contains("libphonon_qt7")) {
                 changeInstallName("/System/Library/Frameworks/CoreVideo.framework/Versions/A/CoreVideo",
                         "/System/Library/Frameworks/QuartzCore.framework/Versions/A/QuartzCore",
-                        QStringList() << destinationPath);
+                        destinationPath);
             }
 
             QList<FrameworkInfo> frameworks = getQtFrameworks(destinationPath, useDebugLibs);
-            deployQtFrameworks(frameworks, appBundleInfo.path, QStringList() << destinationPath, useDebugLibs);
+            deployQtFrameworks(frameworks, appBundleInfo.path, QStringList() << destinationPath, useDebugLibs, deploymentInfo.useLoaderPath);
         }
     } // foreach plugins
 
@@ -592,7 +609,8 @@ void changeQtFrameworks(const QList<FrameworkInfo> frameworks, const QStringList
     foreach (FrameworkInfo framework, frameworks) {
         const QString oldBinaryId = framework.installName;
         const QString newBinaryId = finalQtPath + framework.frameworkName +  framework.binaryPath;
-        changeInstallName(oldBinaryId, newBinaryId, binaryPaths);
+        foreach (const QString &binary, binaryPaths)
+            changeInstallName(oldBinaryId, newBinaryId, binary);
     }
 }
 
