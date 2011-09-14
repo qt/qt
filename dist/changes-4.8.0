@@ -105,6 +105,7 @@ QtNetwork
  - HTTP cache: do not load resources from cache that must be revalidated [QTBUG-18983]
  - HTTP cache: change file organization (MR-2505)
  - SOCKS5: write errors are propagated to the outer socket [QTBUG-18713]
+ - Cookies: Commas are no longer used to support multiple cookies in a single Set-Cookie header [QTBUG-21456]
 
  QtOpenGL
  --------
