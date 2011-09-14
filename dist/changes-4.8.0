@@ -19,6 +19,12 @@ information about a particular change.
 *                           General                                        *
 ****************************************************************************
 
+Qt Platform Abstraction
+-----------------------
+
+Qt 4.8 adds a new platform: QPA (also known as Lighthouse). QPA is a replacement
+for Qt for Embedded Linux (QWS), making it much easier to port Qt to new platforms.
+
 General Improvements
 --------------------
 
