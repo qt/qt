@@ -1331,6 +1331,9 @@ static bool isFeedWithNestedProtocolInHTTPFamily(const KURL& url)
 void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockHistory, bool lockBackForwardList,
     PassRefPtr<Event> event, PassRefPtr<FormState> formState, ReferrerPolicy referrerPolicy)
 {    
+    // Protect frame from getting blown away inside dispatchBeforeLoadEvent in loadWithDocumentLoader.
+    RefPtr<Frame> protect(m_frame);
+
     KURL url = request.resourceRequest().url();
 
     ASSERT(m_frame->document());
@@ -1388,7 +1391,7 @@ void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const Stri
         RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer);
         addHTTPOriginIfNeeded(request, referrerOrigin->toString());
     }
-    addExtraFieldsToRequest(request, newLoadType, true, event || isFormSubmission);
+    addExtraFieldsToRequest(request, newLoadType, true);
     if (newLoadType == FrameLoadTypeReload || newLoadType == FrameLoadTypeReloadFromOrigin)
         request.setCachePolicy(ReloadIgnoringCacheData);
 
@@ -1567,7 +1570,13 @@ void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType t
             loader->setTriggeringAction(NavigationAction(newURL, policyChecker()->loadType(), isFormSubmission));
 
         if (Element* ownerElement = m_frame->ownerElement()) {
-            if (!ownerElement->dispatchBeforeLoadEvent(loader->request().url().string())) {
+            // We skip dispatching the beforeload event if we've already
+            // committed a real document load because the event would leak
+            // subsequent activity by the frame which the parent frame isn't
+            // supposed to learn. For example, if the child frame navigated to
+            // a new URL, the parent frame shouldn't learn the URL.
+            if (!m_stateMachine.committedFirstRealDocumentLoad()
+                && !ownerElement->dispatchBeforeLoadEvent(loader->request().url().string())) {
                 continueLoadAfterNavigationPolicy(loader->request(), formState, false);
                 return;
             }
@@ -1871,6 +1880,20 @@ void FrameLoader::setDocumentLoader(DocumentLoader* loader)
         m_documentLoader->detachFromFrame();
 
     m_documentLoader = loader;
+
+    // The following abomination is brought to you by the unload event.
+    // The detachChildren() call above may trigger a child frame's unload event,
+    // which could do something obnoxious like call document.write("") on
+    // the main frame, which results in detaching children while detaching children.
+    // This can cause the new m_documentLoader to be detached from its Frame*, but still
+    // be alive. To make matters worse, DocumentLoaders with a null Frame* aren't supposed
+    // to happen when they're still alive (and many places below us on the stack think the
+    // DocumentLoader is still usable). Ergo, we reattach loader to its Frame, and pretend
+    // like nothing ever happened.
+    if (m_documentLoader && !m_documentLoader->frame()) {
+        ASSERT(!m_documentLoader->isLoading());
+        m_documentLoader->setFrame(m_frame);
+    }
 }
 
 void FrameLoader::setPolicyDocumentLoader(DocumentLoader* loader)
@@ -2497,14 +2520,15 @@ void FrameLoader::checkLoadCompleteForThisFrame()
             if (m_stateMachine.creatingInitialEmptyDocument() || !m_stateMachine.committedFirstRealDocumentLoad())
                 return;
 
+            if (Page* page = m_frame->page())
+                page->progress()->progressCompleted(m_frame);
+
             const ResourceError& error = dl->mainDocumentError();
             if (!error.isNull())
                 m_client->dispatchDidFailLoad(error);
             else
                 m_client->dispatchDidFinishLoad();
 
-            if (Page* page = m_frame->page())
-                page->progress()->progressCompleted(m_frame);
             return;
         }
         
@@ -2580,12 +2604,14 @@ void FrameLoader::frameLoadCompleted()
 
 void FrameLoader::detachChildren()
 {
-    // FIXME: Is it really necessary to do this in reverse order?
-    Frame* previous;
-    for (Frame* child = m_frame->tree()->lastChild(); child; child = previous) {
-        previous = child->tree()->previousSibling();
-        child->loader()->detachFromParent();
-    }
+    typedef Vector<RefPtr<Frame> > FrameVector;
+    FrameVector childrenToDetach;
+    childrenToDetach.reserveCapacity(m_frame->tree()->childCount());
+    for (Frame* child = m_frame->tree()->lastChild(); child; child = child->tree()->previousSibling())
+        childrenToDetach.append(child);
+    FrameVector::iterator end = childrenToDetach.end();
+    for (FrameVector::iterator it = childrenToDetach.begin(); it != end; it++)
+        (*it)->loader()->detachFromParent();
 }
 
 void FrameLoader::closeAndRemoveChild(Frame* child)
@@ -2700,20 +2726,20 @@ void FrameLoader::detachViewsAndDocumentLoader()
     
 void FrameLoader::addExtraFieldsToSubresourceRequest(ResourceRequest& request)
 {
-    addExtraFieldsToRequest(request, m_loadType, false, false);
+    addExtraFieldsToRequest(request, m_loadType, false);
 }
 
 void FrameLoader::addExtraFieldsToMainResourceRequest(ResourceRequest& request)
 {
-    addExtraFieldsToRequest(request, m_loadType, true, false);
+    addExtraFieldsToRequest(request, m_loadType, true);
 }
 
-void FrameLoader::addExtraFieldsToRequest(ResourceRequest& request, FrameLoadType loadType, bool mainResource, bool cookiePolicyURLFromRequest)
+void FrameLoader::addExtraFieldsToRequest(ResourceRequest& request, FrameLoadType loadType, bool mainResource)
 {
     // Don't set the cookie policy URL if it's already been set.
     // But make sure to set it on all requests, as it has significance beyond the cookie policy for all protocols (<rdar://problem/6616664>).
     if (request.firstPartyForCookies().isEmpty()) {
-        if (mainResource && (isLoadingMainFrame() || cookiePolicyURLFromRequest))
+        if (mainResource && isLoadingMainFrame())
             request.setFirstPartyForCookies(request.url());
         else if (Document* document = m_frame->document())
             request.setFirstPartyForCookies(document->firstPartyForCookies());
@@ -2812,7 +2838,7 @@ void FrameLoader::loadPostRequest(const ResourceRequest& inRequest, const String
     workingResourceRequest.setHTTPMethod("POST");
     workingResourceRequest.setHTTPBody(formData);
     workingResourceRequest.setHTTPContentType(contentType);
-    addExtraFieldsToRequest(workingResourceRequest, loadType, true, true);
+    addExtraFieldsToRequest(workingResourceRequest, loadType, true);
 
     NavigationAction action(url, loadType, true, event);
 
@@ -3286,7 +3312,7 @@ void FrameLoader::loadDifferentDocumentItem(HistoryItem* item, FrameLoadType loa
 
         // Make sure to add extra fields to the request after the Origin header is added for the FormData case.
         // See https://bugs.webkit.org/show_bug.cgi?id=22194 for more discussion.
-        addExtraFieldsToRequest(request, m_loadType, true, formData);
+        addExtraFieldsToRequest(request, m_loadType, true);
         addedExtraFields = true;
         
         // FIXME: Slight hack to test if the NSURL cache contains the page we're going to.
@@ -3329,7 +3355,7 @@ void FrameLoader::loadDifferentDocumentItem(HistoryItem* item, FrameLoadType loa
     }
     
     if (!addedExtraFields)
-        addExtraFieldsToRequest(request, m_loadType, true, formData);
+        addExtraFieldsToRequest(request, m_loadType, true);
 
     loadWithNavigationAction(request, action, false, loadType, 0);
 }

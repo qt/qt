@@ -219,7 +219,7 @@ public:
 
     void makeLower() { if (m_impl) m_impl = m_impl->lower(); }
     void makeUpper() { if (m_impl) m_impl = m_impl->upper(); }
-    void makeSecure(UChar aChar) { if (m_impl) m_impl = m_impl->secure(aChar); }
+    void fill(UChar c) { if (m_impl) m_impl = m_impl->fill(c); }
 
     void truncate(unsigned len);
     void remove(unsigned pos, int len = 1);

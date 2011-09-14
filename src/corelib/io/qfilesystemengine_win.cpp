@@ -508,11 +508,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 
     if (!entry.isRelative()) {
 #if !defined(Q_OS_WINCE)
-        if (entry.isAbsolute()
-            && !entry.filePath().contains(QLatin1String("/../"))
-            && !entry.filePath().contains(QLatin1String("/./"))
-            && !entry.filePath().endsWith(QLatin1String("/.."))
-            && !entry.filePath().endsWith(QLatin1String("/."))) {
+        if (entry.isAbsolute() && entry.isClean()) {
             ret = entry.filePath();
         }  else {
             ret = QDir::fromNativeSeparators(nativeAbsoluteFilePath(entry.filePath()));
@@ -536,7 +532,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
         // Force uppercase drive letters.
         ret[0] = ret.at(0).toUpper();
     }
-    return QFileSystemEntry(ret);
+    return QFileSystemEntry(ret, QFileSystemEntry::FromInternalPath());
 }
 
 //static
@@ -1052,11 +1048,12 @@ QString QFileSystemEngine::tempPath()
     }
     if (ret.isEmpty()) {
 #if !defined(Q_OS_WINCE)
-        ret = QLatin1String("c:/tmp");
+        ret = QLatin1String("C:/tmp");
 #else
         ret = QLatin1String("/Temp");
 #endif
-    }
+    } else if (ret.length() >= 2 && ret[1] == QLatin1Char(':'))
+        ret[0] = ret.at(0).toUpper(); // Force uppercase drive letters.
     return ret;
 }
 

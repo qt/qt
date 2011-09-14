@@ -19,13 +19,317 @@ Merge Request:  http://qt.gitorious.org
 *                          Library                                         *
 ****************************************************************************
 
+QtGui
+-----
+
+ - [QTBUG-20214] QRentBook: LSK and RSK of booking page will change
+   somethimes
+ - [QTBUG-19656] Spectrum: the Mode menu disappears after the device is
+   changed from portrait to landscape.
+ - [QTBUG-19260] Cursor cannot be placed between letters f and i - "fi"
+   is interpreted as one character
+ - [QTBUG-19157] Crash in QGLContextPrivate::bindTexture() when using
+   QPainter::fillRect() with a brush having a size > max_texture_size
+ - [QTBUG-19089] TextInput positionToRectangle doesn't return correct
+   coordinates for the cursor in pre-edit mode
+ - [QTBUG-19067] Font glyphs get clipped on the top
+ - [QTBUG-18500] QTextBlock crash
+ - [QTBUG-18303] Arabic multiline text is clipped on the right
+ - [QTBUG-18185] QStaticText: Wrong kerning and baselines when rotating a
+   QGraphicsView
+ - [QTBUG-17443] Feedreadercrash: when opening feed with unicode characters
+ - [QTBUG-17244] QGraphicsLayout Layouting should be done in one go. Ugly
+   layouting visible otherwise
+ - [QTBUG-17209] Bug-231 introduces an off-by-one error
+ - [QTBUG-17117] Arabic reordering problem when 2 fonts are used
+ - [QTBUG-11131] QAbstractScrollArea::setViewport() causes crash when used
+   from within event handler method
+ - [QTBUG-16422] Big coordinate values cause segfault on ARM when calling
+   QGraphicsEllipseItem::contains
+ - [QTBUG-18017] Regression: Text selection with shift-click stopped working
+ - [QTBUG-18192] Crash when invoking blockBoundingRect over a QTextDocument
+   documentLayout
+ - [QTBUG-17505] Inflexible focus handling in QGraphicsScene
+ - [QTBUG-17020] QPainter::drawText() fails to draw correct text in some
+   circumstances. Related to QTBUG-12950
+ - [QTBUG-16401] QGraphicsScene returns focus incorrectly when QGraphicsView
+   is focused
+ - [QTBUG-17812] regression: qsortfilterproxymodel::reset doesn't invalidate
+   the model (Windows)
+ - [QTBUG-17230] QPlainTextEdit corruption/crash after scrolling
+ - [QTBUG-17536] qguistatemachine::cloneEvent doesn't clone
+   GraphicsSceneWheel Events correctly
+ - [QTBUG-17254] XPM files crash QImage (write)
+ - [QTBUG-16292] QTreeView crash in indexRowSizeHint/itemHeight
+ - [QTBUG-17390] Child widgets don't inherit their parent's input contexts
+ - [QTBUG-15910] setstylesheet on a QComboBox causes a segmentation fault
+ - [QTBUG-16652] Compilation of "4.7" branch fails:
+   private/qdrawhelper_arm_simd_p.h: No such file or directory
+
+QtNetwork
+---------
+
+ - [QTBUG-17464] SIGBUS in fetchAndAddOrdered from
+   QlcdEngine::connectionStateSignalsSlot
+ - [QTBUG-16022] QHttpNetworkConnectionChannel::expand discards data if
+   gzip-stream has missing end-of-stream marker
+ - [QTBUG-17199] ICD Bearer management: Causes the main thread to hang
+   when ran on a different thread.
+
+QtCore
+------
+
+ - [QTBUG-15421] QDirIterator returns hidden directories when it should only
+   return files and returns hidden files when it should only return
+   directories
+
+QtScript
+--------
+
+ - [QTBUG-17815] Missing APIShims in obsoleted QScriptValue constructor
+ - [QTBUG-17788] Crash when calling collectGarbage() after requesting
+   arguments object of native context
+
+QtDBus
+------
+
+ - [QTBUG-14228] Ensure Qt 4.7 doesn't crash when a D-Bus message with file
+   descriptors is received
+
+QtSql
+-----
+
+ - [QTBUG-14831] Dynamic sorting of a QSortFilterProxyModel on a
+   QSqlTableModel with OnManualSubmit is broken (4.7 regression)
+
+Declarative
+-----------
+
+ - [QTBUG-20159] No effect of setting color on a QStaticText or a
+   QML element
+ - [QTBUG-18428] Colored and underlined styled text are not underlined or
+   completely coloured on device
+ - [QTBUG-18362] wigglytext.qml does not behave correctly in qmlscene
+ - [QTBUG-18266] More than one XmlListModel - Lists randomly show data from
+   wrong model
+ - [QTBUG-15983] Cannot pass enum value as signal parameter from C++ to QML
+ - [QTBUG-14974] ListView and GridView + contentY performance
+ - [QTBUG-18412] Crash in sendPostedEvents() - QObject::isWidgetType()
+   (issue with QDeclarativePixmapReply)
+ - [QTBUG-15356] PathView doesn't update if preferredHighlightBegin and
+   preferredHighlightEnd changed
+ - [QTBUG-17562] TextInput text in echo mode PasswordEchoOnEdit revealed
+   on refocus
+ - [QTBUG-17775] Crash when using FolderListModel with a repeater
+ - [QTBUG-17361] Nested pressDelays crashes application
+ - [QTBUG-15705] QDeclarativeTextInput::mousePressEvent() doesn't call
+   QInputContext::mouseHandler()
+ - [QTBUG-17501] Focus: Tap any of the Rounded-cornered rectangle, the
+   context menu doesn't disappear.
+ - [QTBUG-17008] ListView + XmlListModel freeze application when change
+   language key combination
+ - [QTBUG-17324] incorrect 'version is not installed' error when importing
+   QML module
+ - [QTBUG-16999] QML TextInput doesn't scroll if writing preedit at the end
+   of the line
+ - [QTBUG-13451] Support property versioning in QML
+ - [QTBUG-16959] Crash when using Grid.TopToBottom flow with Repeater
+   inside Grid
+ - [QTBUG-16522] QML ListView Should Support Dynamic Headers and Footers
+ - [QTBUG-17114] QtQuick 1.1 alignment regression
+ - [QTBUG-16283] TextEdit and TextInput need text selection modes
+ - [QTBUG-16284] Disable drag and drop in TextEdit and TextInput
+
+OpenVG
+------
+ - [QTBUG-18682] QImage convertToFormat does not work with certain image
+   formats when default (OpenVG) rendering engine used.
+
+OpenGL
+------
+ - [QTBUG-14217] Unresolved symbol QGLWindowSurface::staticMetaObject when
+   building for Windows Mobile 5.0 with OpenGL ES 1.1 support
+ - [QTBUG-18184] mingw gcc 4 static build failed in tools/qml because of the
+   symbol export in libQtOpenGL
+ - [QTBUG-17256] Change QGLPixmapData load functions to use the
+   'convertInPlace' versions of QImage to save memory
+
+3rdParty
+--------
+
+ - Image formats
+    * [QTBUG-20425] Update bundled libpng to 1.5.4 (security)
+
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
 ****************************************************************************
+
+Qt for Linux/X11
+----------------
+
+ - Declarative
+    * [QTBUG-19914] Segfault in QDeclarativeBinding::createBinding triggered
+      by QMultimediaKit
+ - gui
+    * [QTBUG-16175] REG: Qt 4.7/Linux Qt Designer / Qt Creator show multiple
+      warnings: "Application asked to unregister timer 0x17000002 which is
+      not registered in this thread. Fix application."
+
+Qt for Windows
+--------------
+
+ - gui
+    * [QTBUG-19878] QImage constructor crash when opening some tiff images
+ - corelib
+    * [QTBUG-17014] Qt event delivery is unreliable on windows platforms
+ - declarative
+    * [QTBUG-19198] ListView lose items
+    * [QTBUG-18587] Roles are not removed in listmodel
+ - qmake
+    * [QTBUG-18537] Compiling Qt on Windows XP x64 using MinGW-w64 fails
+
+Qt for Mac OS X
+---------------
+
+ - gui
+    * [QTBUG-20496] Qt does not compile under OSX Lion or llvm-gcc
+    * [QTBUG-18547] Buffer overrun in QMacPixmapData::macCreatePixels
+      (QPixmap_mac.cpp)
+    * [QTBUG-15474] Mac: Qt:Sheet dialog permanently loses focus after
+      moving the parent window
+    * [QTBUG-15897] QMainWindow crash in destructor when having a
+      QDockWidget of type Qt::Drawer containing a QTreeWidget
+ - corelib
+    * [QTBUG-11481] Floating Dock Widget behavior on Mac [REGRESSION]
+ - network
+    * [QTBUG-14520] SSL Isn't working with osx 10.5
+    * [QTBUG-5645] SSL Memory leaks on Mac.
+
+Qt for Symbian
+--------------
+
+ - general
+    * [QTBUG-20216] Update QtOpenGL section in Symbian platform notes
+ - examples
+    * [QTBUG-15176] Default heap/stack size might not be enough for symbian
+ - qmake & mkspecs
+    * [QTBUG-20669] Symbian: DEBUGGABLE_UDEBONLY keyword needed in
+      generated  mmp files
+    * [QTBUG-20192] Qt sis can't be created on symbian^1 5.0 and
+      symbian^3 PS2 environments
+    * [QTBUG-18207] QMAKE_CLEAN items with wildcards in symbian-abld
+      builds will halt the build without obvious reason.
+    * [QTBUG-17927] Simplified Chinese language is not supported
+      in Qt 4.7.2
+ - openvg
+    * [QTBUG-20339] when camera application is opened and closed, the qml
+      application in the background is getting closed
+    * [QTBUG-18027] Lazy conversion in fromSymbianCFbsBitmap for openVG
+ - opengl
+    * [QTBUG-19183] Enable multisampling if there's hw support for it
+      on Symbian
+    * [QTBUG-19180] Simplify texture pooling in GL graphics system
+    * [QTBUG-18850] Fix orientation change. Current behaviour results to
+      black screen
+    * [QTBUG-15254] Implement QPixmap::fromSymbianRSgImage() in the
+      OpenGL graphics system
+    * [QTBUG-18209] Native image handle provider support in QGLPixmapData
+    * [QTBUG-18270] Use destroyed swap behaviour in GL graphics system
+      on Symbian
+    * [QTBUG-15252] Implement CFbsBitmap backend for QPixmap in OpenGL
+      graphics system on Symbian
+    * [QTBUG-17850] Implement GL graphics system releaseCachedResources()
+    * [QTBUG-15253] Verify that applications using the OpenGL graphics
+      system on Symbian consume zero graphics memory when they are
+      not visible
+    * [QTBUG-16977] Symbian: Implement QPixmap::fromSymbianCFbsBitmap() in
+      the OpenGL graphics system
+    * [QTBUG-16949] Symbian: Recreate EGL surface on native window resize
+ - gui
+    * [QTBUG-20255] Regression: Some QMenus are shown completely transparent
+      in Symbian
+    * [QTBUG-20240] Regression: QS60Style - All standardIcons are drawn as
+      "small icons"
+    * [QTBUG-20813] Disabled splitscreen translation still moves screen
+    * [QTBUG-20034] Splitview - Auto-translation should translate as
+      little as possible to ensure visibility of the cursor
+    * [QTBUG-20007] Symbian: Do not add linked fonts to the QFontDatabase
+    * [QTBUG-19911] Orientation change causes unnecessary resizes to top
+      level window on Symbian
+    * [QTBUG-19880] Drawing a QPixmap to QImage causes a deep copy on
+      Symbian
+    * [QTBUG-19864] Predicted word is duplicated when doing an orientation
+      switch
+    * [QTBUG-19856] Doing an orientation change while in splitview mode
+      and closing VKB causes QGraphicsView to be incorrectly resized
+    * [QTBUG-19782] UI of the QWidget based applications those uses
+      QGroupBoxs are mess up in latest Symbian RND release
+    * [QTBUG-19734] KERN-EXEC 3 panic in
+      QCoeFepInputContext::translateInputWidget() method
+    * [QTBUG-19689] Textinput: last word inputted was duplicated after
+      press "Password" button
+    * [QTBUG-19578] Fix BCM2727 detection function on Symbian
+    * [QTBUG-19528] Opening symbol menu while typing with prediction on
+      causes issues
+    * [QTBUG-19471] Using QFileDialog crashes in Symbian
+    * [QTBUG-19104] while setting a softkey action in a qt application
+      on symbian, the icon specified only is shown partially
+    * [QTBUG-19043] Fullscreen main window with softkeys initially layouts
+      using full screen dimensions instead of client area dimensions
+    * [QTBUG-18863] QS60Style: compiling simulated style crashes due to
+      missing placeHolderTexture implementation
+    * [QTBUG-18493] Qt reserves graphics resources when launching application
+      directly to background
+    * [QTBUG-18486] Control pane (RSK Cancel) of the test note is covered by
+      "Options, Exit" when re-launching the application from Open applications
+      list
+    * [QTBUG-18409] If fullscreen application without softkeys opens a
+      fullscreen child dialog with softkeys, once the child dialog closes,
+      softkeys remain visible on applicaiton main screen.
+    * [QTBUG-17874] autotest failure between Qt 4.6.3 and Qt 4.7.2 in
+      QLinearGradient::setStops method on Symbian^3 platform
+    * [QTBUG-17844] Different point size for the font created using QFont
+      class and returned by QFontDialog
+    * [QTBUG-16857] Black corners around popup menu in Symbian^3
+    * [QTBUG-16785] QML app: After layout switch the focused text input field
+      is not visible on Split view
+    * [QTBUG-15031] Predictive text is not committed when writing in a QLineEdit
+    * [QTBUG-14058] Wrong availableGeometry detected in Symbian
+    * [QTBUG-17576] GraphicsViews: Focused widget is not visible after
+      orientation change
+    * [QTBUG-17930] Regression: Theme background in style is incorrect
+    * [QTBUG-18024] Don't use EGL surfaces for translucency with 32MB GPU chip
+    * [QTBUG-17984] QML application: focused text input field is not visible
+      when split view is opened
+ - declarative
+    * [QTBUG-20218] Symbian 5.3: QML text edit components are sending
+      software input panel requests
+    * [QTBUG-19821] Flickr: There is gridding on picture
+    * [QTBUG-19669] All events that QDeclarativeDebugTrace shows on
+      Symbian are of duration '0'
+    * [QTBUG-18869] Compilation breakage for Symbian (qmltooling)
+    * [QTBUG-18549] Animation timer seems to take too long time to expire
+      during scrolling a qml list in Symbian device.
+    * [QTBUG-17592] qml.pri causes havoc on Symbian 3.2 and 5.0
+ - network
+    * [QTBUG-18795] QNetworkConfigurationManager::allConfigurations
+      (QNetworkConfiguration::Active) not returning any active configuration
+      when instantiated and called from Secondary thread
+    * [QTBUG-18722] QDesktopServices::openUrl() doesn't handle URL encodings
+      correctly
+    * [QTBUG-18572] Crash with KERN-EXEC 0 when
+      QNetworkConfigurationManagerPrivate fails to connect
+ - corelib
+    * [QTBUG-17776] Qmlviewer: qmlviewer will crash after closing the
+      application "flickr demo"
 
 
 ****************************************************************************
 *                          Tools                                           *
 ****************************************************************************
 
+ - [QTBUG-18595] Enable remote debugging for qmlviewer
+ - [QTBUG-18063] qdoc3 depends on private header files from QML
+ - [QTBUG-16462] qdoc3 segfaults due to a uninitialized member variable
+   when using the WebXML output.
